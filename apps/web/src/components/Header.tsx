@@ -40,7 +40,7 @@ export function Header() {
             {isAuthenticated ? (
               <>
                 <span className="hidden md:inline text-sm text-secondary-600">
-                  Welcome, {user?.firstName || user?.email.split('@')[0]}
+                  Welcome, {user?.name || user?.email.split('@')[0]}
                 </span>
                 <Button variant="outline" onClick={logout}>
                   Logout

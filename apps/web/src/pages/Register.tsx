@@ -11,6 +11,7 @@ import { getErrorMessage } from '../utils/errors';
 
 // Validation schema
 const registerSchema = z.object({
+  name: z.string().min(1, 'Display name is required'),
   email: z.string().email('Please enter a valid email address'),
   password: z
     .string()
@@ -23,8 +24,6 @@ const registerSchema = z.object({
       /[0-9]/,
       'Password must contain at least one number',
     ),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -47,12 +46,7 @@ export function RegisterPage() {
     setIsSubmitting(true);
 
     try {
-      await authRegister(
-        data.email,
-        data.password,
-        data.firstName,
-        data.lastName,
-      );
+      await authRegister(data.name, data.email, data.password);
       toast.success('Account created successfully!');
       navigate('/dashboard', { replace: true });
     } catch (err: unknown) {
@@ -74,22 +68,13 @@ export function RegisterPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="card">
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="First Name"
-                placeholder="John"
-                error={errors.firstName?.message}
-                disabled={isSubmitting || isLoading}
-                {...register('firstName')}
-              />
-              <Input
-                label="Last Name"
-                placeholder="Doe"
-                error={errors.lastName?.message}
-                disabled={isSubmitting || isLoading}
-                {...register('lastName')}
-              />
-            </div>
+            <Input
+              label="Display Name"
+              placeholder="John"
+              error={errors.name?.message}
+              disabled={isSubmitting || isLoading}
+              {...register('name')}
+            />
 
             <Input
               label="Email"

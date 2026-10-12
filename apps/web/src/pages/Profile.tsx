@@ -10,8 +10,7 @@ import { getErrorMessage } from '../utils/errors';
 
 // Validation schema
 const profileSchema = z.object({
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
+  name: z.string().min(1, 'Display name is required'),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -28,8 +27,7 @@ export function ProfilePage() {
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
+      name: user?.name || '',
     },
   });
 
@@ -63,22 +61,13 @@ export function ProfilePage() {
               readOnly
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="First Name"
-                placeholder="John"
-                error={errors.firstName?.message}
-                disabled={isSubmitting || isLoading}
-                {...register('firstName')}
-              />
-              <Input
-                label="Last Name"
-                placeholder="Doe"
-                error={errors.lastName?.message}
-                disabled={isSubmitting || isLoading}
-                {...register('lastName')}
-              />
-            </div>
+            <Input
+              label="Display Name"
+              placeholder="John"
+              error={errors.name?.message}
+              disabled={isSubmitting || isLoading}
+              {...register('name')}
+            />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">

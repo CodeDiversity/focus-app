@@ -17,7 +17,7 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
   clearError: () => void;
@@ -68,19 +68,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
+  // Registration issues no token and signs nobody in — the student is
+  // redirected to login (SP-102's flow) to authenticate.
   const register = useCallback(
-    async (email: string, password: string, firstName?: string, lastName?: string) => {
+    async (name: string, email: string, password: string) => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const response: AuthResponse = await authService.register({
+        await authService.register({
+          name,
           email,
           password,
-          firstName,
-          lastName,
         });
-        setUser(response.user);
       } catch (err: unknown) {
         setError(getErrorMessage(err));
         throw err;

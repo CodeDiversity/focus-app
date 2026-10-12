@@ -4,6 +4,7 @@ import {
   AuthResponse,
   LoginCredentials,
   RegisterCredentials,
+  RegisteredUser,
   User,
 } from '../types';
 
@@ -15,10 +16,10 @@ export const authService = {
     return response.data;
   },
 
-  // Register user
-  async register(credentials: RegisterCredentials): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/auth/register', credentials);
-    tokenStore.setToken(response.data.accessToken);
+  // Register user — the API returns the created student with no token;
+  // signing in is a separate step.
+  async register(credentials: RegisterCredentials): Promise<RegisteredUser> {
+    const response = await api.post<RegisteredUser>('/auth/register', credentials);
     return response.data;
   },
 

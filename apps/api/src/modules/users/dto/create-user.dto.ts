@@ -11,8 +11,5 @@ export class CreateUserDto {
   passwordHash!: string;
 
   @IsString()
-  firstName?: string;
-
-  @IsString()
-  lastName?: string;
+  name!: string;
 }

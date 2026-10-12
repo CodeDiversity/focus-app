@@ -2,9 +2,8 @@
 export interface User {
   id: string;
   email: string;
-  firstName: string | null;
-  lastName: string | null;
-  isVerified: boolean;
+  name: string;
+  emailVerifiedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -20,10 +19,15 @@ export interface LoginCredentials {
 }
 
 export interface RegisterCredentials {
+  name: string;
   email: string;
   password: string;
-  firstName?: string;
-  lastName?: string;
+}
+
+export interface RegisteredUser {
+  id: string;
+  name: string;
+  email: string;
 }
 
 // API Response Types

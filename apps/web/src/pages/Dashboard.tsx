@@ -19,7 +19,7 @@ export function DashboardPage() {
         <div>
           <h1 className="text-3xl font-bold text-secondary-900">Dashboard</h1>
           <p className="text-secondary-600 mt-1">
-            Welcome back, {user?.firstName || user?.email.split('@')[0]}!
+            Welcome back, {user?.name || user?.email.split('@')[0]}!
           </p>
         </div>
         <Link to="/profile">
