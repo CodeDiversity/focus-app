@@ -9,21 +9,14 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { getErrorMessage } from '../utils/errors';
 
-// Validation schema
+// Validation schema — length only, no composition rules (NIST-style)
 const registerSchema = z.object({
-  name: z.string().min(1, 'Display name is required'),
+  name: z
+    .string({ required_error: 'Display name is required' })
+    .trim()
+    .min(1, 'Display name is required'),
   email: z.string().email('Please enter a valid email address'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(
-      /[A-Z]/,
-      'Password must contain at least one uppercase letter',
-    )
-    .regex(
-      /[0-9]/,
-      'Password must contain at least one number',
-    ),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -48,7 +41,7 @@ export function RegisterPage() {
     try {
       await authRegister(data.name, data.email, data.password);
       toast.success('Account created successfully!');
-      navigate('/dashboard', { replace: true });
+      navigate('/login', { replace: true });
     } catch (err: unknown) {
       toast.error(getErrorMessage(err) || 'Registration failed');
     } finally {
@@ -66,7 +59,7 @@ export function RegisterPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="card">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="card">
           <div className="space-y-6">
             <Input
               label="Display Name"
@@ -92,7 +85,7 @@ export function RegisterPage() {
               error={errors.password?.message}
               disabled={isSubmitting || isLoading}
               {...register('password')}
-              hint="Must be at least 8 characters with uppercase and number"
+              hint="Must be at least 8 characters"
             />
 
             <Button
