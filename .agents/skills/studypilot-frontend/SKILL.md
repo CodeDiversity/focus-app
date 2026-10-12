@@ -14,7 +14,7 @@ Stack: React + TypeScript + Vite, TanStack Query for data fetching.
 - Frontend validation mirrors backend validation. Surface API errors as actionable messages.
 - Responsive layouts must work on desktop and mobile, including the calendar's weekly and agenda views.
 - Match existing component and styling conventions. Minimal diffs; do not refactor unrelated code.
-- When finishing a story, record what was built in `docs/stories/<JIRA-KEY>-implementation.md` (e.g. `docs/stories/STUDY-20-implementation.md`): components, routes, queries, states handled, and open items. If the file already exists (e.g. the backend agent wrote it), update it rather than creating a duplicate. The reviewer and DoD auditor read this file.
+- When finishing a story, record what was built in `docs/artifacts/<JIRA-KEY>/implementation.md` (e.g. `docs/artifacts/STUDY-20/implementation.md`; conventions in `docs/artifacts/README.md`): components, routes, queries, states handled, and open items. If the file already exists (e.g. the backend agent wrote it), update it rather than creating a duplicate. The reviewer and DoD auditor read this file.
 
 ## Security rules
 

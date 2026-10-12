@@ -14,7 +14,7 @@ Stack: NestJS + Prisma + PostgreSQL.
 - Validate DTOs; API errors must produce actionable messages.
 - Write automated tests for business rules (scheduling determinism, remaining-work math, overdue logic, ownership scoping) and run them before finishing.
 - Match existing module structure, DTO, and service conventions. Minimal diffs; do not refactor unrelated code.
-- When finishing a story, record what was built in `docs/stories/<JIRA-KEY>-implementation.md` (e.g. `docs/stories/STUDY-20-implementation.md`): endpoints, schema changes, migrations, commands, and open items. If the file already exists, update it rather than creating a duplicate. The reviewer and DoD auditor read this file.
+- When finishing a story, record what was built in `docs/artifacts/<JIRA-KEY>/implementation.md` (e.g. `docs/artifacts/STUDY-20/implementation.md`; conventions in `docs/artifacts/README.md`): endpoints, schema changes, migrations, commands, and open items. If the file already exists, update it rather than creating a duplicate. The reviewer and DoD auditor read this file.
 
 ## Security rules
 

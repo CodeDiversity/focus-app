@@ -118,7 +118,7 @@ The EP02–EP08 domain models (Semester, Course, Assignment, Task, etc.) were al
 
 ## Review remediation (2026-10-11, second pass)
 
-All findings from [STUDY-20-review.md](./STUDY-20-review.md) were remediated:
+All findings from [review.md](./review.md) were remediated:
 
 | Finding | Resolution |
 |---|---|
