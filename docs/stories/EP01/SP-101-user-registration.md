@@ -92,6 +92,7 @@ Frontend (Vitest + Testing Library, colocated `*.test.tsx`, new `apps/web/src/pa
 - Q1 (hashing scope): Swap bcrypt for argon2id everywhere in `AuthService` — `register` hashes, `validateUser` verifies; `bcrypt`/`@types/bcrypt` removed. Login stays functional between SP-101 and SP-102.
 - Q2 (migration): Destructive migration is acceptable; existing dev rows disposable, `prisma migrate dev` reset OK. The `20261011000000_init` migration is not edited.
 - Q3 (post-registration UX): Success toast + `navigate('/login')` with no email prefill and no cross-page state.
+- Q4 (story structure): Kept as a single full-stack story — the Prisma rename couples both apps mechanically, so a backend-only story would break the web build. Implementation lands as two PRs in sequence: (1) backend (DTO, argon2 swap, migration, response shape) plus the mechanical frontend field renames to keep the monorepo green; (2) the register form UX (zod schema, AuthContext/register service, toast + redirect) and its tests.
 - Trivia resolved without a question, noted for implementers: flat `{ id, name, email }` response body; argon2id OWASP defaults (m=19456, t=2, p=1); zod composition rules dropped alongside the backend's; email normalized to lowercase.
 
 ### Out of scope
