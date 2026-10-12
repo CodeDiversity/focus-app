@@ -16,6 +16,11 @@ export class PrismaService
   }
 
   async onModuleInit() {
+    if (!process.env.DATABASE_URL) {
+      throw new Error(
+        'DATABASE_URL is not configured. Set it in apps/api/.env.local (see apps/api/.env.example) or as an environment variable.',
+      );
+    }
     await this.$connect();
   }
 
