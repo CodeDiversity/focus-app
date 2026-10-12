@@ -110,16 +110,16 @@ Run on 2026-10-12, Node 22 / pnpm 8.15.0:
 | Frontend build | `npx tsc && npx vite build` (apps/web) | OK |
 | Lint | eslint both apps | OK (0 errors; pre-existing `no-console` warning in `api/src/main.ts`) |
 | Backend build | compiled via `tsc --noEmit` | OK |
+| Migration apply | `pnpm --filter @studypilot/api db:migrate` | OK — both migrations applied, client regenerated (2026-10-12, after the dotenv-cli script fix) |
+| Live-DB smoke test | Prisma + argon2 script against the dev database | OK — create with new model shape, exact duplicate rejected (P2002), argon2 verify round trip, cleanup |
 
-## Not executed
+## Environment note
 
-- **`prisma migrate dev` / migration apply** — the Prisma CLI cannot see
-  `DATABASE_URL` (it lives in `apps/api/.env.local`, which the CLI does not
-  load and which agents must not read). The migration SQL is committed;
-  run `pnpm --filter @studypilot/api db:migrate` with your local database up
-  to apply it (reset is acceptable per story Q2).
-- **End-to-end register against a live database** — blocked on the same
-  environment gap; service and DTO behavior is covered by the unit suites above.
+`pnpm --filter @studypilot/api db:migrate` originally failed with P1012
+(`DATABASE_URL` not found): the Prisma CLI auto-loads only `.env`, while this
+repo keeps dev config in `.env.local`. Fixed by loading the file explicitly in
+the `db:*` scripts via `dotenv-cli` (apps/api/package.json) — no secret is
+duplicated or committed (`.env.local` is gitignored).
 
 ## Open items
 
@@ -130,3 +130,7 @@ Run on 2026-10-12, Node 22 / pnpm 8.15.0:
 - Rate limiting on `/auth/register` is out of scope here (tracked in the story).
 - `validateUser` does not normalize email casing; SP-102 should normalize on
   login to match register-side normalization.
+- The `users.email` unique constraint is case-sensitive (plain `TEXT UNIQUE`);
+  case-insensitive duplicate protection relies on service-layer
+  normalization. A functional unique index on `lower(email)` (or `citext`)
+  would add defense in depth — noted for SP-102's model work.
