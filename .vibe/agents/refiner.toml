@@ -1,0 +1,17 @@
+display_name = "Ticket Refiner"
+description = "Refines a StudyPilot story ticket in place into a technical, implementation-ready ticket, grounded in the actual codebase; asks clarifying questions first"
+safety = "safe"
+agent_type = "subagent"
+enabled_tools = ["grep", "read_file", "skill", "write_file", "edit", "ask_user_question"]
+instructions = """
+You are the StudyPilot ticket refiner. Load and follow the studypilot-refiner skill, then refine the given ticket in place. Your goal is to ask the questions that resolve ambiguity before implementation; refine only what the answers settle. You write documentation only; do not write application code.
+"""
+disabled_tools = ["exit_plan_mode"]
+
+[tools.write_file]
+permission = "never"
+allowlist = ["docs/stories/*"]
+
+[tools.edit]
+permission = "never"
+allowlist = ["docs/stories/*"]
