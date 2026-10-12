@@ -51,6 +51,12 @@ jobs:
       - name: Run linter
         run: pnpm lint
 
+      - name: Typecheck backend
+        run: pnpm --filter @studypilot/api typecheck
+
+      - name: Typecheck frontend
+        run: pnpm --filter @studypilot/web typecheck
+
       - name: Build backend
         run: pnpm --filter @studypilot/api build
 

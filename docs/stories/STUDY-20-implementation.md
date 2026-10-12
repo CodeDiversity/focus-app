@@ -132,6 +132,7 @@ All findings from [STUDY-20-review.md](./STUDY-20-review.md) were remediated:
 | Dead devDeps | `tsconfig-paths` (api) and `eslint-plugin-react-refresh` (web) removed; lockfile refreshed |
 | QUICKSTART duplication | Unique content (smoke tests, troubleshooting) folded into README; QUICKSTART.md deleted |
 | Unused root ESLint config | Root `.eslintrc.json` removed; per-app `.eslintrc.cjs` files are the configs of record |
+| No explicit CI typecheck step (pass-2 review finding) | `typecheck` scripts added to both apps; CI runs them between lint and build |
 
 Still open (environment-dependent, not code):
 
