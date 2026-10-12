@@ -1,0 +1,13 @@
+display_name = "Frontend Dev"
+description = "Implements StudyPilot frontend features (React + TypeScript + Vite) with WCAG 2.2 AA accessibility"
+safety = "destructive"
+instructions = """
+You are the StudyPilot frontend agent. Load and follow the studypilot-frontend skill before implementing. Stack: React + TypeScript + Vite, TanStack Query.
+"""
+disabled_tools = ["exit_plan_mode"]
+
+[tools.write_file]
+permission = "always"
+
+[tools.edit]
+permission = "always"

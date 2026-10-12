@@ -1,0 +1,13 @@
+display_name = "Backend Dev"
+description = "Implements StudyPilot backend features (NestJS + Prisma + PostgreSQL) from epics and stories"
+safety = "destructive"
+instructions = """
+You are the StudyPilot backend agent. Load and follow the studypilot-backend skill before implementing. Stack: NestJS + Prisma + PostgreSQL.
+"""
+disabled_tools = ["exit_plan_mode"]
+
+[tools.write_file]
+permission = "always"
+
+[tools.edit]
+permission = "always"

@@ -1,0 +1,248 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  firstName    String?
+  lastName     String?
+  isVerified   Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  sessions          Session[]
+  semesters         Semester[]
+  courses           Course[]
+  assignments       Assignment[]
+  tasks             Task[]
+  studySessions     StudySession[]
+  studyPlans        StudyPlan[]
+  availabilitySlots AvailabilitySlot[]
+
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token        String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  ipAddress    String?
+  userAgent    String?
+
+  @@map("sessions")
+}
+
+// ============================================
+// ACADEMIC STRUCTURE
+// ============================================
+
+model Semester {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String   // e.g., "Fall 2024"
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  courses Course[]
+
+  @@unique([userId, name])
+  @@map("semesters")
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  semesterId  String?
+  semester    Semester? @relation(fields: [semesterId], references: [id])
+  code        String   // e.g., "CS101"
+  name        String   // e.g., "Introduction to Computer Science"
+  description String?
+  color       String   @default("#6366f1") // Default indigo
+  credits     Float?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  assignments Assignment[]
+
+  @@unique([userId, code])
+  @@map("courses")
+}
+
+// ============================================
+// ASSIGNMENTS & TASKS
+// ============================================
+
+model Assignment {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String?
+  course      Course?  @relation(fields: [courseId], references: [id])
+  title       String
+  description String?
+  dueDate     DateTime
+  estimatedHours Float?  // Estimated hours needed
+  actualHours  Float?  // Tracked hours spent
+  status      AssignmentStatus @default(PENDING)
+  priority    AssignmentPriority @default(MEDIUM)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tasks Task[]
+
+  @@map("assignments")
+}
+
+enum AssignmentStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  SUBMITTED
+  GRADED
+}
+
+enum AssignmentPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignmentId String?
+  assignment  Assignment? @relation(fields: [assignmentId], references: [id])
+  title       String
+  description String?
+  dueDate     DateTime?
+  estimatedMinutes Int?
+  actualMinutes   Int?
+  status      TaskStatus @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  orderIndex  Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  scheduledTasks ScheduledTask[]
+
+  @@map("tasks")
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  ARCHIVED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+// ============================================
+// STUDY PLANNING & SCHEDULING
+// ============================================
+
+model StudySession {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startTime   DateTime
+  endTime     DateTime
+  durationMinutes Int    @default(0) // Calculated
+  notes       String?
+  isFocusMode Boolean  @default(true)
+  rating      Int?      // 1-5 user rating
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("study_sessions")
+}
+
+model AvailabilitySlot {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int      // 0-6 (Sunday-Saturday)
+  startTime   String   // HH:mm format
+  endTime     String   // HH:mm format
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, dayOfWeek, startTime])
+  @@map("availability_slots")
+}
+
+model StudyPlan {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime @db.Date
+  targetHours Float    // Target study hours for this day
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  scheduledTasks ScheduledTask[]
+
+  @@unique([userId, date])
+  @@map("study_plans")
+}
+
+model ScheduledTask {
+  id          String   @id @default(uuid())
+  studyPlanId String
+  studyPlan  StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id])
+  startTime   DateTime
+  endTime     DateTime
+  durationMinutes Int
+  status      ScheduledTaskStatus @default(SCHEDULED)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([studyPlanId, taskId])
+  @@map("scheduled_tasks")
+}
+
+enum ScheduledTaskStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+  RESCHEDULED
+}

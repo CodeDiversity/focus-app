@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply font-sans antialiased text-secondary-900 bg-secondary-50;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-secondary-900;
+  }
+
+  a {
+    @apply text-primary-600 hover:text-primary-700 transition-colors;
+  }
+
+  button {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+
+  input, textarea, select {
+    @apply w-full px-4 py-2 border border-secondary-300 rounded-lg bg-white text-secondary-900 placeholder-secondary-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors;
+  }
+
+  label {
+    @apply block mb-2 text-sm font-medium text-secondary-700;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 font-medium rounded-lg transition-colors duration-200;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary-600 text-white hover:bg-primary-700;
+  }
+
+  .btn-secondary {
+    @apply btn bg-secondary-100 text-secondary-700 hover:bg-secondary-200;
+  }
+
+  .btn-outline {
+    @apply btn border-2 border-primary-600 text-primary-600 hover:bg-primary-50;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-md p-6;
+  }
+
+  .input-error {
+    @apply border-red-500 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500;
+  }
+
+  .error-message {
+    @apply mt-1 text-sm text-red-600;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-secondary-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-secondary-300 rounded-full hover:bg-secondary-400;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-secondary-400;
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+  @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+}
+
+/* Remove default focus outline when using mouse */
+:focus:not(:focus-visible) {
+  @apply outline-none;
+}

@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: studypilot
+          POSTGRES_PASSWORD: studypilot
+          POSTGRES_DB: studypilot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U studypilot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://studypilot:studypilot@localhost:5432/studypilot?schema=public
+      JWT_SECRET: ci-only-placeholder-not-a-real-secret
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @studypilot/api db:generate
+
+      - name: Run linter
+        run: pnpm lint
+
+      - name: Build backend
+        run: pnpm --filter @studypilot/api build
+
+      - name: Assert backend build artifact
+        run: test -f apps/api/dist/main.js
+
+      - name: Build frontend
+        run: pnpm --filter @studypilot/web build
+
+      - name: Run backend tests
+        run: pnpm --filter @studypilot/api test
+
+      - name: Run frontend tests
+        run: pnpm --filter @studypilot/web test
+
+      - name: Apply database migrations
+        run: pnpm --filter @studypilot/api exec prisma migrate deploy
+
+      - name: Secret scan
+        run: |
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linuxx64.tar.gz" -o /tmp/gitleaks.tgz
+          tar -xzf /tmp/gitleaks.tgz -C /tmp gitleaks
+          /tmp/gitleaks detect --redact

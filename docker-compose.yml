@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: studypilot_db
+    environment:
+      POSTGRES_USER: studypilot
+      POSTGRES_PASSWORD: studypilot
+      POSTGRES_DB: studypilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U studypilot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - studypilot_network
+
+  # Backend API (dev mode, source mounted from the host)
+  api:
+    image: node:20-alpine
+    container_name: studypilot_api
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://studypilot:studypilot@db:5432/studypilot?schema=public
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in the environment or a .env file next to docker-compose.yml}
+      PORT: 4000
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - studypilot_network
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+    command: sh -c "npm install -g pnpm && pnpm install && pnpm --filter @studypilot/api db:generate && pnpm --filter @studypilot/api dev"
+
+  # Frontend Web App (dev mode, source mounted from the host)
+  web:
+    image: node:20-alpine
+    container_name: studypilot_web
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: http://localhost:4000
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/web/node_modules
+    command: sh -c "npm install -g pnpm && pnpm install && pnpm --filter @studypilot/web dev -- --host 0.0.0.0"
+    depends_on:
+      - api
+    networks:
+      - studypilot_network
+
+volumes:
+  postgres_data:
+
+networks:
+  studypilot_network:
+    driver: bridge
