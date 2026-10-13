@@ -1,4 +1,4 @@
-import api from './api';
+import api, { refreshAccessToken } from './api';
 import { tokenStore } from './tokenStore';
 import {
   AuthResponse,
@@ -44,10 +44,11 @@ export const authService = {
     return response.data;
   },
 
-  // Refresh token
-  async refreshToken(): Promise<{ accessToken: string }> {
-    const response = await api.post<{ accessToken: string }>('/auth/refresh');
-    tokenStore.setToken(response.data.accessToken);
-    return response.data;
+  // Refresh token — rotates the httpOnly cookie server-side and returns
+  // the same shape as login so session restore needs no extra call.
+  // Delegates to the api module's single-flight primitive so boot
+  // restore and interceptor refreshes share one in-flight rotation.
+  async refreshToken(): Promise<AuthResponse> {
+    return refreshAccessToken();
   },
 };

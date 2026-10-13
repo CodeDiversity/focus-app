@@ -6,9 +6,11 @@ import React, {
   useCallback,
   ReactNode,
 } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { User, AuthResponse } from '../types';
 import { authService } from '../services/auth';
 import { tokenStore } from '../services/tokenStore';
+import { setSessionExpiredHandler } from '../services/api';
 import { getErrorMessage } from '../utils/errors';
 
 interface AuthContextType {
@@ -33,18 +35,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Tokens live in memory only, so a fresh page load starts logged out.
-  // The profile is fetched only when a token already exists in this session.
+  // When a mid-session refresh fails, the api interceptor calls this
+  // handler: clear local state and go to /login with the attempted page
+  // saved, without a hard reload.
+  useEffect(() => {
+    setSessionExpiredHandler(() => {
+      tokenStore.clearToken();
+      setUser(null);
+      navigate('/login', {
+        replace: true,
+        state: { from: location, sessionExpired: true },
+      });
+    });
+    return () => setSessionExpiredHandler(null);
+  }, [navigate, location]);
+
+  // Session restore on boot: one silent refresh via the httpOnly cookie.
+  // Failure just means logged out — no redirect or toast on public pages.
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        if (tokenStore.getToken()) {
-          const profile = await authService.getProfile();
-          setUser(profile);
-        }
+        const response = await authService.refreshToken();
+        setUser(response.user);
       } catch {
         tokenStore.clearToken();
+        setUser(null);
       } finally {
         setIsLoading(false);
       }

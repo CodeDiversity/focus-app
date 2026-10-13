@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,6 +35,24 @@ export function LoginPage() {
   const from =
     (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ||
     '/dashboard';
+
+  const sessionExpired = Boolean(
+    (
+      location.state as {
+        sessionExpired?: boolean;
+        expired?: boolean;
+      } | null
+    )?.sessionExpired ||
+      (location.state as { expired?: boolean } | null)?.expired,
+  );
+  const expiredToastShown = useRef(false);
+
+  useEffect(() => {
+    if (sessionExpired && !expiredToastShown.current) {
+      expiredToastShown.current = true;
+      toast.error('Your session has expired. Please sign in again.');
+    }
+  }, [sessionExpired]);
 
   const onSubmit = async (data: LoginFormData) => {
     clearError();
