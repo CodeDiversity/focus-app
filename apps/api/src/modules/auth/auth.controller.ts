@@ -2,16 +2,41 @@ import {
   Controller,
   Post,
   Body,
-  UseGuards,
-  Request,
+  Req,
+  Res,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { AuthenticatedRequest } from '../../common/types';
+
+export const REFRESH_COOKIE_NAME = 'refresh_token';
+const REFRESH_COOKIE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
+function refreshCookieOptions() {
+  return {
+    httpOnly: true,
+    path: '/auth',
+    sameSite: 'lax' as const,
+    secure: process.env.NODE_ENV === 'production',
+  };
+}
+
+function setRefreshCookie(res: Response, rawToken: string) {
+  res.cookie(REFRESH_COOKIE_NAME, rawToken, {
+    ...refreshCookieOptions(),
+    maxAge: REFRESH_COOKIE_MAX_AGE_MS,
+  });
+}
+
+function clearRefreshCookie(res: Response) {
+  res.cookie(REFRESH_COOKIE_NAME, '', {
+    ...refreshCookieOptions(),
+    maxAge: 0,
+  });
+}
 
 @Controller('auth')
 export class AuthController {
@@ -24,21 +49,44 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { refreshToken, ...result } = await this.authService.login(loginDto);
+    setRefreshCookie(res, refreshToken);
+    return result;
   }
 
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Post('logout')
-  async logout(@Request() req: AuthenticatedRequest) {
-    await this.authService.logout(req.user.id);
+  async logout(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const rawToken = (req as Request & { cookies?: Record<string, string> })
+      .cookies?.[REFRESH_COOKIE_NAME];
+    await this.authService.logout(rawToken);
+    clearRefreshCookie(res);
     return { message: 'Logged out successfully' };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Post('refresh')
-  async refresh(@Request() req: AuthenticatedRequest) {
-    return this.authService.refresh(req.user);
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const rawToken = (req as Request & { cookies?: Record<string, string> })
+      .cookies?.[REFRESH_COOKIE_NAME];
+    try {
+      const { refreshToken, ...result } =
+        await this.authService.refresh(rawToken);
+      setRefreshCookie(res, refreshToken);
+      return result;
+    } catch (error) {
+      clearRefreshCookie(res);
+      throw error;
+    }
   }
 }

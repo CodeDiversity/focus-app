@@ -14,8 +14,22 @@ jest.mock('argon2', () => ({
 
 describe('AuthService', () => {
   let service: AuthService;
-  let usersService: { findByEmail: jest.Mock; create: jest.Mock };
+  let usersService: {
+    findByEmail: jest.Mock;
+    create: jest.Mock;
+    findById: jest.Mock;
+  };
   let jwtService: { sign: jest.Mock };
+  let prismaService: {
+    refreshToken: {
+      create: jest.Mock;
+      findUnique: jest.Mock;
+      update: jest.Mock;
+      updateMany: jest.Mock;
+    };
+    user: { findUnique: jest.Mock };
+    $transaction: jest.Mock;
+  };
 
   const userRecord = {
     id: 'user-1',
@@ -43,17 +57,28 @@ describe('AuthService', () => {
   };
 
   beforeEach(async () => {
-    usersService = { findByEmail: jest.fn(), create: jest.fn() };
+    usersService = {
+      findByEmail: jest.fn(),
+      create: jest.fn(),
+      findById: jest.fn(),
+    };
     jwtService = { sign: jest.fn().mockReturnValue('signed-token') };
 
-    const prismaService = {
-      session: {
-        deleteMany: jest.fn(),
-        create: jest.fn(),
+    prismaService = {
+      refreshToken: {
+        create: jest.fn().mockImplementation(async (args: { data: { id?: string } }) => ({
+          id: args.data.id ?? 'rt-new',
+        })),
         findUnique: jest.fn(),
-        update: jest.fn(),
+        update: jest.fn().mockResolvedValue({}),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
+      user: { findUnique: jest.fn() },
+      $transaction: jest.fn(),
     };
+    prismaService.$transaction.mockImplementation(
+      async (fn: (tx: typeof prismaService) => unknown) => fn(prismaService),
+    );
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -173,22 +198,69 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('rejects with UnauthorizedException for invalid credentials', async () => {
+    it('rejects invalid credentials with a generic 401', async () => {
       usersService.findByEmail.mockResolvedValue(null);
-
       await expect(
         service.login({ email: 'unknown@example.com', password: 'nope' }),
       ).rejects.toThrow(UnauthorizedException);
+      await expect(
+        service.login({ email: 'unknown@example.com', password: 'nope' }),
+      ).rejects.toThrow('Invalid email or password');
     });
 
-    it('returns a token and the user on success', async () => {
+    it('rejects a wrong password with the same generic message', async () => {
+      usersService.findByEmail.mockResolvedValue(userRecord);
+      (argon2.verify as jest.Mock).mockResolvedValue(false);
+      await expect(
+        service.login({ email: 'student@example.com', password: 'wrong' }),
+      ).rejects.toThrow('Invalid email or password');
+    });
+
+    it('issues a 15-minute access token and creates a new refresh family', async () => {
       usersService.findByEmail.mockResolvedValue(userRecord);
       (argon2.verify as jest.Mock).mockResolvedValue(true);
 
       const result = await service.login({
-        email: 'student@example.com',
+        email: '  Student@Example.COM ',
         password: 'Password123',
       });
+
+      expect(usersService.findByEmail).toHaveBeenCalledWith('student@example.com');
+      expect(result.accessToken).toBe('signed-token');
+      expect(result.user).toEqual({
+        id: 'user-1',
+        name: 'Ada Lovelace',
+        email: 'student@example.com',
+      });
+      expect(result).not.toHaveProperty('passwordHash');
+      expect(prismaService.refreshToken.create).toHaveBeenCalledTimes(1);
+      const createArg = prismaService.refreshToken.create.mock.calls[0][0];
+      expect(createArg.data.userId).toBe('user-1');
+      expect(createArg.data.familyId).toBeTruthy();
+      expect(createArg.data.tokenHash).toBeTruthy();
+      expect(createArg.data.tokenHash).not.toBe(result.refreshToken);
+      expect(JSON.stringify(createArg)).not.toContain(result.refreshToken);
+      expect(createArg.data.expiresAt.getTime()).toBeGreaterThan(Date.now());
+    });
+  });
+
+  describe('refresh', () => {
+    const activeRecord = () => ({
+      id: 'rt-1',
+      userId: 'user-1',
+      familyId: 'family-1',
+      tokenHash: 'stored-hash',
+      expiresAt: new Date(Date.now() + 60_000),
+      revokedAt: null,
+      replacedByTokenId: null,
+      createdAt: new Date(),
+      user: { id: 'user-1', name: 'Ada Lovelace', email: 'student@example.com' },
+    });
+
+    it('rotates the token and invalidates the old one', async () => {
+      prismaService.refreshToken.findUnique.mockResolvedValue(activeRecord());
+
+      const result = await service.refresh('raw-old-token');
 
       expect(result.accessToken).toBe('signed-token');
       expect(result.user).toEqual({
@@ -196,21 +268,183 @@ describe('AuthService', () => {
         name: 'Ada Lovelace',
         email: 'student@example.com',
       });
+      expect(result.refreshToken).toBeTruthy();
+      expect(result.refreshToken).not.toBe('raw-old-token');
+      expect(prismaService.$transaction).toHaveBeenCalledTimes(1);
+      const createArg = prismaService.refreshToken.create.mock.calls[0][0];
+      expect(createArg.data.familyId).toBe('family-1');
+      expect(createArg.data.tokenHash).not.toBe(result.refreshToken);
+      // The old row is claimed atomically and points at the successor.
+      expect(prismaService.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { id: 'rt-1', revokedAt: null, replacedByTokenId: null },
+        data: {
+          replacedByTokenId: createArg.data.id,
+          revokedAt: expect.any(Date),
+        },
+      });
+      expect(createArg.data.id).toBeTruthy();
+    });
+
+    it('lets only one of two concurrent refreshes of the same token succeed', async () => {
+      // Stateful in-memory rows so both calls race over the same record.
+      const rows = [activeRecord()];
+      prismaService.refreshToken.findUnique.mockImplementation(
+        async ({ where }: { where: { tokenHash: string } }) => {
+          await new Promise((r) => setTimeout(r, 5));
+          const row = rows.find((r) => r.tokenHash === where.tokenHash || r.id === 'rt-1');
+          return row ? { ...row } : null;
+        },
+      );
+      prismaService.refreshToken.updateMany.mockImplementation(
+        async (args: {
+          where: Record<string, unknown>;
+          data: Record<string, unknown>;
+        }) => {
+          let count = 0;
+          for (const row of rows) {
+            const matches = Object.entries(args.where).every(([k, v]) => {
+              if (k === 'familyId') return row.familyId === v;
+              if (k === 'id') return row.id === v;
+              if (k === 'revokedAt') return row.revokedAt === v;
+              if (k === 'replacedByTokenId') return row.replacedByTokenId === v;
+              return true;
+            });
+            if (matches) {
+              Object.assign(row, args.data);
+              count += 1;
+            }
+          }
+          return { count };
+        },
+      );
+      prismaService.refreshToken.create.mockImplementation(
+        async (args: { data: Record<string, unknown> }) => {
+          const row = {
+            id: args.data.id as string,
+            userId: args.data.userId as string,
+            familyId: args.data.familyId as string,
+            tokenHash: args.data.tokenHash as string,
+            expiresAt: args.data.expiresAt as Date,
+            revokedAt: null,
+            replacedByTokenId: null,
+            createdAt: new Date(),
+            user: { id: 'user-1', name: 'Ada Lovelace', email: 'student@example.com' },
+          };
+          rows.push(row as never);
+          return row;
+        },
+      );
+      // The presented token's hash must match the stored row.
+      const { createHash } = await import('crypto');
+      rows[0].tokenHash = createHash('sha256').update('raw-old-token').digest('hex');
+
+      const results = await Promise.allSettled([
+        service.refresh('raw-old-token'),
+        service.refresh('raw-old-token'),
+      ]);
+
+      const fulfilled = results.filter((r) => r.status === 'fulfilled');
+      const rejected = results.filter((r) => r.status === 'rejected');
+      expect(fulfilled).toHaveLength(1);
+      expect(rejected).toHaveLength(1);
+      expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(
+        UnauthorizedException,
+      );
+    });
+
+    it('rejects reuse of a rotated token and revokes the whole family', async () => {
+      prismaService.refreshToken.findUnique.mockResolvedValue({
+        ...activeRecord(),
+        revokedAt: new Date(),
+        replacedByTokenId: 'rt-2',
+      });
+
+      await expect(service.refresh('raw-old-token')).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(prismaService.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { familyId: 'family-1' },
+        data: { revokedAt: expect.any(Date) },
+      });
+      expect(prismaService.refreshToken.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects an expired refresh token', async () => {
+      prismaService.refreshToken.findUnique.mockResolvedValue({
+        ...activeRecord(),
+        expiresAt: new Date(Date.now() - 1000),
+      });
+      await expect(service.refresh('raw-old-token')).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(prismaService.refreshToken.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects an unknown refresh token', async () => {
+      prismaService.refreshToken.findUnique.mockResolvedValue(null);
+      await expect(service.refresh('nope')).rejects.toThrow(UnauthorizedException);
+      await expect(service.refresh(undefined)).rejects.toThrow(UnauthorizedException);
     });
   });
 
-  describe('refresh', () => {
-    it('issues a new access token for the authenticated user', async () => {
-      const result = await service.refresh({
-        id: 'user-1',
-        email: 'student@example.com',
-      });
+  describe('logout', () => {
+    it('revokes only the current family and no other family of the same user', async () => {
+      const { createHash } = await import('crypto');
+      const hashOf = (raw: string) =>
+        createHash('sha256').update(raw).digest('hex');
+      const rows = [
+        {
+          id: 'rt-1',
+          userId: 'user-1',
+          familyId: 'family-1',
+          tokenHash: hashOf('raw-token'),
+          expiresAt: new Date(Date.now() + 60_000),
+          revokedAt: null as Date | null,
+          replacedByTokenId: null,
+          createdAt: new Date(),
+        },
+        {
+          id: 'rt-9',
+          userId: 'user-1',
+          familyId: 'family-2',
+          tokenHash: hashOf('other-device-token'),
+          expiresAt: new Date(Date.now() + 60_000),
+          revokedAt: null as Date | null,
+          replacedByTokenId: null,
+          createdAt: new Date(),
+        },
+      ];
+      prismaService.refreshToken.findUnique.mockImplementation(
+        async ({ where }: { where: { tokenHash: string } }) =>
+          rows.find((r) => r.tokenHash === where.tokenHash) ?? null,
+      );
+      prismaService.refreshToken.updateMany.mockImplementation(
+        async (args: {
+          where: { familyId: string };
+          data: { revokedAt: Date };
+        }) => {
+          let count = 0;
+          for (const row of rows) {
+            if (row.familyId === args.where.familyId) {
+              row.revokedAt = args.data.revokedAt;
+              count += 1;
+            }
+          }
+          return { count };
+        },
+      );
 
-      expect(result.accessToken).toBe('signed-token');
-      expect(jwtService.sign).toHaveBeenCalledWith({
-        sub: 'user-1',
-        email: 'student@example.com',
-      });
+      await service.logout('raw-token');
+
+      expect(rows[0].revokedAt).toBeInstanceOf(Date);
+      expect(rows[1].revokedAt).toBeNull();
+    });
+
+    it('succeeds idempotently with a missing or unknown token', async () => {
+      prismaService.refreshToken.findUnique.mockResolvedValue(null);
+      await expect(service.logout(undefined)).resolves.toBeUndefined();
+      await expect(service.logout('unknown')).resolves.toBeUndefined();
+      expect(prismaService.refreshToken.updateMany).not.toHaveBeenCalled();
     });
   });
 });
