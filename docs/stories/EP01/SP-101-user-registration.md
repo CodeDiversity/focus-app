@@ -7,6 +7,7 @@
 **Dependencies:** None (first story)
 **Jira key:** STUDY-6
 **Refined:** 2026-10-12
+**Completed** 2026-10-12
 
 ## Summary
 
