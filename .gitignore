@@ -46,6 +46,7 @@ coverage/
 
 # Prisma
 prisma/migrations/**/migration_lock.toml
+apps/api/src/generated/
 
 # Turbo
 .turbo/

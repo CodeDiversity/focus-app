@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '../../generated/prisma/client';
 
 @Injectable()
 export class PrismaService
@@ -8,6 +9,12 @@ export class PrismaService
 {
   constructor() {
     super({
+      // Prisma 7 connects through a driver adapter; the connection string
+      // stays in the environment and is never hard-coded. An empty string
+      // only defers failure to onModuleInit, which reports it properly.
+      adapter: new PrismaPg({
+        connectionString: process.env.DATABASE_URL ?? '',
+      }),
       log:
         process.env.NODE_ENV === 'development'
           ? ['query', 'info', 'warn', 'error']
