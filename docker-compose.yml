@@ -21,6 +21,15 @@ services:
     networks:
       - studypilot_network
 
+  # Development inbox: captures mail locally and never forwards it.
+  mailpit:
+    image: axllent/mailpit:v1.31.5
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+    networks:
+      - studypilot_network
+
   # Backend API (dev mode, source mounted from the host)
   api:
     image: node:20-alpine
@@ -32,6 +41,10 @@ services:
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in the environment or a .env file next to docker-compose.yml}
       PORT: 4000
       FRONTEND_URL: http://localhost:3000
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_SECURE: "false"
+      SMTP_FROM: StudyPilot <noreply@studypilot.test>
     ports:
       - "4000:4000"
     depends_on:

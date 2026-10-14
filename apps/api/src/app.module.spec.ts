@@ -1,3 +1,5 @@
+import { EmailVerificationService } from './modules/auth/email-verification.service';
+import { EMAIL_PROVIDER } from './modules/email/email-provider';
 import { Test } from '@nestjs/testing';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
@@ -15,6 +17,8 @@ describe('AppModule wiring', () => {
       imports: [AppModule],
     }).compile();
 
+    expect(moduleRef.get(EmailVerificationService)).toBeDefined();
+    expect(moduleRef.get(EMAIL_PROVIDER)).toBeDefined();
     expect(moduleRef.get(AuthService)).toBeDefined();
     expect(moduleRef.get(UsersService)).toBeDefined();
   });
@@ -28,7 +32,7 @@ describe('AppModule wiring', () => {
           whitelist: true,
           forbidNonWhitelisted: true,
           transform: true,
-        }),
+        })
     ).not.toThrow();
   });
 });

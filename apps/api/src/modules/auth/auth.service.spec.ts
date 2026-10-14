@@ -3,6 +3,7 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { AuthService } from './auth.service';
+import { EmailVerificationService } from './email-verification.service';
 import { UsersService } from '../users/users.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -19,6 +20,7 @@ describe('AuthService', () => {
     create: jest.Mock;
     findById: jest.Mock;
   };
+  let verification: { prepareToken: jest.Mock; sendVerification: jest.Mock };
   let jwtService: { sign: jest.Mock };
   let prismaService: {
     refreshToken: {
@@ -62,6 +64,17 @@ describe('AuthService', () => {
       create: jest.fn(),
       findById: jest.fn(),
     };
+    verification = {
+      prepareToken: jest
+        .fn()
+        .mockReturnValue({
+          rawToken: 'raw-verification',
+          tokenHash: 'hashed-verification',
+          expiresAt: new Date('2026-10-14T12:00:00Z'),
+          requestedAt: new Date('2026-10-13T12:00:00Z'),
+        }),
+      sendVerification: jest.fn(),
+    };
     jwtService = { sign: jest.fn().mockReturnValue('signed-token') };
 
     prismaService = {
@@ -77,12 +90,13 @@ describe('AuthService', () => {
       $transaction: jest.fn(),
     };
     prismaService.$transaction.mockImplementation(
-      async (fn: (tx: typeof prismaService) => unknown) => fn(prismaService),
+      async (fn: (tx: typeof prismaService) => unknown) => fn(prismaService)
     );
 
     const moduleRef = await Test.createTestingModule({
       providers: [
         AuthService,
+        { provide: EmailVerificationService, useValue: verification },
         { provide: UsersService, useValue: usersService },
         { provide: PrismaService, useValue: prismaService },
         { provide: JwtService, useValue: jwtService },
@@ -96,18 +110,14 @@ describe('AuthService', () => {
     it('rejects when the email is already registered', async () => {
       usersService.findByEmail.mockResolvedValue(userRecord);
 
-      await expect(service.register(registerDto)).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(service.register(registerDto)).rejects.toThrow(ConflictException);
       expect(usersService.create).not.toHaveBeenCalled();
     });
 
     it('rejects with an actionable message on a duplicate email', async () => {
       usersService.findByEmail.mockResolvedValue(userRecord);
 
-      await expect(service.register(registerDto)).rejects.toThrow(
-        /already exists/i,
-      );
+      await expect(service.register(registerDto)).rejects.toThrow(/already exists/i);
     });
 
     it('normalizes the email to lowercase before the duplicate check and insert', async () => {
@@ -119,11 +129,10 @@ describe('AuthService', () => {
         email: '  Ada@Example.com  ',
       });
 
-      expect(usersService.findByEmail).toHaveBeenCalledWith(
-        'ada@example.com',
-      );
+      expect(usersService.findByEmail).toHaveBeenCalledWith('ada@example.com');
       expect(usersService.create).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'ada@example.com' }),
+        expect.objectContaining({ tokenHash: 'hashed-verification' })
       );
     });
 
@@ -141,6 +150,7 @@ describe('AuthService', () => {
       });
       expect(usersService.create).toHaveBeenCalledWith(
         expect.objectContaining({ passwordHash: 'argon2-hash' }),
+        expect.objectContaining({ tokenHash: 'hashed-verification' })
       );
       const createArg = usersService.create.mock.calls[0][0];
       expect(JSON.stringify(createArg)).not.toContain('Password123');
@@ -163,6 +173,28 @@ describe('AuthService', () => {
     });
   });
 
+  describe('verification registration', () => {
+    it('does not send an email when account/token persistence fails', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockRejectedValue(new Error('persistence failed'));
+      await expect(service.register(registerDto)).rejects.toThrow('persistence failed');
+      expect(verification.sendVerification).not.toHaveBeenCalled();
+    });
+    it('passes the initial hashed token and cooldown to atomic account creation before delivery', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      usersService.create.mockResolvedValue(createdUser);
+      await service.register(registerDto);
+      expect(usersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ email: registerDto.email }),
+        verification.prepareToken.mock.results[0].value
+      );
+      expect(verification.sendVerification).toHaveBeenCalledWith(
+        registerDto.email,
+        'raw-verification'
+      );
+    });
+  });
+
   describe('validateUser', () => {
     it('returns null for an unknown email', async () => {
       usersService.findByEmail.mockResolvedValue(null);
@@ -174,23 +206,15 @@ describe('AuthService', () => {
       usersService.findByEmail.mockResolvedValue(userRecord);
       (argon2.verify as jest.Mock).mockResolvedValue(false);
 
-      expect(
-        await service.validateUser('student@example.com', 'wrong-password'),
-      ).toBeNull();
-      expect(argon2.verify).toHaveBeenCalledWith(
-        'argon2-hash',
-        'wrong-password',
-      );
+      expect(await service.validateUser('student@example.com', 'wrong-password')).toBeNull();
+      expect(argon2.verify).toHaveBeenCalledWith('argon2-hash', 'wrong-password');
     });
 
     it('returns the user without the password hash on success', async () => {
       usersService.findByEmail.mockResolvedValue(userRecord);
       (argon2.verify as jest.Mock).mockResolvedValue(true);
 
-      const user = await service.validateUser(
-        'student@example.com',
-        'Password123',
-      );
+      const user = await service.validateUser('student@example.com', 'Password123');
 
       expect(user).toMatchObject({ id: 'user-1', name: 'Ada Lovelace' });
       expect(user).not.toHaveProperty('passwordHash');
@@ -201,10 +225,10 @@ describe('AuthService', () => {
     it('rejects invalid credentials with a generic 401', async () => {
       usersService.findByEmail.mockResolvedValue(null);
       await expect(
-        service.login({ email: 'unknown@example.com', password: 'nope' }),
+        service.login({ email: 'unknown@example.com', password: 'nope' })
       ).rejects.toThrow(UnauthorizedException);
       await expect(
-        service.login({ email: 'unknown@example.com', password: 'nope' }),
+        service.login({ email: 'unknown@example.com', password: 'nope' })
       ).rejects.toThrow('Invalid email or password');
     });
 
@@ -212,7 +236,7 @@ describe('AuthService', () => {
       usersService.findByEmail.mockResolvedValue(userRecord);
       (argon2.verify as jest.Mock).mockResolvedValue(false);
       await expect(
-        service.login({ email: 'student@example.com', password: 'wrong' }),
+        service.login({ email: 'student@example.com', password: 'wrong' })
       ).rejects.toThrow('Invalid email or password');
     });
 
@@ -231,6 +255,7 @@ describe('AuthService', () => {
         id: 'user-1',
         name: 'Ada Lovelace',
         email: 'student@example.com',
+        emailVerifiedAt: null,
       });
       expect(result).not.toHaveProperty('passwordHash');
       expect(prismaService.refreshToken.create).toHaveBeenCalledTimes(1);
@@ -254,7 +279,12 @@ describe('AuthService', () => {
       revokedAt: null,
       replacedByTokenId: null,
       createdAt: new Date(),
-      user: { id: 'user-1', name: 'Ada Lovelace', email: 'student@example.com' },
+      user: {
+        id: 'user-1',
+        name: 'Ada Lovelace',
+        email: 'student@example.com',
+        emailVerifiedAt: null,
+      },
     });
 
     it('rotates the token and invalidates the old one', async () => {
@@ -267,6 +297,7 @@ describe('AuthService', () => {
         id: 'user-1',
         name: 'Ada Lovelace',
         email: 'student@example.com',
+        emailVerifiedAt: null,
       });
       expect(result.refreshToken).toBeTruthy();
       expect(result.refreshToken).not.toBe('raw-old-token');
@@ -293,13 +324,10 @@ describe('AuthService', () => {
           await new Promise((r) => setTimeout(r, 5));
           const row = rows.find((r) => r.tokenHash === where.tokenHash || r.id === 'rt-1');
           return row ? { ...row } : null;
-        },
+        }
       );
       prismaService.refreshToken.updateMany.mockImplementation(
-        async (args: {
-          where: Record<string, unknown>;
-          data: Record<string, unknown>;
-        }) => {
+        async (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
           let count = 0;
           for (const row of rows) {
             const matches = Object.entries(args.where).every(([k, v]) => {
@@ -315,7 +343,7 @@ describe('AuthService', () => {
             }
           }
           return { count };
-        },
+        }
       );
       prismaService.refreshToken.create.mockImplementation(
         async (args: { data: Record<string, unknown> }) => {
@@ -332,7 +360,7 @@ describe('AuthService', () => {
           };
           rows.push(row as never);
           return row;
-        },
+        }
       );
       // The presented token's hash must match the stored row.
       const { createHash } = await import('crypto');
@@ -347,9 +375,7 @@ describe('AuthService', () => {
       const rejected = results.filter((r) => r.status === 'rejected');
       expect(fulfilled).toHaveLength(1);
       expect(rejected).toHaveLength(1);
-      expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(
-        UnauthorizedException,
-      );
+      expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(UnauthorizedException);
     });
 
     it('rejects reuse of a rotated token and revokes the whole family', async () => {
@@ -359,9 +385,7 @@ describe('AuthService', () => {
         replacedByTokenId: 'rt-2',
       });
 
-      await expect(service.refresh('raw-old-token')).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.refresh('raw-old-token')).rejects.toThrow(UnauthorizedException);
       expect(prismaService.refreshToken.updateMany).toHaveBeenCalledWith({
         where: { familyId: 'family-1' },
         data: { revokedAt: expect.any(Date) },
@@ -374,9 +398,7 @@ describe('AuthService', () => {
         ...activeRecord(),
         expiresAt: new Date(Date.now() - 1000),
       });
-      await expect(service.refresh('raw-old-token')).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.refresh('raw-old-token')).rejects.toThrow(UnauthorizedException);
       expect(prismaService.refreshToken.create).not.toHaveBeenCalled();
     });
 
@@ -390,8 +412,7 @@ describe('AuthService', () => {
   describe('logout', () => {
     it('revokes only the current family and no other family of the same user', async () => {
       const { createHash } = await import('crypto');
-      const hashOf = (raw: string) =>
-        createHash('sha256').update(raw).digest('hex');
+      const hashOf = (raw: string) => createHash('sha256').update(raw).digest('hex');
       const rows = [
         {
           id: 'rt-1',
@@ -416,13 +437,10 @@ describe('AuthService', () => {
       ];
       prismaService.refreshToken.findUnique.mockImplementation(
         async ({ where }: { where: { tokenHash: string } }) =>
-          rows.find((r) => r.tokenHash === where.tokenHash) ?? null,
+          rows.find((r) => r.tokenHash === where.tokenHash) ?? null
       );
       prismaService.refreshToken.updateMany.mockImplementation(
-        async (args: {
-          where: { familyId: string };
-          data: { revokedAt: Date };
-        }) => {
+        async (args: { where: { familyId: string }; data: { revokedAt: Date } }) => {
           let count = 0;
           for (const row of rows) {
             if (row.familyId === args.where.familyId) {
@@ -431,7 +449,7 @@ describe('AuthService', () => {
             }
           }
           return { count };
-        },
+        }
       );
 
       await service.logout('raw-token');

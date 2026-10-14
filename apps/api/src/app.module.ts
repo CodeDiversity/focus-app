@@ -8,6 +8,7 @@ import { PrismaModule } from './modules/prisma/prisma.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'test',
       envFilePath: ['.env.local', '.env'],
     }),
     AuthModule,

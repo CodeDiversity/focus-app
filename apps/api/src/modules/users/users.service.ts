@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import type { PreparedVerificationToken } from '../auth/email-verification.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -7,12 +8,23 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(
+    createUserDto: CreateUserDto,
+    verification?: Omit<PreparedVerificationToken, 'rawToken'>
+  ) {
     return this.prisma.user.create({
       data: {
         email: createUserDto.email,
         passwordHash: createUserDto.passwordHash,
         name: createUserDto.name,
+        ...(verification
+          ? {
+              emailVerificationRequestedAt: verification.requestedAt,
+              emailVerificationTokens: {
+                create: { tokenHash: verification.tokenHash, expiresAt: verification.expiresAt },
+              },
+            }
+          : {}),
       },
       select: {
         id: true,

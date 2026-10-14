@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { createHash, randomBytes } from 'crypto';
@@ -11,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { EmailVerificationService } from './email-verification.service';
 import { AuthenticatedUser } from '../../common/types';
 
 export interface JwtPayload {
@@ -30,6 +27,7 @@ export interface AuthResponse {
     id: string;
     name: string;
     email: string;
+    emailVerifiedAt: Date | null;
   };
 }
 
@@ -52,10 +50,7 @@ let dummyHashPromise: Promise<string> | null = null;
 
 function getDummyHash(): Promise<string> {
   if (!dummyHashPromise) {
-    dummyHashPromise = argon2.hash(
-      randomBytes(32).toString('base64url'),
-      ARGON2_OPTIONS,
-    );
+    dummyHashPromise = argon2.hash(randomBytes(32).toString('base64url'), ARGON2_OPTIONS);
   }
   return dummyHashPromise;
 }
@@ -75,12 +70,13 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly verification: EmailVerificationService
   ) {}
 
   async validateUser(
     email: string,
-    password: string,
-  ): Promise<AuthenticatedUser | null> {
+    password: string
+  ): Promise<(AuthenticatedUser & { emailVerifiedAt: Date | null }) | null> {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
@@ -113,22 +109,24 @@ export class AuthService {
     const existingUser = await this.usersService.findByEmail(email);
     if (existingUser) {
       throw new ConflictException(
-        'An account with this email already exists. Please sign in or register with a different email.',
+        'An account with this email already exists. Please sign in or register with a different email.'
       );
     }
 
     // Hash password
-    const passwordHash = await argon2.hash(
-      registerDto.password,
-      ARGON2_OPTIONS,
-    );
+    const passwordHash = await argon2.hash(registerDto.password, ARGON2_OPTIONS);
 
-    // Create user
-    const user = await this.usersService.create({
-      email,
-      passwordHash,
-      name: registerDto.name,
-    });
+    // Prisma nested creation commits the account, cooldown and hash together.
+    const initialVerification = this.verification.prepareToken();
+    const user = await this.usersService.create(
+      {
+        email,
+        passwordHash,
+        name: registerDto.name,
+      },
+      initialVerification
+    );
+    this.verification.sendVerification(user.email, initialVerification.rawToken);
 
     // Registration issues no token — the student signs in via SP-102's flow
     return { id: user.id, name: user.name, email: user.email };
@@ -165,6 +163,7 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
+        emailVerifiedAt: user.emailVerifiedAt,
       },
       refreshToken: rawRefreshToken,
     };
@@ -181,7 +180,7 @@ export class AuthService {
       | { kind: 'invalid' }
       | {
           kind: 'ok';
-          user: { id: string; name: string; email: string };
+          user: AuthResponse['user'];
           refreshToken: string;
         };
 
@@ -196,7 +195,7 @@ export class AuthService {
             expiresAt: true,
             revokedAt: true,
             replacedByTokenId: true,
-            user: { select: { id: true, name: true, email: true } },
+            user: { select: { id: true, name: true, email: true, emailVerifiedAt: true } },
           },
         });
 
@@ -249,7 +248,7 @@ export class AuthService {
 
         const user = await this.resolveTokenUser(record, tx);
         return { kind: 'ok', user, refreshToken: newRawToken };
-      },
+      }
     );
 
     if (outcome.kind === 'invalid') {
@@ -288,27 +287,33 @@ export class AuthService {
   private async resolveTokenUser(
     record: {
       userId: string;
-      user?: { id: string; name: string; email: string } | null;
+      user?: AuthResponse['user'] | null;
     },
-    client: Pick<PrismaService, 'user'> = this.prisma,
-  ): Promise<{ id: string; name: string; email: string }> {
+    client: Pick<PrismaService, 'user'> = this.prisma
+  ): Promise<AuthResponse['user']> {
     if (record.user) {
       return {
         id: record.user.id,
         name: record.user.name,
         email: record.user.email,
+        emailVerifiedAt: record.user.emailVerifiedAt,
       };
     }
 
     const prismaUser = await client.user?.findUnique({
       where: { id: record.userId },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true, email: true, emailVerifiedAt: true },
     });
     if (prismaUser) {
       return prismaUser;
     }
 
     const fallback = await this.usersService.findById(record.userId);
-    return { id: fallback.id, name: fallback.name, email: fallback.email };
+    return {
+      id: fallback.id,
+      name: fallback.name,
+      email: fallback.email,
+      emailVerifiedAt: fallback.emailVerifiedAt,
+    };
   }
 }
