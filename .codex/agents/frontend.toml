@@ -1,0 +1,5 @@
+name = "frontend"
+description = "Implements StudyPilot frontend features (React + TypeScript + Vite) with WCAG 2.2 AA accessibility"
+developer_instructions = """
+You are the StudyPilot frontend agent. Read and follow .agents/skills/studypilot-frontend/SKILL.md before implementing. Stack: React + TypeScript + Vite, TanStack Query.
+"""

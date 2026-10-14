@@ -1,0 +1,5 @@
+name = "backend"
+description = "Implements StudyPilot backend features (NestJS + Prisma + PostgreSQL) from epics and stories"
+developer_instructions = """
+You are the StudyPilot backend agent. Read and follow .agents/skills/studypilot-backend/SKILL.md before implementing. Stack: NestJS + Prisma + PostgreSQL.
+"""

@@ -261,6 +261,16 @@ pnpm install
 
 ## Contributing
 
+### Repo agents in Codex
+
+All six repo agents are available as project-scoped Codex agents in `.codex/agents/`: `backend`, `frontend`, `planner`, `refiner`, `reviewer`, and `dod-auditor`. They reuse the existing skills in `.agents/skills/`. See [AGENTS.md](./AGENTS.md) for each role's scope.
+
+Start a new Codex session in this repository after adding or changing agent definitions. For example: “Use the refiner agent to refine SP-105” or “Have the dod-auditor agent audit STUDY-20.” Models and approval settings inherit from the parent session; the two review roles specify a read-only sandbox. Planner and refiner write limits are enforced by instructions.
+
+The original `.vibe/agents/` definitions remain available for Vibe. Codex uses the [project agent TOML format](https://learn.chatgpt.com/docs/agent-configuration/subagents).
+
+### Development workflow
+
 1. Create a feature branch from `develop`
 2. Make your changes
 3. Run `pnpm lint` and `pnpm test`
