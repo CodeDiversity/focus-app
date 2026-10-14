@@ -1,16 +1,23 @@
 // Auth Types
-export interface User {
+export interface SessionUser {
   id: string;
   email: string;
   name: string;
   emailVerifiedAt: string | null;
+}
+
+export interface User extends SessionUser {
   createdAt: string;
   updatedAt: string;
 }
 
 export interface AuthResponse {
   accessToken: string;
-  user: User;
+  user: SessionUser;
+}
+
+export interface VerificationResponse {
+  message: string;
 }
 
 export interface LoginCredentials {

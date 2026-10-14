@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { AuthProvider, useAuth } from './AuthContext';
@@ -125,7 +125,7 @@ describe('AuthContext', () => {
       throw new AxiosError('Unauthorized', 'ERR_BAD_REQUEST', config, null, response);
     };
 
-    await expect(api.get('/protected-data')).rejects.toBeTruthy();
+    await act(async () => { await expect(api.get('/protected-data')).rejects.toBeTruthy(); });
 
     await waitFor(() => {
       expect(screen.getByTestId('nav-path')).toHaveTextContent('/login');
@@ -160,8 +160,84 @@ describe('AuthContext', () => {
     );
 
     const button = await screen.findByRole('button', { name: 'sign-out' });
-    button.click();
+    await act(async () => { button.click(); });
     expect(await screen.findByRole('button', { name: 'signed-out' })).toBeInTheDocument();
     expect(tokenStore.getToken()).toBeNull();
+  });
+
+  const sessionUser = { id: 'user-1', name: 'Ada', email: 'ada@example.com', emailVerifiedAt: null };
+  let currentAuth: ReturnType<typeof useAuth>;
+  function VerificationProbe() {
+    currentAuth = useAuth();
+    return <span data-testid="profile-state">{JSON.stringify(currentAuth.user)}</span>;
+  }
+  async function renderVerificationProvider() {
+    mockedRefresh.mockResolvedValue({ accessToken: 'session', user: sessionUser });
+    render(<MemoryRouter><AuthProvider><VerificationProbe /></AuthProvider></MemoryRouter>);
+    await waitFor(() => expect(currentAuth.user?.id).toBe('user-1'));
+  }
+
+  it('refreshes the current profile on focus without rotating the session', async () => {
+    await renderVerificationProvider();
+    vi.mocked(authService.getProfile).mockResolvedValue({ ...sessionUser, emailVerifiedAt: '2026-10-14T12:00:00Z', createdAt: '', updatedAt: '' });
+    await act(async () => { window.dispatchEvent(new Event('focus')); });
+    expect(currentAuth.user?.emailVerifiedAt).toBe('2026-10-14T12:00:00Z');
+    expect(mockedRefresh).toHaveBeenCalledTimes(1);
+    await act(async () => { window.dispatchEvent(new Event('focus')); });
+    expect(authService.getProfile).toHaveBeenCalledTimes(1);
+  });
+
+  it('deduplicates verification profile refresh', async () => {
+    await renderVerificationProvider();
+    let resolveProfile!: (value: Awaited<ReturnType<typeof authService.getProfile>>) => void;
+    vi.mocked(authService.getProfile).mockImplementation(() => new Promise(resolve => { resolveProfile = resolve; }));
+    let first!: Promise<void>;
+    let second!: Promise<void>;
+    act(() => { first = currentAuth.refreshProfile(); second = currentAuth.refreshProfile(); });
+    expect(authService.getProfile).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      resolveProfile({ ...sessionUser, createdAt: '', updatedAt: '' });
+      await Promise.all([first, second]);
+    });
+  });
+
+  it('keeps the usable session when verification profile refresh fails', async () => {
+    await renderVerificationProvider();
+    tokenStore.setToken('usable-session');
+    vi.mocked(authService.getProfile).mockRejectedValue(new Error('network unavailable'));
+    await act(async () => { await currentAuth.refreshProfile(); });
+    expect(currentAuth.isAuthenticated).toBe(true);
+    expect(currentAuth.isLoading).toBe(false);
+    expect(currentAuth.error).toBeNull();
+    expect(tokenStore.getToken()).toBe('usable-session');
+  });
+
+  it('keeps the signed-in account when another account is verified', async () => {
+    await renderVerificationProvider();
+    vi.mocked(authService.getProfile).mockResolvedValue({ ...sessionUser, createdAt: '', updatedAt: '' });
+    await act(async () => { await currentAuth.refreshProfile(); });
+    expect(currentAuth.user).toMatchObject(sessionUser);
+  });
+
+  it.each(['logout', 'account change'] as const)('ignores a late profile response and queued fresh read after %s', async (change) => {
+    await renderVerificationProvider();
+    let resolveProfile!: (value: Awaited<ReturnType<typeof authService.getProfile>>) => void;
+    vi.mocked(authService.getProfile).mockImplementation(() => new Promise(resolve => { resolveProfile = resolve; }));
+    let flight!: Promise<void>;
+    let queued!: Promise<void>;
+    act(() => { flight = currentAuth.refreshProfile(); queued = currentAuth.refreshProfile({ fresh: true }); });
+    if (change === 'logout') {
+      vi.mocked(authService.logout).mockResolvedValue();
+      await act(async () => { await currentAuth.logout(); });
+    } else {
+      vi.mocked(authService.login).mockResolvedValue({ accessToken: 'other-session', user: { ...sessionUser, id: 'user-2', email: 'grace@example.com' } });
+      await act(async () => { await currentAuth.login('grace@example.com', 'password'); });
+    }
+    await act(async () => {
+      resolveProfile({ ...sessionUser, emailVerifiedAt: '2026-10-14', createdAt: '', updatedAt: '' });
+      await Promise.all([flight, queued]);
+    });
+    expect(currentAuth.user?.id ?? null).toBe(change === 'logout' ? null : 'user-2');
+    expect(authService.getProfile).toHaveBeenCalledTimes(1);
   });
 });

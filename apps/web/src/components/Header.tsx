@@ -9,7 +9,7 @@ export function Header() {
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex flex-wrap justify-between items-center gap-3 min-h-16 py-3">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center">
@@ -36,12 +36,13 @@ export function Header() {
           </nav>
 
           {/* Auth buttons */}
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-center gap-3">
             {isAuthenticated ? (
               <>
                 <span className="hidden md:inline text-sm text-secondary-600">
                   Welcome, {user?.name || user?.email.split('@')[0]}
                 </span>
+                <Link to="/verify-email" className="text-sm underline rounded focus-visible:ring-2">Email verification</Link>
                 <Button variant="outline" onClick={logout}>
                   Logout
                 </Button>

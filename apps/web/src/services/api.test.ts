@@ -125,4 +125,19 @@ describe('api interceptor', () => {
     await expect(api.post('/auth/login', {})).rejects.toBeTruthy();
     expect(refreshCalls).toBe(0);
   });
+
+  it.each(['/auth/verify-email', '/auth/resend-verification'])('does not attempt session refresh for public %s errors', async (path) => {
+    tokenStore.setToken('existing-session');
+    const expired = vi.fn();
+    setSessionExpiredHandler(expired);
+    let refreshCalls = 0;
+    api.defaults.adapter = async (config) => {
+      if (config.url === '/auth/refresh') refreshCalls += 1;
+      throw unauthorized(config);
+    };
+    await expect(api.post(path, {})).rejects.toBeTruthy();
+    expect(refreshCalls).toBe(0);
+    expect(expired).not.toHaveBeenCalled();
+    expect(tokenStore.getToken()).toBe('existing-session');
+  });
 });

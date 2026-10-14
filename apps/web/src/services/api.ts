@@ -19,7 +19,10 @@ const api: AxiosInstance = axios.create({
 
 type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 
-const AUTH_PATHS = ['/auth/login', '/auth/refresh', '/auth/logout', '/auth/register'];
+const AUTH_PATHS = [
+  '/auth/login', '/auth/refresh', '/auth/logout', '/auth/register',
+  '/auth/verify-email', '/auth/resend-verification',
+];
 
 function isAuthPath(url: string | undefined): boolean {
   if (!url) return false;

@@ -5,6 +5,7 @@ import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
 import { DashboardPage } from './pages/Dashboard';
 import { ProfilePage } from './pages/Profile';
+import { VerifyEmailPage } from './pages/VerifyEmail';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { PublicRoute } from './components/PublicRoute';
 
@@ -13,6 +14,7 @@ function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         
         {/* Public routes */}
         <Route element={<PublicRoute />}>
