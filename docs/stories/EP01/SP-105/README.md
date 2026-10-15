@@ -151,8 +151,8 @@ The CF-1–CF-6 entries above preserve the previous agent's original claims and 
 
 ### CF-9 — HttpOnly cookie assigned to frontend (Major)
 - **Original finding:** SP-105C AC4 and success handling assigned cookie clearing to the SPA; JavaScript cannot clear the HttpOnly refresh cookie. No reset-controller response owned the action.
-- **Correction:** Pending: B's controller expires the cookie after commit with existing cookie attributes; C clears local state and guards both API token writes and AuthContext restore; D verifies real Set-Cookie behavior.
-- **Verification:** Pending comparison with `clearRefreshCookie` in `auth.controller.ts` and the single-flight refresh in `services/api.ts`.
+- **Correction:** B owns the post-commit expiry header with existing attributes. C now drains/pauses refresh before reset and guards API token writes plus AuthContext restore with a shared session generation; D will verify real cookie behavior.
+- **Verification:** Compared B with the existing cookie helper. Traced `services/api.ts` writing a token before `AuthContext` applies a user: both now have explicit C generation checks; C also prevents a delayed pre-reset refresh cookie from following the reset response. Actual browser proof belongs to D.
 - **Status:** Unresolved.
 
 ### CF-10 — unsupported policy approvals (Major)
