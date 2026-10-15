@@ -1,3 +1,4 @@
+import { ServiceUnavailableException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   RecoveryRateLimitStore,
@@ -104,6 +105,12 @@ function database() {
 }
 
 type TestDb = ReturnType<typeof database>;
+
+async function expectSanitized503(promise: Promise<unknown>) {
+  const error = await promise.catch((e) => e);
+  expect(error).toBeInstanceOf(ServiceUnavailableException);
+  expect((error as ServiceUnavailableException).message).toBe(RECOVERY_UNAVAILABLE_MESSAGE);
+}
 
 /** Seed `count` entries, the oldest `oldestAgoMs` back, spaced 1s apart. */
 function seedWindow(db: TestDb, endpoint: RecoveryEndpoint, oldestAgoMs: number, count: number) {
@@ -240,10 +247,7 @@ describe('RecoveryRateLimitStore', () => {
     db.state.vanishOn = [1, 2]; // both lock reads see no row
     const store = db.make();
 
-    await expect(store.admit(FORGOT, IP)).rejects.toMatchObject({
-      status: 503,
-      message: RECOVERY_UNAVAILABLE_MESSAGE,
-    });
+    await expectSanitized503(store.admit(FORGOT, IP));
     expect(db.tx.recoveryRateLimitBucket.upsert).toHaveBeenCalledTimes(2);
   });
 
@@ -261,10 +265,7 @@ describe('RecoveryRateLimitStore', () => {
     db.state.failRawWith = new Error('connection refused: host 10.0.0.5');
     const store = db.make();
 
-    await expect(store.admit(FORGOT, IP)).rejects.toMatchObject({
-      status: 503,
-      message: RECOVERY_UNAVAILABLE_MESSAGE,
-    });
+    await expectSanitized503(store.admit(FORGOT, IP));
     // The sanitized message reveals no address, endpoint, or database detail.
     expect(RECOVERY_UNAVAILABLE_MESSAGE).not.toContain(IP);
     expect(RECOVERY_UNAVAILABLE_MESSAGE).not.toContain('10.0.0.5');
@@ -276,10 +277,7 @@ describe('RecoveryRateLimitStore', () => {
     db.state.windows.set(`${FORGOT}:${IP}`, ['garbage'] as unknown as Date[]);
     const store = db.make();
 
-    await expect(store.admit(FORGOT, IP)).rejects.toMatchObject({
-      status: 503,
-      message: RECOVERY_UNAVAILABLE_MESSAGE,
-    });
+    await expectSanitized503(store.admit(FORGOT, IP));
   });
 
   it('writes only the four bucket fields — never emails, tokens, passwords, or bodies', async () => {

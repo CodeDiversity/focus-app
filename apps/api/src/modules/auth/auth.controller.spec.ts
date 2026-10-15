@@ -178,6 +178,7 @@ import { Test } from '@nestjs/testing';
 import { AddressInfo } from 'net';
 import { EmailVerificationService } from './email-verification.service';
 import { AllExceptionsFilter } from '../../common/filters/all-exceptions.filter';
+import { RecoveryRateLimitStore } from './recovery-rate-limit.store';
 
 describe('AuthController HTTP verification contracts', () => {
   let app: INestApplication;
@@ -200,6 +201,14 @@ describe('AuthController HTTP verification contracts', () => {
         { provide: AuthService, useValue: {} },
         { provide: EmailVerificationService, useValue: verification },
         { provide: PasswordResetService, useValue: passwordReset },
+        // SP-105F: the controller's recovery routes carry the rate-limit
+        // guard, so this manual module must supply its store. Always
+        // allow: these contracts test the services, and the limiter itself
+        // is covered by its own specs.
+        {
+          provide: RecoveryRateLimitStore,
+          useValue: { admit: jest.fn().mockResolvedValue({ allowed: true }) },
+        },
       ],
     }).compile();
     app = module.createNestApplication();
