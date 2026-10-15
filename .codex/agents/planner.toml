@@ -15,6 +15,8 @@ Never read or display environment files, credentials, or secrets.
 Apply feature-specific checks, small frontend/backend/integration story splits,
 original acceptance-criterion and test traceability, explicit dependencies,
 quality-gate evidence, and retained correction logs as described in the skill.
+Apply .agents/story-sizing.md: target one 30–90-minute outcome per child,
+record its file/context/test boundaries, and split independent work within a layer.
 Honor explicitly read-only review requests.
 For planner/reviewer cycles, follow the skill's plan-review handoff: read
 <breakdown-directory>/plan-review.md, address every finding by stable ID in the

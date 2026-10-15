@@ -15,6 +15,20 @@ When asked to use a role, use its custom agent if the runtime supports selecting
 
 For story work, read the relevant files in `docs/epics/` and `docs/stories/`, plus the shared Definition of Done in `docs/epics/README.md`. Follow `docs/artifacts/README.md` for implementation and review reports.
 
+All story roles must apply [story sizing](.agents/story-sizing.md): default to one
+30–90-minute implementation outcome with explicit file, context and verification
+boundaries. The planner splits oversized unimplemented stories; refiners and
+implementers hand scope growth back to the planner within their existing write
+limits. Reviewers verify sizing from evidence. Preserve atomic security invariants
+and all original AC/test/DoD coverage when splitting.
+
+Backend/frontend tasks use [checkpoint-based execution](.agents/checkpoint-execution.md).
+Implementers maintain `docs/artifacts/<ticket-id>/checkpoint.md` after logical
+milestones and before fresh-context handoffs. A task may span multiple context
+windows or different agent tools; resume from the checkpoint after reconciling
+Git state. Checkpoints do not establish completion or replace the final
+implementation/review artifacts.
+
 The review agents run in a read-only sandbox and return Markdown reports. The parent saves implementation reviews to `docs/artifacts/<JIRA-KEY>/review.md` and plan reviews to `<breakdown-directory>/plan-review.md` (for SP-105: `docs/stories/EP01/SP-105/plan-review.md`). During a planner/reviewer cycle, the planner reads that report, records each original finding and correction by stable ID in the breakdown README, and leaves the report unchanged. The reviewer independently verifies closure on the next pass; the parent replaces the report with the latest returned Markdown. Earlier committed reports remain in Git history. The planner and refiner's narrower write limits are instructions applying to every tool, rather than filesystem sandbox guarantees. Do not broaden their write scope.
 
 All roles must follow their skill's security rules. Never read, display, or write credential or secret files, including `.env` and `.env.*`; flag exposed secrets by location without reproducing values.

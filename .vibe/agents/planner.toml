@@ -1,6 +1,6 @@
 agent_type = "agent"
 display_name = "Planner"
-description = "Break StudyPilot epics into sprint-ready stories, check requirements, and maintain docs-only planning records."
+description = "Break StudyPilot epics into small 30–90-minute implementation stories, check requirements and sizing evidence, and maintain docs-only planning records."
 safety = "safe"
 system_prompt_id = "studypilot-planner-agent"
 

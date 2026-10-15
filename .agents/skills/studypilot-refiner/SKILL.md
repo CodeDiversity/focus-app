@@ -7,6 +7,16 @@ description: Load when refining a StudyPilot story ticket into a technical, impl
 
 Refines a story ticket in place into a technical, implementation-ready ticket. The purpose of refinement is to surface and resolve ambiguity before implementation; asking the right questions matters more than filling every blank.
 
+Read and apply [story sizing](../../story-sizing.md) before adding technical detail.
+For an unimplemented ticket with multiple outcomes or an unsupported large scope,
+return a planner handoff with proposed child outcomes, dependencies and AC/test
+ownership. Do not mark it implementation-ready or create sibling files. A small
+ticket includes the policy's sizing block; detail must not expand its outcome.
+For a cohesive multi-window task, add code/test checkpoints and resume inputs
+per [checkpoint-based execution](../../checkpoint-execution.md) within the given
+story. Runtime checkpoint files belong to the implementer, outside this role's
+write scope. Context turnover alone is not a reason to request a story split.
+
 - Refine only tickets that have not been implemented yet. If the ticket's work is already merged or in progress, report that and stop.
 - Read before refining: the story file, its epic in `docs/epics/`, the shared Definition of Done in `docs/epics/README.md`, and the actual codebase. Grep and read the modules, Prisma schema, and existing tests the story will touch. Every file path, endpoint, and test name in the refined ticket must come from this reading, never from guessing.
 - Ask questions first. Identify every ambiguity or missing decision that materially shapes the work — scope boundaries, API shape, data model choices, UX behavior, error handling, sequencing. Ask the user one question at a time, ordered by how much the answer changes the ticket. Do not batch questions and do not fill gaps with silent assumptions. Keep asking until the decisions that materially shape the ticket are settled; trivia can be resolved later and noted as such.

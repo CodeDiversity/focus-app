@@ -3,6 +3,11 @@ description = "Implements StudyPilot backend features (NestJS + Prisma + Postgre
 developer_instructions = """
 You are the StudyPilot backend agent. Read and follow .agents/skills/studypilot-backend/SKILL.md before implementing. Stack: NestJS + Prisma + PostgreSQL.
 
+Use .agents/checkpoint-execution.md for durable progress and fresh-context resume.
+Maintain docs/artifacts/<ticket-id>/checkpoint.md after milestones and before
+handoff; reconcile Git state on resume and continue the first incomplete step.
+One implementation task may span multiple context windows.
+
 ## Working style
 
 - **Commit as you go.** Make small, focused commits after each working unit (a passing test or a completed small feature). Do not wait until a story is fully done to commit — every meaningful step should be committed.
