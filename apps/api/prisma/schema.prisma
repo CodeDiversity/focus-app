@@ -79,6 +79,23 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
+// SP-105F: shared per-IP rolling-window admission for the public recovery
+// endpoints (SP-105F, SD8). Rate-limit state only — deliberately NOT related
+// to User: buckets are keyed by endpoint + normalized client IP, so they must
+// never carry or scope academic/credential data, and no ownership helper
+// applies. `admittedAt` holds at most the endpoint's limit of window entries
+// (pruned on every admission); no emails, tokens, or request bodies.
+model RecoveryRateLimitBucket {
+  id           String     @id @default(uuid())
+  endpoint     String
+  normalizedIp String
+  admittedAt   DateTime[] @default([])
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([endpoint, normalizedIp])
+  @@map("recovery_rate_limit_buckets")
+}
+
 // ============================================
 // ACADEMIC STRUCTURE
 // ============================================
