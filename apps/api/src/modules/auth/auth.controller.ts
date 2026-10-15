@@ -6,6 +6,8 @@ import { LoginDto } from './dto/login.dto';
 import { EmailVerificationService } from './email-verification.service';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { PasswordResetService } from './password-reset.service';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 export const REFRESH_COOKIE_NAME = 'refresh_token';
 const REFRESH_COOKIE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
@@ -37,7 +39,8 @@ function clearRefreshCookie(res: Response) {
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly verification: EmailVerificationService
+    private readonly verification: EmailVerificationService,
+    private readonly passwordReset: PasswordResetService
   ) {}
 
   @HttpCode(HttpStatus.OK)
@@ -50,6 +53,12 @@ export class AuthController {
   @Post('resend-verification')
   async resendVerification(@Body() dto: ResendVerificationDto) {
     return this.verification.resendVerification(dto.email);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.passwordReset.forgotPassword(dto.email);
   }
 
   @Post('register')

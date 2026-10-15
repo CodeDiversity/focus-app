@@ -1,5 +1,6 @@
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { PasswordResetService } from './password-reset.service';
 
 describe('AuthController', () => {
   const makeRes = () => ({ cookie: jest.fn() });
@@ -15,7 +16,11 @@ describe('AuthController', () => {
         refreshToken: 'raw-refresh',
       }),
     } as unknown as AuthService;
-    const controller = new AuthController(authService, {} as EmailVerificationService);
+    const controller = new AuthController(
+      authService,
+      {} as EmailVerificationService,
+      {} as PasswordResetService
+    );
     const res = makeRes();
 
     const result = await controller.login(
@@ -44,7 +49,11 @@ describe('AuthController', () => {
         refreshToken: 'raw-new',
       }),
     } as unknown as AuthService;
-    const controller = new AuthController(authService, {} as EmailVerificationService);
+    const controller = new AuthController(
+      authService,
+      {} as EmailVerificationService,
+      {} as PasswordResetService
+    );
     const res = makeRes();
 
     const result = await controller.refresh(makeReq('raw-old') as never, res as never);
@@ -65,7 +74,11 @@ describe('AuthController', () => {
     const authService = {
       logout: jest.fn().mockResolvedValue(undefined),
     } as unknown as AuthService;
-    const controller = new AuthController(authService, {} as EmailVerificationService);
+    const controller = new AuthController(
+      authService,
+      {} as EmailVerificationService,
+      {} as PasswordResetService
+    );
     const res = makeRes();
 
     const result = await controller.logout(makeReq('raw-old') as never, res as never);
@@ -77,6 +90,28 @@ describe('AuthController', () => {
       '',
       expect.objectContaining({ httpOnly: true, path: '/auth', maxAge: 0 })
     );
+  });
+
+  it('exposes forgot-password and returns 200 with the generic message', async () => {
+    const passwordResetService = {
+      forgotPassword: jest.fn().mockResolvedValue({
+        message:
+          'If an account exists for that email address, a password reset link has been sent. Check your inbox and wait a minute before requesting another.',
+      }),
+    } as unknown as PasswordResetService;
+    const controller = new AuthController(
+      {} as AuthService,
+      {} as EmailVerificationService,
+      passwordResetService
+    );
+
+    const result = await controller.forgotPassword({ email: 'ada@example.com' });
+
+    expect(passwordResetService.forgotPassword).toHaveBeenCalledWith('ada@example.com');
+    expect(result).toEqual({
+      message:
+        'If an account exists for that email address, a password reset link has been sent. Check your inbox and wait a minute before requesting another.',
+    });
   });
 });
 
@@ -93,12 +128,19 @@ describe('AuthController HTTP verification contracts', () => {
     verifyEmail: jest.fn(),
     resendVerification: jest.fn(),
   };
+  const passwordReset = {
+    forgotPassword: jest.fn().mockResolvedValue({
+      message:
+        'If an account exists for that email address, a password reset link has been sent. Check your inbox and wait a minute before requesting another.',
+    }),
+  };
   beforeAll(async () => {
     const module = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
         { provide: AuthService, useValue: {} },
         { provide: EmailVerificationService, useValue: verification },
+        { provide: PasswordResetService, useValue: passwordReset },
       ],
     }).compile();
     app = module.createNestApplication();
@@ -120,6 +162,10 @@ describe('AuthController HTTP verification contracts', () => {
     verification.resendVerification.mockResolvedValue({
       message:
         'If this email needs verification, a link will be sent. Check your inbox and wait a minute before requesting another.',
+    });
+    passwordReset.forgotPassword.mockResolvedValue({
+      message:
+        'If an account exists for that email address, a password reset link has been sent. Check your inbox and wait a minute before requesting another.',
     });
   });
   afterAll(async () => {
@@ -186,4 +232,35 @@ describe('AuthController HTTP verification contracts', () => {
       message: expect.stringContaining('Request a new email'),
     });
   });
+  it('exposes forgot-password without a JWT guard and returns 200 with the generic message', async () => {
+    const response = await post('/auth/forgot-password', { email: 'Ada@Example.COM' });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      message:
+        'If an account exists for that email address, a password reset link has been sent. Check your inbox and wait a minute before requesting another.',
+    });
+    expect(response.headers.get('set-cookie')).toBeNull();
+    expect(passwordReset.forgotPassword).toHaveBeenCalledWith('ada@example.com');
+  });
+  it.each([
+    ['/auth/forgot-password', { email: '' }],
+    ['/auth/forgot-password', { email: 'bad' }],
+    ['/auth/forgot-password', { email: 'ada@example.com', userId: 'other' }],
+  ])(
+    'rejects invalid DTO or extra fields through real global-pipe HTTP wiring %s %o',
+    async (path, payload) => {
+      const response = await post(path as string, payload);
+      expect(response.status).toBe(400);
+      const error = (await response.json()) as { message: unknown };
+      expect(error).toMatchObject({
+        statusCode: 400,
+        path,
+        error: 'Bad Request',
+        timestamp: expect.any(String),
+      });
+      expect(Array.isArray(error.message)).toBe(true);
+      expect(error.message).toEqual(expect.arrayContaining([expect.any(String)]));
+      expect(passwordReset.forgotPassword).not.toHaveBeenCalled();
+    }
+  );
 });

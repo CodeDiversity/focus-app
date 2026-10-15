@@ -19,14 +19,16 @@ model User {
   email           String    @unique
   passwordHash    String
   name            String
-  emailVerifiedAt DateTime?
+  emailVerifiedAt             DateTime?
   emailVerificationRequestedAt DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  passwordResetRequestedAt    DateTime?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
 
   // Relations
   emailVerificationTokens EmailVerificationToken[]
-  refreshTokens     RefreshToken[]
+  passwordResetTokens    PasswordResetToken[]
+  refreshTokens           RefreshToken[]
   semesters         Semester[]
   courses           Course[]
   assignments       Assignment[]
@@ -63,6 +65,18 @@ model RefreshToken {
 
   @@index([familyId])
   @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 // ============================================

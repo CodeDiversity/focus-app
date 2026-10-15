@@ -1,5 +1,6 @@
 import { EmailModule } from '../email/email.module';
 import { EmailVerificationService } from './email-verification.service';
+import { PasswordResetService } from './password-reset.service';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
@@ -31,6 +32,7 @@ import { UsersModule } from '../users/users.module';
   controllers: [AuthController],
   providers: [
     EmailVerificationService,
+    PasswordResetService,
     AuthService,
     JwtStrategy,
     LocalStrategy,
