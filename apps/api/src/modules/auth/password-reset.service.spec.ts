@@ -59,7 +59,7 @@ function database() {
         Object.assign(state.user, data);
         return { count: 1 };
       }),
-      findUnique: jest.fn(async ({ where }) => ({
+      findUnique: jest.fn(async () => ({
         id: state.user.id,
         email: state.user.email,
       })),
