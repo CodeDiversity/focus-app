@@ -296,4 +296,43 @@ describe('PasswordResetService', () => {
       });
     });
   });
+
+  // --- PR-101: operational visibility into absorbed failures ---
+  describe('failure observability (PR-101)', () => {
+    it('logs a structured issuance-failure event while keeping the generic response', async () => {
+      db.tx.user.updateMany.mockImplementation(async () => {
+        throw new Error(`connection lost for ada@example.com`);
+      });
+      const result = await service.forgotPassword('ada@example.com');
+      expect(result.message).toContain('If an account exists');
+      const calls = JSON.stringify(warn.mock.calls);
+      expect(calls).toContain('event=reset_issuance_failed');
+      expect(calls).toMatch(
+        /correlation=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+      );
+      // The error *name* identifies the failure class; the message (which
+      // may contain the requester's email) must never be logged.
+      expect(calls).toContain('error=Error');
+      expect(calls).not.toContain('connection lost');
+      expect(calls).not.toContain('ada@example.com');
+      expect(provider.send).not.toHaveBeenCalled();
+    });
+
+    it('logs a structured delivery-failure event without recipient or token details', async () => {
+      provider.send.mockRejectedValue(
+        new Error(`smtp rejected for ada@example.com token ${tokenA}`),
+      );
+      await service.forgotPassword('ada@example.com');
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      const calls = JSON.stringify(warn.mock.calls);
+      expect(calls).toContain('event=reset_email_delivery_failed');
+      expect(calls).toMatch(
+        /correlation=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+      );
+      expect(calls).toContain('error=Error');
+      expect(calls).not.toContain('smtp rejected');
+      expect(calls).not.toContain('ada@example.com');
+      expect(calls).not.toContain(tokenA);
+    });
+  });
 });
