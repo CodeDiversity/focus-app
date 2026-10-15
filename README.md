@@ -85,17 +85,61 @@ Or use Turbo to run both:
 pnpm dev
 ```
 
+### Development email inbox
+
+For local development with `pnpm dev`, install and start Docker Desktop (or
+Docker Engine with the Compose plugin), then run from the repository root:
+
+```bash
+pnpm email:up
+```
+
+This uses the standalone `compose.mailpit.yml` and requires no root `.env` or
+`JWT_SECRET`. SMTP and the inbox bind only to localhost. Add these settings to
+`apps/api/.env.local`, preserving your database and authentication settings:
+
+```dotenv
+SMTP_HOST=localhost
+SMTP_PORT=1025
+SMTP_SECURE=false
+SMTP_FROM="StudyPilot <noreply@studypilot.local>"
+FRONTEND_URL=http://localhost:3000
+```
+
+Leave `SMTP_USER` and `SMTP_PASSWORD` unset for Mailpit. Restart the API after
+changing environment settings. Register or use **Resend verification email**
+(wait for the resend cooldown if needed), then open <http://localhost:8025>.
+Mailpit captures messages locally; they do not reach real email accounts.
+
+To stop the inbox, run `pnpm email:down`. Messages are temporary and are removed
+when the container is removed. Run `pnpm email:up` again to start a new inbox.
+
+If port 1025 or 8025 is already occupied, stop the earlier Mailpit instance first.
+For the standalone container used during manual setup, run
+`docker stop studypilot-mailpit`. Run only one local inbox at a time.
+
+Without pnpm, the equivalent start command is:
+
+```bash
+docker compose -f compose.mailpit.yml up -d
+```
+
 ### Using Docker
 
 Start all services with Docker Compose:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 This will start:
 - PostgreSQL database
 - Backend API (port 4000)
 - Frontend app (port 3000)
+- Mailpit inbox (port 8025)
+
+The full stack requires `JWT_SECRET` in your shell or root `.env`. When running
+the API and frontend through pnpm, use `pnpm email:up` above instead: selecting
+only `mailpit` in the full-stack file still validates the API's required variables.
 
 ## Scripts
 
@@ -108,6 +152,8 @@ pnpm test         # Run all tests
 pnpm db:generate  # Generate Prisma client
 pnpm db:migrate   # Run database migrations
 pnpm db:push      # Push schema changes to database
+pnpm email:up     # Start the local Mailpit inbox (Docker required)
+pnpm email:down   # Stop and remove the local inbox
 pnpm clean        # Clean all builds and node_modules
 ```
 

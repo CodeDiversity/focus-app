@@ -1,0 +1,10 @@
+# Local inbox for an API running on the host with pnpm dev.
+# Standalone so Compose does not require the API service's JWT_SECRET.
+name: studypilot-email
+
+services:
+  mailpit:
+    image: axllent/mailpit:v1.31.5
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"

@@ -15,6 +15,8 @@
     "db:generate": "turbo run db:generate",
     "db:migrate": "turbo run db:migrate",
     "db:push": "turbo run db:push",
+    "email:up": "docker compose -f compose.mailpit.yml up -d",
+    "email:down": "docker compose -f compose.mailpit.yml down",
     "clean": "turbo run clean && rm -rf node_modules"
   },
   "devDependencies": {
