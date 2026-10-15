@@ -3,7 +3,7 @@
 **Epic:** [EP01](../../../epics/EP01-authentication-and-onboarding.md)
 **Parent:** [SP-105](./SP-105-password-reset.md), existing Jira STUDY-7
 **Milestone:** M1
-**Status:** Corrected draft — independent re-review pending (2026-10-14). Application not built by this pass.
+**Status:** Plan Ready — independently reviewed in pass 2 (2026-10-14); Implementation Blocked pending SP-103 integrated evidence. Application not built by this pass.
 
 ## Story inventory and sequencing
 
@@ -179,6 +179,10 @@ The CF-1–CF-6 entries above preserve the previous agent's original claims and 
 - **Verification:** Compared ten-child inventory, parent dependencies, C/G ownership, H→I/J→D graph and original AC/TR/DoD allocation. CI migration/Postgres and existing Vitest/JSDOM capabilities are identified; each new outcome has a bounded session and local tests.
 - **Status:** Fixed in plan; **Addressed — awaiting re-review**.
 
+### Independent closure — reviewer pass 2 (2026-10-14)
+
+The [pass-2 reviewer report](./plan-review.md#prioritized-findings-and-closure) independently verifies **PR-001** and **PR-002 resolved in plan**, with no new blocking findings. The earlier “Addressed — awaiting re-review” entries above preserve the original planner disposition; this entry records subsequent reviewer closure. Verdict: **Plan Ready**; execution remains **Implementation Blocked** for SP-103 integrated evidence. Planned behavior and future tests are not implementation verification.
+
 ## Current readiness and verification (2026-10-14)
 
 | Gate | Status | Evidence / limitation |
@@ -190,10 +194,10 @@ The CF-1–CF-6 entries above preserve the previous agent's original claims and 
 | Applicable DoD, including 10 | Pass for planning | Shared map and every child allocate obligations; D performs real integrated verification. N/A only for genuinely absent academic/UI concerns. |
 | Material decisions | Pass | SD7/SD8 cite explicit answers in this conversation (JWT expiry window, separate IP limits and numeric thresholds). |
 | References/code evidence | Pass for planning | Relative Markdown file links checked; actual source paths inspected: auth controller/service/strategy, schema, API single-flight and AuthContext restore. Proposed reset/limiter modules are labeled new. |
-| Correction completeness | Blocked | CF-1–CF-12 retained; PR-001/002 preserve original findings and corrections above. Formal independent closure remains pending. |
+| Correction completeness | Pass | CF-1–CF-12 and original PR-001/002 entries retained; reviewer pass 2 independently verifies both PR findings resolved, recorded in the closure entry above. |
 | Dependency mapping and sequencing | Pass | Inventory and parent identify G→C, H→I/J→D; upstream completion blocks execution only. |
 | Upstream implementation readiness | Blocked / not independently complete | SP-103 latest `docs/artifacts/STUDY-12/review.md` still cannot verify integrated DoD 1/7/10. Recheck new evidence before execution sign-off; source implementation alone is not approval. |
-| Independent plan review | Blocked / pending | Pass 1 report remains Changes Required; PR-001/002 are addressed in docs awaiting reviewer verification. Report is unchanged. |
+| Independent plan review | Pass | [Reviewer pass 2](./plan-review.md) returns Plan Ready and independently resolves PR-001/002; no new blocking planning findings. |
 | Jira sync | Not applicable to this request | No sync authorized/performed; child keys remain Pending creation, parent STUDY-7 retained. |
 
-**Outcome:** corrected draft, awaiting independent plan re-review; no material user decision remains open in this correction pass. Application implementation and integrated tests are future work. A/D's database-timing measurement is a security sign-off obligation, not a constant-time result. No application source, migration, test or tracker was modified. Scoped commits require parent Git escalation: sandbox rejected index.lock; no commit by planner. Unrelated instruction changes remain untouched.
+**Outcome:** **Plan Ready**, independently verified by reviewer pass 2; **Implementation Blocked** pending SP-103 integrated evidence; no material user decision remains open in this correction pass. Application implementation and integrated tests are future work. A/D's database-timing measurement is a security sign-off obligation, not a constant-time result. No application source, migration, test or tracker was modified. Scoped commits require parent Git escalation: sandbox rejected index.lock; no commit by planner. Unrelated instruction changes remain untouched.

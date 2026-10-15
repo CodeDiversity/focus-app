@@ -6,7 +6,7 @@
 **Priority:** High / P0
 **Dependencies:** SP-102 and SP-103; implementation exists, but SP-103 integrated-review completion remains unverified in its latest artifact
 **Jira key:** STUDY-7 (existing parent; no new tracker changes made)
-**Status:** Corrected draft — independent re-review pending
+**Status:** Plan Ready — [independent reviewer pass 2](./plan-review.md); Implementation Blocked pending SP-103 integrated evidence
 **Refined:** 2026-10-14
 
 ## Purpose and children

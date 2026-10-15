@@ -50,7 +50,7 @@ Historical Jira sync: EP01 and seven original stories were recorded as synced on
 
 ## Quality gate — SP-105 correction pass (2026-10-14)
 
-**Corrected draft; independent re-review pending.** The [SP-105 breakdown](./SP-105/README.md) owns original AC/TR/DoD mapping, explicit policy provenance, correction history (CF-1–CF-12), and current readiness evidence.
+**Plan Ready — independently reviewed in [pass 2](./SP-105/plan-review.md); Implementation Blocked pending SP-103 integrated evidence.** The [SP-105 breakdown](./SP-105/README.md) owns original AC/TR/DoD mapping, explicit policy provenance, correction history (CF-1–CF-12, PR-001/002), and current readiness evidence.
 
 - A: backend issuance/persistence/account cooldown.
 - E: backend login/refresh/logout owner-first coordination, prerequisite to B.
@@ -61,4 +61,4 @@ Historical Jira sync: EP01 and seven original stories were recorded as synced on
 - H: reusable real-Postgres fixtures and barriers; I: credential races; J: limiter races.
 - D: executes prerequisite suites, performs manual browser/SMTP sign-off and DoD 10.
 
-The historical blanket “ready” verdict is superseded. Source code exists for SP-102/SP-103 but SP-103's latest review still lacks integrated DoD evidence; planning can proceed while upstream execution readiness remains unverified. No SP-105 implementation or passing tests are claimed. Its original AC7 per-IP requirement is no longer deferred. The corrected plans must receive a fresh read-only review before independent plan approval is claimed.
+The historical blanket “ready” verdict is superseded. Source code exists for SP-102/SP-103 but SP-103's latest review still lacks integrated DoD evidence; planning can proceed while upstream execution readiness remains unverified. No SP-105 implementation or passing tests are claimed. Its original AC7 per-IP requirement is no longer deferred. The pass-2 read-only review independently resolved PR-001/002 and returned Plan Ready; this approves planning obligations, not application implementation or test results.
