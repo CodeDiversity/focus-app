@@ -109,6 +109,7 @@ At task end, run required final verification and write `implementation.md`.
 Follow [review cadence](review-cadence.md): a finished substory is `implementation
 complete — awaiting parent review` and may unblock later implementation. Do not
 dispatch an individual reviewer. Once every child and integration obligation is
-implemented, the coordinator prepares the parent index and marks the parent
-`ready for review`. Mark `complete` only with required final review evidence;
+implemented, the implementer prepares the parent index and marks the parent
+`ready for review`; the coordinator requests the independent combined review.
+Mark `complete` only with required final review evidence;
 a checkpoint or green unit test alone is not formal sign-off.
