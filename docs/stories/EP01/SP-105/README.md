@@ -145,8 +145,8 @@ The CF-1–CF-6 entries above preserve the previous agent's original claims and 
 
 ### CF-8 — login/refresh races asserted away (Blocker)
 - **Original finding:** SP-105B, “Session revocation,” said old-password verification fails after replacement and left login unchanged. Login can verify before reset and persist a new session after reset; refresh can similarly create a successor outside reset's snapshot.
-- **Correction:** Pending: separate backend session-coordination child E; shared owner-first lock, password-snapshot recheck, locked refresh re-read, and race tests with both lock acquisition orders.
-- **Verification:** Pending trace against `AuthService.login` and `refresh`; no application tests run during this planning correction.
+- **Correction:** Added E as B's prerequisite: shared owner-first locking, login password-snapshot recheck, locked refresh re-read and signing, and both race orderings. B now points to this protocol.
+- **Verification:** Compared current login (verify then uncoordinated insert) and refresh (token-first claim) with E's required order; traced reset-first failure and session-first later revocation. D must prove both on PostgreSQL.
 - **Status:** Unresolved.
 
 ### CF-9 — HttpOnly cookie assigned to frontend (Major)
