@@ -33,7 +33,7 @@ Original SP-105 AC4 and session-revocation TR; [shared API/session contract](./S
 - **Rollback:** failed session persistence/signing before commit rolls back token mutations. Preserve existing reuse-detection tests proving family retirement commits on an invalid outcome.
 - **Expiry after lock wait:** use a fresh post-lock wall-clock value, not transaction-start `now()`; reject at the exact expiry boundary.
 
-Extend `apps/api/src/modules/auth/auth.service.spec.ts` with stateful transaction tests; preserve existing auth-controller and JWT strategy tests. D adds real-Postgres, multi-client tests for each order above. These are obligations, not executed tests.
+Extend `apps/api/src/modules/auth/auth.service.spec.ts` with stateful transaction tests; preserve existing auth-controller and JWT strategy tests. I adds real-Postgres, multi-client tests for each order above using H fixtures; D executes them for integrated sign-off. These are obligations, not executed tests.
 
 ## Technical notes and migration
 

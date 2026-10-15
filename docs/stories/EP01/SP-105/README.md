@@ -13,10 +13,15 @@
 | [E](./SP-105E-auth-session-coordination.md) | Backend, assignee TBD | Shared login/refresh/logout coordination | SP-102 | One focused session | Pending creation |
 | [B](./SP-105B-password-reset-backend-redemption.md) | Backend, assignee TBD | Atomic redemption + response-cookie expiry | A, E | One focused session | Pending creation |
 | [F](./SP-105F-password-reset-ip-limits.md) | Backend, assignee TBD | Shared per-IP limits, both recovery endpoints | A/B contracts; can start against contract | One focused session | Pending creation |
-| [C](./SP-105C-password-reset-frontend-ui.md) | Frontend, assignee TBD | Forms + local session/retry handling | A/B/F contracts; finishes after endpoints/limiter | One focused session; reassess if barrier needs wider refactor | Pending creation |
-| [D](./SP-105D-password-reset-integration.md) | Integration, assignee TBD | PostgreSQL/browser/SMTP verification + DoD 10 | A, B, C, E, F | Focused verification session after harness exists; split harness setup if absent | Pending creation |
+| [C](./SP-105C-password-reset-frontend-ui.md) | Frontend, assignee TBD | Recovery forms + retry presentation; consumes G | G plus A/B/F contracts; finishes after endpoints/limiter | One 2–4 hour session; existing form patterns reused | Pending creation |
+| [D](./SP-105D-password-reset-integration.md) | Integration, assignee TBD | Execute suites + manual browser/SMTP sign-off, DoD 10 | A, B, C, E, F, G, H, I, J | One 2–4 hour sign-off after prerequisite suites pass | Pending creation |
 
-Existing A–D IDs and layer boundaries are preserved. E separates session coordination from redemption; F retains original per-IP scope as requested. A/E can start independently; C/F can start against the shared contract but cannot certify integrated behavior until counterparts land. No new Jira mutation was requested or performed.
+| [G](./SP-105G-recovery-session-client.md) | Frontend, assignee TBD | Shared recovery session boundary and sanitization | SP-102; A/B/F contracts; prerequisite to C | One 2–4 hour session | Pending creation |
+| [H](./SP-105H-postgres-test-harness.md) | Integration infrastructure, assignee TBD | Real-DB connections, fixtures, deterministic barriers | SP-102; A/F migrations for suite execution | One 1–3 hour session | Pending creation |
+| [I](./SP-105I-credential-race-tests.md) | Integration tests, assignee TBD | Credential race/expiry/rollback suite | A, B, E, H | One 2–4 hour session | Pending creation |
+| [J](./SP-105J-limiter-integration-tests.md) | Integration tests, assignee TBD | Shared-limiter race/failure suite | F, H; A/B HTTP checks | One 1–3 hour session | Pending creation |
+
+Existing A–D IDs and layer boundaries are preserved. E separates session coordination from redemption; F retains original per-IP scope as requested. A/E can start independently; G/F can start against the shared contract; C consumes G but cannot certify integrated behavior until counterparts land. No new Jira mutation was requested or performed.
 
 ## Shared contract and decisions
 
@@ -31,7 +36,7 @@ The single [shared API/session contract](./SP-105-password-reset.md#shared-api-c
 | SD7 | **Approved 2026-10-14 conversation:** user replied “your suggestion” to the explicit choice to retain existing JWT expiry (default ~15 minutes) while fixing session races. No immediate JWT invalidation promise. |
 | SD8 | **Approved 2026-10-14 conversation:** user “approve as sep” retains per-IP protection in a separate child; “yes” accepts 10 forgot requests / 30 reset submissions per IP per minute and account-independent 429s. F owns shared rolling-window enforcement; A's account cooldown is separate. No per-IP deferral. |
 | SD9 | Same status/body for known/unknown/cooled-down/SMTP failure when IP admission permits; SMTP is off-path. Residual database timing must be measured/reviewed; constant time is not claimed. |
-| SD10 | B expires HttpOnly cookie after commit; C coordinates refresh traffic and clears local state using a shared generation; D verifies real browser/HTTP behavior. |
+| SD10 | B expires HttpOnly cookie after commit; G coordinates refresh traffic and local state using a shared generation; C consumes G; D verifies real browser/HTTP behavior. |
 | SD11 | Uniform actionable token-failure 400; distinguish password-field, network/503 and IP-429 errors for retry. |
 
 ## Original requirement and test traceability
@@ -43,7 +48,7 @@ These preserve the original SP-105 criteria rather than renumbering them to fit 
 | AC1 — generic forgot response, registered or unknown | A (identical non-IP-limited 200, async SMTP), C (generic feedback), F (account-independent admission/429), D (HTTP parity/SMTP and timing review) |
 | AC2 — single-use, hashed at rest, expires in 1 hour | A (hash/TTL/issuance), B (post-lock claim/retirement), D (same/distinct token races, wait-past-expiry/rollback) |
 | AC3 — valid-token password update, registration policy | B (argon2id and field validation), C (matching validation), D (new password succeeds) |
-| AC4 — revoke every refresh family, require re-login | B (all-owner refresh rows + cookie header), E (login/refresh interleavings), C (local state/barrier), D (both lock orders and remaining JWT window) |
+| AC4 — revoke every refresh family, require re-login | B (all-owner refresh rows + cookie header), E (login/refresh interleavings), G (local state/barrier), C (boundary integration), D (both lock orders and remaining JWT window) |
 | AC5 — actionable used/expired rejection, new request | B (uniform 400), C (new-link action; keep token for other error types), D (real negative cases) |
 | AC6 — request/reset screens, loading/empty/error, keyboard | C (all states, focus/announcements/responsiveness), D (real viewports/keyboard and retry) |
 | AC7 — rate limiting per account AND per IP | A (persisted account cooldown), F (shared 10/30 per-IP windows), C (429 retry), D (multi-instance races/admission/no mutation) |
@@ -51,19 +56,23 @@ These preserve the original SP-105 criteria rather than renumbering them to fit 
 | Original TR | Owning tests |
 |---|---|
 | Token single-use and expiry | A unit + B stateful/DTO + D real PostgreSQL (same/distinct token, post-wait expiry) |
-| Session revocation on reset | B/E unit + D deterministic DB login/refresh barriers + C API/context generation tests and D browser cookie check |
+| Session revocation on reset | B/E unit + D deterministic DB login/refresh barriers + G API/context generation tests and D browser cookie check |
 | Generic response for unknown email | A HTTP/provider tests + F account-independent 429 + D HTTP parity/SMTP/timing assessment |
 | Rate limiting | A account-boundary/service-instance tests + F shared-store/window/cleanup tests + D real multi-instance test |
 
+### Added-child traceability (PR-002)
+
+Original AC/TR wording above is unchanged. G owns AC4 session clearing and AC5/AC7 public error isolation; its deferred-promise API/context tests own the client session-revocation TR portion previously in C. C retains UI token/retry and navigation tests. H owns database infrastructure for AC2/AC4/AC7 and their TRs. I owns real-DB single-use/expiry, password update and revocation proofs (AC2–4); J owns AC1/AC7 generic admission/rate-limit proofs. D remains responsible for executing those suites and real-browser/SMTP/DoD 10 evidence across AC1–7. No original criterion or test is deferred.
+
 | Shared DoD | Owner / applicability |
 |---|---|
-| 1 functional criteria | A, B, C, E, F; D verifies integrated behavior |
-| 2 invalid input validation | A email, B password/token, C forms, E existing auth compatibility, F admission/proxy inputs |
+| 1 functional criteria | A, B, C, E, F, G, H, I, J; D verifies integrated behavior |
+| 2 invalid input validation | A email, B password/token, C forms, G boundary/error handling, H/I/J invalid fixtures/failures, E existing auth compatibility, F admission/proxy inputs |
 | 3 academic data scope | N/A: no academic data accessed; credential isolation remains explicit in A/B/E/F |
-| 4 actionable errors | A/B/C/E/F, verified in D |
+| 4 actionable errors | A/B/C/E/F/G, verified in D |
 | 5 states, 6 keyboard, 7 responsive | C obligations, D real-browser verification |
-| 8 automated business-rule tests | A/B/C/E/F; D real database/E2E |
-| 9 API/migration documentation | A/B/E/F; C documents browser/client behavior; D records integration evidence |
+| 8 automated business-rule tests | A/B/C/E/F/G unit/component; H harness, I/J real database; D executes suites and manual E2E |
+| 9 API/migration documentation | A/B/E/F; C documents browser/client behavior; G documents client contract; H/I/J document invocation/fixtures; D records integration evidence |
 | 10 integrated development review | Required for every child; D performs and records it |
 
 ## Correction log
@@ -158,32 +167,33 @@ The CF-1–CF-6 entries above preserve the previous agent's original claims and 
 - **Discovery:** 2026-10-14, reviewer pass 1; parent lines 34/42, F AC3, C retry behavior; API CORS exposes no retry header and exception filter drops extra body fields.
 - **Original finding:** Retry guidance lacks a settled wire contract and browser accessibility ownership. A header-only implementation can be unreadable cross-origin; a body extension can be removed by normalization.
 - **Consequence:** C cannot implement promised retry behavior consistently.
-- **Correction:** In progress: settle header units/rounding/fallback, assign F header/CORS ownership, C parsing, D browser-origin proof.
-- **Verification:** Pending final cross-file check.
-- **Status:** Unresolved; awaiting correction.
+- **Correction:** Parent settles integer-second Retry-After calculation/range; F owns emission and CORS exposure; C/G parse safe retry metadata with 60-second fallback; D owns actual separate-origin JavaScript readability/account parity and token/session preservation.
+- **Verification:** Compared parent retry section, F AC3/HTTP tests, C retry behavior/tests and D browser-origin steps; header survives existing filter without body extension. No implementation is claimed.
+- **Status:** Fixed in plan; **Addressed — awaiting re-review**.
 
 ### PR-002 — Frontend/integration scope and prerequisite ownership (Medium)
 - **Discovery:** 2026-10-14, reviewer pass 1; README inventory lines 16–17/161, C lines 42–55, D lines 43–64.
 - **Original finding:** Frontend and integration children still combine independently testable outcomes without grounded session sizing. C includes shared session infrastructure; D assumes an absent reusable browser/database harness while constructing substantial suites.
 - **Consequence:** Claimed focused-session sizing depends on unowned prerequisites.
-- **Correction:** In progress: preserve A–F; separate session infrastructure, database harness and two coherent database suites; retain D as integrated sign-off owner.
-- **Verification:** Pending inventory/dependency/traceability check.
-- **Status:** Unresolved; awaiting correction.
+- **Correction:** Preserved A–F; G owns shared frontend boundary, H minimal Postgres harness, I credential race suite, J limiter suite. C owns pages consuming G; D only executes prerequisites and performs manual browser/SMTP sign-off. No missing browser runner is assumed.
+- **Verification:** Compared ten-child inventory, parent dependencies, C/G ownership, H→I/J→D graph and original AC/TR/DoD allocation. CI migration/Postgres and existing Vitest/JSDOM capabilities are identified; each new outcome has a bounded session and local tests.
+- **Status:** Fixed in plan; **Addressed — awaiting re-review**.
 
 ## Current readiness and verification (2026-10-14)
 
 | Gate | Status | Evidence / limitation |
 |---|---|---|
-| Child separation and sizing | Pass for planning | A/E/B/F/C/D inventory separates independent backend, frontend and integration outcomes; sizing is provisional and must be reassessed if harness/barrier work is larger than a session. |
+| Child separation and sizing | Pass for planning | Ten-child inventory gives bounded scopes: C pages, G shared session, H harness, I/J distinct suites, D sign-off; no unowned harness setup remains. |
 | Original AC/TR coverage | Pass for planning | All seven ACs and four TRs mapped above; F explicitly retains per-IP AC7. No scope deferral is claimed. |
 | API/data consistency | Pass for planning | Parent shared contract and A/B/C/F agree on token shape, server hashing, success and uniform token-400 messages, field errors, per-IP 429/503 and retry. B owns response-cookie expiry. |
-| Security counterexamples | Pass for proposed mechanism | B owner-first token claim; A issuance order; E locked login snapshot/refresh re-read; C pre-reset drain and API/context generations; F atomic shared admission. D owns real proof in both lock orders. None is claimed implemented. |
+| Security counterexamples | Pass for proposed mechanism | B owner-first token claim; A issuance order; E locked login snapshot/refresh re-read; G pre-reset drain and API/context generations; F atomic shared admission. I owns real credential proof, J limiter races; D executes and records integrated evidence. None is claimed implemented. |
 | Applicable DoD, including 10 | Pass for planning | Shared map and every child allocate obligations; D performs real integrated verification. N/A only for genuinely absent academic/UI concerns. |
 | Material decisions | Pass | SD7/SD8 cite explicit answers in this conversation (JWT expiry window, separate IP limits and numeric thresholds). |
 | References/code evidence | Pass for planning | Relative Markdown file links checked; actual source paths inspected: auth controller/service/strategy, schema, API single-flight and AuthContext restore. Proposed reset/limiter modules are labeled new. |
-| Correction completeness | Pass for parent correction pass | Original CF-1–CF-6 history retained; CF-7–CF-12 document original defects, fixes and checks. Formal independent closure remains pending. |
+| Correction completeness | Blocked | CF-1–CF-12 retained; PR-001/002 preserve original findings and corrections above. Formal independent closure remains pending. |
+| Dependency mapping and sequencing | Pass | Inventory and parent identify G→C, H→I/J→D; upstream completion blocks execution only. |
 | Upstream implementation readiness | Blocked / not independently complete | SP-103 latest `docs/artifacts/STUDY-12/review.md` still cannot verify integrated DoD 1/7/10. Recheck new evidence before execution sign-off; source implementation alone is not approval. |
-| Independent plan review | Blocked / pending | No new reviewer pass or `plan-review.md` has been produced. Do not imply these parent corrections are independently approved. |
+| Independent plan review | Blocked / pending | Pass 1 report remains Changes Required; PR-001/002 are addressed in docs awaiting reviewer verification. Report is unchanged. |
 | Jira sync | Not applicable to this request | No sync authorized/performed; child keys remain Pending creation, parent STUDY-7 retained. |
 
-**Outcome:** corrected draft, awaiting independent plan re-review; no material user decision remains open in this correction pass. Application implementation and integrated tests are future work. A/D's database-timing measurement is a security sign-off obligation, not a constant-time result. No application source, migration, test or tracker was modified. Docs-only incremental commits capture the corrections; unrelated instruction changes remain unstaged.
+**Outcome:** corrected draft, awaiting independent plan re-review; no material user decision remains open in this correction pass. Application implementation and integrated tests are future work. A/D's database-timing measurement is a security sign-off obligation, not a constant-time result. No application source, migration, test or tracker was modified. Scoped commits require parent Git escalation: sandbox rejected index.lock; no commit by planner. Unrelated instruction changes remain untouched.

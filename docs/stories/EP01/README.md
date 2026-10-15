@@ -38,7 +38,7 @@ Per-story deltas are recorded in each story file under "Existing scaffold code".
 | [SP-102](./SP-102-login-logout-sessions.md) | Login, logout, and session management | SP-101 | STUDY-9 |
 | [SP-103](./SP-103-email-verification.md) | Email verification (non-blocking) | SP-101 | STUDY-12 |
 | [SP-104](./SP-104-auth-guards-data-scoping.md) | Auth guards and student data scoping | SP-102 | STUDY-10 |
-| [SP-105](./SP-105/README.md) | Password reset — split into [6 children](./SP-105/README.md) | SP-102, SP-103 | STUDY-7 (parent) |
+| [SP-105](./SP-105/README.md) | Password reset — split into [10 children](./SP-105/README.md) | SP-102, SP-103 | STUDY-7 (parent) |
 | [SP-106](./SP-106-profile-and-preferences.md) | Student profile and preferences | SP-104 | STUDY-11 |
 | [SP-107](./SP-107-onboarding-wizard.md) | Onboarding wizard | SP-103, SP-106 | STUDY-8 |
 
@@ -46,7 +46,7 @@ Epic: **STUDY-5**.
 
 Dependency flow: SP-101 → SP-102 → SP-104 → SP-105, with SP-103 and SP-106 parallelizable after SP-101/SP-102, and SP-107 last. SP-107 step 2 introduces a minimal semester-create endpoint that EP02 must extend, not duplicate — flagged in both stories.
 
-Historical Jira sync: EP01 and seven original stories were recorded as synced on 2026-10-11. SP-105 remains the existing STUDY-7 parent; children A–F have distinct local story IDs and Jira keys **Pending creation**. No tracker mutation occurred during this correction pass; linking and issue types must be reconciled on an explicitly authorized sync.
+Historical Jira sync: EP01 and seven original stories were recorded as synced on 2026-10-11. SP-105 remains the existing STUDY-7 parent; children A–J have distinct local story IDs and Jira keys **Pending creation**. No tracker mutation occurred during this correction pass; linking and issue types must be reconciled on an explicitly authorized sync.
 
 ## Quality gate — SP-105 correction pass (2026-10-14)
 
@@ -56,7 +56,9 @@ Historical Jira sync: EP01 and seven original stories were recorded as synced on
 - E: backend login/refresh/logout owner-first coordination, prerequisite to B.
 - B: backend redemption/retirement/revocation and server-owned cookie expiry.
 - F: backend per-IP limits on both recovery endpoints; retained in scope by explicit user decision.
-- C: frontend recovery screens, refresh barrier and stale-result suppression, retry/error states.
-- D: real PostgreSQL/browser/SMTP verification, all race orderings, and DoD 10.
+- G: shared frontend refresh barrier, generation checks and sanitized API failures.
+- C: recovery screens consuming G, retry/error states.
+- H: reusable real-Postgres fixtures and barriers; I: credential races; J: limiter races.
+- D: executes prerequisite suites, performs manual browser/SMTP sign-off and DoD 10.
 
 The historical blanket “ready” verdict is superseded. Source code exists for SP-102/SP-103 but SP-103's latest review still lacks integrated DoD evidence; planning can proceed while upstream execution readiness remains unverified. No SP-105 implementation or passing tests are claimed. Its original AC7 per-IP requirement is no longer deferred. The corrected plans must receive a fresh read-only review before independent plan approval is claimed.

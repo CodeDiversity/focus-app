@@ -19,10 +19,15 @@ Coordination record, not a combined implementation ticket. The [breakdown README
 | [SP-105E](./SP-105E-auth-session-coordination.md) | Backend — coordinate login/refresh/logout with owner-first locking | SP-102 | Pending creation |
 | [SP-105B](./SP-105B-password-reset-backend-redemption.md) | Backend — atomic reset redemption and server cookie expiry | A, E | Pending creation |
 | [SP-105F](./SP-105F-password-reset-ip-limits.md) | Backend — shared per-IP limits for both recovery endpoints | A/B contracts; starts against contract | Pending creation |
-| [SP-105C](./SP-105C-password-reset-frontend-ui.md) | Frontend — recovery screens and safe local-session cleanup | A/B/F contracts; finishes after endpoints/limiter | Pending creation |
-| [SP-105D](./SP-105D-password-reset-integration.md) | Integration — database/browser/SMTP verification and DoD 10 | A, B, C, E, F completed | Pending creation |
+| [SP-105C](./SP-105C-password-reset-frontend-ui.md) | Frontend — recovery screens consuming G session boundary | G + A/B/F contracts; finishes after endpoints/limiter | Pending creation |
+| [SP-105D](./SP-105D-password-reset-integration.md) | Integration — database/browser/SMTP verification and DoD 10 | A, B, C, E, F, G, H, I, J completed | Pending creation |
 
-Each targets one focused working session; validate estimates at refinement and split further if needed. E and A can start independently. F/C can start against settled contracts, but the complete feature cannot release before A/B/C/E/F and D's verification. SP-103's latest `docs/artifacts/STUDY-12/review.md` still lacks integrated DoD evidence; inspect new evidence before treating that upstream dependency as verified complete.
+| [SP-105G](./SP-105G-recovery-session-client.md) | Frontend — shared recovery session boundary | SP-102; A/B/F contracts | Pending creation |
+| [SP-105H](./SP-105H-postgres-test-harness.md) | Integration infrastructure — Postgres fixtures/barriers | SP-102; A/F migrations | Pending creation |
+| [SP-105I](./SP-105I-credential-race-tests.md) | Integration tests — credential race suite | A, B, E, H | Pending creation |
+| [SP-105J](./SP-105J-limiter-integration-tests.md) | Integration tests — limiter race suite | F, H; A/B HTTP | Pending creation |
+
+Each targets one focused working session; validate estimates at refinement and split further if needed. E and A can start independently. F/G can start against settled contracts, but the complete feature cannot release before A/B/C/E/F/G/H/I/J and D's verification. SP-103's latest `docs/artifacts/STUDY-12/review.md` still lacks integrated DoD evidence; inspect new evidence before treating that upstream dependency as verified complete.
 
 ## Shared API contract (all children must agree)
 
@@ -62,11 +67,11 @@ The user explicitly approved retaining the existing JWT-expiry window on 2026-10
 
 E makes session creation/rotation participate in the same owner-first protocol as A/B: login rechecks the verified password-hash snapshot under the lock; refresh re-reads/claims tokens under the lock. JWT signing occurs under the lock, and results are returned only after commit. Reset-first rejects stale credentials; session-first may return 200 (even delivered later), but reset revokes its newly-created refresh row/successor. All post-reset renewal attempts using those credentials fail. Fresh logins with the **new** password are allowed.
 
-C drains existing single-flight refresh and pauses automatic refresh before the reset POST. On success it advances a shared session generation, clears local token/user and rejects stale API token-store writes and context restores, then navigates to login with a consumed-once notice. Draining before the reset also prevents an earlier refresh response from overwriting the expiry cookie. D proves server and browser behavior; no instantaneous cross-tab JWT withdrawal is claimed.
+G drains existing single-flight refresh and pauses automatic refresh before the reset POST. On success it advances a shared session generation, clears local token/user and rejects stale API token-store writes and context restores; C then navigates to login with a consumed-once notice. Draining before the reset also prevents an earlier refresh response from overwriting the expiry cookie. D proves server and browser behavior; no instantaneous cross-tab JWT withdrawal is claimed.
 
 ## Definition of Done and release
 
-Every child references the [shared DoD](../../../epics/README.md). Backend A/B/E/F own applicable validation, business rules and API/migration documentation; C owns UI states, keyboard/focus/announcements and mobile/desktop behavior; D performs integrated item 10 and records real evidence. Academic-data scoping is N/A within this public recovery flow, but every credential mutation is confined to its stored owner.
+Every child references the [shared DoD](../../../epics/README.md). Backend A/B/E/F own applicable validation, business rules and API/migration documentation; G owns shared browser-session/client contract; H owns DB fixtures, I/J own automated database suites; C owns UI states, keyboard/focus/announcements and mobile/desktop behavior; D performs integrated item 10 and records real evidence. Academic-data scoping is N/A within this public recovery flow, but every credential mutation is confined to its stored owner.
 
 ## Out of scope
 

@@ -13,7 +13,7 @@
 
 ## Summary and decision provenance
 
-Original SP-105 AC7 and rate-limiting TR require per-account **and per-IP** protection. The user approved retaining IP protection in a separate child (“approve as sep”) and approved the proposed initial limits (“yes”): 10 forgot-password requests and 30 reset submissions per IP per minute, with account-independent 429 responses (2026-10-14 conversation). This is a release requirement, not an unspecified API-wide deferral. Target one focused backend session; D owns live multi-client verification.
+Original SP-105 AC7 and rate-limiting TR require per-account **and per-IP** protection. The user approved retaining IP protection in a separate child (“approve as sep”) and approved the proposed initial limits (“yes”): 10 forgot-password requests and 30 reset submissions per IP per minute, with account-independent 429 responses (2026-10-14 conversation). This is a release requirement, not an unspecified API-wide deferral. Target one focused backend session; J constructs live multi-client tests using H fixtures; D executes them for integrated verification.
 
 ## Acceptance criteria
 
@@ -35,7 +35,7 @@ Register the proposed guard/store in the auth module. Concrete filenames such as
 
 - Stateful unit tests: first L requests admitted, L+1 denied; exactly-60-second expiry; denied attempts do not prolong the window; endpoint independence; unknown/known/malformed requests follow the same IP limit; no mutation on rejection; normalized-IP parity; spoofed forwarding headers ignored; shared-NAT behavior.
 - Store/guard HTTP tests: rolling-window boundary burst, fake clocks plus real post-lock time behavior, generic filtered HTTP 429, exact Retry-After rounding/range at subsecond boundaries and CORS exposedHeaders, fail-closed 503 with sanitized errors, no email/token identifiers stored or logged, cleanup racing a request.
-- D: real PostgreSQL with two independent store instances racing the last slot; exactly one admitted, one 429; service restart keeps limits; exercise both endpoints and verify allowed-request generic responses, blocked mutation, and real-browser actionable retry.
+- J (using H; D executes): real PostgreSQL with two independent store instances racing the last slot; exactly one admitted, one 429; service restart keeps limits; exercise both endpoints and verify allowed-request generic responses, blocked mutation, and real-browser actionable retry.
 - Document topology, thresholds, retention/cleanup, migration/rollback and operator verification in the eventual child implementation artifact. Rollback must not silently release an unprotected feature.
 
 ## Definition of Done

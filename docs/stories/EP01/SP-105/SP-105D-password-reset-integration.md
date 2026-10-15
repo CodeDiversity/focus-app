@@ -6,14 +6,14 @@
 **Milestone:** M1
 **Priority:** High / P0
 **Layer:** Integration (backend + frontend, real PostgreSQL + real SMTP)
-**Dependencies:** [SP-105A](./SP-105A-password-reset-backend-issuance.md), [SP-105B](./SP-105B-password-reset-backend-redemption.md), [SP-105C](./SP-105C-password-reset-frontend-ui.md) , [SP-105E](./SP-105E-auth-session-coordination.md), [SP-105F](./SP-105F-password-reset-ip-limits.md) — **all five must land first**
+**Dependencies:** [SP-105A](./SP-105A-password-reset-backend-issuance.md), [SP-105B](./SP-105B-password-reset-backend-redemption.md), [SP-105C](./SP-105C-password-reset-frontend-ui.md) , [SP-105E](./SP-105E-auth-session-coordination.md), [SP-105F](./SP-105F-password-reset-ip-limits.md) plus G, H, I and J — **all prerequisites must land first**
 **Jira key:** Pending creation (child of STUDY-7)
 **Refined:** 2026-10-14
 **Status:** Draft — corrected; awaiting independent re-review
 
 ## Summary
 
-A **verification** story, not a feature story. It wires the already-built backend (SP-105A/B) and frontend (SP-105C) together and proves, against a real PostgreSQL database and real local SMTP, the guarantees that mocks cannot: the single-use / one-success concurrency invariants, session revocation, and the full end-to-end recovery flow. It performs the **DoD 10** integrated development review and records evidence in the artifacts.
+One 2–4 hour integrated sign-off session after all automated prerequisites pass. A **verification** story, not a feature or harness-construction story. It wires the already-built backend (SP-105A/B) and frontend (SP-105C) together and proves, against a real PostgreSQL database and real local SMTP, the guarantees that mocks cannot: the single-use / one-success concurrency invariants, session revocation, and the full end-to-end recovery flow. It performs the **DoD 10** integrated development review and records evidence in the artifacts.
 
 ## Description
 
@@ -35,21 +35,20 @@ As a reviewer of the password-reset feature, I want the whole flow proven togeth
 
 ### What this story does (and does not do)
 
-- **Does:** add the real-database integration tests, run the cross-layer smoke, perform the integrated review, and record evidence.
+- **Does:** execute H/I/J suites, run the manual cross-layer smoke, perform integrated review, and record evidence. No suite/harness construction belongs here.
 - **Does not:** change product feature behavior — that belongs to SP-105A/B/C/E/F. If a gap is found, file it back to the owning child rather than patching feature code here.
 
-### Real-Postgres concurrency proofs (falsify the SP-105B mechanisms)
+### Explicit automated prerequisites
 
-New `apps/api/src/modules/auth/password-reset.integration.spec.ts` using the **real** `PrismaService` against the CI `postgres:15` service (SP-104's CI setup; ensure `prisma migrate deploy` runs before the test step). Mocked transactions do **not** prove Postgres locking/EvalPlanQual (SP-103/SP-104 precedent):
+H owns new real-Postgres fixtures, independent connections, deterministic barriers and cleanup; existing CI already supplies postgres:15-alpine and migrations before Jest. I owns all credential/expiry/rollback/login/refresh ordering suites. J owns shared-limiter races and failure paths. Their linked implementation artifacts and passing commands are entry criteria for D; if missing/failing, D is blocked and returns the gap to that child.
 
-- `two concurrent redemptions of the same token: exactly one 200, one 400` (fire in parallel against the live endpoint/service).
-- `two different valid tokens for one account: exactly one 200` (the user-row `FOR UPDATE` lock + account-wide retirement proof — the counterexample that a naive read-then-write fails).
-- Use deterministic barriers to test all four E orderings: login verified old hash then reset-first (no inserted family); login-first then reset (family revoked); refresh paused before owner lock then reset-first (401); refresh-first then reset (200 permitted, successor revoked). All later refresh attempts fail, new password works, other accounts remain untouched.
-- Race issuance against redemption in both orders, and two eligible issuance requests across service instances. Assert no owner/token lock-order deadlock; a losing reset is uniform 400, a losing cooldown claim is generic 200 with no email. Seed two distinct valid tokens directly for redemption tests: A deliberately permits only one live token during normal issuance.
-- Block an owner lock past expiry; a waiting redemption must fail using fresh post-lock time. Force password/revocation writes to fail and prove complete rollback of token/password/session state.
-- Exercise F with two independent store instances at the last rolling-window slot: exactly one allowed, one 429; test both endpoints, restart persistence, spoofed proxy headers, cleanup racing requests, 503 fail-closed behavior, no mutation/email on rejection, and known/unknown response parity.
-- Hold SMTP delivery unresolved: public issuance still returns; reject delivery and confirm sanitized handling. Measure eligible/unknown/cooled-down database-path timing and record the residual risk and mitigation assessment before security sign-off; do not assert constant time from async SMTP alone.
-- `a second device's refresh after reset is revoked (all families dead)`; verify existing access JWTs remain usable only for the remaining configured TTL, as approved in SD7.
+D runs those suites and records results rather than recreating them. Measure eligible/unknown/cooled-down HTTP timing on the same environment with SMTP unresolved/rejected and record sampling method, distributions, residual risk and security assessment. No constant-time guarantee is inferred. An unacceptable result blocks sign-off and returns to A.
+
+### Browser verification method and retry evidence
+
+No browser automation runner is currently declared. D uses an actual browser with developer tools and manual reproducible steps, not a future unowned automation harness. Test the API from a separate configured web origin with credentials: trigger 429 for both routes, read `Retry-After` in frontend JavaScript (not only the network panel), confirm CORS exposure, same bucket-derived values for known/unknown accounts, and retain reset token/form/session while retrying after the wait. Check missing/malformed-header fallback through G/C automated tests, rather than changing production responses manually.
+
+For delayed refresh, use the browser network response interception facility (or an equivalent recorded debugging proxy) to hold a refresh response before cookie application, start reset, verify no reset POST until the refresh is released, then verify reset expiry wins and state remains cleared. Record the browser/version and exact interception procedure; if the environment cannot hold a response before cookie application, this check is blocked rather than replaced with jsdom. No tooling implementation is hidden in D.
 
 ### Cross-layer end-to-end (real SMTP)
 
@@ -66,14 +65,14 @@ Integrated development smoke (SP-103's Mailpit workflow): start Mailpit + Postgr
 
 ### Relevant files
 
-- `apps/api/src/modules/auth/password-reset.integration.spec.ts` — real-Postgres concurrency + revocation proofs (new).
+- H harness and I/J proposed integration suites — constructed by prerequisites; execute here.
 - CI workflow — `prisma migrate deploy` ordered before the test step; `postgres:15` service (SP-104 precedent).
 - `docker-compose.yml` — reuse SP-103's Mailpit service for the SMTP smoke.
 - `docs/artifacts/<integration-Jira-key>/implementation.md` — evidence record after issue creation; do not fabricate a key.
 
 ### Proposed verification mechanisms (2026-10-14)
 
-- **D1:** SP-105D is a verification story; it adds tests + performs the review, and files any feature gap back to A/B/C/E/F rather than changing feature code.
+- **D1:** SP-105D is a verification story; it executes prerequisite tests + performs the review, and files any feature gap back to A/B/C/E/F rather than changing feature code.
 - **D2:** DoD 10 = the integrated development review performed here (real DB + SMTP + viewports + keyboard), recorded in artifacts; the read-only reviewer returns Markdown for the parent to save as `review.md`.
 - **D3:** real-database tests will use the live `postgres:15` service; SP-105B concurrency mechanisms must be checked at the database, satisfying the "mocked transactions alone do not prove PostgreSQL behavior" rule.
 
