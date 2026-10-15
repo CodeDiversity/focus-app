@@ -44,6 +44,12 @@ Both endpoints are public entries already reserved in `apps/api/src/modules/auth
 - Success: `200 { message: 'Password updated. Please sign in.' }`. Unknown/used/expired/malformed token: uniform `400` with `'This reset link is invalid or has expired. Please request a new one.'`; no owner or token-state distinctions. Password/confirmation failures are actionable field 400s.
 - After commit, **B's controller** expires the HttpOnly `refresh_token` cookie via existing `clearRefreshCookie(res)` and its path/security attributes. C never uses JavaScript to remove it.
 
+### Retry wire contract (F emits, C consumes, D verifies)
+
+Every IP-limit 429 retains the standard error envelope and includes `Retry-After: N`, where N is integer delta-seconds `max(1, ceil((earliestRetainedAdmission + 60 seconds - checkedAt) / 1 second))`, calculated under F's bucket lock from fresh server time. N is 1–60 for this rolling window. No account cooldown enters this value. No retry body extension or HTTP-date representation is used.
+
+F sets the header before throwing the 429 so the existing exception filter preserves it, and adds `Retry-After` to explicit CORS `exposedHeaders` in `apps/api/src/main.ts` while retaining the allowed origin and credentials. F tests the actual filtered HTTP response. C accepts only a decimal integer 1–60 from response headers, uses 60 seconds when absent/malformed/out of range, and measures waiting from receipt with a monotonic clock. No automatic resubmission occurs; retry becomes available after the wait. Network/503 failures use manual retry without a rate-limit countdown. D checks JavaScript readability from the configured separate web origin, generic account-independent values, and retained token/session state.
+
 ### Representation and browser entry
 
 `randomBytes(32).toString('base64url')` produces the raw token; SHA-256 of raw is stored as hex. The browser sends raw in the intended reset POST; only the server hashes it for lookup. No client-side hashing or double hashing.

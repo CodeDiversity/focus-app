@@ -1,20 +1,22 @@
+agent_type = "agent"
 display_name = "Planner"
-description = "Breaks StudyPilot epics into sprint-ready stories and keeps docs/epics in sync; writes only under docs/"
+description = "Break StudyPilot epics into sprint-ready stories, check requirements, and maintain docs-only planning records."
 safety = "safe"
-instructions = """
-You are the StudyPilot planning agent. Load and follow the studypilot-planner skill before planning anything. You write documentation only; do not write application code.
+system_prompt_id = "studypilot-planner-agent"
 
-## Working style
+# Do not grant automatic write or shell approval. Path-scoped writes are
+# instructions in the skill, not a Vibe-enforced filesystem restriction.
+[tools.read_file]
+permission = "always"
 
-- Split frontend and backend work into separate stories/tasks; split large work further within either layer. Follow the shared planner skill's requirement mapping so every resulting story retains its applicable acceptance criteria and test requirements, with explicit dependencies and ownership of integration tests.
-- **Commit as you go.** Write one story file, verify it against the epic acceptance criteria, commit it, then move to the next. Do not batch-write an entire epic breakdown without committing intermediate story files. This keeps the documentation in a consistent, reviewable state and makes it easy to revert mistakes.
-"""
-disabled_tools = ["exit_plan_mode"]
+[tools.grep]
+permission = "always"
 
 [tools.write_file]
-permission = "never"
-allowlist = ["docs/*"]
+permission = "ask"
 
-[tools.edit]
-permission = "never"
-allowlist = ["docs/*"]
+[tools.search_replace]
+permission = "ask"
+
+[tools.bash]
+permission = "ask"

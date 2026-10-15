@@ -154,6 +154,22 @@ The CF-1–CF-6 entries above preserve the previous agent's original claims and 
 - **Verification:** Local Markdown file-link resolution passed for every SP-105 document. Final cross-file comparison checked all six children against the parent contract and AC/TR/DoD maps; no application tests were run for these docs-only edits.
 - **Status:** Fixed in plan; addressed — awaiting independent re-review.
 
+### PR-001 — Retry wire contract and browser access (Medium)
+- **Discovery:** 2026-10-14, reviewer pass 1; parent lines 34/42, F AC3, C retry behavior; API CORS exposes no retry header and exception filter drops extra body fields.
+- **Original finding:** Retry guidance lacks a settled wire contract and browser accessibility ownership. A header-only implementation can be unreadable cross-origin; a body extension can be removed by normalization.
+- **Consequence:** C cannot implement promised retry behavior consistently.
+- **Correction:** In progress: settle header units/rounding/fallback, assign F header/CORS ownership, C parsing, D browser-origin proof.
+- **Verification:** Pending final cross-file check.
+- **Status:** Unresolved; awaiting correction.
+
+### PR-002 — Frontend/integration scope and prerequisite ownership (Medium)
+- **Discovery:** 2026-10-14, reviewer pass 1; README inventory lines 16–17/161, C lines 42–55, D lines 43–64.
+- **Original finding:** Frontend and integration children still combine independently testable outcomes without grounded session sizing. C includes shared session infrastructure; D assumes an absent reusable browser/database harness while constructing substantial suites.
+- **Consequence:** Claimed focused-session sizing depends on unowned prerequisites.
+- **Correction:** In progress: preserve A–F; separate session infrastructure, database harness and two coherent database suites; retain D as integrated sign-off owner.
+- **Verification:** Pending inventory/dependency/traceability check.
+- **Status:** Unresolved; awaiting correction.
+
 ## Current readiness and verification (2026-10-14)
 
 | Gate | Status | Evidence / limitation |
