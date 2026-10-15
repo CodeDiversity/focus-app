@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { appCorsOptions } from './common/cors';
 import cookieParser = require('cookie-parser');
 
 async function bootstrap() {
@@ -24,11 +25,8 @@ async function bootstrap() {
   // Uniform error-response shape for every failure
   app.useGlobalFilters(new AllExceptionsFilter());
 
-  // Enable CORS
-  app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
-  });
+  // Enable CORS (SP-105F: exposes the limiter's Retry-After header to the SPA)
+  app.enableCors(appCorsOptions());
 
   const port = process.env.PORT || 4000;
   await app.listen(port);

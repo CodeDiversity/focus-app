@@ -1,4 +1,13 @@
-import { Controller, Post, Body, Req, Res, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  Res,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -7,6 +16,7 @@ import { EmailVerificationService } from './email-verification.service';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { PasswordResetService } from './password-reset.service';
+import { RecoveryRateLimitGuard } from './recovery-rate-limit.guard';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
@@ -58,12 +68,16 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('forgot-password')
+  // SP-105F: shared per-IP limit (10/60s) — runs before DTO/service execution.
+  @UseGuards(RecoveryRateLimitGuard)
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.passwordReset.forgotPassword(dto.email);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('reset-password')
+  // SP-105F: shared per-IP limit (30/60s) — runs before DTO/service execution.
+  @UseGuards(RecoveryRateLimitGuard)
   async resetPassword(@Body() dto: ResetPasswordDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.passwordReset.resetPassword(dto);
     // A committed reset revokes every refresh family for this account, so

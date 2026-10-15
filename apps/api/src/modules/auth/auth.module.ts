@@ -1,6 +1,8 @@
 import { EmailModule } from '../email/email.module';
 import { EmailVerificationService } from './email-verification.service';
 import { PasswordResetService } from './password-reset.service';
+import { RecoveryRateLimitStore } from './recovery-rate-limit.store';
+import { RecoveryRateLimitGuard } from './recovery-rate-limit.guard';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
@@ -33,6 +35,9 @@ import { UsersModule } from '../users/users.module';
   providers: [
     EmailVerificationService,
     PasswordResetService,
+    // SP-105F: shared per-IP recovery admission (store + route guard).
+    RecoveryRateLimitStore,
+    RecoveryRateLimitGuard,
     AuthService,
     JwtStrategy,
     LocalStrategy,

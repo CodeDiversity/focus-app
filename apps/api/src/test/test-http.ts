@@ -17,6 +17,7 @@ import { PrismaModule } from '../modules/prisma/prisma.module';
 import { PrismaService } from '../modules/prisma/prisma.service';
 import { EMAIL_PROVIDER } from '../modules/email/email-provider';
 import { AllExceptionsFilter } from '../common/filters/all-exceptions.filter';
+import { appCorsOptions } from '../common/cors';
 
 /**
  * Test-only JWT secret. Integration specs sign/verify tokens with it; CI
@@ -88,6 +89,8 @@ export async function createIntegrationApp(): Promise<IntegrationApp> {
     }),
   );
   app.useGlobalFilters(new AllExceptionsFilter());
+  // main.ts parity: CORS with the limiter's Retry-After exposed (SP-105F).
+  app.enableCors(appCorsOptions());
   await app.init();
 
   return {
