@@ -30,6 +30,7 @@ describe('AuthService', () => {
       updateMany: jest.Mock;
     };
     user: { findUnique: jest.Mock };
+    $queryRaw: jest.Mock;
     $transaction: jest.Mock;
   };
 
@@ -87,8 +88,24 @@ describe('AuthService', () => {
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
       user: { findUnique: jest.fn() },
+      $queryRaw: jest.fn(),
       $transaction: jest.fn(),
     };
+    // Default for the SP-105 owner-lock primitives: the owner row exists and
+    // the post-lock clock is "now". Tests override this to simulate a missing
+    // owner or a clock that moves while the transaction waits for the lock.
+    prismaService.$queryRaw.mockImplementation(
+      (strings: { raw: string[] } | string, ...values: unknown[]) => {
+        const sql = typeof strings === 'string' ? strings : strings.raw.join('');
+        if (/FOR UPDATE/i.test(sql)) {
+          return Promise.resolve([{ id: (values[0] as string) ?? '' }]);
+        }
+        if (/clock_timestamp/i.test(sql)) {
+          return Promise.resolve([{ checkedAt: new Date() }]);
+        }
+        return Promise.resolve([]);
+      }
+    );
     prismaService.$transaction.mockImplementation(
       async (fn: (tx: typeof prismaService) => unknown) => fn(prismaService)
     );
@@ -243,6 +260,11 @@ describe('AuthService', () => {
     it('issues a 15-minute access token and creates a new refresh family', async () => {
       usersService.findByEmail.mockResolvedValue(userRecord);
       (argon2.verify as jest.Mock).mockResolvedValue(true);
+      // Under the owner lock the re-read still sees the hash we verified.
+      prismaService.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        passwordHash: 'argon2-hash',
+      });
 
       const result = await service.login({
         email: '  Student@Example.COM ',
@@ -266,6 +288,41 @@ describe('AuthService', () => {
       expect(createArg.data.tokenHash).not.toBe(result.refreshToken);
       expect(JSON.stringify(createArg)).not.toContain(result.refreshToken);
       expect(createArg.data.expiresAt.getTime()).toBeGreaterThan(Date.now());
+    });
+
+    it('persists no session when a password reset commits between verify and the lock', async () => {
+      // The pre-lock verify succeeds against the *old* hash...
+      usersService.findByEmail.mockResolvedValue({ ...userRecord, passwordHash: 'argon2-hash-old' });
+      (argon2.verify as jest.Mock).mockResolvedValue(true);
+      // ...but a reset that committed first leaves a *different* stored hash
+      // when the account is re-read under the owner lock.
+      prismaService.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        passwordHash: 'argon2-hash-new',
+      });
+
+      await expect(
+        service.login({ email: 'student@example.com', password: 'Password123' })
+      ).rejects.toThrow(UnauthorizedException);
+      expect(prismaService.refreshToken.create).not.toHaveBeenCalled();
+      expect(jwtService.sign).not.toHaveBeenCalled();
+    });
+
+    it('persists no session when the owner row is gone under the lock', async () => {
+      usersService.findByEmail.mockResolvedValue(userRecord);
+      (argon2.verify as jest.Mock).mockResolvedValue(true);
+      // lockOwner finds no row -> the FOR UPDATE select returns nothing.
+      prismaService.$queryRaw.mockImplementation(
+        (strings: { raw: string[] } | string) => {
+          const sql = typeof strings === 'string' ? strings : strings.raw.join('');
+          return /FOR UPDATE/i.test(sql) ? Promise.resolve([]) : Promise.resolve([]);
+        }
+      );
+
+      await expect(
+        service.login({ email: 'student@example.com', password: 'Password123' })
+      ).rejects.toThrow(UnauthorizedException);
+      expect(prismaService.refreshToken.create).not.toHaveBeenCalled();
     });
   });
 
@@ -398,6 +455,27 @@ describe('AuthService', () => {
         ...activeRecord(),
         expiresAt: new Date(Date.now() - 1000),
       });
+      await expect(service.refresh('raw-old-token')).rejects.toThrow(UnauthorizedException);
+      expect(prismaService.refreshToken.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects a token that expires while the transaction waits for the owner lock', async () => {
+      // The token is not yet expired at transaction start, but the post-lock
+      // wall clock (clock_timestamp) moves past its expiry before the re-read.
+      const base = Date.now();
+      prismaService.refreshToken.findUnique.mockResolvedValue({
+        ...activeRecord(),
+        expiresAt: new Date(base + 60_000),
+      });
+      prismaService.$queryRaw.mockImplementation(
+        (strings: { raw: string[] } | string) => {
+          const sql = typeof strings === 'string' ? strings : strings.raw.join('');
+          if (/FOR UPDATE/i.test(sql)) return Promise.resolve([{ id: 'user-1' }]);
+          if (/clock_timestamp/i.test(sql)) return Promise.resolve([{ checkedAt: new Date(base + 120_000) }]);
+          return Promise.resolve([]);
+        }
+      );
+
       await expect(service.refresh('raw-old-token')).rejects.toThrow(UnauthorizedException);
       expect(prismaService.refreshToken.create).not.toHaveBeenCalled();
     });
