@@ -17,6 +17,15 @@ export interface PreparedResetToken {
 const GENERIC_SUCCESS_MESSAGE =
   'If an account exists for that email address, a password reset link has been sent. Check your inbox and wait a minute before requesting another.';
 
+/**
+ * Operator-safe identifier for a failure: the error *name* only (e.g.
+ * `Error`, `PrismaClientInitializationException`) — never the message,
+ * which may contain the requester's email or connection details.
+ */
+function failureName(error: unknown): string {
+  return error instanceof Error ? error.name : 'UnknownError';
+}
+
 @Injectable()
 export class PasswordResetService {
   private readonly logger = new Logger(PasswordResetService.name);
@@ -43,9 +52,9 @@ export class PasswordResetService {
    */
   private sendReset(to: string, rawToken: string): void {
     setImmediate(() => {
-      void this.deliverReset(to, rawToken).catch(() => {
+      void this.deliverReset(to, rawToken).catch((error) => {
         this.logger.warn(
-          `Password reset email delivery failed; correlation=${randomUUID()}`,
+          `event=reset_email_delivery_failed correlation=${randomUUID()} error=${failureName(error)}`,
         );
       });
     });
@@ -134,10 +143,19 @@ export class PasswordResetService {
       if (issued) {
         this.sendReset(email, prepared.rawToken);
       }
-    } catch {
-      // Issuance failure is silently absorbed; the caller always gets
-      // the same generic success.  The error is logged internally.
-      this.logger.warn(`Password reset issuance failed; correlation=${randomUUID()}`);
+    } catch (error) {
+      // Deliberate security trade-off: every transaction failure — cooldown
+      // claim, user lookup, token retirement, token insert, or a database
+      // outage — is absorbed so the API response stays identical for
+      // eligible, cooling-down, unregistered, and broken outcomes (no
+      // enumeration or existence oracle).  Operators instead monitor the
+      // structured `event=reset_issuance_failed` log line: its absence means
+      // normal flow, and `error=` names the failure class (e.g.
+      // PrismaClientInitializationException = database down).  Only the error
+      // name is logged — never the message, which may contain the email.
+      this.logger.warn(
+        `event=reset_issuance_failed correlation=${randomUUID()} error=${failureName(error)}`,
+      );
     }
 
     return { message: GENERIC_SUCCESS_MESSAGE };
