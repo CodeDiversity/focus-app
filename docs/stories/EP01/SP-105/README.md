@@ -1,9 +1,9 @@
 # SP-105 Breakdown — Password Reset
 
-**Epic:** [EP01: Authentication & Onboarding](../../epics/EP01-authentication-and-onboarding.md)
+**Epic:** [EP01: Authentication & Onboarding](../../../epics/EP01-authentication-and-onboarding.md)
 **Parent:** [SP-105](./SP-105-password-reset.md) (co-ordination record, Jira STUDY-7)
 **Milestone:** M1
-**Status:** **Plan ready for implementation** (2026-10-14). The feature is **not yet built.**
+**Status:** **Needs Decision — corrections in progress; independent re-review pending** (2026-10-14). The feature is **not yet built.**
 **Children:** [SP-105A](./SP-105A-password-reset-backend-issuance.md) · [SP-105B](./SP-105B-password-reset-backend-redemption.md) · [SP-105C](./SP-105C-password-reset-frontend-ui.md) · [SP-105D](./SP-105D-password-reset-integration.md)
 
 ## How SP-105 is split
@@ -29,9 +29,9 @@ The split mirrors SP-103's issuance/confirmation boundary and the "issuance / re
 | D9 (Q4) | `passwordResetRequestedAt` on `User`; a separate 60-second per-account cooldown. |
 | D10 (Q5) | Same min-8-char password policy as registration; no complexity rules. |
 | D11 (Q6) | `/reset-password` (and `/forgot-password`) live outside `PublicRoute`/`ProtectedRoute`; signed-in and signed-out both handled. |
-| D12 (Q7) | Rate limiting: per-account cooldown now; per-IP deferred to the epic API-wide task. |
+| D12 (Q7) | Prior per-IP deferral is unverified; see SD8 and CF-10. |
 
-**New structural decisions** (auto-approved by the user, 2026-10-14):
+**Proposed mechanisms and tracking conventions** (2026-10-14; policy approval must be explicit):
 
 | # | Decision |
 |---|---|
@@ -41,8 +41,8 @@ The split mirrors SP-103's issuance/confirmation boundary and the "issuance / re
 | SD4 (TTL) | 1-hour reset-token expiry (original AC2); distinct from verification's 24h. |
 | SD5 (single-use) | Issuance retires the account's prior tokens; redemption retires the account's other tokens + revokes all refresh families. "One live token after each request" (A) and "one token can ever be redeemed" (B). |
 | SD6 (concurrency) | Redemption = one all-or-nothing transaction: user-row `FOR UPDATE` lock + conditional claim (`usedAt IS NULL AND expiresAt > now`) + account-wide retirement + refresh revocation + password update; `READ COMMITTED`. Serializes same-token and different-token races. |
-| SD7 (session scope) | Revoke = `revokedAt` on all the user's refresh rows. Accept the bounded ~15-min access-JWT window (stateless JWTs); no denylist in MVP. |
-| SD8 (abuse / AC7) | Per-account 60s cooldown on `forgot-password` now; **per-IP deferred** to the epic API-wide rate-limiting task (SP-102 Q8 / SP-101 precedent) — the original per-IP requirement is preserved as that follow-up, not dropped. Redemption is protected by 256-bit single-use 1h tokens (entropy), not by the issuance cooldown. |
+| SD7 (session scope) | **Decision needed:** current guards allow existing access JWTs until expiry (~15 minutes). Accept this bounded residual window or require immediate access-token invalidation; do not infer approval. |
+| SD8 (abuse / AC7) | **Decision needed:** original per-IP requirement remains in scope unless explicitly deferred. Per-account issuance cooldown limits email attempts; token entropy protects against guessing, not request-volume abuse. SP-102 login deferral is not approval here. |
 | SD9 (anti-oracle) | `forgot-password` returns one identical `200`+message for eligible / cooled-down / unknown / SMTP-failure; email is async off the response path; no `429` / cooldown header. |
 | SD10 (route wrapper) | Both routes outside the wrappers (D11); on success the frontend clears local token/user/cookie, guards the in-flight restore, then navigates to login. |
 | SD11 (uniform rejection) | Every reset-token failure (used/expired/unknown/invalid) is the same generic `400`; never distinguished. |
@@ -133,26 +133,46 @@ The 2026-10-14 refinement of SP-105 (in the working tree) was re-checked against
 - **Verification:** SP-105A (cooldown on issuance) and SP-105B (token entropy on redemption) each state the correct protection for their own endpoint.
 - **Status:** Fixed in plan.
 
-## Readiness table (plan)
+## Review corrections — 2026-10-14
 
-| Row | Status | Evidence |
-|---|---|---|
-| Story separation & size | **Pass** | parent + A + B + C + D; FE/BE separated; each one working session; A and B independently testable (parent "Children" + dependency graph) |
-| Original requirement & test coverage | **Pass** | all 7 ACs + all 4 test reqs mapped to named children; none dropped — AC7 per-IP preserved as a tracked deferral (SD8/CF-3) |
-| API consistency | **Pass** | one shared contract in the parent; A/B/C agree on DTOs, token format, hashing boundary, statuses, and the error envelope |
-| Security counterexamples | **Pass** | same-token race, different-token race, refresh-racing-reset, old-pw-login, access-JWT window, abuse — each has a named mechanism + owning child + falsifying test (B unit / D real-Postgres) |
-| DoD 1, 2, 4, 8, 9 (backend) | **Pass** | allocated to A and B |
-| DoD 3 (academic scoping) | **Not applicable** | public recovery flow; a token authorizes only its owner's change; no academic data touched |
-| DoD 5, 6, 7 (frontend) | **Pass** | allocated to C (unit tests) + D (real-viewport/keyboard verification) |
-| DoD 10 (integrated review) | **Pass (plan) — not yet performed** | allocated to SP-105D (performs it); the actual integrated development review is a downstream verification obligation satisfied at implementation, not now |
-| Dependency completion | **Pass (external) / Pending (children)** | SP-102 + SP-103 implemented (git `005893e`, `f8cb4d2`, `20c7263`); SP-105A/B/C/D not yet built — this plan produces them |
-| Material decisions | **Pass** | D6–D12 (preserved) + SD1–SD11 recorded; all auto-approved 2026-10-14 per the user |
-| Correction-log completeness | **Pass** | CF-1..CF-6 captured with original claim + correction + verification + status |
+The CF-1–CF-6 entries above preserve the previous agent's original claims and dispositions; they are historical, not fresh verification. In particular, CF-3 and CF-5's approval claims are not substantiated by this session. The following entries supersede their readiness/approval conclusions. No independent `plan-review.md` exists yet; these findings come from the parent assistant's review in this conversation. Corrections remain subject to independent re-review.
 
-## Quality gate result
+### CF-7 — inconsistent lock order (Blocker)
+- **Original finding:** SP-105B, “Persistence and concurrency,” steps 1–2 claimed a token before locking its owner, while the parent required owner-first. Two distinct token claims can block account-wide retirement and form a deadlock; the prose incorrectly said the claim already held the user lock.
+- **Correction:** B now specifies advisory owner discovery, owner-first serialization shared with A/E, conditional claim after the lock, fresh post-wait expiry, rollback, and controller-owned cookie expiration.
+- **Verification:** Traced same-token and different-token losers through the new owner-first B steps; neither holds a token lock while waiting for the owner. Remaining cross-file synchronization is tracked below; actual PostgreSQL evidence belongs to D.
+- **Status:** Unresolved.
 
-- **Requirement/test ownership:** all 7 ACs, all 4 test requirements, and all 10 DoD items assigned to named children (DoD 3 N/A; DoD 10 → SP-105D).
-- **Checked code paths (all referenced symbols verified to exist):** `schema.prisma` (`User`/`RefreshToken`/`EmailVerificationToken`); `auth.service.ts` (`ARGON2_OPTIONS`, sha256, 30-day refresh); `email-verification.service.ts` (SHA-256 / 60s cooldown / async email / `readLinkToken`-style 43-char token); `email-provider.ts` (`EMAIL_PROVIDER`); `public-routes.ts` (both reset routes already present, inert); `AllExceptionsFilter` envelope; frontend `VerifyEmail.tsx` (`readLinkToken` + fragment strip), `App.tsx` (unguarded `/verify-email` precedent), `Login.tsx` (dead `/forgot-password` link), `services/auth.ts` + `services/api.ts` (`AUTH_PATHS`).
-- **Settled decisions:** D6–D12 + SD1–SD11 (auto-approved 2026-10-14).
-- **Security guarantees → mechanism + falsifying test:** token single-use (conditional claim + user lock → B unit, D real-Postgres); multiple tokens (account-wide retirement + lock → B, D); session revocation (revoke all rows + SP-102 reuse detection → B, D); access-JWT window (bounded 15-min, documented decision SD7); abuse (per-account cooldown → A; token entropy → B; per-IP deferred SD8).
-- **Overall:** **Plan/breakdown ready for implementation** — every applicable readiness row passes and no finding is left unresolved (CF-1..CF-6 all "Fixed in plan"). The **feature is not yet implemented or tested**: SP-105A–D are the implementation tickets this plan produces, and DoD 10 will be satisfied by SP-105D at implementation time.
+### CF-8 — login/refresh races asserted away (Blocker)
+- **Original finding:** SP-105B, “Session revocation,” said old-password verification fails after replacement and left login unchanged. Login can verify before reset and persist a new session after reset; refresh can similarly create a successor outside reset's snapshot.
+- **Correction:** Pending: separate backend session-coordination child E; shared owner-first lock, password-snapshot recheck, locked refresh re-read, and race tests with both lock acquisition orders.
+- **Verification:** Pending trace against `AuthService.login` and `refresh`; no application tests run during this planning correction.
+- **Status:** Unresolved.
+
+### CF-9 — HttpOnly cookie assigned to frontend (Major)
+- **Original finding:** SP-105C AC4 and success handling assigned cookie clearing to the SPA; JavaScript cannot clear the HttpOnly refresh cookie. No reset-controller response owned the action.
+- **Correction:** Pending: B's controller expires the cookie after commit with existing cookie attributes; C clears local state and guards both API token writes and AuthContext restore; D verifies real Set-Cookie behavior.
+- **Verification:** Pending comparison with `clearRefreshCookie` in `auth.controller.ts` and the single-flight refresh in `services/api.ts`.
+- **Status:** Unresolved.
+
+### CF-10 — unsupported policy approvals (Major)
+- **Original finding:** README SD7/SD8 and CF-3/CF-5 labeled the access-JWT window and per-IP deferral “auto-approved.” This conversation contains no such approval; the alleged follow-up has no specific ID/owner.
+- **Correction:** Remove current approval claims; retain original text only in the historical finding record. Mark access-JWT policy and per-IP disposition as decisions needed until the user answers. Preserve original AC7.
+- **Verification:** Compared the conversation authorization with SD7/SD8. A request to fix docs is not acceptance of a weaker security requirement.
+- **Status:** Decision needed.
+
+### CF-11 — response timing overclaimed (Major)
+- **Original finding:** SP-105A “Security” promised identical timing because SMTP is async, despite eligible accounts doing additional database writes.
+- **Correction:** Pending: retain identical status/body and SMTP-independent response, explicitly disclose residual database-path timing, require measurement and a decision before claiming full timing-enumeration resistance.
+- **Verification:** Pending test ownership in A/D and revised claim comparison; no constant-time result is claimed.
+- **Status:** Unresolved.
+
+### CF-12 — broken links and readiness overclaim (Major)
+- **Original finding:** All moved child epic links used `../../epics/`, resolving into `docs/stories/epics/`; readiness rows passed despite policy and concurrency gaps. SP-103's latest review still has unverified integrated DoD obligations.
+- **Correction:** Pending: repair links, distinguish planning from implementation readiness, preserve dependency limits, and replace blanket readiness claims with specific blockers.
+- **Verification:** Pending local Markdown link resolution and final cross-file review.
+- **Status:** Unresolved.
+
+## Current readiness — supersedes earlier declarations
+
+**Needs Decision; independent re-review pending.** No application feature has been implemented by this correction pass. Original requirement/test maps above are retained, but AC7's per-IP coverage is blocked on CF-10. Session-race coverage must include child E (CF-8). The quality gate cannot pass until these entries are corrected and policy decisions are settled.
