@@ -15,7 +15,7 @@
 
 **Active substory:** None (F implemented 2026-10-15; awaiting parent review)
 
-**Next substory:** [SP-105G](./SP-105G-recovery-session-client.md) — refine/size the shared recovery-session client against the settled A/B/F contracts, then implement when Ready.
+**Next substory:** [SP-105G](./SP-105G-recovery-session-client.md) — implement via its M1–M3 checkpoints (refined/sized 2026-10-15; Ready).
 
 **Implementation owner:** `implementer`, sequential across all layers.
 
@@ -27,7 +27,7 @@
 | [B](./SP-105B-password-reset-backend-redemption.md) | Implemented — awaiting parent review | Implemented before E; login/refresh race invariant remains incomplete until E | Preserve B; finish E, then prove cross-flow behavior in I/D | [Implementation](./artifacts/SP-105B/implementation.md), [historical review](./artifacts/SP-105B/review.md); PR-104 wording corrected in `6826ae0` |
 | [E](./SP-105E-auth-session-coordination.md) | Implemented — awaiting parent review | SP-102 done; login/refresh/logout now use the shared owner-first protocol — the post-reset renewal invariant is closed at unit level | Hold for the combined SP-105 parent review; deterministic real-Postgres proof via I/H, browser via D | [Implementation](./artifacts/SP-105E/implementation.md), [checkpoint](./artifacts/SP-105E/checkpoint.md) |
 | [F](./SP-105F-password-reset-ip-limits.md) | Implemented — awaiting parent review | Implemented 2026-10-15; residual: real multi-instance race (J via H) and browser sign-off (D) | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105F/implementation.md), [checkpoint](./artifacts/SP-105F/checkpoint.md) |
-| [G](./SP-105G-recovery-session-client.md) | Needs refinement | A/B/F contracts; existing SP-102 client | Size/refine shared client boundary before C | Artifact directory created on start |
+| [G](./SP-105G-recovery-session-client.md) | Ready | SP-102 complete (its client is the inspected code); A/B/F implemented, contracts verified against code 2026-10-15 | Implement via M1–M3 checkpoints (see ticket Sizing) | Artifact directory created on start |
 | [C](./SP-105C-password-reset-frontend-ui.md) | Blocked | G; A/B/F endpoint integration before completion | Finish G and applicable backend work; then refine/implement forms | Artifact directory created on start |
 | [H](./SP-105H-postgres-test-harness.md) | Needs refinement | SP-102; A/F migrations for suite execution | Bound harness setup; no integrated pass claimed | Artifact directory created on start |
 | [I](./SP-105I-credential-race-tests.md) | Blocked | A/B implemented; E/H outstanding | Build/run credential race suite after prerequisites | Artifact directory created on start |
@@ -41,6 +41,13 @@ The next-task choice prioritizes the known pre-E session race. A/B records and
 existing commits are evidence pointers, not freshly rerun tests or independent
 closure of old review findings. SP-103's missing integrated DoD 1/7/10 evidence
 does not block E's SP-102-based implementation; it still blocks feature sign-off.
+
+2026-10-15: SP-105G refined and grounded (refiner pass) against the implemented
+A/B/F contracts and the SP-102 client; the ticket now carries the required sizing
+block (cohesive ~2–4h multi-window task, three bounded checkpoints, decisions
+R1–R5) and the queue records it as Ready. No product policy, requirement or
+contract was changed. The SP-103 integrated-evidence gap remains a feature
+sign-off/release gate only; it does not block G's SP-102-based implementation.
 
 Records moved from `docs/artifacts/SP-105A/` and `SP-105B/` into this home's
 `artifacts/` on 2026-10-15. Old directories provide navigation. Reviewer reports
