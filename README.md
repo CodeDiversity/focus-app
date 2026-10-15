@@ -311,6 +311,8 @@ pnpm install
 
 The five repo agents are available as project-scoped Codex agents in `.codex/agents/`: `implementer`, `planner`, `refiner`, `reviewer`, and `dod-auditor`. The single implementer handles backend, frontend and integration substories sequentially, using layer-specific skills in `.agents/skills/`. It resumes through durable checkpoints and requests one final parent review. See [AGENTS.md](./AGENTS.md) for each role's scope. Reload your agent tool/session after changing role definitions so it discovers `implementer` instead of the retired backend/frontend roles.
 
+Every role starts from the parent story README execution queue to find the active/next substory and artifact paths. New and migrated features keep plans and records together under `docs/stories/<epic>/<parent>/`, with per-story records in `artifacts/<story-id>/`. For the active password-reset work, start at [SP-105 execution queue](docs/stories/EP01/SP-105/README.md#execution-queue).
+
 Start a new Codex session in this repository after adding or changing agent definitions. For example: “Use the refiner agent to refine SP-105” or “Have the dod-auditor agent audit STUDY-20.” Models and approval settings inherit from the parent session; the two review roles specify a read-only sandbox. Planner and refiner write limits are enforced by instructions.
 
 The original `.vibe/agents/` definitions remain available for Vibe. Codex uses the [project agent TOML format](https://learn.chatgpt.com/docs/agent-configuration/subagents).

@@ -42,7 +42,7 @@ implementation index for one combined formal review.
 - Frontend validation mirrors backend validation. Surface API errors as actionable messages.
 - Responsive layouts must work on desktop and mobile, including the calendar's weekly and agenda views.
 - Match existing component and styling conventions. Minimal diffs; do not refactor unrelated code.
-- When finishing a story, record what was built in `docs/artifacts/<JIRA-KEY>/implementation.md` (e.g. `docs/artifacts/STUDY-20/implementation.md`; conventions in `docs/artifacts/README.md`): components, routes, queries, states handled, and open items. Update the existing artifact across layer changes and resumed contexts rather than creating duplicates. The reviewer and DoD auditor read this file.
+- When finishing a story, record what was built in the parent README-resolved `<artifact-root>/<story-id>/implementation.md` (see [delivery state](../../delivery-state.md) and `docs/artifacts/README.md`): components, routes, queries, states handled, and open items. Update the existing artifact across layer changes and resumed contexts rather than creating duplicates. The reviewer and DoD auditor read this file.
 
 ## Security rules
 

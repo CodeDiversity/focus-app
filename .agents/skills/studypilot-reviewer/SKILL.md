@@ -5,6 +5,11 @@ description: Review StudyPilot plans before implementation or completed stories 
 
 # StudyPilot Review Agent
 
+Apply [delivery state](../../delivery-state.md) in both review modes. Read the
+parent execution queue and resolve its canonical evidence/report paths. Verify
+status claims independently; never edit the queue, move artifacts, or require a
+legacy `docs/artifacts/` location when the group records a colocated artifact root.
+
 Review only; never modify files, Git state, or Jira with any tool. Return the full report as Markdown in the response. The coordinating parent saves it to the mode-specific report path below. In a standalone session, return the Markdown for the user or next coordinating session to save; do not claim it was saved.
 
 ## Choose the review mode
@@ -32,14 +37,14 @@ The parent saves the returned Markdown verbatim, replacing only the latest `plan
 
 - Apply [review cadence](../../review-cadence.md). Default to one review of the complete parent after all substories and required integration work are implemented. Read the parent implementation index and every linked child implementation record, verify the complete inventory and combined Git scope, and report premature readiness or missing evidence without approving. Individual child review reports are not required. Only perform an early/individual review when explicitly requested; it does not replace the final parent review.
 - For a group review, apply the checks below to the parent and every child, attribute findings/AC results to child IDs, and return one combined report at the parent's artifact path. Do not limit inspection to the final child's diff or initiate separate reviews for each child. An unsplit story retains its existing standalone review flow.
-- Read the story's epic in `docs/epics/`, the shared Definition of Done in `docs/epics/README.md`, and the story's implementation summary at `docs/artifacts/<JIRA-KEY>/implementation.md` (e.g. `docs/artifacts/STUDY-20/implementation.md`) before reviewing. The implementation summary is the implementer's record of what was built; verify its claims against the actual code rather than trusting it. A missing summary is a review gap, and a FAIL for the documentation condition when the story changed the API or schema.
+- Read the story's epic in `docs/epics/`, the shared Definition of Done in `docs/epics/README.md`, and the story's implementation summary at the parent README-resolved `<artifact-root>/<story-id>/implementation.md` before reviewing. The implementation summary is the implementer's record of what was built; verify its claims against the actual code rather than trusting it. A missing summary is a review gap, and a FAIL for the documentation condition when the story changed the API or schema.
 - Check each acceptance criterion explicitly. Report each as satisfied, partially satisfied, or unverified, with file and line references.
 - Audit the ten DoD conditions from `docs/epics/README.md` as a PASS / FAIL / CANNOT VERIFY checklist with file and line evidence. A condition with no automated test backing it is FAIL, not PASS. Pay particular attention to: academic data scoped to the authenticated student, loading/empty/error states, keyboard accessibility, and documented API changes and migrations.
 - Run the automated tests that cover the changed business rules and report actual output, not assumptions. If you cannot run them, report CANNOT VERIFY rather than assuming they pass.
 - Verify data scoping: every query and endpoint touching academic data must be constrained to the authenticated student.
 - Flag AI features, syllabus parsing, LMS integrations, grade calculations, flashcards, or native mobile work as out of scope for the MVP.
 - Write findings as a prioritized list: blockers, should-fix, and optional polish. Suggest concrete fixes but do not apply them.
-- Return the full Markdown report for the parent to save to `docs/artifacts/<JIRA-KEY>/review.md` (conventions in `docs/artifacts/README.md`). Include the review date and state reviewed (commit hash, or `working tree`). The parent replaces the latest report on re-review.
+- Return the full Markdown report for the parent to save to the parent README-resolved `<artifact-root>/<parent-story-id>/review.md` (conventions in `docs/artifacts/README.md`). Include the review date and state reviewed (commit hash, or `working tree`). The parent replaces the latest report on re-review.
 - Finish with a one-line verdict: the story meets the DoD and acceptance criteria, or the list of conditions it fails.
 - Be direct about gaps. Do not approve work you have not verified.
 

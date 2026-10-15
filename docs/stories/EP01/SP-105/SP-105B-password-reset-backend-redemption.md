@@ -1,12 +1,14 @@
 # SP-105B: Password Reset — Redemption & Session Revocation
 
 **Story ID:** SP-105B
+**Execution state:** Implemented — awaiting parent review; E remains outstanding; see the [execution queue](./README.md#execution-queue) and [implementation record](./artifacts/SP-105B/implementation.md)
 **Epic:** [EP01](../../../epics/EP01-authentication-and-onboarding.md)
 **Parent:** [SP-105](./SP-105-password-reset.md)
 **Milestone:** M1
 **Layer:** Backend
 **Priority:** High / P0
-**Status:** Draft — corrected mechanism; awaiting independent re-review
+**Status:** Implemented — awaiting parent review (see execution state above)
+**Historical planning status:** Draft — corrected mechanism; awaiting independent re-review
 **Dependencies:** SP-105A (reset persistence), [SP-105E](./SP-105E-auth-session-coordination.md) (shared owner-first session locking)
 **Jira key:** Pending creation
 **Refined:** 2026-10-14

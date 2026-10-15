@@ -1,6 +1,6 @@
 # SP-105B: Password Reset — Redemption & Session Revocation
 
-**Story:** [SP-105B](../../stories/EP01/SP-105/SP-105B-password-reset-backend-redemption.md)
+**Story:** [SP-105B](../../SP-105B-password-reset-backend-redemption.md)
 **Epic:** EP01 — Authentication & Onboarding
 **Parent:** SP-105 (STUDY-7)
 **Layer:** Backend (NestJS + Prisma + PostgreSQL)

@@ -7,10 +7,11 @@ Smaller stories reduce scope, while checkpoints preserve progress within a story
 
 ## Durable record
 
-The implementer owns `docs/artifacts/<ticket-id>/checkpoint.md`, alongside the
-final `implementation.md`. Use the real Jira key when assigned, otherwise the
-stable story ID; reuse an existing artifact directory for that ticket. Do not
-rename artifacts or invent tracker keys during a resume.
+Apply [delivery state](delivery-state.md) first. The parent README execution
+queue is the canonical next-task record and resolves the artifact root. The
+implementer owns `<artifact-root>/<story-id>/checkpoint.md` alongside
+`implementation.md`; new/migrated groups keep this inside their story folder.
+Reuse explicitly recorded legacy paths until migration, never create duplicates.
 
 Create the checkpoint before substantive implementation. Update it after each
 logical code/test milestone, before a deliberate fresh context or compaction,
@@ -58,7 +59,8 @@ request dumps, or sensitive command output. Refer to environment variable names.
 
 ## Fresh-window resume
 
-1. Read repo instructions, the role's shared skill, the story, and its checkpoint.
+1. Read repo instructions, the role's shared skill, the parent execution queue,
+   the selected story and its resolved checkpoint.
    Follow links to relevant shared contracts/DoD and the next code/test paths.
    Do not replay the full epic, every sibling, or the entire previous conversation.
 2. Check workspace, branch, `git status`, HEAD, and the relevant diff/commits.
@@ -89,7 +91,7 @@ paths. Checkpointing does not require discarding work or forcing a commit.
 Give the user a short resume prompt with the exact checkpoint path:
 
 > Resume <ticket-id> as implementer. Read repo instructions and
-> docs/artifacts/<ticket-id>/checkpoint.md, reconcile Git state, and continue the
+> <exact checkpoint path from the parent README>, reconcile Git state, and continue the
 > first incomplete step. Preserve unrelated work.
 
 Start a fresh session in any compatible coding agent with access to the same
@@ -102,7 +104,8 @@ commits and saved uncommitted work; a checkpoint alone does not transfer code.
 Before another agent/session takes over, the current implementation writer must
 finish its safe handoff and relinquish ownership; never run both as simultaneous
 writers. Record the active child and next child in the parent checkpoint when
-working through a group. Legacy backend/frontend role labels resume as implementer
+working through a group; link to the README queue as the authoritative order.
+Legacy backend/frontend role labels resume as implementer
 while retaining the story's layer and original evidence.
 
 At task end, run required final verification and write `implementation.md`.

@@ -3,9 +3,51 @@
 **Epic:** [EP01](../../../epics/EP01-authentication-and-onboarding.md)
 **Parent:** [SP-105](./SP-105-password-reset.md), existing Jira STUDY-7
 **Milestone:** M1
-**Status:** Plan Ready — independently reviewed in pass 2 (2026-10-14); Implementation Blocked pending SP-103 integrated evidence. Application not built by this pass.
+**Status:** Planning baseline reviewed in pass 2 (2026-10-14); execution state below reconciled 2026-10-15. A/B implemented; full feature/release not approved.
 
-## Story inventory and sequencing
+## Execution queue
+
+**Delivery home:** `docs/stories/EP01/SP-105/`
+
+**Artifact root:** `./artifacts/` (stable story IDs)
+
+**Parent artifacts:** `./artifacts/SP-105/` (created when parent checkpoint/index is written)
+
+**Active substory:** None
+
+**Next substory:** [SP-105E](./SP-105E-auth-session-coordination.md) — refine/size the session-coordination work, then implement when Ready.
+
+**Implementation owner:** `implementer`, sequential across all layers.
+
+**Final review:** One combined SP-105 review after every child and integration obligation is implemented; no automatic child reviews.
+
+| Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
+|---|---|---|---|---|
+| [A](./SP-105A-password-reset-backend-issuance.md) | Implemented — awaiting parent review | SP-103 integrated sign-off still a feature/release gate | Retain issuance evidence; final DB proof in I/D | [Implementation](./artifacts/SP-105A/implementation.md), [historical review](./artifacts/SP-105A/review.md) |
+| [B](./SP-105B-password-reset-backend-redemption.md) | Implemented — awaiting parent review | Implemented before E; login/refresh race invariant remains incomplete until E | Preserve B; finish E, then prove cross-flow behavior in I/D | [Implementation](./artifacts/SP-105B/implementation.md), [historical review](./artifacts/SP-105B/review.md); PR-104 wording corrected in `6826ae0` |
+| [E](./SP-105E-auth-session-coordination.md) | Needs refinement | SP-102 implementation exists; current login/refresh still lack E coordination | **NEXT:** inspect current auth code, add sizing/checkpoint steps, reconcile readiness, implement | `auth.service.ts` login/refresh + existing `owner-lock.ts`; no E implementation artifact |
+| [F](./SP-105F-password-reset-ip-limits.md) | Needs refinement | A/B contracts exist; limiter implementation absent | Size/refine after E; implement shared admission | Artifact directory created on start |
+| [G](./SP-105G-recovery-session-client.md) | Needs refinement | A/B/F contracts; existing SP-102 client | Size/refine shared client boundary before C | Artifact directory created on start |
+| [C](./SP-105C-password-reset-frontend-ui.md) | Blocked | G; A/B/F endpoint integration before completion | Finish G and applicable backend work; then refine/implement forms | Artifact directory created on start |
+| [H](./SP-105H-postgres-test-harness.md) | Needs refinement | SP-102; A/F migrations for suite execution | Bound harness setup; no integrated pass claimed | Artifact directory created on start |
+| [I](./SP-105I-credential-race-tests.md) | Blocked | A/B implemented; E/H outstanding | Build/run credential race suite after prerequisites | Artifact directory created on start |
+| [J](./SP-105J-limiter-integration-tests.md) | Blocked | F/H; A/B HTTP behavior | Build/run limiter suite after prerequisites | Artifact directory created on start |
+| [D](./SP-105D-password-reset-integration.md) | Blocked | All implementation children and I/J; upstream evidence before release | Execute suites, collect browser/SMTP evidence, prepare parent index for final review | Parent final artifacts resolve to `./artifacts/SP-105/` |
+
+This queue is the current execution record; the older plan inventory/gates below
+are planning history, not proof that coding or final review is complete. `Needs
+refinement` is actionable next work, not permission to code an unsized story.
+The next-task choice prioritizes the known pre-E session race. A/B records and
+existing commits are evidence pointers, not freshly rerun tests or independent
+closure of old review findings. SP-103's missing integrated DoD 1/7/10 evidence
+does not block E's SP-102-based implementation; it still blocks feature sign-off.
+
+Records moved from `docs/artifacts/SP-105A/` and `SP-105B/` into this home's
+`artifacts/` on 2026-10-15. Old directories provide navigation. Reviewer reports
+are unchanged; paths quoted inside them refer to the historical reviewed state.
+No application code, tests, tracker state or prior review verdict was changed.
+
+## Planning inventory and sequencing (execution state is above)
 
 | ID | Layer / owner | Scope | Implementation dependency | Target size | Jira |
 |---|---|---|---|---|---|

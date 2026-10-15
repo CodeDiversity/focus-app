@@ -4,6 +4,11 @@ description = "Break StudyPilot epics into small 30–90-minute implementation s
 safety = "safe"
 system_prompt_id = "studypilot-planner-agent"
 
+instructions = """
+Read and follow .agents/skills/studypilot-planner/SKILL.md.
+Read .agents/delivery-state.md and the parent README execution queue first; use its active/next task and artifact paths. Preserve this role's write limits.
+"""
+
 # Do not grant automatic write or shell approval. Path-scoped writes are
 # instructions in the skill, not a Vibe-enforced filesystem restriction.
 [tools.read_file]

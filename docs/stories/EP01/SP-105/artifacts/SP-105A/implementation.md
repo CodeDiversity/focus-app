@@ -1,6 +1,6 @@
 # SP-105A: Password Reset — Data Model & Issuance
 
-**Story:** [SP-105A](../../stories/EP01/SP-105/SP-105A-password-reset-backend-issuance.md)
+**Story:** [SP-105A](../../SP-105A-password-reset-backend-issuance.md)
 **Epic:** EP01 — Authentication & Onboarding
 **Parent:** SP-105 (STUDY-7)
 **Layer:** Backend (NestJS + Prisma + PostgreSQL)

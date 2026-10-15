@@ -12,8 +12,9 @@ of the whole breakdown before implementation.
 
 The planner identifies the review unit in the parent/breakdown README: parent
 ID, all implementation descendants, integration/sign-off owner, source AC/test
-mapping, and final artifact directory. Use the parent's Jira key if assigned,
-otherwise its stable story ID; reuse its existing artifact directory. Do not
+mapping, and final artifact directory. Resolve paths using [delivery state](delivery-state.md): the parent README
+records the delivery home and artifact root. Use stable story-ID directories for
+new/migrated groups, keeping Jira keys in metadata. Do not
 give a coordination record a new implementation issue merely to hold a review.
 For nested splits, the enclosing feature parent owns the final review unless
 the user explicitly chooses a different scope; do not review every nested group.
@@ -35,7 +36,7 @@ reviewer dispatch as the default way to discover which substories are unfinished
 ## Final review gate
 
 After all children and required integration work are implemented, prepare a
-parent `docs/artifacts/<parent-ticket-id>/implementation.md` index containing:
+parent `<artifact-root>/<parent-story-id>/implementation.md` index containing:
 
 - Review scope: parent, complete child inventory and each implementation link.
 - Combined Git change scope: base commit and final commit, or explicit working
@@ -55,7 +56,7 @@ The reviewer independently checks the **combined implementation**, including
 every child AC, all original parent criteria, applicable DoD and cross-child
 behavior. Missing child implementation records are evidence gaps; missing child
 review reports are expected. Return one report for the coordinating parent to
-save at `docs/artifacts/<parent-ticket-id>/review.md`, with findings attributed
+save at the README-resolved `<artifact-root>/<parent-story-id>/review.md`, with findings attributed
 to affected child IDs and files. Retain existing historical child reports.
 
 Findings are fixed in the affected implementation scope and re-reviewed together

@@ -1,6 +1,7 @@
 # SP-105A: Password Reset — Data Model & Issuance
 
 **Story ID:** SP-105A
+**Execution state:** Implemented — awaiting parent review; see the [execution queue](./README.md#execution-queue) and [implementation record](./artifacts/SP-105A/implementation.md)
 **Epic:** [EP01: Authentication & Onboarding](../../../epics/EP01-authentication-and-onboarding.md)
 **Parent:** [SP-105](./SP-105-password-reset.md)
 **Milestone:** M1
@@ -9,7 +10,8 @@
 **Dependencies:** SP-102 (`User`, argon2, `RefreshToken`), SP-103 (`EmailProvider`/`EMAIL_PROVIDER`, Mailpit, cooldown pattern) — both implemented
 **Jira key:** Pending creation (child of STUDY-7)
 **Refined:** 2026-10-14
-**Status:** Draft — corrected; awaiting independent re-review
+**Status:** Implemented — awaiting parent review (see execution state above)
+**Historical planning status:** Draft — corrected; awaiting independent re-review
 
 ## Summary
 

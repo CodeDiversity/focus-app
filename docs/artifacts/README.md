@@ -1,41 +1,62 @@
-# Ticket Artifacts
+# Story records and legacy artifacts
 
-Per-ticket work records, one folder per Jira issue. Story and epic **planning** documents live in `docs/stories/` and `docs/epics/`; this directory holds the **outputs** of working a ticket.
+Keep each feature's plan, execution queue and artifacts in one delivery folder.
+Follow [delivery state](../../.agents/delivery-state.md); the parent README records
+the canonical paths. This directory remains the index for unmigrated historical
+records, not the default destination for new implementation artifacts.
 
-## Layout
+## Canonical layout
 
+```text
+docs/stories/<epic>/<parent>/
+├── README.md                         # active/next substory, execution queue
+├── <parent>.md                       # coordination summary
+├── <child>.md                        # one file per implementation slice
+├── plan-review.md                    # latest complete-plan review
+└── artifacts/
+    ├── <parent-story-id>/
+    │   ├── checkpoint.md
+    │   ├── implementation.md         # final child/evidence index
+    │   └── review.md                 # one combined formal implementation review
+    └── <child-story-id>/
+        ├── checkpoint.md
+        └── implementation.md
 ```
-docs/artifacts/<JIRA-KEY>/
-├── checkpoint.md       # implementer's current progress and fresh-context resume state
-├── implementation.md   # written by the single implementer across layers
-└── review.md           # reviewer report saved by parent; overwritten each pass
-```
 
-## Conventions
+Use stable story IDs for new artifact folders; Jira identity stays in metadata.
+Read the parent's recorded paths before creating anything. Unmigrated features
+can explicitly retain `docs/artifacts/<existing-id>/` until an authorized move.
+Do not duplicate records or rename directories just because a Jira key appears.
 
-- **checkpoint.md** — created before substantive implementation and refreshed after code/test milestones and before context handoffs. Follow [checkpoint-based execution](../../.agents/checkpoint-execution.md) for the template, Git reconciliation, verification, and resume prompt. One task can span fresh windows or different coding agents using the same saved repository state. Use the Jira key when assigned, otherwise the stable story ID, and reuse any existing artifact directory. Checkpoints are progress records, not final implementation or review evidence.
-- **implementation.md** — the single implementer's record of what was built: endpoints, schema changes, migrations, components, commands, verification evidence, and open items. Created or updated when a story finishes. The same implementer maintains it across layer changes and fresh-context handoffs; do not create separate backend/frontend copies.
-- **review.md** — the reviewer's report for the latest pass only: acceptance-criterion verdicts, DoD checklist, blockers / should-fix / polish, and a one-line verdict. Overwritten on re-review so it always holds the current pass; earlier passes live in git history. Include the review date and the state reviewed (commit hash, or "working tree" when none).
-- The reviewer is read-only and returns its report for the coordinating parent to save as `review.md`; implementers own `checkpoint.md` and `implementation.md` (plus their code). Neither role edits the other's artifacts or the planning docs.
-- Jira comments should reference these files by their path here.
+## Records and ownership
 
-## One final implementation review per parent
+- **checkpoint.md:** implementer-owned progress and resume state. Follow
+  [checkpoint execution](../../.agents/checkpoint-execution.md). Link back to the
+  parent queue for task ordering; verify Git state when resuming in any agent.
+- **implementation.md:** implementer-owned actual behavior, changes, commands,
+  results and remaining obligations. Reuse the same file across layer changes
+  and contexts. The parent record indexes every child and the combined Git scope.
+- **review.md:** the independent read-only reviewer's returned report, saved by
+  the coordinating parent. Implementers never edit it. One final review covers
+  the entire parent after all children and required integration work finish;
+  see [review cadence](../../.agents/review-cadence.md). Explicit interim reports
+  are preserved as historical records, not required for each child.
+- **plan-review.md:** reviewer-owned whole-plan report, saved beside the plan by
+  the parent. Planner corrections go in the README log, never in this report.
+  Later reviewer passes replace the latest report; committed history remains.
 
-Follow [review cadence](../../.agents/review-cadence.md). Each substory keeps its
-own implementation/checkpoint records and required tests, but no automatic formal
-review occurs per substory. Record `implementation complete — awaiting parent
-review` so verified implementation can unblock dependent work.
+Only the planner owns scope/dependency/decision changes. The implementer may
+update the README execution fields/table and active child status/artifact pointers
+as the narrow exception in delivery state. Refiners still write only their given
+story; reviewers/auditors remain read-only. The coordinating parent records final
+review outcome only from actual reviewer evidence.
 
-After every child and required integration task is implemented, the integration
-owner/coordinating implementer prepares a parent `implementation.md` index with
-all child artifacts, combined Git scope, original AC/DoD mapping and integration
-evidence. One reviewer checks the entirety and returns the parent `review.md`.
-Use the parent's assigned Jira key or stable story ID and existing directory;
-do not invent tracker issues. Keep prior child reports as historical records.
-Formal approval/release remains pending until the combined review passes.
+## Migrated delivery homes
 
-## Plan reviews before implementation
+- [SP-105 — Password Reset](../stories/EP01/SP-105/README.md): A/B records moved to
+  its `artifacts/` folder. Old A/B directories contain navigation only. Reviewer
+  report bodies and historical path references remain unchanged.
 
-Plan reviews live beside the planning documents as `<breakdown-directory>/plan-review.md`, not in the implementation artifact folder. For SP-105 this is `docs/stories/EP01/SP-105/plan-review.md`.
-
-The read-only reviewer returns a Markdown report containing the date/state reviewed, stable finding IDs, severity, evidence, consequences, closure conditions, and readiness verdict. The parent saves the report verbatim. The planner reads it, addresses each finding, and records original findings and dispositions in the breakdown README correction log without editing the reviewer report. Proposed fixes await independent re-review. The parent replaces the report on each reviewer pass; earlier committed reports remain in Git history. A plan-ready verdict does not certify implementation or passing application tests.
+Other existing directories here remain legacy records. A move preserves report
+contents and repairs live links; it does not imply fresh implementation, tests,
+review approval, or tracker synchronization.

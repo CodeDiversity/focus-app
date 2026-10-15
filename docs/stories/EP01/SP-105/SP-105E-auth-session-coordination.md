@@ -6,7 +6,7 @@
 **Milestone:** M1
 **Layer:** Backend
 **Priority:** High / P0
-**Status:** Draft — awaiting independent plan re-review
+**Status:** Needs refinement — next substory in the [execution queue](./README.md#execution-queue); size/checkpoint the current code before implementation
 **Dependencies:** SP-102 (session implementation)
 **Jira key:** Pending creation
 **Refined:** 2026-10-14

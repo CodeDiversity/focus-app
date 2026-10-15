@@ -7,6 +7,8 @@ Small slices do not create separate formal review gates: follow
 [review cadence](review-cadence.md) for one final review of the completed parent.
 All implementation slices share one sequential `implementer` owner; backend,
 frontend and integration remain scope labels rather than concurrent coding roles.
+Use [delivery state](delivery-state.md) for the next-task queue and canonical
+artifact paths. A sizing/refinement gap is `Needs refinement`, not `Ready` to code.
 
 ## Default implementation slice
 

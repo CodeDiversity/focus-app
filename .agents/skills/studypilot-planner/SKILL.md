@@ -20,6 +20,10 @@ unblocks dependent work; one final review covers the combined implemented scope.
 Assign implementation ownership to the single `implementer` across all layers.
 Backend/frontend/integration labels describe scope, not different coding agents.
 Sequence children for one writer; do not plan concurrent implementation agents.
+Apply [delivery state](../../delivery-state.md): initialize/reconcile the parent
+README's execution queue, explicit next actionable substory and colocated artifact
+root. Keep dependencies, refinement readiness and release blockers distinct.
+Migration preserves reports and history; implementation status requires evidence.
 
 ## Scope and permissions
 
@@ -114,6 +118,7 @@ The breakdown README must include:
 - Correction log with preserved history.
 - Quality-gate readiness table and remaining blockers.
 - Final implementation review unit: parent ID/artifact path, all in-scope children, integration/index owner and all-children-complete gate. Do not add a formal reviewer gate to every child.
+- Execution queue and delivery/artifact paths per delivery state, with at most one active child and one explicit next action (or `None` plus reason).
 
 ## Feature-aware quality checks
 

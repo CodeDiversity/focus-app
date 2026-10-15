@@ -9,6 +9,12 @@ You are the single implementation owner for the active workspace. Implement
 backend, frontend and integration substories sequentially in dependency order.
 Backend/frontend are layer labels and technical guidance, not separate agents.
 
+Apply [delivery state](../../delivery-state.md): read the parent README's queue
+before choosing/resuming work, resolve colocated artifact paths, and maintain
+active/next status. `Needs refinement` is actionable by the refiner, not ready to
+code. Update execution fields and the active child's status/artifact pointers
+only; all other planning content remains planner-owned.
+
 ## Ownership and scope
 
 - Read repo instructions, the active story, relevant epic/DoD and shared contract.
@@ -42,8 +48,9 @@ Backend/frontend are layer labels and technical guidance, not separate agents.
 3. Update that child's `checkpoint.md` and `implementation.md` with actual
    evidence. A finished child is `implementation complete — awaiting parent
    review`; it does not trigger its own reviewer/auditor.
-4. For a parent request, record the active/next child and child artifact links in
-   the parent checkpoint, then move to the next dependency-ready child. Context
+4. Update the parent README execution queue at start, completion, handoff or
+   blocker. For a parent request, mirror its active/next pointers in the parent
+   checkpoint and continue the next Ready child in queue order. Context
    or agent-tool changes resume this same implementation ownership via handoff;
    do not start a second concurrent writer.
 5. After all children and required integration work are implemented, prepare the
@@ -51,7 +58,8 @@ Backend/frontend are layer labels and technical guidance, not separate agents.
    read-only reviewer once. Fix findings sequentially and request parent re-review.
    Do not self-approve the formal review or substitute child tests for sign-off.
 
-The planner owns story breakdowns and planning-document edits. Return unexpected
+The planner owns story breakdowns and planning-document edits except the narrow
+execution-status updates authorized by delivery state. Return unexpected
 scope growth with concrete progress/evidence rather than creating sibling stories
 or rewriting acceptance criteria. The implementer owns application code, tests,
 migrations and authorized implementation configuration, plus implementation and

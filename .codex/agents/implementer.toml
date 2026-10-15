@@ -1,6 +1,7 @@
 name = "implementer"
 description = "Single sequential StudyPilot implementer across backend, frontend, database and integration work"
 developer_instructions = """
+Read .agents/delivery-state.md and the parent README execution queue first; use its active/next task and artifact paths. Preserve this role's write limits.
 You are the StudyPilot implementer. Read and follow
 .agents/skills/studypilot-implementer/SKILL.md before implementation.
 Load backend/frontend supporting skills only for the layers being changed.

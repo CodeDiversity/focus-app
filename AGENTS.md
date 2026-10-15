@@ -21,6 +21,13 @@ review/exploration remains separate; role availability is not a locking mechanis
 
 For story work, read the relevant files in `docs/epics/` and `docs/stories/`, plus the shared Definition of Done in `docs/epics/README.md`. Follow `docs/artifacts/README.md` for implementation and review reports.
 
+Every role must apply [delivery state](.agents/delivery-state.md). Read the parent
+README's execution queue first: it records the active/next substory, blockers,
+and canonical artifact paths. Keep plans and artifacts in the same delivery home.
+The implementer may update only execution fields/table and the active child's
+status/artifact pointers as a narrow exception to planner-owned planning docs;
+refiner write limits and reviewer/auditor read-only limits remain unchanged.
+
 All story roles must apply [story sizing](.agents/story-sizing.md): default to one
 30–90-minute implementation outcome with explicit file, context and verification
 boundaries. The planner splits oversized unimplemented stories; refiners and
@@ -29,7 +36,7 @@ limits. Reviewers verify sizing from evidence. Preserve atomic security invarian
 and all original AC/test/DoD coverage when splitting.
 
 Implementation tasks use [checkpoint-based execution](.agents/checkpoint-execution.md).
-Implementers maintain `docs/artifacts/<ticket-id>/checkpoint.md` after logical
+Implementers maintain the queue-resolved `artifacts/<story-id>/checkpoint.md` after logical
 milestones and before fresh-context handoffs. A task may span multiple context
 windows or different agent tools; resume from the checkpoint after reconciling
 Git state. Checkpoints do not establish completion or replace the final
@@ -41,7 +48,7 @@ work are implemented. Do not automatically review/audit individual substories.
 Implementation-complete children may unblock dependencies while awaiting the
 parent's formal sign-off. Preserve historical reports.
 
-The review agents run in a read-only sandbox and return Markdown reports. The parent saves implementation reviews to `docs/artifacts/<JIRA-KEY>/review.md` and plan reviews to `<breakdown-directory>/plan-review.md` (for SP-105: `docs/stories/EP01/SP-105/plan-review.md`). During a planner/reviewer cycle, the planner reads that report, records each original finding and correction by stable ID in the breakdown README, and leaves the report unchanged. The reviewer independently verifies closure on the next pass; the parent replaces the report with the latest returned Markdown. Earlier committed reports remain in Git history. The planner and refiner's narrower write limits are instructions applying to every tool, rather than filesystem sandbox guarantees. Do not broaden their write scope.
+The review agents run in a read-only sandbox and return Markdown reports. The parent saves implementation reviews at the parent README's resolved artifact path (`<delivery-home>/artifacts/<parent-story-id>/review.md` for migrated/new groups) and plan reviews to `<delivery-home>/plan-review.md` (for SP-105: `docs/stories/EP01/SP-105/plan-review.md`). During a planner/reviewer cycle, the planner reads that report, records each original finding and correction by stable ID in the breakdown README, and leaves the report unchanged. The reviewer independently verifies closure on the next pass; the parent replaces the report with the latest returned Markdown. Earlier committed reports remain in Git history. The planner and refiner's narrower write limits are instructions applying to every tool, rather than filesystem sandbox guarantees. Do not broaden their write scope.
 
 All roles must follow their skill's security rules. Never read, display, or write credential or secret files, including `.env` and `.env.*`; flag exposed secrets by location without reproducing values.
 

@@ -21,6 +21,9 @@ DoD obligations but defers formal review to the completed parent scope. Referenc
 the established parent review unit; do not invent per-child review dependencies.
 Implementation owner is `implementer` regardless of layer. Preserve layer/scope
 metadata without assigning backend/frontend work to separate coding agents.
+Apply [delivery state](../../delivery-state.md): read the parent execution queue
+and artifact pointers before refinement. Return the story's readiness result for
+queue reconciliation; still write only the given story, never README or artifacts.
 
 - Refine only tickets that have not been implemented yet. If the ticket's work is already merged or in progress, report that and stop.
 - Read before refining: the story file, its epic in `docs/epics/`, the shared Definition of Done in `docs/epics/README.md`, and the actual codebase. Grep and read the modules, Prisma schema, and existing tests the story will touch. Every file path, endpoint, and test name in the refined ticket must come from this reading, never from guessing.
@@ -35,7 +38,7 @@ metadata without assigning backend/frontend work to separate coding agents.
   - Test cases to add: specific test files and case names per acceptance criterion, matching the repo's test framework and naming style. Include edge cases as named cases: expiry, single-use, rate limits, empty/loading/error states, authorization and scoping.
   - An explicit out-of-scope list so implementers do not drift.
 - Record each settled decision under a "Decisions" subsection of Technical Notes, one line per question and answer, so later agents can rely on it.
-- If the story has a Jira key and a Jira integration is authenticated, update the tracker issue's description to match the refined ticket. The story file stays the source of truth.
+- If the story has a Jira key, return any needed tracker-description reconciliation to the planner/coordinator. The refiner does not mutate Jira; planner sync requires authorization. The story file stays the source of truth.
 - AI features, syllabus parsing, LMS integrations, grade calculations, flashcards, and native mobile apps are out of scope. Flag a ticket whose refinement reveals them.
 - You write documentation only. Do not write application code or modify files other than the story file.
 
