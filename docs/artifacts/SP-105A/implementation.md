@@ -42,7 +42,7 @@ Implemented the **issuance** half of password reset: `PasswordResetToken` model,
   5. Returns generic `"If an account exists…"` on all valid-email outcomes
   - Cooldown blocks (zero rows → no email, no token)
   - Unregistered email → generic success (no DB write beyond cooldown check)
-  - SMTP failure silently absorbed (logged internally, generic response)
+  - Transaction or SMTP failure → structured warn log (see Failure observability), generic response
 - `sendReset(to, rawToken)`: private, `setImmediate` → `deliverReset()`
   - Composes `${FRONTEND_URL}/reset-password#token=${rawToken}`
   - Reuses SP-103's `EmailProvider` (`EMAIL_PROVIDER`)
@@ -54,15 +54,27 @@ Implemented the **issuance** half of password reset: `PasswordResetToken` model,
 | `auth.module.ts` | Imported `PasswordResetService`, registered in `providers: [...]` |
 | `public-routes.ts` | `POST /auth/forgot-password` already present (inert until SP-105A) |
 
-### Test coverage (18 unit + 10 DTO + 2 controller HTTP)
+### Test coverage (20 unit + 10 DTO + 17 controller)
 
 | Test file | Coverage |
 |---|---|
-| `password-reset.service.spec.ts` (18 tests) | Token issuance (SHA-256, 1h expiry, no raw token exposed), issuance retirement (old tokens retired, 1 outstanding remains), cooldown (60s claim, blocks within 60s, allows after 60s, concurrent serialization, cross-instance persistence), email (fire-and-forget, SMTP failure handling, generic response on failure, sanitized logging, link composition) |
+| `password-reset.service.spec.ts` (20 tests) | Token issuance (SHA-256, 1h expiry, no raw token exposed), issuance retirement (old tokens retired, 1 outstanding remains), cooldown (60s claim, blocks within 60s, allows after 60s, concurrent serialization, cross-instance persistence), email (fire-and-forget, SMTP failure handling, generic response on failure, sanitized logging, link composition), failure observability (PR-101: structured `event=reset_issuance_failed` / `event=reset_email_delivery_failed` warn lines, response unchanged, no email or token in logs) |
 | `forgot-password.dto.spec.ts` (10 tests) | Accepts trimmed mixed-case, rejects empty/malformed/null/overlong, rejects non-whitelisted fields (userId, emailVerifiedAt) |
-| `auth.controller.spec.ts` (2 unit + 2 HTTP) | `forgot-password` returns 200 generic message, no JWT guard, rejects invalid DTO via HTTP |
+| `auth.controller.spec.ts` (17 tests: 4 new + 13 pre-existing) | `forgot-password` returns 200 generic message, no JWT guard, rejects invalid DTO via HTTP |
 
-**Total: 18 + 10 + 17 existing = 45 tests (28 new + 17 existing).**
+**Total: 20 + 10 + 17 = 47 tests (34 new + 13 pre-existing controller tests).**
+
+## Failure observability (PR-101)
+
+The implementation review (pass 1, 2026-10-15) found that the issuance `catch` silently absorbed all transaction-level errors with no operational visibility (PR-101, should-fix). Correction:
+
+- **Deliberate trade-off (behavior unchanged):** every issuance-transaction failure is still absorbed, and `POST /auth/forgot-password` returns the identical generic `200` for eligible, cooling-down, unregistered, and broken outcomes. This prevents account enumeration and any existence oracle, so the *response* is deliberately not a failure signal.
+- **Operator visibility (new):** failures emit structured warn lines that can be monitored or alerted on:
+  - `event=reset_issuance_failed correlation=<uuid> error=<Error.name>` — the issuance transaction (cooldown claim, user lookup, retirement, insert) failed and was rolled back.
+  - `event=reset_email_delivery_failed correlation=<uuid> error=<Error.name>` — the detached SMTP attempt failed after commit.
+  - Only the error *name* is logged (e.g. `Error`, `PrismaClientInitializationException` = database down) — never the message, which may contain the requester's email or connection details.
+- **Monitoring guidance:** the absence of these events is the normal case (cooling-down and unregistered requests are intentionally silent). Alert on any `event=reset_issuance_failed`, and on sustained `event=reset_email_delivery_failed`; a user reporting “no email” with delivery events points at SMTP, while `error=PrismaClient…` events point at the database.
+- Covered by 2 new tests in `password-reset.service.spec.ts` (`failure observability (PR-101)`).
 
 ## Acceptance criteria status
 
@@ -88,12 +100,20 @@ Implemented the **issuance** half of password reset: `PasswordResetToken` model,
 | 9 | ✅ Migration created and documented |
 | 10 | N/A — satisfied by SP-105D |
 
+## Review corrections (implementation review pass 1, 2026-10-15)
+
+| Finding | Severity | Disposition |
+|---|---|---|
+| PR-101 — catch silently absorbs all transaction errors | Should-fix | ✅ Structured `event=reset_issuance_failed` / `event=reset_email_delivery_failed` warn lines with correlation UUID + error name; response unchanged. See [Failure observability](#failure-observability-pr-101). |
+| PR-102 — test-count math inconsistent in this summary | Polish | ✅ Corrected: 34 new + 13 pre-existing = 47 total (service spec now 20 tests after PR-101). |
+| PR-103 — no real-Postgres race test | Polish | Deferred to SP-105D/SP-105I as planned (real-DB isolation is integration scope). |
+
 ## Open items
 
 - **SP-105F (per-IP rate limiting):** Required before feature release; separate story. Not deferred — planned independently.
 - **SP-105B (redemption):** Standalone story for `POST /auth/reset-password`.
 - **SP-105C (frontend):** Recovery UI screens.
-- **SP-105D (integration):** Real-Postgres + real-SMTP verification.
+- **SP-105D (integration):** Real-Postgres + real-SMTP verification, including the real-Postgres transaction race (PR-103).
 
 ## Files modified/created
 
