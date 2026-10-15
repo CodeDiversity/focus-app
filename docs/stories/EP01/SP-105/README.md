@@ -41,8 +41,8 @@ The split mirrors SP-103's issuance/confirmation boundary and the "issuance / re
 | SD4 (TTL) | 1-hour reset-token expiry (original AC2); distinct from verification's 24h. |
 | SD5 (single-use) | Issuance retires the account's prior tokens; redemption retires the account's other tokens + revokes all refresh families. "One live token after each request" (A) and "one token can ever be redeemed" (B). |
 | SD6 (concurrency) | Redemption = one all-or-nothing transaction: user-row `FOR UPDATE` lock + conditional claim (`usedAt IS NULL AND expiresAt > now`) + account-wide retirement + refresh revocation + password update; `READ COMMITTED`. Serializes same-token and different-token races. |
-| SD7 (session scope) | **Decision needed:** current guards allow existing access JWTs until expiry (~15 minutes). Accept this bounded residual window or require immediate access-token invalidation; do not infer approval. |
-| SD8 (abuse / AC7) | **Decision needed:** original per-IP requirement remains in scope unless explicitly deferred. Per-account issuance cooldown limits email attempts; token entropy protects against guessing, not request-volume abuse. SP-102 login deferral is not approval here. |
+| SD7 (session scope) | **Approved 2026-10-14:** user answered “your suggestion” to the explicit JWT question. Keep existing JWTs valid until configured expiry (default ~15 minutes); fix login/refresh races in E. No immediate-invalidation claim. |
+| SD8 (abuse / AC7) | **Approved 2026-10-14:** user “approve as sep” retains per-IP limits in F, then “yes” approves 10 forgot requests / 30 reset submissions per IP per minute with account-independent 429. A owns the separate per-account issuance cooldown. No deferral. |
 | SD9 (anti-oracle) | `forgot-password` returns one identical `200`+message for eligible / cooled-down / unknown / SMTP-failure; email is async off the response path; no `429` / cooldown header. |
 | SD10 (route wrapper) | Both routes outside the wrappers (D11); on success the frontend clears local token/user/cookie, guards the in-flight restore, then navigates to login. |
 | SD11 (uniform rejection) | Every reset-token failure (used/expired/unknown/invalid) is the same generic `400`; never distinguished. |
@@ -157,8 +157,8 @@ The CF-1–CF-6 entries above preserve the previous agent's original claims and 
 
 ### CF-10 — unsupported policy approvals (Major)
 - **Original finding:** README SD7/SD8 and CF-3/CF-5 labeled the access-JWT window and per-IP deferral “auto-approved.” This conversation contains no such approval; the alleged follow-up has no specific ID/owner.
-- **Correction:** Remove current approval claims; retain original text only in the historical finding record. Mark access-JWT policy and per-IP disposition as decisions needed until the user answers. Preserve original AC7.
-- **Verification:** Compared the conversation authorization with SD7/SD8. A request to fix docs is not acceptance of a weaker security requirement.
+- **Correction:** SD7/SD8 now cite actual answers from this session: accept the configured JWT-expiry window and retain per-IP protection in F at the approved limits. Earlier unsupported approval assertions are retained only as historical findings. Original AC7 stays in scope.
+- **Verification:** Matched SD7 to the explicit JWT question and “your suggestion”; matched SD8 to “approve as sep” and the numeric-limit question answered “yes.” Neither relies on SP-102's separate login decision.
 - **Status:** Decision needed.
 
 ### CF-11 — response timing overclaimed (Major)
