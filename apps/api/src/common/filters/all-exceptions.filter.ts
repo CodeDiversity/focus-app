@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client';
 import { Request, Response } from 'express';
+import { RESOURCE_NOT_FOUND } from '../ownership/ownership';
 
 interface NormalizedError {
   statusCode: number;
@@ -86,7 +87,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         case 'P2025':
           return {
             statusCode: HttpStatus.NOT_FOUND,
-            message: 'The requested record was not found.',
+            message: RESOURCE_NOT_FOUND,
             error: 'Not Found',
           };
         default:

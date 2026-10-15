@@ -69,6 +69,8 @@ describe('AllExceptionsFilter', () => {
 
     expect(status).toHaveBeenCalledWith(HttpStatus.NOT_FOUND);
     expect(body.statusCode).toBe(404);
+    expect(body.message).toBe('Resource not found');
+    expect(body.error).toBe('Not Found');
   });
 
   it('hides internal details for unknown errors', () => {

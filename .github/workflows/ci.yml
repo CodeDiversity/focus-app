@@ -66,14 +66,14 @@ jobs:
       - name: Build frontend
         run: pnpm --filter @studypilot/web build
 
+      - name: Apply database migrations
+        run: pnpm --filter @studypilot/api exec prisma migrate deploy
+
       - name: Run backend tests
         run: pnpm --filter @studypilot/api test
 
       - name: Run frontend tests
         run: pnpm --filter @studypilot/web test
-
-      - name: Apply database migrations
-        run: pnpm --filter @studypilot/api exec prisma migrate deploy
 
       - name: Secret scan
         run: |
