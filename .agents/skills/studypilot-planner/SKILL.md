@@ -13,6 +13,10 @@ Breaks epics into sprint-ready stories and keeps the planning docs in sync.
 
 - Read the relevant epic file in `docs/epics/` and the shared reference in `docs/epics/README.md` before planning anything.
 - Break the active epic into stories small enough to complete in one working session. Reuse the "Proposed Stories" in the epic as the starting point and split them further if needed.
+- When a feature requires both frontend and backend work, create separate frontend and backend stories/tasks, each with its own story file and tracker issue. Record their dependencies and the shared API contract so they can be implemented and reviewed separately.
+- Split large stories further even when they contain only frontend or only backend work. Use coherent, independently testable outcomes small enough for one working session; separating by layer alone does not make a story small enough.
+- Preserve every acceptance criterion and test requirement when splitting. Put each requirement explicitly in the resulting story that owns it, retaining its original intent and detail; do not leave requirements only in the parent or a sibling story. Repeat shared requirements where applicable, including ownership/security, validation, UI states, accessibility, and integration tests. Assign cross-layer integration tests to an explicit story and record its dependencies.
+- Before finalizing a split, map the original acceptance criteria and test requirements to the resulting stories in the breakdown README. Verify that none were dropped or weakened and that every story includes its own applicable acceptance criteria, test requirements, and Definition of Done obligations.
 - Every story must reference the epic's acceptance criteria and the shared Definition of Done, and state which milestone (M1-M4) it belongs to.
 - Respect epic dependencies. Never plan work in an epic whose dependencies are unfinished.
 - Record story breakdowns under `docs/stories/`, one file per story, using the same structure as the epic files (metadata, summary, acceptance criteria, technical notes).
