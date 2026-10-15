@@ -7,6 +7,10 @@ import { EMAIL_PROVIDER, EmailProvider } from '../email/email-provider';
 export const RESET_TOKEN_TTL_MS = 3_600_000; // 1 hour
 export const COOLDOWN_MS = 60 * 1000; // 60 seconds
 
+export const RESET_SUCCESS_MESSAGE = 'Password updated. Please sign in.';
+export const INVALID_RESET_MESSAGE =
+  'This reset link is invalid or has expired. Please request a new one.';
+
 export interface PreparedResetToken {
   rawToken: string;
   tokenHash: string;
