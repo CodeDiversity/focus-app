@@ -1,6 +1,6 @@
 # SP-105E: Coordinate Login and Refresh with Password Reset
 
-**Story:** [SP-105E](../../stories/EP01/SP-105/SP-105E-auth-session-coordination.md)
+**Story:** [SP-105E](../../SP-105E-auth-session-coordination.md)
 **Epic:** EP01 — Authentication & Onboarding
 **Parent:** SP-105 (STUDY-7)
 **Layer:** Backend (NestJS + Prisma + PostgreSQL)

@@ -1,15 +1,15 @@
 # SP-105E checkpoint
-Updated: 2026-10-15 12:10 EDT
+Updated: 2026-10-15 12:20 EDT
 Status: implementation complete — awaiting parent review
 Story: docs/stories/EP01/SP-105/SP-105E-auth-session-coordination.md
-Review unit: SP-105 parent (docs/artifacts/SP-105/ implementation index) — child E
+Review unit: SP-105 parent (docs/stories/EP01/SP-105/artifacts/SP-105/ implementation index) — child E
 Role / scope: implementer; backend only. Apply the SP-105 owner-first locking protocol to `AuthService.login` / `refresh` / `logout` (close the login/refresh-vs-reset races). Exclude: new endpoints, cookie/header changes (already in B), per-IP limits (F), frontend (C/G), real-Postgres race suites (H/I).
 
 ## Repository state
 - Workspace / branch: focus-app / `main`
-- HEAD at last update: `9461261` (clean tree)
-- Saved work: none yet this session
-- Other work to preserve: none
+- HEAD at last update: post-move commit (E impl `74fa577`, B lint fix `f0391fa`, docs `72e3da1`, then this relocation)
+- Saved work: `apps/api/src/modules/auth/auth.service.{ts,spec.ts}` (E) + `password-reset.service.spec.ts` (drive-by lint); artifacts relocated to `docs/stories/EP01/SP-105/artifacts/SP-105E/`
+- Other work to preserve: concurrent planner commit `1461e65` (delivery-state + colocated-artifacts convention; moved A/B into `artifacts/`) — untouched, E commits sit on top
 
 ## Progress
 - [x] Resumed state: A + B implemented and committed; B artifact confirms E is the outstanding prerequisite and `owner-lock.ts` (`lockOwner`, `databaseNow`) is ready to reuse.
