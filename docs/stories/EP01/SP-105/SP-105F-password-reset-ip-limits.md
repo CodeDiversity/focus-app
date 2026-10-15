@@ -6,7 +6,7 @@
 **Milestone:** M1
 **Layer:** Backend
 **Priority:** High / P0
-**Status:** Ready for implementation — scope/limits approved 2026-10-14 (SD8); plan re-review closed (parent [pass 2](./plan-review.md)); sized 2026-10-15 after A/B/E implementation
+**Status:** Implemented 2026-10-15 — awaiting parent review (see [execution queue](./README.md#execution-queue)); scope/limits approved 2026-10-14 (SD8); sized 2026-10-15 after A/B/E implementation
 **Dependencies:** SP-105A/B contracts (implemented); SP-102 public-route wiring
 **Jira key:** Pending creation
 **Refined:** 2026-10-14 (plan); 2026-10-15 (sized, grounded in code)
