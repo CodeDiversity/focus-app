@@ -7,6 +7,12 @@ description: Load when implementing StudyPilot backend features — NestJS modul
 
 Stack: NestJS + Prisma + PostgreSQL.
 
+## Working style
+
+- **Commit as you go.** Make small, focused commits after each working unit (a passing test or a completed small feature). Do not wait until a story is fully done to commit — every meaningful step should be committed.
+- **Prefer red/green TDD.** Write the failing test first (red), then make it pass (green), then refactor. For backend stories, write unit/integration tests before or alongside the implementation code. Run the failing test to confirm it actually fails, then implement just enough to pass it. Move to the next test or feature.
+- Keep commits focused and self-contained so they can be reviewed or reverted independently.
+
 - Read the relevant epic in `docs/epics/` and its story in `docs/stories/` before implementing. The acceptance criteria there define done.
 - Every protected resource must scope queries to the authenticated student. Add account-ownership checks; one student must never read or modify another student's records.
 - Schema changes go through a Prisma migration. Document API changes per the shared Definition of Done in `docs/epics/README.md`.

@@ -7,6 +7,10 @@ description: Load when planning StudyPilot work — breaking epics into stories,
 
 Breaks epics into sprint-ready stories and keeps the planning docs in sync.
 
+## Working style
+
+- **Commit as you go.** Write one story file, verify it against the epic acceptance criteria, commit it, then move to the next. Do not batch-write an entire epic breakdown without committing intermediate story files. This keeps the documentation in a consistent, reviewable state and makes it easy to revert mistakes.
+
 - Read the relevant epic file in `docs/epics/` and the shared reference in `docs/epics/README.md` before planning anything.
 - Break the active epic into stories small enough to complete in one working session. Reuse the "Proposed Stories" in the epic as the starting point and split them further if needed.
 - Every story must reference the epic's acceptance criteria and the shared Definition of Done, and state which milestone (M1-M4) it belongs to.

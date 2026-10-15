@@ -7,6 +7,12 @@ description: Load when implementing StudyPilot frontend features — React compo
 
 Stack: React + TypeScript + Vite, TanStack Query for data fetching.
 
+## Working style
+
+- **Commit as you go.** Make small, focused commits after each working unit (a passing test or a completed small feature). Do not wait until a story is fully done to commit — every meaningful step should be committed.
+- **Prefer red/green TDD.** Write the failing test first (red), then make it pass (green), then refactor. For frontend stories, write component tests, render checks, or interaction assertions before or alongside the UI code. Run the failing test to confirm it actually fails, then implement just enough to pass it. Move to the next test or feature.
+- Keep commits focused and self-contained so they can be reviewed or reverted independently.
+
 - Read the relevant epic in `docs/epics/` and its story in `docs/stories/` before implementing. The acceptance criteria there define done.
 - Target WCAG 2.2 AA. Event types on the calendar must be distinguishable without color alone; core interactions must be keyboard accessible with visible focus states.
 - Handle loading, empty, and error states in every view. Empty states should tell the student what to do next.
