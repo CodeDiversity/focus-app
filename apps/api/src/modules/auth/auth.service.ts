@@ -57,7 +57,9 @@ function getDummyHash(): Promise<string> {
 
 // OWASP-recommended argon2id parameters
 // (https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
-const ARGON2_OPTIONS = {
+// Exported (SP-105B) so password reset reuses the exact same policy as
+// registration — one source of truth for argon2id tuning in this module.
+export const ARGON2_OPTIONS = {
   type: argon2.argon2id,
   memoryCost: 19456,
   timeCost: 2,

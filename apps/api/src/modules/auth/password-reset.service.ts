@@ -1,8 +1,14 @@
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes, randomUUID } from 'crypto';
+import * as argon2 from 'argon2';
 import { PrismaService } from '../prisma/prisma.service';
 import { EMAIL_PROVIDER, EmailProvider } from '../email/email-provider';
+import { ARGON2_OPTIONS } from './auth.service';
+import { databaseNow, lockOwner } from './owner-lock';
+// Type-only on purpose: the DTO imports the message constants from this
+// module at runtime, so a runtime import here would form a cycle.
+import type { ResetPasswordDto } from './dto/reset-password.dto';
 
 export const RESET_TOKEN_TTL_MS = 3_600_000; // 1 hour
 export const COOLDOWN_MS = 60 * 1000; // 60 seconds
@@ -163,5 +169,93 @@ export class PasswordResetService {
     }
 
     return { message: GENERIC_SUCCESS_MESSAGE };
+  }
+
+  /**
+   * Redeem a reset token (SP-105B): update the owner's password, retire
+   * every other outstanding reset token, and revoke every refresh family
+   * in one transaction, so the account must sign in again.
+   *
+   * Token/password/confirmation are validated by the global pipe
+   * (`ResetPasswordDto`) before this runs: a short or mismatched
+   * password is a *field* error that never reaches here, and a token that
+   * is not a 43-character base64url value is treated as a *token* failure
+   * — the uniform 400 below, never a field error.
+   *
+   * Concurrency — the owner-first protocol shared with SP-105A issuance
+   * (SP-105E applies the same order to login/refresh/logout):
+   *   1. discover the token's owner without locking or writing the token;
+   *   2. lock the owner's `users` row before any token write;
+   *   3. take a fresh database wall-clock after the lock wait;
+   *   4. conditionally claim the presented token; zero rows rolls back;
+   *   5. retire the remaining unused tokens, revoke all unrevoked refresh
+   *      rows for the owner;
+   *   6. update the locked owner's password hash.
+   *
+   * Two concurrent redemptions for one owner — same or distinct tokens —
+   * serialize on the owner lock: the loser's conditional claim fails and
+   * every dependent write rolls back, so exactly one succeeds. The
+   * issuance cooldown marker is preserved — a reset never grants an extra
+   * email attempt. The raw token and the proposed password are never
+   * persisted, returned, or logged: on failure the error is thrown for
+   * the global filter, and the only values stored are digests.
+   */
+  async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    if (!/^[A-Za-z0-9_-]{43}$/.test(dto.token)) {
+      throw new BadRequestException(INVALID_RESET_MESSAGE);
+    }
+    const tokenHash = createHash('sha256').update(dto.token).digest('hex');
+
+    // Hash before opening the transaction so the expensive argon2 work
+    // never runs while holding the owner lock.
+    const passwordHash = await argon2.hash(dto.password, ARGON2_OPTIONS);
+
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Advisory discovery — no lock, no write.
+      const token = await tx.passwordResetToken.findUnique({
+        where: { tokenHash },
+        select: { id: true, userId: true },
+      });
+      if (!token) throw new BadRequestException(INVALID_RESET_MESSAGE);
+
+      // 2. Owner-first lock. A missing owner row is the same uniform 400
+      //    as an unknown token — never a distinct message.
+      if (!(await lockOwner(tx, token.userId))) {
+        throw new BadRequestException(INVALID_RESET_MESSAGE);
+      }
+
+      // 3. Fresh post-lock wall clock, so a token that expires while this
+      //    transaction waited for the lock cannot be claimed.
+      const checkedAt = await databaseNow(tx);
+
+      // 4. Conditional claim: only one redemption can flip this row.
+      const claim = await tx.passwordResetToken.updateMany({
+        where: {
+          id: token.id,
+          userId: token.userId,
+          usedAt: null,
+          expiresAt: { gt: checkedAt },
+        },
+        data: { usedAt: checkedAt },
+      });
+      if (claim.count !== 1) throw new BadRequestException(INVALID_RESET_MESSAGE);
+
+      // 5. Retire the remaining unused tokens for the owner, then revoke
+      //    every unrevoked refresh row across all families.
+      await tx.passwordResetToken.updateMany({
+        where: { userId: token.userId, usedAt: null },
+        data: { usedAt: checkedAt },
+      });
+      await tx.refreshToken.updateMany({
+        where: { userId: token.userId, revokedAt: null },
+        data: { revokedAt: checkedAt },
+      });
+
+      // 6. Update only the locked owner's password hash (the same argon2id
+      //    options as registration). The cooldown marker is untouched.
+      await tx.user.update({ where: { id: token.userId }, data: { passwordHash } });
+    });
+
+    return { message: RESET_SUCCESS_MESSAGE };
   }
 }

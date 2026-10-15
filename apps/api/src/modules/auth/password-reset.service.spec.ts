@@ -1,11 +1,29 @@
-import { Logger } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
+import * as argon2 from 'argon2';
 import { PrismaService } from '../prisma/prisma.service';
-import { PasswordResetService, RESET_TOKEN_TTL_MS, COOLDOWN_MS } from './password-reset.service';
+import { ARGON2_OPTIONS } from './auth.service';
+import {
+  PasswordResetService,
+  RESET_TOKEN_TTL_MS,
+  COOLDOWN_MS,
+  RESET_SUCCESS_MESSAGE,
+  INVALID_RESET_MESSAGE,
+} from './password-reset.service';
+
+jest.mock('argon2', () => ({
+  hash: jest.fn(),
+  verify: jest.fn(),
+  argon2id: 2,
+}));
 
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
 const tokenA = 'a'.repeat(43);
+const tokenB = 'b'.repeat(43);
+const tokenC = 'c'.repeat(43);
+const tokenOther = 'e'.repeat(43);
+const tokenGhost = 'g'.repeat(43);
 const now = new Date('2026-10-15T12:00:00Z');
 
 // Serialized, rollback-capable transaction double exercising conditional
@@ -74,6 +92,152 @@ function database() {
     $transaction: jest.fn((callback) => {
       const result = tail.then(async () => {
         const before = structuredClone(state);
+        try {
+          return await callback(tx);
+        } catch (error) {
+          Object.assign(state, before);
+          throw error;
+        }
+      });
+      tail = result.catch(() => undefined);
+      return result;
+    }),
+  };
+  return { state, tx, prisma };
+}
+
+interface ResetTokenRow {
+  id: string;
+  userId: string;
+  tokenHash: string;
+  expiresAt: Date;
+  usedAt: Date | null;
+}
+interface RefreshTokenRow {
+  id: string;
+  userId: string;
+  familyId: string;
+  tokenHash: string;
+  expiresAt: Date;
+  revokedAt: Date | null;
+  replacedByTokenId: string | null;
+}
+interface OwnerRow {
+  id: string;
+  passwordHash: string;
+  passwordResetRequestedAt: Date | null;
+}
+
+/**
+ * Redemption transaction double (SP-105B): the same serialized,
+ * rollback-capable $transaction contract as `database()`, plus the two
+ * raw-query steps of the owner-first protocol — the `users` row lock
+ * (with a simulated lock wait that advances the fake clock) and the
+ * post-lock `clock_timestamp()` read.
+ */
+function resetDatabase() {
+  const state = {
+    users: [
+      {
+        id: 'owner',
+        passwordHash: 'old-hash',
+        passwordResetRequestedAt: new Date(now.getTime() - 120_000),
+      },
+      { id: 'other', passwordHash: 'other-hash', passwordResetRequestedAt: null },
+    ] as OwnerRow[],
+    tokens: [] as ResetTokenRow[],
+    refreshTokens: [] as RefreshTokenRow[],
+    lockWaitMs: 0,
+    dropOwner: false,
+  };
+  const tx = {
+    $queryRaw: jest.fn(async (query: TemplateStringsArray, ...values: unknown[]) => {
+      const sql = query.join('?');
+      if (sql.includes('FOR UPDATE')) {
+        if (state.lockWaitMs > 0) jest.advanceTimersByTime(state.lockWaitMs);
+        if (state.dropOwner) return [] as { id: string }[];
+        const userId = values[0] as string;
+        return state.users.filter((u) => u.id === userId).map((u) => ({ id: u.id }));
+      }
+      if (sql.includes('clock_timestamp()')) {
+        return [{ checkedAt: new Date() }];
+      }
+      throw new Error(`unexpected raw query in test double: ${sql}`);
+    }),
+    passwordResetToken: {
+      findUnique: jest.fn(
+        async ({ where }: { where: { tokenHash: string } }) => {
+          const row = state.tokens.find((t) => t.tokenHash === where.tokenHash);
+          return row ? { id: row.id, userId: row.userId } : null;
+        }
+      ),
+      updateMany: jest.fn(
+        async ({
+          where,
+          data,
+        }: {
+          where: Partial<{ id: string; userId: string; usedAt: null; expiresAt: { gt: Date } }>;
+          data: Partial<ResetTokenRow>;
+        }) => {
+          let count = 0;
+          for (const row of state.tokens) {
+            if (where.userId !== undefined && row.userId !== where.userId) continue;
+            if (where.id !== undefined && row.id !== where.id) continue;
+            if (where.usedAt !== undefined && row.usedAt !== where.usedAt) continue;
+            if (where.expiresAt?.gt && !(row.expiresAt > where.expiresAt.gt)) continue;
+            Object.assign(row, data);
+            count++;
+          }
+          return { count };
+        }
+      ),
+    },
+    refreshToken: {
+      updateMany: jest.fn(
+        async ({
+          where,
+          data,
+        }: {
+          where: Partial<{ userId: string; revokedAt: null }>;
+          data: Partial<RefreshTokenRow>;
+        }) => {
+          let count = 0;
+          for (const row of state.refreshTokens) {
+            if (where.userId !== undefined && row.userId !== where.userId) continue;
+            if (where.revokedAt !== undefined && row.revokedAt !== where.revokedAt) continue;
+            Object.assign(row, data);
+            count++;
+          }
+          return { count };
+        }
+      ),
+    },
+    user: {
+      update: jest.fn(
+        async ({ where, data }: { where: { id: string }; data: Partial<OwnerRow> }) => {
+          const row = state.users.find((u) => u.id === where.id);
+          if (!row) throw new Error('owner row vanished');
+          Object.assign(row, data);
+          return row;
+        }
+      ),
+    },
+  };
+  let tail: Promise<unknown> = Promise.resolve();
+  const prisma = {
+    ...tx,
+    $transaction: jest.fn((callback: (client: typeof tx) => Promise<unknown>) => {
+      const result = tail.then(async () => {
+        // Shallow row copies, not structuredClone: a clone would turn the
+        // fake-timer Date instances into native Dates, and post-rollback
+        // assertions check constructor identity.
+        const before = {
+          users: state.users.map((u) => ({ ...u })),
+          tokens: state.tokens.map((t) => ({ ...t })),
+          refreshTokens: state.refreshTokens.map((r) => ({ ...r })),
+          lockWaitMs: state.lockWaitMs,
+          dropOwner: state.dropOwner,
+        };
         try {
           return await callback(tx);
         } catch (error) {
@@ -333,6 +497,226 @@ describe('PasswordResetService', () => {
       expect(calls).not.toContain('smtp rejected');
       expect(calls).not.toContain('ada@example.com');
       expect(calls).not.toContain(tokenA);
+    });
+  });
+
+  // --- SP-105B: redemption ---
+  //
+  // The double exercises the same serialized, rollback-capable
+  // $transaction contract as the issuance block above: conditional
+  // updateMany predicates, a $queryRaw double for the owner lock and the
+  // post-lock wall clock, and structuredClone rollback on throw. Real
+  // PostgreSQL lock-wait behavior is SP-105D/I's integration scope.
+  describe('resetPassword', () => {
+    let db: ReturnType<typeof resetDatabase>;
+    let error: jest.SpyInstance;
+    const oneHour = new Date(now.getTime() + RESET_TOKEN_TTL_MS);
+
+    beforeEach(() => {
+      db = resetDatabase();
+      (argon2.hash as jest.Mock).mockClear().mockResolvedValue('argon2-new-hash');
+      error = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+      // Fixtures: two outstanding owner tokens, one used owner token, one
+      // foreign token; owner refresh rows in two families plus one foreign.
+      db.state.tokens.push(
+        { id: 'tA', userId: 'owner', tokenHash: hash(tokenA), expiresAt: oneHour, usedAt: null },
+        { id: 'tB', userId: 'owner', tokenHash: hash(tokenB), expiresAt: oneHour, usedAt: null },
+        {
+          id: 'tUsed',
+          userId: 'owner',
+          tokenHash: hash(tokenC),
+          expiresAt: oneHour,
+          usedAt: new Date(now.getTime() - 1000),
+        },
+        { id: 'tOther', userId: 'other', tokenHash: hash(tokenOther), expiresAt: oneHour, usedAt: null },
+      );
+      db.state.refreshTokens.push(
+        { id: 'rA1', userId: 'owner', familyId: 'F1', tokenHash: 'h-rA1', expiresAt: oneHour, revokedAt: null, replacedByTokenId: null },
+        { id: 'rA2', userId: 'owner', familyId: 'F1', tokenHash: 'h-rA2', expiresAt: oneHour, revokedAt: new Date(now.getTime() - 5000), replacedByTokenId: 'rA1' },
+        { id: 'rB', userId: 'owner', familyId: 'F2', tokenHash: 'h-rB', expiresAt: oneHour, revokedAt: null, replacedByTokenId: null },
+        { id: 'rOther', userId: 'other', familyId: 'F3', tokenHash: 'h-rOther', expiresAt: oneHour, revokedAt: null, replacedByTokenId: null },
+      );
+      service = new PasswordResetService(
+        db.prisma as unknown as PrismaService,
+        provider,
+        new ConfigService({ FRONTEND_URL: 'http://localhost:3000' })
+      );
+    });
+    afterEach(() => {
+      error.mockRestore();
+    });
+
+    const dto = (token: string, password = 'Password123') => ({
+      token,
+      password,
+      confirmPassword: password,
+    });
+    const owner = () => db.state.users.find((u) => u.id === 'owner')!;
+    const token = (id: string) => db.state.tokens.find((t) => t.id === id)!;
+    const refresh = (id: string) => db.state.refreshTokens.find((r) => r.id === id)!;
+
+    it('updates the locked owner password with the same argon2id options as registration', async () => {
+      await service.resetPassword(dto(tokenA));
+      expect(argon2.hash).toHaveBeenCalledWith('Password123', ARGON2_OPTIONS);
+      expect(owner().passwordHash).toBe('argon2-new-hash');
+    });
+
+    it('returns only the success message after commit', async () => {
+      const result = await service.resetPassword(dto(tokenA));
+      expect(result).toEqual({ message: RESET_SUCCESS_MESSAGE });
+    });
+
+    it('marks the presented token used at the post-lock wall-clock time', async () => {
+      await service.resetPassword(dto(tokenA));
+      expect(token('tA').usedAt).toBeInstanceOf(Date);
+      expect(token('tA').usedAt!.getTime()).toBeGreaterThanOrEqual(now.getTime());
+    });
+
+    it('retires every other unused token for the owner, leaving used and foreign rows untouched', async () => {
+      const usedBefore = token('tUsed').usedAt!;
+      await service.resetPassword(dto(tokenA));
+      expect(token('tB').usedAt).toBeInstanceOf(Date); // the other outstanding token is retired
+      expect(token('tUsed').usedAt).toEqual(usedBefore); // already used — untouched
+      expect(token('tOther').usedAt).toBeNull(); // another owner's token — untouched
+    });
+
+    it('revokes every unrevoked refresh row for the owner in every family', async () => {
+      const revokedBefore = refresh('rA2').revokedAt!;
+      await service.resetPassword(dto(tokenA));
+      expect(refresh('rA1').revokedAt).toBeInstanceOf(Date); // family F1
+      expect(refresh('rB').revokedAt).toBeInstanceOf(Date); // family F2
+      expect(refresh('rA2').revokedAt).toEqual(revokedBefore); // already revoked — untouched
+      expect(refresh('rOther').revokedAt).toBeNull(); // another account — untouched
+    });
+
+    it('preserves the issuance cooldown marker — reset never grants an extra email', async () => {
+      const markerBefore = owner().passwordResetRequestedAt!;
+      await service.resetPassword(dto(tokenA));
+      expect(owner().passwordResetRequestedAt).toEqual(markerBefore);
+      const call = (db.tx.user.update.mock.calls[0][0] as { data: Record<string, unknown> });
+      expect(call.data).toHaveProperty('passwordHash');
+      expect(call.data).not.toHaveProperty('passwordResetRequestedAt');
+    });
+
+    it('returns the uniform 400 for an unknown token and writes nothing', async () => {
+      await expect(service.resetPassword(dto(tokenGhost))).rejects.toThrow(INVALID_RESET_MESSAGE);
+      expect(db.tx.user.update).not.toHaveBeenCalled();
+      expect(token('tA').usedAt).toBeNull();
+      expect(refresh('rA1').revokedAt).toBeNull();
+      expect(owner().passwordHash).toBe('old-hash');
+    });
+
+    it('returns the uniform 400 for a malformed token without touching the database', async () => {
+      await expect(service.resetPassword(dto('a'.repeat(42)))).rejects.toThrow(INVALID_RESET_MESSAGE);
+      expect(db.prisma.$transaction).not.toHaveBeenCalled();
+      expect(argon2.hash).not.toHaveBeenCalled(); // no wasted work before the DB
+    });
+
+    it('returns the uniform 400 when the owner row is missing, with no writes', async () => {
+      db.state.dropOwner = true;
+      await expect(service.resetPassword(dto(tokenA))).rejects.toThrow(INVALID_RESET_MESSAGE);
+      expect(token('tA').usedAt).toBeNull();
+      expect(refresh('rA1').revokedAt).toBeNull();
+      expect(owner().passwordHash).toBe('old-hash');
+    });
+
+    it('returns the uniform 400 for a used token and rolls back every dependent write', async () => {
+      const usedBefore = token('tUsed').usedAt!;
+      await expect(service.resetPassword(dto(tokenC))).rejects.toThrow(INVALID_RESET_MESSAGE);
+      const rejected = token('tUsed');
+      expect(rejected.usedAt).toEqual(usedBefore); // claim flipped nothing
+      expect(token('tB').usedAt).toBeNull(); // retirement rolled back
+      expect(refresh('rA1').revokedAt).toBeNull(); // revocation rolled back
+      expect(owner().passwordHash).toBe('old-hash'); // password rolled back
+    });
+
+    it('returns the uniform 400 for an expired token and writes nothing', async () => {
+      token('tA').expiresAt = new Date(now.getTime() - 1000);
+      await expect(service.resetPassword(dto(tokenA))).rejects.toThrow(INVALID_RESET_MESSAGE);
+      expect(token('tA').usedAt).toBeNull();
+      expect(token('tB').usedAt).toBeNull();
+      expect(refresh('rA1').revokedAt).toBeNull();
+      expect(owner().passwordHash).toBe('old-hash');
+    });
+
+    it('does not claim a token that expires while waiting for the owner lock (fresh post-lock clock)', async () => {
+      token('tA').expiresAt = new Date(now.getTime() + 2000); // expires during the simulated 5s wait
+      db.state.lockWaitMs = 5000;
+      await expect(service.resetPassword(dto(tokenA))).rejects.toThrow(INVALID_RESET_MESSAGE);
+      // The claim must compare against the post-lock clock (now + 5s), not a
+      // pre-lock or transaction-start timestamp.
+      const claim = db.tx.passwordResetToken.updateMany.mock.calls[0][0] as {
+        where: { expiresAt?: { gt?: Date } };
+      };
+      expect(claim.where.expiresAt?.gt?.getTime()).toBe(now.getTime() + 5000);
+      expect(token('tA').usedAt).toBeNull();
+      expect(refresh('rA1').revokedAt).toBeNull();
+      expect(owner().passwordHash).toBe('old-hash');
+    });
+
+    it('same-token race: one success and one uniform 400', async () => {
+      const outcomes = await Promise.allSettled([
+        service.resetPassword(dto(tokenA, 'Password123')),
+        service.resetPassword(dto(tokenA, 'Another1234')),
+      ]);
+      const ok = outcomes.filter((o) => o.status === 'fulfilled');
+      const rejected = outcomes.filter((o) => o.status === 'rejected') as PromiseRejectedResult[];
+      expect(ok).toHaveLength(1);
+      expect((ok[0] as PromiseFulfilledResult<{ message: string }>).value).toEqual({
+        message: RESET_SUCCESS_MESSAGE,
+      });
+      expect(rejected).toHaveLength(1);
+      expect(rejected[0].reason).toBeInstanceOf(BadRequestException);
+      expect((rejected[0].reason as BadRequestException).message).toBe(INVALID_RESET_MESSAGE);
+      expect(token('tA').usedAt).toBeInstanceOf(Date); // claimed exactly once
+      expect(refresh('rA1').revokedAt).toBeInstanceOf(Date);
+    });
+
+    it('distinct-token race: one success and one uniform 400, the loser rolls back', async () => {
+      (argon2.hash as jest.Mock)
+        .mockResolvedValueOnce('hash-from-A')
+        .mockResolvedValueOnce('hash-from-B');
+      const [first, second] = await Promise.allSettled([
+        service.resetPassword(dto(tokenA, 'Password123')),
+        service.resetPassword(dto(tokenB, 'Another1234')),
+      ]);
+      expect(first.status).toBe('fulfilled');
+      expect(second.status).toBe('rejected');
+      expect((second as PromiseRejectedResult).reason).toBeInstanceOf(BadRequestException);
+      expect(((second as PromiseRejectedResult).reason as BadRequestException).message).toBe(
+        INVALID_RESET_MESSAGE
+      );
+      // The winner's writes commit; the loser retired nothing (its claim failed).
+      expect(owner().passwordHash).toBe('hash-from-A');
+      expect(token('tA').usedAt).toBeInstanceOf(Date);
+      expect(token('tB').usedAt).toBeInstanceOf(Date); // retired by the winner
+      expect(refresh('rA1').revokedAt).toBeInstanceOf(Date);
+      expect(refresh('rB').revokedAt).toBeInstanceOf(Date);
+      expect(token('tOther').usedAt).toBeNull();
+      expect(refresh('rOther').revokedAt).toBeNull();
+    });
+
+    it('rolls back claim, retirement, and revocation when password persistence fails', async () => {
+      db.tx.user.update.mockImplementationOnce(async () => {
+        throw new Error('connection lost');
+      });
+      await expect(service.resetPassword(dto(tokenA))).rejects.toThrow('connection lost');
+      // Nothing committed: the token is redeemable again and the account is intact.
+      expect(token('tA').usedAt).toBeNull();
+      expect(token('tB').usedAt).toBeNull();
+      expect(refresh('rA1').revokedAt).toBeNull();
+      expect(refresh('rB').revokedAt).toBeNull();
+      expect(owner().passwordHash).toBe('old-hash');
+    });
+
+    it('never logs the raw token or the proposed password', async () => {
+      db.tx.user.update.mockImplementationOnce(async () => {
+        throw new Error(`boom token ${tokenA} password Password123`);
+      });
+      await expect(service.resetPassword(dto(tokenA))).rejects.toThrow();
+      const logged = JSON.stringify([...warn.mock.calls, ...error.mock.calls]);
+      expect(logged).not.toContain(tokenA);
+      expect(logged).not.toContain('Password123');
     });
   });
 });
