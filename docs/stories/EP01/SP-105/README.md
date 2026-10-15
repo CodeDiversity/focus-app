@@ -163,8 +163,8 @@ The CF-1–CF-6 entries above preserve the previous agent's original claims and 
 
 ### CF-11 — response timing overclaimed (Major)
 - **Original finding:** SP-105A “Security” promised identical timing because SMTP is async, despite eligible accounts doing additional database writes.
-- **Correction:** Pending: retain identical status/body and SMTP-independent response, explicitly disclose residual database-path timing, require measurement and a decision before claiming full timing-enumeration resistance.
-- **Verification:** Pending test ownership in A/D and revised claim comparison; no constant-time result is claimed.
+- **Correction:** A retains identical status/body and SMTP-independent response, discloses residual database-path timing, and assigns measurement/security review to A/D before sign-off. Its transform now follows the actual class-transformer callback shape.
+- **Verification:** Compared eligible write paths with unknown/cooldown paths; no constant-time claim remains in A. A/D own unresolved-SMTP response and timing measurement obligations; no measured result is claimed.
 - **Status:** Unresolved.
 
 ### CF-12 — broken links and readiness overclaim (Major)
