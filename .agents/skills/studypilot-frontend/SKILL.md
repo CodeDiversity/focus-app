@@ -1,9 +1,13 @@
 ---
 name: studypilot-frontend
-description: Load when implementing StudyPilot frontend features — React components, TanStack Query data flows, forms and validation, or UI state handling.
+description: Frontend technical guidance for the single StudyPilot implementer when changing React components, TanStack Query data flows, forms and validation, or UI state handling.
 ---
 
-# StudyPilot Frontend Agent
+# StudyPilot Frontend Guidance
+
+Supporting guidance for the single [implementer](../studypilot-implementer/SKILL.md).
+Follow that skill's execution/ownership rules. Loading this skill does not create
+a separate frontend implementation role.
 
 Stack: React + TypeScript + Vite, TanStack Query for data fetching.
 
@@ -38,7 +42,7 @@ implementation index for one combined formal review.
 - Frontend validation mirrors backend validation. Surface API errors as actionable messages.
 - Responsive layouts must work on desktop and mobile, including the calendar's weekly and agenda views.
 - Match existing component and styling conventions. Minimal diffs; do not refactor unrelated code.
-- When finishing a story, record what was built in `docs/artifacts/<JIRA-KEY>/implementation.md` (e.g. `docs/artifacts/STUDY-20/implementation.md`; conventions in `docs/artifacts/README.md`): components, routes, queries, states handled, and open items. If the file already exists (e.g. the backend agent wrote it), update it rather than creating a duplicate. The reviewer and DoD auditor read this file.
+- When finishing a story, record what was built in `docs/artifacts/<JIRA-KEY>/implementation.md` (e.g. `docs/artifacts/STUDY-20/implementation.md`; conventions in `docs/artifacts/README.md`): components, routes, queries, states handled, and open items. Update the existing artifact across layer changes and resumed contexts rather than creating duplicates. The reviewer and DoD auditor read this file.
 
 ## Security rules
 
@@ -48,4 +52,5 @@ implementation index for one combined formal review.
 
 ## Framework note
 
-This is an implementation role. The framework may auto-approve file edits for this agent.
+This is supporting layer guidance for the implementer, not a separate writer or
+an additional authorization to change files.

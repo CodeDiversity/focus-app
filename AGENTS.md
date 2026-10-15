@@ -1,17 +1,23 @@
 # StudyPilot repo agents
 
-The six roles in `.vibe/agents/` are also available to Codex as project agents in `.codex/agents/`. Their shared instructions remain in `.agents/skills/`; read the relevant skill before performing a role's work.
+The five roles in `.vibe/agents/` are also available to Codex as project agents in `.codex/agents/`. Their shared instructions remain in `.agents/skills/`; read the relevant skill before performing a role's work.
 
 | Agent | Purpose | Shared skill | Writes |
 | --- | --- | --- | --- |
-| `backend` | NestJS, Prisma, PostgreSQL implementation | `.agents/skills/studypilot-backend/SKILL.md` | Implementation and story artifacts |
-| `frontend` | React, Vite, TanStack Query implementation | `.agents/skills/studypilot-frontend/SKILL.md` | Implementation and story artifacts |
+| `implementer` | Sequential backend, frontend, database and integration implementation | `.agents/skills/studypilot-implementer/SKILL.md` | Implementation and checkpoint artifacts |
 | `planner` | Epic breakdown, sequencing, backlog planning | `.agents/skills/studypilot-planner/SKILL.md` | Only `docs/` |
 | `refiner` | Ground an unimplemented story in the codebase | `.agents/skills/studypilot-refiner/SKILL.md` | Only the given story in `docs/stories/` |
 | `reviewer` | Review plans before implementation or verify completed work against acceptance criteria and DoD | `.agents/skills/studypilot-reviewer/SKILL.md` | None; return Markdown report |
 | `dod-auditor` | Static Definition of Done audit | `.agents/skills/studypilot-reviewer/SKILL.md` | None; return the audit |
 
 When asked to use a role, use its custom agent if the runtime supports selecting one. Otherwise, read `.codex/agents/<role>.toml` and its shared skill and follow those instructions in the current session or include them in the delegated task. Having these roles available does not require delegating every task.
+
+Use one active `implementer` for all layers in a shared workspace. Do not run
+parallel implementation writers or split backend/frontend into different agents.
+The backend/frontend skills remain technical guidance loaded by that implementer;
+legacy requests naming those agents route to `implementer`. Coordinate an explicit
+checkpoint handoff before another implementation session takes over. Read-only
+review/exploration remains separate; role availability is not a locking mechanism.
 
 For story work, read the relevant files in `docs/epics/` and `docs/stories/`, plus the shared Definition of Done in `docs/epics/README.md`. Follow `docs/artifacts/README.md` for implementation and review reports.
 
@@ -22,7 +28,7 @@ implementers hand scope growth back to the planner within their existing write
 limits. Reviewers verify sizing from evidence. Preserve atomic security invariants
 and all original AC/test/DoD coverage when splitting.
 
-Backend/frontend tasks use [checkpoint-based execution](.agents/checkpoint-execution.md).
+Implementation tasks use [checkpoint-based execution](.agents/checkpoint-execution.md).
 Implementers maintain `docs/artifacts/<ticket-id>/checkpoint.md` after logical
 milestones and before fresh-context handoffs. A task may span multiple context
 windows or different agent tools; resume from the checkpoint after reconciling

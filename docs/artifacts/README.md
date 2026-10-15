@@ -7,14 +7,14 @@ Per-ticket work records, one folder per Jira issue. Story and epic **planning** 
 ```
 docs/artifacts/<JIRA-KEY>/
 ├── checkpoint.md       # implementer's current progress and fresh-context resume state
-├── implementation.md   # written by the implementer (backend/frontend agents)
+├── implementation.md   # written by the single implementer across layers
 └── review.md           # reviewer report saved by parent; overwritten each pass
 ```
 
 ## Conventions
 
 - **checkpoint.md** — created before substantive implementation and refreshed after code/test milestones and before context handoffs. Follow [checkpoint-based execution](../../.agents/checkpoint-execution.md) for the template, Git reconciliation, verification, and resume prompt. One task can span fresh windows or different coding agents using the same saved repository state. Use the Jira key when assigned, otherwise the stable story ID, and reuse any existing artifact directory. Checkpoints are progress records, not final implementation or review evidence.
-- **implementation.md** — the implementer's record of what was built: endpoints, schema changes, migrations, components, commands, verification evidence, and open items. Created or updated when a story finishes. If both the backend and frontend agents work a ticket, the second updates the first's file rather than duplicating it.
+- **implementation.md** — the single implementer's record of what was built: endpoints, schema changes, migrations, components, commands, verification evidence, and open items. Created or updated when a story finishes. The same implementer maintains it across layer changes and fresh-context handoffs; do not create separate backend/frontend copies.
 - **review.md** — the reviewer's report for the latest pass only: acceptance-criterion verdicts, DoD checklist, blockers / should-fix / polish, and a one-line verdict. Overwritten on re-review so it always holds the current pass; earlier passes live in git history. Include the review date and the state reviewed (commit hash, or "working tree" when none).
 - The reviewer is read-only and returns its report for the coordinating parent to save as `review.md`; implementers own `checkpoint.md` and `implementation.md` (plus their code). Neither role edits the other's artifacts or the planning docs.
 - Jira comments should reference these files by their path here.

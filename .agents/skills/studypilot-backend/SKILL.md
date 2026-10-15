@@ -1,9 +1,13 @@
 ---
 name: studypilot-backend
-description: Load when implementing StudyPilot backend features — NestJS modules, Prisma models and migrations, REST endpoints, or the scheduling domain logic.
+description: Backend technical guidance for the single StudyPilot implementer when changing NestJS modules, Prisma models and migrations, REST endpoints, or scheduling domain logic.
 ---
 
-# StudyPilot Backend Agent
+# StudyPilot Backend Guidance
+
+Supporting guidance for the single [implementer](../studypilot-implementer/SKILL.md).
+Follow that skill's execution/ownership rules. Loading this skill does not create
+a separate backend implementation role.
 
 Stack: NestJS + Prisma + PostgreSQL.
 
@@ -48,4 +52,5 @@ implementation index for one combined formal review.
 
 ## Framework note
 
-This is an implementation role. The framework may auto-approve file edits for this agent; database operations against shared environments should still require human approval.
+This is supporting layer guidance for the implementer. It does not grant separate
+write ownership or authorize database operations against shared environments.

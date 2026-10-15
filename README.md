@@ -309,7 +309,7 @@ pnpm install
 
 ### Repo agents in Codex
 
-All six repo agents are available as project-scoped Codex agents in `.codex/agents/`: `backend`, `frontend`, `planner`, `refiner`, `reviewer`, and `dod-auditor`. They reuse the existing skills in `.agents/skills/`. See [AGENTS.md](./AGENTS.md) for each role's scope.
+The five repo agents are available as project-scoped Codex agents in `.codex/agents/`: `implementer`, `planner`, `refiner`, `reviewer`, and `dod-auditor`. The single implementer handles backend, frontend and integration substories sequentially, using layer-specific skills in `.agents/skills/`. It resumes through durable checkpoints and requests one final parent review. See [AGENTS.md](./AGENTS.md) for each role's scope. Reload your agent tool/session after changing role definitions so it discovers `implementer` instead of the retired backend/frontend roles.
 
 Start a new Codex session in this repository after adding or changing agent definitions. For example: “Use the refiner agent to refine SP-105” or “Have the dod-auditor agent audit STUDY-20.” Models and approval settings inherit from the parent session; the two review roles specify a read-only sandbox. Planner and refiner write limits are enforced by instructions.
 

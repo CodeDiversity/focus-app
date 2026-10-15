@@ -5,6 +5,8 @@ Optimize for a small local coding session with a narrow context footprint.
 Story length alone is not a size measure: a short ticket can hide several jobs.
 Small slices do not create separate formal review gates: follow
 [review cadence](review-cadence.md) for one final review of the completed parent.
+All implementation slices share one sequential `implementer` owner; backend,
+frontend and integration remain scope labels rather than concurrent coding roles.
 
 ## Default implementation slice
 

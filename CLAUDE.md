@@ -2,8 +2,8 @@
 
 Read and follow [AGENTS.md](AGENTS.md) for repository rules and role boundaries.
 This file is a tool entry point; the shared protocol applies to any coding agent.
-Before implementing a story, read the relevant backend/frontend shared skill
-under `.agents/skills/` and apply
+Use the single [implementer](.agents/skills/studypilot-implementer/SKILL.md) for
+all application layers; do not run parallel backend/frontend writers. Apply
 [checkpoint-based execution](.agents/checkpoint-execution.md).
 
 When resuming in a fresh context, read the task's

@@ -17,6 +17,9 @@ Apply [review cadence](../../review-cadence.md). Record the parent review unit,
 complete descendant inventory, final artifact path and integration/index owner
 in the breakdown. Child implementation completion, not individual review approval,
 unblocks dependent work; one final review covers the combined implemented scope.
+Assign implementation ownership to the single `implementer` across all layers.
+Backend/frontend/integration labels describe scope, not different coding agents.
+Sequence children for one writer; do not plan concurrent implementation agents.
 
 ## Scope and permissions
 
@@ -79,7 +82,7 @@ Classify proposed changes into **Backend**, **Frontend**, **Integration**, and, 
 - Target **30–90 minutes** per implementation slice, including tests, required checks and handoff, using the shared sizing policy. Record inspected files, start context and verification in each child's sizing block; an estimate alone does not pass the gate.
 - Split independently verifiable outcomes within a layer before finalizing. Keep atomic security operations together and document any indivisible-core sizing rationale. Preserve existing IDs/history when splitting; do not turn in-progress or completed work back into unimplemented children.
 - Each story should deliver one coherent, independently verifiable outcome and name the behavior it changes.
-- Prefer a vertical sequence that supports incremental integration: agree the contract, create required persistence/backend behavior, build frontend behavior, verify integration. Allow parallel work only when the contract is settled and dependencies permit it.
+- Prefer a vertical sequence that supports incremental integration: agree the contract, create required persistence/backend behavior, build frontend behavior, verify integration. Execute ready children sequentially through the single implementer; independent dependencies do not authorize parallel implementation writers.
 - A story should not claim to be independently shippable if a required counterpart is absent. Distinguish **can start**, **can be reviewed**, and **can be released**.
 - Place every story in the appropriate **M1–M4 milestone**, using the epic's accepted roadmap. Do not invent milestone scope.
 

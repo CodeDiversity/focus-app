@@ -1,6 +1,6 @@
 # Checkpoint-based implementation
 
-Use for backend/frontend work in any coding agent. One implementation task may
+Use for the single implementer's work across all layers in any coding agent. One implementation task may
 span fresh context windows and different agent tools. The
 repository, tests, and durable checkpoint carry progress; chat history is optional.
 Smaller stories reduce scope, while checkpoints preserve progress within a story.
@@ -26,7 +26,7 @@ Updated: <date/time with timezone>
 Status: in progress | blocked | implementation complete — awaiting parent review | ready for review | complete
 Story: <path>
 Review unit: <parent ID and implementation-index path, or standalone story>
-Role / scope: <backend or frontend; owned outcome and exclusions>
+Role / scope: implementer; <active layer, owned outcome and exclusions>
 
 ## Repository state
 - Workspace / branch:
@@ -88,7 +88,7 @@ paths. Checkpointing does not require discarding work or forcing a commit.
 
 Give the user a short resume prompt with the exact checkpoint path:
 
-> Resume <ticket-id> as <role>. Read repo instructions and
+> Resume <ticket-id> as implementer. Read repo instructions and
 > docs/artifacts/<ticket-id>/checkpoint.md, reconcile Git state, and continue the
 > first incomplete step. Preserve unrelated work.
 
@@ -99,6 +99,11 @@ paths, commits and test evidence, never tool-specific session IDs or chat memory
 Repository instructions do not automatically create fresh sessions or guarantee
 recovery after an unsaved crash. A different checkout also needs the referenced
 commits and saved uncommitted work; a checkpoint alone does not transfer code.
+Before another agent/session takes over, the current implementation writer must
+finish its safe handoff and relinquish ownership; never run both as simultaneous
+writers. Record the active child and next child in the parent checkpoint when
+working through a group. Legacy backend/frontend role labels resume as implementer
+while retaining the story's layer and original evidence.
 
 At task end, run required final verification and write `implementation.md`.
 Follow [review cadence](review-cadence.md): a finished substory is `implementation

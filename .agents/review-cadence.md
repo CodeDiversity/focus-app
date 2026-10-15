@@ -18,7 +18,8 @@ give a coordination record a new implementation issue merely to hold a review.
 For nested splits, the enclosing feature parent owns the final review unless
 the user explicitly chooses a different scope; do not review every nested group.
 
-Each implementer still runs the substory's required tests/checks and writes its
+The single implementer runs substories sequentially across layers, including
+integration work. It runs each substory's required tests/checks and writes its
 `implementation.md` and checkpoint. Record **implementation complete — awaiting
 parent review**, with the parent ID and artifact links. This can satisfy a
 dependent substory's implementation prerequisite without a reviewer report.
@@ -42,8 +43,9 @@ parent `docs/artifacts/<parent-ticket-id>/implementation.md` index containing:
 - Original AC/test/DoD ownership and links to collected integration evidence.
 - Commands/results and known gaps; do not label planned checks as executed.
 
-The named integration owner or coordinating implementer owns this index. The
-documentation-only planner never invents implementation evidence. The parent
+The single implementer owns integration implementation and this index; no
+additional implementation writer is needed. The documentation-only planner
+never invents implementation evidence. The parent
 checkpoint becomes `ready for review` and the coordinator dispatches the reviewer
 once for the group. Do not require prior child `review.md` files as prerequisites.
 If there is no coordinator in the current session, hand off the concrete review
