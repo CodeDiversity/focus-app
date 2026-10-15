@@ -23,8 +23,9 @@ Use this shape, filling facts rather than leaving placeholders:
 ```markdown
 # <ticket-id> checkpoint
 Updated: <date/time with timezone>
-Status: in progress | blocked | ready for review | complete
+Status: in progress | blocked | implementation complete — awaiting parent review | ready for review | complete
 Story: <path>
+Review unit: <parent ID and implementation-index path, or standalone story>
 Role / scope: <backend or frontend; owned outcome and exclusions>
 
 ## Repository state
@@ -100,6 +101,9 @@ recovery after an unsaved crash. A different checkout also needs the referenced
 commits and saved uncommitted work; a checkpoint alone does not transfer code.
 
 At task end, run required final verification and write `implementation.md`.
-Set the checkpoint to `ready for review` until required review/sign-off is
-actually complete; list remaining obligations. Mark `complete` only with the
-required evidence. A checkpoint or green unit test alone is not story completion.
+Follow [review cadence](review-cadence.md): a finished substory is `implementation
+complete — awaiting parent review` and may unblock later implementation. Do not
+dispatch an individual reviewer. Once every child and integration obligation is
+implemented, the coordinator prepares the parent index and marks the parent
+`ready for review`. Mark `complete` only with required final review evidence;
+a checkpoint or green unit test alone is not formal sign-off.

@@ -29,6 +29,12 @@ windows or different agent tools; resume from the checkpoint after reconciling
 Git state. Checkpoints do not establish completion or replace the final
 implementation/review artifacts.
 
+Apply [review cadence](.agents/review-cadence.md): test and record each substory,
+then review the entire parent scope once after all substories and integration
+work are implemented. Do not automatically review/audit individual substories.
+Implementation-complete children may unblock dependencies while awaiting the
+parent's formal sign-off. Preserve historical reports.
+
 The review agents run in a read-only sandbox and return Markdown reports. The parent saves implementation reviews to `docs/artifacts/<JIRA-KEY>/review.md` and plan reviews to `<breakdown-directory>/plan-review.md` (for SP-105: `docs/stories/EP01/SP-105/plan-review.md`). During a planner/reviewer cycle, the planner reads that report, records each original finding and correction by stable ID in the breakdown README, and leaves the report unchanged. The reviewer independently verifies closure on the next pass; the parent replaces the report with the latest returned Markdown. Earlier committed reports remain in Git history. The planner and refiner's narrower write limits are instructions applying to every tool, rather than filesystem sandbox guarantees. Do not broaden their write scope.
 
 All roles must follow their skill's security rules. Never read, display, or write credential or secret files, including `.env` and `.env.*`; flag exposed secrets by location without reproducing values.

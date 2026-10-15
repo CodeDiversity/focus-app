@@ -19,6 +19,21 @@ docs/artifacts/<JIRA-KEY>/
 - The reviewer is read-only and returns its report for the coordinating parent to save as `review.md`; implementers own `checkpoint.md` and `implementation.md` (plus their code). Neither role edits the other's artifacts or the planning docs.
 - Jira comments should reference these files by their path here.
 
+## One final implementation review per parent
+
+Follow [review cadence](../../.agents/review-cadence.md). Each substory keeps its
+own implementation/checkpoint records and required tests, but no automatic formal
+review occurs per substory. Record `implementation complete — awaiting parent
+review` so verified implementation can unblock dependent work.
+
+After every child and required integration task is implemented, the integration
+owner/coordinating implementer prepares a parent `implementation.md` index with
+all child artifacts, combined Git scope, original AC/DoD mapping and integration
+evidence. One reviewer checks the entirety and returns the parent `review.md`.
+Use the parent's assigned Jira key or stable story ID and existing directory;
+do not invent tracker issues. Keep prior child reports as historical records.
+Formal approval/release remains pending until the combined review passes.
+
 ## Plan reviews before implementation
 
 Plan reviews live beside the planning documents as `<breakdown-directory>/plan-review.md`, not in the implementation artifact folder. For SP-105 this is `docs/stories/EP01/SP-105/plan-review.md`.

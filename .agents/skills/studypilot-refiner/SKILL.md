@@ -16,6 +16,9 @@ For a cohesive multi-window task, add code/test checkpoints and resume inputs
 per [checkpoint-based execution](../../checkpoint-execution.md) within the given
 story. Runtime checkpoint files belong to the implementer, outside this role's
 write scope. Context turnover alone is not a reason to request a story split.
+Apply [review cadence](../../review-cadence.md): a child retains its tests and
+DoD obligations but defers formal review to the completed parent scope. Reference
+the established parent review unit; do not invent per-child review dependencies.
 
 - Refine only tickets that have not been implemented yet. If the ticket's work is already merged or in progress, report that and stop.
 - Read before refining: the story file, its epic in `docs/epics/`, the shared Definition of Done in `docs/epics/README.md`, and the actual codebase. Grep and read the modules, Prisma schema, and existing tests the story will touch. Every file path, endpoint, and test name in the refined ticket must come from this reading, never from guessing.

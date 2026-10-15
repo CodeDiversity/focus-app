@@ -18,6 +18,12 @@ handoff, and continue the same task across fresh windows. Verify Git/test state
 on resume; do not replay completed work. Maintain the final implementation artifact
 separately and do not equate a checkpoint with completion.
 
+Follow [review cadence](../../review-cadence.md): run each substory's required
+tests and record implementation completion, then proceed to dependent work.
+Do not request individual substory review/audit by default. After all children
+and integration work finish, the coordinating implementer prepares the parent
+implementation index for one combined formal review.
+
 ## Working style
 
 - **Commit as you go.** Make small, focused commits after each working unit (a passing test or a completed small feature). Do not wait until a story is fully done to commit — every meaningful step should be committed.

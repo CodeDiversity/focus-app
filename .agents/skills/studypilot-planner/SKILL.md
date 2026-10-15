@@ -13,6 +13,10 @@ A cohesive task may span fresh contexts using [checkpoint-based execution](../..
 For such tasks, specify bounded verified milestones and resume inputs; the
 implementer owns runtime checkpoint updates. Multiple windows alone do not imply
 multiple stories; split independently verifiable outcomes, not atomic writes.
+Apply [review cadence](../../review-cadence.md). Record the parent review unit,
+complete descendant inventory, final artifact path and integration/index owner
+in the breakdown. Child implementation completion, not individual review approval,
+unblocks dependent work; one final review covers the combined implemented scope.
 
 ## Scope and permissions
 
@@ -106,6 +110,7 @@ The breakdown README must include:
 - Shared API/data contracts and settled decision register.
 - Correction log with preserved history.
 - Quality-gate readiness table and remaining blockers.
+- Final implementation review unit: parent ID/artifact path, all in-scope children, integration/index owner and all-children-complete gate. Do not add a formal reviewer gate to every child.
 
 ## Feature-aware quality checks
 

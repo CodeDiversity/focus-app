@@ -3,6 +3,8 @@
 Use this policy when planning, refining, reviewing, or implementing a story.
 Optimize for a small local coding session with a narrow context footprint.
 Story length alone is not a size measure: a short ticket can hide several jobs.
+Small slices do not create separate formal review gates: follow
+[review cadence](review-cadence.md) for one final review of the completed parent.
 
 ## Default implementation slice
 
@@ -20,9 +22,9 @@ Story length alone is not a size measure: a short ticket can hide several jobs.
   required wiring, migrations and documentation in the estimate. Larger footprints
   trigger a split assessment; these numbers are not a quota or permission to
   omit necessary tests, security checks, accessibility, or documentation.
-- State how the result can be tested and reviewed before dependent stories land.
-  An internal service or component can be independently reviewable while the
-  complete feature remains unavailable for release.
+- State how the result can be tested and inspected before dependent stories land.
+  An internal service or component can unblock later implementation while formal
+  review and release remain gated on the complete parent scope.
 
 ## Required sizing block in each implementation story
 
