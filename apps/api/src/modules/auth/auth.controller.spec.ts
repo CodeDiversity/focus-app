@@ -1,6 +1,11 @@
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { PasswordResetService } from './password-reset.service';
+import {
+  PasswordResetService,
+  RESET_SUCCESS_MESSAGE,
+  INVALID_RESET_MESSAGE,
+} from './password-reset.service';
+import type { ResetPasswordDto } from './dto/reset-password.dto';
 
 describe('AuthController', () => {
   const makeRes = () => ({ cookie: jest.fn() });
@@ -113,6 +118,59 @@ describe('AuthController', () => {
         'If an account exists for that email address, a password reset link has been sent. Check your inbox and wait a minute before requesting another.',
     });
   });
+
+  // --- SP-105B: reset-password ---
+  const resetDto: ResetPasswordDto = {
+    token: 'a'.repeat(43),
+    password: 'Password123',
+    confirmPassword: 'Password123',
+  };
+
+  it('expires the HttpOnly refresh cookie only after a committed reset', async () => {
+    const passwordResetService = {
+      resetPassword: jest.fn().mockResolvedValue({ message: RESET_SUCCESS_MESSAGE }),
+    } as unknown as PasswordResetService;
+    const controller = new AuthController(
+      {} as AuthService,
+      {} as EmailVerificationService,
+      passwordResetService
+    );
+    const res = makeRes();
+
+    const result = await controller.resetPassword(resetDto, res as never);
+
+    expect(passwordResetService.resetPassword).toHaveBeenCalledWith(resetDto);
+    expect(result).toEqual({ message: RESET_SUCCESS_MESSAGE });
+    // The existing helper attributes: HttpOnly, Path=/auth, SameSite=Lax,
+    // expired (Max-Age=0) — the SPA cannot clear an HttpOnly cookie itself.
+    expect(res.cookie).toHaveBeenCalledWith(
+      'refresh_token',
+      '',
+      expect.objectContaining({
+        httpOnly: true,
+        path: '/auth',
+        sameSite: 'lax',
+        maxAge: 0,
+      })
+    );
+  });
+
+  it('emits no cookie cleanup when the redemption fails or rolls back', async () => {
+    const passwordResetService = {
+      resetPassword: jest.fn().mockRejectedValue(new BadRequestException(INVALID_RESET_MESSAGE)),
+    } as unknown as PasswordResetService;
+    const controller = new AuthController(
+      {} as AuthService,
+      {} as EmailVerificationService,
+      passwordResetService
+    );
+    const res = makeRes();
+
+    await expect(controller.resetPassword(resetDto, res as never)).rejects.toThrow(
+      BadRequestException
+    );
+    expect(res.cookie).not.toHaveBeenCalled();
+  });
 });
 
 import { INestApplication, ValidationPipe, BadRequestException } from '@nestjs/common';
@@ -133,6 +191,7 @@ describe('AuthController HTTP verification contracts', () => {
       message:
         'If an account exists for that email address, a password reset link has been sent. Check your inbox and wait a minute before requesting another.',
     }),
+    resetPassword: jest.fn().mockResolvedValue({ message: RESET_SUCCESS_MESSAGE }),
   };
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -167,6 +226,7 @@ describe('AuthController HTTP verification contracts', () => {
       message:
         'If an account exists for that email address, a password reset link has been sent. Check your inbox and wait a minute before requesting another.',
     });
+    passwordReset.resetPassword.mockResolvedValue({ message: RESET_SUCCESS_MESSAGE });
   });
   afterAll(async () => {
     await app?.close();
@@ -263,4 +323,68 @@ describe('AuthController HTTP verification contracts', () => {
       expect(passwordReset.forgotPassword).not.toHaveBeenCalled();
     }
   );
+
+  // --- SP-105B: reset-password over real global-pipe + filter wiring ---
+  const validResetBody = {
+    token: 'a'.repeat(43),
+    password: 'Password123',
+    confirmPassword: 'Password123',
+  };
+
+  it('exposes reset-password publicly, returns explicit 200, and emits the expiry cookie with the existing attributes', async () => {
+    const response = await post('/auth/reset-password', validResetBody);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ message: RESET_SUCCESS_MESSAGE });
+    const setCookie = response.headers.get('set-cookie');
+    expect(setCookie).toMatch(/^refresh_token=;/); // emptied
+    expect(setCookie).toMatch(/HttpOnly/);
+    expect(setCookie).toMatch(/Path=\/auth/);
+    expect(setCookie).toMatch(/SameSite=Lax/);
+    expect(setCookie).toMatch(/Max-Age=0/);
+    expect(passwordReset.resetPassword).toHaveBeenCalledWith(validResetBody);
+  });
+
+  it('returns the uniform invalid-token 400 envelope and emits no cookie cleanup on token failure', async () => {
+    passwordReset.resetPassword.mockRejectedValueOnce(new BadRequestException(INVALID_RESET_MESSAGE));
+    const response = await post('/auth/reset-password', validResetBody);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      statusCode: 400,
+      message: INVALID_RESET_MESSAGE,
+      path: '/auth/reset-password',
+    });
+    expect(response.headers.get('set-cookie')).toBeNull();
+  });
+
+  it.each([
+    // Token-shape failures must read like an invalid link (SP-105 AC5).
+    ['/auth/reset-password', { password: 'Password123', confirmPassword: 'Password123' }],
+    ['/auth/reset-password', { ...validResetBody, token: 'a'.repeat(42) }],
+  ])('maps a token failure %s %o to the uniform invalid-link message', async (path, payload) => {
+    const response = await post(path as string, payload);
+    expect(response.status).toBe(400);
+    const error = (await response.json()) as { message: unknown };
+    expect(Array.isArray(error.message)).toBe(true);
+    for (const message of error.message as string[]) {
+      expect(message).toBe(INVALID_RESET_MESSAGE);
+    }
+    expect(response.headers.get('set-cookie')).toBeNull();
+    expect(passwordReset.resetPassword).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    // Field failures stay field errors — never proof about the token (SP-105B AC4).
+    ['/auth/reset-password', { ...validResetBody, password: 'short', confirmPassword: 'short' }],
+    ['/auth/reset-password', { ...validResetBody, password: 'Password123', confirmPassword: 'Different123' }],
+    ['/auth/reset-password', { ...validResetBody, userId: 'other' }],
+  ])('keeps password/confirmation/whitelist failures as field errors %s %o', async (path, payload) => {
+    const response = await post(path as string, payload);
+    expect(response.status).toBe(400);
+    const error = (await response.json()) as { message: unknown };
+    expect(error).toMatchObject({ statusCode: 400, path, error: 'Bad Request', timestamp: expect.any(String) });
+    expect(Array.isArray(error.message)).toBe(true);
+    expect(JSON.stringify(error.message)).not.toContain(INVALID_RESET_MESSAGE);
+    expect(response.headers.get('set-cookie')).toBeNull();
+    expect(passwordReset.resetPassword).not.toHaveBeenCalled();
+  });
 });

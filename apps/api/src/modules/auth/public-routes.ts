@@ -22,8 +22,7 @@ export const PUBLIC_ROUTES: readonly PublicRoute[] = [
   { method: 'POST', path: '/auth/refresh' },
   { method: 'POST', path: '/auth/verify-email' },
   { method: 'POST', path: '/auth/resend-verification' },
-  // The last two entries are named by SP-105; they are inert until those
-  // routes land and exist so SP-105 does not ship 401-on-public foot-guns.
+  // SP-105's recovery endpoints (SP-105A issuance, SP-105B redemption).
   { method: 'POST', path: '/auth/forgot-password' },
   { method: 'POST', path: '/auth/reset-password' },
 ];

@@ -8,6 +8,7 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { PasswordResetService } from './password-reset.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 export const REFRESH_COOKIE_NAME = 'refresh_token';
 const REFRESH_COOKIE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
@@ -59,6 +60,18 @@ export class AuthController {
   @Post('forgot-password')
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.passwordReset.forgotPassword(dto.email);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto, @Res({ passthrough: true }) res: Response) {
+    const result = await this.passwordReset.resetPassword(dto);
+    // A committed reset revokes every refresh family for this account, so
+    // the HttpOnly cookie is expired here on the server — JavaScript in
+    // the SPA cannot clear it. This runs only after commit: a rolled-back
+    // redemption throws above and emits no cleanup header (SP-105B AC6).
+    clearRefreshCookie(res);
+    return result;
   }
 
   @Post('register')
