@@ -61,7 +61,7 @@ Integrated development smoke (SP-103's Mailpit workflow): start Mailpit + Postgr
 - Verify B's reset HTTP response expires the HttpOnly cookie with the existing path/security attributes. In a real browser, delay an existing refresh response and prove C waits for it before reset; verify stale API-token writes and AuthContext restores cannot repopulate cleared state. A jsdom `document.cookie` assertion is insufficient.
 - Exercise **signed-in and signed-out** entry to both screens; missing/malformed/expired/used tokens; duplicate submissions; network-failure retry.
 - Exercise **keyboard-only** completion and status announcements; inspect **real** desktop/mobile viewports (CSS-class assertions alone do not establish responsiveness).
-- Run the existing API/web test + typecheck commands; record commands, results, migration evidence, and the concurrency/E2E evidence in `docs/artifacts/STUDY-7/implementation.md` (parent key).
+- Run the existing API/web test + typecheck commands; record commands, results, migration evidence, and the concurrency/E2E evidence in `docs/artifacts/<integration-Jira-key>/implementation.md` once its real key exists.
 - Use each child's actual Jira-key artifact directory once assigned; do not treat the parent key as every child's implementation ticket. The integration artifact may link the child evidence. The read-only reviewer returns Markdown; the parent saves it to the integration issue's `review.md` per `docs/artifacts/README.md`.
 
 ### Relevant files
@@ -69,12 +69,12 @@ Integrated development smoke (SP-103's Mailpit workflow): start Mailpit + Postgr
 - `apps/api/src/modules/auth/password-reset.integration.spec.ts` — real-Postgres concurrency + revocation proofs (new).
 - CI workflow — `prisma migrate deploy` ordered before the test step; `postgres:15` service (SP-104 precedent).
 - `docker-compose.yml` — reuse SP-103's Mailpit service for the SMTP smoke.
-- `docs/artifacts/STUDY-7/implementation.md` — evidence record (created/updated here).
+- `docs/artifacts/<integration-Jira-key>/implementation.md` — evidence record after issue creation; do not fabricate a key.
 
 ### Proposed verification mechanisms (2026-10-14)
 
-- **D1:** SP-105D is a verification story; it adds tests + performs the review, and files any feature gap back to A/B/C rather than changing feature code.
-- **D2:** DoD 10 = the integrated development review performed here (real DB + SMTP + viewports + keyboard), recorded in artifacts; the formal reviewer writes `review.md`.
+- **D1:** SP-105D is a verification story; it adds tests + performs the review, and files any feature gap back to A/B/C/E/F rather than changing feature code.
+- **D2:** DoD 10 = the integrated development review performed here (real DB + SMTP + viewports + keyboard), recorded in artifacts; the read-only reviewer returns Markdown for the parent to save as `review.md`.
 - **D3:** real-database tests will use the live `postgres:15` service; SP-105B concurrency mechanisms must be checked at the database, satisfying the "mocked transactions alone do not prove PostgreSQL behavior" rule.
 
 ### Out of scope
