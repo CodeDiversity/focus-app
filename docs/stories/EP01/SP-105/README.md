@@ -3,7 +3,7 @@
 **Epic:** [EP01](../../../epics/EP01-authentication-and-onboarding.md)
 **Parent:** [SP-105](./SP-105-password-reset.md), existing Jira STUDY-7
 **Milestone:** M1
-**Status:** Planning baseline reviewed in pass 2 (2026-10-14); execution state below reconciled 2026-10-15. A/B/F implemented; full feature/release not approved.
+**Status:** Planning baseline reviewed in pass 2 (2026-10-14); execution state below reconciled 2026-10-15. A/B/F implemented; G in progress (started 2026-10-15); full feature/release not approved.
 
 ## Execution queue
 
@@ -13,9 +13,9 @@
 
 **Parent artifacts:** `./artifacts/SP-105/` (created when parent checkpoint/index is written)
 
-**Active substory:** None (F implemented 2026-10-15; awaiting parent review)
+**Active substory:** [SP-105G](./SP-105G-recovery-session-client.md) — implementing (M1 of M1–M3, started 2026-10-15)
 
-**Next substory:** [SP-105G](./SP-105G-recovery-session-client.md) — implement via its M1–M3 checkpoints (refined/sized 2026-10-15; Ready).
+**Next substory:** [SP-105G](./SP-105G-recovery-session-client.md) — resume via [its checkpoint](./artifacts/SP-105G/checkpoint.md) (in progress)
 
 **Implementation owner:** `implementer`, sequential across all layers.
 
@@ -27,7 +27,7 @@
 | [B](./SP-105B-password-reset-backend-redemption.md) | Implemented — awaiting parent review | Implemented before E; login/refresh race invariant remains incomplete until E | Preserve B; finish E, then prove cross-flow behavior in I/D | [Implementation](./artifacts/SP-105B/implementation.md), [historical review](./artifacts/SP-105B/review.md); PR-104 wording corrected in `6826ae0` |
 | [E](./SP-105E-auth-session-coordination.md) | Implemented — awaiting parent review | SP-102 done; login/refresh/logout now use the shared owner-first protocol — the post-reset renewal invariant is closed at unit level | Hold for the combined SP-105 parent review; deterministic real-Postgres proof via I/H, browser via D | [Implementation](./artifacts/SP-105E/implementation.md), [checkpoint](./artifacts/SP-105E/checkpoint.md) |
 | [F](./SP-105F-password-reset-ip-limits.md) | Implemented — awaiting parent review | Implemented 2026-10-15; residual: real multi-instance race (J via H) and browser sign-off (D) | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105F/implementation.md), [checkpoint](./artifacts/SP-105F/checkpoint.md) |
-| [G](./SP-105G-recovery-session-client.md) | Ready | SP-102 complete (its client is the inspected code); A/B/F implemented, contracts verified against code 2026-10-15 | Implement via M1–M3 checkpoints (see ticket Sizing) | Artifact directory created on start |
+| [G](./SP-105G-recovery-session-client.md) | In progress | SP-102 complete; A/B/F implemented (contracts verified against code 2026-10-15) | Implementing M1 (`recovery.ts` barrier/generation/sanitizer + `AUTH_PATHS`) | [Checkpoint](./artifacts/SP-105G/checkpoint.md) |
 | [C](./SP-105C-password-reset-frontend-ui.md) | Blocked | G; A/B/F endpoint integration before completion | Finish G and applicable backend work; then refine/implement forms | Artifact directory created on start |
 | [H](./SP-105H-postgres-test-harness.md) | Needs refinement | SP-102; A/F migrations for suite execution | Bound harness setup; no integrated pass claimed | Artifact directory created on start |
 | [I](./SP-105I-credential-race-tests.md) | Blocked | A/B implemented; E/H outstanding | Build/run credential race suite after prerequisites | Artifact directory created on start |
