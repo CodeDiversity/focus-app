@@ -13,9 +13,9 @@
 
 **Parent artifacts:** `./artifacts/SP-105/` (created when parent checkpoint/index is written)
 
-**Active substory:** None — G implementation-complete (2026-10-16)
+**Active substory:** [SP-105C](./SP-105C-password-reset-frontend-ui.md) — implementing (M1 of M1–M3, started 2026-10-16)
 
-**Next substory:** [SP-105C](./SP-105C-password-reset-frontend-ui.md) — implement M1–M3 (implementer)
+**Next substory:** [SP-105C](./SP-105C-password-reset-frontend-ui.md) — resume via [its checkpoint](./artifacts/SP-105C/checkpoint.md) (in progress)
 
 **Implementation owner:** `implementer`, sequential across all layers.
 
@@ -28,7 +28,7 @@
 | [E](./SP-105E-auth-session-coordination.md) | Implemented — awaiting parent review | SP-102 done; login/refresh/logout now use the shared owner-first protocol — the post-reset renewal invariant is closed at unit level | Hold for the combined SP-105 parent review; deterministic real-Postgres proof via I/H, browser via D | [Implementation](./artifacts/SP-105E/implementation.md), [checkpoint](./artifacts/SP-105E/checkpoint.md) |
 | [F](./SP-105F-password-reset-ip-limits.md) | Implemented — awaiting parent review | Implemented 2026-10-15; residual: real multi-instance race (J via H) and browser sign-off (D) | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105F/implementation.md), [checkpoint](./artifacts/SP-105F/checkpoint.md) |
 | [G](./SP-105G-recovery-session-client.md) | Implemented — awaiting parent review | Implemented 2026-10-16 (M1–M3); A/B/F contracts consumed; C consumes the documented client contract | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105G/implementation.md), [checkpoint](./artifacts/SP-105G/checkpoint.md) |
-| [C](./SP-105C-password-reset-frontend-ui.md) | Ready | G implemented 2026-10-16 (client contract verified against code); A/B/F implemented — endpoints live | Implement M1–M3 (implementer) | [Ticket](./SP-105C-password-reset-frontend-ui.md) (refined 2026-10-16, sizing + decisions C1–C13), [G client contract](./artifacts/SP-105G/implementation.md#client-contract-dod-9) |
+| [C](./SP-105C-password-reset-frontend-ui.md) | In progress | G implemented 2026-10-16 (client contract verified against code); A/B/F implemented — endpoints live | Implementing M1 (request screen + `requestPasswordReset`) | [Checkpoint](./artifacts/SP-105C/checkpoint.md) |
 | [H](./SP-105H-postgres-test-harness.md) | Needs refinement | SP-102; A/F migrations for suite execution | Bound harness setup; no integrated pass claimed | Artifact directory created on start |
 | [I](./SP-105I-credential-race-tests.md) | Blocked | A/B implemented; E/H outstanding | Build/run credential race suite after prerequisites | Artifact directory created on start |
 | [J](./SP-105J-limiter-integration-tests.md) | Blocked | F/H; A/B HTTP behavior | Build/run limiter suite after prerequisites | Artifact directory created on start |
