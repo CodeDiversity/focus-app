@@ -6,8 +6,10 @@ Updated: 2026-10-16 America/New_York.
 ## Status
 
 - Checkpoint 1 — Prerequisite execution (AC2/AC3): **complete**, all suites green.
-- Checkpoint 2 — Manual cross-layer smoke + DoD 10 (AC1/AC4/AC5/AC7): **pending**; needs the human browser + Mailpit run per D6.
-- Checkpoint 3 — AC6 timing sample + parent index: **pending**.
+- Checkpoint 2 — Manual cross-layer smoke + DoD 10 (AC1/AC4/AC5/AC7): **complete**; human ran the procedure per D6 and returned a blanket approval ("approved everything looks good."); limitations recorded in `implementation.md`; SMTP delivery re-proven live.
+- Checkpoint 3 — AC6 timing sample + parent index: **complete**; bounded sample recorded (D8), parent index written to `./artifacts/SP-105/implementation.md`.
+
+Story is **implemented — awaiting the combined SP-105 parent review**.
 
 ## Checkpoint 1 — executed 2026-10-16
 
