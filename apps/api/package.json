@@ -19,7 +19,8 @@
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
     "db:push": "dotenv -e .env.local -- prisma db push",
     "db:studio": "dotenv -e .env.local -- prisma studio",
-    "clean": "rm -rf dist node_modules"
+    "clean": "rm -rf dist node_modules",
+    "test:integration": "jest --testPathIgnorePatterns=\"/node_modules/\" --testRegex=\"(modules/auth/testing/recovery-db-harness|modules/auth/password-reset|modules/auth/recovery-rate-limit)\\.integration\\.spec\\.ts$\""
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",
@@ -87,6 +88,9 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "(modules/auth/testing/recovery-db-harness|modules/auth/password-reset|modules/auth/recovery-rate-limit)\\.integration\\.spec\\.ts$"
+    ]
   }
 }
