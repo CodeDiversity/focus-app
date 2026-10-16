@@ -5,95 +5,94 @@
 **Parent:** [SP-105](./SP-105-password-reset.md)
 **Milestone:** M1
 **Priority:** High / P0
-**Layer:** Frontend (React + TypeScript + Vite)
-**Dependencies:** [SP-105G](./SP-105G-recovery-session-client.md) session boundary; SP-105F response contract (429/503), [SP-105A](./SP-105A-password-reset-backend-issuance.md) + [SP-105B](./SP-105B-password-reset-backend-redemption.md) (shared API contract — can **start** against the contract, **finishes** once the endpoints land)
+**Layer / owner:** Frontend (React + TypeScript + Vite), `implementer` (single writer; backend/frontend are scope labels)
+**Dependencies:** [SP-105G](./SP-105G-recovery-session-client.md) (implemented 2026-10-16 — client contract verified against code, below); [SP-105A](./SP-105A-password-reset-backend-issuance.md) + [SP-105B](./SP-105B-password-reset-backend-redemption.md) + [SP-105F](./SP-105F-password-reset-ip-limits.md) (implemented — the endpoints are live, so integration is real, not contract-only)
 **Jira key:** Pending creation (child of STUDY-7)
-**Refined:** 2026-10-14
-**Status:** Draft — corrected; awaiting independent re-review
+**Refined:** 2026-10-16
+**Status:** Refined 2026-10-16 — implementation-ready (cohesive multi-window task, M1–M3); queue reconciliation `Needs refinement` → `Ready` pending
 
-## Summary
+## Summary and bounded scope
 
-Build the recovery screens: a `/forgot-password` request page (reached from the Login link) and a `/reset-password` reset page (reached from the email link). The reset page reads the token from the URL fragment and strips it, both pages handle signed-in and signed-out users, and a successful reset clears the local session and navigates to login. Target one 2–4 hour session reusing existing verification-page form patterns. This child owns recovery pages, validation, navigation and accessibility; G owns all shared API/session infrastructure and its tests.
+One cohesive multi-window task (~2–3.5h total; three bounded checkpoints in Sizing, accepted 2026-10-16) that builds the two recovery screens on top of the **implemented** SP-105G client contract: a `/forgot-password` request screen (reached from the Login link, which currently dead-ends in the `*` catch-all) and a `/reset-password` reset screen (reached from the email link). The reset screen reads the 43-character token from the URL fragment and strips it; both screens work signed in or signed out, handle all states, honor the shared 429 retry contract, and meet WCAG 2.2 AA. This child owns the pages, validation, navigation and the one-time login notice only; G owns all shared session infrastructure (implemented — C consumes it, never re-implements it), and D owns real-browser/viewport/cookie proof.
 
-## Description
+## Source requirements
 
-As a student, I want clear pages to request a reset link and to set a new password, so that I can recover my account from any device.
+Original SP-105 AC1 (generic request feedback), AC3 (matching validation), AC4 (session-clearing frontend half), AC5 (actionable used/expired + new request), AC6 (screens, states, keyboard, responsiveness), AC7 (429 retry); [shared contract](./SP-105-password-reset.md) ("Retry wire contract", "Representation and browser entry", "Session semantics and ordering"); [shared DoD](../../../epics/README.md). All tests below are future obligations, not passing results.
 
-## Acceptance Criteria
+## Acceptance criteria
 
-1. A **request** screen at `/forgot-password` (reached from the Login "Forgot password?" link) provides a loading state, the single generic "check your inbox" success state (shown regardless of whether the account exists), and an error/empty state; it is keyboard accessible and prevents duplicate submissions. *(original SP-105 AC6, request screen)*
-2. A **reset** screen at `/reset-password` (reached from the email link) reads the token from the URL fragment, strips the fragment from the displayed URL, and offers a new-password form with loading, success, and error states. *(original SP-105 AC6, reset screen)*
-3. Used, expired, or invalid tokens show the backend's actionable message and offer a way to request a new one (link to `/forgot-password`). *(original SP-105 AC5, frontend half)*
-4. After a successful reset, the app clears the in-memory access token + user, relies on B's response to expire the HttpOnly `refresh_token` cookie, prevents an in-flight silent session-restore (SP-102) from resurrecting the cleared session, and navigates to `/login` with a one-time "password updated" notice. *(original SP-105 AC4, frontend half)*
+1. A **request** screen at `/forgot-password` (reached from the Login "Forgot password?" link) provides a loading state, the single generic "check your inbox" success state — the backend's `200` message rendered verbatim, shown regardless of whether the account exists (SD9: the response is account-independent, so no client-side branching is possible or needed) — and an error state; it is keyboard accessible and prevents duplicate submissions. *(original SP-105 AC1/AC6)*
+2. A **reset** screen at `/reset-password` (reached from the email link) reads the token from the URL fragment with the 43-character base64url pattern, strips the fragment from the displayed URL, and offers a new-password form with loading, success, and error states. *(original SP-105 AC6, reset screen)*
+3. Used, expired, or invalid tokens show the backend's uniform invalid-link message and offer a way to request a new one (link to `/forgot-password`). *(original SP-105 AC5, frontend half)*
+4. After a successful reset, G's boundary has already cleared the in-memory token + user (the page renders the resulting state); the app relies on B's response to expire the HttpOnly `refresh_token` cookie, and the page never writes `document.cookie`. The page then navigates to `/login` with a one-time "password updated" notice. A failed reset preserves the signed-in session (G) and keeps the form usable. *(original SP-105 AC4, frontend half)*
 5. Both screens work whether the user is **signed in or signed out** (routes outside `PublicRoute`/`ProtectedRoute`) and handle missing/malformed tokens, duplicate submissions, and network failures with retry. *(decision D11 + recovery-UX robustness)*
 6. Both screens support full keyboard interaction, visible focus, announced status/errors (`aria-live`), and responsive desktop/mobile layouts meeting WCAG 2.2 AA. *(original SP-105 AC6, a11y)*
 
-**DoD:** Per [shared DoD](../../../epics/README.md), 1, 2, 4, 5, 6, 7, 8 apply. DoD 3 is N/A (no academic data; a token authorizes only its owner's change). DoD 9 applies: document browser token handling, retry representation and G client contract; no database migration is introduced. DoD 10 is an obligation satisfied by the integrated review in [SP-105D](./SP-105D-password-reset-integration.md).
+**DoD:** Per [shared DoD](../../../epics/README.md), 1, 2, 4, 5, 6, 7, 8 apply (DoD 5–7: states/keyboard asserted in C's component tests; real-viewport and real-browser proof is D's). DoD 3 is N/A (no academic data; a token authorizes only its owner's change). DoD 9 applies: the implementation artifact documents browser token handling and retry representation, and references G's client contract. DoD 10 is an obligation satisfied by the integrated review in [SP-105D](./SP-105D-password-reset-integration.md).
 
-## Technical Notes
+## Tests (future obligations)
 
-### Routes
-
-- `apps/web/src/App.tsx`: add `<Route path="/forgot-password" element={<ForgotPasswordPage />} />` and `<Route path="/reset-password" element={<ResetPasswordPage />} />` at the top level, **outside** both `PublicRoute` and `ProtectedRoute` — exactly like the existing unguarded `/verify-email`. **Rationale (D11):** `PublicRoute` redirects authenticated users away, which would block a signed-in user who opens their reset link; both states must work.
-- `apps/web/src/pages/Login.tsx`: the existing `<Link to="/forgot-password">` currently hits the `*` catch-all (a dead link carried from SP-104/EP01); it resolves once the route exists. Add a one-time `location.state.reset` notice ("Password updated — sign in with your new password").
-
-### API client integration
-
-G owns API public-path isolation, shared session coordination and sanitized error propagation in services/api.ts and AuthContext. C adds the two typed authService recovery methods and calls G's recovery-operation boundary for reset submission. C never duplicates the refresh barrier or modifies shared restore internals.
-
-### URL-token handling (reset screen)
-
-- Reuse the `readLinkToken(hash)` pattern from `VerifyEmail.tsx`: `new URLSearchParams(location.hash.slice(1)).get('token')`, accepted **only** if it matches `/^[A-Za-z0-9_-]{43}$/`.
-- On load and on hash change: capture the token into state, then strip the fragment via `navigate(\`${location.pathname}${location.search}\`, { replace: true, state: null })`. **Rationale:** a URL fragment avoids the initial HTTP request but *can* remain in browser history and is readable by page JavaScript — capture-once + history-replace is the control; the page does not claim fragments never reach history.
-- Missing/malformed token → show the invalid/expired guidance + a "request a new link" action to `/forgot-password`; do not render a broken form.
-
-### Success and session clearing
-
-- Invoke G's recovery boundary with the reset request; G drains refresh and clears local state on success. Render a retryable error if draining fails; never submit automatically on entry.
-- On success navigate to login with a consumed-once reset notice. B expires the HttpOnly cookie; C never writes document.cookie.
-- Keep the token for field errors, network/503 and 429. Clear only on success or the specific uniform invalid-token message. Failed reset preserves the signed-in session via G.
-- Use the [shared retry wire contract](./SP-105-password-reset.md#retry-wire-contract-f-emits-c-consumes-d-verifies): parse Retry-After decimal integer 1–60, fall back to 60 seconds if absent/malformed/out of range, wait from receipt using a monotonic clock and allow explicit retry afterward; never auto-resubmit. Token and form values remain in memory. No rate countdown is applied to network/503 errors.
-
-### States and accessibility
-
-- **Request screen:** email input → submitting (loading, disabled, in-progress indicator) → the single generic "check your inbox" success (identical whether or not the account exists — no "we couldn't find that account") → error (actionable field message). Disable while in flight to prevent duplicates.
-- **Reset screen:** new-password + confirm; client-side validation mirroring the backend (min 8, must match); loading; success; invalid-token; error.
-- **Keyboard/focus/announce:** full tab order, Enter submits, visible focus rings, `aria-live="polite"` for async status, `aria-invalid`/`aria-describedby` on fields, per WCAG 2.2 AA.
-- **429 retry:** show the generic IP-limit message and wait guidance for either endpoint, retain valid form/token state, and retry without global logout. Test network/503 separately from token-invalid and password-field errors.
-- **Responsive:** single-column mobile, comfortable desktop. Verify at real viewports in SP-105D (CSS-class assertions alone do not establish responsiveness).
-
-### Relevant files
-
-- `apps/web/src/App.tsx` — two top-level routes outside the wrappers.
-- `apps/web/src/pages/ForgotPassword.tsx` (+ `.test.tsx`) — request screen.
-- `apps/web/src/pages/ResetPassword.tsx` (+ `.test.tsx`) — reset screen (new).
-- `apps/web/src/pages/Login.tsx` — the link resolves; add the `reset` one-time notice.
-- `apps/web/src/services/auth.ts` — the two methods.
-- `apps/web/src/services/api.ts` — G-owned boundary consumed here.
-- `apps/web/src/context/AuthContext.tsx` — G-owned state clearing; no shared refactor in C.
-- Reuse: `VerifyEmail.tsx` (`readLinkToken`), existing `Button`/`Input`/form + toast components.
-
-### Test cases
-
-Frontend — Vitest, React Testing Library, `user-event`, colocated `*.test.tsx`.
+Vitest + jsdom via `pnpm --filter @studypilot/web test` (jsdom, `@testing-library/jest-dom` in `src/test/setup.ts`, `setupUser()` in `src/test/user.ts`). Page tests render `<MemoryRouter>` + the real `<AuthProvider>` + `<App>` and drive the endpoints by overriding `api.defaults.adapter` — the established pattern (`VerifyEmail.test.tsx`, `recovery.test.ts`) — so the **real** G module (barrier, sanitization, generation) executes with no `vi.mock` of `recovery.ts`/`api.ts` (decision C6). The backend strings asserted below are the implemented ones (inspected code, below).
 
 | AC | file / describe | Named cases |
 |---|---|---|
-| 1 | `ForgotPassword.test.tsx` | `shows the email form`; `submits and shows the single generic success state`; `shows the same success for a 200 (no account-existence leak)`; `shows an actionable error for a 400 field error`; `disables submit while in flight (no duplicate)`; `is reachable while signed in and signed out` |
-| 2, 3 | `ResetPassword.test.tsx` | `reads the token from the URL fragment`; `strips the token fragment from the displayed URL`; `shows guidance and a re-request link when the token is missing or malformed`; `submits and shows success`; `shows the backend invalid/expired message and offers a new request on 400`; `validates min-8 and confirm-match before submit`; `keeps the token and offers retry after a network failure` |
-| 4 | `ResetPassword.test.tsx` (mock G boundary) | `clears the token and user on success`; `calls G boundary and renders retryable drain failure`; `navigates to /login with a one-time reset notice` |
-| 5 | `Login.test.tsx` | `the forgot-password link routes to the request screen`; `shows the one-time password-updated notice after reset` |
-| 6 | Both pages | `completes the flow using keyboard only`; `announces async status via aria-live`; `fits mobile and desktop viewports` |
-| — | Both page tests | `uses readable Retry-After`; `falls back to 60 seconds for absent/malformed/out-of-range header`; `retains token/form and session on 429`; `offers explicit retry after wait without automatic resubmit` |
+| 1 | `ForgotPassword.test.tsx` (new) | `shows the email form`; `submits and shows the single generic success state` (renders the backend message verbatim; form replaced); `shows the same success for a 200 regardless of account existence`; `shows an actionable error for a 400 email field error`; `disables submit while in flight (no duplicate)` (dblClick → exactly one call); `is reachable while signed in and signed out`; `waits out a 429 Retry-After countdown, keeps the email, and offers explicit retry without resubmitting`; `completes using keyboard only`; `announces status via aria-live` |
+| 2, 3 | `ResetPassword.test.tsx` (new) | `reads the token from the URL fragment`; `strips the token fragment from the displayed URL`; `shows guidance and a re-request link when the token is missing or malformed` (no broken form); `submits { token, password, confirmPassword } and shows success`; `shows the uniform invalid-link message and offers a new request on 400` (token cleared — form and retry gone); `keeps the token and form on a 400 password field error`; `keeps the token and offers retry after a network failure`; `validates min-8 and confirm-match before submit` |
+| 4 | `ResetPassword.test.tsx` (adapter drives the real G module) | `clears the local token and user on success` (`tokenStore.getToken()` null; signed-in user gone); `navigates to /login with a one-time reset notice`; `renders a retryable drain failure when the in-flight refresh does not settle within the 10s bound` (fake timers; reset never sent; form + token retained); `preserves the signed-in session on a 429` |
+| 5 | `Login.test.tsx` (extend) | `the forgot-password link routes to the request screen`; `shows the one-time password-updated notice after reset` (consumed once — not repeated on re-render) |
+| 6 | Both page tests | `completes the flow using keyboard only`; `announces async status via aria-live`; layout assertions limited to structure — **real-viewport proof is D's** (DoD 7) |
+| — | Both page tests (429 matrix) | `uses a readable Retry-After within 1–60`; `falls back to the 60-second wait for an absent/malformed/out-of-range header`; `retains form and token state on 429` |
 
-### Mechanisms and recorded decisions (2026-10-14)
+The existing suites (`VerifyEmail.test.tsx`, `Login.test.tsx`, `Register.test.tsx`, `api.test.ts`, `recovery.test.ts`, `AuthContext.test.tsx`) remain required and must pass — after G the baseline is 9 files / 102 tests.
 
-- **C1:** both routes outside `PublicRoute`/`ProtectedRoute` (D11) — signed-in and signed-out both work.
-- **C2:** read the token once from the fragment, then strip it via history-replace (reuses `VerifyEmail`).
-- **C3:** on reset success, clear local token + user; B expires the cookie; consume G’s recovery barrier and shared generation (G guards API writes/context restore), navigate to `/login` with a one-time notice.
-- **C4:** the request screen shows **one** generic success message (no account-existence leak), mirroring the backend.
+## Technical notes
 
-### Out of scope
+### Inspected code (2026-10-16)
 
-- The backend endpoints ([SP-105A](./SP-105A-password-reset-backend-issuance.md) / [SP-105B](./SP-105B-password-reset-backend-redemption.md)) and integration review ([SP-105D](./SP-105D-password-reset-integration.md)).
-- Email-template design beyond SP-103's provider reuse; per-IP enforcement (F; actionable 429 UI is in scope here); "active sessions" UI.
+- `apps/web/src/App.tsx` — `/verify-email` is a top-level route outside both wrappers (line 17); `/login` + `/register` sit under `PublicRoute`; `*` redirects to `/` (line 32).
+- `apps/web/src/pages/Login.tsx` — the `Forgot password?` link (line 103) points at `/forgot-password` and currently resolves into the catch-all; the `sessionExpired` one-time `toast` pattern (`location.state` + consumed-once ref, lines 39–55) is the model for the reset notice; forms use react-hook-form + `zodResolver` + `Input` + `Button`.
+- `apps/web/src/pages/VerifyEmail.tsx` — the `readLinkToken` 43-char base64url pattern (lines 10–13), capture-once + `navigate(pathname + search, { replace: true, state: null })`, and the `aria-live="polite"` status regions.
+- `apps/web/src/services/recovery.ts` (G, implemented `ea3f078`) — `runRecoveryReset(send)`, `RecoveryError { status, message, fieldErrors?, retryAfterSeconds?, retryable }`, `isRecoveryError`, `ResetPasswordResult`; drain-timeout message `'Your session is still syncing. Please wait a moment, then try again.'` (retryable 409); overlapping-reset message `'A password reset is already in progress. Please wait for it to finish.'`.
+- `apps/web/src/services/api.ts` (G) — `RECOVERY_PATHS`: recovery failures reject with the sanitized `RecoveryError`; recovery 401s are inert (no refresh, no session-expired handler). `apps/web/src/context/AuthContext.tsx` (G) — clears the local user through the registered clearer on success.
+- `apps/web/src/components/Input.tsx` — label/hint/error with `aria-invalid`/`aria-describedby` built in, password show/hide; `Button.tsx` — `isLoading` disables and shows a spinner. `apps/web/src/hooks/useResendVerification.ts` — the deadline/tick countdown pattern (SP-103 file — C mirrors it, does not edit it).
+- **Backend strings (implemented A/B/F, verified):** forgot `200` `'If an account exists for that email address, a password reset link has been sent. Check your inbox and wait a minute before requesting another.'`; forgot `400` `'Please enter a valid email address'` (all four constraints share it; the envelope `message` is an array that G's sanitizer dedupes to one); reset success `200` `'Password updated. Please sign in.'`; reset invalid `400` `'This reset link is invalid or has expired. Please request a new one.'` (both the DTO-validation array path and the service-exception path — byte-identical after dedup); reset field `400`s `'Password must be at least 8 characters'` / `'Passwords do not match'`; `429` `'Too many recovery requests. Wait and try again.'` + `Retry-After: N` (1–60, set before the throw; the filter preserves it; CORS exposes it in `common/cors.ts`); `503` `'Service temporarily unavailable. Please try again later.'`; the email link is `${FRONTEND_URL}/reset-password#token=<raw>` (`password-reset.service.ts`). The global filter (`common/filters/all-exceptions.filter.ts`) sets `error` to a **string** (`'Bad Request'`) for validation failures, so `fieldErrors` is populated only for field-map envelopes (decision C7).
+
+### Decisions (settled 2026-10-16)
+
+- **C1:** both routes outside `PublicRoute`/`ProtectedRoute`, top-level next to `/verify-email` (D11) — `PublicRoute` redirects authenticated users to `/dashboard`, which would block a signed-in user who opens their reset link.
+- **C2:** read the token once from the fragment, then strip it via history-replace (the `VerifyEmail` pattern, including `state: null`).
+- **C3:** on reset success the page navigates to `/login` with a one-time notice; the local clear is G's boundary doing its job — C never clears token/user itself and never writes `document.cookie` (B expires the cookie).
+- **C4:** the request screen shows **one** generic success state — the backend's `200` message rendered verbatim; the response is account-independent by contract, so the UI cannot and must not branch on account existence.
+- **C5 — sizing (user-accepted 2026-10-16):** one cohesive multi-window story with three bounded checkpoints, **not** a split into request/reset children — the two screens of one user flow share the 429 retry presentation, a11y, route wiring and test pattern; each checkpoint is independently verifiable; the reviewed plan (pass 2) scoped C as the bounded "pages consuming G" outcome, matching G's precedent. If implementation repeatedly overruns the per-checkpoint estimates, that observation returns to the planner — the implementer does not silently grow scope.
+- **C6 — test strategy (user-accepted 2026-10-16):** page tests drive the real G module through `api.defaults.adapter` overrides (no `vi.mock` of `recovery.ts`/`api.ts`); the drain-bound and 429-countdown cases use fake timers. This replaces the draft's "mock G boundary" note — G is implemented, so the boundary is testable for real.
+- **C7 — server field errors render as a form-level alert:** the implemented filter puts a string (`'Bad Request'`) in `error`, so real DTO 400s carry no field map and `fieldErrors` is `undefined`; the deduped message is actionable and is rendered in a `role="alert"` region. Client-side zod (min-8 + confirm-match on reset; email format on request) prevents most of them before submit. If `fieldErrors` is present (field-map envelope), map it onto the matching fields.
+- **C8 — types:** add `ForgotPasswordRequest { email }` and `ResetPasswordRequest { token, password, confirmPassword }` to `apps/web/src/types/index.ts` (convention of `LoginCredentials`); the reset method returns G's `ResetPasswordResult` (single source of truth — no duplicated shape); the forgot method returns the existing `VerificationResponse` (`{ message }` — identical to the backend's success body).
+- **C9 — 429 countdown:** per-page inline deadline measured with a monotonic clock (`performance.now()`) from receipt + a 1-second tick, re-enabling explicit retry after the wait; form values and token are retained; **no automatic resubmission** and **no countdown** for network/503 (shared retry wire contract, PR-001). C mirrors the `useResendVerification` pattern without editing that SP-103 file.
+- **C10 — one-time login notice:** `location.state.reset === true` → `toast.success('Password updated — sign in with your new password.')`, consumed once via a ref (mirrors Login's `sessionExpired` pattern).
+- **C11 — token lifetime:** clear the in-memory token only on success or on the **byte-exact** uniform invalid-link message (local constant equal to the backend's `INVALID_RESET_MESSAGE`); keep it for field errors, 429, 503, network and drain-timeout failures. G's dedup guarantees the message is byte-stable across the DTO and service paths.
+- **C12 — cross-account edge:** a successful reset clears the local session even if the signed-in account differs from the link's owner (inherited from G's unconditional clear-on-success — conservative: after any successful reset, no session survives in this tab), then navigates to `/login`.
+- **C13 — helper lift:** lift `readLinkToken` from `VerifyEmail.tsx` into new `apps/web/src/utils/linkToken.ts` (the 43-char base64url representation, SD3/SD4, is security-relevant and must not drift between two copies); `VerifyEmail.tsx` imports it — a behavior-identical change guarded by its existing suite.
+
+### Sizing
+
+- **Outcome:** a student can request a reset link from `/forgot-password` and complete a reset from the email's `/reset-password#token=…` link — both auth states, all screen states, the 429 retry contract, keyboard/a11y, and the session-clear + one-time-login-notice handoff.
+- **Time estimate:** ~2–3.5h total as a justified **cohesive multi-window task** (C5), executed as three bounded checkpoints:
+  - **M1 (~45–75m):** request screen — `ForgotPassword.tsx` + `authService.requestPasswordReset` + `/forgot-password` route + the Login link resolving; `ForgotPassword.test.tsx` (form, verbatim generic success, 400, duplicate, signed in/out, 429 wait + retry, keyboard). Verify: new suite + full web suite green.
+  - **M2 (~60–120m):** reset screen — `ResetPassword.tsx` + `authService.resetPassword` (through `runRecoveryReset`) + `/reset-password` route + fragment capture/strip; `ResetPassword.test.tsx` (token handling, uniform-invalid, field error, success clear + notice navigation, 429, drain bound via fake timers, keyboard). Verify: new suite + full web suite green.
+  - **M3 (~30–60m):** Login one-time notice + `Login.test.tsx` cases; `linkToken` lift (C13); DoD 9 client doc block in the implementation artifact; full `test` + `typecheck` + `lint` pass.
+  - Resume inputs for a fresh window: this ticket; the parent contract's "Representation and browser entry", "Retry wire contract" and "Session semantics and ordering" sections; G's client-contract block in [the implementation artifact](./artifacts/SP-105G/implementation.md); `App.tsx`, `pages/VerifyEmail.tsx` (+ test), `pages/Login.tsx`, `services/auth.ts`, `services/recovery.ts`, `components/Input.tsx`/`Button.tsx`, `test/user.ts`; the last incomplete checkpoint step with its focused verification command.
+- **Files:** new — `apps/web/src/pages/ForgotPassword.tsx`, `pages/ForgotPassword.test.tsx`, `pages/ResetPassword.tsx`, `pages/ResetPassword.test.tsx`, `utils/linkToken.ts`. Edited — `services/auth.ts`, `App.tsx`, `pages/Login.tsx`, `pages/Login.test.tsx`, `types/index.ts`, `pages/VerifyEmail.tsx` (import swap only, C13). **Footprint record:** 8 production + 3–4 test files total — above the default 1–3/1–2 expectation because the outcome is **two screens of one user flow**, but each checkpoint stays within 1–3 production + 1–2 test files and is independently verifiable (the breadth is deliberate per C5; there is no indivisible security core in C — the atomic session invariant lives in G, which C consumes).
+- **Start context:** this ticket; [shared contract](./SP-105-password-reset.md#shared-api-contract-all-children-must-agree) (representation, retry wire, session semantics); [shared DoD](../../../epics/README.md); G's [client contract block](./artifacts/SP-105G/implementation.md#client-contract-dod-9); the inspected code above. Dependency contracts are implemented — no sibling story reading required to start.
+- **Verification:** `pnpm --filter @studypilot/web test` (baseline after G: 9 files / 102 tests; two new page suites; 0 unhandled errors), `pnpm --filter @studypilot/web typecheck`, `pnpm --filter @studypilot/web lint`. No database or browser infrastructure needed; real-browser cookie/viewport/timing proof is D's dependency, not C's gate.
+- **Dependencies / exclusions:** Requires G implemented (evidence: `recovery.ts`/`api.ts`/`AuthContext.tsx` inspected above, suite green) and A/B/F implemented (evidence: endpoint strings and guard verified above). Excluded — any change to `services/recovery.ts`, `services/api.ts`, `context/AuthContext.tsx` (G, implemented), `useResendVerification` (SP-103), the backend (A/B/F/E), Header/nav additions, real-browser proof and DoD 10 (D), and H/I/J. Every excluded source requirement keeps its named owner.
+
+## Definition of Done
+
+Shared DoD 1/2/4/5/6/7/8 apply: meet the local criteria, validate input client-side (zod) with the backend as the source of truth, render actionable sanitized errors, handle loading/empty/error states, support keyboard + announcements, keep desktop/mobile layouts sane (real-viewport proof is D's), and automate the named cases above. DoD 3 is N/A: no academic data is accessed. DoD 9: the implementation artifact documents browser token handling (capture-once, strip, lifetime rule C11), retry representation (C9), and references G's client contract. Item 10 remains required through [SP-105D](./SP-105D-password-reset-integration.md); local completion alone is not release approval. Record evidence under this child's actual Jira key after assignment; no fabricated key or test result.
+
+## Out of scope
+
+- Any change to G's implemented files (`services/recovery.ts`, `services/api.ts`, `context/AuthContext.tsx`) or to `useResendVerification` (SP-103) — C consumes them read-only.
+- The backend endpoints (A/B/F — implemented) and integration review (D).
+- Email-template design beyond SP-103's provider reuse; per-IP enforcement (F); "active sessions" UI; Header/navigation additions.
+- `document.cookie` writes of any kind (B expires the HttpOnly cookie server-side); cross-tab or real-browser behavior claims (D).
