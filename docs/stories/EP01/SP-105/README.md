@@ -13,9 +13,9 @@
 
 **Parent artifacts:** `./artifacts/SP-105/` (created when parent checkpoint/index is written)
 
-**Active substory:** None — J implementation complete
+**Active substory:** [SP-105D](./SP-105D-password-reset-integration.md) — implementer session started 2026-10-16
 
-**Next substory:** [SP-105D](./SP-105D-password-reset-integration.md) — refine (2026-10-14 draft has no sizing block and predates the landed H/I/J suites)
+**Next substory:** [SP-105D](./SP-105D-password-reset-integration.md) — implement (checkpoint 1: execute H/I/J suites on a disposable `_test` PostgreSQL target; then the manual Mailpit/browser smoke per D6 and the parent index)
 
 **Implementation owner:** `implementer`, sequential across all layers.
 
@@ -32,11 +32,18 @@
 | [H](./SP-105H-postgres-test-harness.md) | Implemented — awaiting parent review | Six existing migrations applied to disposable PostgreSQL 15; three harness checks passed | Hold for combined SP-105 parent review | [Implementation](./artifacts/SP-105H/implementation.md), [checkpoint](./artifacts/SP-105H/checkpoint.md) |
 | [I](./SP-105I-credential-race-tests.md) | Implemented — awaiting parent review | A/B/E/H implemented; 15-case suite proves AC1/AC2/AC3 on real PostgreSQL (18/18 integration green) | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105I/implementation.md), [checkpoint](./artifacts/SP-105I/checkpoint.md) |
 | [J](./SP-105J-limiter-integration-tests.md) | Implemented — awaiting parent review | F and H implemented; 8-case store suite proves last-slot races, restart, window, and stale cleanup on real PostgreSQL (26/26 integration green) | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105J/implementation.md), [checkpoint](./artifacts/SP-105J/checkpoint.md) |
-| [D](./SP-105D-password-reset-integration.md) | Needs refinement | Implementation children A–J are done; the 2026-10-14 draft has no sizing block and predates H/I/J. SP-103 integrated evidence remains a feature-release gate | Refine, then execute suites and prepare the parent index | Parent final artifacts resolve to `./artifacts/SP-105/` |
+| [D](./SP-105D-password-reset-integration.md) | In progress | Implementation children A–J are done. Refinement landed in `662ba13` (2026-10-16: sizing block, D1–D9, D6 manual-evidence ownership); the user authorized the implementation session | Checkpoint 1: execute H/I/J suites unchanged on a disposable migrated `_test` PostgreSQL target, plus `test` and `typecheck`; then the manual Mailpit/browser smoke per D6, the AC6 timing sample, and the parent index | [Checkpoint](./artifacts/SP-105D/checkpoint.md); parent final artifacts resolve to `./artifacts/SP-105/` |
 
 This queue is the current execution record; the older plan inventory/gates below
 are planning history, not proof that coding or final review is complete. `Needs
 refinement` is actionable next work, not permission to code an unsized story.
+
+2026-10-16: SP-105D implementation session started (this record). The 2026-10-14
+D draft was refined in `662ba13` against the landed H/I/J suites (sizing block,
+checkpoints 1–3, decisions D1–D9); the queue row predating that refinement is
+reconciled here to In progress. Evidence will land in
+`./artifacts/SP-105D/checkpoint.md` and `./artifacts/SP-105D/implementation.md`.
+No product policy, requirement or contract was changed.
 
 2026-10-16: SP-105J implemented. `recovery-rate-limit.integration.spec.ts` proves
 the shared-bucket last-slot races, new-client persistence, real
