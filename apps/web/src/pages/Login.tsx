@@ -54,6 +54,21 @@ export function LoginPage() {
     }
   }, [sessionExpired]);
 
+  // C10: one-time notice for the reset handoff — ResetPassword navigates here
+  // with `state: { reset: true }` after a successful reset. The ref consumes
+  // it once per mount so re-renders (typing, focus) never re-fire the toast.
+  const passwordReset = Boolean(
+    (location.state as { reset?: boolean } | null)?.reset,
+  );
+  const resetToastShown = useRef(false);
+
+  useEffect(() => {
+    if (passwordReset && !resetToastShown.current) {
+      resetToastShown.current = true;
+      toast.success('Password updated — sign in with your new password.');
+    }
+  }, [passwordReset]);
+
   const onSubmit = async (data: LoginFormData) => {
     clearError();
     setIsSubmitting(true);
