@@ -3,7 +3,7 @@
 **Epic:** [EP01](../../../epics/EP01-authentication-and-onboarding.md)
 **Parent:** [SP-105](./SP-105-password-reset.md), existing Jira STUDY-7
 **Milestone:** M1
-**Status:** Planning baseline reviewed in pass 2 (2026-10-14); execution state below reconciled 2026-10-16. A/B/E/F/G/C implemented — awaiting the combined parent review; H implemented — awaiting the combined parent review; I implemented — awaiting the combined parent review; full feature/release not approved.
+**Status:** Planning baseline reviewed in pass 2 (2026-10-14); execution state below reconciled 2026-10-16. A/B/E/F/G/C/H/I/J implemented — awaiting the combined parent review; D needs refinement before sign-off; full feature/release not approved.
 
 ## Execution queue
 
@@ -13,9 +13,9 @@
 
 **Parent artifacts:** `./artifacts/SP-105/` (created when parent checkpoint/index is written)
 
-**Active substory:** None — I implementation complete
+**Active substory:** None — J implementation complete
 
-**Next substory:** [SP-105J](./SP-105J-limiter-integration-tests.md) — refine (draft needs grounded sizing and cases)
+**Next substory:** [SP-105D](./SP-105D-password-reset-integration.md) — refine (2026-10-14 draft has no sizing block and predates the landed H/I/J suites)
 
 **Implementation owner:** `implementer`, sequential across all layers.
 
@@ -26,17 +26,26 @@
 | [A](./SP-105A-password-reset-backend-issuance.md) | Implemented — awaiting parent review | SP-103 integrated sign-off still a feature/release gate | Retain issuance evidence; final DB proof in I/D | [Implementation](./artifacts/SP-105A/implementation.md), [historical review](./artifacts/SP-105A/review.md) |
 | [B](./SP-105B-password-reset-backend-redemption.md) | Implemented — awaiting parent review | Implemented before E; login/refresh race invariant remains incomplete until E | Preserve B; finish E, then prove cross-flow behavior in I/D | [Implementation](./artifacts/SP-105B/implementation.md), [historical review](./artifacts/SP-105B/review.md); PR-104 wording corrected in `6826ae0` |
 | [E](./SP-105E-auth-session-coordination.md) | Implemented — awaiting parent review | SP-102 done; login/refresh/logout now use the shared owner-first protocol — the post-reset renewal invariant is closed at unit level | Hold for the combined SP-105 parent review; deterministic real-Postgres proof via I/H, browser via D | [Implementation](./artifacts/SP-105E/implementation.md), [checkpoint](./artifacts/SP-105E/checkpoint.md) |
-| [F](./SP-105F-password-reset-ip-limits.md) | Implemented — awaiting parent review | Implemented 2026-10-15; residual: real multi-instance race (J via H) and browser sign-off (D) | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105F/implementation.md), [checkpoint](./artifacts/SP-105F/checkpoint.md) |
+| [F](./SP-105F-password-reset-ip-limits.md) | Implemented — awaiting parent review | Implemented 2026-10-15; multi-instance race is J's suite; browser sign-off remains D | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105F/implementation.md), [checkpoint](./artifacts/SP-105F/checkpoint.md) |
 | [G](./SP-105G-recovery-session-client.md) | Implemented — awaiting parent review | Implemented 2026-10-16 (M1–M3); A/B/F contracts consumed; C consumes the documented client contract | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105G/implementation.md), [checkpoint](./artifacts/SP-105G/checkpoint.md) |
 | [C](./SP-105C-password-reset-frontend-ui.md) | Implemented — awaiting parent review | G implemented 2026-10-16 (client contract consumed); A/B/F implemented — endpoints live | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105C/implementation.md), [checkpoint](./artifacts/SP-105C/checkpoint.md) |
 | [H](./SP-105H-postgres-test-harness.md) | Implemented — awaiting parent review | Six existing migrations applied to disposable PostgreSQL 15; three harness checks passed | Hold for combined SP-105 parent review | [Implementation](./artifacts/SP-105H/implementation.md), [checkpoint](./artifacts/SP-105H/checkpoint.md) |
-| [I](./SP-105I-credential-race-tests.md) | Implemented — awaiting parent review | A/B/E/H implemented; 15-case suite proves AC1/AC2/AC3 on real PostgreSQL (18/18 integration green) | Hold for the combined SP-105 parent review; J refines next | [Implementation](./artifacts/SP-105I/implementation.md), [checkpoint](./artifacts/SP-105I/checkpoint.md) |
-| [J](./SP-105J-limiter-integration-tests.md) | Needs refinement | F/H and A/B implemented; draft needs grounded refinement before coding | Refine after I in queue order | H [implementation](./artifacts/SP-105H/implementation.md); J artifacts created on start |
-| [D](./SP-105D-password-reset-integration.md) | Blocked | All implementation children and I/J; upstream evidence before release | Execute suites, collect browser/SMTP evidence, prepare parent index for final review | Parent final artifacts resolve to `./artifacts/SP-105/` |
+| [I](./SP-105I-credential-race-tests.md) | Implemented — awaiting parent review | A/B/E/H implemented; 15-case suite proves AC1/AC2/AC3 on real PostgreSQL (18/18 integration green) | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105I/implementation.md), [checkpoint](./artifacts/SP-105I/checkpoint.md) |
+| [J](./SP-105J-limiter-integration-tests.md) | Implemented — awaiting parent review | F and H implemented; 8-case store suite proves last-slot races, restart, window, and stale cleanup on real PostgreSQL (26/26 integration green) | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105J/implementation.md), [checkpoint](./artifacts/SP-105J/checkpoint.md) |
+| [D](./SP-105D-password-reset-integration.md) | Needs refinement | Implementation children A–J are done; the 2026-10-14 draft has no sizing block and predates H/I/J. SP-103 integrated evidence remains a feature-release gate | Refine, then execute suites and prepare the parent index | Parent final artifacts resolve to `./artifacts/SP-105/` |
 
 This queue is the current execution record; the older plan inventory/gates below
 are planning history, not proof that coding or final review is complete. `Needs
 refinement` is actionable next work, not permission to code an unsized story.
+
+2026-10-16: SP-105J implemented. `recovery-rate-limit.integration.spec.ts` proves
+the shared-bucket last-slot races, new-client persistence, real
+`clock_timestamp()` window, and stale cleanup race (8 cases). Full
+`test:integration` is 3 suites / 26 tests, zero skips. No production, schema,
+harness, or CI change. Queue: J implemented — awaiting the combined parent
+review; next actionable is D (needs refinement). No product policy or contract
+was changed.
+
 The next-task choice prioritizes the known pre-E session race. A/B records and
 existing commits are evidence pointers, not freshly rerun tests or independent
 closure of old review findings. SP-103's missing integrated DoD 1/7/10 evidence
