@@ -3,7 +3,7 @@
 **Epic:** [EP01](../../../epics/EP01-authentication-and-onboarding.md)
 **Parent:** [SP-105](./SP-105-password-reset.md), existing Jira STUDY-7
 **Milestone:** M1
-**Status:** Planning baseline reviewed in pass 2 (2026-10-14); execution state below reconciled 2026-10-16. A/B/E/F/G/C implemented — awaiting the combined parent review; H still needs refinement; full feature/release not approved.
+**Status:** Planning baseline reviewed in pass 2 (2026-10-14); execution state below reconciled 2026-10-16. A/B/E/F/G/C implemented — awaiting the combined parent review; H implemented — awaiting the combined parent review; I implemented — awaiting the combined parent review; full feature/release not approved.
 
 ## Execution queue
 
@@ -13,9 +13,9 @@
 
 **Parent artifacts:** `./artifacts/SP-105/` (created when parent checkpoint/index is written)
 
-**Active substory:** [SP-105H](./SP-105H-postgres-test-harness.md) — needs refinement (next actionable)
+**Active substory:** None — I implementation complete
 
-**Next substory:** [SP-105H](./SP-105H-postgres-test-harness.md) — refine (refiner pass), then implement
+**Next substory:** [SP-105J](./SP-105J-limiter-integration-tests.md) — refine (draft needs grounded sizing and cases)
 
 **Implementation owner:** `implementer`, sequential across all layers.
 
@@ -29,9 +29,9 @@
 | [F](./SP-105F-password-reset-ip-limits.md) | Implemented — awaiting parent review | Implemented 2026-10-15; residual: real multi-instance race (J via H) and browser sign-off (D) | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105F/implementation.md), [checkpoint](./artifacts/SP-105F/checkpoint.md) |
 | [G](./SP-105G-recovery-session-client.md) | Implemented — awaiting parent review | Implemented 2026-10-16 (M1–M3); A/B/F contracts consumed; C consumes the documented client contract | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105G/implementation.md), [checkpoint](./artifacts/SP-105G/checkpoint.md) |
 | [C](./SP-105C-password-reset-frontend-ui.md) | Implemented — awaiting parent review | G implemented 2026-10-16 (client contract consumed); A/B/F implemented — endpoints live | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105C/implementation.md), [checkpoint](./artifacts/SP-105C/checkpoint.md) |
-| [H](./SP-105H-postgres-test-harness.md) | Needs refinement | SP-102; A/F migrations for suite execution | Bound harness setup; no integrated pass claimed | Artifact directory created on start |
-| [I](./SP-105I-credential-race-tests.md) | Blocked | A/B implemented; E/H outstanding | Build/run credential race suite after prerequisites | Artifact directory created on start |
-| [J](./SP-105J-limiter-integration-tests.md) | Blocked | F/H; A/B HTTP behavior | Build/run limiter suite after prerequisites | Artifact directory created on start |
+| [H](./SP-105H-postgres-test-harness.md) | Implemented — awaiting parent review | Six existing migrations applied to disposable PostgreSQL 15; three harness checks passed | Hold for combined SP-105 parent review | [Implementation](./artifacts/SP-105H/implementation.md), [checkpoint](./artifacts/SP-105H/checkpoint.md) |
+| [I](./SP-105I-credential-race-tests.md) | Implemented — awaiting parent review | A/B/E/H implemented; 15-case suite proves AC1/AC2/AC3 on real PostgreSQL (18/18 integration green) | Hold for the combined SP-105 parent review; J refines next | [Implementation](./artifacts/SP-105I/implementation.md), [checkpoint](./artifacts/SP-105I/checkpoint.md) |
+| [J](./SP-105J-limiter-integration-tests.md) | Needs refinement | F/H and A/B implemented; draft needs grounded refinement before coding | Refine after I in queue order | H [implementation](./artifacts/SP-105H/implementation.md); J artifacts created on start |
 | [D](./SP-105D-password-reset-integration.md) | Blocked | All implementation children and I/J; upstream evidence before release | Execute suites, collect browser/SMTP evidence, prepare parent index for final review | Parent final artifacts resolve to `./artifacts/SP-105/` |
 
 This queue is the current execution record; the older plan inventory/gates below
