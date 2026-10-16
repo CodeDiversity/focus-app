@@ -1,55 +1,42 @@
 # SP-105C checkpoint
 
-Updated: 2026-10-16 (M1 complete — stop for next checkpoint)
-Status: in progress (M1 ✅; M2 next)
+Updated: 2026-10-16 (M3 complete)
+Status: implementation complete — awaiting parent review
 Story: docs/stories/EP01/SP-105/SP-105C-password-reset-frontend-ui.md
 Review unit: SP-105 parent (`docs/stories/EP01/SP-105/artifacts/SP-105/` implementation index) — child C
-Role / scope: implementer; frontend only (`apps/web`). Outcome: two recovery screens consuming the implemented G contract — `/forgot-password` request screen (done), `/reset-password` reset screen (fragment token, form, 429 retry, a11y), one-time login notice, route wiring. Exclusions: G-owned files (`services/recovery.ts`, `services/api.ts`, `context/AuthContext.tsx`), `useResendVerification` (SP-103), all backend work, real-browser proof (D), `document.cookie` writes.
+Role / scope: implementer; frontend only (`apps/web`). Outcome: two recovery screens consuming the implemented G contract — `/forgot-password` request screen, `/reset-password` reset screen (fragment token, form, 429 retry, a11y), one-time login notice, route wiring. Exclusions: G-owned files (`services/recovery.ts`, `services/api.ts`, `context/AuthContext.tsx`), `useResendVerification` (SP-103), all backend work, real-browser proof (D), `document.cookie` writes.
 
 ## Repository state
 - Workspace / branch: focus-app, `main`
-- HEAD at last update: `6b97f77` (M1 — forgot-password request screen)
-- Saved work: none — working tree clean after the M1 commit
-- Other work to preserve: none
+- HEAD at last update: `6dd78a8` (M3 — one-time login notice)
+- Saved work: M1 (`6b97f77`) + M2 (`510e36e`) + M3 (`6dd78a8`) committed; the final `implementation.md` is queued with the queue/ticket update
+- Other work to preserve: none — working tree clean apart from this child's planning artifacts
 
 ## Progress
 - [x] **M1 — request screen (complete, `6b97f77`):** `pages/ForgotPassword.tsx` + `ForgotPassword.test.tsx` (16 cases: form, verbatim generic success, existence-agnostic, 400 field error, in-flight/duplicate, signed in/out, 429 readable wait + 60s fallback matrix, 503/network retry, keyboard, aria-live), `authService.requestPasswordReset(email: string)`, `/forgot-password` route in `App.tsx`
-- [ ] M2 — reset screen: `utils/linkToken.ts` lift + `VerifyEmail.tsx` import swap (C13), `ResetPasswordRequest` in `types/index.ts`, `authService.resetPassword` via `runRecoveryReset`, `pages/ResetPassword.tsx` (+ `.test.tsx`), `/reset-password` route
-- [ ] M3 — Login one-time notice (C10) + `Login.test.tsx` cases; DoD 9 client doc block in the implementation artifact; full `test`/`typecheck`/`lint` pass; ticket → Implemented; queue → `Implemented — awaiting parent review`
-- Current step: M2 not started — red first: `ResetPassword.test.tsx`, then the implementation.
+- [x] **M2 — reset screen (complete, `510e36e`):** `utils/linkToken.ts` lift + `VerifyEmail.tsx` import swap (C13), `ResetPasswordRequest` in `types/index.ts`, `authService.resetPassword` via `runRecoveryReset`, `pages/ResetPassword.tsx` + `ResetPassword.test.tsx` (21 cases), `/reset-password` route
+- [x] **M3 — login notice (complete, `6dd78a8`):** `Login.tsx` one-time notice (C10) + `Login.test.tsx` cases (+3 → 7); DoD 9 client doc block in the implementation artifact; full `test`/`typecheck`/`lint` pass; ticket → Implemented; queue → `Implemented — awaiting parent review`
+- **Complete.** Post-M3 `pnpm --filter @studypilot/web test` = 11 files / 142 passed, 0 unhandled errors; `typecheck` and `lint` clean (2026-10-16). Child is `implementation complete — awaiting parent review`; no child-level reviewer/auditor is triggered (review cadence: one combined SP-105 parent review).
 
 ## Decisions and dependencies
 - Ticket decisions C1–C13 (refined 2026-10-16); single-story shape and the real-G-module test strategy are user-accepted (C5/C6).
 - G is implemented (`ea3f078`, `cfe48ae`) — its client contract is the production source of truth; A/B/F endpoints are live.
-- Page tests: `api.defaults.adapter` harness (the `installPendingHarness` style from `recovery.test.ts`), full `App` + `MemoryRouter` + real `AuthProvider`; **do not gate submit on `isLoading`** — a hanging boot restore must not block the recovery forms (the drain barrier is the ordering mechanism).
-- **`requestPasswordReset(email: string)` takes a plain string (the `resendVerification` precedent) — ticket C8's `ForgotPasswordRequest` type is dropped; only `ResetPasswordRequest` is added to `types/index.ts`** (C8 deviation — record in the implementation artifact's DoD 9 block).
+- Page tests: `api.defaults.adapter` harness, full `App` + `MemoryRouter` + real `AuthProvider`; **do not gate submit on `isLoading`** — a hanging boot restore must not block the recovery forms (the drain barrier is the ordering mechanism).
+- **`requestPasswordReset(email: string)` takes a plain string (the `resendVerification` precedent) — ticket C8's `ForgotPasswordRequest` type is dropped; only `ResetPasswordRequest` is added to `types/index.ts`** (C8 deviation — recorded in the implementation artifact's DoD 9 block).
 
-### M2 design (settled; verified against code this window)
-- **`utils/linkToken.ts` (C13):** `readLinkToken(hash)` — the 43-char base64url pattern (`/^[A-Za-z0-9_-]{43}$/`), `URLSearchParams(hash.slice(1)).get('token')`, null when absent/malformed. `VerifyEmail.tsx` swaps its inline copy for the import (behavior-identical; its 18-case suite guards).
-- **`types/index.ts`:** `export interface ResetPasswordRequest { token: string; password: string; confirmPassword: string; }` (after `VerificationResponse`).
-- **`authService.resetPassword(request: ResetPasswordRequest): Promise<ResetPasswordResult>`:** returns `runRecoveryReset(() => api.post<ResetPasswordResult>('/auth/reset-password', request).then(r => r.data))` — imports `runRecoveryReset` + the `ResetPasswordResult` type from `./recovery` (no cycle: recovery imports only `../types` + `./tokenStore`). No try/catch — G re-sanitizes inside the boundary; the raw token never escapes.
-- **`ResetPassword.tsx`:**
-  - `const INVALID_RESET_MESSAGE = 'This reset link is invalid or has expired. Please request a new one.';` (C11 — must be byte-identical to backend `password-reset.service.ts` `INVALID_RESET_MESSAGE`; G's dedup keeps it stable across the DTO-array and service-exception paths).
-  - Token: capture-once `useState(() => readLinkToken(location.hash))` + effect strips via `navigate(`${location.pathname}${location.search}`, { replace: true, state: null })` (C2, VerifyEmail pattern).
-  - zod: `z.object({ password: z.string({ required_error: 'Password must be at least 8 characters' }).min(8, 'Password must be at least 8 characters'), confirmPassword: z.string({ required_error: 'Passwords do not match' }) }).refine(d => d.password === d.confirmPassword, { message: 'Passwords do not match', path: ['confirmPassword'] })` — **no `.trim()` on password** (backend takes it exactly as sent; no max on the backend DTO), no max on the client.
-  - No `useAuth` (boot-state gating forbidden — the drain barrier orders; same decision as M1).
-  - Success (C3/C12): `navigate('/login', { replace: true, state: { reset: true } })` — **no rendered success state** (G already cleared token/user; the Login notice (M3, C10) is the success representation; the page unmounts in the same tick so a success `<p>` would never paint — tests assert the navigation, not a success paragraph).
-  - C11: on 400 with `err.message === INVALID_RESET_MESSAGE` (byte-exact) → `setToken(null)` + invalid state (uniform message in `role="alert"` + guidance + link to `/forgot-password`; form gone). Otherwise keep token + form; 400 field errors → form-level `role="alert"` with the deduped `err.message` (C7) + map `err.fieldErrors` onto fields via `setError` when present.
-  - 429 countdown (C9): identical to the M1 pattern — `performance.now()` deadline + 1s tick + explicit retry only; form values + token retained. No countdown for 503/network.
-  - States: no token → guidance + re-request link (no broken form); invalid → as above; else → form (two password Inputs, `autoComplete="new-password"`, show/hide toggle is `tabIndex={-1}` so tab order is password → confirm → button).
-  - Copy: h1 `Choose a new password`; status region `Updating your password…`; button `Update password` / `Updating password…`; countdown `Try again in N second(s).`; back link `Back to sign in` to `/login`.
-  - **`role="status"` collision:** `EmailVerificationBanner` (rendered by `Layout`) has its own `role="status"` and renders when signed in + unverified — the signed-in reset tests must NOT query `getByRole('status')` unqualified (or scope to the page's region); the aria-live case stays signed-out.
-- **`App.tsx`:** `<Route path="/reset-password" element={<ResetPasswordPage />} />` top-level next to `/forgot-password` (C1 — outside both wrappers).
-- **`ResetPassword.test.tsx` (red first; ~16 cases):** same harness as M1 (`api.defaults.adapter`, `fail()` **throws** — the M1 lesson: an async handler that *returns* an error object resolves with it; `LocationProbe` from `VerifyEmail.test` + a `|reset` suffix from `location.state.reset`).
-  - Cases: reads token from fragment (form renders); strips fragment (probe `/reset-password$`); missing/malformed token → guidance + re-request link, no form (it.each: no hash / 42-char / bad chars); submits `{ token, password, confirmPassword }` → body asserted, navigates `/login`, `tokenStore.getToken()` null, user cleared (signed-in variant: Header logout button gone); uniform-invalid 400 (it.each string / 3×-array — dedup byte-identical) → alert + token/form gone + re-request link; 400 field error (`message` array, `error: 'Bad Request'` string) → alert `Password must be at least 8 characters. Passwords do not match`, token + form + values kept, resubmit carries the token; 503 + network (it.each, `reject(...)` style) → retryable alert, no countdown, token kept, button enabled; **drain bound — fake timers** (`vi.useFakeTimers()` after the real-timer typing, then submit click; `await act(async () => { vi.advanceTimersByTime(10_000) })` → DRAIN_TIMEOUT message `'Your session is still syncing. Please wait a moment, then try again.'`; reset never sent; form + token retained) — **settle the pending boot refresh in the test body** (`resolve(ok(...))` under `act`) because `beginRefresh`'s `.finally` calls `setInFlightRefresh(null)`, releasing the `awaiting-drain` barrier — recovery.ts module state persists across tests (verified: `api.ts` lines 79–82); signed-in 429 → session preserved (`existing-session` token + logout button) + countdown; 429 readable + 60s-fallback matrix (it.each: absent/malformed/zero/61) with `vi.spyOn(performance, 'now')` + real 1s tick (the proven M1 pattern, NOT fake timers); keyboard-only flow; aria-live (signed-out only, per the collision note above).
-  - `userEvent` 14.6.7 is installed; its only timer use is `wait.js` when a non-zero `delay` is configured (default 0) — `setupUser()` under fake timers is expected safe for the drain click, but if any case hangs, fall back to `fireEvent.click` for that one interaction.
-  - Default `restoreHandler` for `/auth/refresh`: pending-promise holder (the `installPendingHarness` style) so every case controls the boot settle; settle it in cleanup where it stays pending (drain case) — all other cases settle immediately (401 signed-out / 200 signed-in) so module state self-heals.
+### M2 execution notes (settled during the window)
+- **Drain-bound test:** `vi.useFakeTimers()` after the real-timer typing; the submit goes through `fireEvent.submit(form)` — userEvent v14.6.7 awaits a (now fake) 0ms timer per interaction, so `user.click`/`user.type` after `useFakeTimers` hang. The drain-failure re-render is scheduled on the real scheduler (MessageChannel) once `act` resolves, so the test restores real timers **before** `findByRole` polling. The body is wrapped in try/finally that settles the boot refresh — `beginRefresh`'s `.finally` calls `setInFlightRefresh(null)`, releasing the `awaiting-drain` barrier; a stuck barrier would 409 every later case (module state persists across tests in a file).
+- **`<input type="password">` has no implicit role** in this toolchain (aria-query 5.1.3 + @testing-library/dom 9.3.4) — the form is queried by label (`getByLabelText(/^new password$/i)`), the Login.test pattern.
+- **`role="status"` collision:** `EmailVerificationBanner` (rendered by `Layout`) has its own `role="status"` and renders when signed in + unverified — the aria-live case stays signed-out.
 
 ## Verification
-- Baseline after M1: `pnpm --filter @studypilot/web test` = 10 files / 118 passed (16 new); `typecheck` + `lint` clean (max-warnings 0). M1 commit: `6b97f77` (4 files, 452 insertions).
+- `pnpm --filter @studypilot/web test` (repo root, 2026-10-16): 11 files, 142 passed, 0 unhandled errors — baseline was 10 files / 118 tests pre-C; +16 forgot +21 reset +3 login.
+- `pnpm --filter @studypilot/web typecheck`: clean — final M3 pass.
+- `pnpm --filter @studypilot/web lint`: clean — final M3 pass.
+- No G-owned files, `useResendVerification`, backend files, Header/nav additions, or `document.cookie` writes touched; real-browser proof remains SP-105D.
 
 ## Resume next
-1. M2 red: write `apps/web/src/pages/ResetPassword.test.tsx` (design above); run `pnpm --filter @studypilot/web vitest run src/pages/ResetPassword.test.tsx` — expect red (route falls to `*` → home).
-2. M2 green: `utils/linkToken.ts` + `VerifyEmail.tsx` import swap; `ResetPasswordRequest` in `types/index.ts`; `authService.resetPassword` (via `runRecoveryReset`); `pages/ResetPassword.tsx`; `/reset-password` route in `App.tsx`. Run the ResetPassword suite, then the full `test` + `typecheck` + `lint`; commit `feat(SP-105C): M2 — reset-password screen on the G recovery boundary`.
-3. M3: `Login.tsx` one-time notice (C10: `location.state.reset` + consumed-once ref + `toast.success('Password updated — sign in with your new password.')`, mirroring the `sessionExpired` pattern) + extend `Login.test.tsx` (its `vi.mock('../services/auth')` factory gains `requestPasswordReset`/`resetPassword`; routes gain `/forgot-password` + `/reset-password`; cases: forgot link routes to the request screen; notice shows after reset and is consumed once). Then `artifacts/SP-105C/implementation.md` with the DoD 9 block (browser token handling: capture-once/strip/lifetime C11; retry representation C9; G contract reference + the C8 deviation note), ticket → `Implemented 2026-10-16`, queue → `Implemented — awaiting parent review`, Next → H refine; commit `docs(SP-105C)`. Stop — no self-review (combined parent review covers C).
-- Read next: ticket Sizing/Decisions (`docs/stories/EP01/SP-105/SP-105C-password-reset-frontend-ui.md`); `pages/ForgotPassword.tsx` (+ test — the pattern to mirror), `pages/VerifyEmail.tsx` (+ test — probe/harness), `pages/Login.tsx` (+ test), `services/auth.ts`, `services/recovery.ts`, `services/api.ts` (beginRefresh settle, lines 68–86), `components/Input.tsx`/`Button.tsx`, `test/user.ts`.
+- **Nothing — the child is complete.** The full M1–M3 outcome is recorded in `implementation.md` (DoD 9 block included) and the parent queue:
+  - C: `Implemented — awaiting parent review` (hold for the combined SP-105 parent review).
+  - Next queue task: SP-105H → `Needs refinement` (refiner pass, then implement).
+- If a review finding requires a fix, this checkpoint resumes the fix in the same implementation ownership; the final implementation/review artifacts live at the parent (`artifacts/SP-105/`).

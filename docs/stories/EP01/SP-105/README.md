@@ -3,7 +3,7 @@
 **Epic:** [EP01](../../../epics/EP01-authentication-and-onboarding.md)
 **Parent:** [SP-105](./SP-105-password-reset.md), existing Jira STUDY-7
 **Milestone:** M1
-**Status:** Planning baseline reviewed in pass 2 (2026-10-14); execution state below reconciled 2026-10-16. A/B/E/F/G implemented — awaiting the combined parent review; C refined and Ready (2026-10-16), H still needs refinement; full feature/release not approved.
+**Status:** Planning baseline reviewed in pass 2 (2026-10-14); execution state below reconciled 2026-10-16. A/B/E/F/G/C implemented — awaiting the combined parent review; H still needs refinement; full feature/release not approved.
 
 ## Execution queue
 
@@ -13,9 +13,9 @@
 
 **Parent artifacts:** `./artifacts/SP-105/` (created when parent checkpoint/index is written)
 
-**Active substory:** [SP-105C](./SP-105C-password-reset-frontend-ui.md) — implementing (M1 of M1–M3, started 2026-10-16)
+**Active substory:** [SP-105H](./SP-105H-postgres-test-harness.md) — needs refinement (next actionable)
 
-**Next substory:** [SP-105C](./SP-105C-password-reset-frontend-ui.md) — resume via [its checkpoint](./artifacts/SP-105C/checkpoint.md) (in progress)
+**Next substory:** [SP-105H](./SP-105H-postgres-test-harness.md) — refine (refiner pass), then implement
 
 **Implementation owner:** `implementer`, sequential across all layers.
 
@@ -28,7 +28,7 @@
 | [E](./SP-105E-auth-session-coordination.md) | Implemented — awaiting parent review | SP-102 done; login/refresh/logout now use the shared owner-first protocol — the post-reset renewal invariant is closed at unit level | Hold for the combined SP-105 parent review; deterministic real-Postgres proof via I/H, browser via D | [Implementation](./artifacts/SP-105E/implementation.md), [checkpoint](./artifacts/SP-105E/checkpoint.md) |
 | [F](./SP-105F-password-reset-ip-limits.md) | Implemented — awaiting parent review | Implemented 2026-10-15; residual: real multi-instance race (J via H) and browser sign-off (D) | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105F/implementation.md), [checkpoint](./artifacts/SP-105F/checkpoint.md) |
 | [G](./SP-105G-recovery-session-client.md) | Implemented — awaiting parent review | Implemented 2026-10-16 (M1–M3); A/B/F contracts consumed; C consumes the documented client contract | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105G/implementation.md), [checkpoint](./artifacts/SP-105G/checkpoint.md) |
-| [C](./SP-105C-password-reset-frontend-ui.md) | In progress | G implemented 2026-10-16 (client contract verified against code); A/B/F implemented — endpoints live | Implementing M1 (request screen + `requestPasswordReset`) | [Checkpoint](./artifacts/SP-105C/checkpoint.md) |
+| [C](./SP-105C-password-reset-frontend-ui.md) | Implemented — awaiting parent review | G implemented 2026-10-16 (client contract consumed); A/B/F implemented — endpoints live | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105C/implementation.md), [checkpoint](./artifacts/SP-105C/checkpoint.md) |
 | [H](./SP-105H-postgres-test-harness.md) | Needs refinement | SP-102; A/F migrations for suite execution | Bound harness setup; no integrated pass claimed | Artifact directory created on start |
 | [I](./SP-105I-credential-race-tests.md) | Blocked | A/B implemented; E/H outstanding | Build/run credential race suite after prerequisites | Artifact directory created on start |
 | [J](./SP-105J-limiter-integration-tests.md) | Blocked | F/H; A/B HTTP behavior | Build/run limiter suite after prerequisites | Artifact directory created on start |
@@ -41,6 +41,15 @@ The next-task choice prioritizes the known pre-E session race. A/B records and
 existing commits are evidence pointers, not freshly rerun tests or independent
 closure of old review findings. SP-103's missing integrated DoD 1/7/10 evidence
 does not block E's SP-102-based implementation; it still blocks feature sign-off.
+
+2026-10-16: SP-105C implemented (M1–M3; commits `6b97f77`, `510e36e`,
+`6dd78a8`): `/forgot-password` request screen (verbatim generic success, 429
+wait + explicit retry, keyboard/aria-live) and `/reset-password` reset screen
+(fragment token capture/strip via the shared `utils/linkToken.ts`, form through
+G's `runRecoveryReset`, token lifetime per C11) plus the one-time login notice;
+40 new cases, web suite 11 files / 142 tests green, typecheck and lint clean.
+Queue: C implemented — awaiting the combined parent review; next actionable is
+H (needs refinement). No product policy, requirement or contract was changed.
 
 2026-10-16: SP-105C refined and grounded (refiner pass) against the implemented
 G client contract and the implemented A/B/F endpoint strings; the ticket now
