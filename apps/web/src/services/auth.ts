@@ -35,6 +35,16 @@ export const authService = {
     }
   },
 
+  // SP-105C — POST /auth/forgot-password. The shared instance's recovery path
+  // (SP-105G) sanitizes every failure into a RecoveryError, so this method
+  // stays a thin forwarder and never re-derives messages.
+  async requestPasswordReset(email: string): Promise<VerificationResponse> {
+    const response = await api.post<VerificationResponse>('/auth/forgot-password', {
+      email: email.trim().toLowerCase(),
+    });
+    return response.data;
+  },
+
   // Login user
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>('/auth/login', credentials);
