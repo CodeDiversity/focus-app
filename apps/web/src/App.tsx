@@ -7,6 +7,7 @@ import { DashboardPage } from './pages/Dashboard';
 import { ProfilePage } from './pages/Profile';
 import { VerifyEmailPage } from './pages/VerifyEmail';
 import { ForgotPasswordPage } from './pages/ForgotPassword';
+import { ResetPasswordPage } from './pages/ResetPassword';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { PublicRoute } from './components/PublicRoute';
 
@@ -17,6 +18,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         
         {/* Public routes */}
         <Route element={<PublicRoute />}>

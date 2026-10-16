@@ -20,6 +20,12 @@ export interface VerificationResponse {
   message: string;
 }
 
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export interface LoginCredentials {
   email: string;
   password: string;

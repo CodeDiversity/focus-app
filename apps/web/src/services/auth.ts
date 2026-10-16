@@ -1,10 +1,12 @@
 import api, { refreshAccessToken } from './api';
 import { tokenStore } from './tokenStore';
+import { runRecoveryReset, type ResetPasswordResult } from './recovery';
 import {
   AuthResponse,
   LoginCredentials,
   RegisterCredentials,
   RegisteredUser,
+  ResetPasswordRequest,
   User,
   VerificationResponse,
 } from '../types';
@@ -43,6 +45,17 @@ export const authService = {
       email: email.trim().toLowerCase(),
     });
     return response.data;
+  },
+
+  // SP-105C — POST /auth/reset-password inside the SP-105G recovery boundary:
+  // it drains the in-flight refresh before sending, commits the session clear
+  // (generation first) on success, and re-sanitizes every failure. The raw
+  // link token appears only in this request body — nothing returned or
+  // thrown carries it beyond the sanitized RecoveryError / ResetPasswordResult.
+  async resetPassword(request: ResetPasswordRequest): Promise<ResetPasswordResult> {
+    return runRecoveryReset(() =>
+      api.post<ResetPasswordResult>('/auth/reset-password', request).then((response) => response.data),
+    );
   },
 
   // Login user

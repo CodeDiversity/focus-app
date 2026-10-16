@@ -6,11 +6,7 @@ import { Input } from '../components/Input';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/auth';
 import { resendFeedback, useResendVerification } from '../hooks/useResendVerification';
-
-function readLinkToken(hash: string): string | null {
-  const token = new URLSearchParams(hash.slice(1)).get('token');
-  return token && /^[A-Za-z0-9_-]{43}$/.test(token) ? token : null;
-}
+import { readLinkToken } from '../utils/linkToken';
 
 export function VerifyEmailPage() {
   const location = useLocation();
