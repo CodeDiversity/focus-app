@@ -141,3 +141,85 @@ describe('api interceptor', () => {
     expect(tokenStore.getToken()).toBe('existing-session');
   });
 });
+
+describe('api recovery paths (SP-105G)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    tokenStore.clearToken();
+    setSessionExpiredHandler(null);
+  });
+
+  // 43-character base64url token with a distinctive marker: if a sanitized
+  // rejection ever leaked the raw Axios config/body, the marker would appear.
+  const RAW_TOKEN = `T0k3n${'a'.repeat(37)}`;
+  const INVALID_RESET_MESSAGE =
+    'This reset link is invalid or has expired. Please request a new one.';
+
+  function failure(config: InternalAxiosRequestConfig, status: number): AxiosError {
+    const response = {
+      data: {
+        statusCode: status,
+        message: status === 400 ? INVALID_RESET_MESSAGE : 'Unauthorized',
+        error: 'Bad Request',
+        path: config.url,
+        timestamp: '2026-10-15T12:00:00.000Z',
+      },
+      status,
+      statusText: String(status),
+      headers: { 'Set-Cookie': 'refresh_token=; Path=/auth; Max-Age=0' },
+      config,
+    } as AxiosResponse;
+    return new AxiosError(`Request failed with status code ${status}`, 'ERR_BAD_REQUEST', config, null, response);
+  }
+
+  it.each(['/auth/forgot-password', '/auth/reset-password'] as const)(
+    'never triggers a refresh or the session-expired handler for %s 400/401/404/429/503 errors',
+    async (path) => {
+      tokenStore.setToken('existing-session');
+      const expired = vi.fn();
+      setSessionExpiredHandler(expired);
+      let refreshCalls = 0;
+      for (const status of [400, 401, 404, 429, 503]) {
+        api.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
+          if (config.url === '/auth/refresh') {
+            refreshCalls += 1;
+            return ok(config, {
+              accessToken: 'new-token',
+              user: { id: 'user-1', name: 'Ada', email: 'ada@example.com' },
+            });
+          }
+          return Promise.reject(failure(config, status));
+        };
+        await expect(api.post(path, { email: 'ada@example.com' })).rejects.toBeTruthy();
+        expect(refreshCalls).toBe(0);
+        expect(expired).not.toHaveBeenCalled();
+        expect(tokenStore.getToken()).toBe('existing-session');
+      }
+    },
+  );
+
+  it('rejects recovery-path failures as sanitized errors without the raw Axios error', async () => {
+    api.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
+      return Promise.reject(failure(config, 400));
+    };
+    const rejected = await api
+      .post('/auth/reset-password', { token: RAW_TOKEN, password: 'x', confirmPassword: 'x' })
+      .catch((e) => e);
+    const rendered = JSON.stringify(rejected);
+    expect(rendered).not.toContain('T0k3n'); // raw link token in the request body
+    expect(rendered).not.toContain('refresh_token=');
+    expect(rejected).not.toHaveProperty('config');
+    expect(rejected.message).toBe(INVALID_RESET_MESSAGE);
+  });
+
+  it('keeps the existing spread error shape for non-recovery paths', async () => {
+    tokenStore.setToken('old-token');
+    api.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
+      return Promise.reject(unauthorized(config));
+    };
+    const rejected = await api.get('/protected').catch((e) => e);
+    expect(rejected.message).toBe('Your session has expired. Please sign in again.');
+    expect(rejected).toHaveProperty('config'); // pre-existing spread shape unchanged
+    expect(tokenStore.getToken()).toBeNull();
+  });
+});
