@@ -12,6 +12,7 @@ import { User, SessionUser, AuthResponse } from '../types';
 import { authService } from '../services/auth';
 import { tokenStore } from '../services/tokenStore';
 import { setSessionExpiredHandler } from '../services/api';
+import { registerLocalSessionClearer, snapshotSessionGeneration } from '../services/recovery';
 import { getErrorMessage } from '../utils/errors';
 
 interface AuthContextType {
@@ -60,6 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refreshProfile = useCallback((options?: { fresh?: boolean }): Promise<void> => {
     const current = userRef.current;
     const version = sessionVersion.current;
+    const generation = snapshotSessionGeneration();
     if (!current) {
       // The public page can confirm before boot has restored its existing session.
       if (options?.fresh && restoreFlight.current) {
@@ -73,7 +75,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return profileFlight.current.promise;
     }
     const promise = authService.getProfile().then((profile) => {
-      if (sessionVersion.current === version && userRef.current?.id === current.id && profile.id === current.id) {
+      // A flight that predates a successful reset is a no-op (SP-105G R3).
+      if (
+        sessionVersion.current === version &&
+        userRef.current?.id === current.id &&
+        profile.id === current.id &&
+        generation === snapshotSessionGeneration()
+      ) {
         applyUser(profile);
       }
     }).catch(() => {
@@ -82,7 +90,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (profileFlight.current?.promise !== promise) return;
       const needsFresh = profileFlight.current.needsFresh;
       profileFlight.current = null;
-      if (needsFresh && sessionVersion.current === version && userRef.current?.id === current.id) {
+      if (
+        needsFresh &&
+        sessionVersion.current === version &&
+        userRef.current?.id === current.id &&
+        generation === snapshotSessionGeneration()
+      ) {
         return refreshProfile();
       }
     });
@@ -106,7 +119,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // handler: clear local state and go to /login with the attempted page
   // saved, without a hard reload.
   useEffect(() => {
+    // Snapshotted at registration: a successful reset advances the shared
+    // generation, and a registration that predates it must skip the clear
+    // and the /login navigation (SP-105G R3).
+    const generation = snapshotSessionGeneration();
     setSessionExpiredHandler(() => {
+      if (generation !== snapshotSessionGeneration()) return;
       tokenStore.clearToken();
       applyUser(null);
       navigate('/login', {
@@ -122,12 +140,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     let active = true;
     const version = sessionVersion.current;
+    const generation = snapshotSessionGeneration();
+    // A restore that predates a successful reset is a no-op (SP-105G R3).
+    const isStale = () =>
+      !active ||
+      sessionVersion.current !== version ||
+      generation !== snapshotSessionGeneration();
     const initializeAuth = async () => {
       try {
         const response = await authService.refreshToken();
-        if (active && sessionVersion.current === version) applyUser(response.user);
+        if (!isStale()) applyUser(response.user);
       } catch {
-        if (active && sessionVersion.current === version) {
+        if (!isStale()) {
           tokenStore.clearToken();
           applyUser(null);
         }
@@ -142,6 +166,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (restoreFlight.current === promise) restoreFlight.current = null;
     });
     return () => { active = false; };
+  }, [applyUser]);
+
+  // A successful password reset clears the local user through the recovery
+  // boundary (the access token is cleared there first); navigation is C's.
+  useEffect(() => {
+    registerLocalSessionClearer(() => applyUser(null));
+    return () => registerLocalSessionClearer(null);
   }, [applyUser]);
 
   const login = useCallback(async (email: string, password: string) => {

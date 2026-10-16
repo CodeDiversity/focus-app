@@ -1,11 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { AuthProvider, useAuth } from './AuthContext';
 import { authService } from '../services/auth';
 import api from '../services/api';
 import { tokenStore } from '../services/tokenStore';
+import { runRecoveryReset } from '../services/recovery';
+import type { AuthResponse } from '../types';
 
 vi.mock('../services/auth', () => ({
   authService: {
@@ -239,5 +241,178 @@ describe('AuthContext', () => {
     });
     expect(currentAuth.user?.id ?? null).toBe(change === 'logout' ? null : 'user-2');
     expect(authService.getProfile).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('AuthContext recovery session generation (SP-105G M2)', () => {
+  const sessionUser = { id: 'user-1', name: 'Ada', email: 'ada@example.com', emailVerifiedAt: null };
+  let currentAuth: ReturnType<typeof useAuth>;
+
+  function ok(config: InternalAxiosRequestConfig, data: unknown): AxiosResponse {
+    return { data, status: 200, statusText: 'OK', headers: {}, config } as AxiosResponse;
+  }
+
+  function Probe() {
+    currentAuth = useAuth();
+    const location = useLocation();
+    const state = location.state as { sessionExpired?: boolean; from?: { pathname?: string } } | null;
+    if (currentAuth.isLoading) return <div>loading</div>;
+    return (
+      <div>
+        <span data-testid="auth-state">{currentAuth.isAuthenticated ? currentAuth.user?.email : 'logged-out'}</span>
+        <span data-testid="nav-path">{location.pathname}</span>
+        <span data-testid="nav-expired">{String(Boolean(state?.sessionExpired))}</span>
+      </div>
+    );
+  }
+
+  function renderProvider() {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Probe />} />
+            <Route path="/login" element={<div>Login page</div>} />
+          </Routes>
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+  }
+
+  beforeEach(() => {
+    cleanup();
+    api.defaults.adapter = undefined;
+    vi.clearAllMocks();
+    tokenStore.clearToken();
+  });
+
+  it('rejects a boot-restore completion predating a successful reset', async () => {
+    tokenStore.setToken('live-token');
+    // The silent boot refresh is in flight (its generation snapshot predates the reset).
+    let resolveRefresh!: (value: AuthResponse) => void;
+    mockedRefresh.mockImplementation(() => new Promise((resolve) => { resolveRefresh = resolve; }));
+
+    renderProvider();
+    await act(async () => {
+      await runRecoveryReset(() => Promise.resolve({ message: 'Password updated. Please sign in.' }));
+    });
+    expect(tokenStore.getToken()).toBeNull(); // cleared by the reset
+
+    // The pre-reset boot refresh "succeeds" late: it must not resurrect the cleared session.
+    await act(async () => {
+      resolveRefresh({ accessToken: 'stale-token', user: { ...sessionUser, emailVerifiedAt: '2026-10-14' } } as AuthResponse);
+    });
+    expect(await screen.findByTestId('auth-state')).toHaveTextContent('logged-out');
+    expect(tokenStore.getToken()).toBeNull();
+  });
+
+  it('rejects a profile-flight completion predating a successful reset', async () => {
+    mockedRefresh.mockResolvedValue({ accessToken: 'session', user: sessionUser } as AuthResponse);
+    renderProvider();
+    await screen.findByText('ada@example.com');
+
+    // A profile flight is in flight (focus-driven verification read).
+    let resolveProfile!: (value: Awaited<ReturnType<typeof authService.getProfile>>) => void;
+    vi.mocked(authService.getProfile).mockImplementation(() => new Promise((resolve) => { resolveProfile = resolve; }));
+    await act(async () => { window.dispatchEvent(new Event('focus')); });
+    expect(authService.getProfile).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await runRecoveryReset(() => Promise.resolve({ message: 'Password updated. Please sign in.' }));
+    });
+    expect(screen.getByTestId('auth-state')).toHaveTextContent('logged-out');
+
+    // The stale profile read completes: it must not re-apply the old session.
+    await act(async () => {
+      resolveProfile({ ...sessionUser, emailVerifiedAt: '2026-10-14', createdAt: '', updatedAt: '' });
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(screen.getByTestId('auth-state')).toHaveTextContent('logged-out'));
+  });
+
+  it('an explicit login after the reset re-establishes session operation', async () => {
+    mockedRefresh.mockResolvedValue({ accessToken: 'session', user: sessionUser } as AuthResponse);
+    renderProvider();
+    await screen.findByText('ada@example.com');
+
+    await act(async () => {
+      await runRecoveryReset(() => Promise.resolve({ message: 'Password updated. Please sign in.' }));
+    });
+    expect(screen.getByTestId('auth-state')).toHaveTextContent('logged-out');
+    expect(tokenStore.getToken()).toBeNull();
+
+    // The advanced generation must not block an explicit, post-reset login.
+    // Models the real login, which writes the token on success.
+    vi.mocked(authService.login).mockImplementation(async () => {
+      tokenStore.setToken('new-token');
+      return { accessToken: 'new-token', user: sessionUser } as AuthResponse;
+    });
+    await act(async () => { await currentAuth.login('ada@example.com', 'brand-new-password'); });
+    expect(screen.getByTestId('auth-state')).toHaveTextContent('ada@example.com');
+    expect(tokenStore.getToken()).toBe('new-token');
+  });
+
+  it('a failed reset preserves the session and ordinary expiry still logs out', async () => {
+    // Models the real single-flight refresh, which writes the token on success.
+    mockedRefresh.mockImplementation(async () => {
+      tokenStore.setToken('session');
+      return { accessToken: 'session', user: sessionUser } as AuthResponse;
+    });
+    // The probe renders beside the Routes so it survives the /login redirect.
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <AuthProvider>
+          <Probe />
+          <Routes>
+            <Route path="/" element={<div>Home page</div>} />
+            <Route path="/login" element={<div>Login page</div>} />
+          </Routes>
+        </AuthProvider>
+      </MemoryRouter>,
+    );
+    await screen.findByText('ada@example.com');
+
+    // A uniform invalid-link 400 from the reset endpoint.
+    const invalidLink = 'This reset link is invalid or has expired. Please request a new one.';
+    const resetSend = () =>
+      api
+        .post('/auth/reset-password', { token: 'T0k3n', password: 'x', confirmPassword: 'x' })
+        .then((r) => r.data);
+    api.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
+      if (config.url === '/auth/refresh') {
+        return ok(config, { accessToken: 'session', user: sessionUser } as AuthResponse);
+      }
+      const response = {
+        data: { statusCode: 400, message: invalidLink, error: 'Bad Request', path: config.url, timestamp: '2026-10-15T12:00:00.000Z' },
+        status: 400,
+        statusText: 'Bad Request',
+        headers: {},
+        config,
+      } as AxiosResponse;
+      throw new AxiosError('Request failed with status code 400', 'ERR_BAD_REQUEST', config, null, response);
+    };
+    await expect(runRecoveryReset(resetSend)).rejects.toBeTruthy();
+
+    // The prior session is preserved: no logout, no navigation, generation unchanged.
+    expect(screen.getByTestId('auth-state')).toHaveTextContent('ada@example.com');
+    expect(screen.getByTestId('nav-path')).toHaveTextContent('/');
+    expect(screen.getByTestId('nav-expired')).toHaveTextContent('false');
+    expect(tokenStore.getToken()).toBe('session');
+
+    // Ordinary mid-session expiry afterwards still clears the session and navigates.
+    api.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
+      if (config.url === '/auth/refresh') {
+        return ok(config, { accessToken: 'session', user: sessionUser } as AuthResponse);
+      }
+      const response = { data: { message: 'Unauthorized' }, status: 401, statusText: 'Unauthorized', headers: {}, config } as AxiosResponse;
+      throw new AxiosError('Unauthorized', 'ERR_BAD_REQUEST', config, null, response);
+    };
+    await act(async () => {
+      await expect(api.get('/protected')).rejects.toBeTruthy();
+    });
+    await waitFor(() => expect(screen.getByTestId('nav-path')).toHaveTextContent('/login'));
+    expect(screen.getByTestId('nav-expired')).toHaveTextContent('true');
+    expect(screen.getByTestId('auth-state')).toHaveTextContent('logged-out');
+    expect(tokenStore.getToken()).toBeNull();
   });
 });

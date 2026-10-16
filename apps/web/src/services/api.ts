@@ -10,6 +10,7 @@ import {
   onRecoveryBarrierReleased,
   sanitizeRecoveryError,
   setInFlightRefresh,
+  snapshotSessionGeneration,
 } from './recovery';
 import { ApiError, AuthResponse } from '../types';
 
@@ -23,7 +24,7 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean; _generation?: number };
 
 // The two SP-105 recovery routes (public entries; SP-105A/B/F).
 const RECOVERY_PATHS = ['/auth/forgot-password', '/auth/reset-password'];
@@ -56,20 +57,23 @@ export function setSessionExpiredHandler(handler: SessionExpiredHandler | null):
 export const setAuthFailureHandler = setSessionExpiredHandler;
 
 let refreshPromise: Promise<AuthResponse> | null = null;
+let deferredRefresh: Promise<AuthResponse> | null = null;
 
-export function refreshAccessToken(): Promise<AuthResponse> {
-  if (refreshPromise) {
-    return refreshPromise;
-  }
-  if (isRecoveryBarrierActive()) {
-    // A recovery operation owns the session while its barrier is active.
-    // Defer — never drop — this rotation; it starts after release.
-    return onRecoveryBarrierReleased().then(() => refreshAccessToken());
-  }
+/**
+ * Starts the single-flight rotation for `generation` — the session
+ * generation snapshotted at the *caller's* entry, so a rotation deferred
+ * behind the recovery barrier keeps the pre-reset generation even though it
+ * dispatches after release.
+ */
+function beginRefresh(generation: number): Promise<AuthResponse> {
   const promise = api
     .post<AuthResponse>('/auth/refresh')
     .then((response) => {
-      tokenStore.setToken(response.data.accessToken);
+      // A successful reset advances the generation and clears the token: a
+      // rotation that predates it must not resurrect the cleared session.
+      if (generation === snapshotSessionGeneration()) {
+        tokenStore.setToken(response.data.accessToken);
+      }
       return response.data;
     })
     .finally(() => {
@@ -81,12 +85,37 @@ export function refreshAccessToken(): Promise<AuthResponse> {
   return promise;
 }
 
+export function refreshAccessToken(): Promise<AuthResponse> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+  const generation = snapshotSessionGeneration();
+  if (isRecoveryBarrierActive()) {
+    // A recovery operation owns the session while its barrier is active.
+    // Defer — never drop — this rotation; one deferred flight is shared so
+    // the single-flight invariant survives the pause.
+    if (!deferredRefresh) {
+      deferredRefresh = onRecoveryBarrierReleased().then(() => {
+        deferredRefresh = null;
+        return refreshPromise ?? beginRefresh(generation);
+      });
+    }
+    return deferredRefresh;
+  }
+  return beginRefresh(generation);
+}
+
 // Request interceptor to add auth token
 api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
+  (config: RetriableConfig) => {
     const token = tokenStore.getToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    // Snapshot the session generation at dispatch. Retries reuse the config,
+    // so a retried 401 is still checked against the ORIGINAL dispatch.
+    if (config._generation === undefined) {
+      config._generation = snapshotSessionGeneration();
     }
     return config;
   },
@@ -108,6 +137,16 @@ api.interceptors.response.use(
       !originalRequest._retry &&
       !isAuthPath(originalRequest.url)
     ) {
+      const generation = originalRequest._generation ?? snapshotSessionGeneration();
+      if (generation !== snapshotSessionGeneration()) {
+        // This request predates a successful password reset. Its session is
+        // gone and its local state already cleared: do not refresh, retry,
+        // or re-clear — reject quietly (ticket AC2 / decision R3).
+        return Promise.reject({
+          ...error,
+          message: 'Your session has expired. Please sign in again.',
+        });
+      }
       originalRequest._retry = true;
       try {
         const refreshed = await refreshAccessToken();
@@ -116,9 +155,13 @@ api.interceptors.response.use(
         }
         return api(originalRequest);
       } catch {
-        tokenStore.clearToken();
-        if (sessionExpiredHandler) {
-          sessionExpiredHandler();
+        // Re-check: a rotation deferred behind the barrier runs after release
+        // and therefore observes an advanced generation.
+        if (generation === snapshotSessionGeneration()) {
+          tokenStore.clearToken();
+          if (sessionExpiredHandler) {
+            sessionExpiredHandler();
+          }
         }
         const message = 'Your session has expired. Please sign in again.';
         return Promise.reject({ ...error, message });
@@ -126,9 +169,11 @@ api.interceptors.response.use(
     }
 
     if (status === 401 && originalRequest?._retry) {
-      tokenStore.clearToken();
-      if (sessionExpiredHandler) {
-        sessionExpiredHandler();
+      if ((originalRequest._generation ?? snapshotSessionGeneration()) === snapshotSessionGeneration()) {
+        tokenStore.clearToken();
+        if (sessionExpiredHandler) {
+          sessionExpiredHandler();
+        }
       }
     }
 

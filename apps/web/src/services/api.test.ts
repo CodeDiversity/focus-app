@@ -1,8 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
-import api, { setSessionExpiredHandler } from './api';
+import api, { setSessionExpiredHandler, refreshAccessToken } from './api';
 import { authService } from './auth';
 import { tokenStore } from './tokenStore';
+import {
+  isRecoveryBarrierActive,
+  runRecoveryReset,
+  snapshotSessionGeneration,
+} from './recovery';
+import type { AuthResponse } from '../types';
 
 function ok(config: InternalAxiosRequestConfig, data: unknown): AxiosResponse {
   return { data, status: 200, statusText: 'OK', headers: {}, config } as AxiosResponse;
@@ -144,6 +150,7 @@ describe('api interceptor', () => {
 
 describe('api recovery paths (SP-105G)', () => {
   beforeEach(() => {
+    api.defaults.adapter = undefined;
     vi.clearAllMocks();
     tokenStore.clearToken();
     setSessionExpiredHandler(null);
@@ -221,5 +228,167 @@ describe('api recovery paths (SP-105G)', () => {
     expect(rejected.message).toBe('Your session has expired. Please sign in again.');
     expect(rejected).toHaveProperty('config'); // pre-existing spread shape unchanged
     expect(tokenStore.getToken()).toBeNull();
+  });
+});
+
+describe('api session generation (SP-105G M2)', () => {
+  beforeEach(() => {
+    api.defaults.adapter = undefined;
+    vi.clearAllMocks();
+    tokenStore.clearToken();
+    setSessionExpiredHandler(null);
+  });
+
+  const GEN_TOKEN = `G3n${'b'.repeat(37)}`;
+  const USER = { id: 'user-1', name: 'Ada', email: 'ada@example.com' };
+
+  function fail(config: InternalAxiosRequestConfig, status: number, data: unknown): AxiosError {
+    const response = { data, status, statusText: String(status), headers: {}, config } as AxiosResponse;
+    return new AxiosError(`Request failed with status code ${status}`, 'ERR_BAD_REQUEST', config, null, response);
+  }
+
+  const resetSend = () =>
+    api
+      .post('/auth/reset-password', { token: GEN_TOKEN, password: 'new-pass-9', confirmPassword: 'new-pass-9' })
+      .then((r) => r.data as { message: string });
+
+  interface PendingCall {
+    config: InternalAxiosRequestConfig;
+    resolve: (response: AxiosResponse) => void;
+    reject: (error: unknown) => void;
+  }
+
+  function installHarness() {
+    const urls: string[] = [];
+    const pending: PendingCall[] = [];
+    api.defaults.adapter = (config: InternalAxiosRequestConfig) => {
+      urls.push(config.url ?? '');
+      const entry: PendingCall = { config, resolve: () => undefined, reject: () => undefined };
+      pending.push(entry);
+      return new Promise<AxiosResponse>((res, rej) => {
+        entry.resolve = res;
+        entry.reject = rej;
+      });
+    };
+    return {
+      urls,
+      count: (url: string) => urls.filter((u) => u === url).length,
+      pendingFor(url: string) {
+        for (let i = pending.length - 1; i >= 0; i -= 1) {
+          if (pending[i].config.url === url) return pending[i];
+        }
+        throw new Error(`no recorded call for ${url}`);
+      },
+    };
+  }
+
+  const flush = () => new Promise((r) => setTimeout(r, 0));
+
+  it('a successful reset rejects a stale refresh token write', async () => {
+    const harness = installHarness();
+    tokenStore.setToken('live-token');
+    const genBefore = snapshotSessionGeneration();
+
+    const reset = runRecoveryReset(resetSend);
+    // Two concurrent rotations hit the barrier: deferred, single-flight, and
+    // snapshotted at entry so they keep the PRE-reset generation.
+    const staleRefresh = refreshAccessToken();
+    const staleRefresh2 = refreshAccessToken();
+    await flush();
+    expect(harness.count('/auth/refresh')).toBe(0); // deferred — never dispatched yet
+    expect(harness.count('/auth/reset-password')).toBe(1);
+
+    harness
+      .pendingFor('/auth/reset-password')
+      .resolve(ok(harness.pendingFor('/auth/reset-password').config, { message: 'Password updated. Please sign in.' }));
+    await expect(reset).resolves.toEqual({ message: 'Password updated. Please sign in.' });
+    expect(snapshotSessionGeneration()).toBe(genBefore + 1);
+    expect(isRecoveryBarrierActive()).toBe(false);
+
+    await flush(); // release runs the deferred rotation
+    expect(harness.count('/auth/refresh')).toBe(1); // single-flight preserved
+
+    // Adversarial: the server still "rotates" — the write must be rejected.
+    harness
+      .pendingFor('/auth/refresh')
+      .resolve(ok(harness.pendingFor('/auth/refresh').config, { accessToken: 'stale-token', user: USER } as AuthResponse));
+    await expect(staleRefresh).resolves.toBeTruthy();
+    await expect(staleRefresh2).resolves.toBeTruthy();
+    expect(tokenStore.getToken()).toBeNull(); // generation rejected the stale write
+  });
+
+  it('a stale 401 predating a successful reset refreshes nothing and fires no session-expired handler', async () => {
+    const harness = installHarness();
+    tokenStore.setToken('old-token');
+    const expired = vi.fn();
+    setSessionExpiredHandler(expired);
+
+    const protectedFlight = api.get('/protected'); // in flight; snapshots the pre-reset generation
+    await flush();
+
+    const reset = runRecoveryReset(resetSend);
+    await flush();
+    harness
+      .pendingFor('/auth/reset-password')
+      .resolve(ok(harness.pendingFor('/auth/reset-password').config, { message: 'Password updated. Please sign in.' }));
+    await expect(reset).resolves.toBeTruthy();
+    expect(tokenStore.getToken()).toBeNull(); // cleared by the reset
+
+    // The stale request's access JWT had lapsed: its 401 arrives after the reset.
+    harness
+      .pendingFor('/protected')
+      .reject(fail(harness.pendingFor('/protected').config, 401, { message: 'Unauthorized' }));
+    const rejected = await protectedFlight.catch((e) => e);
+    expect(rejected.message).toBe('Your session has expired. Please sign in again.');
+    expect(harness.count('/auth/refresh')).toBe(0); // no stale rotation
+    expect(expired).not.toHaveBeenCalled(); // no logout/navigation
+    expect(tokenStore.getToken()).toBeNull();
+  });
+
+  it('a failed reset releases the barrier, preserves the prior session, and performs no logout', async () => {
+    const harness = installHarness();
+    tokenStore.setToken('live-token');
+    const expired = vi.fn();
+    setSessionExpiredHandler(expired);
+    const genBefore = snapshotSessionGeneration();
+
+    const refresh = refreshAccessToken(); // in flight; the reset drains it
+    const reset = runRecoveryReset(resetSend);
+    const resetFailure = reset.catch((e) => e);
+    await flush();
+
+    harness
+      .pendingFor('/auth/refresh')
+      .resolve(ok(harness.pendingFor('/auth/refresh').config, { accessToken: 'rotated-token', user: USER } as AuthResponse));
+    await refresh;
+    expect(tokenStore.getToken()).toBe('rotated-token');
+    await flush(); // the drained reset POST dispatches once the drain settles
+
+    harness
+      .pendingFor('/auth/reset-password')
+      .reject(
+        fail(
+          harness.pendingFor('/auth/reset-password').config,
+          400,
+          { statusCode: 400, message: 'This reset link is invalid or has expired. Please request a new one.', error: 'Bad Request', path: '/auth/reset-password', timestamp: '2026-10-15T12:00:00.000Z' },
+        ),
+      );
+    const error = (await resetFailure) as { status: number; retryable: boolean };
+    expect(error).toMatchObject({ status: 400, retryable: false });
+
+    expect(isRecoveryBarrierActive()).toBe(false);
+    expect(snapshotSessionGeneration()).toBe(genBefore); // unchanged
+    expect(tokenStore.getToken()).toBe('rotated-token'); // prior session preserved
+    expect(expired).not.toHaveBeenCalled();
+
+    // Barrier released: a new rotation dispatches immediately (not deferred).
+    const next = refreshAccessToken();
+    await flush();
+    expect(harness.count('/auth/refresh')).toBe(2);
+    harness
+      .pendingFor('/auth/refresh')
+      .resolve(ok(harness.pendingFor('/auth/refresh').config, { accessToken: 'later-token', user: USER } as AuthResponse));
+    await next;
+    expect(tokenStore.getToken()).toBe('later-token');
   });
 });
