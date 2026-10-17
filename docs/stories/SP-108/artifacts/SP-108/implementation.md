@@ -33,7 +33,7 @@ suite green afterwards.
 | Test req | Tests | State |
 |---|---|---|
 | TR-108-01 — store configures, typed hooks dispatch/select, serializability middleware | `apps/web/src/store/store.test.tsx` | Pass |
-| TR-108-02 — slice/thunk behavior incl. error/loading paths; `AuthContext` unchanged | `apps/web/src/store/authSlice.test.ts` (8), `apps/web/src/context/AuthContext.test.tsx` (14) | Pass |
+| TR-108-02 — slice/thunk behavior incl. error/loading paths; `AuthContext` unchanged | `apps/web/src/store/authSlice.test.ts` (8 reducer), `apps/web/src/store/authSlice.thunks.test.ts` (4 thunk phases), `apps/web/src/context/AuthContext.registerLogout.test.tsx` (4 adapter callbacks), `apps/web/src/context/AuthContext.test.tsx` (14) | Pass — the thunk/adapter error+loading cases were added 2026-10-17 by SP-108F (review IR-002); the original "Pass" claim rested on the reducer cases only |
 | TR-108-03 — SP-105G generation/barrier regression | `apps/web/src/services/recovery.test.ts` (23), `apps/web/src/services/api.test.ts` (14) | Pass |
 | TR-108-04 — RTK Query mutation parity with the old `useMutation` contract | `apps/web/src/store/api.test.ts` (8), `apps/web/src/hooks/useResendVerification.test.tsx` (5) | Pass |
 | TR-108-05 — zero `@tanstack` references and dependencies | scoped grep + frozen-lockfile install | Pass (zero matches) |
@@ -46,6 +46,8 @@ suite green afterwards.
 | [B](./../SP-108B-auth-state-slice.md) | Auth/session state moved into `authSlice`; `AuthProvider` re-implemented as a store-backed adapter with the same `AuthContextType` interface (RD3) | `./artifacts/SP-108B/implementation.md` (+ checkpoints cp1, cp2) | `d164841` |
 | [C](./../SP-108C-rtk-query-data-layer.md) | RTK Query service on the shared axios `baseQuery` replaces every TanStack usage; `QueryClientProvider`/devtools removed; shared test providers added | `./artifacts/SP-108C/implementation.md` | `5308efa`, `7439f8f`, `5cce85e`, `57a8850`, `607917d` |
 | [D](./../SP-108D-tanstack-removal-verification.md) | TanStack packages + `package-lock.json` removed, `pnpm-lock.yaml` regenerated, README/skill docs flipped, full verification, this index | `./artifacts/SP-108D/implementation.md` | `32e5dd5`, `37b9eb3` |
+| [E](./../SP-108E-boot-loading-gate-fix.md) | Fix pass — boot-session loading gate restored (`authSlice` boots `isLoading: true`) + 4 real route-guard regression tests (review IR-001) | `./artifacts/SP-108E/implementation.md` | `b3533a8` |
+| [F](./../SP-108F-thunk-phase-tests.md) | Fix pass — 8 thunk/adapter error+loading phase tests through the real production paths (review IR-002) | `./artifacts/SP-108F/implementation.md` | `45e3e54` |
 
 ## Combined Git scope
 

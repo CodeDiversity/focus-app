@@ -4,8 +4,9 @@
 **Parent:** [SP-108](./SP-108.md) (fix pass for the combined review)
 **Milestone:** M1
 **Layer / owner:** Frontend, `implementer` (single writer)
-**Status:** Ready (fix planned) — closes review finding **IR-002 (Should-fix)**
-in `artifacts/SP-108/review.md`
+**Status:** Implemented — awaiting parent review (implementer, 2026-10-17,
+commit `45e3e54`) — closes review finding **IR-002 (Should-fix)** in
+`artifacts/SP-108/review.md`
 **Dependencies:** [SP-108E](./SP-108E-boot-loading-gate-fix.md) (sequential —
 both edit `authSlice.test.ts`; one writer)
 **Jira key:** Pending creation
