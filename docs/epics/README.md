@@ -51,6 +51,30 @@ Every completed story must satisfy the following applicable conditions:
 
 Cross-cutting technical tasks, such as initial NestJS setup, Prisma migrations, CI, error handling, and deployment, should be tracked as technical stories or tasks linked to the appropriate milestone.
 
+### Frontend architecture
+
+`apps/web` uses **Feature-Sliced Design** layers, decided 2026-10-17
+([SP-109](../stories/SP-109/SP-109.md), user decision; breakdown and per-story
+sizing in [docs/stories/SP-109](../stories/SP-109/README.md)):
+
+```text
+apps/web/src/
+  app/       providers, router, Redux store + typed hooks   (top layer)
+  pages/     route screens, one folder per route            (pages/<route>/ui)
+  widgets/   composed blocks (layout, header, guards)       (widgets/<block>/ui)
+  features/  user actions: components, hooks, slices, API   (features/<feature>/{ui,model,api,lib})
+  entities/  domain data and its API                        (entities/<entity>/{model,api})
+  shared/    reusable UI, HTTP transport, helpers           (no upward imports)
+  test/      test support (exempt from layer ordering)
+```
+
+Imports use the single `@/` → `apps/web/src` alias and may only point downward
+(`shared` → `entities` → `features` → `widgets` → `pages` → `app`); the only
+sanctioned upward imports are RTK `RootState`/`AppDispatch` types from
+`@/app/store`. ESLint enforces this (SP-109A/I). New frontend work in EP02–EP08
+places components, RTK slices/queries and API modules in the owning feature
+folder rather than in flat top-level folders.
+
 ### Technical Tasks
 
 | Task | Title | Milestone | Jira |
