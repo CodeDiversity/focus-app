@@ -15,7 +15,12 @@ implementation complete — integration obligation discharged (round-trip suite 
 a disposable real Postgres 7/7, API 288/288 zero skips, web 188/188, manual
 browser sign-off approved with recorded limitations); all four children handed to
 the combined SP-106 parent review, parent index at
-`./artifacts/SP-106/implementation.md`.
+`./artifacts/SP-106/implementation.md`. 2026-10-17: combined parent review pass
+1 returned **Changes Required** (one blocking finding, IR-106-01 — the Profile
+page never read the stored time zone), saved at `./artifacts/SP-106/review.md`;
+the finding was fixed in `5050b82` (stored-zone hydration + re-seed, unknown-zone
+PATCH guard, 5 new page tests, root README `PUT`→`PATCH`) and all four children
+are handed to the combined parent re-review.
 
 ## Execution queue
 
@@ -26,17 +31,18 @@ the combined SP-106 parent review, parent index at
 **Parent artifacts:** `./artifacts/SP-106/` (created when the parent
 checkpoint/index is written)
 
-**Active substory:** None — all four children implemented 2026-10-17 and handed
-to the combined parent review (A/B/C complete awaiting review; D complete with
-its integration obligation discharged). Checkpoints
+**Active substory:** None — SP-106C's IR-106-01 fix (commit `5050b82`) landed
+2026-10-17 after review pass 1; all four children are implemented and handed to
+the combined parent re-review. Checkpoints
 [./artifacts/SP-106A/checkpoint.md](./artifacts/SP-106A/checkpoint.md) ·
 [./artifacts/SP-106B/checkpoint.md](./artifacts/SP-106B/checkpoint.md) ·
 [./artifacts/SP-106C/checkpoint.md](./artifacts/SP-106C/checkpoint.md) ·
 [./artifacts/SP-106D/checkpoint.md](./artifacts/SP-106D/checkpoint.md).
 
-**Next substory:** None — every child and the integration obligation are
-implemented; the single combined SP-106 parent review is next (report at
-[./artifacts/SP-106/review.md](./artifacts/SP-106/review.md), parent index at
+**Next substory:** None — the single combined SP-106 parent **re-review** is
+next (pass 1 verdict `Changes Required` at
+[./artifacts/SP-106/review.md](./artifacts/SP-106/review.md); one blocking
+finding IR-106-01 fixed in `5050b82`; parent index at
 [./artifacts/SP-106/implementation.md](./artifacts/SP-106/implementation.md)).
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C → D;
@@ -51,7 +57,7 @@ written at `./artifacts/SP-106/implementation.md`).
 |---|---|---|---|---|
 | [A](./SP-106A-profile-schema-and-get.md) | Implemented — awaiting parent review | SP-104 implemented and reviewed (STUDY-10 review PASS) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106A/checkpoint.md) · [implementation](./artifacts/SP-106A/implementation.md) · commits `fbd0ab7`, `71aff0d`, `775d4eb` (2026-10-17: 260/260 tests, typecheck, lint clean) |
 | [B](./SP-106B-patch-profile-validation.md) | Implemented — awaiting parent review | A implemented (fields exist on the model and GET response — `fbd0ab7`/`71aff0d`) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106B/checkpoint.md) · 258/281 tests (2 skipped — integration need DATABASE_URL), typecheck, lint clean |
-| [C](./SP-106C-profile-preferences-form.md) | Implemented — awaiting parent review | B implemented (PATCH + 400 `errors` contract; GET fields) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106C/checkpoint.md) · [implementation](./artifacts/SP-106C/implementation.md) · commit `6ece311` (2026-10-17: 188/188 web tests, typecheck, lint clean; error-plumb deviation recorded for the parent review) |
+| [C](./SP-106C-profile-preferences-form.md) | Implemented — awaiting parent review | B implemented (PATCH + 400 `errors` contract; GET fields) | — (combined parent re-review; IR-106-01 fixed in `5050b82`) | [checkpoint](./artifacts/SP-106C/checkpoint.md) · [implementation](./artifacts/SP-106C/implementation.md) · commits `6ece311`, `5050b82` (2026-10-17: 193/193 web tests, typecheck, lint clean; error-plumb deviation recorded for the parent review; stored-zone hydration fix after review pass 1) |
 | [D](./SP-106D-profile-integration.md) | Implemented — awaiting parent review | A, B, C implemented | — (combined parent review after all children; report at `./artifacts/SP-106/review.md`) | [checkpoint](./artifacts/SP-106D/checkpoint.md) · [implementation](./artifacts/SP-106D/implementation.md) · commits `426459e` (2026-10-17: integration suite 7/7 on disposable Postgres, API 288/288 zero skips, web 188/188, typecheck+lint clean; manual browser sign-off approved with recorded limitations) · [parent index](./artifacts/SP-106/implementation.md) |
 
 The queue is the current execution record. All four children are implemented

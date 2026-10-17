@@ -1,9 +1,46 @@
 # SP-106C Checkpoint
 
 **Story:** SP-106C — Profile and Preferences Form (Frontend)
-**Status:** Implemented — awaiting parent review (2026-10-17)
+**Status:** Implemented — awaiting parent review (2026-10-17); IR-106-01 fixed 2026-10-17 (`5050b82`)
 **Sequence:** A → B → C → D (sequential)
-**Commit:** `6ece311` (implementation) — checkpoint/queue docs in a docs commit
+**Commit:** `6ece311` (implementation) · `5050b82` (IR-106-01 fix + tests, from the combined parent review) — checkpoint/queue docs in docs commits
+
+## Combined parent review finding IR-106-01 — fixed 2026-10-17 (commit `5050b82`)
+
+**Finding (review pass 1, `../SP-106/review.md`):** the page read the stored zone
+from the *session* user, but login/refresh/boot project only
+`id/name/email/emailVerifiedAt`, so `user.timeZone` was `undefined` on every
+normal session; D106-3's "pre-fill the stored value" branch was unreachable, the
+display line showed the browser zone, and a name-only save PATCHed that fallback
+over the stored zone. Verified in code before fixing (`Profile.tsx:33-35` +
+`AuthContext.tsx:184-198`).
+
+**Fix (test-first; 5 new page tests were RED first):**
+
+- `Profile.tsx` reads the full profile once via `AuthContext.refreshProfile()`
+  (`GET /users/me`) and re-seeds the form when the stored profile arrives
+  (react-hook-form `defaultValues` do not refresh after mount). The request is
+  deferred one microtask because the provider mirrors `user` into its own ref in
+  an effect that runs *after* this page's mount effects — an immediate call is a
+  silent no-op. In-progress keystrokes win: the re-seed is skipped once the
+  student has typed (`markEdited` on both inputs).
+- The PATCH body keeps the form contract `{ name, timeZone }`, but omits
+  `timeZone` while the stored value is still unknown and the student has not
+  touched the field — so an unreadable stored zone can never be overwritten by
+  the browser fallback. (C's AC3 contract is preserved for the normal path.)
+- `Profile.test.tsx`: hydration pre-fill + display line, name-only save after
+  hydration re-sends the stored zone, unknown-zone name-only save sends no
+  `timeZone`, explicit zone choice still sends the chosen zone, and a slow-read
+  race proving a late hydration does not clobber typing.
+- `README.md` (repo root) API list: `PUT /users/me` → `PATCH /users/me`
+  (review polish IR-106-04).
+
+**Verification after the fix:** web suite **19 files / 193 tests passed**
+(188 + 5 new); `typecheck` + `lint` clean; API suite re-run unchanged on a
+disposable Postgres — **25 suites / 288 tests, 0 skips**; API typecheck clean,
+lint 0 errors (1 pre-existing warning). Non-blocking polish IR-106-02/03/06 were
+left untouched (they are SP-106B behaviour the review classified as polish; not
+authorized in this fix pass).
 
 ## Grounding findings carried into implementation (deviations from ticket notes)
 
@@ -61,6 +98,7 @@
 
 ## Completion state
 
-- Queue row C → `Implemented — awaiting parent review`
-- Next actionable: [SP-106D](../../SP-106D-profile-integration.md) — implement
-  (round-trip suite + manual browser sign-off).
+- Queue row C → `Implemented — awaiting parent review` (IR-106-01 fixed in
+  `5050b82` after the combined parent review's first pass; re-review next)
+- Next actionable: the single combined SP-106 parent re-review
+  (`../SP-106/review.md`).

@@ -110,4 +110,16 @@ precedent; no academic data is touched by these flows.
   the combined parent review, not re-litigated here.
 - No Jira mutation occurred (child key STUDY-35 recorded in metadata only).
 - Parent index written at `./artifacts/SP-106/implementation.md`; the combined
-  parent review report is expected at `./artifacts/SP-106/review.md`.
+  parent review report is at `./artifacts/SP-106/review.md`.
+
+## Combined parent review pass 1 (2026-10-17) — outcome and follow-up
+
+The review returned **Changes Required** with one blocking should-fix finding,
+IR-106-01, in **SP-106C** (this child's own AC1–AC4, AC5 sign-off and evidence
+were all accepted; the finding was that the Profile page never read the stored
+time zone, so D106-3's pre-fill branch was unreachable). IR-106-01 and polish
+IR-106-04 were fixed in commit `5050b82` under SP-106C's scope — see
+`../SP-106C/checkpoint.md`. Post-fix gates re-run by the implementer: web
+193/193, API 25 suites / 288 tests 0 skips on a disposable Postgres, typechecks
+and lint clean. The parent re-review is next; this child's evidence above is
+otherwise unchanged (no API/integration artifact was touched by the fix).

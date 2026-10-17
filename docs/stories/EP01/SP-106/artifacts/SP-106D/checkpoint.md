@@ -39,6 +39,8 @@ Role / scope: implementer; integration verification (new API integration spec + 
 - Dev servers stopped (no listener on `:3000`/`:4000`); disposable database dropped.
 
 ## Resume next
-1. Nothing pending in this child. The coordinator requests the single combined SP-106 parent review (report at `./artifacts/SP-106/review.md`).
-2. If the review returns findings, fix them here and request parent re-review.
-- Read next: `./artifacts/SP-106/implementation.md` (parent index), `./implementation.md` (this child's record).
+1. Nothing pending in this child. The combined parent review (pass 1:
+   `Changes Required` on IR-106-01) was followed by the SP-106C fix in `5050b82`;
+   the parent **re-review** is next (report at `./artifacts/SP-106/review.md`).
+2. If the re-review returns findings, fix them here and request parent re-review.
+- Read next: `./artifacts/SP-106/implementation.md` (parent index), `./implementation.md` (this child's record), `../SP-106C/checkpoint.md` (IR-106-01 fix).

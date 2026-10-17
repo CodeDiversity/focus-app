@@ -1,10 +1,30 @@
 # SP-106 parent implementation index
 
-Updated: 2026-10-17 America/New_York
+Updated: 2026-10-17 America/New_York (review pass 1 recorded; IR-106-01 fixed)
 Prepared by: implementer (single sequential writer) after SP-106D completion.
 Purpose: index of every child's implementation evidence for the one combined
 SP-106 parent review. The review report, when the read-only reviewer returns,
 is saved at `./review.md` (this directory).
+
+## Review status
+
+- **Pass 1 (2026-10-17): `Changes Required`** — [`./review.md`](./review.md).
+  One blocking should-fix finding, **IR-106-01** (SP-106C): the SPA never read
+  the stored time zone, so after any login/reload the Profile field and display
+  line showed the browser zone and a name-only save silently overwrote the
+  stored zone. Every other AC/TR/epic AC, the four security invariants and DoD
+  1–10 passed on static evidence; IR-106-02…08 were polish/bookkeeping. The
+  reviewer's execution gates were recorded CANNOT VERIFY (its session had no
+  shell and nested delegation was blocked).
+- **IR-106-01 fixed** 2026-10-17 in commit `5050b82` (plus polish IR-106-04:
+  root README `PUT`→`PATCH`). Fix detail and evidence: `SP-106C/checkpoint.md`
+  → "Combined parent review finding IR-106-01". Post-fix gates re-run by the
+  implementer: web **193/193** (19 files), API **25 suites / 288 tests, 0 skips**
+  on a disposable Postgres, both typechecks clean, lint clean (API: 1
+  pre-existing warning).
+- **Next:** the single combined SP-106 parent **re-review** (findings IDs
+  preserved; new IDs continue at IR-106-09). `Reviewed` is established only by a
+  passing combined parent review.
 
 ## Status
 
@@ -24,7 +44,7 @@ wire proof, manual browser sign-off, this index).
 |---|---|---|---|---|
 | [A](./../SP-106A-profile-schema-and-get.md) | `User.timeZone` (`@default("UTC")`) + `preferences Json?` with one additive migration; `GET /users/me` returns them, credentials excluded by explicit `select` | [implementation](./SP-106A/implementation.md) | [checkpoint](./SP-106A/checkpoint.md) | `fbd0ab7`, `71aff0d`, `775d4eb` |
 | [B](./../SP-106B-patch-profile-validation.md) | `PATCH /users/me` (replaces `PUT`, no alias) with IANA + bounded-plain-object preferences validation; field-level 400 `errors` map via `FieldValidationPipe`; dead unscoped `findAll`/`remove` deleted | [checkpoint](./SP-106B/checkpoint.md) (implementation record folded into the checkpoint) | [checkpoint](./SP-106B/checkpoint.md) | `51add91` |
-| [C](./../SP-106C-profile-preferences-form.md) | Profile page Time zone field (D106-3 pre-fill, client IANA validation, field-level API errors, loading/error/success states), stored-zone display line via the shared helper, `api.put` → `api.patch` | [implementation](./SP-106C/implementation.md) | [checkpoint](./SP-106C/checkpoint.md) | `6ece311` |
+| [C](./../SP-106C-profile-preferences-form.md) | Profile page Time zone field (D106-3 pre-fill, client IANA validation, field-level API errors, loading/error/success states), stored-zone display line via the shared helper, `api.put` → `api.patch`; **IR-106-01 fix:** stored-zone hydration + re-seed and the unknown-zone PATCH guard | [implementation](./SP-106C/implementation.md) | [checkpoint](./SP-106C/checkpoint.md) | `6ece311`, `5050b82` |
 | [D](./../SP-106D-profile-integration.md) | Integrated sign-off: new real-Postgres round-trip suite (cross-session, isolation, credential exclusion, field-level 400), full-suite re-runs, manual browser sign-off (DoD 10), this parent index | [implementation](./SP-106D/implementation.md) | [checkpoint](./SP-106D/checkpoint.md) | `426459e`, plus docs commits |
 
 Shared contract delivered (README → Shared API contract):
