@@ -16,24 +16,25 @@ milestone — this one is **M1**.
 **Parent artifacts:** `./artifacts/SP-108/` (created when the parent
 checkpoint/index is written)
 
-**Active substory:** None — SP-108B and SP-108C both implemented, awaiting the combined parent review
+**Active substory:** None — all children (A–D) implemented; awaiting the combined parent review
 
-**Next substory:** SP-108D — refine (TanStack package removal, root README flip, full verification; checkpoint `./artifacts/SP-108D/checkpoint.md`)
+**Next substory:** None — final parent review next (`./artifacts/SP-108/review.md`, independent reviewer). All children implemented; no substory work remains.
 
 **Implementation owner:** `implementer`, sequential across all layers (all
 children are frontend-scope work; single writer).
 
 **Final review:** One combined SP-108 review after every child is implemented;
 no automatic child reviews. Final artifact path:
-`./artifacts/SP-108/review.md`; integration/index owner: SP-108D (records the
-parent index at `./artifacts/SP-108/implementation.md`).
+`./artifacts/SP-108/review.md`; integration/index owner: SP-108D (parent index
+written at `./artifacts/SP-108/implementation.md`). **All children implemented
+2026-10-16 — the combined review is next; no child work remains.**
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [A](./SP-108A-store-foundation.md) | Implemented — awaiting parent review | None — TanStack Query and AuthContext remain fully operational during this slice | None — all 4 AC met, 145 tests green, typecheck + lint clean | `./artifacts/SP-108A/` (checkpoint) |
 | [B](./SP-108B-auth-state-slice.md) | Implemented — awaiting parent review | A (store + typed hooks exist) | None — 14 AuthContext tests + 8 slice tests green, typecheck + lint clean, 82 out-of-scope tests (App-importing tests need SP-108C) | `./artifacts/SP-108B/` (checkpoints cp1, cp2) |
 | [C](./SP-108C-rtk-query-data-layer.md) | Implemented — awaiting parent review | A (store) landed; independent of B's scope | None — 166/166 web tests green, typecheck + lint + build clean, zero TanStack refs in `apps/web/src` | `./artifacts/SP-108C/` (checkpoint, implementation) |
-| [D](./SP-108D-tanstack-removal-verification.md) | Needs refinement | C (zero remaining TanStack usage is D's precondition); B (auth fully off React state) | Refine after B/C | None yet |
+| [D](./SP-108D-tanstack-removal-verification.md) | Implemented — awaiting parent review | B, C implemented — met; refined 2026-10-16 | None — TanStack packages + `package-lock.json` removed, `pnpm-lock.yaml` regenerated, README/skill docs flipped, 166/166 web tests + typecheck/lint/build/frozen-lockfile clean, AC2 grep zero matches | `./artifacts/SP-108D/` (checkpoint, implementation); parent index `./artifacts/SP-108/implementation.md` |
 
 This queue is the current execution record. A/B/C/D story files below are
 planner-created with sizing blocks; B–D carry `Needs refinement` (not `Ready`)

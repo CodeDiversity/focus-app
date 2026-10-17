@@ -4,12 +4,15 @@
 **Epic:** Cross-cutting technical task (standalone; see [SP-108](./SP-108.md))
 **Milestone:** M1
 **Layer / owner:** Frontend/Integration, `implementer` (single writer)
-**Status:** Refined — ready for implementation once the SP-108A/B Git
-precondition below is met. SP-108B and SP-108C are implemented
-(`./artifacts/SP-108B/implementation.md`, `./artifacts/SP-108C/implementation.md`)
-and `apps/web/src` has zero TanStack references. The queue row still reads
-`Needs refinement` until the planner/coordinator reconciles it — that edit is not
-this role's.
+**Status:** Implemented — awaiting parent review (2026-10-16). TanStack packages
+and `package-lock.json` removed, `pnpm-lock.yaml` regenerated, README/skill docs
+flipped, 166/166 web tests plus typecheck/lint/build/frozen-lockfile green, AC2
+grep zero matches. Evidence: `./artifacts/SP-108D/implementation.md` (and
+checkpoint). Dev-server smoke **not performed** — no registered test-account
+credential was available; recorded with that reason in the child record. SP-108B
+and SP-108C are implemented (`./artifacts/SP-108B/implementation.md`,
+`./artifacts/SP-108C/implementation.md`) and `apps/web/src` has zero TanStack
+references.
 **Dependencies:** SP-108C (zero remaining TanStack usage), SP-108B (auth fully
 off React state)
 **Jira key:** Pending creation (no sync authorized or performed for SP-108)
