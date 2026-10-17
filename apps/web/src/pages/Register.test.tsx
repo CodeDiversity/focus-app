@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { makeTestStore } from '../test/providers';
 import { RegisterPage } from './Register';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { authService } from '../services/auth';
@@ -30,18 +32,20 @@ const mockedToast = toast as unknown as {
 // uses, with a marker on /login so redirects are observable.
 const renderRegisterPage = () =>
   render(
-    <MemoryRouter initialEntries={['/register']}>
-      <AuthProvider>
-        <AuthProbe />
-        <Routes>
-          <Route path="/register" element={<RegisterPage />} />
-          <Route
-            path="/login"
-            element={<div data-testid="login-page">Login page</div>}
-          />
-        </Routes>
-      </AuthProvider>
-    </MemoryRouter>,
+    <Provider store={makeTestStore()}>
+      <MemoryRouter initialEntries={['/register']}>
+        <AuthProvider>
+          <AuthProbe />
+          <Routes>
+            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/login"
+              element={<div data-testid="login-page">Login page</div>}
+            />
+          </Routes>
+        </AuthProvider>
+      </MemoryRouter>
+    </Provider>,
   );
 
 // Exposes auth state so tests can assert registration signs nobody in.

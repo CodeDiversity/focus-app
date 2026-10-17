@@ -1,19 +1,33 @@
 import React, {
   createContext,
   useContext,
-  useState,
   useEffect,
   useCallback,
   useRef,
   ReactNode,
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { User, SessionUser, AuthResponse } from '../types';
+import { useSelector } from 'react-redux';
+import type { SessionUser, User } from '../types';
 import { authService } from '../services/auth';
 import { tokenStore } from '../services/tokenStore';
 import { setSessionExpiredHandler } from '../services/api';
 import { registerLocalSessionClearer, snapshotSessionGeneration } from '../services/recovery';
+import {
+  setBannerDismissed,
+  clearError,
+  setLoading,
+  setError,
+  setUser,
+  clearUser,
+} from '../store/authSlice';
+import {
+  login,
+  updateProfile,
+} from '../store/authSlice.thunks';
 import { getErrorMessage } from '../utils/errors';
+import { selectUser, selectIsLoading, selectError, selectIsVerificationBannerDismissed } from '../store/authSlice.selectors';
+import { useAppDispatch } from '../store/hooks';
 
 interface AuthContextType {
   user: SessionUser | null;
@@ -32,30 +46,49 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// A rejected thunk carries the sanitized message in `payload`
+// (`rejectWithValue(getErrorMessage(err))`); fall back to the raw error.
+function thunkErrorMessage(payload: unknown, error: unknown): string {
+  return typeof payload === 'string' ? payload : getErrorMessage(error);
+}
+
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<SessionUser | null>(null);
-  const userRef = useRef<SessionUser | null>(null);
-  const sessionVersion = useRef(0);
-  const profileFlight = useRef<{ version: number; promise: Promise<void>; needsFresh: boolean } | null>(null);
-  const restoreFlight = useRef<Promise<void> | null>(null);
-  const [isVerificationBannerDismissed, setBannerDismissed] = useState(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const user = useSelector(selectUser);
+  const isLoading = useSelector(selectIsLoading);
+  const error = useSelector(selectError);
+  const isVerificationBannerDismissed = useSelector(selectIsVerificationBannerDismissed);
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Local refs retained in the adapter (not in the slice) — decisions D1/D2
+  const sessionVersion = useRef(0);
+  const profileFlight = useRef<{ version: number; promise: Promise<void>; needsFresh: boolean } | null>(null);
+  const restoreFlight = useRef<Promise<void> | null>(null);
+  const userRef = useRef<SessionUser | null>(null);
+
+  // Keep userRef in sync with Redux state
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  // Derived state (same as current: isAuthenticated = !!user)
+  const isAuthenticated = !!user;
+
+  // applyUser equivalent: advances sessionVersion and dispatches setUser
   const applyUser = useCallback((next: SessionUser | null) => {
-    if (userRef.current?.id !== next?.id) {
+    const currentId = userRef.current?.id;
+    const nextId = next?.id;
+    if (currentId !== nextId) {
       sessionVersion.current += 1;
-      setBannerDismissed(false);
     }
     userRef.current = next;
-    setUser(next);
-  }, []);
+    dispatch(setUser(next));
+  }, [dispatch]);
 
   // Reconcile only this session's profile. Transient failures leave access usable.
   const refreshProfile = useCallback((options?: { fresh?: boolean }): Promise<void> => {
@@ -112,8 +145,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [refreshProfile]);
 
   const dismissVerificationBanner = useCallback(() => {
-    if (userRef.current?.emailVerifiedAt === null) setBannerDismissed(true);
-  }, []);
+    if (userRef.current?.emailVerifiedAt === null) {
+      dispatch(setBannerDismissed());
+    }
+  }, [dispatch]);
 
   // When a mid-session refresh fails, the api interceptor calls this
   // handler: clear local state and go to /login with the attempted page
@@ -125,7 +160,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const generation = snapshotSessionGeneration();
     setSessionExpiredHandler(() => {
       if (generation !== snapshotSessionGeneration()) return;
-      tokenStore.clearToken();
+      // tokenStore.clearToken() stays in the api interceptor (unchanged)
       applyUser(null);
       navigate('/login', {
         replace: true,
@@ -152,11 +187,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (!isStale()) applyUser(response.user);
       } catch {
         if (!isStale()) {
-          tokenStore.clearToken();
+          // tokenStore.clearToken() handled by api interceptor
           applyUser(null);
         }
       } finally {
-        if (active) setIsLoading(false);
+        if (active) {
+          dispatch(setLoading(false));
+        }
       }
     };
 
@@ -166,7 +203,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (restoreFlight.current === promise) restoreFlight.current = null;
     });
     return () => { active = false; };
-  }, [applyUser]);
+  }, [applyUser, dispatch]);
 
   // A successful password reset clears the local user through the recovery
   // boundary (the access token is cleared there first); navigation is C's.
@@ -175,43 +212,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => registerLocalSessionClearer(null);
   }, [applyUser]);
 
-  const login = useCallback(async (email: string, password: string) => {
+  // The thunks swallow the service rejection into `rejectWithValue` (the
+  // sanitized message). Re-throw it here so `await login(...)` still rejects —
+  // callers render the error and must not navigate on a failed sign-in.
+  const loginFn = useCallback(async (email: string, password: string) => {
     sessionVersion.current += 1;
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response: AuthResponse = await authService.login({ email, password });
-      applyUser(response.user);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-      throw err;
-    } finally {
-      setIsLoading(false);
+    const result = await dispatch(login({ email, password }));
+    if (login.rejected.match(result)) {
+      throw new Error(thunkErrorMessage(result.payload, result.error));
     }
-  }, [applyUser]);
+  }, [dispatch]);
 
   // Registration issues no token and signs nobody in — the student is
   // redirected to login (SP-102's flow) to authenticate.
   const register = useCallback(
     async (name: string, email: string, password: string) => {
-      setIsLoading(true);
-      setError(null);
-
+      dispatch(setLoading(true));
+      dispatch(setError(null));
       try {
-        await authService.register({
-          name,
-          email,
-          password,
-        });
+        await authService.register({ name, email, password });
       } catch (err: unknown) {
-        setError(getErrorMessage(err));
+        dispatch(setError(getErrorMessage(err)));
         throw err;
       } finally {
-        setIsLoading(false);
+        dispatch(setLoading(false));
       }
     },
-    [],
+    [dispatch],
   );
 
   const logout = useCallback(async () => {
@@ -222,34 +249,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Logout error:', getErrorMessage(err));
     } finally {
       tokenStore.clearToken();
-      applyUser(null);
+      dispatch(clearUser());
     }
-  }, [applyUser]);
+  }, [dispatch]);
 
-  const updateProfile = useCallback(async (data: Partial<User>) => {
-    try {
-      const updatedUser = await authService.updateProfile(data);
-      applyUser(updatedUser);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-      throw err;
+  const updateProfileFn = useCallback(async (data: Partial<User>) => {
+    const result = await dispatch(updateProfile(data));
+    if (updateProfile.rejected.match(result)) {
+      throw new Error(thunkErrorMessage(result.payload, result.error));
     }
-  }, [applyUser]);
+  }, [dispatch]);
 
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+  const clearErrorFn = useCallback(() => {
+    dispatch(clearError());
+  }, [dispatch]);
 
   const value: AuthContextType = {
     user,
-    isAuthenticated: !!user,
+    isAuthenticated,
     isLoading,
     error,
-    login,
+    login: loginFn,
     register,
     logout,
-    updateProfile,
-    clearError,
+    updateProfile: updateProfileFn,
+    clearError: clearErrorFn,
     refreshProfile,
     isVerificationBannerDismissed,
     dismissVerificationBanner,

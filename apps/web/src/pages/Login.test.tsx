@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { makeTestStore } from '../test/providers';
 import { LoginPage } from './Login';
 import { ForgotPasswordPage } from './ForgotPassword';
 import { ResetPasswordPage } from './ResetPassword';
@@ -40,34 +42,38 @@ const LINK_TOKEN = 'AbC123_-'.repeat(6).slice(0, 43);
 
 const renderLogin = (state?: unknown) =>
   render(
-    <MemoryRouter
-      initialEntries={[{ pathname: '/login', state } as never]}
-    >
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/dashboard" element={<div>Dashboard page</div>} />
-          <Route path="/profile" element={<div>Profile page</div>} />
-        </Routes>
-      </AuthProvider>
-    </MemoryRouter>,
+    <Provider store={makeTestStore()}>
+      <MemoryRouter
+        initialEntries={[{ pathname: '/login', state } as never]}
+      >
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/dashboard" element={<div>Dashboard page</div>} />
+            <Route path="/profile" element={<div>Profile page</div>} />
+          </Routes>
+        </AuthProvider>
+      </MemoryRouter>
+    </Provider>,
   );
 
 // The reset handoff enters from the email link's destination; the same route
 // tree lets the reset page navigate to /login with the one-time notice state.
 const renderReset = () =>
   render(
-    <MemoryRouter initialEntries={[`/reset-password#token=${LINK_TOKEN}`]}>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-        </Routes>
-      </AuthProvider>
-    </MemoryRouter>,
+    <Provider store={makeTestStore()}>
+      <MemoryRouter initialEntries={[`/reset-password#token=${LINK_TOKEN}`]}>
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+          </Routes>
+        </AuthProvider>
+      </MemoryRouter>
+    </Provider>,
   );
 
 describe('LoginPage', () => {
@@ -90,7 +96,11 @@ describe('LoginPage', () => {
     await user.type(screen.getByLabelText(/password/i), 'Password123');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
-    expect(mockedToast.error).toHaveBeenCalledWith('Invalid email or password');
+    // The login thunk rejects asynchronously through the Redux store, so the
+    // toast assertion waits for the dispatched rejection to settle.
+    await waitFor(() =>
+      expect(mockedToast.error).toHaveBeenCalledWith('Invalid email or password'),
+    );
     expect(screen.queryByText('Dashboard page')).not.toBeInTheDocument();
   });
 
