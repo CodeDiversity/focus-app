@@ -44,4 +44,9 @@ The dashboard should prioritize clarity and avoid overwhelming the user.
 
 ## Technical Notes
 
-Use TanStack Query to retrieve dashboard data. Prefer composing domain-specific queries over creating a large service that owns unrelated business rules.
+Use RTK Query (SP-108 decision RD2, 2026-10-16 — RTK Query replaces TanStack
+Query) to retrieve dashboard data, over the shared axios transport in
+`apps/web/src/services/api.ts`. Prefer composing domain-specific endpoints over
+creating a large service that owns unrelated business rules. (Historical note:
+the original wording named TanStack Query; SP-108's user decision reversed that
+architecture choice for the whole web app.)
