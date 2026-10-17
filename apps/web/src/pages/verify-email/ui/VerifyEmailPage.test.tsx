@@ -1,11 +1,13 @@
 import { StrictMode } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { setupUser } from '../test/user';
+import { setupUser } from '@/test/user';
 import { useLocation } from 'react-router-dom';
-import { Providers, makeTestStore } from '../test/providers';
+import { Providers, makeTestStore } from '@/test/providers';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import App from '../App';
+// test-only: suite renders the real App router (SP-109H)
+// eslint-disable-next-line import/no-restricted-paths
+import App from '@/app/App';
 import { AuthProvider } from '@/features/auth/model/AuthContext';
 import api from '@/shared/api/httpClient';
 import { tokenStore } from '@/shared/api/tokenStore';

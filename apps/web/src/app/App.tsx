@@ -1,13 +1,13 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from '@/widgets/layout/ui/Layout';
-import { HomePage } from './pages/Home';
-import { LoginPage } from './pages/Login';
-import { RegisterPage } from './pages/Register';
-import { DashboardPage } from './pages/Dashboard';
-import { ProfilePage } from './pages/Profile';
-import { VerifyEmailPage } from './pages/VerifyEmail';
-import { ForgotPasswordPage } from './pages/ForgotPassword';
-import { ResetPasswordPage } from './pages/ResetPassword';
+import { HomePage } from '@/pages/home/ui/HomePage';
+import { LoginPage } from '@/pages/login/ui/LoginPage';
+import { RegisterPage } from '@/pages/register/ui/RegisterPage';
+import { DashboardPage } from '@/pages/dashboard/ui/DashboardPage';
+import { ProfilePage } from '@/pages/profile/ui/ProfilePage';
+import { VerifyEmailPage } from '@/pages/verify-email/ui/VerifyEmailPage';
+import { ForgotPasswordPage } from '@/pages/forgot-password/ui/ForgotPasswordPage';
+import { ResetPasswordPage } from '@/pages/reset-password/ui/ResetPasswordPage';
 import { ProtectedRoute } from '@/widgets/protected-route/ui/ProtectedRoute';
 import { PublicRoute } from '@/widgets/public-route/ui/PublicRoute';
 

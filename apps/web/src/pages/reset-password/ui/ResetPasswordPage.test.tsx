@@ -1,13 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useLocation } from 'react-router-dom';
-import { Providers } from '../test/providers';
+import { Providers } from '@/test/providers';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import App from '../App';
+// test-only: suite renders the real App router (SP-109H)
+// eslint-disable-next-line import/no-restricted-paths
+import App from '@/app/App';
 import { AuthProvider } from '@/features/auth/model/AuthContext';
 import api from '@/shared/api/httpClient';
 import { tokenStore } from '@/shared/api/tokenStore';
-import { setupUser } from '../test/user';
+import { setupUser } from '@/test/user';
 
 // The implemented backend strings (SP-105A/B/F) — the page renders the
 // sanitized RecoveryError message and the uniform invalid-link message.
