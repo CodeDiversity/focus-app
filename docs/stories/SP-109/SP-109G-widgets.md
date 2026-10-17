@@ -6,7 +6,7 @@
 **Layer / owner:** Frontend, `implementer` (single writer)
 **Status:** Queued (SP-109C, SP-109E, SP-109F must land first)
 **Dependencies:** SP-109C (`shared/ui`), SP-109E (`useAuth`), SP-109F (resend hook)
-**Jira key:** Pending creation
+**Jira key:** STUDY-51 (verified 2026-10-17)
 
 ## Summary and bounded scope
 
@@ -127,7 +127,7 @@ SP-109 review. Evidence goes to `./artifacts/SP-109G/`.
 
 ## Tracker reference
 
-`Pending creation` (RD11).
+`STUDY-51` (verified 2026-10-17; RD11 superseded — parent `STUDY-44`).
 
 ## Out of scope
 

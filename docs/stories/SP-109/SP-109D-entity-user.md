@@ -6,7 +6,7 @@
 **Layer / owner:** Frontend, `implementer` (single writer)
 **Status:** Queued (SP-109B and SP-109C must land first)
 **Dependencies:** SP-109B (types), SP-109C (`shared/api/httpClient`)
-**Jira key:** Pending creation
+**Jira key:** STUDY-48 (verified 2026-10-17)
 
 ## Summary and bounded scope
 
@@ -137,7 +137,7 @@ goes to `./artifacts/SP-109D/`.
 
 ## Tracker reference
 
-`Pending creation` (RD11).
+`STUDY-48` (verified 2026-10-17; RD11 superseded — parent `STUDY-44`).
 
 ## Out of scope
 

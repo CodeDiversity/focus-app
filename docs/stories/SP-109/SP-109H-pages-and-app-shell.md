@@ -6,7 +6,7 @@
 **Layer / owner:** Frontend, `implementer` (single writer)
 **Status:** Queued (SP-109G must land first)
 **Dependencies:** SP-109G (widgets exist as folders), SP-109F (`app/store`)
-**Jira key:** Pending creation
+**Jira key:** STUDY-52 (verified 2026-10-17)
 
 ## Summary and bounded scope
 
@@ -136,7 +136,7 @@ combined SP-109 review. Evidence goes to `./artifacts/SP-109H/`.
 
 ## Tracker reference
 
-`Pending creation` (RD11).
+`STUDY-52` (verified 2026-10-17; RD11 superseded — parent `STUDY-44`).
 
 ## Out of scope
 

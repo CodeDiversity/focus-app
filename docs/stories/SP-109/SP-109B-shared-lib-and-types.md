@@ -6,7 +6,7 @@
 **Layer / owner:** Frontend, `implementer` (single writer)
 **Status:** Queued (SP-109A must land first — the moves use the `@/` alias)
 **Dependencies:** SP-109A
-**Jira key:** Pending creation
+**Jira key:** STUDY-46 (verified 2026-10-17)
 
 ## Summary and bounded scope
 
@@ -131,7 +131,7 @@ SP-109 review. Evidence goes to `./artifacts/SP-109B/`.
 
 ## Tracker reference
 
-`Pending creation` (RD11 — no Jira sync authorized).
+`STUDY-46` (verified 2026-10-17; RD11 superseded — parent `STUDY-44`).
 
 ## Out of scope
 

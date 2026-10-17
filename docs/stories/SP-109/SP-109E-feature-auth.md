@@ -7,7 +7,7 @@
 **Status:** Queued (SP-109C and SP-109D must land first)
 **Dependencies:** SP-109C (transport), SP-109D (`userService` extraction, so
 `authService` no longer owns the profile methods)
-**Jira key:** Pending creation
+**Jira key:** STUDY-49 (verified 2026-10-17)
 
 ## Summary and bounded scope
 
@@ -137,7 +137,7 @@ DoD 10 belongs to the combined SP-109 review. Evidence goes to
 
 ## Tracker reference
 
-`Pending creation` (RD11).
+`STUDY-49` (verified 2026-10-17; RD11 superseded — parent `STUDY-44`).
 
 ## Out of scope
 

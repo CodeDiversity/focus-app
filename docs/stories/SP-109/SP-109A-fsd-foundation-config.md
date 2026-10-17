@@ -6,7 +6,7 @@
 **Layer / owner:** Frontend config, `implementer` (single writer)
 **Status:** Ready
 **Dependencies:** None
-**Jira key:** Pending creation
+**Jira key:** STUDY-45 (verified 2026-10-17)
 
 ## Summary and bounded scope
 
@@ -130,8 +130,8 @@ README DoD map). DoD 10 belongs to the combined SP-109 review. Evidence goes to
 
 ## Tracker reference
 
-`Pending creation` — no Jira sync authorized or performed for this parent
-(RD11).
+`STUDY-45` — verified 2026-10-17; parent SP-109 is `STUDY-44`
+(RD11 superseded: the authorized bootstrap sync created and verified these keys).
 
 ## Out of scope
 

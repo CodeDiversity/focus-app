@@ -6,7 +6,7 @@
 **Layer / owner:** Frontend verification + docs (root `README.md`), `implementer`
 **Status:** Queued (SP-109B–H must land first)
 **Dependencies:** SP-109A–H
-**Jira key:** Pending creation
+**Jira key:** STUDY-53 (verified 2026-10-17)
 
 ## Summary and bounded scope
 
@@ -136,7 +136,7 @@ child must not mark anything `Reviewed`. Evidence goes to
 
 ## Tracker reference
 
-`Pending creation` (RD11 — no Jira sync authorized or performed).
+`STUDY-53` (verified 2026-10-17; RD11 superseded — parent `STUDY-44`).
 
 ## Out of scope
 
