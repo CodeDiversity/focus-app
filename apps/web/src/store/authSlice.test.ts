@@ -65,11 +65,12 @@ describe('authSlice — reducer actions', () => {
 
   it('setLoading toggles isLoading', () => {
     const store = makeStore();
-    expect(store.getState().auth.isLoading).toBe(false);
-    store.dispatch(setLoading(true));
+    // Boot starts loading (session restore) until the boot effect clears it.
     expect(store.getState().auth.isLoading).toBe(true);
     store.dispatch(setLoading(false));
     expect(store.getState().auth.isLoading).toBe(false);
+    store.dispatch(setLoading(true));
+    expect(store.getState().auth.isLoading).toBe(true);
   });
 
   it('setError stores and clears error', () => {
@@ -90,7 +91,9 @@ describe('authSlice — reducer actions', () => {
     const store = makeStore();
     const state = store.getState().auth;
     expect(state.user).toBeNull();
-    expect(state.isLoading).toBe(false);
+    // Pre-migration parity: boot holds the session-restoring spinner until the
+    // silent refresh settles (SP-108E / review IR-001).
+    expect(state.isLoading).toBe(true);
     expect(state.error).toBeNull();
     expect(state.isVerificationBannerDismissed).toBe(false);
   });

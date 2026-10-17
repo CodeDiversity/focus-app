@@ -13,7 +13,10 @@ export interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  isLoading: false,
+  // Boot starts in the "restoring session" state: the route guards hold their
+  // spinner until the silent refresh settles (pre-migration `useState(true)`,
+  // SP-105G boot contract). The AuthProvider boot effect clears it in `finally`.
+  isLoading: true,
   error: null,
   isVerificationBannerDismissed: false,
 };
