@@ -79,9 +79,17 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
 - **Refiner:** reads the queue, writes only the given unimplemented story, and
   returns its readiness/dependency result for planner/coordinator reconciliation.
   It cannot edit README, create artifacts or mark other stories ready.
-- **Reviewer / DoD auditor:** read queue and colocated evidence independently;
-  never edit status or move files. One final combined parent review after every
-  child and integration task is implemented; gaps are findings, not status edits.
-- **Coordinating parent:** saves returned reviewer reports at the resolved path
-  and records verified parent-review outcome in execution fields. Only a passing
-  final parent review allows `Reviewed`; child self-checks never do.
+- **Reviewer:** reads the queue and colocated evidence independently; never
+  moves files. The review is read-only and its only own writes are the saved
+  report plus, on a passing verdict, the reviewer skill's passing-review docs
+  sync: finding/correction-log entries, verdict-dependent queue fields
+  (including `Reviewed` after the passing final parent review) and a stale
+  parent status line. Non-passing verdicts save the report only and defer
+  those edits. One final combined parent review after every child and
+  integration task is implemented; gaps are findings, not status edits.
+- **DoD auditor:** reads queue and evidence and returns the audit; writes
+  nothing.
+- **Coordinating parent:** the reviewer saves its own report at the resolved
+  path; the parent reconciles queue/status edits the reviewer deferred on a
+  non-passing verdict. Only a passing final parent review allows `Reviewed`;
+  child self-checks never do.

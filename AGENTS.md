@@ -7,7 +7,7 @@ The five roles in `.vibe/agents/` are also available to Codex as project agents 
 | `implementer` | Sequential backend, frontend, database and integration implementation | `.agents/skills/studypilot-implementer/SKILL.md` | Implementation and checkpoint artifacts |
 | `planner` | Epic breakdown, sequencing, backlog planning | `.agents/skills/studypilot-planner/SKILL.md` | Only `docs/` |
 | `refiner` | Ground an unimplemented story in the codebase | `.agents/skills/studypilot-refiner/SKILL.md` | Only the given story in `docs/stories/` |
-| `reviewer` | Review plans before implementation or verify completed work against acceptance criteria and DoD | `.agents/skills/studypilot-reviewer/SKILL.md` | None; return Markdown report |
+| `reviewer` | Review plans before implementation or verify completed work against acceptance criteria and DoD | `.agents/skills/studypilot-reviewer/SKILL.md` | Saves its report at the resolved path; after a passing review, correction-log entries, queue execution fields and the parent status line |
 | `dod-auditor` | Static Definition of Done audit | `.agents/skills/studypilot-reviewer/SKILL.md` | None; return the audit |
 
 When asked to use a role, use its custom agent if the runtime supports selecting one. Otherwise, read `.codex/agents/<role>.toml` and its shared skill and follow those instructions in the current session or include them in the delegated task. Having these roles available does not require delegating every task.
@@ -26,7 +26,9 @@ README's execution queue first: it records the active/next substory, blockers,
 and canonical artifact paths. Keep plans and artifacts in the same delivery home.
 The implementer may update only execution fields/table and the active child's
 status/artifact pointers as a narrow exception to planner-owned planning docs;
-refiner write limits and reviewer/auditor read-only limits remain unchanged.
+refiner write limits remain unchanged; the reviewer writes only its saved report
+and a passing verdict's scoped docs sync (see the reviewer skill), and the DoD
+auditor stays read-only.
 
 All story roles must apply [story sizing](.agents/story-sizing.md): default to one
 30–90-minute implementation outcome with explicit file, context and verification
@@ -48,7 +50,21 @@ work are implemented. Do not automatically review/audit individual substories.
 Implementation-complete children may unblock dependencies while awaiting the
 parent's formal sign-off. Preserve historical reports.
 
-The review agents run in a read-only sandbox and return Markdown reports. The parent saves implementation reviews at the parent README's resolved artifact path (`<delivery-home>/artifacts/<parent-story-id>/review.md` for migrated/new groups) and plan reviews to `<delivery-home>/plan-review.md` (for SP-105: `docs/stories/EP01/SP-105/plan-review.md`). During a planner/reviewer cycle, the planner reads that report, records each original finding and correction by stable ID in the breakdown README, and leaves the report unchanged. The reviewer independently verifies closure on the next pass; the parent replaces the report with the latest returned Markdown. Earlier committed reports remain in Git history. The planner and refiner's narrower write limits are instructions applying to every tool, rather than filesystem sandbox guarantees. Do not broaden their write scope.
+The reviewer runs its review read-only and then saves its own Markdown report:
+implementation reviews at the parent README's resolved artifact path
+(`<delivery-home>/artifacts/<parent-story-id>/review.md` for migrated/new groups)
+and plan reviews to `<delivery-home>/plan-review.md` (for SP-105:
+`docs/stories/EP01/SP-105/plan-review.md`), replacing only the latest report.
+Earlier committed reports remain in Git history. On a passing verdict the
+reviewer also records each finding and correction by stable ID in the breakdown
+README, reconciles the queue's verdict-dependent execution fields, and refreshes
+a stale parent status line (see the reviewer skill's passing-review docs sync).
+On a non-passing verdict it saves the report only and defers those docs edits;
+the planner/coordinator reconciles the queue instead, and the reviewer
+independently verifies closure on the next pass. During a planner/reviewer
+cycle, the planner reads that report and leaves it unchanged. The planner and
+refiner's narrower write limits are instructions applying to every tool, rather
+than filesystem sandbox guarantees. Do not broaden their write scope.
 
 All roles must follow their skill's security rules. Never read, display, or write credential or secret files, including `.env` and `.env.*`; flag exposed secrets by location without reproducing values.
 

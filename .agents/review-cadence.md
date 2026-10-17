@@ -55,9 +55,12 @@ request and index path instead of claiming a review was run.
 The reviewer independently checks the **combined implementation**, including
 every child AC, all original parent criteria, applicable DoD and cross-child
 behavior. Missing child implementation records are evidence gaps; missing child
-review reports are expected. Return one report for the coordinating parent to
-save at the README-resolved `<artifact-root>/<parent-story-id>/review.md`, with findings attributed
-to affected child IDs and files. Retain existing historical child reports.
+review reports are expected. It saves one report at the README-resolved
+`<artifact-root>/<parent-story-id>/review.md`, with findings attributed
+to affected child IDs and files. On a passing verdict it also performs the
+reviewer skill's passing-review docs sync; on a non-passing verdict it saves
+the report only and the coordinator/planner defers those docs edits until the
+passing pass. Retain existing historical child reports.
 
 Findings are fixed in the affected implementation scope and re-reviewed together
 at the parent; no automatic child-by-child review cycle. Only the final passing
