@@ -1,6 +1,6 @@
 ---
 name: studypilot-frontend
-description: Frontend technical guidance for the single StudyPilot implementer when changing React components, TanStack Query data flows, forms and validation, or UI state handling.
+description: Frontend technical guidance for the single StudyPilot implementer when changing React components, RTK Query data flows, forms and validation, or UI state handling.
 ---
 
 # StudyPilot Frontend Guidance
@@ -9,7 +9,7 @@ Supporting guidance for the single [implementer](../studypilot-implementer/SKILL
 Follow that skill's execution/ownership rules. Loading this skill does not create
 a separate frontend implementation role.
 
-Stack: React + TypeScript + Vite, TanStack Query for data fetching.
+Stack: React + TypeScript + Vite, Redux Toolkit + RTK Query for data fetching.
 
 Apply [story sizing](../../story-sizing.md) before implementation. Use the story's
 start context and implement only its outcome. If shared state/infrastructure work
@@ -38,7 +38,7 @@ implementation index for one combined formal review.
 - Read the relevant epic in `docs/epics/` and its story in `docs/stories/` before implementing. The acceptance criteria there define done.
 - Target WCAG 2.2 AA. Event types on the calendar must be distinguishable without color alone; core interactions must be keyboard accessible with visible focus states.
 - Handle loading, empty, and error states in every view. Empty states should tell the student what to do next.
-- Compose domain-specific TanStack Query queries; do not build one large dashboard service owning unrelated business rules.
+- Compose domain-specific RTK Query endpoints/services; do not build one large dashboard service owning unrelated business rules.
 - Frontend validation mirrors backend validation. Surface API errors as actionable messages.
 - Responsive layouts must work on desktop and mobile, including the calendar's weekly and agenda views.
 - Match existing component and styling conventions. Minimal diffs; do not refactor unrelated code.
