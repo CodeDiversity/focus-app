@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { setupUser } from '../test/user';
+import { setupUser } from '@/test/user';
 import { useNavigate } from 'react-router-dom';
-import { Providers } from '../test/providers';
+import { Providers } from '@/test/providers';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { Layout } from './Layout';
+import { Layout } from '@/widgets/layout/ui/Layout';
 import { AuthProvider, useAuth } from '@/features/auth/model/AuthContext';
 import api from '@/shared/api/httpClient';
 import { tokenStore } from '@/shared/api/tokenStore';

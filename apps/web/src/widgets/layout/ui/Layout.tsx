@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
-import { Header } from './Header';
-import { EmailVerificationBanner } from './EmailVerificationBanner';
+import { Header } from '@/widgets/header/ui/Header';
+import { EmailVerificationBanner } from '@/widgets/email-verification-banner/ui/EmailVerificationBanner';
 
 interface LayoutProps {
   children: ReactNode;

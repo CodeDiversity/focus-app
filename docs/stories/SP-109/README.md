@@ -19,9 +19,9 @@ answered in-session with **Feature-Sliced Design (FSD) layers** as the conventio
 
 **Parent artifacts:** `./artifacts/SP-109/` (parent checkpoint / final index)
 
-**Active substory:** None — SP-109A, SP-109B, SP-109C, SP-109D implemented (queued for combined parent review 2026-10-17).
+**Active substory:** None — SP-109A–SP-109G implemented (queued for combined parent review 2026-10-17).
 
-**Next substory:** [SP-109E](./SP-109E-feature-auth.md) — implement (`features/auth`: auth API service, auth types, `AuthProvider`/`useAuth` context), now unblocked by D.
+**Next substory:** [SP-109H](./SP-109H-pages-and-app-shell.md) — implement (`pages/` + `app/` router/providers), unblocked by G.
 
 **Implementation owner:** `implementer`, sequential. All children are
 frontend-scope moves/config work; single writer, one commit per child.
@@ -36,9 +36,9 @@ at `./artifacts/SP-109/review.md`; integration/index owner: SP-109I (parent inde
 | [B](./SP-109B-shared-lib-and-types.md) | Implemented — awaiting parent review (2026-10-17) | A | — | `./artifacts/SP-109B/` |
 | [C](./SP-109C-shared-ui-and-transport.md) | Implemented — awaiting parent review (2026-10-17) | B (implemented 2026-10-17) | — | `./artifacts/SP-109C/` |
 | [D](./SP-109D-entity-user.md) | Implemented — awaiting parent review (2026-10-17) | B, C | — | `./artifacts/SP-109D/` |
-| [E](./SP-109E-feature-auth.md) | Queued (file written 2026-10-17) | C, D | Implement after D | `./artifacts/SP-109E/` |
-| [F](./SP-109F-feature-session-store.md) | Queued (file written 2026-10-17) | E | Implement after E | `./artifacts/SP-109F/` |
-| [G](./SP-109G-widgets.md) | Queued (file written 2026-10-17) | C, E, F | Implement after F | `./artifacts/SP-109G/` |
+| [E](./SP-109E-feature-auth.md) | Implemented — awaiting parent review (2026-10-17) | C, D | — | `./artifacts/SP-109E/` |
+| [F](./SP-109F-feature-session-store.md) | Implemented — awaiting parent review (2026-10-17) | E | — | `./artifacts/SP-109F/` |
+| [G](./SP-109G-widgets.md) | Implemented — awaiting parent review (2026-10-17) | C, E, F | — | `./artifacts/SP-109G/` |
 | [H](./SP-109H-pages-and-app-shell.md) | Queued (file written 2026-10-17) | G | Implement after G | `./artifacts/SP-109H/` |
 | [I](./SP-109I-boundaries-docs-verification.md) | Queued (file written 2026-10-17) | B–H | Implement last: enforcement proof, docs paths, full verification | `./artifacts/SP-109I/` |
 

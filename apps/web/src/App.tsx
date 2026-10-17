@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Layout } from './components/Layout';
+import { Layout } from '@/widgets/layout/ui/Layout';
 import { HomePage } from './pages/Home';
 import { LoginPage } from './pages/Login';
 import { RegisterPage } from './pages/Register';
@@ -8,8 +8,8 @@ import { ProfilePage } from './pages/Profile';
 import { VerifyEmailPage } from './pages/VerifyEmail';
 import { ForgotPasswordPage } from './pages/ForgotPassword';
 import { ResetPasswordPage } from './pages/ResetPassword';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { PublicRoute } from './components/PublicRoute';
+import { ProtectedRoute } from '@/widgets/protected-route/ui/ProtectedRoute';
+import { PublicRoute } from '@/widgets/public-route/ui/PublicRoute';
 
 function App() {
   return (
