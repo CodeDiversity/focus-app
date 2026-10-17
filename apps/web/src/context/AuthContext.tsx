@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import type { SessionUser, User } from '../types';
+import type { SessionUser, User } from '@/entities/user/model/types';
 import { authService } from '../services/auth';
 import { tokenStore } from '../services/tokenStore';
 import { setSessionExpiredHandler } from '../services/api';
@@ -25,7 +25,7 @@ import {
   login,
   updateProfile,
 } from '../store/authSlice.thunks';
-import { getErrorMessage } from '../utils/errors';
+import { getErrorMessage } from '@/shared/lib/errors';
 import { selectUser, selectIsLoading, selectError, selectIsVerificationBannerDismissed } from '../store/authSlice.selectors';
 import { useAppDispatch } from '../store/hooks';
 

@@ -2,7 +2,7 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import type { AxiosRequestConfig, Method } from 'axios';
 import httpClient from '../services/api';
-import type { VerificationResponse } from '../types';
+import type { VerificationResponse } from '@/features/auth/model/types';
 
 /** Shape every endpoint passes to the baseQuery — transport details only. */
 export interface AxiosBaseQueryArgs {

@@ -9,7 +9,7 @@ import { authService } from '../services/auth';
 import api from '../services/api';
 import { tokenStore } from '../services/tokenStore';
 import { runRecoveryReset } from '../services/recovery';
-import type { AuthResponse } from '../types';
+import type { AuthResponse } from '@/features/auth/model/types';
 import authSlice from '../store/authSlice';
 
 vi.mock('../services/auth', () => ({

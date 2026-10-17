@@ -1,4 +1,4 @@
-import { ApiError } from '../types';
+import { ApiError } from '@/shared/api/types';
 
 export function getErrorMessage(error: unknown): string {
   if (

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { SessionUser } from '../types';
+import type { SessionUser } from '@/entities/user/model/types';
 import { Button } from './Button';
 import { resendFeedback, useResendVerification } from '../hooks/useResendVerification';
 

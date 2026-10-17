@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import type { SessionUser } from '../types';
+import type { SessionUser } from '@/entities/user/model/types';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
 /* ---- State ---- */

@@ -6,7 +6,7 @@ import { ProtectedRoute } from '../components/ProtectedRoute';
 import { PublicRoute } from '../components/PublicRoute';
 import { authService } from '../services/auth';
 import { Providers, makeTestStore } from '../test/providers';
-import type { AuthResponse } from '../types';
+import type { AuthResponse } from '@/features/auth/model/types';
 
 vi.mock('../services/auth', () => ({
   authService: {

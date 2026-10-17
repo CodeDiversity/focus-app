@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { getErrorMessage } from '../utils/errors';
+import { getErrorMessage } from '@/shared/lib/errors';
 
 // Validation schema
 const loginSchema = z.object({

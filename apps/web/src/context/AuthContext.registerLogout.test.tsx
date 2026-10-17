@@ -4,7 +4,8 @@ import { AuthProvider, useAuth } from './AuthContext';
 import { authService } from '../services/auth';
 import { tokenStore } from '../services/tokenStore';
 import { Providers, makeTestStore } from '../test/providers';
-import type { AuthResponse, RegisteredUser } from '../types';
+import type { AuthResponse } from '@/features/auth/model/types';
+import type { RegisteredUser } from '@/entities/user/model/types';
 
 vi.mock('../services/auth', () => ({
   authService: {

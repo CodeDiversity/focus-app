@@ -8,7 +8,7 @@ import {
   runRecoveryReset,
   snapshotSessionGeneration,
 } from './recovery';
-import type { AuthResponse } from '../types';
+import type { AuthResponse } from '@/features/auth/model/types';
 
 function ok(config: InternalAxiosRequestConfig, data: unknown): AxiosResponse {
   return { data, status: 200, statusText: 'OK', headers: {}, config } as AxiosResponse;

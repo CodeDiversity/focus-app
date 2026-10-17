@@ -7,8 +7,8 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { authService } from '../services/auth';
 import { isRecoveryError } from '../services/recovery';
-import { getErrorMessage } from '../utils/errors';
-import { readLinkToken } from '../utils/linkToken';
+import { getErrorMessage } from '@/shared/lib/errors';
+import { readLinkToken } from '@/shared/lib/linkToken';
 
 // C11 — byte-identical to the backend's uniform invalid-link message
 // (SP-105B `INVALID_RESET_MESSAGE`). G's dedup keeps it byte-stable across

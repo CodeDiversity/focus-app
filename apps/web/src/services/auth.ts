@@ -1,15 +1,14 @@
 import api, { refreshAccessToken } from './api';
 import { tokenStore } from './tokenStore';
 import { runRecoveryReset, type ResetPasswordResult } from './recovery';
-import {
+import type {
   AuthResponse,
   LoginCredentials,
   RegisterCredentials,
-  RegisteredUser,
   ResetPasswordRequest,
-  User,
   VerificationResponse,
-} from '../types';
+} from '@/features/auth/model/types';
+import type { RegisteredUser, User } from '@/entities/user/model/types';
 
 export const authService = {
   // Do not propagate Axios request configuration: it contains the link token.

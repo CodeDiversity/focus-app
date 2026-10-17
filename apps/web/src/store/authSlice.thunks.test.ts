@@ -3,7 +3,8 @@ import { configureStore } from '@reduxjs/toolkit';
 import authSlice, { setError, setUser } from './authSlice';
 import { login, updateProfile } from './authSlice.thunks';
 import { authService } from '../services/auth';
-import type { AuthResponse, User } from '../types';
+import type { AuthResponse } from '@/features/auth/model/types';
+import type { User } from '@/entities/user/model/types';
 
 vi.mock('../services/auth', () => ({
   authService: {

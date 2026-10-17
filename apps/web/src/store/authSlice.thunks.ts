@@ -1,8 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { authService } from '../services/auth';
 import { tokenStore } from '../services/tokenStore';
-import { apiErrorMessage, extractApiError, getErrorMessage } from '../utils/errors';
-import type { SessionUser } from '../types';
+import { apiErrorMessage, extractApiError, getErrorMessage } from '@/shared/lib/errors';
+import type { SessionUser } from '@/entities/user/model/types';
 import { setUser, clearUser, setLoading, setError } from './authSlice';
 import type { AppStore } from './store';
 

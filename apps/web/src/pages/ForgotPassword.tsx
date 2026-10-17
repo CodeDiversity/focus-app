@@ -7,7 +7,7 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { authService } from '../services/auth';
 import { isRecoveryError } from '../services/recovery';
-import { getErrorMessage } from '../utils/errors';
+import { getErrorMessage } from '@/shared/lib/errors';
 
 // Validation mirrors the backend ForgotPasswordDto (trim / 254 max / email)
 // with the same messages, so client and server agree on what is invalid.

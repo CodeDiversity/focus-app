@@ -6,7 +6,7 @@ import { Input } from '../components/Input';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/auth';
 import { resendFeedback, useResendVerification } from '../hooks/useResendVerification';
-import { readLinkToken } from '../utils/linkToken';
+import { readLinkToken } from '@/shared/lib/linkToken';
 
 export function VerifyEmailPage() {
   const location = useLocation();

@@ -9,8 +9,8 @@ import { AuthProvider } from '../context/AuthContext';
 import { authService } from '../services/auth';
 import { makeTestStore } from '../test/providers';
 import { setUser } from '../store/authSlice';
-import { formatDateTime, getBrowserTimeZone } from '../utils/datetime';
-import type { User } from '../types';
+import { formatDateTime, getBrowserTimeZone } from '@/shared/lib/datetime';
+import type { User } from '@/entities/user/model/types';
 import type { AppStore } from '../store/store';
 
 vi.mock('react-hot-toast', () => ({

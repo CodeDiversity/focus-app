@@ -6,8 +6,8 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { getFieldError, getErrorMessage } from '../utils/errors';
-import { formatDateTime, getBrowserTimeZone, isValidTimeZone } from '../utils/datetime';
+import { getFieldError, getErrorMessage } from '@/shared/lib/errors';
+import { formatDateTime, getBrowserTimeZone, isValidTimeZone } from '@/shared/lib/datetime';
 
 // Validation schema — the time zone is free text (D106-8) validated with the
 // shared TECH-01 IANA check (D106-4). Refinement runs before any request, so

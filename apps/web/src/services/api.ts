@@ -12,7 +12,8 @@ import {
   setInFlightRefresh,
   snapshotSessionGeneration,
 } from './recovery';
-import { ApiError, AuthResponse } from '../types';
+import { ApiError } from '@/shared/api/types';
+import type { AuthResponse } from '@/features/auth/model/types';
 
 // Create axios instance with base URL
 const api: AxiosInstance = axios.create({

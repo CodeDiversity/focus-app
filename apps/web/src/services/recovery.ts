@@ -26,7 +26,7 @@
  * - This module owns local state and request ordering only. The HttpOnly
  *   refresh cookie is expired server-side by SP-105B; navigation is C's.
  */
-import type { AuthResponse } from '../types';
+import type { AuthResponse } from '@/features/auth/model/types';
 import { tokenStore } from './tokenStore';
 
 /** `POST /auth/reset-password` success payload (SP-105B). */
