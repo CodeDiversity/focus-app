@@ -12,7 +12,7 @@ import {
   api as storeApi,
   axiosBaseQuery,
   resendErrorMessage,
-} from './api';
+} from './sessionApi';
 
 type BaseQueryArgs = { url: string; method: Method; body?: unknown };
 

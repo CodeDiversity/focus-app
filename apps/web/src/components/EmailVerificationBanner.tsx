@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/features/auth/model/AuthContext';
 import type { SessionUser } from '@/entities/user/model/types';
 import { Button } from '@/shared/ui/Button';
-import { resendFeedback, useResendVerification } from '../hooks/useResendVerification';
+import { resendFeedback, useResendVerification } from '@/features/email-verification/model/useResendVerification';
 
 function StudentReminder({ student, dismiss }: { student: SessionUser; dismiss: () => void }) {
   const resend = useResendVerification();

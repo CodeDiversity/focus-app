@@ -5,7 +5,7 @@ import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
 import { useAuth } from '@/features/auth/model/AuthContext';
 import { authService } from '@/features/auth/api/authService';
-import { resendFeedback, useResendVerification } from '../hooks/useResendVerification';
+import { resendFeedback, useResendVerification } from '@/features/email-verification/model/useResendVerification';
 import { readLinkToken } from '@/shared/lib/linkToken';
 
 export function VerifyEmailPage() {

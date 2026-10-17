@@ -4,8 +4,8 @@ import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import type { ReactNode } from 'react';
 import httpClient, { setSessionExpiredHandler } from '@/shared/api/httpClient';
 import { tokenStore } from '@/shared/api/tokenStore';
-import { useResendVerification } from './useResendVerification';
-import { Providers } from '../test/providers';
+import { useResendVerification } from '@/features/email-verification/model/useResendVerification';
+import { Providers } from '../../../test/providers';
 
 const originalAdapter = httpClient.defaults.adapter;
 

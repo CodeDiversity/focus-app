@@ -21,14 +21,16 @@ import {
   setError,
   setUser,
   clearUser,
-} from '../../../store/authSlice';
+} from '@/features/session/model/authSlice';
 import {
   login,
   updateProfile,
-} from '../../../store/authSlice.thunks';
+} from '@/features/session/model/authSlice.thunks';
 import { getErrorMessage } from '@/shared/lib/errors';
-import { selectUser, selectIsLoading, selectError, selectIsVerificationBannerDismissed } from '../../../store/authSlice.selectors';
-import { useAppDispatch } from '../../../store/hooks';
+import { selectUser, selectIsLoading, selectError, selectIsVerificationBannerDismissed } from '@/features/session/model/authSlice.selectors';
+// RD7: sanctioned features → app import for typed dispatch hook
+// eslint-disable-next-line import/no-restricted-paths
+import { useAppDispatch } from '@/app/store/hooks';
 
 interface AuthContextType {
   user: SessionUser | null;

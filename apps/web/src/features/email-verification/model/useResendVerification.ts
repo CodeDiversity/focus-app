@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useResendVerificationMutation, resendErrorMessage } from '../store/api';
+import { useResendVerificationMutation, resendErrorMessage } from '@/features/session/api/sessionApi';
 
 export const resendFeedback = 'If this email needs verification, a link will be sent. Check your inbox and wait a minute before requesting another.';
 

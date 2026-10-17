@@ -3,7 +3,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from './AuthContext';
 import { authService } from '../api/authService';
 import { tokenStore } from '@/shared/api/tokenStore';
-import { Providers, makeTestStore } from '../../../test/providers';
+import { Providers, makeTestStore } from '@/test/providers';
 import type { AuthResponse } from './types';
 import type { RegisteredUser } from '@/entities/user/model/types';
 

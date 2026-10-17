@@ -5,7 +5,9 @@ import { tokenStore } from '@/shared/api/tokenStore';
 import { apiErrorMessage, extractApiError, getErrorMessage } from '@/shared/lib/errors';
 import type { SessionUser } from '@/entities/user/model/types';
 import { setUser, clearUser, setLoading, setError } from './authSlice';
-import type { AppStore } from './store';
+// RD7: sanctioned features → app import for typed AppStore
+// eslint-disable-next-line import/no-restricted-paths
+import type { AppStore } from '@/app/store/store';
 
 type AppDispatch = AppStore['dispatch'];
 

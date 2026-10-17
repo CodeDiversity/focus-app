@@ -1,7 +1,7 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import type { AxiosRequestConfig, Method } from 'axios';
-import httpClient from '../shared/api/httpClient';
+import httpClient from '@/shared/api/httpClient';
 import type { VerificationResponse } from '@/features/auth/model/types';
 
 /** Shape every endpoint passes to the baseQuery — transport details only. */
@@ -21,7 +21,7 @@ export interface AxiosBaseQueryError {
 }
 
 /**
- * Every RTK Query request goes through the shared `src/shared/api/httpClient.ts` axios
+ * Every RTK Query request goes through the shared `shared/api/httpClient.ts` axios
  * instance, so the SP-105G interceptor chain (bearer token, single-flight
  * refresh, recovery barrier, session generations, `AUTH_PATHS`, error
  * sanitization) stays the single transport — RD4.
@@ -57,7 +57,7 @@ export const RESEND_FALLBACK_MESSAGE =
 /**
  * Mirrors the messages `authService.resendVerification` throws. The mapping is
  * duplicated (not shared) so `features/auth/api/authService.ts` stays untouched, and is
- * pinned by the parity cases in `api.test.ts`.
+ * pinned by the parity cases in `sessionApi.test.ts`.
  */
 export function resendErrorMessage(code?: string): string {
   return code === '400' ? RESEND_INVALID_EMAIL_MESSAGE : RESEND_FALLBACK_MESSAGE;

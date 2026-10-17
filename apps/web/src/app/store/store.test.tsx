@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { store } from './store';
-import { useAppDispatch, useAppSelector } from './hooks';
+import { store } from '@/app/store/store';
+import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { Provider } from 'react-redux';
 import { render } from '@testing-library/react';
 
@@ -55,7 +55,7 @@ describe('store', () => {
     const { getByTestId } = render(
       <Provider store={store}>
         <TestComponent />
-      </Provider>,
+      </Provider>
     );
 
     // The store registers the auth and api (RTK Query) reducers, so state has two keys

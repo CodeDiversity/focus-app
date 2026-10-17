@@ -9,10 +9,12 @@ import { AuthProvider } from '@/features/auth/model/AuthContext';
 import { authService } from '@/features/auth/api/authService';
 import { userService } from '@/entities/user/api/userService';
 import { makeTestStore } from '../test/providers';
-import { setUser } from '../store/authSlice';
+import { setUser } from '@/features/session/model/authSlice';
 import { formatDateTime, getBrowserTimeZone } from '@/shared/lib/datetime';
 import type { User } from '@/entities/user/model/types';
-import type { AppStore } from '../store/store';
+// RD7: sanctioned pages → app import for typed AppStore
+// eslint-disable-next-line import/no-restricted-paths
+import type { AppStore } from '@/app/store/store';
 
 vi.mock('react-hot-toast', () => ({
   default: { success: vi.fn(), error: vi.fn() },

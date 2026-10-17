@@ -49,7 +49,7 @@ module.exports = {
           from: ['src/features', 'src/widgets', 'src/pages', 'src/app'],
           message: 'entities/ files cannot import from features/, widgets/, pages/, or app/',
         },
-        // features/ cannot import from widgets/, pages/, or app/ (sanctioned exceptions use eslint-disable)
+        // features/ cannot import from widgets/, pages/, or app/ (sanctioned: features/session and auth/model may import app/store per RD7)
         {
           target: 'src/features',
           from: ['src/widgets', 'src/pages', 'src/app'],
@@ -61,7 +61,7 @@ module.exports = {
           from: ['src/pages', 'src/app'],
           message: 'widgets/ files cannot import from pages/ or app/ (use eslint-disable for sanctioned store/hooks exceptions)',
         },
-        // pages/ cannot import from app/ (sanctioned exceptions use eslint-disable)
+        // pages/ cannot import from app/ (sanctioned: may import app/store per RD7)
         {
           target: 'src/pages',
           from: 'src/app',

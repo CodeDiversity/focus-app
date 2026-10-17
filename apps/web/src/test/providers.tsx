@@ -2,11 +2,11 @@ import type { ReactNode } from 'react';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
-import authReducer from '../store/authSlice';
-import { api } from '../store/api';
+import authReducer from '@/features/session/model/authSlice';
+import { api } from '@/features/session/api/sessionApi';
 
 /**
- * A fresh store per test, mirroring `src/store/store.ts` (auth + api reducers,
+ * A fresh store per test, mirroring `src/app/store/store.ts` (auth + api reducers,
  * api.middleware) so tests never share mutable session or RTK Query cache
  * state.
  */

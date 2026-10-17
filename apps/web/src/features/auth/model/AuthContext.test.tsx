@@ -11,7 +11,7 @@ import api from '@/shared/api/httpClient';
 import { tokenStore } from '@/shared/api/tokenStore';
 import { runRecoveryReset } from '@/shared/api/recovery';
 import type { AuthResponse } from './types';
-import authSlice from '../../../store/authSlice';
+import authSlice from '@/features/session/model/authSlice';
 
 vi.mock('../api/authService', () => ({
   authService: {
