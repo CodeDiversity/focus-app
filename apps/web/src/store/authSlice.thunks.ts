@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { authService } from '../services/auth';
 import { tokenStore } from '../services/tokenStore';
-import { getErrorMessage } from '../utils/errors';
+import { apiErrorMessage, extractApiError, getErrorMessage } from '../utils/errors';
 import type { SessionUser } from '../types';
 import { setUser, clearUser, setLoading, setError } from './authSlice';
 import type { AppStore } from './store';
@@ -36,8 +36,14 @@ export const updateProfile = createAsyncThunk(
       dispatch(setUser(updatedUser));
       return updatedUser;
     } catch (err: unknown) {
-      dispatch(setError(getErrorMessage(err)));
-      return rejectWithValue(getErrorMessage(err));
+      // SP-106C — forward the parsed ApiError the api response interceptor
+      // already extracted from the rejection (`response.data`) so the SP-106B
+      // field-level 400 map (D106-6) survives to the Profile form. The
+      // `message` stays a plain sanitized string for the slice/error surface.
+      const apiError = extractApiError(err);
+      const message = apiError ? apiErrorMessage(apiError) : getErrorMessage(err);
+      dispatch(setError(message));
+      return rejectWithValue({ message, apiError });
     } finally {
       dispatch(setLoading(false));
     }

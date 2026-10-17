@@ -256,6 +256,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const updateProfileFn = useCallback(async (data: Partial<User>) => {
     const result = await dispatch(updateProfile(data));
     if (updateProfile.rejected.match(result)) {
+      const payload = result.payload;
+      // SP-106C: the structured rejection pairs the sanitized message with
+      // the parsed ApiError; rethrow with the ApiError attached so the
+      // Profile form can render field-level 400 messages (AC-106-06) while
+      // `getErrorMessage` still sees the sanitized string.
+      if (payload && typeof payload === 'object' && 'message' in payload) {
+        const record = payload as {
+          message?: unknown;
+          apiError?: unknown;
+        };
+        throw Object.assign(
+          new Error(
+            typeof record.message === 'string'
+              ? record.message
+              : getErrorMessage(result.error),
+          ),
+          { apiError: record.apiError },
+        );
+      }
       throw new Error(thunkErrorMessage(result.payload, result.error));
     }
   }, [dispatch]);

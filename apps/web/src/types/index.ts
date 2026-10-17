@@ -4,6 +4,11 @@ export interface SessionUser {
   email: string;
   name: string;
   emailVerifiedAt: string | null;
+  /** IANA identifier; present on GET/PATCH /users/me payloads. Undefined on
+   * login/refresh session users whose backend shape predates SP-106A. */
+  timeZone?: string;
+  /** Plain JSON preferences bag (null until first set; SP-106A/B). */
+  preferences?: Record<string, unknown> | null;
 }
 
 export interface User extends SessionUser {
@@ -50,7 +55,9 @@ export interface ApiResponse<T> {
 }
 
 export interface ApiError {
-  message: string;
+  // SP-106B validation 400s preserve the stock constraint message array;
+  // other failures keep a single string.
+  message: string | string[];
   statusCode: number;
   errors?: Record<string, string[]>;
 }

@@ -111,11 +111,51 @@ describe('auth thunks — updateProfile', () => {
 
     expect(updateProfile.rejected.match(result)).toBe(true);
     if (updateProfile.rejected.match(result)) {
-      expect(result.payload).toBe('We could not update your profile. Try again.');
+      // SP-106C: the structured rejection pairs the sanitized message with the
+      // parsed ApiError (undefined here — a plain network Error carried none).
+      expect(result.payload).toEqual({
+        message: 'We could not update your profile. Try again.',
+        apiError: undefined,
+      });
     }
     expect(store.getState().auth.error).toBe('We could not update your profile. Try again.');
     expect(store.getState().auth.isLoading).toBe(false);
     // The signed-in account survives a failed profile save.
+    expect(store.getState().auth.user).toMatchObject({ id: 'user-1' });
+  });
+
+  it('updateProfile forwards the parsed ApiError from an interceptor-shaped 400 (D106-6)', async () => {
+    const apiError = {
+      statusCode: 400,
+      message: ['timeZone must be a valid IANA time zone, e.g. America/New_York'],
+      error: 'Bad Request',
+      errors: {
+        timeZone: ['timeZone must be a valid IANA time zone, e.g. America/New_York'],
+      },
+    };
+    // The shape the api response interceptor rejects with: the parsed body
+    // stays at response.data, and the 400's `message` array is truthy (B's
+    // preserved message array), so the CE `message` prop holds the array.
+    mockedUpdateProfile.mockRejectedValue({
+      response: { data: apiError },
+      message: apiError.message,
+    });
+    const store = makeStore();
+    store.dispatch(setUser(sessionUser));
+
+    const result = await store.dispatch(updateProfile({ timeZone: 'Mars/Olympus' }));
+
+    expect(updateProfile.rejected.match(result)).toBe(true);
+    if (updateProfile.rejected.match(result)) {
+      expect(result.payload).toEqual({
+        // The human message is joined from the 400's message array.
+        message: 'timeZone must be a valid IANA time zone, e.g. America/New_York',
+        apiError,
+      });
+    }
+    expect(store.getState().auth.error).toBe(
+      'timeZone must be a valid IANA time zone, e.g. America/New_York',
+    );
     expect(store.getState().auth.user).toMatchObject({ id: 'user-1' });
   });
 });

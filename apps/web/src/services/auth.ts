@@ -87,9 +87,10 @@ export const authService = {
     return response.data;
   },
 
-  // Update user profile
+  // Update user profile — PATCH (SP-106C, D106-2): partial update via the
+  // SP-106B endpoint (PUT was removed there; a tokened PUT now 404s).
   async updateProfile(data: Partial<User>): Promise<User> {
-    const response = await api.put<User>('/users/me', data);
+    const response = await api.patch<User>('/users/me', data);
     return response.data;
   },
 
