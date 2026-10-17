@@ -45,7 +45,7 @@ Unit — `apps/api/src/common/filters/all-exceptions.filter.spec.ts` (extend):
 
 Integration — extend `apps/api/src/modules/users/users-data-scoping.spec.ts` (real Postgres; self-skips without `DATABASE_URL`):
 
-- valid `PATCH` (timeZone + preferences) → 200 with updated values; row verified via the test's unscoped read
+- valid `PATCH` (timeZone + preferences) → 200 with updated values; row verified via the test's unscoped read; a same-session `GET /users/me` returns the updated values *(TR-106-02, same-session half; the cross-session half is SP-106D)*
 - invalid `timeZone` → 400 with `errors.timeZone`; row unchanged
 - student A's `PATCH` leaves student B's row byte-identical; B's `GET` is unchanged
 - tokened `PUT /users/me` → 404 (route removed)

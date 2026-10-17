@@ -4,8 +4,9 @@
 **Parent:** [SP-106](./SP-106-profile-and-preferences.md), existing Jira STUDY-11
 **Milestone:** M1
 **Status:** Planned 2026-10-17 — **Plan Ready** (planning gate; no implementation
-performed). 2026-10-17: breakdown drafted; child tickets A–D land in incremental
-commits — the plan is complete once SP-106D lands.
+performed). 2026-10-17: breakdown complete — all four child tickets (A–D) landed
+in incremental commits (`75f8eba` scaffold, `d2fab80` A, `1f69094` B, `327b50f` C,
+and this commit for D).
 
 ## Execution queue
 
