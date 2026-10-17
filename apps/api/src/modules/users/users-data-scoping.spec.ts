@@ -11,11 +11,15 @@ import {
 } from '../../common/ownership/ownership';
 
 /**
- * SP-104 integration spec: cross-student isolation against a real database
- * (decision Q2). Two students are seeded through the real `POST /auth/register`
+ * SP-104/SP-106A integration spec: cross-student isolation against a real
+ * database (SP-104 decision Q2). Two students are seeded through the real `POST /auth/register`
  * + `POST /auth/login`, semesters are seeded straight through the module's
  * real `PrismaService`, and access is asserted both over HTTP (guard layer)
  * and through the ownership helpers over real SQL (ownership layer).
+ *
+ * SP-106A extends the guard-layer cases: `GET /users/me` returns the new
+ * `timeZone`/`preferences` profile fields (schema defaults for a fresh
+ * student) while the credential fields stay out of the body.
  *
  * The suite self-skips when `DATABASE_URL` is unset, so a bare local
  * `pnpm test` without Docker still works; CI always provides the variable,
@@ -127,8 +131,33 @@ describeIntegration('student data scoping (integration, real database)', () => {
           id: student.id,
           email: student.email,
           name: student.name,
+          // SP-106A: the new profile fields ride along; a freshly
+          // registered student receives the schema defaults.
+          timeZone: 'UTC',
+          preferences: null,
         });
       }
+    });
+
+    it('GET /users/me returns the new profile fields with credential fields still excluded (SP-106A)', async () => {
+      const response = await agent
+        .get('/users/me')
+        .set('Authorization', `Bearer ${studentA.accessToken}`)
+        .expect(HttpStatus.OK);
+      // A newly registered student: timeZone defaults to "UTC",
+      // preferences stays null until first set.
+      expect(response.body).toMatchObject({
+        id: studentA.id,
+        email: studentA.email,
+        timeZone: 'UTC',
+        preferences: null,
+      });
+      // The explicit Prisma select is the credential boundary: none of
+      // the sensitive fields may appear in the response body.
+      expect(response.body).not.toHaveProperty('passwordHash');
+      expect(response.body).not.toHaveProperty('emailVerificationTokens');
+      expect(response.body).not.toHaveProperty('passwordResetTokens');
+      expect(response.body).not.toHaveProperty('refreshTokens');
     });
 
     it('POST /auth/register remains public without a token', async () => {
