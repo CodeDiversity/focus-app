@@ -5,7 +5,7 @@
 **Epic:** [EP01: Authentication & Onboarding](../../../epics/EP01-authentication-and-onboarding.md)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** Ready (planned 2026-10-17); implementation after SP-106B lands
+**Status:** Implemented — awaiting combined parent review (2026-10-17; commit `6ece311`; [implementation record](./artifacts/SP-106C/implementation.md), [checkpoint](./artifacts/SP-106C/checkpoint.md))
 **Dependencies:** SP-106B (PATCH + 400 `errors` contract; `GET` fields)
 **Jira key:** STUDY-34
 
