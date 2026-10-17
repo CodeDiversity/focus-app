@@ -20,8 +20,6 @@ export const INVALID_RESET_MESSAGE =
 export interface PreparedResetToken {
   rawToken: string;
   tokenHash: string;
-  expiresAt: Date;
-  requestedAt: Date;
 }
 
 const GENERIC_SUCCESS_MESSAGE =
@@ -47,13 +45,16 @@ export class PasswordResetService {
   ) {}
 
   prepareToken(): PreparedResetToken {
+    // PR-107: deliberately clock-free. Every issued timestamp — the cooldown
+    // claim marker, the cooldown boundary, the retirement stamp, and the
+    // token expiry — is derived from the database clock inside the
+    // transaction, after the owner-lock wait. Stamping from the application
+    // clock (the pre-fix behavior) let app/DB clock skew shift the effective
+    // 60 s cooldown and 1 h TTL, and could diverge across replicas.
     const rawToken = randomBytes(32).toString('base64url');
-    const requestedAt = new Date();
     return {
       rawToken,
       tokenHash: createHash('sha256').update(rawToken).digest('hex'),
-      requestedAt,
-      expiresAt: new Date(requestedAt.getTime() + RESET_TOKEN_TTL_MS),
     };
   }
 
@@ -106,43 +107,55 @@ export class PasswordResetService {
 
     try {
       const issued = await this.prisma.$transaction(async (tx) => {
-        // 1. Claim the account's cooldown atomically.
-        //    Zero rows means the account is still cooling down — no email, no token.
-        const claim = await tx.user.updateMany({
-          where: {
-            email,
-            OR: [
-              { passwordResetRequestedAt: null },
-              {
-                passwordResetRequestedAt: {
-                  lte: new Date(prepared.requestedAt.getTime() - COOLDOWN_MS),
-                },
-              },
-            ],
-          },
-          data: { passwordResetRequestedAt: prepared.requestedAt },
-        });
-        if (claim.count === 0) return false;
-
-        // 2. Find the user (for email and relation write).
+        // 1. Discover the owner without writing or locking (owner-first,
+        //    the shared SP-105 protocol). Unknown email — generic success,
+        //    no email, no token.
         const user = await tx.user.findUnique({
           where: { email },
           select: { id: true, email: true },
         });
-        if (!user) throw new Error('Claimed reset owner is unavailable');
+        if (!user) return false;
 
-        // 3. Retire all outstanding tokens for this account.
+        // 2. Lock the owner's row before any credential write. Concurrent
+        //    issuances, redemptions (SP-105B) and session mutations
+        //    (SP-105E) now all serialize on this same row.
+        if (!(await lockOwner(tx, user.id))) return false;
+
+        // 3. Fresh post-lock wall clock. The cooldown boundary, the claim
+        //    marker, the retirement stamp, and the token expiry all derive
+        //    from this database time (PR-107) — never the application clock.
+        const checkedAt = await databaseNow(tx);
+
+        // 4. Claim the account's cooldown atomically. Zero rows means the
+        //    account is still cooling down — no email, no token.
+        const claim = await tx.user.updateMany({
+          where: {
+            id: user.id,
+            OR: [
+              { passwordResetRequestedAt: null },
+              {
+                passwordResetRequestedAt: {
+                  lte: new Date(checkedAt.getTime() - COOLDOWN_MS),
+                },
+              },
+            ],
+          },
+          data: { passwordResetRequestedAt: checkedAt },
+        });
+        if (claim.count === 0) return false;
+
+        // 5. Retire all outstanding tokens for this account.
         await tx.passwordResetToken.updateMany({
           where: { userId: user.id, usedAt: null },
-          data: { usedAt: new Date() },
+          data: { usedAt: checkedAt },
         });
 
-        // 4. Create the new token row.
+        // 6. Create the new token row.
         await tx.passwordResetToken.create({
           data: {
             userId: user.id,
             tokenHash: prepared.tokenHash,
-            expiresAt: prepared.expiresAt,
+            expiresAt: new Date(checkedAt.getTime() + RESET_TOKEN_TTL_MS),
           },
         });
 

@@ -42,11 +42,27 @@ function database() {
       expiresAt: Date;
       usedAt: Date | null;
     }>,
+    // PR-107: when set, the fake PostgreSQL clock differs from the fake-timer
+    // application clock — the issuance claim/expiry must follow the database.
+    dbNow: null as Date | null,
+    lockWaitMs: 0,
   };
   const tx = {
+    $queryRaw: jest.fn(async (query: TemplateStringsArray, ...values: unknown[]) => {
+      const sql = query.join('?');
+      if (sql.includes('FOR UPDATE')) {
+        if (state.lockWaitMs > 0) jest.advanceTimersByTime(state.lockWaitMs);
+        const userId = values[0] as string;
+        return userId === state.user.id ? [{ id: userId }] : [];
+      }
+      if (sql.includes('clock_timestamp()')) {
+        return [{ checkedAt: state.dbNow ?? new Date() }];
+      }
+      throw new Error(`unexpected raw query in test double: ${sql}`);
+    }),
     user: {
       updateMany: jest.fn(async ({ where, data }) => {
-        const matches = where.email === state.user.email;
+        const matches = where.id === state.user.id;
         const cutoff = where.OR?.[1]?.passwordResetRequestedAt?.lte;
         if (!matches) return { count: 0 };
         if (
@@ -59,10 +75,10 @@ function database() {
         Object.assign(state.user, data);
         return { count: 1 };
       }),
-      findUnique: jest.fn(async () => ({
-        id: state.user.id,
-        email: state.user.email,
-      })),
+      findUnique: jest.fn(async ({ where }: { where: { email: string } }) => {
+        if (where?.email !== state.user.email) return null;
+        return { id: state.user.id, email: state.user.email };
+      }),
     },
     passwordResetToken: {
       updateMany: jest.fn(async ({ where, data }) => {
@@ -274,12 +290,15 @@ describe('PasswordResetService', () => {
   });
 
   // --- prepareToken ---
-  it('generates only a SHA256 hash with a one-hour expiry', () => {
+  it('generates a 43-character base64url token and its SHA-256 hash', () => {
+    // PR-107: prepareToken is deliberately clock-free. Every issued
+    // timestamp — claim marker, cooldown boundary, retirement stamp, expiry —
+    // must be derived from the database clock inside the transaction, after
+    // the owner-lock wait.
     const prepared = service.prepareToken();
     expect(prepared.rawToken).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(prepared.tokenHash).toBe(hash(prepared.rawToken));
-    expect(prepared.expiresAt).toEqual(new Date(now.getTime() + RESET_TOKEN_TTL_MS));
-    expect(prepared.requestedAt).toEqual(now);
+    expect(Object.keys(prepared)).toEqual(['rawToken', 'tokenHash']);
   });
 
   // --- AC1: identical generic response ---
@@ -315,6 +334,34 @@ describe('PasswordResetService', () => {
     it('expires one hour after issuance', async () => {
       await service.forgotPassword('ada@example.com');
       expect(db.state.tokens[0].expiresAt).toEqual(new Date(now.getTime() + RESET_TOKEN_TTL_MS));
+    });
+
+    it('stamps the cooldown claim and expiry from the database clock, not the application clock', async () => {
+      // PR-107: skew the fake PostgreSQL clock five minutes ahead of the
+      // fake Node clock — every issued timestamp must follow the database.
+      const dbClock = new Date(now.getTime() + 5 * 60_000);
+      db.state.dbNow = dbClock;
+      await service.forgotPassword('ada@example.com');
+      expect(db.state.user.passwordResetRequestedAt).toEqual(dbClock);
+      expect(db.state.tokens[0].expiresAt).toEqual(
+        new Date(dbClock.getTime() + RESET_TOKEN_TTL_MS)
+      );
+    });
+
+    it('reads the claim time after the owner-lock wait', async () => {
+      // The simulated FOR UPDATE wait advances the fake clock before the
+      // post-lock clock_timestamp() read, so the claim (and expiry) must
+      // land at the post-wait time, and the lock must precede the claim.
+      db.state.lockWaitMs = 5_000;
+      await service.forgotPassword('ada@example.com');
+      const postWait = new Date(now.getTime() + 5_000);
+      expect(db.state.user.passwordResetRequestedAt).toEqual(postWait);
+      expect(db.state.tokens[0].expiresAt).toEqual(
+        new Date(postWait.getTime() + RESET_TOKEN_TTL_MS)
+      );
+      expect(db.tx.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
+        db.tx.user.updateMany.mock.invocationCallOrder[0]
+      );
     });
 
     it('never returns the raw token in the response', async () => {

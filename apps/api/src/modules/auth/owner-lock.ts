@@ -18,9 +18,10 @@ import type { PrismaClient } from '../../generated/prisma/client';
  * `SELECT ... FOR UPDATE` makes concurrent mutations for one account
  * serialize on the same `users` row: a contender proceeds only after the
  * winner commits or rolls back, so its conditional writes see the
- * winner's result and fail closed. Issuance (SP-105A) already takes a
- * row lock on `users` via its cooldown claim, so it serializes against
- * this lock on the same row. Credential transactions never hold a token
+ * winner's result and fail closed. Issuance (SP-105A) takes this same
+ * explicit owner lock before its cooldown claim (PR-107), so all
+ * credential transactions serialize on the same row. Credential
+ * transactions never hold a token
  * row lock while waiting for the owner lock, which rules out the
  * token-before-owner deadlock.
  */
