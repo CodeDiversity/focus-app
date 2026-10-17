@@ -21,8 +21,9 @@ awaiting combined parent review; next actionable is SP-106D.
 **Parent artifacts:** `./artifacts/SP-106/` (created when the parent
 checkpoint/index is written)
 
-**Active substory:** None — SP-106A + SP-106B + SP-106C implementation
-complete 2026-10-17 (awaiting combined parent review; checkpoints
+**Active substory:** [SP-106D](./SP-106D-profile-integration.md) — in progress
+2026-10-17 (integration suite + manual sign-off + parent index). A/B/C
+implementation complete 2026-10-17 (awaiting combined parent review; checkpoints
 [./artifacts/SP-106A/checkpoint.md](./artifacts/SP-106A/checkpoint.md) ·
 [./artifacts/SP-106B/checkpoint.md](./artifacts/SP-106B/checkpoint.md) ·
 [./artifacts/SP-106C/checkpoint.md](./artifacts/SP-106C/checkpoint.md)).
@@ -45,7 +46,7 @@ written at `./artifacts/SP-106/implementation.md`).
 | [A](./SP-106A-profile-schema-and-get.md) | Implemented — awaiting parent review | SP-104 implemented and reviewed (STUDY-10 review PASS) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106A/checkpoint.md) · [implementation](./artifacts/SP-106A/implementation.md) · commits `fbd0ab7`, `71aff0d`, `775d4eb` (2026-10-17: 260/260 tests, typecheck, lint clean) |
 | [B](./SP-106B-patch-profile-validation.md) | Implemented — awaiting parent review | A implemented (fields exist on the model and GET response — `fbd0ab7`/`71aff0d`) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106B/checkpoint.md) · 258/281 tests (2 skipped — integration need DATABASE_URL), typecheck, lint clean |
 | [C](./SP-106C-profile-preferences-form.md) | Implemented — awaiting parent review | B implemented (PATCH + 400 `errors` contract; GET fields) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106C/checkpoint.md) · [implementation](./artifacts/SP-106C/implementation.md) · commit `6ece311` (2026-10-17: 188/188 web tests, typecheck, lint clean; error-plumb deviation recorded for the parent review) |
-| [D](./SP-106D-profile-integration.md) | Queued | A, B, C implemented | Implement (round-trip suite + manual browser sign-off); needs a disposable Postgres `DATABASE_URL` | — |
+| [D](./SP-106D-profile-integration.md) | In progress | A, B, C implemented | Implement (round-trip suite + manual browser sign-off); needs a disposable Postgres `DATABASE_URL` | [checkpoint](./artifacts/SP-106D/checkpoint.md) |
 
 The queue is the current execution record. C/D are fully refined and sized
 (ready tickets) but not `Ready`-state because their implementation
