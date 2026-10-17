@@ -5,7 +5,7 @@
 **Epic:** [EP01: Authentication & Onboarding](../../../epics/EP01-authentication-and-onboarding.md)
 **Milestone:** M1
 **Layer:** Integration
-**Status:** Queued (planned 2026-10-17)
+**Status:** Implemented — awaiting combined parent review (2026-10-17; commit `426459e`; [implementation record](./artifacts/SP-106D/implementation.md), [checkpoint](./artifacts/SP-106D/checkpoint.md))
 **Dependencies:** SP-106A, SP-106B, SP-106C implemented
 **Jira key:** STUDY-35
 
