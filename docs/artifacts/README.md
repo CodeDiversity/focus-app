@@ -36,20 +36,23 @@ Do not duplicate records or rename directories just because a Jira key appears.
 - **implementation.md:** implementer-owned actual behavior, changes, commands,
   results and remaining obligations. Reuse the same file across layer changes
   and contexts. The parent record indexes every child and the combined Git scope.
-- **review.md:** the independent read-only reviewer's returned report, saved by
-  the coordinating parent. Implementers never edit it. One final review covers
+- **review.md:** the independent reviewer's report, saved by the reviewer.
+  Restricted runtimes use the reviewer skill's parent-persistence fallback.
+  Implementers never edit it. One final review covers
   the entire parent after all children and required integration work finish;
   see [review cadence](../../.agents/review-cadence.md). Explicit interim reports
   are preserved as historical records, not required for each child.
 - **plan-review.md:** reviewer-owned whole-plan report, saved beside the plan by
-  the parent. Planner corrections go in the README log, never in this report.
+  the reviewer, with the same restricted-runtime fallback. Planner corrections
+  go in the README log, never in this report.
   Later reviewer passes replace the latest report; committed history remains.
 
 Only the planner owns scope/dependency/decision changes. The implementer may
 update the README execution fields/table and active child status/artifact pointers
 as the narrow exception in delivery state. Refiners still write only their given
-story; reviewers/auditors remain read-only. The coordinating parent records final
-review outcome only from actual reviewer evidence.
+story; reviewers write only their report and passing-verdict scoped sync; auditors write
+nothing. Deferred persistence never grants another role broader write authority.
+Record final review outcome only from actual independent reviewer evidence.
 
 ## Migrated delivery homes
 

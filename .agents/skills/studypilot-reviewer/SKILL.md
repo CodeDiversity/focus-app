@@ -22,8 +22,20 @@ exactly the following:
    entries, verdict-dependent queue fields, and a stale parent status line.
 
 On a non-passing verdict save the report only and defer the docs sync to a
-passing pass. If the save fails, return the Markdown for the user or next
-coordinating session to save; never claim it was saved.
+passing pass. If tools or permissions prevent saving, return the full Markdown, exact target
+path, and an explicit list of deferred passing-sync edits. The coordinating parent
+may persist these within its own write authority, verbatim for the report; otherwise
+leave a concrete handoff. Never bypass runtime restrictions, broaden another
+role's write scope, or claim pending writes succeeded. This is the canonical
+restricted-runtime fallback for both agent frameworks. Auditors never save or sync.
+
+## Static audit mode
+
+When invoked as `dod-auditor`, inspect the queue, relevant story/epic, shared DoD,
+implementation evidence and code. Return findings and the DoD checklist with
+file/line references. Do not execute or delegate tests, save a report, sync docs
+or approve execution-dependent gates; mark those CANNOT VERIFY. Skip the plan
+review, persistence and passing-sync procedures below.
 
 ## Choose the review mode
 
@@ -32,7 +44,7 @@ coordinating session to save; never claim it was saved.
 
 ## Plan review (before implementation)
 
-Read the source epic, shared DoD, parent summary, every child, breakdown README, decisions, correction log, and any previous `plan-review.md`. Inspect relevant application code independently; treat planner claims and correction statuses as unverified. Apply the planning criteria in `.agents/skills/studypilot-planner/SKILL.md` in read-only review mode.
+Read the source epic, shared DoD, parent summary, every child, breakdown README, decisions, correction log, and any previous `plan-review.md`. Inspect relevant application code independently; treat planner claims and correction statuses as unverified. Apply [shared planning validation](../../planning-checklist.md); do not load planner authoring or Jira procedures.
 
 - Verify original AC/test coverage, separate backend/frontend children, working-session size, integration ownership, dependency status, shared contracts, and all applicable DoD obligations.
 - Verify all implementation layers have one sequential `implementer` owner. Backend/frontend child separation is scope granularity, not a mandate for separate writers. Flag plans that require concurrent implementation agents in one workspace.
@@ -52,7 +64,7 @@ Save the returned Markdown verbatim, replacing only the latest `plan-review.md` 
 - For a group review, apply the checks below to the parent and every child, attribute findings/AC results to child IDs, and return one combined report at the parent's artifact path. Do not limit inspection to the final child's diff or initiate separate reviews for each child. An unsplit story retains its existing standalone review flow.
 - Read the story's epic in `docs/epics/`, the shared Definition of Done in `docs/epics/README.md`, and the story's implementation summary at the parent README-resolved `<artifact-root>/<story-id>/implementation.md` before reviewing. The implementation summary is the implementer's record of what was built; verify its claims against the actual code rather than trusting it. A missing summary is a review gap, and a FAIL for the documentation condition when the story changed the API or schema.
 - Check each acceptance criterion explicitly. Report each as satisfied, partially satisfied, or unverified, with file and line references.
-- Audit the ten DoD conditions from `docs/epics/README.md` as a PASS / FAIL / CANNOT VERIFY checklist with file and line evidence. A condition with no automated test backing it is FAIL, not PASS. Pay particular attention to: academic data scoped to the authenticated student, loading/empty/error states, keyboard accessibility, and documented API changes and migrations.
+- Audit the ten DoD conditions from `docs/epics/README.md` as a PASS / FAIL / CANNOT VERIFY checklist with file and line evidence. Use evidence appropriate to the condition: executed automated tests for business rules and explicit automated-test obligations; code inspection plus relevant tests for validation, ownership and error behavior; interaction/browser evidence for UI states, keyboard and responsive behavior; documentation inspection for API/migration docs; recorded integrated-environment verification for item 10. Missing required behavior or tests is FAIL; unavailable execution or insufficient evidence is CANNOT VERIFY. A documentation or integrated-review condition does not require an artificial automated test. Do not relax any explicit story test requirement. Pay particular attention to: academic data scoped to the authenticated student, loading/empty/error states, keyboard accessibility, and documented API changes and migrations.
 - Run the automated tests that cover the changed business rules when execution is available and permitted, and report actual output, not assumptions. If you cannot run them, report CANNOT VERIFY rather than assuming they pass.
 - Verify data scoping: every query and endpoint touching academic data must be constrained to the authenticated student.
 - Flag AI features, syllabus parsing, LMS integrations, grade calculations, flashcards, or native mobile work as out of scope for the MVP.
@@ -95,38 +107,18 @@ code or test file, migrations, another story's docs, or the reviewer report's
 content. The sync is bookkeeping of verified results, not new verification; a
 planner/implementer may still act on queue rows reserved to them.
 
-## Running commands (get evidence, don't assume it)
+## Running commands
 
-Report actual output, not assumptions. **Absence of shell is a capability gap to
-work around, not a reason to downgrade a gate to the implementer's word.**
-Reviewers in this repo have obtained executed evidence both directly and by
-delegating a read-only helper; use whichever your runtime allows, in this order:
-
-1. **Run the gate yourself** and paste the real output (including the exit code
-   and the summary block) into the report.
-2. **If your runtime grants no shell, delegate a read-only command helper** — a
-   fresh `general`/`explore` session — and treat its raw output as *your* gate
-   evidence. Instruct the helper to run exactly the commands you name, print
-   output verbatim, and:
-   - **not** modify, create or delete any file; run no Git write command
-     (`add`, `commit`, `checkout`, `restore`, `reset`, `stash`, `clean`, `apply`);
-     install nothing; run no build/fmt/fix command that could rewrite files;
-   - never read `.env`, `.env.*`, credential, key, token or secret files;
-   - report which command failed or was unavailable rather than guessing.
-
-   In the report's **Limitations**, record that the run was delegated, name the
-   helper's stated constraints, and paste its verbatim output — the same way
-   pass 1 of the SP-108 review handled it.
-3. **Only** if neither route works, mark the gate **CANNOT VERIFY** and say
-   explicitly that the result is implementer-attested and unverified. Never let a
-   verdict rest silently on an implementer-attested number; a `PASS` whose
-   limitation is an unexecuted gate must say so in the verdict line too.
-
-Prefer this delegation over a static-reading verdict: it is the difference
-between reviewer-executed evidence and evidence the implementer produced about
-its own work. Tool grants are runtime-level and no per-role config in this repo
-sets them, so check for shell early in the review rather than discovering at the
-end that no gate ran.
+Check execution capability early. Run relevant gates independently when permitted;
+record command, working directory, exit code and concise result, linking detailed
+logs only when needed. Do not paste full successful output into every report.
+Never mutate Git state, install dependencies, change code, run fix/format commands or read secrets
+as part of review. If shell is unavailable and delegation is authorized, a bounded
+command helper may execute the exact gates under the same restrictions and return
+results; disclose delegation. Do not spawn helpers merely to repeat available tests.
+If execution is blocked, mark the gate CANNOT VERIFY and distinguish recorded
+implementer evidence from reviewer-executed evidence. Required unverified gates
+prevent an unqualified passing verdict. Static auditors do not run or delegate tests.
 
 ## Security rules
 
@@ -135,11 +127,6 @@ end that no gate ran.
 
 ## Framework note
 
-The review is read-only; the reviewer's writes are its saved report plus, on a
-passing verdict, the scoped sync above. Where the runtime separates tools,
-prefer granting shell so gates are reviewer-executed; if shell is unavailable,
-follow [Running commands](#running-commands-get-evidence-dont-assume-it) and
-delegate a read-only helper rather than leaving gates implementer-attested. The
-dod-auditor remains fully read-only: it returns the audit and
-saves or syncs nothing. Never broaden the write scope beyond this skill, and
-never cover for a failed save by editing other files to "help".
+Only report persistence and passing-verdict sync may write files. Use the
+restricted-runtime fallback above when unavailable. The DoD auditor reads only,
+returns its static audit, and marks execution-dependent checks CANNOT VERIFY.

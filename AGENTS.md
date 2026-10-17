@@ -1,72 +1,43 @@
 # StudyPilot repo agents
 
-The five roles in `.vibe/agents/` are also available to Codex as project agents in `.codex/agents/`. Their shared instructions remain in `.agents/skills/`; read the relevant skill before performing a role's work.
+Use the requested custom role in `.codex/agents/` when supported; `.vibe/agents/`
+provides the same roles for Vibe. Otherwise read its definition and shared skill.
+Role availability does not require delegation.
 
-| Agent | Purpose | Shared skill | Writes |
-| --- | --- | --- | --- |
-| `implementer` | Sequential backend, frontend, database and integration implementation | `.agents/skills/studypilot-implementer/SKILL.md` | Implementation and checkpoint artifacts |
-| `planner` | Epic breakdown, sequencing, backlog planning | `.agents/skills/studypilot-planner/SKILL.md` | Only `docs/` |
-| `refiner` | Ground an unimplemented story in the codebase | `.agents/skills/studypilot-refiner/SKILL.md` | Only the given story in `docs/stories/` |
-| `reviewer` | Review plans before implementation or verify completed work against acceptance criteria and DoD | `.agents/skills/studypilot-reviewer/SKILL.md` | Saves its report at the resolved path; after a passing review, correction-log entries, queue execution fields and the parent status line |
-| `dod-auditor` | Static Definition of Done audit | `.agents/skills/studypilot-reviewer/SKILL.md` | None; return the audit |
+| Role | Shared skill | Write boundary |
+| --- | --- | --- |
+| implementer | `.agents/skills/studypilot-implementer/SKILL.md` | Code, tests, implementation/checkpoint artifacts; scoped execution-status updates |
+| planner | `.agents/skills/studypilot-planner/SKILL.md` | Only `docs/` |
+| refiner | `.agents/skills/studypilot-refiner/SKILL.md` | Only the given unimplemented story |
+| reviewer | `.agents/skills/studypilot-reviewer/SKILL.md` | Report; passing verdict's scoped docs sync |
+| dod-auditor | `.agents/skills/studypilot-reviewer/SKILL.md` (static audit) | None |
 
-When asked to use a role, use its custom agent if the runtime supports selecting one. Otherwise, read `.codex/agents/<role>.toml` and its shared skill and follow those instructions in the current session or include them in the delegated task. Having these roles available does not require delegating every task.
+One active implementer owns all layers sequentially in a shared workspace.
+Legacy backend/frontend agent requests route to implementer; load their technical
+skills only for affected layers. Coordinate a checkpoint handoff before another
+implementation session takes over. Preserve other contributors' work.
 
-Use one active `implementer` for all layers in a shared workspace. Do not run
-parallel implementation writers or split backend/frontend into different agents.
-The backend/frontend skills remain technical guidance loaded by that implementer;
-legacy requests naming those agents route to `implementer`. Coordinate an explicit
-checkpoint handoff before another implementation session takes over. Read-only
-review/exploration remains separate; role availability is not a locking mechanism.
+For story work, read [delivery state](.agents/delivery-state.md) and the parent
+README's execution queue first. Load the requested role's skill, relevant epic,
+active story, shared DoD in `docs/epics/README.md`, and relevant contracts.
+Use section-level reads; expand when dependencies or evidence require it.
 
-For story work, read the relevant files in `docs/epics/` and `docs/stories/`, plus the shared Definition of Done in `docs/epics/README.md`. Follow `docs/artifacts/README.md` for implementation and review reports.
+Canonical workflow rules live in:
 
-Every role must apply [delivery state](.agents/delivery-state.md). Read the parent
-README's execution queue first: it records the active/next substory, blockers,
-and canonical artifact paths. Keep plans and artifacts in the same delivery home.
-The implementer may update only execution fields/table and the active child's
-status/artifact pointers as a narrow exception to planner-owned planning docs;
-refiner write limits remain unchanged; the reviewer writes only its saved report
-and a passing verdict's scoped docs sync (see the reviewer skill), and the DoD
-auditor stays read-only.
+- [Story sizing](.agents/story-sizing.md): planning, refinement and scope assessment.
+- [Checkpoint execution](.agents/checkpoint-execution.md): implementation/resume.
+- [Review cadence](.agents/review-cadence.md): review unit and final gate.
+- [Context and efficiency](.agents/context-efficiency.md): reads, handoffs and measurement.
+- [Artifact conventions](docs/artifacts/README.md): layout and records.
 
-All story roles must apply [story sizing](.agents/story-sizing.md): default to one
-30–90-minute implementation outcome with explicit file, context and verification
-boundaries. The planner splits oversized unimplemented stories; refiners and
-implementers hand scope growth back to the planner within their existing write
-limits. Reviewers verify sizing from evidence. Preserve atomic security invariants
-and all original AC/test/DoD coverage when splitting.
+Follow role write limits with every tool, including shell. Reviewer persistence
+and restricted-runtime fallback are defined in its skill; an auditor stays
+fully read-only. Never treat implementation completion as independent approval.
 
-Implementation tasks use [checkpoint-based execution](.agents/checkpoint-execution.md).
-Implementers maintain the queue-resolved `artifacts/<story-id>/checkpoint.md` after logical
-milestones and before fresh-context handoffs. A task may span multiple context
-windows or different agent tools; resume from the checkpoint after reconciling
-Git state. Checkpoints do not establish completion or replace the final
-implementation/review artifacts.
-
-Apply [review cadence](.agents/review-cadence.md): test and record each substory,
-then review the entire parent scope once after all substories and integration
-work are implemented. Do not automatically review/audit individual substories.
-Implementation-complete children may unblock dependencies while awaiting the
-parent's formal sign-off. Preserve historical reports.
-
-The reviewer runs its review read-only and then saves its own Markdown report:
-implementation reviews at the parent README's resolved artifact path
-(`<delivery-home>/artifacts/<parent-story-id>/review.md` for migrated/new groups)
-and plan reviews to `<delivery-home>/plan-review.md` (for SP-105:
-`docs/stories/EP01/SP-105/plan-review.md`), replacing only the latest report.
-Earlier committed reports remain in Git history. On a passing verdict the
-reviewer also records each finding and correction by stable ID in the breakdown
-README, reconciles the queue's verdict-dependent execution fields, and refreshes
-a stale parent status line (see the reviewer skill's passing-review docs sync).
-On a non-passing verdict it saves the report only and defers those docs edits;
-the planner/coordinator reconciles the queue instead, and the reviewer
-independently verifies closure on the next pass. During a planner/reviewer
-cycle, the planner reads that report and leaves it unchanged. The planner and
-refiner's narrower write limits are instructions applying to every tool, rather
-than filesystem sandbox guarantees. Do not broaden their write scope.
-
-All roles must follow their skill's security rules. Never read, display, or write credential or secret files, including `.env` and `.env.*`; flag exposed secrets by location without reproducing values.
+Never read, display, search inside, or write credential or secret files, including
+`.env` and `.env.*`. Flag exposed secrets by location without reproducing values.
+Existing authorization boundaries for trackers, shared databases, deployment and
+destructive actions remain in force.
 
 ## Ownership scoping
 

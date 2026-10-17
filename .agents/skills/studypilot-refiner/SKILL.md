@@ -7,30 +7,18 @@ description: Load when refining a StudyPilot story ticket into a technical, impl
 
 Refines a story ticket in place into a technical, implementation-ready ticket. The purpose of refinement is to surface and resolve ambiguity before implementation; asking the right questions matters more than filling every blank.
 
-Read and apply [story sizing](../../story-sizing.md) before adding technical detail.
-For an unimplemented ticket with multiple outcomes or an unsupported large scope,
-return a planner handoff with proposed child outcomes, dependencies and AC/test
-ownership. Do not mark it implementation-ready or create sibling files. A small
-ticket includes the policy's sizing block; detail must not expand its outcome.
-For a cohesive multi-window task, add code/test checkpoints and resume inputs
-per [checkpoint-based execution](../../checkpoint-execution.md) within the given
-story. Runtime checkpoint files belong to the implementer, outside this role's
-write scope. Context turnover alone is not a reason to request a story split.
-Apply [review cadence](../../review-cadence.md): a child retains its tests and
-DoD obligations but defers formal review to the completed parent scope. Reference
-the established parent review unit; do not invent per-child review dependencies.
-Implementation owner is `implementer` regardless of layer. Preserve layer/scope
-metadata without assigning backend/frontend work to separate coding agents.
-Apply [delivery state](../../delivery-state.md): read the parent execution queue
-and artifact pointers before refinement. Return the story's readiness result for
-queue reconciliation; still write only the given story, never README or artifacts.
+Apply [delivery state](../../delivery-state.md), [story sizing](../../story-sizing.md)
+and [context efficiency](../../context-efficiency.md). Use the established parent
+review unit under [review cadence](../../review-cadence.md). For multi-window
+stories read [checkpoint execution](../../checkpoint-execution.md) to plan milestones; runtime artifacts remain
+implementer-owned. Return oversized scope to the planner with proposed outcomes,
+dependencies and AC/test owners; write only the given story, never siblings,
+README or artifacts. Return readiness for coordinator reconciliation.
 
 - Refine only tickets that have not been implemented yet. If the ticket's work is already merged or in progress, report that and stop.
 - Read before refining: the story file, its epic in `docs/epics/`, the shared Definition of Done in `docs/epics/README.md`, and the actual codebase. Grep and read the modules, Prisma schema, and existing tests the story will touch. Every file path, endpoint, and test name in the refined ticket must come from this reading, never from guessing.
-- Ask questions first. Identify every ambiguity or missing decision that materially shapes the work — scope boundaries, API shape, data model choices, UX behavior, error handling, sequencing. Ask the user one question at a time, ordered by how much the answer changes the ticket. Do not batch questions and do not fill gaps with silent assumptions. Keep asking until the decisions that materially shape the ticket are settled; trivia can be resolved later and noted as such.
-- For each question, offer a suggested answer with a short rationale whenever you have a recommendation, and mark it as such ("I'd suggest X because Y — but this is your call"). When you have no basis for a recommendation, say so and present the trade-offs evenly instead of guessing. If the `ask_user_question` tool is available, use it; otherwise end your turn with the question and wait for the answer.
-- If a ticket genuinely has no material ambiguity, say so and proceed directly to refining it. Do not invent questions to seem thorough.
-- Before finalizing, ask the user if they have any additional callouts — concerns, constraints, or context the refinement should capture that the questions did not surface. Do this after all material questions are settled and before writing the story file. Incorporate anything raised into the appropriate section (Decisions, Technical Notes, or out-of-scope); if the user has nothing to add, say so and finalize.
+- Consult existing decisions before asking. Ask only unresolved material questions affecting scope, security, public contracts, persisted data, UX or sequencing. Batch independent questions; ask dependent ones sequentially. Recommend an answer with a brief rationale when grounded; otherwise explain the trade-offs. Use an available user-input tool, or return questions to the parent when running as a subagent. Continue independent inspection while waiting, but do not finalize affected decisions without answers.
+- Record harmless reversible assumptions explicitly. If no material ambiguity remains, refine directly; no mandatory final-callouts question or extra approval turn. Incorporate any callouts the user supplies.
 - Refine the ticket in place: rewrite the story file under `docs/stories/`, preserving its metadata (Story ID, Epic, Milestone, Priority, Dependencies, Jira key) and section structure (Summary, Description, Acceptance Criteria, Technical Notes). Add a `Refined: <date>` line to the metadata. The story file is the only file you may write — never application code, configs, or other docs.
 - Ground the refined ticket in the codebase:
   - Relevant files: existing files to change with a one-line reason each; new files to create, following the repo's existing module and test naming conventions.

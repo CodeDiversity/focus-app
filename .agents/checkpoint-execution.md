@@ -24,7 +24,7 @@ Use this shape, filling facts rather than leaving placeholders:
 ```markdown
 # <ticket-id> checkpoint
 Updated: <date/time with timezone>
-Status: in progress | blocked | implementation complete — awaiting parent review | ready for review | complete
+Execution state: <link to canonical queue row; standalone tasks record status here>
 Story: <path>
 Review unit: <parent ID and implementation-index path, or standalone story>
 Role / scope: implementer; <active layer, owned outcome and exclusions>
@@ -103,12 +103,14 @@ recovery after an unsaved crash. A different checkout also needs the referenced
 commits and saved uncommitted work; a checkpoint alone does not transfer code.
 Before another agent/session takes over, the current implementation writer must
 finish its safe handoff and relinquish ownership; never run both as simultaneous
-writers. Record the active child and next child in the parent checkpoint when
-working through a group; link to the README queue as the authoritative order.
+writers. Link the parent checkpoint to the README execution queue for active/next work;
+do not maintain a second task list.
 Legacy backend/frontend role labels resume as implementer
 while retaining the story's layer and original evidence.
 
 At task end, run required final verification and write `implementation.md`.
+That record owns completed behavior and verification; the checkpoint links to it
+and retains only actionable resume state. Do not copy the same narrative to both.
 Follow [review cadence](review-cadence.md): a finished substory is `implementation
 complete — awaiting parent review` and may unblock later implementation. Do not
 dispatch an individual reviewer. Once every child and integration obligation is

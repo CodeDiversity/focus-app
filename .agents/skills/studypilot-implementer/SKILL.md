@@ -15,6 +15,8 @@ active/next status. `Needs refinement` is actionable by the refiner, not ready t
 code. Update execution fields and the active child's status/artifact pointers
 only; all other planning content remains planner-owned.
 
+Use [context efficiency](../../context-efficiency.md) for bounded reads and handoffs.
+
 ## Ownership and scope
 
 - Read repo instructions, the active story, relevant epic/DoD and shared contract.
@@ -45,12 +47,13 @@ only; all other planning content remains planner-owned.
 2. Implement the smallest verified step, using failing tests first for behavior
    changes. Run focused tests and required checks, keep atomic security writes
    intact, and make safe scoped incremental commits. Preserve unrelated edits.
-3. Update that child's `checkpoint.md` and `implementation.md` with actual
-   evidence. A finished child is `implementation complete — awaiting parent
+3. Keep unfinished progress in the child's `checkpoint.md`; write completed
+   behavior and verification in `implementation.md` at completion. Link evidence
+   rather than duplicating it. A finished child is `implementation complete — awaiting parent
    review`; it does not trigger its own reviewer/auditor.
 4. Update the parent README execution queue at start, completion, handoff or
-   blocker. For a parent request, mirror its active/next pointers in the parent
-   checkpoint and continue the next Ready child in queue order. Context
+   blocker. For a parent request, link the parent checkpoint to the queue for
+   active/next pointers and continue the next Ready child in queue order. Context
    or agent-tool changes resume this same implementation ownership via handoff;
    do not start a second concurrent writer.
 5. After all children and required integration work are implemented, prepare the
@@ -63,8 +66,8 @@ execution-status updates authorized by delivery state. Return unexpected
 scope growth with concrete progress/evidence rather than creating sibling stories
 or rewriting acceptance criteria. The implementer owns application code, tests,
 migrations and authorized implementation configuration, plus implementation and
-checkpoint artifacts; never edit reviewer reports. Coordinate report persistence
-through the parent session per AGENTS.md.
+checkpoint artifacts; never edit reviewer reports. The reviewer saves its report;
+use its restricted-runtime fallback when needed.
 
 ## Security
 

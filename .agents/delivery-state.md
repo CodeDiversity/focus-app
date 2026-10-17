@@ -72,9 +72,10 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
 - **Implementer:** owns code and artifacts. Narrow exception to its planning-doc
   restriction: update only the README's execution fields/table and active child's
   `Status`/artifact pointers at start, checkpoint handoff, completion, or blocker.
-  Record evidence, recompute the next actionable row, and mirror status in the
-  checkpoint. Do not change ACs, dependencies, decisions or planning review logs.
-  Parent checkpoint next-task fields point back to this queue instead of becoming
+  Record evidence, recompute the next actionable row, and link to the checkpoint
+  for unfinished progress. Do not change ACs, dependencies, decisions or planning
+  review logs.
+  Parent checkpoint task fields link back to this queue instead of becoming
   a competing task list. Coordinate handoff before transferring the single writer.
 - **Refiner:** reads the queue, writes only the given unimplemented story, and
   returns its readiness/dependency result for planner/coordinator reconciliation.
@@ -90,6 +91,7 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
 - **DoD auditor:** reads queue and evidence and returns the audit; writes
   nothing.
 - **Coordinating parent:** the reviewer saves its own report at the resolved
-  path; the parent reconciles queue/status edits the reviewer deferred on a
+  path, using its skill's restricted-runtime fallback when needed; the parent
+  reconciles queue/status edits the reviewer deferred on a
   non-passing verdict. Only a passing final parent review allows `Reviewed`;
   child self-checks never do.
