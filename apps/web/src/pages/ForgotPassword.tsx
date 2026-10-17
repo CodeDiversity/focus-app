@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
-import { authService } from '../services/auth';
+import { authService } from '@/features/auth/api/authService';
 import { isRecoveryError } from '@/shared/api/recovery';
 import { getErrorMessage } from '@/shared/lib/errors';
 

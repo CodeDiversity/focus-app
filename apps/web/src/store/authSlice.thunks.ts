@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { authService } from '../services/auth';
+import { authService } from '@/features/auth/api/authService';
 import { userService } from '@/entities/user/api/userService';
 import { tokenStore } from '@/shared/api/tokenStore';
 import { apiErrorMessage, extractApiError, getErrorMessage } from '@/shared/lib/errors';

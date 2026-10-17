@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/features/auth/model/AuthContext';
 import { Button } from '@/shared/ui/Button';
 
 export function Header() {

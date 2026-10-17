@@ -4,7 +4,7 @@ import type { Method } from 'axios';
 import { configureStore } from '@reduxjs/toolkit';
 import type { BaseQueryApi } from '@reduxjs/toolkit/query';
 import httpClient, { setSessionExpiredHandler } from '@/shared/api/httpClient';
-import { authService } from '../services/auth';
+import { authService } from '@/features/auth/api/authService';
 import { tokenStore } from '@/shared/api/tokenStore';
 import {
   RESEND_FALLBACK_MESSAGE,

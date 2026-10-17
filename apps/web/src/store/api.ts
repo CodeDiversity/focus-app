@@ -38,7 +38,7 @@ export const axiosBaseQuery: BaseQueryFn<
     return { data: response.data };
   } catch (error: unknown) {
     // The response interceptor rejects with `{ ...error, message }`, which keeps
-    // `response.status` readable (services/auth.ts relies on the same shape).
+    // `response.status` readable (authService relies on the same shape).
     const failure = error as { message?: string; response?: { status?: number } };
     const status = failure.response?.status;
     return {
@@ -56,7 +56,7 @@ export const RESEND_FALLBACK_MESSAGE =
 
 /**
  * Mirrors the messages `authService.resendVerification` throws. The mapping is
- * duplicated (not shared) so `src/services/auth.ts` stays untouched, and is
+ * duplicated (not shared) so `features/auth/api/authService.ts` stays untouched, and is
  * pinned by the parity cases in `api.test.ts`.
  */
 export function resendErrorMessage(code?: string): string {

@@ -9,7 +9,7 @@ import React, {
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { SessionUser, User } from '@/entities/user/model/types';
-import { authService } from '../services/auth';
+import { authService } from '../api/authService';
 import { userService } from '@/entities/user/api/userService';
 import { tokenStore } from '@/shared/api/tokenStore';
 import { setSessionExpiredHandler } from '@/shared/api/httpClient';
@@ -21,14 +21,14 @@ import {
   setError,
   setUser,
   clearUser,
-} from '../store/authSlice';
+} from '../../../store/authSlice';
 import {
   login,
   updateProfile,
-} from '../store/authSlice.thunks';
+} from '../../../store/authSlice.thunks';
 import { getErrorMessage } from '@/shared/lib/errors';
-import { selectUser, selectIsLoading, selectError, selectIsVerificationBannerDismissed } from '../store/authSlice.selectors';
-import { useAppDispatch } from '../store/hooks';
+import { selectUser, selectIsLoading, selectError, selectIsVerificationBannerDismissed } from '../../../store/authSlice.selectors';
+import { useAppDispatch } from '../../../store/hooks';
 
 interface AuthContextType {
   user: SessionUser | null;

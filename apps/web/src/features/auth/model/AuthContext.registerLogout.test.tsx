@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from './AuthContext';
-import { authService } from '../services/auth';
+import { authService } from '../api/authService';
 import { tokenStore } from '@/shared/api/tokenStore';
-import { Providers, makeTestStore } from '../test/providers';
-import type { AuthResponse } from '@/features/auth/model/types';
+import { Providers, makeTestStore } from '../../../test/providers';
+import type { AuthResponse } from './types';
 import type { RegisteredUser } from '@/entities/user/model/types';
 
-vi.mock('../services/auth', () => ({
+vi.mock('../api/authService', () => ({
   authService: {
     register: vi.fn(),
     getProfile: vi.fn(),

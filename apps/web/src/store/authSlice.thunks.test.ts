@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
 import authSlice, { setError, setUser } from './authSlice';
 import { login, updateProfile } from './authSlice.thunks';
-import { authService } from '../services/auth';
+import { authService } from '@/features/auth/api/authService';
 import { userService } from '@/entities/user/api/userService';
 import type { AuthResponse } from '@/features/auth/model/types';
 import type { User } from '@/entities/user/model/types';
 
-vi.mock('../services/auth', () => ({
+vi.mock('@/features/auth/api/authService', () => ({
   authService: {
     register: vi.fn(),
     login: vi.fn(),

@@ -3,8 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
-import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/auth';
+import { useAuth } from '@/features/auth/model/AuthContext';
+import { authService } from '@/features/auth/api/authService';
 import { resendFeedback, useResendVerification } from '../hooks/useResendVerification';
 import { readLinkToken } from '@/shared/lib/linkToken';
 

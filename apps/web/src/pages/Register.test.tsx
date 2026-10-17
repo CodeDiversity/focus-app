@@ -5,8 +5,8 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { makeTestStore } from '../test/providers';
 import { RegisterPage } from './Register';
-import { AuthProvider, useAuth } from '../context/AuthContext';
-import { authService } from '../services/auth';
+import { AuthProvider, useAuth } from '@/features/auth/model/AuthContext';
+import { authService } from '@/features/auth/api/authService';
 import { tokenStore } from '@/shared/api/tokenStore';
 import toast from 'react-hot-toast';
 
@@ -14,7 +14,7 @@ vi.mock('react-hot-toast', () => ({
   default: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock('../services/auth', () => ({
+vi.mock('@/features/auth/api/authService', () => ({
   authService: {
     register: vi.fn(),
     getProfile: vi.fn(),

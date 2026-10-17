@@ -7,7 +7,7 @@ import type {
   RegisterCredentials,
   ResetPasswordRequest,
   VerificationResponse,
-} from '@/features/auth/model/types';
+} from '../model/types';
 import type { RegisteredUser } from '@/entities/user/model/types';
 
 export const authService = {

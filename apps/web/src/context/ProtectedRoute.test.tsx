@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { Route, Routes, useLocation } from 'react-router-dom';
-import { AuthProvider } from './AuthContext';
+import { AuthProvider } from '@/features/auth/model/AuthContext';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { PublicRoute } from '../components/PublicRoute';
-import { authService } from '../services/auth';
+import { authService } from '@/features/auth/api/authService';
 import { Providers, makeTestStore } from '../test/providers';
 import type { AuthResponse } from '@/features/auth/model/types';
 
-vi.mock('../services/auth', () => ({
+vi.mock('@/features/auth/api/authService', () => ({
   authService: {
     register: vi.fn(),
     login: vi.fn(),

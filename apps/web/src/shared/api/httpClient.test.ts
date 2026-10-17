@@ -1,15 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import api, { setSessionExpiredHandler, refreshAccessToken } from './httpClient';
-import { authService } from '@/services/auth';
+import type { AuthResponse } from '@/features/auth/model/types';
 import { tokenStore } from './tokenStore';
 import {
   isRecoveryBarrierActive,
   runRecoveryReset,
   snapshotSessionGeneration,
 } from './recovery';
-import type { AuthResponse } from '@/features/auth/model/types';
-
 function ok(config: InternalAxiosRequestConfig, data: unknown): AxiosResponse {
   return { data, status: 200, statusText: 'OK', headers: {}, config } as AxiosResponse;
 }
@@ -112,8 +110,8 @@ describe('api interceptor', () => {
     };
 
     const [a, b] = await Promise.all([
-      authService.refreshToken(),
-      authService.refreshToken(),
+      refreshAccessToken(),
+      refreshAccessToken(),
     ]);
     expect(a.accessToken).toBe('boot-token');
     expect(b.accessToken).toBe('boot-token');

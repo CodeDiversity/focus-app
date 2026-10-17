@@ -6,7 +6,7 @@ import { useLocation } from 'react-router-dom';
 import { Providers, makeTestStore } from '../test/providers';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import App from '../App';
-import { AuthProvider } from '../context/AuthContext';
+import { AuthProvider } from '@/features/auth/model/AuthContext';
 import api from '@/shared/api/httpClient';
 import { tokenStore } from '@/shared/api/tokenStore';
 

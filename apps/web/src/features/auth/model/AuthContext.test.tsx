@@ -5,15 +5,15 @@ import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { AuthProvider, useAuth } from './AuthContext';
-import { authService } from '../services/auth';
+import { authService } from '../api/authService';
 import { userService } from '@/entities/user/api/userService';
 import api from '@/shared/api/httpClient';
 import { tokenStore } from '@/shared/api/tokenStore';
 import { runRecoveryReset } from '@/shared/api/recovery';
-import type { AuthResponse } from '@/features/auth/model/types';
-import authSlice from '../store/authSlice';
+import type { AuthResponse } from './types';
+import authSlice from '../../../store/authSlice';
 
-vi.mock('../services/auth', () => ({
+vi.mock('../api/authService', () => ({
   authService: {
     register: vi.fn(),
     login: vi.fn(),
