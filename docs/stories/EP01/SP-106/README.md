@@ -6,7 +6,7 @@
 **Status:** Planned 2026-10-17 — **Plan Ready** (planning gate; no implementation
 performed). 2026-10-17: breakdown complete — all four child tickets (A–D) landed
 in incremental commits (`75f8eba` scaffold, `d2fab80` A, `1f69094` B, `327b50f` C,
-and this commit for D).
+`57d789f` D).
 
 ## Execution queue
 
