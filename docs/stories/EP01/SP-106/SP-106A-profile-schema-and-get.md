@@ -5,7 +5,7 @@
 **Epic:** [EP01: Authentication & Onboarding](../../../epics/EP01-authentication-and-onboarding.md)
 **Milestone:** M1
 **Layer:** Backend
-**Status:** In progress (implementation started 2026-10-17; checkpoint in [artifacts/SP-106A/checkpoint.md](./artifacts/SP-106A/checkpoint.md))
+**Status:** Implemented — awaiting parent review (2026-10-17; [implementation record](./artifacts/SP-106A/implementation.md), [checkpoint](./artifacts/SP-106A/checkpoint.md))
 **Dependencies:** SP-104 (implemented and reviewed — STUDY-10 review PASS: global guard, `@CurrentUser()`, ownership helper, `test-http` harness)
 **Jira key:** Pending creation
 
