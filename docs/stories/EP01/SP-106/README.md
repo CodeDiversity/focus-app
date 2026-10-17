@@ -68,10 +68,10 @@ is performed and none replaces that sign-off.
 
 | ID | Layer / owner | Scope | Dependency | Target size | Jira |
 |---|---|---|---|---|---|
-| [A](./SP-106A-profile-schema-and-get.md) | Backend, `implementer` | `timeZone` + `preferences` on `User` (one migration); `GET /users/me` returns them, credentials excluded | SP-104 (done) | One 60–90 min session | Pending creation |
-| [B](./SP-106B-patch-profile-validation.md) | Backend, `implementer` | `PATCH /users/me` (replaces PUT) with IANA + bounded-preferences validation; field-level 400 `errors` map; dead service methods removed | A | One ~90 min session (largest child; indivisible core) | Pending creation |
-| [C](./SP-106C-profile-preferences-form.md) | Frontend, `implementer` | Profile page time-zone field (browser-detected default, client IANA validation, field-level API errors, form states); PATCH switch; stored-zone display via shared helper | B | One 60–90 min session | Pending creation |
-| [D](./SP-106D-profile-integration.md) | Integration, `implementer` | Cross-session round-trip + cross-student + credential-exclusion proof on real Postgres; manual browser sign-off (DoD 10) | A, B, C | One ~60 min session | Pending creation |
+| [A](./SP-106A-profile-schema-and-get.md) | Backend, `implementer` | `timeZone` + `preferences` on `User` (one migration); `GET /users/me` returns them, credentials excluded | SP-104 (done) | One 60–90 min session | STUDY-32 |
+| [B](./SP-106B-patch-profile-validation.md) | Backend, `implementer` | `PATCH /users/me` (replaces PUT) with IANA + bounded-preferences validation; field-level 400 `errors` map; dead service methods removed | A | One ~90 min session (largest child; indivisible core) | STUDY-33 |
+| [C](./SP-106C-profile-preferences-form.md) | Frontend, `implementer` | Profile page time-zone field (browser-detected default, client IANA validation, field-level API errors, form states); PATCH switch; stored-zone display via shared helper | B | One 60–90 min session | STUDY-34 |
+| [D](./SP-106D-profile-integration.md) | Integration, `implementer` | Cross-session round-trip + cross-student + credential-exclusion proof on real Postgres; manual browser sign-off (DoD 10) | A, B, C | One ~60 min session | STUDY-35 |
 
 Sequence: A → B → C → D, one sequential writer. D is the named integration
 owner for cross-layer verification.
@@ -220,7 +220,7 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
 | 7. Dependency mapping and sequencing | Pass | A → B → C → D, one sequential writer; upstream SP-104 (implemented/reviewed) and SP-108 (implemented/reviewed) verified in code; downstream SP-107/EP04/EP05 consumption noted in the contract section. |
 | 8. Material decisions | Pass | D106-1 user-approved 2026-10-17; D106-2…9 grounded in the story's own ACs/notes or inspected code; no open material question. |
 | 9. Correction log | Pass | CF-106-01 fixed in plan, verification recorded. |
-| 10. Jira identity/sync | Not applicable | No sync authorized for this task. Parent keeps existing STUDY-11; children A–D are `Pending creation`; no duplicate keys. |
+| 10. Jira identity/sync | Not applicable | No sync was authorized for that planning task. Children A–D are now **STUDY-32–STUDY-35**, verified 2026-10-17 by the authorized bootstrap sync, which resolves reviewer finding **IR-106-05** (the inventory column was the reported defect). Parent keeps existing STUDY-11; no duplicate keys. |
 
 **Outcome:** **Plan Ready** — all applicable planning gate rows pass; no
 unresolved material planning findings. Implementation is **not blocked**:
