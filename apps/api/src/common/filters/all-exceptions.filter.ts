@@ -14,6 +14,7 @@ interface NormalizedError {
   statusCode: number;
   message: string | string[];
   error: string;
+  errors?: Record<string, string[]>;
 }
 
 interface ErrorResponseBody extends NormalizedError {
@@ -24,6 +25,9 @@ interface ErrorResponseBody extends NormalizedError {
 /**
  * Uniform error shape for every API response:
  * { statusCode, message, error, path, timestamp }
+ *
+ * Validation exceptions (400) additionally include an additive `errors`
+ * field map: { <field>: string[] } — per-field actionable messages.
  * Unknown errors are logged server-side but never leak internals.
  */
 @Catch()
@@ -73,6 +77,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
         statusCode,
         message,
         error: typeof record.error === 'string' ? record.error : exception.name,
+        // Preserve the additive `errors` field map when present.
+        errors:
+          record.errors && typeof record.errors === 'object'
+            ? (record.errors as Record<string, string[]>)
+            : undefined,
       };
     }
 

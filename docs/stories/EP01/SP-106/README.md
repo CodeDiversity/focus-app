@@ -8,7 +8,8 @@ performed). 2026-10-17: breakdown complete — all four child tickets (A–D) la
 in incremental commits (`75f8eba` scaffold, `d2fab80` A, `1f69094` B, `327b50f` C,
 `57d789f` D). 2026-10-17: SP-106A implementation complete — awaiting combined
 parent review; next actionable is SP-106B (execution queue below is the current
-record).
+record). 2026-10-17: SP-106B implementation complete — awaiting combined parent
+review; next actionable is SP-106C.
 
 ## Execution queue
 
@@ -19,12 +20,14 @@ record).
 **Parent artifacts:** `./artifacts/SP-106/` (created when the parent
 checkpoint/index is written)
 
-**Active substory:** None — SP-106A implementation complete 2026-10-17
-(awaiting combined parent review; checkpoint
-[./artifacts/SP-106A/checkpoint.md](./artifacts/SP-106A/checkpoint.md)).
+**Active substory:** None — SP-106A + SP-106B implementation complete 2026-10-17
+(awaiting combined parent review; checkpoints
+[./artifacts/SP-106A/checkpoint.md](./artifacts/SP-106A/checkpoint.md) ·
+[./artifacts/SP-106B/checkpoint.md](./artifacts/SP-106B/checkpoint.md)).
 
-**Next substory:** [SP-106B](./SP-106B-patch-profile-validation.md) — implement
-(its prerequisite — A's model fields + GET shape — has landed).
+**Next substory:** [SP-106C](./SP-106C-profile-preferences-form.md) — implement
+(form consuming PATCH + GET; its prerequisites — A's model fields + GET shape
+and B's PATCH + validation — have landed).
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C → D;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -37,11 +40,11 @@ written at `./artifacts/SP-106/implementation.md`).
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [A](./SP-106A-profile-schema-and-get.md) | Implemented — awaiting parent review | SP-104 implemented and reviewed (STUDY-10 review PASS) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106A/checkpoint.md) · [implementation](./artifacts/SP-106A/implementation.md) · commits `fbd0ab7`, `71aff0d`, `775d4eb` (2026-10-17: 260/260 tests, typecheck, lint clean) |
-| [B](./SP-106B-patch-profile-validation.md) | Ready | A implemented (fields exist on the model and GET response — `fbd0ab7`/`71aff0d`) | Implement | — (artifacts created at implementation) |
+| [B](./SP-106B-patch-profile-validation.md) | Implemented — awaiting parent review | A implemented (fields exist on the model and GET response — `fbd0ab7`/`71aff0d`) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106B/checkpoint.md) · 258/281 tests (2 skipped — integration need DATABASE_URL), typecheck, lint clean |
 | [C](./SP-106C-profile-preferences-form.md) | Queued | B implemented (PATCH + 400 `errors` contract; GET fields) | Implement after B | — |
 | [D](./SP-106D-profile-integration.md) | Queued | A, B, C implemented | Implement (round-trip suite + manual browser sign-off) | — |
 
-The queue is the current execution record. B/C/D are fully refined and sized
+The queue is the current execution record. C/D are fully refined and sized
 (ready tickets) but not `Ready`-state because their implementation
 prerequisites have not landed; `Queued` is their honest state.
 
@@ -91,7 +94,7 @@ PATCH /users/me          (authenticated; replaces the scaffold's PUT — no alia
   body: { name?: string, timeZone?: string, preferences?: object }   // partial
   200 → same shape as GET (updated row)
   400 → { statusCode: 400, message: string[], error: "Bad Request",
-           errors: { <field>: string[] }, path, timestamp }
+            errors: { <field>: string[] }, path, timestamp }
         (message array preserved for compatibility; errors map is additive — D106-6)
   401 → unauthenticated (global default-deny guard, SP-104)
   404 → not possible: the target id is derived from the JWT principal only.

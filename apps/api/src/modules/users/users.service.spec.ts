@@ -11,15 +11,16 @@ import { UsersService } from './users.service';
  *   assertions use exact call-object matches, so adding a credential
  *   field to the select fails these tests.
  * - `create` must leave both fields out of the `data` object so the
- *   database defaults (`"UTC"` / `NULL`) apply — registration never
+ *   database defaults ("UTC" / NULL) apply — registration never
  *   writes a time zone or preferences explicitly.
  */
 describe('UsersService (unit, mocked PrismaService)', () => {
   const findUnique = jest.fn();
   const create = jest.fn();
+  const update = jest.fn();
   // Partial mock: UsersService only touches `prisma.user` in the methods
   // under test.
-  const prisma = { user: { findUnique, create } } as unknown as PrismaService;
+  const prisma = { user: { findUnique, create, update } } as unknown as PrismaService;
 
   let service: UsersService;
 
@@ -117,6 +118,78 @@ describe('UsersService (unit, mocked PrismaService)', () => {
           updatedAt: true,
         },
       });
+    });
+  });
+
+  describe('update', () => {
+    it('touches only the provided fields (omitted fields are not written)', async () => {
+      update.mockResolvedValue({
+        id: 'user-3',
+        email: 'hedy@example.com',
+        name: 'Hedy',
+        emailVerifiedAt: null,
+        timeZone: 'America/Los_Angeles',
+        preferences: null,
+        createdAt: new Date('2026-10-17T00:00:00.000Z'),
+        updatedAt: new Date('2026-10-17T00:00:00.000Z'),
+      });
+
+      await service.update('user-3', { timeZone: 'America/Los_Angeles' });
+
+      // Only the provided field is in the `data` object — `name` and
+      // `preferences` are absent, so they are not overwritten.
+      const args = update.mock.calls[0][0] as { data: Record<string, unknown> };
+      expect(args.data).toEqual({ timeZone: 'America/Los_Angeles' });
+      expect(args.data).not.toHaveProperty('name');
+      expect(args.data).not.toHaveProperty('preferences');
+
+      // The select returns the full safe shape (incl. the new fields).
+      expect(update).toHaveBeenCalledWith({
+        where: { id: 'user-3' },
+        data: { timeZone: 'America/Los_Angeles' },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          emailVerifiedAt: true,
+          timeZone: true,
+          preferences: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    });
+
+    it('returns the full safe shape and excludes credentials', async () => {
+      update.mockResolvedValue({
+        id: 'user-4',
+        email: 'linus@example.com',
+        name: 'Linus',
+        emailVerifiedAt: null,
+        timeZone: 'Europe/Berlin',
+        preferences: { theme: 'dark' },
+        createdAt: new Date('2026-10-17T00:00:00.000Z'),
+        updatedAt: new Date('2026-10-17T00:00:00.000Z'),
+      });
+
+      const result = await service.update('user-4', {
+        name: 'Linus',
+        timeZone: 'Europe/Berlin',
+        preferences: { theme: 'dark' },
+      });
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          id: 'user-4',
+          timeZone: 'Europe/Berlin',
+          preferences: { theme: 'dark' },
+        })
+      );
+      // Credential fields must never appear in the response.
+      expect(result).not.toHaveProperty('passwordHash');
+      expect(result).not.toHaveProperty('emailVerificationTokens');
+      expect(result).not.toHaveProperty('passwordResetTokens');
+      expect(result).not.toHaveProperty('refreshTokens');
     });
   });
 });

@@ -42,19 +42,6 @@ export class UsersService {
     });
   }
 
-  async findAll() {
-    return this.prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        emailVerifiedAt: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-  }
-
   async findById(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -86,36 +73,44 @@ export class UsersService {
     });
   }
 
+  /**
+   * Partially update the authenticated user's profile.
+   *
+   * Only provided fields are written to the database — omitted fields
+   * are not included in the Prisma `data` object, so they remain
+   * untouched.  The select returns the full safe profile shape
+   * (timeZone + preferences, no credentials).
+   *
+   * (D106-7: `findAll` and `remove` are deleted — no route references
+   *  them, and unscoped user lookups are a latent enumeration hazard.)
+   */
   async update(id: string, updateUserDto: UpdateUserDto) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
-
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+    // Build the partial data object: only include fields that were
+    // provided in the DTO (undefined fields are omitted).
+    const data: Record<string, unknown> = {};
+    if (updateUserDto.name !== undefined) {
+      data.name = updateUserDto.name;
+    }
+    if (updateUserDto.timeZone !== undefined) {
+      data.timeZone = updateUserDto.timeZone;
+    }
+    if (updateUserDto.preferences !== undefined) {
+      data.preferences = updateUserDto.preferences;
     }
 
     return this.prisma.user.update({
       where: { id },
-      data: {
-        name: updateUserDto.name,
-      },
+      data,
       select: {
         id: true,
         email: true,
         name: true,
         emailVerifiedAt: true,
+        timeZone: true,
+        preferences: true,
         createdAt: true,
         updatedAt: true,
       },
     });
-  }
-
-  async remove(id: string) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
-
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-
-    return this.prisma.user.delete({ where: { id } });
   }
 }

@@ -1,5 +1,5 @@
 import { ConfigModule } from '@nestjs/config';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 // `import = require` (not `import ... from` or `import * as`): under this
@@ -18,6 +18,7 @@ import { PrismaService } from '../modules/prisma/prisma.service';
 import { EMAIL_PROVIDER } from '../modules/email/email-provider';
 import { AllExceptionsFilter } from '../common/filters/all-exceptions.filter';
 import { appCorsOptions } from '../common/cors';
+import { FieldValidationPipe } from '../common/pipes/validation.pipe';
 
 /**
  * Test-only JWT secret. Integration specs sign/verify tokens with it; CI
@@ -39,7 +40,7 @@ export interface IntegrationApp {
 /**
  * Build the real HTTP application for integration specs (SP-104, decision
  * Q2): the real `PrismaService` against a real database, the real auth and
- * users modules, and `main.ts` parity (cookie-parser, global ValidationPipe,
+ * users modules, and `main.ts` parity (cookie-parser, global FieldValidationPipe,
  * AllExceptionsFilter) so what the tests exercise is what production
  * serves.
  *
@@ -78,8 +79,9 @@ export async function createIntegrationApp(): Promise<IntegrationApp> {
 
   const app = moduleRef.createNestApplication();
   app.use(cookieParser());
+  // D106-6: field-validation pipe (parity with main.ts).
   app.useGlobalPipes(
-    new ValidationPipe({
+    new FieldValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,

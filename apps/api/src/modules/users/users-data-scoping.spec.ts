@@ -180,6 +180,104 @@ describeIntegration('student data scoping (integration, real database)', () => {
     });
   });
 
+  describe('PATCH /users/me (SP-106B)', () => {
+    it('valid PATCH (timeZone + preferences) → 200 with updated values', async () => {
+      const patchResult = await agent
+        .patch('/users/me')
+        .set('Authorization', `Bearer ${studentA.accessToken}`)
+        .send({ timeZone: 'America/Los_Angeles', preferences: { theme: 'dark' } })
+        .expect(HttpStatus.OK);
+
+      expect(patchResult.body).toMatchObject({
+        id: studentA.id,
+        timeZone: 'America/Los_Angeles',
+        preferences: { theme: 'dark' },
+      });
+
+      // Same-session GET returns the updated values (TR-106-02, same-session half).
+      const getAfter = await agent
+        .get('/users/me')
+        .set('Authorization', `Bearer ${studentA.accessToken}`)
+        .expect(HttpStatus.OK);
+      expect(getAfter.body).toMatchObject({
+        timeZone: 'America/Los_Angeles',
+        preferences: { theme: 'dark' },
+      });
+
+      // Verify via unscoped read that the row was actually persisted.
+      const dbUser = await app.prisma.user.findUnique({
+        where: { id: studentA.id },
+        select: { timeZone: true, preferences: true },
+      });
+      expect(dbUser).toMatchObject({
+        timeZone: 'America/Los_Angeles',
+        preferences: { theme: 'dark' },
+      });
+    });
+
+    it('invalid timeZone → 400 with errors.timeZone; row unchanged', async () => {
+      const beforeTime = (await app.prisma.user.findUnique({
+        where: { id: studentA.id },
+        select: { timeZone: true },
+      }))!.timeZone;
+
+      const patchResult = await agent
+        .patch('/users/me')
+        .set('Authorization', `Bearer ${studentA.accessToken}`)
+        .send({ timeZone: 'Mars/Olympus' })
+        .expect(HttpStatus.BAD_REQUEST);
+
+      // Field-level errors map (D106-6).
+      expect(patchResult.body.errors).toHaveProperty('timeZone');
+      expect(Array.isArray(patchResult.body.errors.timeZone)).toBe(true);
+      expect(patchResult.body.errors.timeZone[0]).toContain('IANA');
+
+      // The existing message array is preserved (D106-6).
+      expect(Array.isArray(patchResult.body.message)).toBe(true);
+
+      // Row unchanged — the invalid value was not written.
+      const afterTime = (await app.prisma.user.findUnique({
+        where: { id: studentA.id },
+        select: { timeZone: true },
+      }))!.timeZone;
+      expect(afterTime).toBe(beforeTime);
+    });
+
+    it("student A's PATCH leaves student B's row byte-identical (TR-106-03)", async () => {
+      // Capture student B's current state.
+      const bBefore = await app.prisma.user.findUnique({
+        where: { id: studentB.id },
+      });
+
+      // Student A patches their own profile.
+      await agent
+        .patch('/users/me')
+        .set('Authorization', `Bearer ${studentA.accessToken}`)
+        .send({ name: 'Student student-a (renamed)' })
+        .expect(HttpStatus.OK);
+
+      // Student B's row must be unchanged.
+      const bAfter = await app.prisma.user.findUnique({
+        where: { id: studentB.id },
+      });
+      expect(bAfter).toEqual(bBefore);
+
+      // And B's GET is unchanged.
+      const bGet = await agent
+        .get('/users/me')
+        .set('Authorization', `Bearer ${studentB.accessToken}`)
+        .expect(HttpStatus.OK);
+      expect(bGet.body.name).toBe(bBefore!.name);
+    });
+
+    it('tokened PUT /users/me → 404 (route removed, D106-2)', async () => {
+      await agent
+        .put('/users/me')
+        .set('Authorization', `Bearer ${studentA.accessToken}`)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+  });
+
   // Exactly what an EP02+ route will do once its endpoints land: a scoped
   // read, then the ownership assertion. (No academic routes exist until
   // EP02+, so the ownership layer is exercised through the helpers over

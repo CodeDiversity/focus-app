@@ -81,4 +81,24 @@ describe('AllExceptionsFilter', () => {
     expect(body.message).toBe('An unexpected error occurred. Please try again.');
     expect(JSON.stringify(body)).not.toContain('hunter2');
   });
+
+  it('includes the additive errors field map for validation exceptions (D106-6)', () => {
+    const body = run(
+      new BadRequestException({
+        statusCode: 400,
+        message: ['timeZone must be a valid IANA time zone'],
+        error: 'Bad Request',
+        errors: { timeZone: ['timeZone must be a valid IANA time zone, e.g. America/New_York'] },
+      }),
+    );
+
+    expect(status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
+    expect(body.statusCode).toBe(400);
+    // The existing message array is preserved verbatim.
+    expect(body.message).toEqual(['timeZone must be a valid IANA time zone']);
+    // The additive errors field map is present.
+    expect(body.errors).toEqual({
+      timeZone: ['timeZone must be a valid IANA time zone, e.g. America/New_York'],
+    });
+  });
 });
