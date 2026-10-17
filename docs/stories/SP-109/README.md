@@ -38,7 +38,7 @@ at `./artifacts/SP-109/review.md`; integration/index owner: SP-109I (parent inde
 | [A](./SP-109A-fsd-foundation-config.md) | Ready (file written 2026-10-17) | None | Implement — add `@/` alias + ESLint layer rules, no moves | `./artifacts/SP-109A/` |
 | [B](./SP-109B-shared-lib-and-types.md) | Queued (file written 2026-10-17) | A | Implement after A | `./artifacts/SP-109B/` |
 | [C](./SP-109C-shared-ui-and-transport.md) | Queued (file written 2026-10-17) | B | Implement after B | `./artifacts/SP-109C/` |
-| [D](./SP-109D-entity-user.md) | Queued | B, C | Implement after C | `./artifacts/SP-109D/` |
+| [D](./SP-109D-entity-user.md) | Queued (file written 2026-10-17) | B, C | Implement after C | `./artifacts/SP-109D/` |
 | [E](./SP-109E-feature-auth.md) | Queued | C, D | Implement after D | `./artifacts/SP-109E/` |
 | [F](./SP-109F-feature-session-store.md) | Queued | E | Implement after E | `./artifacts/SP-109F/` |
 | [G](./SP-109G-widgets.md) | Queued | C, E, F | Implement after F | `./artifacts/SP-109G/` |
