@@ -6,7 +6,8 @@
 **Status:** Planned 2026-10-17 — **Plan Ready** (planning gate; no implementation
 performed). 2026-10-17: breakdown complete — all four child tickets (A–D) landed
 in incremental commits (`75f8eba` scaffold, `d2fab80` A, `1f69094` B, `327b50f` C,
-`57d789f` D).
+`57d789f` D). 2026-10-17: SP-106A implementation started (execution queue below is
+the current record).
 
 ## Execution queue
 
@@ -17,11 +18,12 @@ in incremental commits (`75f8eba` scaffold, `d2fab80` A, `1f69094` B, `327b50f` 
 **Parent artifacts:** `./artifacts/SP-106/` (created when the parent
 checkpoint/index is written)
 
-**Active substory:** None — planning complete; no implementation session
-authorized yet.
+**Active substory:** [SP-106A](./SP-106A-profile-schema-and-get.md) — implementer
+in progress (started 2026-10-17; checkpoint
+[./artifacts/SP-106A/checkpoint.md](./artifacts/SP-106A/checkpoint.md)).
 
-**Next substory:** [SP-106A](./SP-106A-profile-schema-and-get.md) — implement
-(planning complete; awaiting start authorization).
+**Next substory:** [SP-106A](./SP-106A-profile-schema-and-get.md) — resume
+(active; continue from its checkpoint).
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C → D;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -33,7 +35,7 @@ written at `./artifacts/SP-106/implementation.md`).
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-106A-profile-schema-and-get.md) | Ready | SP-104 implemented and reviewed (STUDY-10 review PASS; global guard, `@CurrentUser()`, ownership helper and `test-http` harness verified in code 2026-10-17) | Implement | — (artifacts created at implementation) |
+| [A](./SP-106A-profile-schema-and-get.md) | In progress | SP-104 implemented and reviewed (STUDY-10 review PASS; global guard, `@CurrentUser()`, ownership helper and `test-http` harness verified in code 2026-10-17) | Implement (active) | [./artifacts/SP-106A/checkpoint.md](./artifacts/SP-106A/checkpoint.md) |
 | [B](./SP-106B-patch-profile-validation.md) | Queued | A implemented (fields must exist on the model and GET response) | Implement after A | — |
 | [C](./SP-106C-profile-preferences-form.md) | Queued | B implemented (PATCH + 400 `errors` contract; GET fields) | Implement after B | — |
 | [D](./SP-106D-profile-integration.md) | Queued | A, B, C implemented | Implement (round-trip suite + manual browser sign-off) | — |
