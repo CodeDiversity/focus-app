@@ -2,12 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import { configureStore } from '@reduxjs/toolkit';
+import { Provider } from 'react-redux';
 import { AuthProvider, useAuth } from './AuthContext';
 import { authService } from '../services/auth';
 import api from '../services/api';
 import { tokenStore } from '../services/tokenStore';
 import { runRecoveryReset } from '../services/recovery';
 import type { AuthResponse } from '../types';
+import authSlice from '../store/authSlice';
 
 vi.mock('../services/auth', () => ({
   authService: {
@@ -21,6 +24,12 @@ vi.mock('../services/auth', () => ({
 
 const mockedRefresh = vi.mocked(authService.refreshToken);
 
+function makeStore() {
+  return configureStore({
+    reducer: { auth: authSlice },
+  });
+}
+
 function Probe() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
@@ -33,17 +42,21 @@ function Probe() {
   );
 }
 
-const renderProvider = () =>
-  render(
+const renderProvider = () => {
+  const store = makeStore();
+  return render(
     <MemoryRouter initialEntries={['/']}>
-      <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Probe />} />
-          <Route path="/login" element={<div>Login page</div>} />
-        </Routes>
-      </AuthProvider>
+      <Provider store={store}>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Probe />} />
+            <Route path="/login" element={<div>Login page</div>} />
+          </Routes>
+        </AuthProvider>
+      </Provider>
     </MemoryRouter>,
   );
+};
 
 describe('AuthContext', () => {
   beforeEach(() => {
@@ -102,15 +115,18 @@ describe('AuthContext', () => {
       );
     }
 
+    const store = makeStore();
     render(
       <MemoryRouter initialEntries={['/dashboard']}>
-        <AuthProvider>
-          <NavProbe />
-          <Routes>
-            <Route path="/dashboard" element={<div>Dashboard page</div>} />
-            <Route path="/login" element={<div>Login page</div>} />
-          </Routes>
-        </AuthProvider>
+        <Provider store={store}>
+          <AuthProvider>
+            <NavProbe />
+            <Routes>
+              <Route path="/dashboard" element={<div>Dashboard page</div>} />
+              <Route path="/login" element={<div>Login page</div>} />
+            </Routes>
+          </AuthProvider>
+        </Provider>
       </MemoryRouter>,
     );
 
@@ -153,11 +169,14 @@ describe('AuthContext', () => {
       );
     }
 
+    const store = makeStore();
     render(
       <MemoryRouter initialEntries={['/']}>
-        <AuthProvider>
-          <LogoutProbe />
-        </AuthProvider>
+        <Provider store={store}>
+          <AuthProvider>
+            <LogoutProbe />
+          </AuthProvider>
+        </Provider>
       </MemoryRouter>,
     );
 
@@ -175,7 +194,8 @@ describe('AuthContext', () => {
   }
   async function renderVerificationProvider() {
     mockedRefresh.mockResolvedValue({ accessToken: 'session', user: sessionUser });
-    render(<MemoryRouter><AuthProvider><VerificationProbe /></AuthProvider></MemoryRouter>);
+    const store = makeStore();
+    render(<MemoryRouter><Provider store={store}><AuthProvider><VerificationProbe /></AuthProvider></Provider></MemoryRouter>);
     await waitFor(() => expect(currentAuth.user?.id).toBe('user-1'));
   }
 
@@ -267,14 +287,17 @@ describe('AuthContext recovery session generation (SP-105G M2)', () => {
   }
 
   function renderProvider() {
+    const store = makeStore();
     render(
       <MemoryRouter initialEntries={['/']}>
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Probe />} />
-            <Route path="/login" element={<div>Login page</div>} />
-          </Routes>
-        </AuthProvider>
+        <Provider store={store}>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Probe />} />
+              <Route path="/login" element={<div>Login page</div>} />
+            </Routes>
+          </AuthProvider>
+        </Provider>
       </MemoryRouter>,
     );
   }
@@ -359,15 +382,18 @@ describe('AuthContext recovery session generation (SP-105G M2)', () => {
       return { accessToken: 'session', user: sessionUser } as AuthResponse;
     });
     // The probe renders beside the Routes so it survives the /login redirect.
+    const store = makeStore();
     render(
       <MemoryRouter initialEntries={['/']}>
-        <AuthProvider>
-          <Probe />
-          <Routes>
-            <Route path="/" element={<div>Home page</div>} />
-            <Route path="/login" element={<div>Login page</div>} />
-          </Routes>
-        </AuthProvider>
+        <Provider store={store}>
+          <AuthProvider>
+            <Probe />
+            <Routes>
+              <Route path="/" element={<div>Home page</div>} />
+              <Route path="/login" element={<div>Login page</div>} />
+            </Routes>
+          </AuthProvider>
+        </Provider>
       </MemoryRouter>,
     );
     await screen.findByText('ada@example.com');

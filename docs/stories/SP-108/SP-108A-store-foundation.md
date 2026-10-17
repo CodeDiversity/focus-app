@@ -4,7 +4,7 @@
 **Epic:** Cross-cutting technical task (standalone; see [SP-108](./SP-108.md))
 **Milestone:** M1
 **Layer / owner:** Frontend, `implementer` (single writer)
-**Status:** Ready (planned 2026-10-16)
+**Status:** Implemented — awaiting parent review (2026-10-16)
 **Dependencies:** None
 **Jira key:** Pending creation
 
