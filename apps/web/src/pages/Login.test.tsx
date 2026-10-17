@@ -9,7 +9,7 @@ import { ForgotPasswordPage } from './ForgotPassword';
 import { ResetPasswordPage } from './ResetPassword';
 import { AuthProvider } from '../context/AuthContext';
 import { authService } from '../services/auth';
-import { tokenStore } from '../services/tokenStore';
+import { tokenStore } from '@/shared/api/tokenStore';
 import toast from 'react-hot-toast';
 
 vi.mock('react-hot-toast', () => ({

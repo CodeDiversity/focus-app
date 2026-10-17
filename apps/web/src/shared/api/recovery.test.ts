@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import api, { refreshAccessToken } from './api';
+import api, { refreshAccessToken } from './httpClient';
 import { tokenStore } from './tokenStore';
 import {
   RECOVERY_DRAIN_TIMEOUT_MS,

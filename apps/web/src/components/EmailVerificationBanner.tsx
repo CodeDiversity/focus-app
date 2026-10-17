@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import type { SessionUser } from '@/entities/user/model/types';
-import { Button } from './Button';
+import { Button } from '@/shared/ui/Button';
 import { resendFeedback, useResendVerification } from '../hooks/useResendVerification';
 
 function StudentReminder({ student, dismiss }: { student: SessionUser; dismiss: () => void }) {

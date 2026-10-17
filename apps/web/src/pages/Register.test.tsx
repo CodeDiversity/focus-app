@@ -7,7 +7,7 @@ import { makeTestStore } from '../test/providers';
 import { RegisterPage } from './Register';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { authService } from '../services/auth';
-import { tokenStore } from '../services/tokenStore';
+import { tokenStore } from '@/shared/api/tokenStore';
 import toast from 'react-hot-toast';
 
 vi.mock('react-hot-toast', () => ({

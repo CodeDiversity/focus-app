@@ -3,9 +3,9 @@ import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import type { Method } from 'axios';
 import { configureStore } from '@reduxjs/toolkit';
 import type { BaseQueryApi } from '@reduxjs/toolkit/query';
-import httpClient, { setSessionExpiredHandler } from '../services/api';
+import httpClient, { setSessionExpiredHandler } from '@/shared/api/httpClient';
 import { authService } from '../services/auth';
-import { tokenStore } from '../services/tokenStore';
+import { tokenStore } from '@/shared/api/tokenStore';
 import {
   RESEND_FALLBACK_MESSAGE,
   RESEND_INVALID_EMAIL_MESSAGE,

@@ -5,8 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { Button } from '../components/Button';
-import { Input } from '../components/Input';
+import { Button } from '@/shared/ui/Button';
+import { Input } from '@/shared/ui/Input';
 import { getErrorMessage } from '@/shared/lib/errors';
 
 // Validation schema

@@ -5,8 +5,8 @@ import { Providers } from '../test/providers';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import App from '../App';
 import { AuthProvider } from '../context/AuthContext';
-import api from '../services/api';
-import { tokenStore } from '../services/tokenStore';
+import api from '@/shared/api/httpClient';
+import { tokenStore } from '@/shared/api/tokenStore';
 import { setupUser } from '../test/user';
 
 // The implemented backend strings (SP-105A/B/F) — the page renders the

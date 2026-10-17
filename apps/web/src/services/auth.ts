@@ -1,6 +1,6 @@
-import api, { refreshAccessToken } from './api';
-import { tokenStore } from './tokenStore';
-import { runRecoveryReset, type ResetPasswordResult } from './recovery';
+import api, { refreshAccessToken } from '@/shared/api/httpClient';
+import { tokenStore } from '@/shared/api/tokenStore';
+import { runRecoveryReset, type ResetPasswordResult } from '@/shared/api/recovery';
 import type {
   AuthResponse,
   LoginCredentials,

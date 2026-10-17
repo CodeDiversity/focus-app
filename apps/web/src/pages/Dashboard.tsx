@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Button } from '../components/Button';
+import { Button } from '@/shared/ui/Button';
 
 export function DashboardPage() {
   const { user, isLoading } = useAuth();

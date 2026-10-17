@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Button } from './Button';
+import { Button } from '@/shared/ui/Button';
 
 export function Header() {
   const { isAuthenticated, logout, user } = useAuth();

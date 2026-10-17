@@ -6,7 +6,7 @@ technical tasks are tracked as technical stories linked to the appropriate
 milestone — this one is **M1** (it reorganizes the M1 web app and defines the
 structure EP02–EP08 will build in).
 **Jira:** STUDY-44 (parent); children A–I are **STUDY-45–STUDY-53** — verified 2026-10-17.
-**Status:** Planned 2026-10-17 (planner); SP-109A implemented 2026-10-17; SP-109B implemented 2026-10-17.
+**Status:** Planned 2026-10-17 (planner); SP-109A implemented 2026-10-17; SP-109B implemented 2026-10-17; SP-109C implemented 2026-10-17.
 **Origin:** User request 2026-10-17 — “implement front end code structure into
 feature folders, all the components, slices, etc. should be in feature folders”,
 answered in-session with **Feature-Sliced Design (FSD) layers** as the convention.
@@ -19,10 +19,9 @@ answered in-session with **Feature-Sliced Design (FSD) layers** as the conventio
 
 **Parent artifacts:** `./artifacts/SP-109/` (parent checkpoint / final index)
 
-**Active substory:** None — SP-109A and SP-109B implemented 2026-10-17.
+**Active substory:** None — SP-109A, SP-109B, SP-109C implemented 2026-10-17.
 
-**Next substory:** [SP-109C](./SP-109C-shared-ui-and-transport.md) — implement
-(shared/ui: Button/Input; shared/api: httpClient/tokenStore/recovery + zone exception).
+**Next substory:** [SP-109D](./SP-109D-entity-user.md) — implement (entities/user: types + getProfile/updateProfile extracted from authService).
 
 **Implementation owner:** `implementer`, sequential. All children are
 frontend-scope moves/config work; single writer, one commit per child.
@@ -35,7 +34,7 @@ at `./artifacts/SP-109/review.md`; integration/index owner: SP-109I (parent inde
 |---|---|---|---|---|
 | [A](./SP-109A-fsd-foundation-config.md) | Implemented — awaiting parent review (2026-10-17) | None | — | `./artifacts/SP-109A/` |
 | [B](./SP-109B-shared-lib-and-types.md) | Implemented — awaiting parent review (2026-10-17) | A | — | `./artifacts/SP-109B/` |
-| [C](./SP-109C-shared-ui-and-transport.md) | Ready (refined 2026-10-17) | B (implemented 2026-10-17) | Implement | `./artifacts/SP-109C/` |
+| [C](./SP-109C-shared-ui-and-transport.md) | Implemented — awaiting parent review (2026-10-17) | B (implemented 2026-10-17) | — | `./artifacts/SP-109C/` |
 | [D](./SP-109D-entity-user.md) | Queued (file written 2026-10-17) | B, C | Implement after C | `./artifacts/SP-109D/` |
 | [E](./SP-109E-feature-auth.md) | Queued (file written 2026-10-17) | C, D | Implement after D | `./artifacts/SP-109E/` |
 | [F](./SP-109F-feature-session-store.md) | Queued (file written 2026-10-17) | E | Implement after E | `./artifacts/SP-109F/` |

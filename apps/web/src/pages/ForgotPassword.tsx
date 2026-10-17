@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '../components/Button';
-import { Input } from '../components/Input';
+import { Button } from '@/shared/ui/Button';
+import { Input } from '@/shared/ui/Input';
 import { authService } from '../services/auth';
-import { isRecoveryError } from '../services/recovery';
+import { isRecoveryError } from '@/shared/api/recovery';
 import { getErrorMessage } from '@/shared/lib/errors';
 
 // Validation mirrors the backend ForgotPasswordDto (trim / 254 max / email)

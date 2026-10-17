@@ -6,8 +6,8 @@ import { Providers } from '../test/providers';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { Layout } from './Layout';
 import { AuthProvider, useAuth } from '../context/AuthContext';
-import api from '../services/api';
-import { tokenStore } from '../services/tokenStore';
+import api from '@/shared/api/httpClient';
+import { tokenStore } from '@/shared/api/tokenStore';
 
 const ada = { id: 'ada', name: 'Ada', email: 'ada@example.com', emailVerifiedAt: null as string | null };
 const grace = { ...ada, id: 'grace', name: 'Grace', email: 'grace@example.com' };

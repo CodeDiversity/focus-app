@@ -1,7 +1,7 @@
 /**
  * SP-105G — shared recovery-session boundary for the web client.
  *
- * This is a leaf module: it imports only `../types` (type) and `./tokenStore`,
+ * This is a leaf module: it imports only `@/features/auth/model/types` (type) and `./tokenStore`,
  * so `api.ts` and `AuthContext.tsx` consume it without an import cycle
  * (ticket decision R4). The api module registers its single-flight refresh
  * here via `setInFlightRefresh`; SP-105C supplies the reset request itself to

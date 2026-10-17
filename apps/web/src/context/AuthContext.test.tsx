@@ -6,9 +6,9 @@ import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { AuthProvider, useAuth } from './AuthContext';
 import { authService } from '../services/auth';
-import api from '../services/api';
-import { tokenStore } from '../services/tokenStore';
-import { runRecoveryReset } from '../services/recovery';
+import api from '@/shared/api/httpClient';
+import { tokenStore } from '@/shared/api/tokenStore';
+import { runRecoveryReset } from '@/shared/api/recovery';
 import type { AuthResponse } from '@/features/auth/model/types';
 import authSlice from '../store/authSlice';
 

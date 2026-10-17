@@ -10,9 +10,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { SessionUser, User } from '@/entities/user/model/types';
 import { authService } from '../services/auth';
-import { tokenStore } from '../services/tokenStore';
-import { setSessionExpiredHandler } from '../services/api';
-import { registerLocalSessionClearer, snapshotSessionGeneration } from '../services/recovery';
+import { tokenStore } from '@/shared/api/tokenStore';
+import { setSessionExpiredHandler } from '@/shared/api/httpClient';
+import { registerLocalSessionClearer, snapshotSessionGeneration } from '@/shared/api/recovery';
 import {
   setBannerDismissed,
   clearError,

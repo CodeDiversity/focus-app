@@ -7,8 +7,8 @@ import { Providers, makeTestStore } from '../test/providers';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import App from '../App';
 import { AuthProvider } from '../context/AuthContext';
-import api from '../services/api';
-import { tokenStore } from '../services/tokenStore';
+import api from '@/shared/api/httpClient';
+import { tokenStore } from '@/shared/api/tokenStore';
 
 const linkToken = 'a'.repeat(43);
 const student = { id: 'ada', name: 'Ada', email: 'ada@example.com', emailVerifiedAt: null };

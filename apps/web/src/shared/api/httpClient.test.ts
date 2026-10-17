@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
-import api, { setSessionExpiredHandler, refreshAccessToken } from './api';
-import { authService } from './auth';
+import api, { setSessionExpiredHandler, refreshAccessToken } from './httpClient';
+import { authService } from '@/services/auth';
 import { tokenStore } from './tokenStore';
 import {
   isRecoveryBarrierActive,

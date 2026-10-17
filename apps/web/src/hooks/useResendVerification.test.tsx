@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import type { ReactNode } from 'react';
-import httpClient, { setSessionExpiredHandler } from '../services/api';
-import { tokenStore } from '../services/tokenStore';
+import httpClient, { setSessionExpiredHandler } from '@/shared/api/httpClient';
+import { tokenStore } from '@/shared/api/tokenStore';
 import { useResendVerification } from './useResendVerification';
 import { Providers } from '../test/providers';
 

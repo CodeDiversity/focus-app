@@ -36,11 +36,12 @@ module.exports = {
     'import/no-restricted-paths': ['error', {
       basePath: './',
       zones: [
-        // shared/ cannot import from anything above it
+        // shared/ cannot import from anything above it (except: type-only import of AuthResponse from features/auth/model/types — RD13).
         {
           target: 'src/shared',
           from: ['src/entities', 'src/features', 'src/widgets', 'src/pages', 'src/app'],
-          message: 'shared/ files cannot import from entities/, features/, widgets/, pages/, or app/',
+          except: ['auth/model/types.ts'],
+          message: 'shared/ files cannot import from entities/, features/, widgets/, pages/, or app/ (except: type-only import of AuthResponse from features/auth/model/types — RD13)',
         },
         // entities/ cannot import from features/, widgets/, pages/, or app/
         {

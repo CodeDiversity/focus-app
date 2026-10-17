@@ -1,7 +1,7 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import type { AxiosRequestConfig, Method } from 'axios';
-import httpClient from '../services/api';
+import httpClient from '../shared/api/httpClient';
 import type { VerificationResponse } from '@/features/auth/model/types';
 
 /** Shape every endpoint passes to the baseQuery — transport details only. */
@@ -21,7 +21,7 @@ export interface AxiosBaseQueryError {
 }
 
 /**
- * Every RTK Query request goes through the shared `src/services/api.ts` axios
+ * Every RTK Query request goes through the shared `src/shared/api/httpClient.ts` axios
  * instance, so the SP-105G interceptor chain (bearer token, single-flight
  * refresh, recovery barrier, session generations, `AUTH_PATHS`, error
  * sanitization) stays the single transport — RD4.
