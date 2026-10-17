@@ -39,7 +39,7 @@ Per-story deltas are recorded in each story file under "Existing scaffold code".
 | [SP-103](./SP-103-email-verification.md) | Email verification (non-blocking) | SP-101 | STUDY-12 |
 | [SP-104](./SP-104-auth-guards-data-scoping.md) | Auth guards and student data scoping | SP-102 | STUDY-10 |
 | [SP-105](./SP-105/README.md) | Password reset — split into [10 children](./SP-105/README.md) | SP-102, SP-103 | STUDY-7 (parent) |
-| [SP-106](./SP-106-profile-and-preferences.md) | Student profile and preferences | SP-104 | STUDY-11 |
+| [SP-106](./SP-106/README.md) | Student profile and preferences — split into [4 children](./SP-106/README.md) | SP-104 | STUDY-11 (parent) |
 | [SP-107](./SP-107-onboarding-wizard.md) | Onboarding wizard | SP-103, SP-106 | STUDY-8 |
 
 Epic: **STUDY-5**.
@@ -62,3 +62,14 @@ Historical Jira sync: EP01 and seven original stories were recorded as synced on
 - D: executes prerequisite suites, performs manual browser/SMTP sign-off and DoD 10.
 
 The historical blanket “ready” verdict is superseded. Source code exists for SP-102/SP-103 but SP-103's latest review still lacks integrated DoD evidence; planning can proceed while upstream execution readiness remains unverified. No SP-105 implementation or passing tests are claimed. Its original AC7 per-IP requirement is no longer deferred. The pass-2 read-only review independently resolved PR-001/002 and returned Plan Ready; this approves planning obligations, not application implementation or test results.
+
+## Quality gate — SP-106 plan (2026-10-17)
+
+**Plan Ready; implementation not started and not claimed.** The [SP-106 breakdown](./SP-106/README.md) owns the execution queue, decisions (D106-1…9, preferences shape user-approved 2026-10-17), shared API contract, original AC/TR traceability, correction log (CF-106-01), and quality gate.
+
+- A: backend — `timeZone` + `preferences` on `User` (one migration); `GET /users/me` returns them, credentials excluded.
+- B: backend — `PATCH /users/me` (replaces PUT) with IANA + bounded-preferences validation; field-level 400 `errors` map; dead unscoped service methods deleted.
+- C: frontend — profile time-zone field (browser-detected default, client validation, form states); PATCH switch; stored-zone display via the existing shared helper.
+- D: integration — cross-session round-trip + cross-student + credential-exclusion proof on real Postgres; manual browser sign-off (DoD 10).
+
+Upstream prerequisites SP-104 (implemented, STUDY-10 review PASS) and SP-108 (implemented, combined review PASS) are verified in code, so implementation is not blocked; next actionable is SP-106A.
