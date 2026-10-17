@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "scope": {
+    "site": null,
+    "projectKey": null,
+    "jql": null
+  },
+  "fieldMap": {},
+  "statusMap": {},
+  "cursor": null,
+  "lastFullReconcileAt": null,
+  "stories": {},
+  "operations": []
+}

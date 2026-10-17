@@ -47,6 +47,11 @@ Do not duplicate records or rename directories just because a Jira key appears.
   go in the README log, never in this report.
   Later reviewer passes replace the latest report; committed history remains.
 
+The Jira-sync role may remove a completed story specification only under its
+[prune gates](../../.agents/skills/studypilot-jira-sync/SKILL.md), preserving this
+folder, parent delivery READMEs, contracts, traceability and all artifacts. Its
+[ledger](../jira-sync/README.md) retains identity, recovery pointers and tombstones.
+
 Only the planner owns scope/dependency/decision changes. The implementer may
 update the README execution fields/table and active child status/artifact pointers
 as the narrow exception in delivery state. Refiners still write only their given

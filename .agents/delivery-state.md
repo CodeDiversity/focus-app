@@ -77,6 +77,13 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
   review logs.
   Parent checkpoint task fields link back to this queue instead of becoming
   a competing task list. Coordinate handoff before transferring the single writer.
+- **Jira sync:** owns sync identity, baselines, pending operations and tombstones
+  in `docs/jira-sync/`. May reconcile scoped specifications/tracker metadata and
+  repair navigation under its skill; cannot invent readiness, review or execution
+  state. Explicit prune removes only eligible specifications after verified Jira
+  preservation and the passing final review; retain delivery READMEs, queue rows,
+  traceability, contracts and artifacts. Reopened imports return as drafts to the
+  planner, never automatically as active implementation.
 - **Refiner:** reads the queue, writes only the given unimplemented story, and
   returns its readiness/dependency result for planner/coordinator reconciliation.
   It cannot edit README, create artifacts or mark other stories ready.

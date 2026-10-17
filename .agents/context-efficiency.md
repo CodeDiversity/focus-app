@@ -18,9 +18,13 @@ within the session rather than opening them again at each milestone.
 - Child implementation record: completed behavior, verification and known gaps.
 - Parent implementation index: child/evidence links and complete combined Git scope.
 - Reviewer report: independent findings, closure evidence and verdict.
+- Jira-sync ledger: tracker identity, last common spec baseline, pending mutations
+  and removal tombstones; never a duplicate execution queue.
 
 Other records link to these facts rather than repeating narratives. Historical
 records stay intact; do not bulk rewrite finished stories to adopt this convention.
+Explicit Jira-sync pruning may remove a completed specification under its skill
+gates; preserve historical evidence and repair live navigation to its tombstone.
 Required child status pointers and final review status sync remain scoped updates.
 
 ## Bounded handoff

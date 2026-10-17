@@ -8,6 +8,7 @@ Role availability does not require delegation.
 | --- | --- | --- |
 | implementer | `.agents/skills/studypilot-implementer/SKILL.md` | Code, tests, implementation/checkpoint artifacts; scoped execution-status updates |
 | planner | `.agents/skills/studypilot-planner/SKILL.md` | Only `docs/` |
+| jira-sync | `.agents/skills/studypilot-jira-sync/SKILL.md` | Sync ledger; scoped story specs/navigation and epic tracker metadata |
 | refiner | `.agents/skills/studypilot-refiner/SKILL.md` | Only the given unimplemented story |
 | reviewer | `.agents/skills/studypilot-reviewer/SKILL.md` | Report; passing verdict's scoped docs sync |
 | dod-auditor | `.agents/skills/studypilot-reviewer/SKILL.md` (static audit) | None |
@@ -42,3 +43,12 @@ destructive actions remain in force.
 ## Ownership scoping
 
 Every Prisma query for a student's academic data must include the authenticated student's `userId` in its `where` clause — use the helpers in `apps/api/src/common/ownership/ownership.ts` (`ownedWhere` for single-record where-clauses, `assertOwned` for fetched records, `assertAffected` for `updateMany`/`deleteMany` counts), and read the principal with `@CurrentUser()` (never `@Req()`/`@Request()` in controllers; the global `APP_GUARD` already 401s unauthenticated routes). Access that is not owned — the record missing, or owned by another student — returns the same uniform 404 with the generic message `Resource not found`. Never answer with a 403 or a distinct message: that reveals another student's records exist (an existence oracle). The canonical in-code copy of this convention is the header comment in `apps/api/src/common/ownership/ownership.ts`.
+
+## Jira synchronization
+
+Use `jira-sync` for bidirectional story reconciliation and the durable
+[ledger](docs/jira-sync/README.md). Preview is the default; explicit sync modes
+retain existing tracker authorization boundaries. The ledger tracks sync identity
+and baselines, not implementation state. Explicit prune may remove verified
+completed specifications after the final review gate; keep parent queues,
+traceability, contracts and artifacts. Preserve tombstones to prevent re-import.
