@@ -95,6 +95,39 @@ code or test file, migrations, another story's docs, or the reviewer report's
 content. The sync is bookkeeping of verified results, not new verification; a
 planner/implementer may still act on queue rows reserved to them.
 
+## Running commands (get evidence, don't assume it)
+
+Report actual output, not assumptions. **Absence of shell is a capability gap to
+work around, not a reason to downgrade a gate to the implementer's word.**
+Reviewers in this repo have obtained executed evidence both directly and by
+delegating a read-only helper; use whichever your runtime allows, in this order:
+
+1. **Run the gate yourself** and paste the real output (including the exit code
+   and the summary block) into the report.
+2. **If your runtime grants no shell, delegate a read-only command helper** — a
+   fresh `general`/`explore` session — and treat its raw output as *your* gate
+   evidence. Instruct the helper to run exactly the commands you name, print
+   output verbatim, and:
+   - **not** modify, create or delete any file; run no Git write command
+     (`add`, `commit`, `checkout`, `restore`, `reset`, `stash`, `clean`, `apply`);
+     install nothing; run no build/fmt/fix command that could rewrite files;
+   - never read `.env`, `.env.*`, credential, key, token or secret files;
+   - report which command failed or was unavailable rather than guessing.
+
+   In the report's **Limitations**, record that the run was delegated, name the
+   helper's stated constraints, and paste its verbatim output — the same way
+   pass 1 of the SP-108 review handled it.
+3. **Only** if neither route works, mark the gate **CANNOT VERIFY** and say
+   explicitly that the result is implementer-attested and unverified. Never let a
+   verdict rest silently on an implementer-attested number; a `PASS` whose
+   limitation is an unexecuted gate must say so in the verdict line too.
+
+Prefer this delegation over a static-reading verdict: it is the difference
+between reviewer-executed evidence and evidence the implementer produced about
+its own work. Tool grants are runtime-level and no per-role config in this repo
+sets them, so check for shell early in the review rather than discovering at the
+end that no gate ran.
+
 ## Security rules
 
 - Never read, display, quote, or write to `.env`, `.env.*`, credential, key, token, or secret-manager files. Even read-only review does not include secrets.
@@ -103,8 +136,10 @@ planner/implementer may still act on queue rows reserved to them.
 ## Framework note
 
 The review is read-only; the reviewer's writes are its saved report plus, on a
-passing verdict, the scoped sync above. Grant the agent file-edit rights but
-block shell where the runtime separates tools (tests are then CANNOT VERIFY or
-delegated). The dod-auditor remains fully read-only: it returns the audit and
+passing verdict, the scoped sync above. Where the runtime separates tools,
+prefer granting shell so gates are reviewer-executed; if shell is unavailable,
+follow [Running commands](#running-commands-get-evidence-dont-assume-it) and
+delegate a read-only helper rather than leaving gates implementer-attested. The
+dod-auditor remains fully read-only: it returns the audit and
 saves or syncs nothing. Never broaden the write scope beyond this skill, and
 never cover for a failed save by editing other files to "help".
