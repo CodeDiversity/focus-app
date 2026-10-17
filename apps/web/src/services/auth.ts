@@ -8,7 +8,7 @@ import type {
   ResetPasswordRequest,
   VerificationResponse,
 } from '@/features/auth/model/types';
-import type { RegisteredUser, User } from '@/entities/user/model/types';
+import type { RegisteredUser } from '@/entities/user/model/types';
 
 export const authService = {
   // Do not propagate Axios request configuration: it contains the link token.
@@ -80,23 +80,6 @@ export const authService = {
     }
   },
 
-  // Get current user profile
-  async getProfile(): Promise<User> {
-    const response = await api.get<User>('/users/me');
-    return response.data;
-  },
-
-  // Update user profile — PATCH (SP-106C, D106-2): partial update via the
-  // SP-106B endpoint (PUT was removed there; a tokened PUT now 404s).
-  async updateProfile(data: Partial<User>): Promise<User> {
-    const response = await api.patch<User>('/users/me', data);
-    return response.data;
-  },
-
-  // Refresh token — rotates the httpOnly cookie server-side and returns
-  // the same shape as login so session restore needs no extra call.
-  // Delegates to the api module's single-flight primitive so boot
-  // restore and interceptor refreshes share one in-flight rotation.
   async refreshToken(): Promise<AuthResponse> {
     return refreshAccessToken();
   },

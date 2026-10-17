@@ -19,9 +19,9 @@ answered in-session with **Feature-Sliced Design (FSD) layers** as the conventio
 
 **Parent artifacts:** `./artifacts/SP-109/` (parent checkpoint / final index)
 
-**Active substory:** None — SP-109A, SP-109B, SP-109C implemented 2026-10-17.
+**Active substory:** None — SP-109A, SP-109B, SP-109C, SP-109D implemented (queued for combined parent review 2026-10-17).
 
-**Next substory:** [SP-109D](./SP-109D-entity-user.md) — implement (entities/user: types + getProfile/updateProfile extracted from authService).
+**Next substory:** [SP-109E](./SP-109E-feature-auth.md) — implement (`features/auth`: auth API service, auth types, `AuthProvider`/`useAuth` context), now unblocked by D.
 
 **Implementation owner:** `implementer`, sequential. All children are
 frontend-scope moves/config work; single writer, one commit per child.
@@ -35,7 +35,7 @@ at `./artifacts/SP-109/review.md`; integration/index owner: SP-109I (parent inde
 | [A](./SP-109A-fsd-foundation-config.md) | Implemented — awaiting parent review (2026-10-17) | None | — | `./artifacts/SP-109A/` |
 | [B](./SP-109B-shared-lib-and-types.md) | Implemented — awaiting parent review (2026-10-17) | A | — | `./artifacts/SP-109B/` |
 | [C](./SP-109C-shared-ui-and-transport.md) | Implemented — awaiting parent review (2026-10-17) | B (implemented 2026-10-17) | — | `./artifacts/SP-109C/` |
-| [D](./SP-109D-entity-user.md) | Queued (file written 2026-10-17) | B, C | Implement after C | `./artifacts/SP-109D/` |
+| [D](./SP-109D-entity-user.md) | Implemented — awaiting parent review (2026-10-17) | B, C | — | `./artifacts/SP-109D/` |
 | [E](./SP-109E-feature-auth.md) | Queued (file written 2026-10-17) | C, D | Implement after D | `./artifacts/SP-109E/` |
 | [F](./SP-109F-feature-session-store.md) | Queued (file written 2026-10-17) | E | Implement after E | `./artifacts/SP-109F/` |
 | [G](./SP-109G-widgets.md) | Queued (file written 2026-10-17) | C, E, F | Implement after F | `./artifacts/SP-109G/` |

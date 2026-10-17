@@ -6,6 +6,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { AuthProvider, useAuth } from './AuthContext';
 import { authService } from '../services/auth';
+import { userService } from '@/entities/user/api/userService';
 import api from '@/shared/api/httpClient';
 import { tokenStore } from '@/shared/api/tokenStore';
 import { runRecoveryReset } from '@/shared/api/recovery';
@@ -15,10 +16,16 @@ import authSlice from '../store/authSlice';
 vi.mock('../services/auth', () => ({
   authService: {
     register: vi.fn(),
-    getProfile: vi.fn(),
     login: vi.fn(),
     refreshToken: vi.fn(),
     logout: vi.fn(),
+  },
+}));
+
+vi.mock('@/entities/user/api/userService', () => ({
+  userService: {
+    getProfile: vi.fn(),
+    updateProfile: vi.fn(),
   },
 }));
 
@@ -201,22 +208,22 @@ describe('AuthContext', () => {
 
   it('refreshes the current profile on focus without rotating the session', async () => {
     await renderVerificationProvider();
-    vi.mocked(authService.getProfile).mockResolvedValue({ ...sessionUser, emailVerifiedAt: '2026-10-14T12:00:00Z', createdAt: '', updatedAt: '' });
+    vi.mocked(userService.getProfile).mockResolvedValue({ ...sessionUser, emailVerifiedAt: '2026-10-14T12:00:00Z', createdAt: '', updatedAt: '' });
     await act(async () => { window.dispatchEvent(new Event('focus')); });
     expect(currentAuth.user?.emailVerifiedAt).toBe('2026-10-14T12:00:00Z');
     expect(mockedRefresh).toHaveBeenCalledTimes(1);
     await act(async () => { window.dispatchEvent(new Event('focus')); });
-    expect(authService.getProfile).toHaveBeenCalledTimes(1);
+    expect(userService.getProfile).toHaveBeenCalledTimes(1);
   });
 
   it('deduplicates verification profile refresh', async () => {
     await renderVerificationProvider();
-    let resolveProfile!: (value: Awaited<ReturnType<typeof authService.getProfile>>) => void;
-    vi.mocked(authService.getProfile).mockImplementation(() => new Promise(resolve => { resolveProfile = resolve; }));
+    let resolveProfile!: (value: Awaited<ReturnType<typeof userService.getProfile>>) => void;
+    vi.mocked(userService.getProfile).mockImplementation(() => new Promise(resolve => { resolveProfile = resolve; }));
     let first!: Promise<void>;
     let second!: Promise<void>;
     act(() => { first = currentAuth.refreshProfile(); second = currentAuth.refreshProfile(); });
-    expect(authService.getProfile).toHaveBeenCalledTimes(1);
+    expect(userService.getProfile).toHaveBeenCalledTimes(1);
     await act(async () => {
       resolveProfile({ ...sessionUser, createdAt: '', updatedAt: '' });
       await Promise.all([first, second]);
@@ -226,7 +233,7 @@ describe('AuthContext', () => {
   it('keeps the usable session when verification profile refresh fails', async () => {
     await renderVerificationProvider();
     tokenStore.setToken('usable-session');
-    vi.mocked(authService.getProfile).mockRejectedValue(new Error('network unavailable'));
+    vi.mocked(userService.getProfile).mockRejectedValue(new Error('network unavailable'));
     await act(async () => { await currentAuth.refreshProfile(); });
     expect(currentAuth.isAuthenticated).toBe(true);
     expect(currentAuth.isLoading).toBe(false);
@@ -236,15 +243,15 @@ describe('AuthContext', () => {
 
   it('keeps the signed-in account when another account is verified', async () => {
     await renderVerificationProvider();
-    vi.mocked(authService.getProfile).mockResolvedValue({ ...sessionUser, createdAt: '', updatedAt: '' });
+    vi.mocked(userService.getProfile).mockResolvedValue({ ...sessionUser, createdAt: '', updatedAt: '' });
     await act(async () => { await currentAuth.refreshProfile(); });
     expect(currentAuth.user).toMatchObject(sessionUser);
   });
 
   it.each(['logout', 'account change'] as const)('ignores a late profile response and queued fresh read after %s', async (change) => {
     await renderVerificationProvider();
-    let resolveProfile!: (value: Awaited<ReturnType<typeof authService.getProfile>>) => void;
-    vi.mocked(authService.getProfile).mockImplementation(() => new Promise(resolve => { resolveProfile = resolve; }));
+    let resolveProfile!: (value: Awaited<ReturnType<typeof userService.getProfile>>) => void;
+    vi.mocked(userService.getProfile).mockImplementation(() => new Promise(resolve => { resolveProfile = resolve; }));
     let flight!: Promise<void>;
     let queued!: Promise<void>;
     act(() => { flight = currentAuth.refreshProfile(); queued = currentAuth.refreshProfile({ fresh: true }); });
@@ -260,7 +267,7 @@ describe('AuthContext', () => {
       await Promise.all([flight, queued]);
     });
     expect(currentAuth.user?.id ?? null).toBe(change === 'logout' ? null : 'user-2');
-    expect(authService.getProfile).toHaveBeenCalledTimes(1);
+    expect(userService.getProfile).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -335,10 +342,10 @@ describe('AuthContext recovery session generation (SP-105G M2)', () => {
     await screen.findByText('ada@example.com');
 
     // A profile flight is in flight (focus-driven verification read).
-    let resolveProfile!: (value: Awaited<ReturnType<typeof authService.getProfile>>) => void;
-    vi.mocked(authService.getProfile).mockImplementation(() => new Promise((resolve) => { resolveProfile = resolve; }));
+    let resolveProfile!: (value: Awaited<ReturnType<typeof userService.getProfile>>) => void;
+    vi.mocked(userService.getProfile).mockImplementation(() => new Promise((resolve) => { resolveProfile = resolve; }));
     await act(async () => { window.dispatchEvent(new Event('focus')); });
-    expect(authService.getProfile).toHaveBeenCalledTimes(1);
+    expect(userService.getProfile).toHaveBeenCalledTimes(1);
 
     await act(async () => {
       await runRecoveryReset(() => Promise.resolve({ message: 'Password updated. Please sign in.' }));

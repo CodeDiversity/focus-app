@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { ProfilePage } from './Profile';
 import { AuthProvider } from '../context/AuthContext';
 import { authService } from '../services/auth';
+import { userService } from '@/entities/user/api/userService';
 import { makeTestStore } from '../test/providers';
 import { setUser } from '../store/authSlice';
 import { formatDateTime, getBrowserTimeZone } from '@/shared/lib/datetime';
@@ -20,17 +21,22 @@ vi.mock('react-hot-toast', () => ({
 vi.mock('../services/auth', () => ({
   authService: {
     register: vi.fn(),
-    getProfile: vi.fn(),
     login: vi.fn(),
     refreshToken: vi.fn(),
     logout: vi.fn(),
+  },
+}));
+
+vi.mock('@/entities/user/api/userService', () => ({
+  userService: {
+    getProfile: vi.fn(),
     updateProfile: vi.fn(),
   },
 }));
 
 const mockedRefreshToken = vi.mocked(authService.refreshToken);
-const mockedGetProfile = vi.mocked(authService.getProfile);
-const mockedUpdateProfile = vi.mocked(authService.updateProfile);
+const mockedGetProfile = vi.mocked(userService.getProfile);
+const mockedUpdateProfile = vi.mocked(userService.updateProfile);
 const mockedToast = toast as unknown as {
   success: ReturnType<typeof vi.fn>;
   error: ReturnType<typeof vi.fn>;

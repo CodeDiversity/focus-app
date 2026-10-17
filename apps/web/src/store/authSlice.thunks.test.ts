@@ -3,22 +3,28 @@ import { configureStore } from '@reduxjs/toolkit';
 import authSlice, { setError, setUser } from './authSlice';
 import { login, updateProfile } from './authSlice.thunks';
 import { authService } from '../services/auth';
+import { userService } from '@/entities/user/api/userService';
 import type { AuthResponse } from '@/features/auth/model/types';
 import type { User } from '@/entities/user/model/types';
 
 vi.mock('../services/auth', () => ({
   authService: {
     register: vi.fn(),
-    getProfile: vi.fn(),
     login: vi.fn(),
     refreshToken: vi.fn(),
     logout: vi.fn(),
+  },
+}));
+
+vi.mock('@/entities/user/api/userService', () => ({
+  userService: {
+    getProfile: vi.fn(),
     updateProfile: vi.fn(),
   },
 }));
 
 const mockedLogin = vi.mocked(authService.login);
-const mockedUpdateProfile = vi.mocked(authService.updateProfile);
+const mockedUpdateProfile = vi.mocked(userService.updateProfile);
 
 /** Only the `auth` reducer: these tests exercise the thunks' own dispatch surface. */
 function makeStore() {

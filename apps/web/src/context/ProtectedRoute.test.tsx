@@ -11,10 +11,16 @@ import type { AuthResponse } from '@/features/auth/model/types';
 vi.mock('../services/auth', () => ({
   authService: {
     register: vi.fn(),
-    getProfile: vi.fn(),
     login: vi.fn(),
     refreshToken: vi.fn(),
     logout: vi.fn(),
+  },
+}));
+
+vi.mock('@/entities/user/api/userService', () => ({
+  userService: {
+    getProfile: vi.fn(),
+    updateProfile: vi.fn(),
   },
 }));
 

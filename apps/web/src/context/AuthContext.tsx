@@ -10,6 +10,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { SessionUser, User } from '@/entities/user/model/types';
 import { authService } from '../services/auth';
+import { userService } from '@/entities/user/api/userService';
 import { tokenStore } from '@/shared/api/tokenStore';
 import { setSessionExpiredHandler } from '@/shared/api/httpClient';
 import { registerLocalSessionClearer, snapshotSessionGeneration } from '@/shared/api/recovery';
@@ -107,7 +108,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (options?.fresh) profileFlight.current.needsFresh = true;
       return profileFlight.current.promise;
     }
-    const promise = authService.getProfile().then((profile) => {
+    const promise = userService.getProfile().then((profile) => {
       // A flight that predates a successful reset is a no-op (SP-105G R3).
       if (
         sessionVersion.current === version &&

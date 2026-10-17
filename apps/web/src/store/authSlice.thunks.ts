@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { authService } from '../services/auth';
+import { userService } from '@/entities/user/api/userService';
 import { tokenStore } from '@/shared/api/tokenStore';
 import { apiErrorMessage, extractApiError, getErrorMessage } from '@/shared/lib/errors';
 import type { SessionUser } from '@/entities/user/model/types';
@@ -32,7 +33,7 @@ export const updateProfile = createAsyncThunk(
     dispatch(setLoading(true));
     dispatch(setError(null));
     try {
-      const updatedUser = await authService.updateProfile(data);
+      const updatedUser = await userService.updateProfile(data);
       dispatch(setUser(updatedUser));
       return updatedUser;
     } catch (err: unknown) {
