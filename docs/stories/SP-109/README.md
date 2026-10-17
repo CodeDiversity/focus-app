@@ -43,7 +43,7 @@ at `./artifacts/SP-109/review.md`; integration/index owner: SP-109I (parent inde
 | [F](./SP-109F-feature-session-store.md) | Queued (file written 2026-10-17) | E | Implement after E | `./artifacts/SP-109F/` |
 | [G](./SP-109G-widgets.md) | Queued (file written 2026-10-17) | C, E, F | Implement after F | `./artifacts/SP-109G/` |
 | [H](./SP-109H-pages-and-app-shell.md) | Queued (file written 2026-10-17) | G | Implement after G | `./artifacts/SP-109H/` |
-| [I](./SP-109I-boundaries-docs-verification.md) | Queued | B–H | Implement last: enforcement proof, docs paths, full verification | `./artifacts/SP-109I/` |
+| [I](./SP-109I-boundaries-docs-verification.md) | Queued (file written 2026-10-17) | B–H | Implement last: enforcement proof, docs paths, full verification | `./artifacts/SP-109I/` |
 
 Only SP-109A is `Ready`; B–I are `Queued` because they need A's alias and their
 own dependency landed. A is a pure-config slice with zero source moves, so it can
@@ -242,6 +242,7 @@ findings are preserved verbatim.
 | Frontend-flow risks | Pass (with limits) | No runtime flow changes: the suite (193 tests, several rendering the real `App` router and guards) is the regression net for every child. Residual: no runtime dev-server smoke is authorized in this environment (same limitation SP-108 recorded), so `build` + dev-server verification is CANNOT VERIFY here. |
 | Dependency mapping and sequencing | Pass | A → B → C → D → E → F → G → H → I; one sequential writer; file-disjointness checked (`authService.ts` D+E sequential, `App.tsx`/`main.tsx` only H, test-store wiring only F). |
 | Material decisions | Pass | RD1 from an explicit user answer; RD4/RD5/RD7/RD8 planner-grounded in inspected imports; RD6 and RD9 marked **Provisional** with named verification/follow-up owners. |
+| Correction-log history | Pass | PC-001 and PC-002 preserve their original findings with correction + verification; both are `Fixed in plan` in `docs/` (EP05 + epics README convention section, and RD3's alias removal owned by A). No correction redefined a product, security or MVP-scope policy. |
 | Jira identity/sync | Not applicable | No sync authorized; keys `Pending creation`; no duplicate keys. |
 
 **Outcome:** `Plan Ready` — nine sized children with a frozen import-direction
