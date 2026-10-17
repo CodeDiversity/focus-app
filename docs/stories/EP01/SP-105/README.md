@@ -301,6 +301,67 @@ The CF-1–CF-6 entries above preserve the previous agent's original claims and 
 
 The [pass-2 reviewer report](./plan-review.md#prioritized-findings-and-closure) independently verifies **PR-001** and **PR-002 resolved in plan**, with no new blocking findings. The earlier “Addressed — awaiting re-review” entries above preserve the original planner disposition; this entry records subsequent reviewer closure. Verdict: **Plan Ready**; execution remains **Implementation Blocked** for SP-103 integrated evidence. Planned behavior and future tests are not implementation verification.
 
+## Review corrections — 2026-10-15/16 (implementation findings)
+
+Entered by the reviewer's passing-review docs sync on 2026-10-16 (parent review
+pass 2, [report](./artifacts/SP-105/review.md)). **PR-101–PR-106 are back-filled
+dispositions of the 2026-10-15 child implementation-review passes** (A:
+`artifacts/SP-105A/review.md`; B: `artifacts/SP-105B/review.md`) that had no
+stable-ID entries here (parent-finding PR-110); their closure was verified by
+parent pass 1 and re-checked at pass 2. PR-107–PR-111 are the pass-1 parent
+findings, closed per the pass-2 report.
+
+### PR-101 — issuance failures invisible to operators (Should-fix, SP-105A, 2026-10-15)
+- **Original finding:** the transaction catch absorbed every error (cooldown, unknown account, DB outage) with no operator signal; the generic 200 masked silent failures.
+- **Consequence:** a database outage or email breakage would be invisible server-side.
+- **Disposition:** structured, sanitizing warn lines — `event=reset_issuance_failed` with a correlation UUID and error *name* (never the message) in the issuance catch, and `event=reset_email_delivery_failed` in the async delivery path; the API response is unchanged.
+- **Verification:** confirmed in source by parent pass 1; re-verified at pass 2 (`password-reset.service.ts:66-70`, `:169-181`). **Closed.**
+
+### PR-102 — implementation-summary suite accounting wrong (Polish, SP-105A, 2026-10-15)
+- **Original finding:** summary claimed 28 new + 17 existing = 45; the actual split was 32 new + 13 existing = 45.
+- **Disposition:** implementation summary corrected; totals and suite membership now reconcile.
+- **Verification:** parent pass 1 confirmed the counts. **Closed.**
+
+### PR-103 — no real-PostgreSQL race test at the A pass (Polish, SP-105A, 2026-10-15)
+- **Original finding:** the transaction race had no real-database test; plan review had assigned that obligation to SP-105D's integration scope.
+- **Disposition:** correctly deferred to the real-DB harness — SP-105I's 15-case credential suite (incl. same/distinct-token races and expiry across a lock wait) proves it on disposable PostgreSQL 15.
+- **Verification:** suite I green when recorded at SP-105D (`23d627b`) and **re-executed by parent pass 2 on the post-PR-107 code (26/26 incl. I)**; harness invocation contract documented. **Closed.**
+
+### PR-104 — B record overclaimed refresh-family behavior pre-E (Documentation should-fix, SP-105B, 2026-10-15)
+- **Original finding:** the implementation record claimed a reset family would be "dead on its next use" — false before E existed; the family stayed alive and rotatable.
+- **Disposition:** the sentence was corrected in the B record through `6826ae0` (recorded in the queue row). The underlying race invariant was then **implemented** by SP-105E (locked re-read, password-snapshot recheck), closing the substance in code, not only in prose.
+- **Verification:** parent pass 1 verified E's implementation in `auth.service.ts`; suite I covers both race orderings. **Closed.**
+
+### PR-105 — before-E sequencing not recorded in the README (Polish, SP-105B, 2026-10-15)
+- **Original finding:** B's dependency on E landed with no README record.
+- **Disposition:** B's queue row records "Implemented before E; login/refresh race invariant remains incomplete until E". **Closed.**
+
+### PR-106 — placeholder test and `@IsString` drift (Polish, SP-105B, 2026-10-15)
+- **Original finding:** a comment-only no-op test counted as passing; `reset-password.dto.ts` overrode the type-error message while `register.dto.ts` used the default — same bad input, different bytes on the two endpoints.
+- **Disposition:** not applied in code within B's scope; the substance is carried forward **open** at parent level as **PR-109** (below), so no item is dropped.
+- **Verification:** pass 2 re-confirmed both nits at their current locations. **Open, non-blocking (via PR-109).**
+
+### PR-107 — issuance stamped from the app clock instead of a fresh post-lock DB clock (Should-fix, SP-105A, parent pass 1)
+- **Original finding:** pass 1 (`db0218f`): `prepareToken()` captured `requestedAt = new Date()` before the transaction and reused it for the cooldown claim's boundary and SET, the retirement stamp, and `expiresAt`; the refined ticket and shared contract SD5 require a fresh wall-clock time taken **after any lock wait** (redemption already did this and enforced app-stamped values against the DB clock).
+- **Consequence:** app/DB skew (or replica divergence) shifted the effective 60 s cooldown and 1 h TTL; concurrency safety was not affected.
+- **Disposition:** fixed in `cf05ebf` per pass 1's fix menu — clock-free `PreparedResetToken`/`prepareToken()`; issuance follows the shared owner-first order (discover → `lockOwner` → `databaseNow` → conditional claim by `id` → retire with `checkedAt` → create with `checkedAt + TTL`); `owner-lock.ts` header updated; red/green unit proofs with an injectable DB clock and post-wait timing case.
+- **Verification:** parent pass 2 independently verified the fix in source and **re-executed the disposable-PostgreSQL integration suite on the fixed code (26/26)**; fix recorded in `artifacts/SP-105A/implementation.md` (`8b363d4`). **Closed.**
+
+### PR-108 — DoD 10 manual evidence was only a blanket approval (Should-fix, SP-105D, parent pass 1)
+- **Original finding:** the D6 manual run returned "approved everything looks good." with no per-step granularity, browser/version, or Block-E report; real-browser DoD 5/6/7 conditions rested on it.
+- **Consequence:** sign-off conditionality — the approval's granularity was the weak link in DoD 10.
+- **Disposition:** pass 1 offered (a) a targeted per-step browser-matrix re-run or (b) explicit user ratification. **User decision, 2026-10-16 (this conversation): "Ratify D6 blanket approval"** — the blanket approval is accepted as sufficient evidence for DoD 10 (closure path (b)). D's artifact retains the honest granularity limitations.
+- **Verification:** recorded user decision with date; no new measurement was fabricated. **Closed.**
+
+### PR-110 — implementation findings missing from this log (Polish, process, parent pass 1)
+- **Original finding:** the correction log recorded plan findings (CF-1–12, PR-001/002) but not the historical implementation findings PR-101–106.
+- **Disposition:** back-filled above, clearly marked as dispositions of the 2026-10-15 A/B passes, per the passing-review sync policy. **Closed in the pass-2 sync.**
+
+### PR-111 — stale parent status line; unratified gate reinterpretation (Polish, process, parent pass 1)
+- **Original finding:** `SP-105-password-reset.md` still read "Implementation Blocked pending SP-103 integrated evidence" though all children were implemented; and the planner's reinterpretation of the plan-review execution block ("blocks feature sign-off, not implementation") had no recorded user ratification.
+- **Disposition:** the parent status line is refreshed in the pass-2 sync to reflect this verdict. The **SP-103 gate reinterpretation remains unratified by the user** — deliberately recorded as open, with provenance (planner rationale in the 2026-10-15/16 queue entries; substance: SP-103's unverified integrated DoD 1/7/10 gates the EP01 **feature release**, while SP-105's own sign-off is established by this review). Not overridden, not silently absorbed.
+- **Verification:** status line refreshed; ratification still pending. **Partially closed; remainder open, non-blocking.**
+
 ## Current readiness and verification (2026-10-14)
 
 | Gate | Status | Evidence / limitation |
