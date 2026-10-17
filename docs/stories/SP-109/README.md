@@ -5,8 +5,8 @@
 technical tasks are tracked as technical stories linked to the appropriate
 milestone — this one is **M1** (it reorganizes the M1 web app and defines the
 structure EP02–EP08 will build in).
-**Jira:** Pending creation (no sync authorized/performed).
-**Status:** Planned 2026-10-17 (planner); nothing implemented yet.
+**Jira:** STUDY-44 (parent); children A–I are **STUDY-45–STUDY-53** — verified 2026-10-17.
+**Status:** Planned 2026-10-17 (planner); SP-109A implemented 2026-10-17; SP-109B implemented 2026-10-17.
 **Origin:** User request 2026-10-17 — “implement front end code structure into
 feature folders, all the components, slices, etc. should be in feature folders”,
 answered in-session with **Feature-Sliced Design (FSD) layers** as the convention.
@@ -19,12 +19,10 @@ answered in-session with **Feature-Sliced Design (FSD) layers** as the conventio
 
 **Parent artifacts:** `./artifacts/SP-109/` (parent checkpoint / final index)
 
-**Active substory:** None — the breakdown is planned; no implementation is
-authorized or started.
+**Active substory:** None — SP-109A and SP-109B implemented 2026-10-17.
 
-**Next substory:** [SP-109A](./SP-109A-fsd-foundation-config.md) — implement
-(config foundation: `@/` alias, layer folders, ESLint boundary rules; no source
-file moves).
+**Next substory:** [SP-109C](./SP-109C-shared-ui-and-transport.md) — implement
+(shared/ui: Button/Input; shared/api: httpClient/tokenStore/recovery + zone exception).
 
 **Implementation owner:** `implementer`, sequential. All children are
 frontend-scope moves/config work; single writer, one commit per child.
@@ -35,9 +33,9 @@ at `./artifacts/SP-109/review.md`; integration/index owner: SP-109I (parent inde
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-109A-fsd-foundation-config.md) | Ready (file written 2026-10-17) | None | Implement — add `@/` alias + ESLint layer rules, no moves | `./artifacts/SP-109A/` |
-| [B](./SP-109B-shared-lib-and-types.md) | Queued (file written 2026-10-17) | A | Implement after A | `./artifacts/SP-109B/` |
-| [C](./SP-109C-shared-ui-and-transport.md) | Queued (file written 2026-10-17) | B | Implement after B | `./artifacts/SP-109C/` |
+| [A](./SP-109A-fsd-foundation-config.md) | Implemented — awaiting parent review (2026-10-17) | None | — | `./artifacts/SP-109A/` |
+| [B](./SP-109B-shared-lib-and-types.md) | Implemented — awaiting parent review (2026-10-17) | A | — | `./artifacts/SP-109B/` |
+| [C](./SP-109C-shared-ui-and-transport.md) | Ready (refined 2026-10-17) | B (implemented 2026-10-17) | Implement | `./artifacts/SP-109C/` |
 | [D](./SP-109D-entity-user.md) | Queued (file written 2026-10-17) | B, C | Implement after C | `./artifacts/SP-109D/` |
 | [E](./SP-109E-feature-auth.md) | Queued (file written 2026-10-17) | C, D | Implement after D | `./artifacts/SP-109E/` |
 | [F](./SP-109F-feature-session-store.md) | Queued (file written 2026-10-17) | E | Implement after E | `./artifacts/SP-109F/` |
@@ -45,23 +43,21 @@ at `./artifacts/SP-109/review.md`; integration/index owner: SP-109I (parent inde
 | [H](./SP-109H-pages-and-app-shell.md) | Queued (file written 2026-10-17) | G | Implement after G | `./artifacts/SP-109H/` |
 | [I](./SP-109I-boundaries-docs-verification.md) | Queued (file written 2026-10-17) | B–H | Implement last: enforcement proof, docs paths, full verification | `./artifacts/SP-109I/` |
 
-Only SP-109A is `Ready`; B–I are `Queued` because they need A's alias and their
-own dependency landed. A is a pure-config slice with zero source moves, so it can
-start immediately.
+SP-109A and SP-109B are implemented; C–I are `Queued` because they need A's alias and B's relocated modules.
 
 ## Child inventory
 
 | ID | Layer / owner | Outcome | Dependency | Target size | Jira |
 |---|---|---|---|---|---|
-| [A](./SP-109A-fsd-foundation-config.md) | Frontend config, `implementer` | `@/` alias in tsconfig + Vite, layer folder skeleton, ESLint layer-direction rules | None | One 45–60 min session | Pending creation |
-| [B](./SP-109B-shared-lib-and-types.md) | Frontend, `implementer` | `shared/lib` + `shared/api/types` + per-layer type homes replace `src/utils` and `src/types` | A | One 60–90 min session | Pending creation |
-| [C](./SP-109C-shared-ui-and-transport.md) | Frontend, `implementer` | `shared/ui` (Button/Input) and `shared/api` (httpClient, tokenStore, recovery) | B | One 60–90 min session | Pending creation |
-| [D](./SP-109D-entity-user.md) | Frontend, `implementer` | `entities/user` — user types + `getProfile`/`updateProfile` extracted from `authService` | B, C | One 60–90 min session | Pending creation |
-| [E](./SP-109E-feature-auth.md) | Frontend, `implementer` | `features/auth` — auth API service, auth types, `AuthProvider`/`useAuth` context | C, D | One 60–90 min session | Pending creation |
-| [F](./SP-109F-feature-session-store.md) | Frontend, `implementer` | `features/session` (slice, thunks, selectors, RTK Query API), `features/email-verification` hook, `app/store` | E | One 60–90 min session | Pending creation |
-| [G](./SP-109G-widgets.md) | Frontend, `implementer` | `widgets/` — layout, header, verification banner, route guards | C, E, F | One 45–60 min session | Pending creation |
-| [H](./SP-109H-pages-and-app-shell.md) | Frontend, `implementer` | `pages/<route>/ui/*` + `app/App.tsx` router + `app/providers/AppProviders.tsx` + `main.tsx` | G | One 60–90 min session | Pending creation |
-| [I](./SP-109I-boundaries-docs-verification.md) | Frontend/verification + docs, `implementer` | Proved boundary enforcement, legacy folders gone, repo docs repointed, full green verification | B–H | One 60–90 min session | Pending creation |
+| [A](./SP-109A-fsd-foundation-config.md) | Implemented — awaiting parent review (2026-10-17) | Frontend config, `implementer` | `@/` alias in tsconfig + Vite, layer folder skeleton, ESLint layer-direction rules | None | One 45–60 min session | STUDY-45 |
+| [B](./SP-109B-shared-lib-and-types.md) | Implemented — awaiting parent review (2026-10-17) | Frontend, `implementer` | `shared/lib` + `shared/api/types` + per-layer type homes replace `src/utils` and `src/types` | A | One 60–90 min session | STUDY-46 |
+| [C](./SP-109C-shared-ui-and-transport.md) | Frontend, `implementer` | `shared/ui` (Button/Input) and `shared/api` (httpClient, tokenStore, recovery) | B | One 60–90 min session | STUDY-47 |
+| [D](./SP-109D-entity-user.md) | Frontend, `implementer` | `entities/user` — user types + `getProfile`/`updateProfile` extracted from `authService` | B, C | One 60–90 min session | STUDY-48 |
+| [E](./SP-109E-feature-auth.md) | Frontend, `implementer` | `features/auth` — auth API service, auth types, `AuthProvider`/`useAuth` context | C, D | One 60–90 min session | STUDY-49 |
+| [F](./SP-109F-feature-session-store.md) | Frontend, `implementer` | `features/session` (slice, thunks, selectors, RTK Query API), `features/email-verification` hook, `app/store` | E | One 60–90 min session | STUDY-50 |
+| [G](./SP-109G-widgets.md) | Frontend, `implementer` | `widgets/` — layout, header, verification banner, route guards | C, E, F | One 45–60 min session | STUDY-51 |
+| [H](./SP-109H-pages-and-app-shell.md) | Frontend, `implementer` | `pages/<route>/ui/*` + `app/App.tsx` router + `app/providers/AppProviders.tsx` + `main.tsx` | G | One 60–90 min session | STUDY-52 |
+| [I](./SP-109I-boundaries-docs-verification.md) | Frontend/verification + docs, `implementer` | Proved boundary enforcement, legacy folders gone, repo docs repointed, full green verification | B–H | One 60–90 min session | STUDY-53 |
 
 Sequence A → B → C → D → E → F → G → H → I, one sequential writer. D and G/H
 have partial independence from E, but they are ordered so only one child touches
@@ -135,10 +131,13 @@ other `features`; `widgets` → `features`, `shared`; `pages` → `widgets`,
 `features`, `shared`; `app` → everything below it; `test/` is exempt (it
 composes the store and router for suites).
 
-Two documented exceptions (RD7): `features/session/**` may import
+Three documented exceptions: (1) RD7 — `features/session/**` may import
 `@/app/store/store` and `@/app/store/hooks` (typed `RootState`/`AppDispatch`
 only), and `features/auth/model/AuthContext.tsx` may import
-`@/app/store/hooks` (`useAppDispatch`). No other upward import from `app`.
+`@/app/store/hooks` (`useAppDispatch`); (2) RD13 — `shared/api/*` may
+type-import `@/features/auth/model/types` (only `AuthResponse`; erased at
+compile time, no runtime shared→features dependency). No other upward import
+from `app` or `shared`.
 
 ## Decision register
 
@@ -154,8 +153,9 @@ only), and `features/auth/model/AuthContext.tsx` may import
 | RD8 | `src/test/` (`setup.ts`, `providers.tsx`, `user.ts`) stays where it is and is **exempt** from layer ordering: `providers.tsx` deliberately composes the store, RTK Query API and `MemoryRouter`. `vite.config.ts`'s `setupFiles` path therefore does not change. | Planner 2026-10-17, grounded in `test/providers.tsx:5-6` and `vite.config.ts` `test.setupFiles`. |
 | RD9 | **Provisional:** the unused academic types (`Semester`, `Course`, `Assignment`, `Task`, `StudySession`) move to `shared/types/academic.ts` rather than creating five empty `entities/*` folders. Follow-up owner: the **EP02 breakdown** (semester/course) must relocate them to `entities/<entity>/model/types.ts` when those entities are first built. | Planner 2026-10-17, grounded in `types/index.ts:65-137` (declared, zero consumers — verified by grep). |
 | RD10 | **Settled 2026-10-17:** the single RTK Query API (`src/store/api.ts`: resend-verification mutation + axios `baseQuery`) moves as one unit to `features/session/api/sessionApi.ts` and is **not** split per feature in this parent. Rationale: it is one endpoint over one transport today (`store/api.ts:66-79`); splitting it inside a pure-move refactor adds churn and risk without a consumer to justify it. **Consequence for EP02+:** the first story that adds a non-session endpoint must introduce a per-feature RTK Query API (`features/<feature>/api/…`) and register its reducer/middleware in `app/store/store.ts` — that story becomes the convention's owner and may retire `sessionApi` by absorbing its endpoint. | Planner recommendation, **delegated and adopted by the user 2026-10-17** ("your decision"), grounded in `store/api.ts:66-79`. |
-| RD11 | Story home is a standalone folder `docs/stories/SP-109/`, milestone **M1**; Jira key `Pending creation`; **no Jira sync authorized or performed**. | Planner 2026-10-17, per the epics README technical-tasks note (SP-108 precedent). |
+| RD11 | Story home is a standalone folder `docs/stories/SP-109/`, milestone **M1**; Jira key `Pending creation` at planning time; **no Jira sync authorized or performed** then. *(Superseded 2026-10-17: keys `STUDY-44`–`STUDY-53` created and verified by the authorized bootstrap sync.)* | Planner 2026-10-17, per the epics README technical-tasks note (SP-108 precedent). |
 | RD12 | The root `README.md` "State Management" line references `apps/web/src/services/api.ts` and must be repointed to `shared/api/httpClient.ts`. The planner writes only `docs/`, so **SP-109I owns the root README edit**; docs/ files (`docs/epics/README.md`, `docs/epics/EP05-student-dashboard.md`) are repointed by the planner now (PC-001). | Planner 2026-10-17; SP-108 RD6 write-scope precedent. |
+| RD13 | The `src/shared` zone in `apps/web/.eslintrc.cjs` gains `except: ['auth/model/types.ts']` (type-only exception). The transport's type-only `AuthResponse` import from `features/auth/model/types` is the sole sanctioned `shared → features` import (erased at compile time; no runtime dependency). Verified 2026-10-17: without the except the moved files fail lint (both aliased and relative forms flagged); with it, exactly that file is exempt, other features imports still trip the rule, and full lint stays clean. | User-approved 2026-10-17 (refiner), grounded in empirical ESLint 8.57.1 + eslint-plugin-import 2.32.0 probe (temp copy of `apps/web`). |
 
 ## Source requirements and test traceability
 
@@ -243,7 +243,7 @@ findings are preserved verbatim.
 | Dependency mapping and sequencing | Pass | A → B → C → D → E → F → G → H → I; one sequential writer; file-disjointness checked (`authService.ts` D+E sequential, `App.tsx`/`main.tsx` only H, test-store wiring only F). |
 | Material decisions | Pass | RD1 from an explicit user answer; RD10 settled 2026-10-17 on the user's delegation of the choice to the planner, with the EP02+ follow-up owner named; RD4/RD5/RD7/RD8 planner-grounded in inspected imports; RD6 and RD9 marked **Provisional** with named verification/follow-up owners. |
 | Correction-log history | Pass | PC-001 and PC-002 preserve their original findings with correction + verification; both are `Fixed in plan` in `docs/` (EP05 + epics README convention section, and RD3's alias removal owned by A). No correction redefined a product, security or MVP-scope policy. |
-| Jira identity/sync | Not applicable | No sync authorized; keys `Pending creation`; no duplicate keys. |
+| Jira identity/sync | Not applicable | No sync was authorized in that pass; keys are now `STUDY-44`–`STUDY-53` (verified 2026-10-17); no duplicate keys. |
 
 **Outcome:** `Plan Ready` — nine sized children with a frozen import-direction
 contract and per-child verification. **Implementation Blocked** for B–I until A
