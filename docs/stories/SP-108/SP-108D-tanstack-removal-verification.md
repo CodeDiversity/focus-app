@@ -207,4 +207,4 @@ implementer records them in `./artifacts/SP-108D/implementation.md`.
   planner/reviewer.
 - `./artifacts/SP-108/review.md` and any formal review.
 - Backend work, new endpoints, Prisma migrations, new environment variables.
-- Jira sync (never authorized for SP-108; keys stay Pending creation).
+- Jira sync (never authorized for SP-108 during that pass; keys stayed Pending creation there). *(Superseded 2026-10-17: keys STUDY-36–STUDY-43 verified by the authorized bootstrap sync.)*
