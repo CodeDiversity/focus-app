@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Providers } from '../test/providers';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import App from '../App';
 import { AuthProvider } from '../context/AuthContext';
@@ -48,15 +47,12 @@ function fail(
 }
 
 function renderPage() {
-  const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   render(
-    <MemoryRouter initialEntries={['/forgot-password']}>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </QueryClientProvider>
-    </MemoryRouter>,
+    <Providers initialEntries={['/forgot-password']}>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </Providers>,
   );
 }
 

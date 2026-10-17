@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, useLocation } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
+import { Providers } from '../test/providers';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import App from '../App';
 import { AuthProvider } from '../context/AuthContext';
@@ -64,16 +64,13 @@ function LocationProbe() {
 }
 
 function renderPage(path = `/reset-password#token=${TOKEN}`) {
-  const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   render(
-    <MemoryRouter initialEntries={[path]}>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <LocationProbe />
-          <App />
-        </AuthProvider>
-      </QueryClientProvider>
-    </MemoryRouter>,
+    <Providers initialEntries={[path]}>
+      <AuthProvider>
+        <LocationProbe />
+        <App />
+      </AuthProvider>
+    </Providers>,
   );
 }
 

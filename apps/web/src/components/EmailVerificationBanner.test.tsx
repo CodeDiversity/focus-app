@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { setupUser } from '../test/user';
-import { MemoryRouter, useNavigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { Providers } from '../test/providers';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { Layout } from './Layout';
 import { AuthProvider, useAuth } from '../context/AuthContext';
@@ -29,7 +29,7 @@ function Probe() {
   </>;
 }
 function renderBanner() {
-  return render(<MemoryRouter><QueryClientProvider client={new QueryClient()}><AuthProvider><Layout><Probe /></Layout></AuthProvider></QueryClientProvider></MemoryRouter>);
+  return render(<Providers initialEntries={['/profile']}><AuthProvider><Layout><Probe /></Layout></AuthProvider></Providers>);
 }
 
 describe('EmailVerificationBanner', () => {

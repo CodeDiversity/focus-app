@@ -2,8 +2,8 @@ import { StrictMode } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { setupUser } from '../test/user';
-import { MemoryRouter, useLocation } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
+import { Providers, makeTestStore } from '../test/providers';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import App from '../App';
 import { AuthProvider } from '../context/AuthContext';
@@ -32,10 +32,10 @@ function LocationProbe() {
   return <span data-testid="location">{location.pathname}{location.hash}</span>;
 }
 function renderPage(path = `/verify-email#token=${linkToken}`, strict = false) {
-  const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
-  const page = <MemoryRouter initialEntries={[path]}><QueryClientProvider client={queryClient}><AuthProvider><LocationProbe /><App /></AuthProvider></QueryClientProvider></MemoryRouter>;
+  const store = makeTestStore();
+  const page = <Providers store={store} initialEntries={[path]}><AuthProvider><LocationProbe /><App /></AuthProvider></Providers>;
   render(strict ? <StrictMode>{page}</StrictMode> : page);
-  return queryClient;
+  return store;
 }
 
 describe('VerifyEmailPage', () => {
@@ -72,12 +72,14 @@ describe('VerifyEmailPage', () => {
 
   it.each([false, true])('is reachable while signed in=%s and requires an explicit Verify email action', async (authenticated) => {
     signedIn = authenticated;
-    const cache = renderPage();
+    const store = renderPage();
     const user = setupUser();
     await user.click(await screen.findByRole('button', { name: /^verify email$/i }));
     expect(await screen.findByText(/email verified successfully/i)).toBeInTheDocument();
     expect(calls.filter(call => call.path === '/auth/verify-email')).toEqual([{ path: '/auth/verify-email', data: { token: linkToken } }]);
-    expect(JSON.stringify(cache.getMutationCache().getAll().map(mutation => mutation.state))).not.toContain(linkToken);
+    // The raw link token must not survive in any client-side cache.
+    const mutations = store.getState().api.mutations;
+    expect(JSON.stringify(Object.values(mutations).map(entry => entry))).not.toContain(linkToken);
     if (authenticated) {
       expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
       expect(tokenStore.getToken()).toBe('existing-session');
