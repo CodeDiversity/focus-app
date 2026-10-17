@@ -7,7 +7,7 @@
 **Layer:** Frontend
 **Status:** Ready (planned 2026-10-17); implementation after SP-106B lands
 **Dependencies:** SP-106B (PATCH + 400 `errors` contract; `GET` fields)
-**Jira key:** Pending creation
+**Jira key:** STUDY-34
 
 ## Summary
 

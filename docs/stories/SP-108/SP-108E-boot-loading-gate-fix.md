@@ -8,7 +8,7 @@
 commit `b3533a8`) — closes review finding **IR-001 (Blocker)** in
 `artifacts/SP-108/review.md`
 **Dependencies:** None (fixes landed SP-108A/B code)
-**Jira key:** Pending creation
+**Jira key:** STUDY-41
 
 ## Summary and bounded scope
 

@@ -7,7 +7,7 @@
 **Priority:** High / P0
 **Layer / owner:** Frontend (React + TypeScript + Vite), `implementer` (single writer; backend/frontend are scope labels)
 **Dependencies:** [SP-105G](./SP-105G-recovery-session-client.md) (implemented 2026-10-16 — client contract verified against code, below); [SP-105A](./SP-105A-password-reset-backend-issuance.md) + [SP-105B](./SP-105B-password-reset-backend-redemption.md) + [SP-105F](./SP-105F-password-reset-ip-limits.md) (implemented — the endpoints are live, so integration is real, not contract-only)
-**Jira key:** Pending creation (child of STUDY-7)
+**Jira key:** STUDY-24
 **Refined:** 2026-10-16
 **Status:** Implemented (2026-10-16) — awaiting the combined SP-105 parent review ([implementation](./artifacts/SP-105C/implementation.md); [checkpoint](./artifacts/SP-105C/checkpoint.md))
 

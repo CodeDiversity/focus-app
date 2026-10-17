@@ -8,7 +8,7 @@
 **Priority:** High / P0
 **Status:** Needs refinement — next substory in the [execution queue](./README.md#execution-queue); size/checkpoint the current code before implementation
 **Dependencies:** SP-102 (session implementation)
-**Jira key:** Pending creation
+**Jira key:** STUDY-26
 **Refined:** 2026-10-14
 
 ## Summary and bounded scope

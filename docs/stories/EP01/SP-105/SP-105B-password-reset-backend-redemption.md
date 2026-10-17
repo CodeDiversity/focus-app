@@ -10,7 +10,7 @@
 **Status:** Implemented — awaiting parent review (see execution state above)
 **Historical planning status:** Draft — corrected mechanism; awaiting independent re-review
 **Dependencies:** SP-105A (reset persistence), [SP-105E](./SP-105E-auth-session-coordination.md) (shared owner-first session locking)
-**Jira key:** Pending creation
+**Jira key:** STUDY-23
 **Refined:** 2026-10-14
 
 ## Summary and scope

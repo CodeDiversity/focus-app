@@ -9,7 +9,7 @@ commit `45e3e54`) — closes review finding **IR-002 (Should-fix)** in
 `artifacts/SP-108/review.md`
 **Dependencies:** [SP-108E](./SP-108E-boot-loading-gate-fix.md) (sequential —
 both edit `authSlice.test.ts`; one writer)
-**Jira key:** Pending creation
+**Jira key:** STUDY-42
 
 ## Summary and bounded scope
 

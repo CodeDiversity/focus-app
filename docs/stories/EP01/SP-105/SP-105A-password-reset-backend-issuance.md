@@ -8,7 +8,7 @@
 **Priority:** High / P0
 **Layer:** Backend (NestJS + Prisma + PostgreSQL)
 **Dependencies:** SP-102 (`User`, argon2, `RefreshToken`), SP-103 (`EmailProvider`/`EMAIL_PROVIDER`, Mailpit, cooldown pattern) — both implemented
-**Jira key:** Pending creation (child of STUDY-7)
+**Jira key:** STUDY-22
 **Refined:** 2026-10-14
 **Status:** Implemented — awaiting parent review (see execution state above)
 **Historical planning status:** Draft — corrected; awaiting independent re-review

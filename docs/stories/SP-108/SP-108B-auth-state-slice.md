@@ -6,7 +6,7 @@
 **Layer / owner:** Frontend, `implementer` (single writer)
 **Status:** Needs refinement (refine against code after SP-108A lands)
 **Dependencies:** SP-108A (store + typed hooks exist)
-**Jira key:** Pending creation
+**Jira key:** STUDY-38
 **Refined:** 2026-10-16
 
 ## Summary and bounded scope

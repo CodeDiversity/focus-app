@@ -12,7 +12,7 @@
 `authSlice` and store-backed `AuthProvider` make the Redux `Provider` mandatory in
 every `AuthProvider` test). Independent of B's *scope*, sequenced after it for the
 single writer.
-**Jira key:** Pending creation
+**Jira key:** STUDY-39
 **Refined:** 2026-10-16
 
 ## Summary and bounded scope

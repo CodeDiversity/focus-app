@@ -7,7 +7,7 @@
 **Layer:** Integration
 **Status:** Queued (planned 2026-10-17)
 **Dependencies:** SP-106A, SP-106B, SP-106C implemented
-**Jira key:** Pending creation
+**Jira key:** STUDY-35
 
 ## Summary
 

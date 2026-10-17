@@ -15,7 +15,7 @@ and SP-108C are implemented (`./artifacts/SP-108B/implementation.md`,
 references.
 **Dependencies:** SP-108C (zero remaining TanStack usage), SP-108B (auth fully
 off React state)
-**Jira key:** Pending creation (no sync authorized or performed for SP-108)
+**Jira key:** STUDY-40
 **Refined:** 2026-10-16
 
 ## Summary and bounded scope

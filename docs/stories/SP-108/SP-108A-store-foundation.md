@@ -6,7 +6,7 @@
 **Layer / owner:** Frontend, `implementer` (single writer)
 **Status:** Implemented — awaiting parent review (2026-10-16)
 **Dependencies:** None
-**Jira key:** Pending creation
+**Jira key:** STUDY-37
 
 ## Summary and bounded scope
 

@@ -8,7 +8,7 @@
 **Status:** Implemented — awaiting parent review
 **Implementation:** [Record](./artifacts/SP-105H/implementation.md), [checkpoint](./artifacts/SP-105H/checkpoint.md)
 **Dependencies:** SP-102; A/F migrations before recovery suite execution
-**Jira key:** Pending creation
+**Jira key:** STUDY-29
 **Refined:** 2026-10-16
 
 ## Summary and bounded scope

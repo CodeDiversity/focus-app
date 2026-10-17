@@ -7,6 +7,7 @@
 **Dependencies:** SP-101
 **Jira key:** STUDY-9
 **Refined:** 2026-10-13
+**Completed** 2026-10-16 (verified implemented in the scaffold-baseline checkout during the SP-103 inspection; Jira STUDY-9 already Done)
 
 ## Summary
 

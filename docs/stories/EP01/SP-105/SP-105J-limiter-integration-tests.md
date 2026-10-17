@@ -8,7 +8,7 @@
 **Layer / owner:** Integration tests, `implementer` (single sequential writer; layer is a scope label)
 **Status:** Implemented (2026-10-16) — awaiting the combined SP-105 parent review ([implementation](./artifacts/SP-105J/implementation.md); [checkpoint](./artifacts/SP-105J/checkpoint.md))
 **Dependencies:** [SP-105F](./SP-105F-password-reset-ip-limits.md) and [SP-105H](./SP-105H-postgres-test-harness.md) are implemented (awaiting parent review). H's [implementation](./artifacts/SP-105H/implementation.md) is the helper contract. F's store is the subject.
-**Jira key:** Pending creation (child of STUDY-7)
+**Jira key:** STUDY-31
 **Refined:** 2026-10-16
 **Review unit:** one combined SP-105 review after every child, including D, is implemented. Child tests and DoD stay here. Formal review resolves to `./artifacts/SP-105/review.md`. This child does not require its own `review.md`.
 

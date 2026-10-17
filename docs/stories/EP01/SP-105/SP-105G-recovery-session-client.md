@@ -7,7 +7,7 @@
 **Layer / owner:** Frontend, `implementer` (single writer; backend/frontend are scope labels)
 **Status:** Implemented 2026-10-16 (M1–M3 complete) — awaiting combined parent review ([implementation](./artifacts/SP-105G/implementation.md); [checkpoint](./artifacts/SP-105G/checkpoint.md))
 **Dependencies:** SP-102 (complete — its client is the current `services/api.ts` + `context/AuthContext.tsx`); A/B/F contracts (implemented; verified against code 2026-10-15); C consumes this contract
-**Jira key:** Pending creation
+**Jira key:** STUDY-28
 **Refined:** 2026-10-15
 
 ## Summary and bounded scope

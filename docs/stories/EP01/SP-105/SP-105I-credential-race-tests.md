@@ -8,7 +8,7 @@
 **Layer / owner:** Integration tests, `implementer` (single sequential writer; layer is a scope label)
 **Status:** Implemented (2026-10-16) — awaiting the combined SP-105 parent review ([implementation](./artifacts/SP-105I/implementation.md); [checkpoint](./artifacts/SP-105I/checkpoint.md))
 **Dependencies:** [SP-105A](./SP-105A-password-reset-backend-issuance.md), [SP-105B](./SP-105B-password-reset-backend-redemption.md), [SP-105E](./SP-105E-auth-session-coordination.md) and [SP-105H](./SP-105H-postgres-test-harness.md) are implemented (awaiting parent review); H's [implementation](./artifacts/SP-105H/implementation.md) documents the helper contract consumed here
-**Jira key:** Pending creation (child of STUDY-7)
+**Jira key:** STUDY-30
 **Refined:** 2026-10-16
 
 ## Summary and bounded scope

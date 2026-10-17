@@ -7,7 +7,7 @@
 **Layer:** Backend
 **Status:** Ready (planned 2026-10-17); implementation after SP-106A lands
 **Dependencies:** SP-106A (fields must exist on the model and GET response)
-**Jira key:** Pending creation
+**Jira key:** STUDY-33
 
 ## Summary
 

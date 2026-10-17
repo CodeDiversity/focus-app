@@ -7,7 +7,7 @@
 **Priority:** High / P0
 **Layer / owner:** Integration (backend + frontend, real PostgreSQL + real SMTP); `implementer` (single sequential writer; layer is a scope label)
 **Dependencies:** [SP-105A](./SP-105A-password-reset-backend-issuance.md), [SP-105B](./SP-105B-password-reset-backend-redemption.md), [SP-105C](./SP-105C-password-reset-frontend-ui.md), [SP-105E](./SP-105E-auth-session-coordination.md), [SP-105F](./SP-105F-password-reset-ip-limits.md) plus G, H, I and J — **all implemented** (awaiting the combined SP-105 parent review)
-**Jira key:** Pending creation (child of STUDY-7)
+**Jira key:** STUDY-25
 **Refined:** 2026-10-16
 **Status:** Ready for implementation — refined 2026-10-16 (one cohesive multi-window sign-off; manual browser DoD 10, no automation runner)
 **Review unit:** one combined SP-105 review after every child, including D, is implemented. D performs DoD 10 and prepares the parent index; the formal review resolves to `./artifacts/SP-105/review.md`. D does not require its own child review.

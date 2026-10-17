@@ -7,7 +7,7 @@
 **Layer:** Backend
 **Status:** Implemented — awaiting parent review (2026-10-17; [implementation record](./artifacts/SP-106A/implementation.md), [checkpoint](./artifacts/SP-106A/checkpoint.md))
 **Dependencies:** SP-104 (implemented and reviewed — STUDY-10 review PASS: global guard, `@CurrentUser()`, ownership helper, `test-http` harness)
-**Jira key:** Pending creation
+**Jira key:** STUDY-32
 
 ## Summary
 
