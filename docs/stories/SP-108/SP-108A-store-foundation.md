@@ -87,7 +87,7 @@ DoD 1 (criteria pass) and 8 (store tests) apply; DoD 2/4 are satisfied by the
 middleware negative case; DoD 3/5/6/7 N/A (no data access, no new UI — recorded
 in the README map); DoD 9 covered by this ticket + the README; DoD 10 belongs
 to the combined SP-108 final review. Evidence goes to
-`./artifacts/SP-108A/` per [delivery state](../../.agents/delivery-state.md)
+`./artifacts/SP-108A/` per [delivery state](../../../.agents/delivery-state.md)
 naming (`artifacts/<story-id>/` under this home).
 
 ## Out of scope
