@@ -3,7 +3,7 @@
 **Epic:** [EP01](../../../epics/EP01-authentication-and-onboarding.md)
 **Parent:** [SP-105](./SP-105-password-reset.md), existing Jira STUDY-7
 **Milestone:** M1
-**Status:** Planning baseline reviewed in pass 2 (2026-10-14); execution state below reconciled 2026-10-16. A/B/C/D/E/F/G/H/I/J all implemented — awaiting the combined parent review; full feature/release not approved.
+**Status:** Implemented and Reviewed — combined parent implementation review pass 2 (2026-10-16) is **Pass**; PR-107/PR-108 closed. Queue reconciled to [the saved final report](./artifacts/SP-105/review.md) on 2026-10-17. Optional polish and the separate SP-103 release bookkeeping remain documented in that report.
 
 ## Execution queue
 
@@ -13,9 +13,9 @@
 
 **Parent artifacts:** `./artifacts/SP-105/` (created when parent checkpoint/index is written)
 
-**Active substory:** None — all ten children implemented; the pass-1 parent review verdict is Changes Required ([review](./artifacts/SP-105/review.md)) and PR-107 (the one authorized code fix) is implemented in `cf05ebf`
+**Active substory:** None — all ten children implemented and covered by the passing combined parent review.
 
-**Next substory:** User decision on PR-108, then the SP-105 parent re-review; the reviewer replaces `./artifacts/SP-105/review.md` with the pass-2 report (index at `./artifacts/SP-105/implementation.md`)
+**Next substory:** None — SP-105 pass-2 final review passed. PR-107 and PR-108 are closed; no required SP-105 implementation work remains.
 
 **Implementation owner:** `implementer`, sequential across all layers.
 
@@ -23,16 +23,20 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-105A-password-reset-backend-issuance.md) | Implemented — awaiting parent review | SP-103 integrated sign-off still a feature/release gate | PR-107 DB-clock fix implemented in `cf05ebf` — verify in the parent re-review | [Implementation](./artifacts/SP-105A/implementation.md) (incl. PR-107 fix note), [historical review](./artifacts/SP-105A/review.md) |
-| [B](./SP-105B-password-reset-backend-redemption.md) | Implemented — awaiting parent review | Implemented before E; login/refresh race invariant remains incomplete until E | Preserve B; finish E, then prove cross-flow behavior in I/D | [Implementation](./artifacts/SP-105B/implementation.md), [historical review](./artifacts/SP-105B/review.md); PR-104 wording corrected in `6826ae0` |
-| [E](./SP-105E-auth-session-coordination.md) | Implemented — awaiting parent review | SP-102 done; login/refresh/logout now use the shared owner-first protocol — the post-reset renewal invariant is closed at unit level | Hold for the combined SP-105 parent review; deterministic real-Postgres proof via I/H, browser via D | [Implementation](./artifacts/SP-105E/implementation.md), [checkpoint](./artifacts/SP-105E/checkpoint.md) |
-| [F](./SP-105F-password-reset-ip-limits.md) | Implemented — awaiting parent review | Implemented 2026-10-15; multi-instance race is J's suite; browser sign-off remains D | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105F/implementation.md), [checkpoint](./artifacts/SP-105F/checkpoint.md) |
-| [G](./SP-105G-recovery-session-client.md) | Implemented — awaiting parent review | Implemented 2026-10-16 (M1–M3); A/B/F contracts consumed; C consumes the documented client contract | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105G/implementation.md), [checkpoint](./artifacts/SP-105G/checkpoint.md) |
-| [C](./SP-105C-password-reset-frontend-ui.md) | Implemented — awaiting parent review | G implemented 2026-10-16 (client contract consumed); A/B/F implemented — endpoints live | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105C/implementation.md), [checkpoint](./artifacts/SP-105C/checkpoint.md) |
-| [H](./SP-105H-postgres-test-harness.md) | Implemented — awaiting parent review | Six existing migrations applied to disposable PostgreSQL 15; three harness checks passed | Hold for combined SP-105 parent review | [Implementation](./artifacts/SP-105H/implementation.md), [checkpoint](./artifacts/SP-105H/checkpoint.md) |
-| [I](./SP-105I-credential-race-tests.md) | Implemented — awaiting parent review | A/B/E/H implemented; 15-case suite proves AC1/AC2/AC3 on real PostgreSQL (18/18 integration green) | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105I/implementation.md), [checkpoint](./artifacts/SP-105I/checkpoint.md) |
-| [J](./SP-105J-limiter-integration-tests.md) | Implemented — awaiting parent review | F and H implemented; 8-case store suite proves last-slot races, restart, window, and stale cleanup on real PostgreSQL (26/26 integration green) | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105J/implementation.md), [checkpoint](./artifacts/SP-105J/checkpoint.md) |
-| [D](./SP-105D-password-reset-integration.md) | Implemented — awaiting parent review | A–J implemented; user authorized the D session and returned the D6 manual approval | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105D/implementation.md), [checkpoint](./artifacts/SP-105D/checkpoint.md); parent index at `./artifacts/SP-105/implementation.md` |
+| [A](../../../jira-sync/tombstones.md#story-sp-105a) | Reviewed (parent pass 2, 2026-10-16) | SP-103 integrated sign-off still a feature/release gate | None — passing final parent review; preserve optional polish/release notes | [Implementation](./artifacts/SP-105A/implementation.md) (incl. PR-107 fix note), [historical review](./artifacts/SP-105A/review.md) |
+| [B](./SP-105B-password-reset-backend-redemption.md) | Reviewed (parent pass 2, 2026-10-16) | Implemented before E; login/refresh race invariant remains incomplete until E | None — passing final parent review; preserve optional polish/release notes | [Implementation](./artifacts/SP-105B/implementation.md), [historical review](./artifacts/SP-105B/review.md); PR-104 wording corrected in `6826ae0` |
+| [E](../../../jira-sync/tombstones.md#story-sp-105e) | Reviewed (parent pass 2, 2026-10-16) | SP-102 done; login/refresh/logout now use the shared owner-first protocol — the post-reset renewal invariant is closed at unit level | None — passing final parent review; preserve optional polish/release notes | [Implementation](./artifacts/SP-105E/implementation.md), [checkpoint](./artifacts/SP-105E/checkpoint.md) |
+| [F](./SP-105F-password-reset-ip-limits.md) | Reviewed (parent pass 2, 2026-10-16) | Implemented 2026-10-15; multi-instance race is J's suite; browser sign-off remains D | None — passing final parent review; preserve optional polish/release notes | [Implementation](./artifacts/SP-105F/implementation.md), [checkpoint](./artifacts/SP-105F/checkpoint.md) |
+| [G](../../../jira-sync/tombstones.md#story-sp-105g) | Reviewed (parent pass 2, 2026-10-16) | Implemented 2026-10-16 (M1–M3); A/B/F contracts consumed; C consumes the documented client contract | None — passing final parent review; preserve optional polish/release notes | [Implementation](./artifacts/SP-105G/implementation.md), [checkpoint](./artifacts/SP-105G/checkpoint.md) |
+| [C](../../../jira-sync/tombstones.md#story-sp-105c) | Reviewed (parent pass 2, 2026-10-16) | G implemented 2026-10-16 (client contract consumed); A/B/F implemented — endpoints live | None — passing final parent review; preserve optional polish/release notes | [Implementation](./artifacts/SP-105C/implementation.md), [checkpoint](./artifacts/SP-105C/checkpoint.md) |
+| [H](../../../jira-sync/tombstones.md#story-sp-105h) | Reviewed (parent pass 2, 2026-10-16) | Six existing migrations applied to disposable PostgreSQL 15; three harness checks passed | None — passing final parent review; preserve optional polish/release notes | [Implementation](./artifacts/SP-105H/implementation.md), [checkpoint](./artifacts/SP-105H/checkpoint.md) |
+| [I](../../../jira-sync/tombstones.md#story-sp-105i) | Reviewed (parent pass 2, 2026-10-16) | A/B/E/H implemented; 15-case suite proves AC1/AC2/AC3 on real PostgreSQL (18/18 integration green) | None — passing final parent review; preserve optional polish/release notes | [Implementation](./artifacts/SP-105I/implementation.md), [checkpoint](./artifacts/SP-105I/checkpoint.md) |
+| [J](../../../jira-sync/tombstones.md#story-sp-105j) | Reviewed (parent pass 2, 2026-10-16) | F and H implemented; 8-case store suite proves last-slot races, restart, window, and stale cleanup on real PostgreSQL (26/26 integration green) | None — passing final parent review; preserve optional polish/release notes | [Implementation](./artifacts/SP-105J/implementation.md), [checkpoint](./artifacts/SP-105J/checkpoint.md) |
+| [D](../../../jira-sync/tombstones.md#story-sp-105d) | Reviewed (parent pass 2, 2026-10-16) | A–J implemented; user authorized the D session and returned the D6 manual approval | None — passing final parent review; preserve optional polish/release notes | [Implementation](./artifacts/SP-105D/implementation.md), [checkpoint](./artifacts/SP-105D/checkpoint.md); parent index at `./artifacts/SP-105/implementation.md` |
+
+2026-10-17 reconciliation: the saved pass-2 report supersedes the stale pass-1
+queue status. PR-107/PR-108 closure and final acceptance come from that independent
+report, not from this status correction. Historical entries below are retained.
 
 This queue is the current execution record; the older plan inventory/gates below
 are planning history, not proof that coding or final review is complete. `Needs
@@ -127,19 +131,19 @@ No application code, tests, tracker state or prior review verdict was changed.
 
 | ID | Layer / owner | Scope | Implementation dependency | Target size | Jira |
 |---|---|---|---|---|---|
-| [A](./SP-105A-password-reset-backend-issuance.md) | Backend, assignee TBD | Model + token issuance + account cooldown | SP-102/103 | One focused session | Pending creation |
-| [E](./SP-105E-auth-session-coordination.md) | Backend, assignee TBD | Shared login/refresh/logout coordination | SP-102 | One focused session | Pending creation |
-| [B](./SP-105B-password-reset-backend-redemption.md) | Backend, assignee TBD | Atomic redemption + response-cookie expiry | A, E | One focused session | Pending creation |
-| [F](./SP-105F-password-reset-ip-limits.md) | Backend, assignee TBD | Shared per-IP limits, both recovery endpoints | A/B contracts; can start against contract | One focused session | Pending creation |
-| [C](./SP-105C-password-reset-frontend-ui.md) | Frontend, assignee TBD | Recovery forms + retry presentation; consumes G | G plus A/B/F contracts; finishes after endpoints/limiter | One 2–4 hour session; existing form patterns reused | Pending creation |
-| [D](./SP-105D-password-reset-integration.md) | Integration, assignee TBD | Execute suites + manual browser/SMTP sign-off, DoD 10 | A, B, C, E, F, G, H, I, J | One 2–4 hour sign-off after prerequisite suites pass | Pending creation |
+| [A](../../../jira-sync/tombstones.md#story-sp-105a) | Backend, assignee TBD | Model + token issuance + account cooldown | SP-102/103 | One focused session | STUDY-22 |
+| [E](../../../jira-sync/tombstones.md#story-sp-105e) | Backend, assignee TBD | Shared login/refresh/logout coordination | SP-102 | One focused session | STUDY-23 |
+| [B](./SP-105B-password-reset-backend-redemption.md) | Backend, assignee TBD | Atomic redemption + response-cookie expiry | A, E | One focused session | STUDY-24 |
+| [F](./SP-105F-password-reset-ip-limits.md) | Backend, assignee TBD | Shared per-IP limits, both recovery endpoints | A/B contracts; can start against contract | One focused session | STUDY-25 |
+| [C](../../../jira-sync/tombstones.md#story-sp-105c) | Frontend, assignee TBD | Recovery forms + retry presentation; consumes G | G plus A/B/F contracts; finishes after endpoints/limiter | One 2–4 hour session; existing form patterns reused | STUDY-26 |
+| [D](../../../jira-sync/tombstones.md#story-sp-105d) | Integration, assignee TBD | Execute suites + manual browser/SMTP sign-off, DoD 10 | A, B, C, E, F, G, H, I, J | One 2–4 hour sign-off after prerequisite suites pass | STUDY-27 |
 
-| [G](./SP-105G-recovery-session-client.md) | Frontend, assignee TBD | Shared recovery session boundary and sanitization | SP-102; A/B/F contracts; prerequisite to C | One 2–4 hour session | Pending creation |
-| [H](./SP-105H-postgres-test-harness.md) | Integration infrastructure, assignee TBD | Real-DB connections, fixtures, deterministic barriers | SP-102; A/F migrations for suite execution | One 1–3 hour session | Pending creation |
-| [I](./SP-105I-credential-race-tests.md) | Integration tests, assignee TBD | Credential race/expiry/rollback suite | A, B, E, H | One 2–4 hour session | Pending creation |
-| [J](./SP-105J-limiter-integration-tests.md) | Integration tests, assignee TBD | Shared-limiter race/failure suite | F, H; A/B HTTP checks | One 1–3 hour session | Pending creation |
+| [G](../../../jira-sync/tombstones.md#story-sp-105g) | Frontend, assignee TBD | Shared recovery session boundary and sanitization | SP-102; A/B/F contracts; prerequisite to C | One 2–4 hour session | STUDY-28 |
+| [H](../../../jira-sync/tombstones.md#story-sp-105h) | Integration infrastructure, assignee TBD | Real-DB connections, fixtures, deterministic barriers | SP-102; A/F migrations for suite execution | One 1–3 hour session | STUDY-29 |
+| [I](../../../jira-sync/tombstones.md#story-sp-105i) | Integration tests, assignee TBD | Credential race/expiry/rollback suite | A, B, E, H | One 2–4 hour session | STUDY-30 |
+| [J](../../../jira-sync/tombstones.md#story-sp-105j) | Integration tests, assignee TBD | Shared-limiter race/failure suite | F, H; A/B HTTP checks | One 1–3 hour session | STUDY-31 |
 
-Existing A–D IDs and layer boundaries are preserved. E separates session coordination from redemption; F retains original per-IP scope as requested. A/E can start independently; G/F can start against the shared contract; C consumes G but cannot certify integrated behavior until counterparts land. No new Jira mutation was requested or performed.
+Existing A–D IDs and layer boundaries are preserved. E separates session coordination from redemption; F retains original per-IP scope as requested. A/E can start independently; G/F can start against the shared contract; C consumes G but cannot certify integrated behavior until counterparts land. No new Jira mutation was requested or performed in that correction pass. *(Superseded 2026-10-17: the authorized bootstrap sync verified child keys STUDY-22–STUDY-31 and their managed labels.)*
 
 ## Shared contract and decisions
 
@@ -148,7 +152,7 @@ The single [shared API/session contract](./SP-105-password-reset.md#shared-api-c
 | ID | Decision and provenance |
 |---|---|
 | D6/D7/D9–D11 | Existing EP01 baseline: unverified accounts may recover; fragment links; separate 60s account issuance cooldown; registration password policy; routes work signed in/out. No new approval is fabricated. |
-| SD1/SD2 | Preserve parent + A–D; add separately tracked E/F. Existing STUDY-7 stays parent; child keys remain Pending creation. Documentation structure only; no Jira sync implied. |
+| SD1/SD2 | Preserve parent + A–D; add separately tracked E/F. Existing STUDY-7 stays parent; child keys remain Pending creation. Documentation structure only; no Jira sync implied. *(Superseded 2026-10-17: the authorized sync verified keys STUDY-22–STUDY-31; parent STUDY-7 retained.)* |
 | SD3/SD4 | 43-character base64url raw token, server SHA-256 hex at rest, one-hour TTL. |
 | SD5/SD6 | Owner-first locking before token writes, fresh post-wait expiry, retire outstanding tokens and revoke all refresh families in one transaction; E coordinates session issuance/rotation. Proposed mechanism, not a proven test result. |
 | SD7 | **Approved 2026-10-14 conversation:** user replied “your suggestion” to the explicit choice to retain existing JWT expiry (default ~15 minutes) while fixing session races. No immediate JWT invalidation promise. |
@@ -203,7 +207,7 @@ The 2026-10-14 refinement of SP-105 (in the working tree) was re-checked against
 - **Original claim:** *"All 7 original acceptance criteria from SP-105 are mapped to concrete technical sections … Status: Plan ready for implementation."* — one combined backend+frontend story with requirements mapped to its own sections.
 - **Consequence:** violates the required breakdown structure — separate backend/frontend children each with their own tracker issue, and requirement/test mapping to **child IDs**, not sections of one combined file. A single combined ticket cannot be implemented/reviewed independently by the backend and frontend agents, and cross-layer integration has no owner.
 - **Correction:** split into parent + A/B/C/D; created this breakdown README with the per-AC / per-test / per-DoD → child maps; corrected the EP01 README.
-- **Verification:** every original AC, all 4 test requirements, and every DoD item is assigned to a named child above; each child has a distinct tracker key (or "Pending creation"); the EP01 README no longer maps requirements to one combined story.
+- **Verification:** every original AC, all 4 test requirements, and every DoD item is assigned to a named child above; each child has a distinct tracker key (all ten verified as STUDY-22–STUDY-31 on 2026-10-17); the EP01 README no longer maps requirements to one combined story.
 - **Status:** Fixed in plan.
 
 ### CF-2 — DoD 10 unowned (Major)
@@ -377,6 +381,6 @@ findings, closed per the pass-2 report.
 | Dependency mapping and sequencing | Pass | Inventory and parent identify G→C, H→I/J→D; upstream completion blocks execution only. |
 | Upstream implementation readiness | Blocked / not independently complete | SP-103 latest `docs/artifacts/STUDY-12/review.md` still cannot verify integrated DoD 1/7/10. Recheck new evidence before execution sign-off; source implementation alone is not approval. |
 | Independent plan review | Pass | [Reviewer pass 2](./plan-review.md) returns Plan Ready and independently resolves PR-001/002; no new blocking planning findings. |
-| Jira sync | Not applicable to this request | No sync authorized/performed; child keys remain Pending creation, parent STUDY-7 retained. |
+| Jira sync | Not applicable to this request | No sync authorized/performed at that time; child keys are now **STUDY-22–STUDY-31** (verified 2026-10-17), parent STUDY-7 retained. Nested linkage stays blocked by Jira's Task/Epic constraint. |
 
 **Outcome:** **Plan Ready**, independently verified by reviewer pass 2; **Implementation Blocked** pending SP-103 integrated evidence; no material user decision remains open in this correction pass. Application implementation and integrated tests are future work. A/D's database-timing measurement is a security sign-off obligation, not a constant-time result. No application source, migration, test or tracker was modified. Scoped commits require parent Git escalation: sandbox rejected index.lock; no commit by planner. Unrelated instruction changes remain untouched.

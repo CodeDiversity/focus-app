@@ -9,7 +9,7 @@
 **Priority:** High / P0
 **Status:** Implemented — awaiting parent review (see execution state above)
 **Historical planning status:** Draft — corrected mechanism; awaiting independent re-review
-**Dependencies:** SP-105A (reset persistence), [SP-105E](./SP-105E-auth-session-coordination.md) (shared owner-first session locking)
+**Dependencies:** SP-105A (reset persistence), [SP-105E](../../../jira-sync/tombstones.md#story-sp-105e) (shared owner-first session locking)
 **Jira key:** STUDY-23
 **Refined:** 2026-10-14
 
@@ -60,4 +60,4 @@ Current evidence: `auth.controller.ts` already defines `clearRefreshCookie`; `au
 
 ## Definition of Done
 
-[Shared DoD](../../../epics/README.md): 1, 2, 4, 8, 9 apply; 3 N/A because no academic data is accessed (credential-owner isolation still required); 5–7 N/A for backend. Item 10 is required and performed in D. Document API, cookie behavior and concurrency in the eventual child issue's implementation artifact; keep Jira `Pending creation` until created. Independent plan re-review remains pending.
+[Shared DoD](../../../epics/README.md): 1, 2, 4, 8, 9 apply; 3 N/A because no academic data is accessed (credential-owner isolation still required); 5–7 N/A for backend. Item 10 is required and performed in D. Document API, cookie behavior and concurrency in the eventual child issue's implementation artifact; keep Jira `Pending creation` until created (done 2026-10-17: this child is STUDY-23, verified). Independent plan re-review remains pending.

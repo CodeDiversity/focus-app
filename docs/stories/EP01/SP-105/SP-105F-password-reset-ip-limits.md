@@ -81,4 +81,4 @@ Test files (grounded): `recovery-rate-limit.store.spec.ts` and `recovery-rate-li
 - A process-local (in-memory) limiter fallback or a second store — AC2 requires the shared PostgreSQL store; storage failure fails closed, it never disables limits.
 - Rate limiting on endpoints other than the two recovery routes; login throttling remains SP-102 Q8's existing decision.
 - Automatic retries, backoff clients, or frontend presentation (G/C), and all integrated/browser/SMTP evidence (D).
-- Tracker mutation: the Jira child key remains Pending creation; no sync is implied by refinement.
+- Tracker mutation: the Jira child key remains Pending creation; no sync is implied by refinement. *(Updated 2026-10-17: this child is STUDY-27, created and verified by the authorized bootstrap sync.)*

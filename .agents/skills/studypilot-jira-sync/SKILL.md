@@ -125,9 +125,15 @@ Prune requires all gates, recorded per item:
 2. Completed implementation/integration evidence and a passing independent final
    review for the whole review unit, with no unresolved required work. Child
    self-checks and interim reviews cannot replace the parent gate.
-3. Exact current full specification verified in Jira, including AC/TR and relevant
-   contracts, no pending/conflicted fields, and configured terminal completed Jira
-   status. Do not transition Jira merely to qualify for pruning.
+3. Verify the mapped Jira issue exists in its configured terminal completed
+   state. Preserve the exact complete specification either in Jira or in Git:
+   the user-approved 2026-10-17 Git-history policy allows curated Jira summaries
+   without mirroring AC/TR. For Git preservation, verify the committed blob equals
+   the current file byte-for-byte and record its full commit, path and SHA-256
+   plus recovery command/link in the ledger and tombstone index. Retain unresolved
+   sync issues in the ledger; identity/content conflicts or ambiguous pending
+   writes block pruning, while known hierarchy-only limitations do not. Never
+   transition Jira merely to qualify for pruning.
 4. Persist tombstone first: ID, key/URL, former path, full local content hash,
    content commit, review/implementation paths, verified remote hash and timestamp.
    Preserve parent README, contracts, traceability and all artifacts. Unique shared
@@ -145,8 +151,10 @@ a tombstone is a conflict, never deletion permission. Terminal tombstoned storie
 are excluded from imports; remote content changes are flagged without resurrecting
 them or erasing their historical baseline. A nonterminal status signals reopening:
 flag it and, on authorized pull/sync, restore a draft at the former unoccupied path.
-Occupied paths block restoration. Retain tombstone history, mark reopened, and hand
-off to planner. Never restore Reviewed or reactivate implementation automatically.
+Under Git-history preservation, recover and hash-verify the recorded full Git blob,
+then reconcile Jira changes; never replace the full specification with its curated
+Jira summary. Missing recovery content blocks restoration. Occupied paths block
+restoration. Retain tombstone history, mark reopened, and hand off to planner. Never restore Reviewed or reactivate implementation automatically.
 
 ## Report
 

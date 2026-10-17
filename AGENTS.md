@@ -1,7 +1,8 @@
 # StudyPilot repo agents
 
 Use the requested custom role in `.codex/agents/` when supported; `.vibe/agents/`
-provides the same roles for Vibe. Otherwise read its definition and shared skill.
+provides the same roles for Vibe, and `.opencode/agents/` for OpenCode.
+Otherwise read its definition and shared skill.
 Role availability does not require delegation.
 
 | Role | Shared skill | Write boundary |

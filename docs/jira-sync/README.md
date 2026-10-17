@@ -3,8 +3,15 @@
 Use the `jira-sync` agent for on-demand reconciliation. Its shared instructions
 live in [the sync skill](../../.agents/skills/studypilot-jira-sync/SKILL.md).
 This directory records what actually synchronized; parent README queues remain
-authoritative for implementation state. The initial empty ledger is intentional:
-no Jira connection, mapping, content transfer or cleanup has been performed.
+authoritative for implementation state. The ledger was bootstrapped on
+2026-10-17 — verified scope, field map, status map, 52 story records and the first
+operation history — replacing the intentional empty skeleton. That run created no
+issue deletions, no Git push, no status transition and no specification prune.
+
+The role is defined for Codex, Vibe and OpenCode. In OpenCode, select `jira-sync`
+as the active agent or mention `@jira-sync`; its definition is
+[.opencode/agents/jira-sync.md](../../.opencode/agents/jira-sync.md).
+All three use the same shared skill and repo ledger.
 
 ## Requests
 
@@ -20,6 +27,25 @@ These invoke agent behavior, not installed CLI commands. No background schedulin
 is configured. First use verifies project scope and connector availability.
 Preview and status are read-only. Push/pull/sync do not remove specifications;
 explicit prune does. An existing authorization remains valid within its scope.
+
+## Completed-specification preservation
+
+User-approved policy, 2026-10-17: a completed specification may be removed using
+**Git history plus ledger recovery links**. Jira can retain its curated summary;
+the full specification need not be copied into its description. Before removal,
+verify that a full committed Git blob exactly matches the clean local file,
+record its commit/path/SHA-256 and recovery command in the ledger, and add a
+durable entry in [tombstones.md](./tombstones.md). Jira must still be verified Done
+and the independent final review must pass. Dirty files and unresolved required
+work remain in place. Known hierarchy-only Jira limitations remain recorded and
+do not block local removal; identity/content conflicts and uncertain writes do.
+
+On reopening, recover and hash-verify the full recorded Git blob before marking
+the restored specification as a draft and reconciling remote changes. A curated
+Jira summary cannot substitute for the complete recovered requirements. Parent
+READMEs, shared contracts, traceability and evidence remain in the repo. Historical
+references inside immutable evidence may name removed paths; use the tombstone's
+Git recovery command to inspect those original specifications.
 
 ## Ledger format (version 1)
 
@@ -38,6 +64,8 @@ Null means unknown/uninitialized, not verified empty or successful.
 | `lastFullReconcileAt` | UTC time of last fully discovered and accounted-for full inventory. |
 | `stories` | Stable local ID → record below; tombstones are retained permanently. |
 | `operations` | Append-only operation records, including interrupted/failed work. |
+| `runs` | Append-only run log: `runId`, mode, authorization, counts, and what was executed versus left blocked. Informational summary; `operations` remains authoritative. |
+| `fingerprintAlgorithms` | Which digest produced which stored hash, and why they differ (see below). |
 
 Each `stories[id]` record contains:
 
@@ -46,11 +74,31 @@ Each `stories[id]` record contains:
 | `jira` | Verified `key`, `url`, `updatedAt`, `statusId`; nullable until creation verified. |
 | `localPath`, `epicId`, `parentId` | Actual path and hierarchy; unknown mappings stay null. |
 | `lifecycle` | `active`, `prune-pending`, `pruned` or `reopened`; separate from delivery status. |
-| `baseline` | Per mapped field: `{value, sha256, verifiedAt}` for the last verified common value. Store normalized managed content only. |
+| `baseline` | Per mapped field: `{value, sha256, verifiedAt}` for the last verified common value. Store normalized managed content only. Description baselines also record `valueModel: curated-summary+pointer` and are set only where a sync actually wrote the description. |
 | `observed` | Last local/remote hashes, remote update time, observation time; not a success claim. |
 | `conflicts` | Per field: baseline/local/remote values, hashes, detection time and resolution if explicitly chosen. |
 | `blockers` | Reasons and required next action, including unavailable permissions or uncertain creation. |
 | `tombstones` | Append-only historical removal records with the fields below. |
+
+Field ownership in `fieldMap` uses a fixed vocabulary: `shared` (reconciled both
+ways), `repo-evidence` (the repository decides; Jira status follows `statusMap`),
+`jira` (never written by this agent: assignee, sprint, comments, worklogs, rank)
+and `jira-curated` (Jira keeps its own transportable text and is deliberately not
+a mirror). `description` is `jira-curated`: an ID-only stub is filled with the
+local title, the specification's own first summary sentence and a
+`Source of truth: <repo path>` pointer, while human-written prose is preserved
+verbatim — so description divergence is expected and is **not** recorded as a
+conflict. Requirement text, acceptance criteria and traceability stay repo-owned.
+`statusMap` holds the verified status IDs, the transition IDs allowed per status
+and the proposed evidence-to-status mapping; a mapping being present never
+authorizes a transition, and unmapped statuses never transition.
+
+`observed.remoteDescFingerprint` and `observed.localBodyFingerprint` are 16-hex
+FNV-1a plus weighted-sum fingerprints over the normalized word sequence, not
+SHA-256: the Code Mode sandbox exposes neither `crypto.subtle` nor `BigInt`. They
+are change detectors only and are explicitly **not** prune-grade proof. Local file
+bytes are hashed with real SHA-256 outside the sandbox, and every
+`baseline.*.sha256` follows the canonical rule below.
 
 Tombstones contain `formerPath`, `localContentSha256`, `contentCommit`,
 `jiraKey`, `jiraUrl`, `remoteSpecSha256`, `verifiedAt`, `removedAt`,
@@ -59,6 +107,10 @@ working-tree scope), and `navigationAnchor`. `removedAt` stays null until actual
 removal. The content commit must resolve to the exact recoverable specification
 blob, not merely an ancestor containing a previous revision. Retain old tombstones
 across reopen/prune cycles. Fingerprints alone are not a recoverable specification.
+Git-preserved tombstones also record `preservation: git-history`, `recoveryCommand`,
+`recoveryUrl`, the remote content model, and the final review hash. Recovery URLs
+require the referenced commit on the remote; the local Git command works without
+pushing. The ledger's `prunePolicy` records authorization; it is not review evidence.
 
 Before deletion, create a stable Markdown entry in [tombstones.md](./tombstones.md)
 with anchor `story-<lowercase-stable-id>`, Jira link, former path, content commit

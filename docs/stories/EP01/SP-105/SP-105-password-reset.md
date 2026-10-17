@@ -11,21 +11,21 @@
 
 ## Purpose and children
 
-Coordination record, not a combined implementation ticket. The [breakdown README](./README.md) preserves source requirements, decisions, original findings and readiness evidence. Each child has its own pending tracker identity; no issue creation/sync is claimed.
+Coordination record, not a combined implementation ticket. The [breakdown README](./README.md) preserves source requirements, decisions, original findings and readiness evidence. Each child has its own tracker identity — keys **STUDY-22–STUDY-31**, verified 2026-10-17 (STUDY-22=A, 23=B, 24=C, 25=D, 26=E, 27=F, 28=G, 29=H, 30=I, 31=J).
 
 | Child | Layer / coherent outcome | Dependencies | Jira |
 |---|---|---|---|
-| [SP-105A](./SP-105A-password-reset-backend-issuance.md) | Backend — reset persistence and email issuance | SP-102, SP-103 | Pending creation |
-| [SP-105E](./SP-105E-auth-session-coordination.md) | Backend — coordinate login/refresh/logout with owner-first locking | SP-102 | Pending creation |
-| [SP-105B](./SP-105B-password-reset-backend-redemption.md) | Backend — atomic reset redemption and server cookie expiry | A, E | Pending creation |
-| [SP-105F](./SP-105F-password-reset-ip-limits.md) | Backend — shared per-IP limits for both recovery endpoints | A/B contracts; starts against contract | Pending creation |
-| [SP-105C](./SP-105C-password-reset-frontend-ui.md) | Frontend — recovery screens consuming G session boundary | G + A/B/F contracts; finishes after endpoints/limiter | Pending creation |
-| [SP-105D](./SP-105D-password-reset-integration.md) | Integration — database/browser/SMTP verification and DoD 10 | A, B, C, E, F, G, H, I, J completed | Pending creation |
+| [SP-105A](../../../jira-sync/tombstones.md#story-sp-105a) | Backend — reset persistence and email issuance | SP-102, SP-103 | STUDY-22 |
+| [SP-105E](../../../jira-sync/tombstones.md#story-sp-105e) | Backend — coordinate login/refresh/logout with owner-first locking | SP-102 | STUDY-23 |
+| [SP-105B](./SP-105B-password-reset-backend-redemption.md) | Backend — atomic reset redemption and server cookie expiry | A, E | STUDY-24 |
+| [SP-105F](./SP-105F-password-reset-ip-limits.md) | Backend — shared per-IP limits for both recovery endpoints | A/B contracts; starts against contract | STUDY-25 |
+| [SP-105C](../../../jira-sync/tombstones.md#story-sp-105c) | Frontend — recovery screens consuming G session boundary | G + A/B/F contracts; finishes after endpoints/limiter | STUDY-26 |
+| [SP-105D](../../../jira-sync/tombstones.md#story-sp-105d) | Integration — database/browser/SMTP verification and DoD 10 | A, B, C, E, F, G, H, I, J completed | STUDY-27 |
 
-| [SP-105G](./SP-105G-recovery-session-client.md) | Frontend — shared recovery session boundary | SP-102; A/B/F contracts | Pending creation |
-| [SP-105H](./SP-105H-postgres-test-harness.md) | Integration infrastructure — Postgres fixtures/barriers | SP-102; A/F migrations | Pending creation |
-| [SP-105I](./SP-105I-credential-race-tests.md) | Integration tests — credential race suite | A, B, E, H | Pending creation |
-| [SP-105J](./SP-105J-limiter-integration-tests.md) | Integration tests — limiter race suite | F, H; A/B HTTP | Pending creation |
+| [SP-105G](../../../jira-sync/tombstones.md#story-sp-105g) | Frontend — shared recovery session boundary | SP-102; A/B/F contracts | STUDY-28 |
+| [SP-105H](../../../jira-sync/tombstones.md#story-sp-105h) | Integration infrastructure — Postgres fixtures/barriers | SP-102; A/F migrations | STUDY-29 |
+| [SP-105I](../../../jira-sync/tombstones.md#story-sp-105i) | Integration tests — credential race suite | A, B, E, H | STUDY-30 |
+| [SP-105J](../../../jira-sync/tombstones.md#story-sp-105j) | Integration tests — limiter race suite | F, H; A/B HTTP | STUDY-31 |
 
 Each targets one focused working session; validate estimates at refinement and split further if needed. E and A can start independently. F/G can start against settled contracts, but the complete feature cannot release before A/B/C/E/F/G/H/I/J and D's verification. SP-103's latest `docs/artifacts/STUDY-12/review.md` still lacks integrated DoD evidence; inspect new evidence before treating that upstream dependency as verified complete.
 

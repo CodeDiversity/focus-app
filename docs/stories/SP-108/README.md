@@ -4,7 +4,7 @@
 [docs/epics/README.md](../../epics/README.md#release-milestones), cross-cutting
 technical tasks are tracked as technical stories linked to the appropriate
 milestone — this one is **M1**.
-**Jira:** Pending creation (no sync authorized/performed).
+**Jira:** STUDY-36 (parent); children A–G are **STUDY-37–STUDY-43** — verified 2026-10-17.
 **Status:** Planned 2026-10-16; all children (A–D) implemented 2026-10-16;
 combined parent review 2026-10-17 verdict **FAIL** (IR-001 blocker +
 IR-002/IR-003 should-fix); fix pass SP-108E → SP-108F → SP-108G implemented
@@ -59,13 +59,13 @@ file was changed by this scope (verified from the fix-pass commit scope and
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-108A-store-foundation.md) | Reviewed (passes 2 and 3, 2026-10-17) | None — TanStack Query and AuthContext remain fully operational during this slice | None — A4 restored and pinned by SP-108E (IR-001 closed, re-verified executed-green in pass 3); record added by SP-108G (IR-003 closed) | `./artifacts/SP-108A/implementation.md` (+ `checkpoint.md`) |
-| [B](./SP-108B-auth-state-slice.md) | Reviewed (passes 2 and 3, 2026-10-17) | A (store + typed hooks exist) | None — B4 negative tests added by SP-108F (IR-002 closed, re-verified executed-green in pass 3); IR-004/IR-009 polish open | `./artifacts/SP-108B/implementation.md` (+ checkpoints cp1, cp2) |
-| [C](./SP-108C-rtk-query-data-layer.md) | Reviewed (passes 2 and 3, 2026-10-17) | A (store) landed; independent of B's scope | None — all C criteria PASS; TanStack zero-match grep and full suite executed in pass 3 | `./artifacts/SP-108C/` (checkpoint, implementation) |
+| [A](../../jira-sync/tombstones.md#story-sp-108a) | Reviewed (passes 2 and 3, 2026-10-17) | None — TanStack Query and AuthContext remain fully operational during this slice | None — A4 restored and pinned by SP-108E (IR-001 closed, re-verified executed-green in pass 3); record added by SP-108G (IR-003 closed) | `./artifacts/SP-108A/implementation.md` (+ `checkpoint.md`) |
+| [B](../../jira-sync/tombstones.md#story-sp-108b) | Reviewed (passes 2 and 3, 2026-10-17) | A (store + typed hooks exist) | None — B4 negative tests added by SP-108F (IR-002 closed, re-verified executed-green in pass 3); IR-004/IR-009 polish open | `./artifacts/SP-108B/implementation.md` (+ checkpoints cp1, cp2) |
+| [C](../../jira-sync/tombstones.md#story-sp-108c) | Reviewed (passes 2 and 3, 2026-10-17) | A (store) landed; independent of B's scope | None — all C criteria PASS; TanStack zero-match grep and full suite executed in pass 3 | `./artifacts/SP-108C/` (checkpoint, implementation) |
 | [D](./SP-108D-tanstack-removal-verification.md) | Reviewed (passes 2 and 3, 2026-10-17) | B, C implemented — met; refined 2026-10-16 | None — D4 partial on the Git-scope/index gap only (IR-005, IR-010 polish); `build`/frozen-lockfile remain CANNOT VERIFY | `./artifacts/SP-108D/` (checkpoint, implementation); parent index `./artifacts/SP-108/implementation.md` |
-| [E](./SP-108E-boot-loading-gate-fix.md) | Reviewed (passes 2 and 3, 2026-10-17) | None (fixes landed SP-108A/B code) — met | None — IR-001 closed: slice boots `isLoading: true`, 4 real-guard regression tests executed green (`store/authSlice.ts:19`, `context/ProtectedRoute.test.tsx`) | `./artifacts/SP-108E/` (checkpoint, implementation) |
-| [F](./SP-108F-thunk-phase-tests.md) | Reviewed (passes 2 and 3, 2026-10-17) | E (both edit `authSlice.test.ts`; one writer) — met | None — IR-002 closed: 8 thunk/adapter error+loading tests through the real paths, executed green; IR-012 polish open | `./artifacts/SP-108F/` (checkpoint, implementation) |
-| [G](./SP-108G-store-implementation-record.md) | Reviewed (passes 2 and 3, 2026-10-17) | None — met | None — IR-003 closed: SP-108A record verified faithful to `checkpoint.md`, parent index row for A repointed; the index still lacks a G row (IR-010 polish) | record itself (`./artifacts/SP-108G/implementation.md`, checkpoint) |
+| [E](../../jira-sync/tombstones.md#story-sp-108e) | Reviewed (passes 2 and 3, 2026-10-17) | None (fixes landed SP-108A/B code) — met | None — IR-001 closed: slice boots `isLoading: true`, 4 real-guard regression tests executed green (`store/authSlice.ts:19`, `context/ProtectedRoute.test.tsx`) | `./artifacts/SP-108E/` (checkpoint, implementation) |
+| [F](../../jira-sync/tombstones.md#story-sp-108f) | Reviewed (passes 2 and 3, 2026-10-17) | E (both edit `authSlice.test.ts`; one writer) — met | None — IR-002 closed: 8 thunk/adapter error+loading tests through the real paths, executed green; IR-012 polish open | `./artifacts/SP-108F/` (checkpoint, implementation) |
+| [G](../../jira-sync/tombstones.md#story-sp-108g) | Reviewed (passes 2 and 3, 2026-10-17) | None — met | None — IR-003 closed: SP-108A record verified faithful to `checkpoint.md`, parent index row for A repointed; the index still lacks a G row (IR-010 polish) | record itself (`./artifacts/SP-108G/implementation.md`, checkpoint) |
 
 The queue is the current execution record. SP-108A–D were implemented
 2026-10-16 and reviewed together 2026-10-17; the review returned FAIL, so the
@@ -80,13 +80,13 @@ preserved in Git history.
 
 | ID | Layer / owner | Scope | Dependency | Target size | Jira |
 |---|---|---|---|---|---|
-| [A](./SP-108A-store-foundation.md) | Frontend, `implementer` | Install RTK, store, typed hooks, `Provider` wiring | None | One 30–90 min session | Pending creation |
-| [B](./SP-108B-auth-state-slice.md) | Frontend, `implementer` | Auth/session state into an RTK `authSlice`; `AuthProvider` becomes a store-backed adapter | A | Cohesive ~2–3h multi-window, 3 checkpoints | Pending creation |
-| [C](./SP-108C-rtk-query-data-layer.md) | Frontend, `implementer` | RTK Query service (axios baseQuery) replaces every TanStack Query usage | A | Cohesive ~2–3h multi-window, 3 checkpoints | Pending creation |
-| [D](./SP-108D-tanstack-removal-verification.md) | Frontend/Integration, `implementer` | Remove TanStack deps, repo-doc flip, full verification | B, C | One 30–60 min session | Pending creation |
-| [E](./SP-108E-boot-loading-gate-fix.md) | Frontend, `implementer` | Review fix IR-001: restore `isLoading: true` boot gate + real-guard regression tests | None | One 30–60 min session | Pending creation |
-| [F](./SP-108F-thunk-phase-tests.md) | Frontend, `implementer` | Review fix IR-002: thunk/adapter error+loading negative tests | E | One 30–60 min session | Pending creation |
-| [G](./SP-108G-store-implementation-record.md) | Docs/artifacts, `implementer` | Review fix IR-003: SP-108A implementation record + parent-index repoint | None | One ~20–30 min docs slice (under the code-slice floor, reconstruction-only — rationale in the ticket) | Pending creation |
+| [A](../../jira-sync/tombstones.md#story-sp-108a) | Frontend, `implementer` | Install RTK, store, typed hooks, `Provider` wiring | None | One 30–90 min session | STUDY-37 |
+| [B](../../jira-sync/tombstones.md#story-sp-108b) | Frontend, `implementer` | Auth/session state into an RTK `authSlice`; `AuthProvider` becomes a store-backed adapter | A | Cohesive ~2–3h multi-window, 3 checkpoints | STUDY-38 |
+| [C](../../jira-sync/tombstones.md#story-sp-108c) | Frontend, `implementer` | RTK Query service (axios baseQuery) replaces every TanStack Query usage | A | Cohesive ~2–3h multi-window, 3 checkpoints | STUDY-39 |
+| [D](./SP-108D-tanstack-removal-verification.md) | Frontend/Integration, `implementer` | Remove TanStack deps, repo-doc flip, full verification | B, C | One 30–60 min session | STUDY-40 |
+| [E](../../jira-sync/tombstones.md#story-sp-108e) | Frontend, `implementer` | Review fix IR-001: restore `isLoading: true` boot gate + real-guard regression tests | None | One 30–60 min session | STUDY-41 |
+| [F](../../jira-sync/tombstones.md#story-sp-108f) | Frontend, `implementer` | Review fix IR-002: thunk/adapter error+loading negative tests | E | One 30–60 min session | STUDY-42 |
+| [G](../../jira-sync/tombstones.md#story-sp-108g) | Docs/artifacts, `implementer` | Review fix IR-003: SP-108A implementation record + parent-index repoint | None | One ~20–30 min docs slice (under the code-slice floor, reconstruction-only — rationale in the ticket) | STUDY-43 |
 
 Sequence: A → B → C → D, then the review fix pass **E → F → G** (F after E
 because both edit `authSlice.test.ts`; G is independent and placed last).
@@ -99,9 +99,9 @@ No parallel implementation.
 |---|---|---|
 | RD1 | **Redux Toolkit is the client-state library** (chosen over Zustand and over the status quo). Includes migrating **all** existing client state into RTK. | User, 2026-10-16: “Migrate everything to RTK and replace architecture decision”. |
 | RD2 | **RTK Query fully replaces TanStack Query** for data fetching/mutations; the documented TanStack architecture decision is reversed. | User, 2026-10-16: “Full replace with RTK Query”. |
-| RD3 | Auth/session state moves into an RTK `authSlice`; the [SP-105G](../../stories/EP01/SP-105/SP-105G-recovery-session-client.md) session-generation/barrier semantics are preserved **exactly**. `AuthProvider` is re-implemented as a store-backed adapter with the same public `AuthContextType` interface, so the 9 `useAuth` consumers and their tests are untouched in B. Removing the adapter later is optional, separately tracked future work — it is not silently dropped, just deferred by design. | Planner, grounded in `AuthContext.tsx` inspection; part of RD1's “everything”. |
+| RD3 | Auth/session state moves into an RTK `authSlice`; the [SP-105G](../../jira-sync/tombstones.md#story-sp-105g) session-generation/barrier semantics are preserved **exactly**. `AuthProvider` is re-implemented as a store-backed adapter with the same public `AuthContextType` interface, so the 9 `useAuth` consumers and their tests are untouched in B. Removing the adapter later is optional, separately tracked future work — it is not silently dropped, just deferred by design. | Planner, grounded in `AuthContext.tsx` inspection; part of RD1's “everything”. |
 | RD4 | **Provisional:** RTK Query uses a **custom axios `baseQuery` delegating to the existing `services/api.ts` instance**, so the single-flight refresh, recovery barrier, session generations and `AUTH_PATHS` handling keep working unchanged. A `fetchBaseQuery` rewrite would discard that SP-105G machinery. Verification task: all `api.test.ts`/`AuthContext.test.tsx`/`recovery.test.ts` generation regression cases must stay green after C. | Planner 2026-10-16, grounded in `api.ts`/`recovery.ts` inspection. |
-| RD5 | Story home is a standalone folder `docs/stories/SP-108/` (cross-cutting technical task; not an EP01 capability), milestone **M1**; Jira key Pending creation; **no Jira sync authorized or performed**. | Planner 2026-10-16, per the epics README technical-tasks note. |
+| RD5 | Story home is a standalone folder `docs/stories/SP-108/` (cross-cutting technical task; not an EP01 capability), milestone **M1**; Jira key Pending creation at planning time; **no Jira sync authorized or performed** then. *(Superseded 2026-10-17: parent verified as STUDY-36, children STUDY-37–STUDY-43.)* | Planner 2026-10-16, per the epics README technical-tasks note. |
 | RD6 | The repo still documents TanStack: root `README.md` “State Management” line and `.agents/skills/studypilot-frontend/SKILL.md`. The planner may only write `docs/`; **SP-108D owns the root README line**; the skill text update is flagged to the user/coordinator (out of planner write scope). | Planner 2026-10-16, write-scope rule. |
 
 ## Source requirements and test traceability
@@ -170,7 +170,7 @@ verified closures from pass 2, with the polish items explicitly left open.
 - **Consequence:** user-visible regression with green tests — the exact class
   of silent regression DoD 8 exists to catch.
 - **Correction:** fix planned as
-  [SP-108E](./SP-108E-boot-loading-gate-fix.md) (initial `isLoading: true`,
+  [SP-108E](../../jira-sync/tombstones.md#story-sp-108e) (initial `isLoading: true`,
   real-guard regression tests, slice-default case updated; the README
   quality-gate row corrected today to stop asserting something untrue).
 - **Verification:** reviewer-only — re-run of the combined review after
@@ -201,7 +201,7 @@ verified closures from pass 2, with the polish items explicitly left open.
   register/logout callbacks can break user-facing error handling with a green
   suite.
 - **Correction:** fix planned as
-  [SP-108F](./SP-108F-thunk-phase-tests.md) — tests through the real
+  [SP-108F](../../jira-sync/tombstones.md#story-sp-108f) — tests through the real
   production paths (`login`/`updateProfile` thunks; `AuthContext` register/
   logout callbacks), because `registerThunk`/`logoutThunk`
   (`authSlice.thunks.ts:48/:68`) are **dead exports** (review IR-006) and
@@ -235,7 +235,7 @@ verified closures from pass 2, with the polish items explicitly left open.
 - **Consequence:** DoD 9 documentation element unmet for a manifest change and
   the app-wide store; reviewer/AoD evidence path broken for A.
 - **Correction:** fix planned as
-  [SP-108G](./SP-108G-store-implementation-record.md) — reconstruct the
+  [SP-108G](../../jira-sync/tombstones.md#story-sp-108g) — reconstruct the
   record strictly from `checkpoint.md` + git history + the review's verified
   results (no new evidence), and repoint the parent-index row.
 - **Verification:** reviewer-only — combined re-review after E/F/G.
@@ -356,7 +356,7 @@ than accepting pass 2's or the fix records' claims.
 | Frontend-flow risks | **Original Pass is invalid → under correction** | The row asserted "Routing/guards unchanged (RD3 adapter keeps `isAuthenticated`/`isLoading` semantics)" — proven untrue by review IR-001 and planner code inspection 2026-10-17 (boot-restore spinner gate regressed; no real-guard test exists). Under correction by SP-108E; the row is restated to verified behavior after the fix and re-verified by the re-run review. |
 | Dependency mapping and sequencing | Pass | A → B → C → D, then the review fix pass E → F → G (F after E; G independent); C independent of B but sequential for one writer. |
 | Material decisions | Pass | RD1/RD2 cite explicit user answers (2026-10-16); RD4 marked Provisional with a verification task; RD3/RD5/RD6 planner-grounded. |
-| Jira identity/sync | Not applicable | No sync authorized; keys Pending creation; no duplicate keys. |
+| Jira identity/sync | Not applicable | No sync was authorized in that pass; keys are now STUDY-36–STUDY-43 (verified 2026-10-17); no duplicate keys. |
 
 **Outcome:** plan executed — SP-108A–D implemented 2026-10-16; combined review
 pass 1 (2026-10-17) returned **FAIL** (IR-001 blocker; IR-002/IR-003 closed by

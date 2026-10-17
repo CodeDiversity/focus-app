@@ -80,8 +80,9 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
 - **Jira sync:** owns sync identity, baselines, pending operations and tombstones
   in `docs/jira-sync/`. May reconcile scoped specifications/tracker metadata and
   repair navigation under its skill; cannot invent readiness, review or execution
-  state. Explicit prune removes only eligible specifications after verified Jira
-  preservation and the passing final review; retain delivery READMEs, queue rows,
+  state. Explicit prune removes only eligible specifications after verified
+  specification preservation in Jira or recoverable Git history, plus the passing
+  final review; retain delivery READMEs, queue rows,
   traceability, contracts and artifacts. Reopened imports return as drafts to the
   planner, never automatically as active implementation.
 - **Refiner:** reads the queue, writes only the given unimplemented story, and
