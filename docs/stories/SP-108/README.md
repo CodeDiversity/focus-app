@@ -18,11 +18,11 @@ IR-002/IR-003 should-fix) — fix pass planned as SP-108E → SP-108F → SP-108
 **Parent artifacts:** `./artifacts/SP-108/` (created when the parent
 checkpoint/index is written)
 
-**Active substory:** None — no fix pass task started yet
+**Active substory:** SP-108F — implement the IR-002 thunk/adapter error+loading
+negative tests (SP-108E completed 2026-10-17, commit `b3533a8`)
 
-**Next substory:** SP-108E — implement the IR-001 blocker fix (restore the
-boot-session loading gate), then SP-108F, then SP-108G, then re-run the
-combined parent review.
+**Next substory:** SP-108G — write the SP-108A implementation record and repoint
+the parent index (IR-003), then re-run the combined parent review.
 
 **Implementation owner:** `implementer`, sequential across all layers (all
 children are frontend-scope work; single writer).
@@ -42,8 +42,8 @@ report is under `./artifacts/SP-108/review.md` (parent-replaced latest).
 | [B](./SP-108B-auth-state-slice.md) | Implemented — awaiting parent review | A (store + typed hooks exist) | None — but review B4 FAIL (IR-002 tests missing); IR-001 fix spans B's surface (SP-108E) | `./artifacts/SP-108B/` (checkpoints cp1, cp2) |
 | [C](./SP-108C-rtk-query-data-layer.md) | Implemented — awaiting parent review | A (store) landed; independent of B's scope | None — review PASS on all C criteria | `./artifacts/SP-108C/` (checkpoint, implementation) |
 | [D](./SP-108D-tanstack-removal-verification.md) | Implemented — awaiting parent review | B, C implemented — met; refined 2026-10-16 | None — but review D4 partial (IR-005 Git-scope polish, deferred) | `./artifacts/SP-108D/` (checkpoint, implementation); parent index `./artifacts/SP-108/implementation.md` |
-| [E](./SP-108E-boot-loading-gate-fix.md) | Ready | None (fixes landed SP-108A/B code) | Implement — restore `isLoading: true` at boot + real-guard regression tests (IR-001 blocker) | `./artifacts/SP-108E/` |
-| [F](./SP-108F-thunk-phase-tests.md) | Ready | E (both edit `authSlice.test.ts`; one writer) | Implement — thunk/adapter error+loading negative tests (IR-002) | `./artifacts/SP-108F/` |
+| [E](./SP-108E-boot-loading-gate-fix.md) | Implemented — awaiting parent review | None (fixes landed SP-108A/B code) — met | None — implemented 2026-10-17 (`b3533a8`): slice boots `isLoading: true`, 4 real-guard regression tests, suite 16 files / 170 tests green | `./artifacts/SP-108E/` (checkpoint, implementation) |
+| [F](./SP-108F-thunk-phase-tests.md) | In progress | E (both edit `authSlice.test.ts`; one writer) — met | Implement — thunk/adapter error+loading negative tests (IR-002) | `./artifacts/SP-108F/` (checkpoint) |
 | [G](./SP-108G-store-implementation-record.md) | Ready | None | Implement — write `artifacts/SP-108A/implementation.md`, repoint the parent index (IR-003) | record itself; queue evidence cell updated on completion |
 
 The queue is the current execution record. SP-108A–D were implemented

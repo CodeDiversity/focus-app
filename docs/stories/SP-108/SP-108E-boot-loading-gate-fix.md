@@ -4,7 +4,8 @@
 **Parent:** [SP-108](./SP-108.md) (fix pass for the combined review)
 **Milestone:** M1
 **Layer / owner:** Frontend, `implementer` (single writer)
-**Status:** Ready (fix planned) — closes review finding **IR-001 (Blocker)** in
+**Status:** Implemented — awaiting parent review (implementer, 2026-10-17,
+commit `b3533a8`) — closes review finding **IR-001 (Blocker)** in
 `artifacts/SP-108/review.md`
 **Dependencies:** None (fixes landed SP-108A/B code)
 **Jira key:** Pending creation
