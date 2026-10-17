@@ -5,8 +5,8 @@
 **Milestone:** M1
 **Layer / owner:** Documentation/artifacts, `implementer` (single writer —
 implementation records are implementer-owned artifacts)
-**Status:** Ready (fix planned) — closes review finding **IR-003 (Should-fix)**
-in `artifacts/SP-108/review.md`
+**Status:** Implemented — awaiting parent review (implementer, 2026-10-17) —
+closes review finding **IR-003 (Should-fix)** in `artifacts/SP-108/review.md`
 **Dependencies:** None (independent of SP-108E/F; placed last in the queue)
 **Jira key:** Pending creation
 

@@ -18,12 +18,13 @@ IR-002/IR-003 should-fix) — fix pass planned as SP-108E → SP-108F → SP-108
 **Parent artifacts:** `./artifacts/SP-108/` (created when the parent
 checkpoint/index is written)
 
-**Active substory:** SP-108G — write the SP-108A implementation record and
-repoint the parent index (IR-003). SP-108F completed 2026-10-17, commit `45e3e54`.
+**Active substory:** None — the fix pass (E → F → G) is fully implemented
+(2026-10-17: `b3533a8`, `45e3e54`, and the SP-108G docs commit)
 
-**Next substory:** Re-run the combined SP-108 parent review once every fix-pass
-child (E → F → G) is implemented; the reviewer alone closes IR-001/IR-002/IR-003
-and issues the verdict.
+**Next substory:** None — re-run the combined SP-108 parent review (independent
+read-only reviewer). Only the reviewer closes IR-001/IR-002/IR-003 and issues the
+verdict; the implementer has no further authorized work in this pass
+(IR-004…IR-008 remain individually user-approved).
 
 **Implementation owner:** `implementer`, sequential across all layers (all
 children are frontend-scope work; single writer).
@@ -45,7 +46,7 @@ report is under `./artifacts/SP-108/review.md` (parent-replaced latest).
 | [D](./SP-108D-tanstack-removal-verification.md) | Implemented — awaiting parent review | B, C implemented — met; refined 2026-10-16 | None — but review D4 partial (IR-005 Git-scope polish, deferred) | `./artifacts/SP-108D/` (checkpoint, implementation); parent index `./artifacts/SP-108/implementation.md` |
 | [E](./SP-108E-boot-loading-gate-fix.md) | Implemented — awaiting parent review | None (fixes landed SP-108A/B code) — met | None — implemented 2026-10-17 (`b3533a8`): slice boots `isLoading: true`, 4 real-guard regression tests, suite 16 files / 170 tests green | `./artifacts/SP-108E/` (checkpoint, implementation) |
 | [F](./SP-108F-thunk-phase-tests.md) | Implemented — awaiting parent review | E (both edit `authSlice.test.ts`; one writer) — met | None — implemented 2026-10-17 (`45e3e54`): 8 thunk/adapter error+loading tests, mutation-proven, suite 18 files / 178 tests green | `./artifacts/SP-108F/` (checkpoint, implementation) |
-| [G](./SP-108G-store-implementation-record.md) | In progress | None — met | Implement — write `artifacts/SP-108A/implementation.md`, repoint the parent index (IR-003) | record itself; queue evidence cell updated on completion |
+| [G](./SP-108G-store-implementation-record.md) | Implemented — awaiting parent review | None — met | None — implemented 2026-10-17: `artifacts/SP-108A/implementation.md` written (reconstruction only, evidence attributed and marked not re-run) and the parent index row for A repointed | record itself (`./artifacts/SP-108G/implementation.md`, checkpoint) |
 
 The queue is the current execution record. SP-108A–D were implemented
 2026-10-16 and reviewed together 2026-10-17; the review returned FAIL, so the
