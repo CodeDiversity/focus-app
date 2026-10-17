@@ -22,6 +22,12 @@ model User {
   emailVerifiedAt             DateTime?
   emailVerificationRequestedAt DateTime?
   passwordResetRequestedAt    DateTime?
+  // SP-106A: profile preferences (D106-1) — first-class time zone column
+  // (later epics depend on it directly) plus a nullable JSON bag for future
+  // minimal prefs (EP06 study defaults). Purely additive: existing rows
+  // backfill to "UTC" / NULL.
+  timeZone                    String    @default("UTC")
+  preferences                 Json?
   createdAt                   DateTime  @default(now())
   updatedAt                   DateTime  @updatedAt
 
