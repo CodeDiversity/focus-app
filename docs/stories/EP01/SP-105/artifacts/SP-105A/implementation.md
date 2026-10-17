@@ -108,6 +108,64 @@ The implementation review (pass 1, 2026-10-15) found that the issuance `catch` s
 | PR-102 — test-count math inconsistent in this summary | Polish | ✅ Corrected: 34 new + 13 pre-existing = 47 total (service spec now 20 tests after PR-101). |
 | PR-103 — no real-Postgres race test | Polish | Deferred to SP-105D/SP-105I as planned (real-DB isolation is integration scope). |
 
+## Pass-1 combined parent review fix — PR-107 (2026-10-16)
+
+The SP-105 combined parent review
+([review](../SP-105/review.md), commit `db0218f`) returned **Changes
+Required**: issuance stamped its timestamps from the application clock, while
+the refined ticket (line 63) and shared contract **SD5** require a *fresh
+wall-clock time after any lock wait* — the redemption path (SP-105B) already
+did this via `databaseNow`.
+
+**Root cause:** `prepareToken()` captured `requestedAt = new Date()` before
+the transaction and reused it for the cooldown claim boundary/SET, the
+retirement stamp, and `expiresAt`; the TTL was therefore stamped on the app
+clock but enforced against the DB clock (app/DB skew shifts the effective
+60 s cooldown and 1 h TTL; multi-replica divergence).
+
+**Fix (commit `cf05ebf`) — Option 1, the explicit owner-first protocol:**
+
+- `PreparedResetToken` is now clock-free (`{ rawToken, tokenHash }`);
+  `prepareToken()` constructs only the token and its digest.
+- `forgotPassword`'s transaction follows the shared order exactly: discover
+  owner by email (no lock/write; unknown → generic success) →
+  `lockOwner(tx, user.id)` (`FOR UPDATE`) → `databaseNow(tx)` → conditional
+  cooldown claim **by `id`** against `checkedAt` → retire outstanding tokens
+  with `usedAt: checkedAt` → create the token with
+  `expiresAt = checkedAt + RESET_TOKEN_TTL_MS`.
+- `owner-lock.ts` header comment updated (issuance takes the explicit lock
+  now; the "implicit claim lock" note no longer applies).
+
+**Tests (red/green):**
+
+- Issuance double extended with the redemption double's `$queryRaw` contract
+  (`FOR UPDATE` + `clock_timestamp()`), an injectable `state.dbNow`, a
+  `lockWaitMs` wait simulation, and a `where.email`-respecting `findUnique`;
+  the claim doubles now match by `id`.
+- New cases: skew the DB clock 5 min ahead of the Node clock and assert
+  marker/expiry follow the DB clock; simulate a 5 s lock wait and assert the
+  claim lands at the post-wait time with `FOR UPDATE` ordered before the
+  claim (`invocationCallOrder`); `prepareToken` test trimmed to token shape +
+  digest.
+- Red first: the updated spec failed 12 cases against the untouched
+  implementation (claim by email, app-clock stamps); now green.
+
+**Commands and results:**
+
+| Command | Result |
+|---|---|
+| `pnpm --filter @studypilot/api exec jest password-reset.service.spec` | 38 / 38 passed |
+| `pnpm --filter @studypilot/api run test --runInBand` | 20 suites / 239 passed; 2 suites / 18 declared pre-skips unchanged (was 237 — net +2 new cases) |
+| `pnpm --filter @studypilot/api typecheck` | clean |
+
+**Deferred by user decision:** the disposable-PostgreSQL `test:integration`
+re-run (H/I/J suites are test-only and unchanged; the real-DB credential
+races in suite I exercise the same service path and were green at `db0218f`)
+and the other PR findings (108–111). Recovery transaction rollback semantics
+are unchanged; the retired app-clock throw path ("Claimed reset owner is
+unavailable") is now covered by `lockOwner` returning `false` for a vanished
+owner, still collapsing to the generic success without enumeration.
+
 ## Open items
 
 - **SP-105F (per-IP rate limiting):** Required before feature release; separate story. Not deferred — planned independently.

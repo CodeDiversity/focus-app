@@ -13,9 +13,9 @@
 
 **Parent artifacts:** `./artifacts/SP-105/` (created when parent checkpoint/index is written)
 
-**Active substory:** None — SP-105D implementation complete
+**Active substory:** None — all ten children implemented; the pass-1 parent review verdict is Changes Required ([review](./artifacts/SP-105/review.md)) and PR-107 (the one authorized code fix) is implemented in `cf05ebf`
 
-**Next substory:** None — final combined SP-105 parent review; the read-only reviewer's returned report is saved at `./artifacts/SP-105/review.md` (index at `./artifacts/SP-105/implementation.md`)
+**Next substory:** User decision on PR-108, then the SP-105 parent re-review; the reviewer replaces `./artifacts/SP-105/review.md` with the pass-2 report (index at `./artifacts/SP-105/implementation.md`)
 
 **Implementation owner:** `implementer`, sequential across all layers.
 
@@ -23,7 +23,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-105A-password-reset-backend-issuance.md) | Implemented — awaiting parent review | SP-103 integrated sign-off still a feature/release gate | Retain issuance evidence; final DB proof in I/D | [Implementation](./artifacts/SP-105A/implementation.md), [historical review](./artifacts/SP-105A/review.md) |
+| [A](./SP-105A-password-reset-backend-issuance.md) | Implemented — awaiting parent review | SP-103 integrated sign-off still a feature/release gate | PR-107 DB-clock fix implemented in `cf05ebf` — verify in the parent re-review | [Implementation](./artifacts/SP-105A/implementation.md) (incl. PR-107 fix note), [historical review](./artifacts/SP-105A/review.md) |
 | [B](./SP-105B-password-reset-backend-redemption.md) | Implemented — awaiting parent review | Implemented before E; login/refresh race invariant remains incomplete until E | Preserve B; finish E, then prove cross-flow behavior in I/D | [Implementation](./artifacts/SP-105B/implementation.md), [historical review](./artifacts/SP-105B/review.md); PR-104 wording corrected in `6826ae0` |
 | [E](./SP-105E-auth-session-coordination.md) | Implemented — awaiting parent review | SP-102 done; login/refresh/logout now use the shared owner-first protocol — the post-reset renewal invariant is closed at unit level | Hold for the combined SP-105 parent review; deterministic real-Postgres proof via I/H, browser via D | [Implementation](./artifacts/SP-105E/implementation.md), [checkpoint](./artifacts/SP-105E/checkpoint.md) |
 | [F](./SP-105F-password-reset-ip-limits.md) | Implemented — awaiting parent review | Implemented 2026-10-15; multi-instance race is J's suite; browser sign-off remains D | Hold for the combined SP-105 parent review | [Implementation](./artifacts/SP-105F/implementation.md), [checkpoint](./artifacts/SP-105F/checkpoint.md) |
@@ -37,6 +37,23 @@
 This queue is the current execution record; the older plan inventory/gates below
 are planning history, not proof that coding or final review is complete. `Needs
 refinement` is actionable next work, not permission to code an unsized story.
+
+2026-10-16: SP-105 pass-1 combined parent review returned **Changes
+Required** — no blockers; PR-107/PR-108 should-fix, PR-109–PR-111 polish
+(report at `./artifacts/SP-105/review.md`). The user authorized only PR-107;
+108–111 deferred. PR-107 implemented (commit `cf05ebf`): issuance is now on
+the shared owner-first protocol — discover → explicit `users` row `FOR
+UPDATE` lock → post-lock `clock_timestamp()` → conditional cooldown claim by
+`id` → retire outstanding tokens → create — with every issued timestamp
+(marker, boundary, retirement, TTL) derived from `checkedAt` instead of the
+application clock; `prepareToken()` is clock-free. Red/green against the
+updated unit double: service spec 38/38; API unit 20 suites / 239 passed
+(18 declared skips unchanged); typecheck clean. The disposable-Postgres
+`test:integration` re-run was deferred by user decision (test-only suites,
+unchanged; suite I exercised the same service path green at `db0218f`).
+Queue: PR-107 fix recorded in A's implementation note — awaiting the user's
+PR-108 decision and the parent re-review. No schema, migration, harness,
+`package.json`, or CI change was made.
 
 2026-10-16: SP-105D implemented (refinement `662ba13`; implementation session
 with evidence commits and the parent index). Checkpoint 1: H/I/J suites
