@@ -29,6 +29,7 @@ vi.mock('../services/auth', () => ({
 }));
 
 const mockedRefreshToken = vi.mocked(authService.refreshToken);
+const mockedGetProfile = vi.mocked(authService.getProfile);
 const mockedUpdateProfile = vi.mocked(authService.updateProfile);
 const mockedToast = toast as unknown as {
   success: ReturnType<typeof vi.fn>;
@@ -57,10 +58,15 @@ const validUser = userEvent.setup();
 // The seeded store already holds the signed-in user at first render, so the
 // form's default values derive from the stored profile, not from the boot
 // refresh (which re-applies the same mocked session user).
-const renderProfilePage = (user: User = storedStudent): AppStore => {
+//
+// `profile` is what `GET /users/me` returns when the page hydrates the stored
+// profile (IR-106-01); it defaults to the session user, which keeps the
+// pre-existing cases at their original pre-fill behavior.
+const renderProfilePage = (user: User = storedStudent, profile?: User): AppStore => {
   const store = makeTestStore();
   store.dispatch(setUser(user));
   mockedRefreshToken.mockResolvedValue({ accessToken: 'test-token', user });
+  mockedGetProfile.mockResolvedValue(profile ?? user);
   render(
     <Provider store={store}>
       <MemoryRouter initialEntries={['/profile']}>
@@ -230,5 +236,112 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
     );
 
     vi.useRealTimers();
+  });
+});
+
+describe('ProfilePage stored-zone hydration (IR-106-01)', () => {
+  // A login/refresh/boot session user: the auth service projects only
+  // id/name/email/emailVerifiedAt, so `timeZone` is genuinely absent until
+  // GET /users/me hydrates the full profile.
+  const loginShapeUser: User = { ...storedStudent, timeZone: undefined };
+  const storedNewYork: User = { ...storedStudent, timeZone: 'America/New_York' };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockedRefreshToken.mockResolvedValue({
+      accessToken: 'test-token',
+      user: loginShapeUser,
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('pre-fills the stored zone (not the browser zone) once the profile is hydrated', async () => {
+    renderProfilePage(loginShapeUser, storedNewYork);
+
+    await waitFor(() => expect(mockedGetProfile).toHaveBeenCalled());
+    await waitFor(() => expect(timeZoneInput()).toHaveValue('America/New_York'));
+    // The stored-zone display line follows the hydrated value too.
+    await waitFor(() =>
+      expect(screen.getByText(/your time zone/i)).toHaveTextContent('America/New_York'),
+    );
+  });
+
+  it('hydrates before the student edits: a name-only save re-sends the stored zone, not a fallback', async () => {
+    renderProfilePage(loginShapeUser, storedNewYork);
+    await waitFor(() => expect(timeZoneInput()).toHaveValue('America/New_York'));
+    mockedUpdateProfile.mockResolvedValue(storedNewYork);
+
+    const nameInput = screen.getByLabelText(/display name/i);
+    await validUser.clear(nameInput);
+    await validUser.type(nameInput, 'Ada Byron');
+    await validUser.click(screen.getByRole('button', { name: /save changes/i }));
+
+    await waitFor(() => expect(mockedUpdateProfile).toHaveBeenCalled());
+    // The body carries the *stored* zone the student never changed — the
+    // stored row is left exactly as it was.
+    expect(mockedUpdateProfile.mock.calls[0][0]).toEqual({
+      name: 'Ada Byron',
+      timeZone: 'America/New_York',
+    });
+  });
+
+  it('never sends the browser fallback zone when the stored zone is unknown', async () => {
+    // GET /users/me cannot supply the zone (login shape, or a failed read):
+    // the field keeps the browser default, and a name-only save must not
+    // persist that fallback over the student's stored preference.
+    renderProfilePage(loginShapeUser);
+    await waitForBoot();
+    mockedUpdateProfile.mockResolvedValue({ ...storedStudent, timeZone: undefined });
+
+    const nameInput = screen.getByLabelText(/display name/i);
+    await validUser.clear(nameInput);
+    await validUser.type(nameInput, 'Ada Byron');
+    await validUser.click(screen.getByRole('button', { name: /save changes/i }));
+
+    await waitFor(() => expect(mockedUpdateProfile).toHaveBeenCalled());
+    // No `timeZone` key at all: the unreadable stored zone stays untouched.
+    expect(mockedUpdateProfile.mock.calls[0][0]).toEqual({ name: 'Ada Byron' });
+  });
+
+  it('does not clobber keystrokes typed before the stored profile arrives', async () => {
+    // A slow profile read: the student starts typing before it lands.
+    let releaseProfile: (profile: User) => void = () => undefined;
+    mockedGetProfile.mockImplementation(
+      () =>
+        new Promise<User>((resolve) => {
+          releaseProfile = resolve;
+        }),
+    );
+    renderProfilePage(loginShapeUser);
+    await waitFor(() => expect(mockedGetProfile).toHaveBeenCalled());
+
+    await validUser.clear(timeZoneInput());
+    await validUser.type(timeZoneInput(), 'Europe/Berlin');
+
+    await act(async () => {
+      releaseProfile(storedNewYork);
+    });
+
+    // The late hydration settles state, but the unsaved edit wins.
+    expect(timeZoneInput()).toHaveValue('Europe/Berlin');
+  });
+
+  it('still lets the student choose a zone when the stored zone is unknown', async () => {
+    renderProfilePage(loginShapeUser);
+    await waitForBoot();
+    mockedUpdateProfile.mockResolvedValue(storedNewYork);
+
+    await validUser.clear(timeZoneInput());
+    await validUser.type(timeZoneInput(), 'Europe/Berlin');
+    await validUser.click(screen.getByRole('button', { name: /save changes/i }));
+
+    await waitFor(() => expect(mockedUpdateProfile).toHaveBeenCalled());
+    expect(mockedUpdateProfile.mock.calls[0][0]).toEqual({
+      name: 'Ada Lovelace',
+      timeZone: 'Europe/Berlin',
+    });
   });
 });

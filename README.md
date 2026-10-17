@@ -236,7 +236,7 @@ The database schema is defined in `apps/api/prisma/schema.prisma`. Key models:
 
 ### Users
 - `GET /users/me` - Get current user profile
-- `PUT /users/me` - Update current user profile
+- `PATCH /users/me` - Update current user profile
 
 ### Smoke-test the API
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -22,22 +22,22 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
+// D106-3 pre-fill rule: the stored zone when it is anything but the schema
+// default ("UTC"), otherwise the browser-detected zone the student can change.
+const zoneForForm = (stored: string | undefined): string =>
+  stored && stored !== 'UTC' ? stored : getBrowserTimeZone();
+
 export function ProfilePage() {
-  const { user, updateProfile, isLoading, logout } = useAuth();
+  const { user, updateProfile, refreshProfile, isLoading, logout } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // D106-3 pre-fill: the stored zone when it is anything but the schema
-  // default ("UTC"), otherwise the browser-detected zone the student can
-  // change. Login/refresh session users may not carry the field at all —
-  // they get the browser zone too (the DB default for fresh students).
   const storedTimeZone = user?.timeZone;
-  const defaultTimeZone =
-    storedTimeZone && storedTimeZone !== 'UTC' ? storedTimeZone : getBrowserTimeZone();
+  const defaultTimeZone = zoneForForm(storedTimeZone);
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, dirtyFields },
     reset,
     setError,
   } = useForm<ProfileFormData>({
@@ -48,13 +48,59 @@ export function ProfilePage() {
     },
   });
 
+  // IR-106-01: login/refresh/boot session users carry no `timeZone` (the auth
+  // service projects only id/name/email/emailVerifiedAt), so the first render
+  // cannot know the stored value. Read the full profile once through the
+  // shared AuthContext helper, then re-seed the form — react-hook-form's
+  // `defaultValues` do not refresh after mount — so the field and the display
+  // line show the stored zone instead of the browser fallback.
+  //
+  // The request is made one microtask after the session user exists: the
+  // provider mirrors `user` into its own ref in an effect that runs *after*
+  // this page's mount effects, so calling `refreshProfile()` synchronously in
+  // that first effect would be a silent no-op.
+  const requestedProfile = useRef(false);
+  const appliedStoredProfile = useRef(false);
+  const studentEdited = useRef(false);
+  const markEdited = useCallback(() => {
+    studentEdited.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!user || requestedProfile.current) return;
+    requestedProfile.current = true;
+    void Promise.resolve().then(() => refreshProfile());
+  }, [user, refreshProfile]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (appliedStoredProfile.current || user.timeZone === undefined) return;
+    appliedStoredProfile.current = true;
+    // Unsaved keystrokes win: never overwrite what the student is typing.
+    if (studentEdited.current) return;
+    reset({ name: user.name || '', timeZone: zoneForForm(user.timeZone) });
+  }, [user, reset]);
+
   const onSubmit = async (data: ProfileFormData) => {
     setIsSubmitting(true);
 
     try {
-      // D106-9: the M1 form edits name + timeZone only; `preferences` is
-      // omitted so the PATCH partial update leaves the stored bag untouched.
-      await updateProfile({ name: data.name, timeZone: data.timeZone });
+      // D106-9: the M1 form edits name + timeZone only, so `preferences` is
+      // omitted and the stored bag is left untouched by the partial update.
+      const payload: { name?: string; timeZone?: string } = { name: data.name };
+      // IR-106-01: the zone rides along with every save (the form contract),
+      // *except* when the stored value is still unknown — the session user
+      // carried no `timeZone` and the profile read did not supply one — and
+      // the student did not touch the field. In that case the value shown is
+      // only the browser fallback, and sending it would overwrite a stored
+      // preference the form could not read.
+      if (storedTimeZone !== undefined || dirtyFields.timeZone) {
+        payload.timeZone = data.timeZone;
+      }
+
+      await updateProfile(payload);
+      // A submitted edit is the new baseline for the next save.
+      reset(data);
       toast.success('Profile updated successfully!');
     } catch (err: unknown) {
       // AC-106-06: a 400 carrying the SP-106B `errors` map renders its
@@ -99,7 +145,7 @@ export function ProfilePage() {
               placeholder="John"
               error={errors.name?.message}
               disabled={isSubmitting || isLoading}
-              {...register('name')}
+              {...register('name', { onChange: markEdited })}
             />
 
             <Input
@@ -107,7 +153,7 @@ export function ProfilePage() {
               placeholder="America/New_York"
               error={errors.timeZone?.message}
               disabled={isSubmitting || isLoading}
-              {...register('timeZone')}
+              {...register('timeZone', { onChange: markEdited })}
             />
             <p className="text-sm text-secondary-500">
               Your time zone: <span className="font-mono">{storedTimeZone ?? defaultTimeZone}</span>{' '}
