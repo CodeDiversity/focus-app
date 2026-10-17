@@ -16,9 +16,9 @@ milestone — this one is **M1**.
 **Parent artifacts:** `./artifacts/SP-108/` (created when the parent
 checkpoint/index is written)
 
-**Active substory:** SP-108C — implementing (refined 2026-10-16; CP1 `src/store/api.ts` next)
+**Active substory:** None — SP-108B and SP-108C both implemented, awaiting the combined parent review
 
-**Next substory:** SP-108C — resume (RTK Query service via axios baseQuery; checkpoint `./artifacts/SP-108C/checkpoint.md`)
+**Next substory:** SP-108D — refine (TanStack package removal, root README flip, full verification; checkpoint `./artifacts/SP-108D/checkpoint.md`)
 
 **Implementation owner:** `implementer`, sequential across all layers (all
 children are frontend-scope work; single writer).
@@ -32,7 +32,7 @@ parent index at `./artifacts/SP-108/implementation.md`).
 |---|---|---|---|---|
 | [A](./SP-108A-store-foundation.md) | Implemented — awaiting parent review | None — TanStack Query and AuthContext remain fully operational during this slice | None — all 4 AC met, 145 tests green, typecheck + lint clean | `./artifacts/SP-108A/` (checkpoint) |
 | [B](./SP-108B-auth-state-slice.md) | Implemented — awaiting parent review | A (store + typed hooks exist) | None — 14 AuthContext tests + 8 slice tests green, typecheck + lint clean, 82 out-of-scope tests (App-importing tests need SP-108C) | `./artifacts/SP-108B/` (checkpoints cp1, cp2) |
-| [C](./SP-108C-rtk-query-data-layer.md) | In progress | A (store) landed; independent of B's scope | Implement — CP1 `src/store/api.ts` + `src/store/api.test.ts` | `./artifacts/SP-108C/` (checkpoint) |
+| [C](./SP-108C-rtk-query-data-layer.md) | Implemented — awaiting parent review | A (store) landed; independent of B's scope | None — 166/166 web tests green, typecheck + lint + build clean, zero TanStack refs in `apps/web/src` | `./artifacts/SP-108C/` (checkpoint, implementation) |
 | [D](./SP-108D-tanstack-removal-verification.md) | Needs refinement | C (zero remaining TanStack usage is D's precondition); B (auth fully off React state) | Refine after B/C | None yet |
 
 This queue is the current execution record. A/B/C/D story files below are
