@@ -15,7 +15,13 @@ module.exports = {
     ecmaFeatures: { jsx: true },
   },
   plugins: ['@typescript-eslint', 'import'],
-  settings: { react: { version: 'detect' }, 'import/resolver': { typescript: { project: './tsconfig.json' } } },
+  settings: {
+    react: { version: 'detect' },
+    'import/resolver': {
+      alias: { map: [['@', './src']], extensions: ['.js', '.jsx', '.ts', '.tsx'] },
+      node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
+    },
+  },
   rules: {
     'react/prop-types': 'off',
     'react/react-in-jsx-scope': 'off',
@@ -23,37 +29,41 @@ module.exports = {
       'error',
       { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
     ],
-    // FSD layer-direction enforcement (RD6) — eslint-plugin-import fallback
+    // FSD layer-direction enforcement (RD6) — import/no-restricted-paths zones.
+    // In each zone: target = importing folder (files in target cannot import from from),
+    //               from  = imported folder (files in from cannot be imported by target).
+    // basePath is set to the ESLint config directory (apps/web) so paths resolve correctly.
     'import/no-restricted-paths': ['error', {
+      basePath: './',
       zones: [
         // shared/ cannot import from anything above it
         {
-          target: ['./src/entities', './src/features', './src/widgets', './src/pages', './src/app'],
-          from: './src/shared',
+          target: 'src/shared',
+          from: ['src/entities', 'src/features', 'src/widgets', 'src/pages', 'src/app'],
           message: 'shared/ files cannot import from entities/, features/, widgets/, pages/, or app/',
         },
         // entities/ cannot import from features/, widgets/, pages/, or app/
         {
-          target: ['./src/features', './src/widgets', './src/pages', './src/app'],
-          from: './src/entities',
+          target: 'src/entities',
+          from: ['src/features', 'src/widgets', 'src/pages', 'src/app'],
           message: 'entities/ files cannot import from features/, widgets/, pages/, or app/',
         },
         // features/ cannot import from widgets/, pages/, or app/ (sanctioned exceptions use eslint-disable)
         {
-          target: ['./src/widgets', './src/pages', './src/app'],
-          from: './src/features',
+          target: 'src/features',
+          from: ['src/widgets', 'src/pages', 'src/app'],
           message: 'features/ files cannot import from widgets/, pages/, or app/ (use eslint-disable for sanctioned store/hooks exceptions)',
         },
         // widgets/ cannot import from pages/ or app/ (sanctioned exceptions use eslint-disable)
         {
-          target: ['./src/pages', './src/app'],
-          from: './src/widgets',
+          target: 'src/widgets',
+          from: ['src/pages', 'src/app'],
           message: 'widgets/ files cannot import from pages/ or app/ (use eslint-disable for sanctioned store/hooks exceptions)',
         },
         // pages/ cannot import from app/ (sanctioned exceptions use eslint-disable)
         {
-          target: './src/app',
-          from: './src/pages',
+          target: 'src/pages',
+          from: 'src/app',
           message: 'pages/ files cannot import from app/ (use eslint-disable for sanctioned store/hooks exceptions)',
         },
       ],
