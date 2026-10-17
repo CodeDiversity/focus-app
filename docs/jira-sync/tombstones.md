@@ -176,3 +176,27 @@ It retains that entry through reopen/removal cycles; detailed history lives in
 - [Committed specification](https://github.com/CodeDiversity/focus-app/blob/91145acd1d73c91a11a29ca08b5b5210d844e609/docs/stories/EP01/SP-105/SP-105J-limiter-integration-tests.md); requires that commit on the remote. Local recovery works without a push.
 - [Implementation](../stories/EP01/SP-105/artifacts/SP-105J/implementation.md) and [passing parent review](../stories/EP01/SP-105/artifacts/SP-105/review.md), reviewed code `8b363d4`.
 - Removed under Git-history preservation on 2026-10-17T18:43:57.877120Z. Shared contracts and traceability remain in [the parent README](../stories/EP01/SP-105/README.md).
+
+<a id="story-sp-101"></a>
+
+## SP-101
+
+- Jira: [STUDY-6](https://adhdstudy.atlassian.net/browse/STUDY-6) — verified Done 2026-10-17T20:22:52.095720Z.
+- Former file: `docs/stories/EP01/SP-101-user-registration.md`.
+- Exact content: commit `e0bc484e5b25e27f23ce1af84cd071a03e3089eb`, SHA-256 `57733fc8a029c4c555b649254460adfbfa19cd44b8befd57f149689e11b9f389`.
+- Recover: `git show e0bc484e5b25e27f23ce1af84cd071a03e3089eb:docs/stories/EP01/SP-101-user-registration.md`.
+- [Committed specification](https://github.com/CodeDiversity/focus-app/blob/e0bc484e5b25e27f23ce1af84cd071a03e3089eb/docs/stories/EP01/SP-101-user-registration.md); requires that commit on the remote. Local recovery works without a push.
+- [Passing saved review](../artifacts/STUDY-6/review.md) and [implementation](../artifacts/STUDY-6/implementation.md) retained unchanged.
+- Sign-off accepted explicitly by the user on 2026-10-17 despite the report’s disclosed same-implementer review. This records acceptance for deletion, not a new independent-review claim.
+
+<a id="story-sp-102"></a>
+
+## SP-102
+
+- Jira: [STUDY-9](https://adhdstudy.atlassian.net/browse/STUDY-9) — verified Done 2026-10-17T20:22:52.095720Z.
+- Former file: `docs/stories/EP01/SP-102-login-logout-sessions.md`.
+- Exact content: commit `e0bc484e5b25e27f23ce1af84cd071a03e3089eb`, SHA-256 `e1e2e16ee2270ca09675a3eaadf949fff80573b601250487daef95bb5d7f5d4b`.
+- Recover: `git show e0bc484e5b25e27f23ce1af84cd071a03e3089eb:docs/stories/EP01/SP-102-login-logout-sessions.md`.
+- [Committed specification](https://github.com/CodeDiversity/focus-app/blob/e0bc484e5b25e27f23ce1af84cd071a03e3089eb/docs/stories/EP01/SP-102-login-logout-sessions.md); requires that commit on the remote. Local recovery works without a push.
+- [Passing saved review](../artifacts/STUDY-9/review.md) and [implementation](../artifacts/STUDY-9/implementation.md) retained unchanged.
+- Sign-off accepted explicitly by the user on 2026-10-17 despite the report’s disclosed same-implementer review. This records acceptance for deletion, not a new independent-review claim.

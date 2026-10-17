@@ -47,6 +47,11 @@ READMEs, shared contracts, traceability and evidence remain in the repo. Histori
 references inside immutable evidence may name removed paths; use the tombstone's
 Git recovery command to inspect those original specifications.
 
+For SP-101 and SP-102 specifically, the user accepted the historical passing
+reviews despite disclosed same-implementer provenance and requested removal on
+2026-10-17. Their tombstones preserve that acceptance and the unchanged reports;
+it is not a new independent-review claim or a blanket exception for other stories.
+
 ## Ledger format (version 1)
 
 [ledger.json](./ledger.json) is machine-readable and committed with reconciled

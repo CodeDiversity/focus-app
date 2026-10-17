@@ -557,7 +557,7 @@
       "localPath": "docs/stories/EP01/SP-101-user-registration.md",
       "epicId": "EP01",
       "parentId": null,
-      "lifecycle": "active",
+      "lifecycle": "pruned",
       "baseline": {
         "summary": {
           "value": "SP-101: User Registration",
@@ -594,7 +594,50 @@
       },
       "conflicts": {},
       "blockers": [],
-      "tombstones": []
+      "tombstones": [
+        {
+          "formerPath": "docs/stories/EP01/SP-101-user-registration.md",
+          "localContentSha256": "57733fc8a029c4c555b649254460adfbfa19cd44b8befd57f149689e11b9f389",
+          "contentCommit": "e0bc484e5b25e27f23ce1af84cd071a03e3089eb",
+          "jiraKey": "STUDY-6",
+          "jiraUrl": "https://adhdstudy.atlassian.net/browse/STUDY-6",
+          "remoteSpecSha256": "c627890b1b110c4b7ddf23721c03c3a21ef15c4f0423ec2ee9d14bc14f94cef2",
+          "remoteContentModel": "curated Jira content; full specification preserved in Git",
+          "verifiedAt": "2026-10-17T20:22:52.095720Z",
+          "removedAt": "2026-10-17T20:22:52.095720Z",
+          "implementationPaths": [
+            "docs/artifacts/STUDY-6/implementation.md"
+          ],
+          "finalReviewPath": "docs/artifacts/STUDY-6/review.md",
+          "finalReviewSha256": "f21750272416100dd5999077812b222867f9cd23a80f868377768a4d87048229",
+          "reviewedCommit": "4f71077",
+          "navigationAnchor": "story-sp-101",
+          "preservation": "git-history",
+          "recoveryCommand": "git show e0bc484e5b25e27f23ce1af84cd071a03e3089eb:docs/stories/EP01/SP-101-user-registration.md",
+          "recoveryUrl": "https://github.com/CodeDiversity/focus-app/blob/e0bc484e5b25e27f23ce1af84cd071a03e3089eb/docs/stories/EP01/SP-101-user-registration.md",
+          "authorization": "User explicitly accepted existing passing reviews for SP-101/SP-102 and requested deletion, despite disclosed same-implementer reviewer provenance (2026-10-17).",
+          "reviewAcceptance": {
+            "source": "explicit user instruction",
+            "scope": [
+              "SP-101"
+            ],
+            "reviewProvenance": "same agent as implementer; disclosed in saved report",
+            "doesNotEstablishIndependentReview": true
+          }
+        }
+      ],
+      "pruneAssessment": {
+        "checkedAt": "2026-10-17T20:22:52.095720Z",
+        "disposition": "pruned",
+        "reasonCode": "user-accepted-existing-signoff",
+        "reason": "User explicitly accepted existing passing reviews for SP-101/SP-102 and requested deletion, despite disclosed same-implementer reviewer provenance (2026-10-17).",
+        "evidencePaths": [
+          "docs/artifacts/STUDY-6/review.md",
+          "docs/artifacts/STUDY-6/implementation.md"
+        ],
+        "jiraStatus": "Done",
+        "nextAction": "None; recover via tombstone if reopened"
+      }
     },
     "SP-102": {
       "jira": {
@@ -612,7 +655,7 @@
       "localPath": "docs/stories/EP01/SP-102-login-logout-sessions.md",
       "epicId": "EP01",
       "parentId": null,
-      "lifecycle": "active",
+      "lifecycle": "pruned",
       "baseline": {
         "summary": {
           "value": "SP-102: Login, Logout, and Session Management",
@@ -649,7 +692,50 @@
       },
       "conflicts": {},
       "blockers": [],
-      "tombstones": []
+      "tombstones": [
+        {
+          "formerPath": "docs/stories/EP01/SP-102-login-logout-sessions.md",
+          "localContentSha256": "e1e2e16ee2270ca09675a3eaadf949fff80573b601250487daef95bb5d7f5d4b",
+          "contentCommit": "e0bc484e5b25e27f23ce1af84cd071a03e3089eb",
+          "jiraKey": "STUDY-9",
+          "jiraUrl": "https://adhdstudy.atlassian.net/browse/STUDY-9",
+          "remoteSpecSha256": "9cdd1367bef9bd4fa160f7e93813f02423367b924da0a15507bd6f1641866aca",
+          "remoteContentModel": "curated Jira content; full specification preserved in Git",
+          "verifiedAt": "2026-10-17T20:22:52.095720Z",
+          "removedAt": "2026-10-17T20:22:52.095720Z",
+          "implementationPaths": [
+            "docs/artifacts/STUDY-9/implementation.md"
+          ],
+          "finalReviewPath": "docs/artifacts/STUDY-9/review.md",
+          "finalReviewSha256": "5279124ff6b63a8a10db919a2e92e5852c1dab2f308fa7d2c28b13cf60745812",
+          "reviewedCommit": "working tree on 9189f85; recorded in saved review",
+          "navigationAnchor": "story-sp-102",
+          "preservation": "git-history",
+          "recoveryCommand": "git show e0bc484e5b25e27f23ce1af84cd071a03e3089eb:docs/stories/EP01/SP-102-login-logout-sessions.md",
+          "recoveryUrl": "https://github.com/CodeDiversity/focus-app/blob/e0bc484e5b25e27f23ce1af84cd071a03e3089eb/docs/stories/EP01/SP-102-login-logout-sessions.md",
+          "authorization": "User explicitly accepted existing passing reviews for SP-101/SP-102 and requested deletion, despite disclosed same-implementer reviewer provenance (2026-10-17).",
+          "reviewAcceptance": {
+            "source": "explicit user instruction",
+            "scope": [
+              "SP-102"
+            ],
+            "reviewProvenance": "same agent as implementer; disclosed in saved report",
+            "doesNotEstablishIndependentReview": true
+          }
+        }
+      ],
+      "pruneAssessment": {
+        "checkedAt": "2026-10-17T20:22:52.095720Z",
+        "disposition": "pruned",
+        "reasonCode": "user-accepted-existing-signoff",
+        "reason": "User explicitly accepted existing passing reviews for SP-101/SP-102 and requested deletion, despite disclosed same-implementer reviewer provenance (2026-10-17).",
+        "evidencePaths": [
+          "docs/artifacts/STUDY-9/review.md",
+          "docs/artifacts/STUDY-9/implementation.md"
+        ],
+        "jiraStatus": "Done",
+        "nextAction": "None; recover via tombstone if reopened"
+      }
     },
     "SP-103": {
       "jira": {
@@ -6255,6 +6341,60 @@
           "detail": "Specification removed; Git recovery, tombstone, surviving evidence and navigation recorded"
         }
       ]
+    },
+    {
+      "id": "c4ada4570c5891b8a6e5b48545cd668c7c57b8d9622f789f27e9ae10b3f39729",
+      "runId": "prune-legacy-signoff-2026-10-17T20:22:52.095720Z",
+      "storyId": "SP-101",
+      "action": "prune-local-spec",
+      "target": "docs/stories/EP01/SP-101-user-registration.md",
+      "intendedFields": {
+        "preservation": "git-history",
+        "contentCommit": "e0bc484e5b25e27f23ce1af84cd071a03e3089eb",
+        "acceptedSignoff": "docs/artifacts/STUDY-6/review.md"
+      },
+      "sourceSha256": "57733fc8a029c4c555b649254460adfbfa19cd44b8befd57f149689e11b9f389",
+      "targetSha256": "c627890b1b110c4b7ddf23721c03c3a21ef15c4f0423ec2ee9d14bc14f94cef2",
+      "preparedAt": "2026-10-17T20:22:52.095720Z",
+      "attempts": [
+        {
+          "at": "2026-10-17T20:22:52.095720Z",
+          "state": "pending",
+          "detail": "Clean committed specification, Jira Done, passing saved review and explicit user acceptance verified"
+        },
+        {
+          "at": "2026-10-17T20:22:52.095720Z",
+          "state": "verified",
+          "detail": "Removed only specification; Git recovery, accepted review provenance and navigation retained"
+        }
+      ]
+    },
+    {
+      "id": "98ac5975246712fed47c87accd129a2d5fc2750aaa4dd91d866b605d0fe9bb5c",
+      "runId": "prune-legacy-signoff-2026-10-17T20:22:52.095720Z",
+      "storyId": "SP-102",
+      "action": "prune-local-spec",
+      "target": "docs/stories/EP01/SP-102-login-logout-sessions.md",
+      "intendedFields": {
+        "preservation": "git-history",
+        "contentCommit": "e0bc484e5b25e27f23ce1af84cd071a03e3089eb",
+        "acceptedSignoff": "docs/artifacts/STUDY-9/review.md"
+      },
+      "sourceSha256": "e1e2e16ee2270ca09675a3eaadf949fff80573b601250487daef95bb5d7f5d4b",
+      "targetSha256": "9cdd1367bef9bd4fa160f7e93813f02423367b924da0a15507bd6f1641866aca",
+      "preparedAt": "2026-10-17T20:22:52.095720Z",
+      "attempts": [
+        {
+          "at": "2026-10-17T20:22:52.095720Z",
+          "state": "pending",
+          "detail": "Clean committed specification, Jira Done, passing saved review and explicit user acceptance verified"
+        },
+        {
+          "at": "2026-10-17T20:22:52.095720Z",
+          "state": "verified",
+          "detail": "Removed only specification; Git recovery, accepted review provenance and navigation retained"
+        }
+      ]
     }
   ],
   "runs": [
@@ -6371,6 +6511,24 @@
         "docs/stories/EP01/SP-105/SP-105B-password-reset-backend-redemption.md",
         "docs/stories/EP01/SP-105/README.md",
         "docs/stories/EP01/SP-105/SP-105-password-reset.md"
+      ]
+    },
+    {
+      "runId": "prune-legacy-signoff-2026-10-17T20:22:52.095720Z",
+      "mode": "prune",
+      "startedAt": "2026-10-17T20:22:52.095720Z",
+      "completedAt": "2026-10-17T20:22:52.095720Z",
+      "authorization": "User explicitly accepted existing passing reviews for SP-101/SP-102 and requested deletion, despite disclosed same-implementer reviewer provenance (2026-10-17).",
+      "stories": [
+        "SP-101",
+        "SP-102"
+      ],
+      "counts": {
+        "pruned": 2,
+        "jiraMutations": 0
+      },
+      "navigationFiles": [
+        "docs/stories/EP01/README.md"
       ]
     }
   ],

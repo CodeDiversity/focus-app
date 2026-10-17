@@ -34,8 +34,8 @@ Per-story deltas are recorded in each story file under "Existing scaffold code".
 
 | Story | Title | Dependencies | Jira |
 |---|---|---|---|
-| [SP-101](./SP-101-user-registration.md) | User registration | — | STUDY-6 |
-| [SP-102](./SP-102-login-logout-sessions.md) | Login, logout, and session management | SP-101 | STUDY-9 |
+| [SP-101](../../jira-sync/tombstones.md#story-sp-101) | User registration | — | STUDY-6 |
+| [SP-102](../../jira-sync/tombstones.md#story-sp-102) | Login, logout, and session management | SP-101 | STUDY-9 |
 | [SP-103](./SP-103-email-verification.md) | Email verification (non-blocking) | SP-101 | STUDY-12 |
 | [SP-104](./SP-104-auth-guards-data-scoping.md) | Auth guards and student data scoping | SP-102 | STUDY-10 |
 | [SP-105](./SP-105/README.md) | Password reset — split into [10 children](./SP-105/README.md) | SP-102, SP-103 | STUDY-7 (parent) |

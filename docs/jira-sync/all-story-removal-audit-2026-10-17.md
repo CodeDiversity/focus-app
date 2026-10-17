@@ -1,5 +1,12 @@
 # All-story removal audit — 2026-10-17
 
+**Latest follow-up:** The user explicitly accepted SP-101/SP-102's existing passing
+reviews despite their disclosed same-implementer provenance and requested deletion.
+Both specifications are now removed with verified Git recovery and unchanged
+review/implementation artifacts. **16 specifications removed, 23 retained** across
+the original 39-record inventory. This scoped acceptance does not invent a new
+independent review or change SP-103/SP-104's status.
+
 Rechecked all **39 mapped local story records** against complete single-page live
 Jira discovery (52 issues, `isLast=true`), parent queues and saved implementation
 review verdicts. No unmapped specification files were found under `docs/stories/`
@@ -22,8 +29,8 @@ does not establish a passing final verdict.
 
 | Story | Jira | Live status | Disposition |
 | --- | --- | --- | --- |
-| SP-101 | STUDY-6 | Done | Retained: saved review identifies reviewer as implementer; independent gate not established |
-| SP-102 | STUDY-9 | Done | Retained: saved review identifies reviewer as implementer; independent gate not established |
+| SP-101 | STUDY-6 | Done | Removed; user accepted existing passing sign-off; Git recovery/tombstone verified |
+| SP-102 | STUDY-9 | Done | Removed; user accepted existing passing sign-off; Git recovery/tombstone verified |
 | SP-103 | STUDY-12 | To Do | Retained: review not fully approved (DoD 1/7/10 unverified); Jira To Do |
 | SP-104 | STUDY-10 | To Do | Retained: Jira To Do despite passing repo review |
 | SP-105 | STUDY-7 | Done | Retained: dirty specification; parent also preserves shared context. Final parent review PASS |
