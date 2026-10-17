@@ -26,11 +26,16 @@ export class UsersService {
             }
           : {}),
       },
+      // SP-106A: timeZone + preferences are profile fields (D106-1);
+      // registration leaves them unset in `data` so the schema defaults
+      // ("UTC" / NULL) apply, and the select returns the defaulted row.
       select: {
         id: true,
         email: true,
         name: true,
         emailVerifiedAt: true,
+        timeZone: true,
+        preferences: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -53,11 +58,16 @@ export class UsersService {
   async findById(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
+      // SP-106A: explicit select is the credential boundary for
+      // GET /users/me — it returns the profile + preferences fields and
+      // never passwordHash or the token relations.
       select: {
         id: true,
         email: true,
         name: true,
         emailVerifiedAt: true,
+        timeZone: true,
+        preferences: true,
         createdAt: true,
         updatedAt: true,
       },
