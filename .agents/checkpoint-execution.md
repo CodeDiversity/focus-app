@@ -85,8 +85,11 @@ Finish the current reversible code/test step and save files before handoff.
 An intentionally red test or partial adapter may be checkpointed as incomplete;
 record exactly what is failing. Do not deploy incomplete work or interrupt a live
 transaction to create a checkpoint. Keep atomic credential writes together.
-Make the existing role's scoped commits when safe; if blocked, record uncommitted
-paths. Checkpointing does not require discarding work or forcing a commit.
+Apply the [task closeout contract](context-efficiency.md#task-closeout-contract):
+commit finished scoped milestones and the status/artifact updates before
+handoff or advancing to the next child. If committing is blocked, record exact
+uncommitted paths, the reason and next owner/action. Checkpointing does not
+require discarding work or committing an unsafe partial step.
 
 Give the user a short resume prompt with the exact checkpoint path:
 

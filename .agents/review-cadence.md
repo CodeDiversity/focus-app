@@ -32,6 +32,10 @@ Finishing the nominally last ID alone is insufficient: verify all in-scope
 descendants, dependencies and integration obligations. A new child, reopened
 work or a failed required check keeps the group from being ready. Do not use
 reviewer dispatch as the default way to discover which substories are unfinished.
+Before dispatch, apply the [task closeout contract](context-efficiency.md#task-closeout-contract):
+each child has its persisted status, implementation evidence, scoped commit
+hashes (or an explicit commit blocker and owner), verification and remaining
+work. Resolve missing closeout with the implementer before final review.
 
 ## Final review gate
 
@@ -61,6 +65,10 @@ to affected child IDs and files. On a passing verdict it also performs the
 reviewer skill's passing-review docs sync; on a non-passing verdict it saves
 the report only and the coordinator/planner defers those docs edits until the
 passing pass. Retain existing historical child reports.
+The reviewer returns a completed review-task status and its verdict separately,
+with report path, verification and deferred edits. It never commits. The
+coordinator owns the scoped report/docs commit and any permitted fallback
+persistence; a non-passing verdict is a completed review with follow-up work.
 
 Findings are fixed in the affected implementation scope and re-reviewed together
 at the parent; no automatic child-by-child review cycle. Only the final passing
