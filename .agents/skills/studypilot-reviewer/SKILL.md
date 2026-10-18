@@ -109,6 +109,39 @@ planner/implementer may still act on queue rows reserved to them.
 
 ## Running commands
 
+### Evidence reuse and report completion
+
+For each required gate, record the command, working directory, tested commit
+or dirty state, exit code and concise result. Preserve these fields in the
+checkpoint/compaction handoff, with evidence paths when available. Distinguish
+reviewer-executed results (including an authorized helper's results) from
+implementer-provided evidence. A summary retains that provenance; it is not a
+new execution. Never invent missing output or claim reconstructed text is verbatim.
+
+After compaction, check HEAD and relevant dirty paths once, then reuse recorded
+results whose tested code/configuration is unchanged. If full output was not
+preserved, say so and report the recorded concise result. Missing raw output,
+per-file test lines, timestamps, or a previous report's formatting are not
+reasons to rerun a successful gate. Do not repeat completed code searches or
+expand a helper's scope merely to make the report more detailed.
+
+Rerun verification only for changed relevant code/configuration, a failed gate,
+or a specific missing fact required to decide an AC/DoD condition. Name that
+trigger and run only the affected check. Missing execution/provenance fields
+are an evidence gap: retrieve the existing record first; if still insufficient,
+mark the affected condition CANNOT VERIFY or run its bounded check when allowed.
+Runtime restrictions remain binding; missing shell access does not itself
+authorize delegation or repeating previously executed checks.
+
+Once every AC/DoD condition has an evidence-backed disposition (including FAIL
+or CANNOT VERIFY), finish the report. Resolve missing line citations with one
+batched, bounded read. Classify findings against current requirements once;
+prior reports cannot waive an unmet requirement. Reopen a decision only for
+new evidence or a named rule conflict. Save the report, perform the authorized
+verdict-dependent sync, and return the task closeout. If persistence is blocked,
+return the full report and exact deferred writes using the fallback above.
+A non-passing verdict completes the review task and assigns follow-up work.
+
 Check execution capability early. Run relevant gates independently when permitted;
 record command, working directory, exit code and concise result, linking detailed
 logs only when needed. Do not paste full successful output into every report.
