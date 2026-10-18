@@ -92,11 +92,11 @@ _No corrections yet — this is a fresh breakdown._
 | Story | State | Dependencies / Blockers | Next Action | Evidence / Artifacts |
 |---|---|---|---|---|
 | STUDY-21A | Done — awaiting parent review | — | Parent review (reviewer role, unit STUDY-21) | `artifacts/STUDY-21A/implementation.md` |
-| STUDY-21B | Queued | STUDY-21A review outcome | — | `docs/stories/STUDY-21/STUDY-21B.md` |
+| STUDY-21B | Implemented — awaiting parent review | STUDY-21A configs in place (`f6ed6ee`); implemented 2026-10-18 on user direction ahead of the pending parent review | Parent review (reviewer role, unit STUDY-21 — needs all children, so after STUDY-21C) | `artifacts/STUDY-21B/implementation.md`, `artifacts/STUDY-21B/checkpoint.md` |
 | STUDY-21C | Queued | STUDY-21A review outcome | — | `docs/stories/STUDY-21/STUDY-21C.md` |
 
-**Active substory:** none — STUDY-21A implemented, awaiting the STUDY-21 parent review
-**Next substory:** STUDY-21 parent review (unit STUDY-21; record at `artifacts/STUDY-21/`); then STUDY-21B
+**Active substory:** none — STUDY-21B implemented 2026-10-18, awaiting the STUDY-21 parent review
+**Next substory:** resume the interrupted STUDY-21A parent review (coordinator/reviewer; partial report at `artifacts/STUDY-21/review.md` ends at `<!--APPEND-2b-->`, no verdict — F-21B-7); then STUDY-21C
 
 ## Final Implementation Review
 

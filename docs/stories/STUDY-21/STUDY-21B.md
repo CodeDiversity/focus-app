@@ -6,7 +6,7 @@
 **Parent Story:** [STUDY-21](./README.md)
 **Milestone:** M1
 **Layer:** Infrastructure
-**Status:** Queued (blocked for implementation)
+**Status:** Implemented — awaiting the STUDY-21 parent review (2026-10-18; record at `artifacts/STUDY-21B/implementation.md`)
 **Dependencies:** STUDY-21A (configs must exist before hooks reference them)
 **Jira:** STUDY-23
 

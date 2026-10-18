@@ -17,9 +17,28 @@
     "db:push": "turbo run db:push",
     "email:up": "docker compose -f compose.mailpit.yml up -d",
     "email:down": "docker compose -f compose.mailpit.yml down",
-    "clean": "turbo run clean && rm -rf node_modules"
+    "clean": "turbo run clean && rm -rf node_modules",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "apps/api/src/**/*.ts": [
+      "eslint --fix --max-warnings 0",
+      "prettier --write"
+    ],
+    "apps/web/src/**/*.{ts,tsx}": [
+      "eslint --fix --max-warnings 0",
+      "prettier --write"
+    ],
+    "packages/**/*.{ts,tsx,js,jsx,cjs,mjs}": [
+      "prettier --write"
+    ],
+    "**/package.json": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
+    "husky": "^9.0.0",
+    "lint-staged": "^15.0.0",
     "turbo": "^2.0.0",
     "typescript": "^5.3.0"
   },

@@ -228,6 +228,26 @@ Formatting has no per-file override: change the shared settings in
 `packages/config/prettier/.prettierrc.cjs` (affects all apps) and re-run
 `format:write` in each app.
 
+**Pre-commit hooks:** `husky` and `lint-staged` run on every `git commit`,
+checking **staged files only** (never the whole codebase):
+
+| Staged files | Commands |
+|---|---|
+| `apps/api/src/**/*.ts` | `eslint --fix --max-warnings 0`, `prettier --write` |
+| `apps/web/src/**/*.{ts,tsx}` | `eslint --fix --max-warnings 0`, `prettier --write` |
+| `packages/**/*.{ts,tsx,js,jsx,cjs,mjs}` | `prettier --write` |
+| `**/package.json` | `prettier --write` |
+
+Fixable problems (formatting, auto-fixable lint rules) are corrected and
+re-staged automatically. Lint errors that cannot be auto-fixed (for example an
+unused variable) **reject the commit** — fix the file and commit again. The
+hooks install themselves on `pnpm install` (the root `prepare` script runs
+`husky`), so run `pnpm install` once after a fresh clone before committing.
+
+To bypass the hook for a deliberate exception (for example a work-in-progress
+file), use `git commit --no-verify`. The same lint rules run in CI, so a
+bypassed file will still fail the pipeline.
+
 ## Project Organization
 
 ### Backend (apps/api)
