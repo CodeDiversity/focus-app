@@ -69,6 +69,57 @@ migrations and authorized implementation configuration, plus implementation and
 checkpoint artifacts; never edit reviewer reports. The reviewer saves its report;
 use its restricted-runtime fallback when needed.
 
+## Required findings record and committed closeout
+
+For every assigned child, create its resolved `checkpoint.md` before substantive
+work. At each logical milestone, record discoveries, failed checks, deviations,
+blockers and decisions in that checkpoint with evidence and the next action.
+Record findings when discovered, not from memory at final handoff. Each finding
+has a stable local ID, requirement/source, affected paths, observed issue,
+disposition (open/fixed/blocked), owner, and closure evidence when fixed.
+Keep reviewer finding IDs when addressing review feedback; never edit the
+review report or claim independent approval.
+
+At completion, write `implementation.md` for every child, including docs-only
+or move-only work. Include AC-by-AC outcomes, verification commands/cwd/results
+and tested state, changed paths, commit scope, deviations and findings with
+their dispositions. If none were found, explicitly record `Findings/deviations:
+None`; a missing section is not evidence of no findings. Move completed findings
+and verification into this record and link it from the checkpoint, keeping only
+actionable unfinished work in the checkpoint. Do not create a second findings
+tracker or copy full logs into both artifacts.
+
+Before advancing to another child or returning an implemented task, complete
+this closeout in order:
+
+1. Verify every required AC/check/artifact. Unmet requirements remain open;
+   do not call them polish or mark the child implemented. Record blocked/partial
+   progress honestly and hand off its next action when work cannot continue.
+2. Update the checkpoint's progress boxes/status, the active child's Status and
+   artifact pointers, and the parent queue row plus active/next fields together.
+   Use `Implemented — awaiting parent review` only for finished implementation.
+   Keep unchanged historical records intact; do not fabricate old evidence.
+3. Inspect the scoped diff and existing staging. Stage explicit owned paths or
+   hunks, inspect the staged diff, and commit code/tests plus completion records
+   and status updates. Commit after each finished child, not only after the
+   whole parent. Earlier code commits do not excuse uncommitted closeout docs.
+   Preserve unrelated edits and staging; never blanket-stage or bypass hooks.
+4. Verify the resulting commit exists and inspect remaining scoped dirty paths.
+   Return the verified hash(es), artifact links, verification and remaining work
+   using the shared task closeout contract. A commit's own hash belongs in the
+   returned handoff; do not repeatedly amend to insert it into its own record.
+   If permissions/hooks/mixed ownership block committing, return `commit
+   pending`, exact paths, reason and next owner/action. Do not silently skip
+   the commit or report a fully committed handoff.
+
+Before requesting parent review, check the entire child inventory once for
+missing records, stale completion pointers, open findings and uncommitted scoped
+writes. Resolve these within authorized scope first. The parent index must link
+every child's implementation record and actual commit scope, using a baseline
+before the first included change; distinguish working-tree evidence explicitly.
+Do not claim queue reconciliation that was merely planned. Status reconciliation
+does not require rerunning unchanged passing tests or reconstructing raw output.
+
 ## Security
 
 Never read/display/write `.env`, `.env.*`, credentials, private keys or secret
