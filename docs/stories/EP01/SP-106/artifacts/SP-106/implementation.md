@@ -30,10 +30,17 @@ is saved at `./review.md` (this directory).
   disposable Postgres, both typechecks clean, both lints clean. Detail:
   `SP-106E/implementation.md`, `SP-106E/checkpoint.md`,
   `SP-106B/checkpoint.md` (fix-pass section).
-- **Open (not fabricable by the implementer): IR-106-14** — DoD 10 needs one
-  recorded human browser pass on `/profile` with the shipped select (or a
-  recorded user ratification extending the 2026-10-17 sign-off). Handed to the
-  coordinator.
+- **IR-106-14 closed 2026-10-18 (user ratification):** the coordinator
+  confirmed the select-based `/profile` page tested and passing, extending the
+  2026-10-17 integrated sign-off to the SP-106E select UI — the review's
+  explicit user-ratification closure path. Recorded with provenance in
+  `SP-106E/checkpoint.md`; DoD 10 is satisfied for the current tree. No
+  browser-session details were fabricated by the implementer.
+- **Remaining open (planner-owned, non-blocking per the review):** IR-106-08
+  (SP-107 capture-point note — the stored zone stays `UTC` until the first
+  Profile save; SP-107's ticket should state that it persists the
+  browser-detected zone or record an approval of the status quo) and
+  IR-106-15(d) (record E's Jira key on tracker creation).
 - **Next:** the combined SP-106 parent **re-review** (finding IDs preserved;
   new IDs continue at IR-106-16). `Reviewed` is established only by a passing
   combined parent review.
@@ -58,7 +65,7 @@ wire proof, manual browser sign-off, this index).
 | [A](./../SP-106A-profile-schema-and-get.md) | `User.timeZone` (`@default("UTC")`) + `preferences Json?` with one additive migration; `GET /users/me` returns them, credentials excluded by explicit `select` | [implementation](./SP-106A/implementation.md) | [checkpoint](./SP-106A/checkpoint.md) | `fbd0ab7`, `71aff0d`, `775d4eb` |
 | [B](./../SP-106B-patch-profile-validation.md) | `PATCH /users/me` (replaces `PUT`, no alias) with IANA + bounded-plain-object preferences validation; field-level 400 `errors` map via `FieldValidationPipe`; dead unscoped `findAll`/`remove` deleted; **pass-2 polish fix:** UTF-8 byte cap (IR-106-02), nested-aware `message` flattening + pipe spec (IR-106-03), `@IsNotEmpty()` name (IR-106-06) | [checkpoint](./SP-106B/checkpoint.md) (implementation record folded into the checkpoint) | [checkpoint](./SP-106B/checkpoint.md) | `51add91`, plus 2026-10-18 fix-pass commit (see B checkpoint) |
 | [C](./../SP-106C-profile-preferences-form.md) | Profile page Time zone field (D106-3 pre-fill, client IANA validation, field-level API errors, loading/error/success states), stored-zone display line via the shared helper, `api.put` → `api.patch`; **IR-106-01 fix:** stored-zone hydration + re-seed and the unknown-zone PATCH guard | [implementation](./SP-106C/implementation.md) | [checkpoint](./SP-106C/checkpoint.md) | `6ece311`, `5050b82` |
-| [D](./../SP-106D-profile-integration.md) | Integrated sign-off: new real-Postgres round-trip suite (cross-session, isolation, credential exclusion, field-level 400), full-suite re-runs, manual browser sign-off (DoD 10 — predates the E select UI; see IR-106-14), this parent index | [implementation](./SP-106D/implementation.md) | [checkpoint](./SP-106D/checkpoint.md) | `426459e`, plus docs commits |
+| [D](./../SP-106D-profile-integration.md) | Integrated sign-off: new real-Postgres round-trip suite (cross-session, isolation, credential exclusion, field-level 400), full-suite re-runs, manual browser sign-off (DoD 10 — extended to the E select UI by the coordinator's 2026-10-18 ratification, IR-106-14 closed), this parent index | [implementation](./SP-106D/implementation.md) | [checkpoint](./SP-106D/checkpoint.md) | `426459e`, plus docs commits |
 | [E](./../SP-106E-profile-timezone-select.md) | Profile time-zone **select dropdown** (D106-10): reusable `Select` component; `getTimeZones()` via standard `Intl.supportedValuesOf('timeZone')` with exported curated fallback, sorted by `GMT±HH:MM` offset then region, memoized; live display line via `watch('timeZone')`; stored-alias option guard; falsifiable list/sort/live/keyboard/responsive tests (**pass-2 fix:** IR-106-09/10/11/15a-c) | [implementation](./SP-106E/implementation.md) | [checkpoint](./SP-106E/checkpoint.md) | `4def5c2`, plus 2026-10-18 fix-pass commit (see E record) |
 
 Shared contract delivered (README → Shared API contract):

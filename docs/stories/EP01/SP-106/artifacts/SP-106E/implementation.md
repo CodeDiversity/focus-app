@@ -55,7 +55,7 @@ Reviewer findings addressed in this fix pass (IDs preserved from `../review.md` 
 | IR-106-15 (c) stored alias silently re-resolved | **Fixed (ride-along)** | Option-list guard + `US/Pacific` test |
 | IR-106-15 (d) E Jira key "Pending creation" | **Open — planner-owned** | Tracker creation is outside implementer scope; no tracker mutation authorized |
 | IR-106-13 (parent index/README stale) | **Fixed (records)** | E row added to `../implementation.md`; README status/narration corrected |
-| IR-106-14 (browser sign-off predates select) | **Blocked — human gate** | Not fabricable by the implementer; handed to the coordinator (one recorded browser pass on `/profile`, or recorded user ratification of the 2026-10-17 sign-off) |
+| IR-106-14 (browser sign-off predates select) | **Closed — user ratification recorded** | Coordinator (user) confirmed the select-based `/profile` page tested and passing on 2026-10-18, extending the 2026-10-17 integrated sign-off to the SP-106E select UI — the review's explicit user-ratification closure path, recorded in `./checkpoint.md` (no session details fabricated by the implementer). DoD 10 satisfied for the current tree |
 
 ## Commit
 

@@ -37,7 +37,7 @@ Fix pass in progress. Reviewer finding IDs preserved per the implementer skill.
 | IR-106-15 (a–c) | Story technical note; polish | `apps/web/src/shared/lib/datetime.ts`, `ProfilePage.tsx` | Fallback list local + untested; `getTimeZones()` re-sorted ~418 zones per render; stored alias absent from list silently re-resolved | fixed (this pass, ride-along) | implementer | `FALLBACK_TIME_ZONES` exported + unit-tested; module-scope memoization; option-list guard for stored aliases |
 | IR-106-15 (d) | Child-inventory Jira key | `README.md:71` | E's Jira key still "Pending creation" | open — planner-owned | planner | Not implementer scope (tracker creation); no tracker mutation authorized |
 | IR-106-13 | Parent records | `artifacts/SP-106/implementation.md`, `README.md` status/narration | Parent index omitted E; "all four children" sentences stale | fixed (this pass, records) | implementer | E row added to parent index; README status block + queue narration updated (records commit) |
-| IR-106-14 | DoD 10 | SP-106D/E evidence | Recorded 2026-10-17 browser sign-off predates the select UI | blocked — human gate | human/coordinator | Cannot be fabricated by the implementer: one recorded browser pass on `/profile` with the select (or recorded user ratification extending the sign-off). Handed to the coordinator at closeout. |
+| IR-106-14 | DoD 10 | SP-106D/E evidence | Recorded 2026-10-17 browser sign-off predates the select UI | fixed — user ratification recorded 2026-10-18 | coordinator (user) | Coordinator ratified the select-based `/profile` page as tested and passing (instruction in the implementation session, 2026-10-18), extending the 2026-10-17 integrated sign-off to the SP-106E select UI — the review's explicit user-ratification closure path. Ratification recorded here by the implementer; no browser-session details were fabricated. DoD 10 satisfied for the current tree via that ratification. |
 | IR-106-02 | D106-5 bytes (polish, pass 1) | `apps/api/src/modules/users/dto/validate-bounded-size.validator.ts` | Cap measured in UTF-16 units, not bytes | fixed (this pass, ride-along) | implementer | `Buffer.byteLength(serialized, 'utf8')` + multi-byte DTO test |
 | IR-106-03 | D106-6 nested DTOs (polish, pass 1) | `apps/api/src/common/pipes/validation.pipe.ts` | Custom `message` collection skipped nested-DTO subtrees | fixed (this pass, ride-along) | implementer | Reuses stock `flattenValidationErrors` + new `validation.pipe.spec.ts` |
 | IR-106-06 | Validation symmetry (polish, pass 1) | `apps/api/src/modules/users/dto/update-user.dto.ts` | PATCH accepted an empty display name | fixed (this pass, ride-along) | implementer | `@IsNotEmpty()` on `name` + DTO test |
@@ -45,11 +45,10 @@ Fix pass in progress. Reviewer finding IDs preserved per the implementer skill.
 
 ## Remaining work
 
-- **IR-106-14 (open — human gate, not implementer-fabricable):** one recorded
-  browser pass on `/profile` with the shipped select (open the list, choose a
-  zone, watch the display line update — the AC-106E-4 fix —, keyboard
-  interaction, Save, reload), or a recorded user ratification extending the
-  2026-10-17 sign-off. Handed to the coordinator at closeout.
+- **IR-106-14: closed 2026-10-18 by coordinator ratification** — the user
+  (coordinator) confirmed the select-based `/profile` page tested and passing,
+  extending the 2026-10-17 integrated sign-off to the SP-106E select UI (the
+  review's user-ratification closure path). See the findings table above.
 - **IR-106-15(d) (open — planner-owned):** E's child-inventory Jira key is
   still "Pending creation"; tracker creation is outside implementer scope.
 - **IR-106-08 (open — planner/SP-107):** the stored zone stays `UTC` until the

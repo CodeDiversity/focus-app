@@ -29,10 +29,12 @@ records, and the DoD-10 browser gate predating the select UI), saved at
 `./artifacts/SP-106/review.md`; the implementer fixed IR-106-09/10/11/13 plus
 ride-along polish IR-106-02/03/06/15(a–c) the same day (web 201/201, API
 292/292 zero skips on a disposable Postgres, typechecks and lints clean).
-**Open gate: IR-106-14** — one recorded human browser pass on `/profile` with
-the select (or a recorded user ratification of the 2026-10-17 sign-off) is
-required before the parent re-review can pass. All five children are handed to
-that re-review (next finding IDs continue at IR-106-16).
+2026-10-18: **IR-106-14 closed by coordinator ratification** — the user
+confirmed the select-based `/profile` page tested and passing, extending the
+2026-10-17 integrated sign-off to the select UI (the review's user-ratification
+closure path; DoD 10 satisfied). All five children with all pass-2 findings
+closed are handed to the combined parent re-review (next finding IDs continue
+at IR-106-16); only planner-owned polish IR-106-08/15(d) remains open.
 
 ## Execution queue
 
@@ -44,20 +46,19 @@ that re-review (next finding IDs continue at IR-106-16).
 checkpoint/index is written)
 
 **Active substory:** None — all five children (A–E) implemented; pass-2 review
-findings fixed 2026-10-18 and awaiting the combined SP-106 parent re-review.
-**Open gate:** IR-106-14 — a recorded human browser pass on `/profile` with the
-select UI (DoD 10) or a recorded user ratification extending the 2026-10-17
-sign-off; not fabricable by the implementer. Checkpoints
+findings fixed 2026-10-18 and IR-106-14 closed by coordinator ratification
+the same day; awaiting the combined SP-106 parent re-review. Checkpoints
 [./artifacts/SP-106A/checkpoint.md](./artifacts/SP-106A/checkpoint.md) ·
 [./artifacts/SP-106B/checkpoint.md](./artifacts/SP-106B/checkpoint.md) ·
 [./artifacts/SP-106C/checkpoint.md](./artifacts/SP-106C/checkpoint.md) ·
 [./artifacts/SP-106D/checkpoint.md](./artifacts/SP-106D/checkpoint.md) ·
 [./artifacts/SP-106E/checkpoint.md](./artifacts/SP-106E/checkpoint.md).
 
-**Next substory:** None — all five children implemented and pass-2 findings
-fixed; the combined SP-106 parent re-review is next (after the IR-106-14
-browser gate; report at `./artifacts/SP-106/review.md`, new finding IDs from
-IR-106-16).
+**Next substory:** None — all five children implemented and all pass-2 findings
+closed (IR-106-14 via coordinator ratification 2026-10-18); the combined
+SP-106 parent re-review is next (report at `./artifacts/SP-106/review.md`, new
+finding IDs from IR-106-16). Only planner-owned polish IR-106-08/15(d) remains
+open; neither conditions sign-off.
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C → D;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -78,9 +79,9 @@ written at `./artifacts/SP-106/implementation.md`).
 The queue is the current execution record. All five children (A–E) are
 implemented — A–D on 2026-10-17, E on 2026-10-18 — and awaiting the single
 combined SP-106 parent re-review; pass-2 findings IR-106-09/10/11/13 plus
-polish ride-alongs were fixed 2026-10-18, and IR-106-14 (DoD-10 browser pass
-on the select UI) remains an open human gate. No child review is performed and
-none replaces that sign-off.
+polish ride-alongs were fixed 2026-10-18, and IR-106-14 (DoD-10 coverage of
+the select UI) was closed the same day by coordinator ratification. No child
+review is performed and none replaces that sign-off.
 
 ## Child inventory
 
