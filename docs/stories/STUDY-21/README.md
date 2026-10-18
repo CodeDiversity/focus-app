@@ -2,7 +2,7 @@
 
 **Epic:** [EP01: Authentication & Onboarding](../../epics/EP01-authentication-and-onboarding.md) (cross-cutting technical task)
 **Milestone:** M1
-**Status:** Planned
+**Status:** In progress — STUDY-21A implemented + reviewed (pass, qualified, 2026-10-18); STUDY-21B/21C queued
 **Jira:** [STUDY-21](https://adhdstudy.atlassian.net/browse/STUDY-21)
 **Dependencies:** STUDY-20 (TECH-01 — scaffold with baseline scripts and package deps)
 
@@ -77,15 +77,21 @@ Applicable items for this technical task: **1, 8, 9, 10** (functional criteria o
 
 ## Correction Log
 
-_No corrections yet — this is a fresh breakdown._
+| ID | Original claim | Consequence | Disposition | Reference |
+|---|---|---|---|---|
+| F-21A-7 | D21-6 (settled by user, `7ca4296`) names `focus-tabindex` + `jsx-no-target-blank` as explicit jsx-a11y rules | Neither rule exists in any available 6.x build of `eslint-plugin-jsx-a11y` (reviewer-verified in installed 6.10.2: 39 rules, both absent) — the settled 4-rule list is not implementable as written | **Closed (accepted deviation).** Reviewer adjudicated the remap (34-rule `recommended` + explicit `alt-text`/`aria-props`/`tabindex-no-positive: error`; target-blank intent enforced via `react/recommended` in `eslint-plugin-react` 7.37.5) as satisfying AC-21A-4's "at least" intent; deviation documented in `apps/web/.eslintrc.cjs` L33–41. Reviewer adjudication of a named rule conflict, not a waiver — no AC intent unmet. | `artifacts/STUDY-21/review.md` §3 |
+| P-1 | `apps/web/.eslintrc.cjs` L39–40 comment records target-blank as "dropped" | A future reader could infer `target="_blank"` is unenforced, though `react/jsx-no-target-blank: error` is active via `plugin:react/recommended` | Optional polish — one-line comment addition; no mandatory obligation unmet. Owner: implementer. | `artifacts/STUDY-21/review.md` §7 |
+| P-2 | `artifacts/STUDY-21A/implementation.md` deviation note records `no-noninteractive-tabindex: warn` in `recommended` | Installed 6.10.2 actually sets it to `error` — conservative inaccuracy (config stricter than recorded) | Optional polish — correct the note; no mandatory obligation unmet. Owner: implementer. | `artifacts/STUDY-21/review.md` §7 |
+
+Verdict record: **PASS (qualified)** — 2026-10-18, reviewer. Qualifications: (1) the four execution gates + three negative probes are CANNOT VERIFY by the reviewer (no execution capability in the reviewer runtime); the pass rests on the implementer's recorded evidence (`artifacts/STUDY-21A/checkpoint.md`, `artifacts/STUDY-21A/implementation.md`, tested at `f6ed6ee`) plus complete reviewer static verification. (2) The parent's "all children implemented" final gate is not met — STUDY-21B/21C queued; the final parent review applies when they land. Full report: `artifacts/STUDY-21/review.md`.
 
 ## Quality Gate
 
 | Story | Status | Notes |
 |---|---|---|
-| STUDY-21A | Implemented — awaiting STUDY-21 parent review | Configs created/extended; code pre-fixed (lint + format clean); one D21-6 rule-name deviation recorded (F-21A-7) for the reviewer to adjudicate |
-| STUDY-21B | Plan Ready (blocked for implementation) | Depends on STUDY-21A configs being in place |
-| STUDY-21C | Plan Ready (blocked for implementation) | Depends on STUDY-21A configs being in place |
+| STUDY-21A | Reviewed — **pass (qualified)** (2026-10-18, reviewer) | All 8 ACs + DoD 1/8/9/10 met; F-21A-7 accepted deviation (adjudicated, closed); execution gates CANNOT VERIFY by reviewer (implementer-recorded evidence + static verification). Report: `artifacts/STUDY-21/review.md` |
+| STUDY-21B | Plan Ready (unblocked) | STUDY-21A configs in place and reviewed (pass) |
+| STUDY-21C | Plan Ready (unblocked) | STUDY-21A configs in place and reviewed (pass) |
 
 ## Execution Queue
 
