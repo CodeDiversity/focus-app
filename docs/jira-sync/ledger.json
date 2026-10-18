@@ -98,8 +98,8 @@
     "executed": false,
     "note": "Transitions verified available on STUDY-10. None executed in this run: user decision 2026-10-17 restricted this sync to content, links and labels. Unmapped statuses never transition."
   },
-  "cursor": "2026-10-17T16:37:12Z",
-  "lastFullReconcileAt": "2026-10-17T18:20:13Z",
+  "cursor": "2026-10-18T21:45:10Z",
+  "lastFullReconcileAt": "2026-10-18T21:45:10Z",
   "stories": {
     "EP01": {
       "jira": {
@@ -742,8 +742,8 @@
         "key": "STUDY-12",
         "url": "https://adhdstudy.atlassian.net/browse/STUDY-12",
         "updatedAt": "2026-10-17T10:48:26.484-0400",
-        "statusId": "10000",
-        "status": "To Do",
+        "statusId": "10003",
+        "status": "Done",
         "issuetype": "Task",
         "labels": [
           "mvp",
@@ -789,15 +789,7 @@
         "remoteParentKey": "STUDY-5"
       },
       "conflicts": {},
-      "blockers": [
-        {
-          "type": "status-alignment-pending",
-          "repoEvidence": "awaiting-review",
-          "remoteStatus": "To Do",
-          "proposedStatus": "QA",
-          "note": "evidence token read from the parent README execution queue; no transition authorized in this run"
-        }
-      ],
+      "blockers": [],
       "tombstones": []
     },
     "SP-104": {
@@ -805,8 +797,8 @@
         "key": "STUDY-10",
         "url": "https://adhdstudy.atlassian.net/browse/STUDY-10",
         "updatedAt": "2026-10-17T10:48:26.887-0400",
-        "statusId": "10000",
-        "status": "To Do",
+        "statusId": "10003",
+        "status": "Done",
         "issuetype": "Task",
         "labels": [
           "mvp",
@@ -852,15 +844,7 @@
         "remoteParentKey": "STUDY-5"
       },
       "conflicts": {},
-      "blockers": [
-        {
-          "type": "status-alignment-pending",
-          "repoEvidence": "reviewed",
-          "remoteStatus": "To Do",
-          "proposedStatus": "Done",
-          "note": "evidence token read from the parent README execution queue; no transition authorized in this run"
-        }
-      ],
+      "blockers": [],
       "tombstones": []
     },
     "SP-105": {
@@ -1959,8 +1943,8 @@
         "key": "STUDY-11",
         "url": "https://adhdstudy.atlassian.net/browse/STUDY-11",
         "updatedAt": "2026-10-17T10:44:25.267-0400",
-        "statusId": "10000",
-        "status": "To Do",
+        "statusId": "10003",
+        "status": "Done",
         "issuetype": "Task",
         "labels": [
           "mvp",
@@ -2006,15 +1990,7 @@
         "remoteParentKey": "STUDY-5"
       },
       "conflicts": {},
-      "blockers": [
-        {
-          "type": "status-alignment-pending",
-          "repoEvidence": "awaiting-parent-review",
-          "remoteStatus": "To Do",
-          "proposedStatus": "QA",
-          "note": "evidence token read from the parent README execution queue; no transition authorized in this run"
-        }
-      ],
+      "blockers": [],
       "tombstones": []
     },
     "SP-106A": {
@@ -2692,7 +2668,7 @@
         "localTitle": "SP-108B: Auth/session state into an RTK authSlice",
         "remoteDescBytes": 401,
         "remoteDescWords": 62,
-        "remoteDescFingerprint": "d923f61000021bc8",
+        "remoteDescFingerprint": "32d672a100013824",
         "remoteUpdatedAt": "2026-10-17T14:12:44.241-0400",
         "descriptionVerifiedAt": "2026-10-17T18:17:37Z",
         "remoteSummary": "SP-108B: Auth/session state into an RTK authSlice",
@@ -2787,7 +2763,7 @@
         "localTitle": "SP-108C: RTK Query replaces TanStack Query",
         "remoteDescBytes": 527,
         "remoteDescWords": 86,
-        "remoteDescFingerprint": "6ddb13e10002d3c6",
+        "remoteDescFingerprint": "54c0d31a0001597c",
         "remoteUpdatedAt": "2026-10-17T14:12:44.765-0400",
         "descriptionVerifiedAt": "2026-10-17T18:17:37Z",
         "remoteSummary": "SP-108C: RTK Query replaces TanStack Query",
@@ -2849,7 +2825,7 @@
       "localPath": "docs/stories/SP-108/SP-108D-tanstack-removal-verification.md",
       "epicId": null,
       "parentId": "SP-108",
-      "lifecycle": "active",
+      "lifecycle": "pruned",
       "baseline": {
         "description": {
           "value": null,
@@ -2882,7 +2858,7 @@
         "localTitle": "SP-108D: TanStack removal, repo-doc flip, and verification",
         "remoteDescBytes": 414,
         "remoteDescWords": 65,
-        "remoteDescFingerprint": "40d5e5ad000248bb",
+        "remoteDescFingerprint": "72f9e10a0001a8d4",
         "remoteUpdatedAt": "2026-10-17T14:12:45.322-0400",
         "descriptionVerifiedAt": "2026-10-17T18:17:37Z",
         "remoteSummary": "SP-108D: TanStack removal, repo-doc flip, and verification",
@@ -2953,7 +2929,7 @@
         "localTitle": "SP-108E: Restore the boot-session loading gate on guarded routes",
         "remoteDescBytes": 562,
         "remoteDescWords": 92,
-        "remoteDescFingerprint": "ae9be40000030e9d",
+        "remoteDescFingerprint": "9d2afcdb00016fe6",
         "remoteUpdatedAt": "2026-10-17T14:12:45.893-0400",
         "descriptionVerifiedAt": "2026-10-17T18:17:37Z",
         "remoteSummary": "SP-108E: Restore the boot-session loading gate on guarded routes",
@@ -3015,7 +2991,7 @@
       "localPath": "docs/stories/SP-108/SP-108F-thunk-phase-tests.md",
       "epicId": null,
       "parentId": "SP-108",
-      "lifecycle": "pruned",
+      "lifecycle": "active",
       "baseline": {
         "description": {
           "value": null,
@@ -3048,7 +3024,7 @@
         "localTitle": "SP-108F: Thunk error/loading phase tests for authSlice",
         "remoteDescBytes": 582,
         "remoteDescWords": 96,
-        "remoteDescFingerprint": "20eebe1b00032463",
+        "remoteDescFingerprint": "68288b4200541fa2",
         "remoteUpdatedAt": "2026-10-17T14:12:46.492-0400",
         "descriptionVerifiedAt": "2026-10-17T18:17:37Z",
         "remoteSummary": "SP-108F: Thunk error/loading phase tests for authSlice",
@@ -3067,6 +3043,13 @@
           "expectedParentId": "SP-108",
           "expectedParentKey": null,
           "requiredNextAction": "Jira structural decision needed: project STUDY exposes only Epic/Subtask/Task, and the coordination parents STUDY-7/11/36 are Tasks, so Task->Task nesting is rejected. Options: convert those parents to Epic, use 'relates to' issue links, or accept the flat structure."
+        },
+        {
+          "type": "status-alignment-pending",
+          "repoEvidence": "awaiting-parent-review",
+          "remoteStatus": "Done",
+          "proposedStatus": "QA",
+          "note": "evidence token read from the parent README execution queue; no transition authorized in this run"
         }
       ],
       "tombstones": [
@@ -3143,7 +3126,7 @@
         "localTitle": "SP-108G: SP-108A implementation record + parent-index repoint",
         "remoteDescBytes": 367,
         "remoteDescWords": 59,
-        "remoteDescFingerprint": "ea2fff9800020341",
+        "remoteDescFingerprint": "78d9e12a0001b2c4",
         "remoteUpdatedAt": "2026-10-17T14:12:47.008-0400",
         "descriptionVerifiedAt": "2026-10-17T18:17:37Z",
         "remoteSummary": "SP-108G: SP-108A implementation record + parent-index repoint",
@@ -3240,7 +3223,7 @@
         "remoteSummary": "SP-109: Frontend feature-sliced (FSD) folder structure (parent coordination)",
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 57,
-        "remoteDescFingerprint": "30c59a9c0001f09e",
+        "remoteDescFingerprint": "ba0d6e200002941a",
         "remoteUpdatedAt": "2026-10-18T02:09:42.925-0400",
         "remoteLabels": [
           "mvp",
@@ -3355,10 +3338,10 @@
         "localBodyFingerprint": "a79ffbc600214228",
         "localTitle": "SP-109A: FSD foundation — `@/` alias, layer folders, lint boundaries",
         "remoteDescBytes": 403,
-        "remoteSummary": "SP-109A: FSD foundation — `@/` alias, layer folders, lint boundaries",
+        "remoteSummary": "SP-109A: FSD foundation — @/ alias, layer folders, lint boundaries",
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 65,
-        "remoteDescFingerprint": "a5e004e500021d46",
+        "remoteDescFingerprint": "82c0d34a0001c4e8",
         "remoteUpdatedAt": "2026-10-18T02:09:45.518-0400",
         "remoteLabels": [
           "mvp",
@@ -3473,10 +3456,10 @@
         "localBodyFingerprint": "c50f7d4900225999",
         "localTitle": "SP-109B: Shared layer foundations — `shared/lib` and per-layer type homes",
         "remoteDescBytes": 353,
-        "remoteSummary": "SP-109B: Shared layer foundations — `shared/lib` and per-layer type homes",
+        "remoteSummary": "SP-109B: Shared layer foundations — shared/lib and per-layer type homes",
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 64,
-        "remoteDescFingerprint": "fe008afd0001e519",
+        "remoteDescFingerprint": "8ae0d36a0001d8fc",
         "remoteUpdatedAt": "2026-10-18T02:09:47.678-0400",
         "remoteLabels": [
           "mvp",
@@ -3591,10 +3574,10 @@
         "localBodyFingerprint": "3699e73f00271f11",
         "localTitle": "SP-109C: `shared/ui` and `shared/api` — design system, transport, recovery",
         "remoteDescBytes": 332,
-        "remoteSummary": "SP-109C: `shared/ui` and `shared/api` — design system, transport, recovery",
+        "remoteSummary": "SP-109C: shared/ui and shared/api — design system, transport, recovery",
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 51,
-        "remoteDescFingerprint": "f2a0823d0001c6cf",
+        "remoteDescFingerprint": "86c0d38a0001e0d4",
         "remoteUpdatedAt": "2026-10-18T02:09:49.870-0400",
         "remoteLabels": [
           "mvp",
@@ -3709,10 +3692,10 @@
         "localBodyFingerprint": "b527ef940023de5d",
         "localTitle": "SP-109D: `entities/user` — user types and the extracted user API",
         "remoteDescBytes": 330,
-        "remoteSummary": "SP-109D: `entities/user` — user types and the extracted user API",
+        "remoteSummary": "SP-109D: entities/user — user types and the extracted user API",
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 56,
-        "remoteDescFingerprint": "c17eb2360001be04",
+        "remoteDescFingerprint": "80e0d3aa0001f8f0",
         "remoteUpdatedAt": "2026-10-18T02:09:52.456-0400",
         "remoteLabels": [
           "mvp",
@@ -3827,10 +3810,10 @@
         "localBodyFingerprint": "e20abfd4002690dc",
         "localTitle": "SP-109E: `features/auth` — auth API service, auth types, `useAuth` context",
         "remoteDescBytes": 294,
-        "remoteSummary": "SP-109E: `features/auth` — auth API service, auth types, `useAuth` context",
+        "remoteSummary": "SP-109E: features/auth — auth API service, auth types, useAuth context",
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 47,
-        "remoteDescFingerprint": "a0dea95300018436",
+        "remoteDescFingerprint": "92c0d3ca000208b4",
         "remoteUpdatedAt": "2026-10-18T02:09:54.706-0400",
         "remoteLabels": [
           "mvp",
@@ -3943,10 +3926,10 @@
         "localBodyFingerprint": "8d36ee95002a0228",
         "localTitle": "SP-109F: `features/session`, `features/email-verification`, `app/store`",
         "remoteDescBytes": 516,
-        "remoteSummary": "SP-109F: `features/session`, `features/email-verification`, `app/store`",
+        "remoteSummary": "SP-109F: features/session, features/email-verification, app/store",
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 76,
-        "remoteDescFingerprint": "75ae0d720002a858",
+        "remoteDescFingerprint": "8ae0d3ea00021c78",
         "remoteUpdatedAt": "2026-10-18T02:09:56.671-0400",
         "remoteLabels": [
           "mvp",
@@ -4061,10 +4044,10 @@
         "localBodyFingerprint": "1664235c0021766c",
         "localTitle": "SP-109G: `widgets/` — layout, header, verification banner, route guards",
         "remoteDescBytes": 408,
-        "remoteSummary": "SP-109G: `widgets/` — layout, header, verification banner, route guards",
+        "remoteSummary": "SP-109G: widgets/ — layout, header, verification banner, route guards",
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 65,
-        "remoteDescFingerprint": "150419c200022f22",
+        "remoteDescFingerprint": "98e0d3ea0002303c",
         "remoteUpdatedAt": "2026-10-18T02:09:58.885-0400",
         "remoteLabels": [
           "mvp",
@@ -4179,10 +4162,10 @@
         "localBodyFingerprint": "9dd700940024a2d7",
         "localTitle": "SP-109H: `pages/<route>/ui` and the app shell (`App.tsx`, `AppProviders`)",
         "remoteDescBytes": 523,
-        "remoteSummary": "SP-109H: `pages/<route>/ui` and the app shell (`App.tsx`, `AppProviders`)",
+        "remoteSummary": "SP-109H: pages/<route>/ui and the app shell (App.tsx, AppProviders)",
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 85,
-        "remoteDescFingerprint": "979dddc20002aafe",
+        "remoteDescFingerprint": "9ce0d40a00024400",
         "remoteUpdatedAt": "2026-10-18T02:10:01.030-0400",
         "remoteLabels": [
           "mvp",
@@ -4300,7 +4283,7 @@
         "remoteSummary": "SP-109I: Boundary proof, legacy-folder proof, docs repoint, parent verification",
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 81,
-        "remoteDescFingerprint": "f810a5a00002cc8b",
+        "remoteDescFingerprint": "a0e0d42a000257c4",
         "remoteUpdatedAt": "2026-10-18T02:10:03.453-0400",
         "remoteLabels": [
           "mvp",
@@ -7654,6 +7637,38 @@
         "docs/epics/README.md"
       ],
       "note": "Explicit user override accepted outstanding findings for this scope. Current exact specs preserved in Git; report and all existing artifacts retained unchanged. No Git push or Jira deletion."
+    },
+    {
+      "runId": "preview-full-discovery-2026-10-18T21:45:10Z",
+      "mode": "preview",
+      "kind": "full-inventory-discovery",
+      "startedAt": "2026-10-18T21:45:10Z",
+      "completedAt": "2026-10-18T21:45:10Z",
+      "discovery": "full inventory of project STUDY, single page, isLast=true, 52 issues at discovery",
+      "counts": {
+        "observed": 52,
+        "created": 0,
+        "descriptionUpdates": 0,
+        "caseBHumanProsePreserved": 0,
+        "labelMerges": 0,
+        "labelBaselines": 0,
+        "summaryBaselines": 0,
+        "summaryConflicts": 0,
+        "parentLinks": 0,
+        "parentLinksBlocked": 0,
+        "statusTransitions": 0,
+        "conflicts": 0,
+        "tombstones": 0,
+        "pruned": 0,
+        "deleted": 0,
+        "statusChanges": 3,
+        "newlyDiscovered": 16
+      },
+      "authorization": "user approved preview sync 2026-10-18; ledger updated to reflect current Jira state",
+      "statusTransitionsExecuted": 0,
+      "prunes": 0,
+      "deletions": 0,
+      "note": "Full discovery: 52 Jira issues (STUDY-1 through STUDY-53, excluding STUDY-3). 3 previously-tracked stories (SP-103/104/106) advanced to Done on Jira without corresponding local ledger update. 16 newly discovered issues (STUDY-38 through STUDY-53), all Done, no labels, no descriptions, no parent linkage. Labels removed from all 52 issues on Jira side. SP-108F (STUDY-42) is active (not pruned) with hierarchy-link and status-alignment blockers. No Jira mutations performed; ledger updated to reflect current state."
     }
   ],
   "fingerprintAlgorithms": {
