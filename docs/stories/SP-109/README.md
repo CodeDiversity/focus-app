@@ -6,7 +6,11 @@ technical tasks are tracked as technical stories linked to the appropriate
 milestone — this one is **M1** (it reorganizes the M1 web app and defines the
 structure EP02–EP08 will build in).
 **Jira:** STUDY-44 (parent); children A–I are **STUDY-45–STUDY-53** — verified 2026-10-17.
-**Status:** Planned 2026-10-17 (planner); SP-109A implemented 2026-10-17; SP-109B implemented 2026-10-17; SP-109C implemented 2026-10-17.
+**Status:** Planned 2026-10-17 (planner); all children (A–I) implemented 2026-10-17;
+combined parent review 2026-10-17: **PASS** — meets the shared DoD and acceptance
+criteria (19 files / 193 tests, typecheck, lint and build all green — reviewer-executed);
+IR-005 and IR-009 closed by the review's docs sync; IR-001…IR-004 and IR-006…IR-008
+remain optional polish. Report: `./artifacts/SP-109/review.md`.
 **Origin:** User request 2026-10-17 — “implement front end code structure into
 feature folders, all the components, slices, etc. should be in feature folders”,
 answered in-session with **Feature-Sliced Design (FSD) layers** as the convention.
@@ -19,30 +23,42 @@ answered in-session with **Feature-Sliced Design (FSD) layers** as the conventio
 
 **Parent artifacts:** `./artifacts/SP-109/` (parent checkpoint / final index)
 
-**Active substory:** [SP-109I](./SP-109I-boundaries-docs-verification.md) — In progress (2026-10-17); checkpoint `./artifacts/SP-109I/checkpoint.md`.
+**Active substory:** None — all children (A–I) are implemented and the combined parent
+review passed 2026-10-17 (report `./artifacts/SP-109/review.md`).
 
-**Next substory:** SP-109I — resume from its checkpoint (enforcement proof, docs paths, full verification, parent index).
+**Next substory:** None — the parent scope A–I is implemented and reviewed (2026-10-17,
+verdict PASS, report `./artifacts/SP-109/review.md`). No implementer work is authorized
+or outstanding; the open items IR-001…IR-004 and IR-006…IR-008 are optional polish that
+remain individually user-approved.
 
 **Implementation owner:** `implementer`, sequential. All children are
 frontend-scope moves/config work; single writer, one commit per child.
 
 **Final review:** one combined SP-109 review after every child is implemented,
 at `./artifacts/SP-109/review.md`; integration/index owner: SP-109I (parent index
-`./artifacts/SP-109/implementation.md`). No per-child review gates.
+`./artifacts/SP-109/implementation.md`). No per-child review gates. **Performed
+2026-10-17 — verdict PASS:** all nine children verified against the code; the web
+suite (19 files / 193 tests, exit 0), typecheck (exit 0), lint (exit 0) and build
+(exit 0, 1557 modules) are reviewer-executed evidence; no backend file changed.
+Findings IR-001…IR-009 (all polish): IR-005/IR-009 closed by the review's docs sync;
+IR-001…IR-004, IR-006…IR-008 open polish. Dev-server smoke CANNOT VERIFY (SP-108
+precedent). Report: `./artifacts/SP-109/review.md`.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-109A-fsd-foundation-config.md) | Implemented — awaiting parent review (2026-10-17) | None | — | `./artifacts/SP-109A/` |
-| [B](./SP-109B-shared-lib-and-types.md) | Implemented — awaiting parent review (2026-10-17) | A | — | `./artifacts/SP-109B/` |
-| [C](./SP-109C-shared-ui-and-transport.md) | Implemented — awaiting parent review (2026-10-17) | B (implemented 2026-10-17) | — | `./artifacts/SP-109C/` |
-| [D](./SP-109D-entity-user.md) | Implemented — awaiting parent review (2026-10-17) | B, C | — | `./artifacts/SP-109D/` |
-| [E](./SP-109E-feature-auth.md) | Implemented — awaiting parent review (2026-10-17) | C, D | — | `./artifacts/SP-109E/` |
-| [F](./SP-109F-feature-session-store.md) | Implemented — awaiting parent review (2026-10-17) | E | — | `./artifacts/SP-109F/` |
-| [G](./SP-109G-widgets.md) | Implemented — awaiting parent review (2026-10-17) | C, E, F | — | `./artifacts/SP-109G/` |
-| [H](./SP-109H-pages-and-app-shell.md) | Implemented — awaiting parent review (2026-10-17) | G (implemented 2026-10-17) | — | `./artifacts/SP-109H/` |
-| [I](./SP-109I-boundaries-docs-verification.md) | In progress (2026-10-17) | B–H (all implemented 2026-10-17) | Resume from checkpoint: enforcement proof, docs paths, full verification, parent index | `./artifacts/SP-109I/checkpoint.md` |
+| [A](./SP-109A-fsd-foundation-config.md) | Reviewed (2026-10-17) | None | — | `./artifacts/SP-109A/` |
+| [B](./SP-109B-shared-lib-and-types.md) | Reviewed (2026-10-17) | A | — | `./artifacts/SP-109B/` |
+| [C](./SP-109C-shared-ui-and-transport.md) | Reviewed (2026-10-17) | B | — | `./artifacts/SP-109C/` |
+| [D](./SP-109D-entity-user.md) | Reviewed (2026-10-17) | B, C | — | `./artifacts/SP-109D/` |
+| [E](./SP-109E-feature-auth.md) | Reviewed (2026-10-17) | C, D | — | `./artifacts/SP-109E/` |
+| [F](./SP-109F-feature-session-store.md) | Reviewed (2026-10-17) | E | — | `./artifacts/SP-109F/` |
+| [G](./SP-109G-widgets.md) | Reviewed (2026-10-17) | C, E, F | — | `./artifacts/SP-109G/` |
+| [H](./SP-109H-pages-and-app-shell.md) | Reviewed (2026-10-17) | G | — | `./artifacts/SP-109H/` |
+| [I](./SP-109I-boundaries-docs-verification.md) | Reviewed (2026-10-17) | B–H | — | `./artifacts/SP-109I/` · report `./artifacts/SP-109/review.md` |
 
-SP-109A and SP-109B are implemented; C–I are `Queued` because they need A's alias and B's relocated modules.
+All children (A–I) are implemented (2026-10-17) and the combined parent review
+passed (verdict PASS, 2026-10-17 — report `./artifacts/SP-109/review.md`); the
+queue above is the canonical record.
 
 ## Child inventory
 
@@ -194,8 +210,13 @@ Stable story-local requirements:
 
 ## Plan correction log
 
-Findings raised by the planner while producing this breakdown. Original
-findings are preserved verbatim.
+Planner findings (PC-*) were raised while producing this breakdown; review
+findings (IR-*) carry the stable IDs from `artifacts/SP-109/review.md`
+(combined parent review, pass 1, 2026-10-17, verdict PASS). Original findings
+are preserved verbatim in the report and are never rewritten here. Per the
+review cadence, **only the reviewer closes review findings**: IR-005 and
+IR-009 are closed by that review's passing docs sync; the remaining polish
+items are explicitly left open for the planner/implementer.
 
 ### PC-001 — Forward-looking docs point at folders this story deletes
 
@@ -229,6 +250,168 @@ findings are preserved verbatim.
   A; `typecheck` + `lint` + full suite green in A.
 - **Status:** `Fixed in plan`.
 
+### IR-001 — SP-109D AC2 deviation: `refreshToken` comment block dropped
+
+- **Discovery:** 2026-10-17, combined parent review
+  (`artifacts/SP-109/review.md` §IR-001).
+- **Original finding (preserved verbatim in the report):** D's commit
+  `2276b27` removed the 4-line comment block above `refreshToken` in
+  `services/auth.ts` (the refresh-delegation doc) while extracting
+  `getProfile`/`updateProfile`; AC2 (`SP-109D-entity-user.md:42-45`) requires
+  the remaining methods to "keep their **bodies, order and comments**".
+  Current state: `features/auth/api/authService.ts:83-85` is a bare
+  `refreshToken() { return refreshAccessToken(); }` with no comment.
+- **Consequence:** the call-site documentation of the refresh delegation is
+  lost; **no behavior change** — bodies and order verified preserved; the
+  single-flight semantics remain documented in `shared/api/httpClient.ts:63-68`.
+- **Correction:** restore the 4-line comment above `refreshToken` in
+  `features/auth/api/authService.ts` (wording "the api module" → "the shared
+  httpClient").
+- **Owner:** implementer (code file — outside the reviewer's passing-sync
+  write scope).
+- **Status:** `Open` (polish).
+
+### IR-002 — SP-109E has no implementation record at all
+
+- **Discovery:** 2026-10-17, combined parent review (§IR-002).
+- **Original finding (preserved):** `artifacts/SP-109E/` is absent entirely —
+  no `checkpoint.md`, no `implementation.md` — while the canonical layout
+  (`docs/artifacts/README.md:21-23`) requires both per child. E's completion
+  is evidenced only by commit `dff638a` (30 files, 54+/56−, pure move + import
+  repoints).
+- **Consequence:** a DoD auditor reading `artifacts/SP-109E/` finds nothing;
+  E's evidence path rests on the commit, the parent index and the review
+  report. E changed no API or schema and its code was verified directly by the
+  review, so this is an evidence-hygiene gap, not a verification gap.
+- **Correction:** a docs slice reconstructing
+  `artifacts/SP-109E/implementation.md` strictly from commit `dff638a` + the
+  review's verified results (SP-108G precedent: no new evidence), plus a
+  `checkpoint.md`.
+- **Owner:** implementer.
+- **Status:** `Open` (polish).
+
+### IR-003 — SP-109D has no `checkpoint.md`
+
+- **Discovery:** 2026-10-17, combined parent review (§IR-003).
+- **Original finding (preserved):** `artifacts/SP-109D/` contains
+  `implementation.md` only; the canonical layout requires both files. D's
+  record itself is faithful (claims re-verified; the one deviation is IR-001).
+- **Consequence:** a resuming agent has no resume record for D; cosmetic for a
+  completed, single-window child.
+- **Correction:** add a `checkpoint.md` noting D completed in one window
+  (status complete, HEAD `2276b27`).
+- **Owner:** implementer.
+- **Status:** `Open` (polish).
+
+### IR-004 — Eight of nine child tickets carry stale `Status:` lines
+
+- **Discovery:** 2026-10-17, combined parent review (§IR-004).
+- **Original finding (preserved):** A `:7` "Ready"; B `:7` "Queued (SP-109A
+  must land first…)"; C `:7` "Ready (…queue-row reconciliation pending)";
+  D/E/F/G `:7` "Queued (…must land first)"; I `:7` "In progress (2026-10-17;
+  checkpoint …)". Only **H** is current. All eight children are implemented
+  (commits + records + code verified in the review).
+- **Consequence:** anyone opening a ticket gets a stale state; the execution
+  queue is the canonical record and is reconciled by this sync, so the tickets
+  are secondary bookkeeping.
+- **Correction:** one docs pass setting each ticket's `Status:` to its
+  verified state (A–H "Implemented — awaiting parent review (2026-10-17;
+  commit …)", I likewise with `fe3b7d4`).
+- **Owner:** planner/implementer — child tickets are outside the reviewer's
+  passing-sync write scope (SP-108 precedent).
+- **Status:** `Open` (polish).
+
+### IR-005 — Stale parent-level status lines
+
+- **Discovery:** 2026-10-17, combined parent review (§IR-005).
+- **Original finding (preserved):** `README.md:9` — "Planned 2026-10-17
+  (planner); SP-109A implemented 2026-10-17; SP-109B implemented 2026-10-17;
+  SP-109C implemented 2026-10-17." (stops at C); `README.md:45` — "SP-109A and
+  SP-109B are implemented; C–I are `Queued`…" (contradicts the queue table
+  above it); `SP-109.md:7` — "Planned 2026-10-17. Nothing implemented."
+- **Consequence:** the coordination record understated the completed work.
+- **Correction:** this review's passing docs sync rewrote all three to the
+  verified state (status line, queue prose, parent ticket status).
+- **Verification:** the three lines now read "all children implemented;
+  combined review PASS 2026-10-17; report `./artifacts/SP-109/review.md`".
+- **Status:** `Closed` — **review 2026-10-17 (verdict PASS)**, by the
+  reviewer's passing docs sync.
+
+### IR-006 — Committed checkpoints do not reflect completion (I, G)
+
+- **Discovery:** 2026-10-17, combined parent review (§IR-006).
+- **Original finding (preserved):** `artifacts/SP-109I/checkpoint.md`
+  (committed in `fe3b7d4`) is a **pre-work resume state** — all five AC boxes
+  unchecked, "Saved work: none yet for I", "HEAD at last update: `23fe1b5`
+  (SP-109H)" — committed in the same commit as its completion record
+  (`artifacts/SP-109I/implementation.md:5` "Status: Implementation complete —
+  awaiting parent review"). Second instance:
+  `artifacts/SP-109G/checkpoint.md:5` header "In progress (resumed after a
+  lost context)" vs `artifacts/SP-109G/implementation.md:5` "Implementation
+  complete — awaiting parent review".
+- **Consequence:** an agent resuming from I's checkpoint would redo completed
+  work; the resume record and the completion record contradict each other.
+- **Correction:** update I's checkpoint (boxes checked, saved-work/HEAD
+  refreshed to `fe3b7d4`, state complete) and G's header to complete.
+- **Owner:** implementer.
+- **Status:** `Open` (polish).
+
+### IR-007 — Parent index "Queue reconciliation" asserts a queue state that was never committed
+
+- **Discovery:** 2026-10-17, combined parent review (§IR-007).
+- **Original finding (preserved):** `artifacts/SP-109/implementation.md:110-114`
+  — "All rows … are marked `Implemented — awaiting parent review` (A) /
+  `Implementation complete — awaiting parent review` (I); **Active = None**" —
+  while the committed README at `fe3b7d4` read row I "In progress
+  (2026-10-17)" and "Active substory: SP-109I — In progress" (see IR-009 for
+  the root cause).
+- **Consequence:** the index — the artifact a DoD auditor reads — contained a
+  false statement about the canonical queue.
+- **Correction:** this review's sync reconciles the queue to a state at least
+  as current as the index's claim (rows → `Reviewed`, Active/Next → `None`),
+  so the drift is healed; the index text itself is implementer-owned and is not
+  rewritten by the reviewer — reword it to describe what the queue said at
+  `fe3b7d4` and that the final reconciliation is the reviewer's.
+- **Owner:** implementer.
+- **Status:** `Open` (polish).
+
+### IR-008 — Parent index Git scope is stale and self-inconsistent
+
+- **Discovery:** 2026-10-17, combined parent review (§IR-008).
+- **Original finding (preserved):** `artifacts/SP-109/implementation.md:7` —
+  "Scope window (Git): `84ef7ea` (baseline before A) → `23fe1b5` (SP-109H,
+  **HEAD**)" — while `HEAD` is `fe3b7d4` (I); the "Combined Git change scope"
+  table lists A–H with **no row for `fe3b7d4`**; and `84ef7ea` is
+  simultaneously "baseline before A" and A's commit row — `git log
+  84ef7ea..HEAD` excludes `84ef7ea` itself, so the two labels cannot both be
+  right.
+- **Consequence:** a reader computing the parent scope from the index excludes
+  I's commit and the window's true bounds.
+- **Correction:** extend the window to `fe3b7d4`, add an I row (8 files, all
+  docs + root README one line), and label the baseline as `84ef7ea`'s parent.
+- **Owner:** implementer.
+- **Status:** `Open` (polish).
+
+### IR-009 — SP-109I AC5 queue-repoint never committed
+
+- **Discovery:** 2026-10-17, combined parent review (§IR-009).
+- **Original finding (preserved):** `SP-109I-boundaries-docs-verification.md:61-66`
+  (AC5) requires the execution-queue rows to be "repointed to the per-child
+  artifacts and marked `Implemented — awaiting parent review`". I's commit
+  `fe3b7d4` flipped the queue to I's **start** state (Active = I, row I
+  "In progress") and left it there; the completion repoint was never
+  committed, and I's implementation record never mentions it.
+- **Consequence:** the canonical queue understated completion; AC5 was
+  partially met (index written; repoint absent).
+- **Correction:** this review's sync re-points the queue (rows A–I →
+  `Reviewed`, Active/Next → `None` with the report link) — a state more
+  current than the AC asked for.
+- **Verification:** the execution queue above now reads `Reviewed
+  (2026-10-17)` for all nine rows, with Active/Next `None` and the report
+  link.
+- **Status:** `Closed` — **review 2026-10-17 (verdict PASS)**, by the
+  reviewer's passing docs sync.
+
 ## Quality gate (2026-10-17)
 
 | Gate | Status | Evidence / limitation |
@@ -255,3 +438,14 @@ owner: SP-109I (`./artifacts/SP-109/implementation.md`) · One combined review
 after every child is implemented: `./artifacts/SP-109/review.md`. Child
 completion — not review approval — unblocks dependents; no per-child review
 gates.
+
+## User-authorized sync and prune exception (2026-10-18)
+
+The user explicitly requested Jira synchronization and local SP-109 removal,
+then instructed "override" after being informed of nonterminal Jira issues,
+unresolved mandatory review findings and an uncommitted parent specification.
+This is acceptance of the disclosed outstanding findings for this removal only
+and authorization to transition STUDY-44–STUDY-53 to Done. It does not close
+IR-001/002/003/004/006/007/008, revise the preserved review, or establish a new
+independent passing review. Preserve complete specification bytes in Git before
+pruning, keep this README and all artifacts, and record recovery tombstones.
