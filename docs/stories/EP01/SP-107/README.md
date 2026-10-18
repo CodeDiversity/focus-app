@@ -64,7 +64,7 @@ all rows are planning state.
 |---|---|---|---|---|---|
 | [A](./SP-107A-onboarding-state-backend.md) | Backend, `implementer` | Onboarding state: three additive `User` columns (one migration, existing users backfilled **completed** — D107-2); `GET /onboarding` + `PATCH /onboarding` (monotonic step, terminal completion) | SP-104 (done) | One 1.5–2 h session | Pending creation |
 | [B](./SP-107B-minimal-semester-course-endpoints.md) | Backend, `implementer` | Minimal `POST /semesters` + `POST /courses` (student-scoped; `@db.Date` date fields; 409 duplicates; uniform-404 foreign-semester ownership check); EP02-extend flag | SP-104 (done) | One 2 h session | Pending creation |
-| [C](./SP-107C-wizard-shell-and-step1.md) | Frontend, `implementer` | Wizard shell: `/onboarding` route, login-entry redirect, resume, skip (step 2+), terminal redirect, full-screen presentation; step 1 preferences form (name + time-zone `Select`, reuses SP-106 `PATCH /users/me`) | A; SP-106C/E (in code) | One 2–2.5 h session | Pending creation |
+| [C](./SP-107C-wizard-shell-and-step1.md) | Frontend, `implementer` | Wizard shell: `/onboarding` route, login-entry redirect, resume, skip (step 2+), terminal redirect (standard `Layout`, D107-3); step 1 preferences form (name + time-zone `Select`, reuses SP-106 `PATCH /users/me`) | A; SP-106C/E (in code) | One 2–2.5 h session | Pending creation |
 | [D](./SP-107D-wizard-step2-semester.md) | Frontend, `implementer` | Step 2 first-semester form (name + start/end dates, end-after-start client validation, 409 duplicate-name handling) | B, C | One 1–1.5 h session | Pending creation |
 | [E](./SP-107E-wizard-step3-course.md) | Frontend, `implementer` | Step 3 optional first-course form (code + name, pre-selected semester from onboarding state, finish-without-course) | B, C | One 1–1.5 h session | Pending creation |
 | [F](./SP-107F-wizard-integration.md) | Integration, `implementer` | Full wizard flow on real Postgres (complete, resume, skip, terminal, cross-student); manual browser sign-off (DoD 10); parent index | A–E | One 1.5–2 h session | Pending creation |
@@ -78,7 +78,7 @@ integration owner for cross-layer verification.
 |---|---|---|
 | D107-1 | **Onboarding state shape:** three additive `User` columns — `onboardingStep Int @default(1)` (first incomplete step, 1–3), `onboardingCompletedAt DateTime?` (set on complete *or* skip; `completed` is derived from it), `onboardingSemesterId String?` (semester created in step 2, for step-3 resume). One additive migration; no `UserOnboardingState` model (the ticket's first option — three steps do not justify a new model). | Planner 2026-10-18, grounded in the parent ticket's technical note. Reversible. |
 | D107-2 | **Existing-user backfill: marked completed.** The migration sets `onboardingCompletedAt = now()` for all pre-existing rows; the wizard appears only for brand-new registrations. | **User decision 2026-10-18** (recommended "wizard once" was offered and declined). |
-| D107-3 | **Entry points:** login success → `GET /onboarding` → not completed → `/onboarding` (full-screen, no app header — same presentation pattern as login/register), else the existing redirect (`from` or `/dashboard`). The `/onboarding` route itself: completed → redirect `/dashboard`; else render at the stored step. No boot-time gate and no persistent header link in M1: the wizard's exits are complete/skip, and a sign-out link inside the wizard preserves the resume path (sign-in re-enters). | Planner 2026-10-18, grounded in AC-107-01/03/05 + locked EP01 D4 ("skippable wizard"). Reversible; a header "continue setup" affordance is a possible EP05 follow-up, not M1 scope. |
+| D107-3 | **Entry points:** login success → `GET /onboarding` → not completed → `/onboarding`, else the existing redirect (`from` or `/dashboard`). The `/onboarding` route (inside `ProtectedRoute`, rendered within the standard `Layout` — every existing page, including login/register, renders under the app header): completed → redirect `/dashboard`; else render at the stored step. No boot-time gate and no persistent header link in M1; the M1 resume paths are sign-in (the wizard footer offers sign-out) and the `/onboarding` URL. | Planner 2026-10-18, grounded in AC-107-01/03/05 + locked EP01 D4 ("skippable wizard") + `Layout.tsx` inspection. Reversible; boot-time reconciliation and a header "continue setup" affordance are possible EP05 follow-ups, not M1 scope. |
 | D107-4 | **Skip is offered from step 2 onward** (not on step 1): "skippable after Step 1" reads as step 1 required, steps 2–3 skippable. Skip = `PATCH /onboarding { completed: true }`, terminal, records completion without optional data. | Planner 2026-10-18, grounded in AC-107-04 wording. Reversible. |
 | D107-5 | **Semester endpoint is minimal:** `POST /semesters` only — `name` + `startDate`/`endDate`; no `isActive` input (schema default `false`; EP02 owns activation semantics); no list/get/update/delete. Duplicate name for the same student → 409. | Planner 2026-10-18, grounded in the parent ticket + EP02 scope ("Create and manage semesters" is EP02's proposed story 1). |
 | D107-6 | **Course endpoint is minimal:** `POST /courses` only — `code` + `name` required; `semesterId` optional with an ownership check (missing **or another student's** → uniform 404 `Resource not found` per the repo ownership convention); `description`/`credits`/`color` optional with bounds. Duplicate code for the same student → 409. No edit/archive. | Planner 2026-10-18, grounded in the parent ticket + EP02 scope + `apps/api/src/common/ownership/ownership.ts` convention. |
@@ -190,7 +190,7 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
 | 4 actionable API errors | A, B (field-level 400 `errors` map), C, D, E (display) |
 | 5 loading/empty/error states | C, D, E (per-step form states) |
 | 6 keyboard accessibility | C, D, E (full keyboard flow per step, incl. the `Select`) |
-| 7 responsive layouts | C, D, E (full-screen wizard on mobile + desktop) |
+| 7 responsive layouts | C, D, E (wizard fits mobile + desktop within the standard layout) |
 | 8 automated business-rule tests | A, B, C, D, E, F |
 | 9 API/migration documentation | A (User migration), B (Semester `@db.Date` migration + API contract — this README) |
 | 10 integrated development review | F (manual browser sign-off) + the combined parent review |
@@ -206,9 +206,29 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
 
 ## Plan correction log
 
-No findings yet — fresh breakdown 2026-10-18. Entries are appended here with
-stable IDs and preserved history; the parent ticket's original requirements
-are unchanged by the breakdown.
+### CF-107-01 — D107-3 claimed a presentation pattern the app does not have
+
+- **Discovery:** 2026-10-18, during SP-107C authoring, in the breakdown
+  README decision D107-3 (scaffold commit `07ab678`).
+- **Original finding (preserved):** D107-3 stated the wizard renders
+  "`/onboarding` (full-screen, no app header — same presentation pattern as
+  login/register)".
+- **Consequence:** an implementer would have rendered the wizard outside the
+  app `Layout`, contradicting the actual code: `apps/web/src/widgets/layout/ui/Layout.tsx`
+  wraps **every** route (Header + `EmailVerificationBanner` + `main`), and the
+  login/register pages render *inside* it (their `min-h-screen` is within
+  `main`). The claim "same presentation pattern as login/register" was false.
+- **Correction:** D107-3 rewritten — the wizard renders inside the standard
+  `Layout`/`ProtectedRoute` like all existing pages; the resume-path wording
+  (sign-in + `/onboarding` URL; no boot gate, no header link in M1) is
+  unchanged. SP-107C's AC 1 and technical notes state the same.
+- **Verification:** `Layout.tsx` (17 lines — unconditional Header + banner +
+  main) and `App.tsx` route table re-read; `LoginPage.tsx`/`RegisterPage.tsx`
+  confirmed to render within `main`. Grep for "full-screen"/"no app header"
+  across the breakdown found two further stale spots — the child-inventory row
+  for C and DoD row 7 — both rewritten in the same correction; the only
+  remaining occurrences are inside this preserved finding.
+- **Status:** `Fixed in plan`.
 
 ## Quality gate
 
