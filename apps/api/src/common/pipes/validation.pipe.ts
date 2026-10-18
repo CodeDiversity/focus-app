@@ -27,7 +27,6 @@ export class FieldValidationPipe extends ValidationPipe {
   ): BadRequestException => {
     // Build the field-level errors map.
     const errorsMap: Record<string, string[]> = {};
-    const messageArray: string[] = [];
 
     for (const validationError of errors) {
       const constraints = validationError.constraints;
@@ -38,12 +37,17 @@ export class FieldValidationPipe extends ValidationPipe {
       const property = validationError.property;
 
       // Collect constraint messages for this property.
-      const messages = Object.values(constraints) as string[];
-      errorsMap[property] = messages;
-
-      // Also collect into the stock message array (backward compat).
-      messageArray.push(...messages);
+      const message = Object.values(constraints) as string[];
+      errorsMap[property] = message;
     }
+
+    // The stock `message` array (backward compatibility) now comes from Nest's
+    // own flattener (IR-106-03): it recurses into `children`, so nested-DTO
+    // constraints (e.g. `preferences.limit must be an integer`) no longer
+    // vanish from `message` — they were previously dropped here because only
+    // top-level `constraints` were read. For flat DTOs the output is
+    // byte-identical to the previous manual loop (same iteration order).
+    const messageArray = this.flattenValidationErrors(errors);
 
     return new BadRequestException({
       statusCode: 400,

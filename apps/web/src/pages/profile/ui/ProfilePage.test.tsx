@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
@@ -11,9 +11,9 @@ import { userService } from '@/entities/user/api/userService';
 import { makeTestStore } from '@/test/providers';
 import { setUser } from '@/features/session/model/authSlice';
 import {
+  FALLBACK_TIME_ZONES,
   formatDateTime,
   getBrowserTimeZone,
-  getTimeZones,
   isValidTimeZone,
 } from '@/shared/lib/datetime';
 import type { User } from '@/entities/user/model/types';
@@ -143,23 +143,124 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
     expect(timeZoneSelect()).toHaveValue(getBrowserTimeZone());
   });
 
-  it('renders all supported zones sorted by offset then region (AC-106-03, TR-106-01 by construction)', async () => {
+  it('renders all runtime-supported zones sorted by offset then region (AC-106E-1, AC-106E-2)', async () => {
     renderProfilePage();
     await waitForBoot();
 
     const select = timeZoneSelect();
-    const options = select.querySelectorAll('option');
+    const values = Array.from(select.querySelectorAll('option')).map((o) => o.value);
+    expect(values.length).toBeGreaterThan(0);
 
-    // The select should have all supported zones (ES2022 supportedValuesOf count
-    // or the fallback list count — both validated against isValidTimeZone).
-    expect(options.length).toBeGreaterThan(0);
+    // Structural access: the app compiles against lib ES2020.
+    const intl = Intl as unknown as { supportedValuesOf?: (key: 'timeZone') => string[] };
 
-    // The list should be sorted by offset (ascending) then by region name.
-    const values = Array.from(options).map((o) => o.value);
-    expect(values).toEqual(getTimeZones());
+    // AC-106E-1 / IR-106-11a: on modern runtimes the select renders the
+    // *runtime* list (beyond the curated fallback), not ~112 fallback
+    // entries. The pre-fix helper always fell back — these two assertions
+    // fail on it.
+    if (typeof intl.supportedValuesOf === 'function') {
+      expect(values.length).toBeGreaterThan(FALLBACK_TIME_ZONES.length);
+      expect(values).toContain('Europe/Vatican'); // runtime list; absent from the fallback
+    } else {
+      expect(values.length).toBeLessThanOrEqual(FALLBACK_TIME_ZONES.length);
+    }
 
-    // Every option must be a valid IANA zone (by construction from the runtime's list).
+    // AC-106E-2 / IR-106-11b: sorted by UTC offset, not alphabetically.
+    // London (UTC+1 in June) must precede Tokyo (UTC+9); an alphabetical
+    // list would flip them ('Asia' < 'Europe'), which is what the broken
+    // offset parser produced.
+    expect(values.indexOf('Europe/London')).toBeLessThan(values.indexOf('Asia/Tokyo'));
+
+    // Offset extremes at the fixed June reference date (runtime list only —
+    // the fallback does not include Midway/Kiritimati).
+    if (typeof intl.supportedValuesOf === 'function') {
+      expect(values[0]).toBe('Pacific/Midway'); // UTC-11 — most negative offset
+      expect(values[values.length - 1]).toBe('Pacific/Kiritimati'); // UTC+14 — most positive
+    }
+
+    // Every option must be a valid IANA zone, with no duplicates.
     expect(values.every((v) => isValidTimeZone(v))).toBe(true);
+    expect(new Set(values).size).toBe(values.length);
+  });
+
+  it('offers a stored non-canonical alias that is absent from the runtime list (IR-106-15c)', async () => {
+    // US/Pacific is a valid IANA alias (Intl accepts it) but is not part of
+    // the canonical supportedValuesOf list. Without the guard it silently
+    // resolves to the first option on save; the page now offers it explicitly.
+    renderProfilePage({ ...storedStudent, timeZone: 'US/Pacific' });
+    await waitForBoot();
+
+    const values = Array.from(timeZoneSelect().querySelectorAll('option')).map((o) => o.value);
+    expect(values).toContain('US/Pacific');
+    expect(timeZoneSelect()).toHaveValue('US/Pacific');
+  });
+
+  it('updates the display line in real time when the selection changes, without saving (AC-106E-4)', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-17T18:30:00.000Z'));
+
+    renderProfilePage({ ...storedStudent, timeZone: 'America/New_York' });
+    // Flush the mocked boot microtasks (fake timers freeze waitFor polling).
+    await act(async () => undefined);
+
+    expect(screen.getByText(/your time zone/i)).toHaveTextContent('America/New_York');
+
+    fireEvent.change(timeZoneSelect(), { target: { value: 'Pacific/Auckland' } });
+
+    // IR-106-09: the line follows the live form value — no save required.
+    expect(screen.getByText(/your time zone/i)).toHaveTextContent('Pacific/Auckland');
+    expect(screen.getByText(/your time zone/i)).toHaveTextContent(
+      formatDateTime(new Date('2026-10-17T18:30:00.000Z'), 'Pacific/Auckland')
+    );
+    expect(mockedUpdateProfile).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it('is keyboard reachable as a native combobox, with keys left to the browser (AC-106E-6)', async () => {
+    renderProfilePage({ ...storedStudent, timeZone: 'America/New_York' });
+    await waitForBoot();
+
+    // Tab order: Email is disabled (skipped), Display Name first, then the
+    // time-zone select.
+    await validUser.tab();
+    expect(screen.getByLabelText(/display name/i)).toHaveFocus();
+    await validUser.tab();
+    expect(timeZoneSelect()).toHaveFocus();
+
+    // Implicit combobox role of a single-select <select> (AT contract).
+    expect(screen.getByRole('combobox')).toBe(timeZoneSelect());
+
+    // Arrow/Enter/Space/Escape on a native select are the browser's built-in
+    // menu behavior; jsdom cannot emulate the open menu (user-event
+    // implements arrow walking only for radio inputs). Pin that the app does
+    // not intercept these keys: the selection is untouched and focus stays.
+    await validUser.keyboard('{ArrowDown}{Enter}{Escape}');
+    expect(timeZoneSelect()).toHaveValue('America/New_York');
+    expect(timeZoneSelect()).toHaveFocus();
+
+    // The selection a menu produces (change event) drives the form value
+    // and the AC-106E-4 display line without a save.
+    fireEvent.change(timeZoneSelect(), { target: { value: 'Pacific/Auckland' } });
+    expect(screen.getByText(/your time zone/i)).toHaveTextContent('Pacific/Auckland');
+    expect(mockedUpdateProfile).not.toHaveBeenCalled();
+  });
+
+  it('fits the card layout with responsive container classes (AC-106E-8)', async () => {
+    renderProfilePage();
+    await waitForBoot();
+
+    const select = timeZoneSelect();
+    // Same full-width treatment as Input inside the existing card, which
+    // sits in the responsive page container (jsdom cannot measure real
+    // layout — the real-browser dimension is the IR-106-14 pass).
+    expect(select).toHaveClass('w-full');
+    expect(select.closest('.w-full')).not.toBeNull(); // Select's own wrapper
+    expect(select.closest('.card')).not.toBeNull();
+
+    const container = document.querySelector('.max-w-2xl');
+    expect(container).not.toBeNull();
+    expect(container).toHaveClass('px-4', 'sm:px-6', 'lg:px-8');
   });
 
   it('submits { name, timeZone } via PATCH and updates the session user (AC-106-02, TR-106-02)', async () => {

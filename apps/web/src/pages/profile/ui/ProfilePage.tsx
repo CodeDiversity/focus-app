@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -43,6 +43,7 @@ export function ProfilePage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, dirtyFields },
     reset,
     setError,
@@ -71,6 +72,26 @@ export function ProfilePage() {
   const markEdited = useCallback(() => {
     studentEdited.current = true;
   }, []);
+
+  // AC-106E-4: the display line follows the live form value, so changing the
+  // selection updates it in real time — no save required. `watch` re-renders
+  // the page on every change; `markEdited` (a ref mutation) alone never did.
+  const watchedTimeZone = watch('timeZone');
+  const displayedTimeZone = watchedTimeZone ?? storedTimeZone ?? defaultTimeZone;
+
+  // The option list is immutable and memoized by the shared helper
+  // (IR-106-15b); recompute only when the pre-fill default changes.
+  const timeZoneOptions = useMemo(() => {
+    const zones = getTimeZones();
+    // IR-106-15(c): a stored non-canonical alias (e.g. `US/Pacific`, written
+    // through the API) is absent from the runtime's canonical list. Offer it
+    // explicitly so the pre-selected value round-trips instead of silently
+    // resolving to the first option on save.
+    if (isValidTimeZone(defaultTimeZone) && !zones.includes(defaultTimeZone)) {
+      return [defaultTimeZone, ...zones];
+    }
+    return zones;
+  }, [defaultTimeZone]);
 
   useEffect(() => {
     if (!user || requestedProfile.current) return;
@@ -159,15 +180,15 @@ export function ProfilePage() {
               disabled={isSubmitting || isLoading}
               {...register('timeZone', { onChange: markEdited })}
             >
-              {getTimeZones().map((tz) => (
+              {timeZoneOptions.map((tz) => (
                 <option key={tz} value={tz}>
                   {tz}
                 </option>
               ))}
             </Select>
             <p className="text-sm text-secondary-500">
-              Your time zone: <span className="font-mono">{storedTimeZone ?? defaultTimeZone}</span>{' '}
-              (currently {formatDateTime(new Date(), storedTimeZone ?? defaultTimeZone)} there)
+              Your time zone: <span className="font-mono">{displayedTimeZone}</span> (currently{' '}
+              {formatDateTime(new Date(), displayedTimeZone)} there)
             </p>
           </div>
 

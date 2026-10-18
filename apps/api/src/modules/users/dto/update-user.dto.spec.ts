@@ -125,6 +125,31 @@ describe('UpdateUserDto (DTO-level validation, no database)', () => {
       const prefsErrors = errors.filter((e) => e.includes('serialized size'));
       expect(prefsErrors).toHaveLength(0);
     });
+
+    it('measures the cap in UTF-8 bytes, not UTF-16 units (IR-106-02)', async () => {
+      // 2050 multi-byte characters: ~2061 UTF-16 units inside the JSON
+      // string, but ~4111 UTF-8 bytes — under the cap in units, over it in
+      // bytes. The old `String.length` check accepted this payload.
+      const dto = new UpdateUserDto();
+      dto.preferences = { data: 'é'.repeat(2050) };
+      const serialized = JSON.stringify(dto.preferences);
+      expect(serialized.length).toBeLessThan(4096); // units: would pass the old check
+      expect(Buffer.byteLength(serialized, 'utf8')).toBeGreaterThan(4096); // bytes: the real cap
+
+      const errors = await validateDto(dto);
+      const prefsErrors = errors.filter((e) => e.includes('serialized size'));
+      expect(prefsErrors).toHaveLength(1);
+    });
+  });
+
+  describe('name', () => {
+    it('an empty display name fails (IR-106-06 — matches the form and registration)', async () => {
+      const dto = new UpdateUserDto();
+      dto.name = '';
+      const errors = await validateDto(dto);
+      const nameErrors = errors.filter((e) => e.includes('should not be empty'));
+      expect(nameErrors).toHaveLength(1);
+    });
   });
 
   describe('partial update', () => {
