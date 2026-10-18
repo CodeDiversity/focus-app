@@ -40,11 +40,11 @@ Per-story deltas are recorded in each story file under "Existing scaffold code".
 | [SP-104](./SP-104-auth-guards-data-scoping.md) | Auth guards and student data scoping | SP-102 | STUDY-10 |
 | [SP-105](./SP-105/README.md) | Password reset — split into [10 children](./SP-105/README.md) | SP-102, SP-103 | STUDY-7 (parent) |
 | [SP-106](./SP-106/README.md) | Student profile and preferences — split into [4 children](./SP-106/README.md) | SP-104 | STUDY-11 (parent) |
-| [SP-107](./SP-107-onboarding-wizard.md) | Onboarding wizard | SP-103, SP-106 | STUDY-8 |
+| [SP-107](./SP-107/README.md) | Onboarding wizard — split into [6 children](./SP-107/README.md) | SP-103, SP-106 | STUDY-8 (parent) |
 
 Epic: **STUDY-5**.
 
-Dependency flow: SP-101 → SP-102 → SP-104 → SP-105, with SP-103 and SP-106 parallelizable after SP-101/SP-102, and SP-107 last. SP-107 step 2 introduces a minimal semester-create endpoint that EP02 must extend, not duplicate — flagged in both stories.
+Dependency flow: SP-101 → SP-102 → SP-104 → SP-105, with SP-103 and SP-106 parallelizable after SP-101/SP-102, and SP-107 last. SP-107 introduces minimal `POST /semesters` (step 2) and `POST /courses` (step 3) endpoints that EP02 must extend, not duplicate — flagged in both breakdowns.
 
 Historical Jira sync: EP01 and seven original stories were recorded as synced on 2026-10-11. SP-105 remains the existing STUDY-7 parent; children A–J have distinct local story IDs and Jira keys **Pending creation**. No tracker mutation occurred during this correction pass; linking and issue types must be reconciled on an explicitly authorized sync. Superseded 2026-10-17 by the authorized bootstrap sync, which verified SP-105's children A–J as **STUDY-22–STUDY-31**, SP-106's children A–D as **STUDY-32–STUDY-35**, SP-108 and its children A–G as **STUDY-36–STUDY-43**, SP-106/SP-105 parents STUDY-11/STUDY-7 as before, and SP-109 and its children A–I as **STUDY-44–STUDY-53**. Nested parent linkage remains unresolved: Jira rejects a `Task` parenting another `Task`, and STUDY-7/STUDY-11/STUDY-36 are `Task`s. No status transition was executed in that run; full record in `docs/jira-sync/ledger.json`.
 
