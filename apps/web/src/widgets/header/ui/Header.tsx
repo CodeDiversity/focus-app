@@ -20,15 +20,26 @@ export function Header() {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className={location.pathname === '/' ? 'text-primary-600 font-medium' : ''}>
+            <Link
+              to="/"
+              className={location.pathname === '/' ? 'text-primary-600 font-medium' : ''}
+            >
               Home
             </Link>
             {isAuthenticated && (
               <>
-                <Link to="/dashboard" className={location.pathname === '/dashboard' ? 'text-primary-600 font-medium' : ''}>
+                <Link
+                  to="/dashboard"
+                  className={
+                    location.pathname === '/dashboard' ? 'text-primary-600 font-medium' : ''
+                  }
+                >
                   Dashboard
                 </Link>
-                <Link to="/profile" className={location.pathname === '/profile' ? 'text-primary-600 font-medium' : ''}>
+                <Link
+                  to="/profile"
+                  className={location.pathname === '/profile' ? 'text-primary-600 font-medium' : ''}
+                >
                   Profile
                 </Link>
               </>
@@ -42,7 +53,9 @@ export function Header() {
                 <span className="hidden md:inline text-sm text-secondary-600">
                   Welcome, {user?.name || user?.email.split('@')[0]}
                 </span>
-                <Link to="/verify-email" className="text-sm underline rounded focus-visible:ring-2">Email verification</Link>
+                <Link to="/verify-email" className="text-sm underline rounded focus-visible:ring-2">
+                  Email verification
+                </Link>
                 <Button variant="outline" onClick={logout}>
                   Logout
                 </Button>

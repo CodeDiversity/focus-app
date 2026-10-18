@@ -13,8 +13,8 @@ export function HomePage() {
             Take Control of Your Studies
           </h1>
           <p className="text-xl text-secondary-600 mb-8 max-w-2xl mx-auto">
-            StudyPilot helps students with ADHD stay organized, manage deadlines,
-            and build effective study habits with personalized planning tools.
+            StudyPilot helps students with ADHD stay organized, manage deadlines, and build
+            effective study habits with personalized planning tools.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {isAuthenticated ? (
@@ -43,12 +43,14 @@ export function HomePage() {
           {[
             {
               title: 'Organize Your Courses',
-              description: 'Keep track of all your courses, assignments, and deadlines in one place.',
+              description:
+                'Keep track of all your courses, assignments, and deadlines in one place.',
               icon: '📚',
             },
             {
               title: 'Smart Scheduling',
-              description: 'Let StudyPilot help you create optimal study plans based on your availability.',
+              description:
+                'Let StudyPilot help you create optimal study plans based on your availability.',
               icon: '📅',
             },
             {
@@ -57,14 +59,9 @@ export function HomePage() {
               icon: '⏰',
             },
           ].map((feature, index) => (
-            <div
-              key={index}
-              className="card hover:shadow-lg transition-shadow"
-            >
+            <div key={index} className="card hover:shadow-lg transition-shadow">
               <div className="text-4xl mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-secondary-900 mb-2">
-                {feature.title}
-              </h3>
+              <h3 className="text-xl font-semibold text-secondary-900 mb-2">{feature.title}</h3>
               <p className="text-secondary-600">{feature.description}</p>
             </div>
           ))}

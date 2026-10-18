@@ -33,8 +33,7 @@ export function LoginPage() {
 
   // Get redirect path from location state
   const from =
-    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ||
-    '/dashboard';
+    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || '/dashboard';
 
   const sessionExpired = Boolean(
     (
@@ -42,8 +41,7 @@ export function LoginPage() {
         sessionExpired?: boolean;
         expired?: boolean;
       } | null
-    )?.sessionExpired ||
-      (location.state as { expired?: boolean } | null)?.expired,
+    )?.sessionExpired || (location.state as { expired?: boolean } | null)?.expired
   );
   const expiredToastShown = useRef(false);
 
@@ -57,9 +55,7 @@ export function LoginPage() {
   // C10: one-time notice for the reset handoff — ResetPassword navigates here
   // with `state: { reset: true }` after a successful reset. The ref consumes
   // it once per mount so re-renders (typing, focus) never re-fire the toast.
-  const passwordReset = Boolean(
-    (location.state as { reset?: boolean } | null)?.reset,
-  );
+  const passwordReset = Boolean((location.state as { reset?: boolean } | null)?.reset);
   const resetToastShown = useRef(false);
 
   useEffect(() => {
@@ -89,9 +85,7 @@ export function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-secondary-900">Welcome back!</h1>
-          <p className="mt-2 text-secondary-600">
-            Sign in to your StudyPilot account
-          </p>
+          <p className="mt-2 text-secondary-600">Sign in to your StudyPilot account</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="card">

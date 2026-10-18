@@ -11,7 +11,12 @@
     @apply font-sans antialiased text-secondary-900 bg-secondary-50;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold text-secondary-900;
   }
 
@@ -23,7 +28,9 @@
     @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
   }
 
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     @apply w-full px-4 py-2 border border-secondary-300 rounded-lg bg-white text-secondary-900 placeholder-secondary-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors;
   }
 

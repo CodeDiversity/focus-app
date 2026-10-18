@@ -3,11 +3,7 @@ import { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import api, { setSessionExpiredHandler, refreshAccessToken } from './httpClient';
 import type { AuthResponse } from '@/features/auth/model/types';
 import { tokenStore } from './tokenStore';
-import {
-  isRecoveryBarrierActive,
-  runRecoveryReset,
-  snapshotSessionGeneration,
-} from './recovery';
+import { isRecoveryBarrierActive, runRecoveryReset, snapshotSessionGeneration } from './recovery';
 function ok(config: InternalAxiosRequestConfig, data: unknown): AxiosResponse {
   return { data, status: 200, statusText: 'OK', headers: {}, config } as AxiosResponse;
 }
@@ -109,10 +105,7 @@ describe('api interceptor', () => {
       throw unauthorized(config);
     };
 
-    const [a, b] = await Promise.all([
-      refreshAccessToken(),
-      refreshAccessToken(),
-    ]);
+    const [a, b] = await Promise.all([refreshAccessToken(), refreshAccessToken()]);
     expect(a.accessToken).toBe('boot-token');
     expect(b.accessToken).toBe('boot-token');
     expect(refreshCalls).toBe(1);
@@ -130,20 +123,23 @@ describe('api interceptor', () => {
     expect(refreshCalls).toBe(0);
   });
 
-  it.each(['/auth/verify-email', '/auth/resend-verification'])('does not attempt session refresh for public %s errors', async (path) => {
-    tokenStore.setToken('existing-session');
-    const expired = vi.fn();
-    setSessionExpiredHandler(expired);
-    let refreshCalls = 0;
-    api.defaults.adapter = async (config) => {
-      if (config.url === '/auth/refresh') refreshCalls += 1;
-      throw unauthorized(config);
-    };
-    await expect(api.post(path, {})).rejects.toBeTruthy();
-    expect(refreshCalls).toBe(0);
-    expect(expired).not.toHaveBeenCalled();
-    expect(tokenStore.getToken()).toBe('existing-session');
-  });
+  it.each(['/auth/verify-email', '/auth/resend-verification'])(
+    'does not attempt session refresh for public %s errors',
+    async (path) => {
+      tokenStore.setToken('existing-session');
+      const expired = vi.fn();
+      setSessionExpiredHandler(expired);
+      let refreshCalls = 0;
+      api.defaults.adapter = async (config) => {
+        if (config.url === '/auth/refresh') refreshCalls += 1;
+        throw unauthorized(config);
+      };
+      await expect(api.post(path, {})).rejects.toBeTruthy();
+      expect(refreshCalls).toBe(0);
+      expect(expired).not.toHaveBeenCalled();
+      expect(tokenStore.getToken()).toBe('existing-session');
+    }
+  );
 });
 
 describe('api recovery paths (SP-105G)', () => {
@@ -174,7 +170,13 @@ describe('api recovery paths (SP-105G)', () => {
       headers: { 'Set-Cookie': 'refresh_token=; Path=/auth; Max-Age=0' },
       config,
     } as AxiosResponse;
-    return new AxiosError(`Request failed with status code ${status}`, 'ERR_BAD_REQUEST', config, null, response);
+    return new AxiosError(
+      `Request failed with status code ${status}`,
+      'ERR_BAD_REQUEST',
+      config,
+      null,
+      response
+    );
   }
 
   it.each(['/auth/forgot-password', '/auth/reset-password'] as const)(
@@ -200,7 +202,7 @@ describe('api recovery paths (SP-105G)', () => {
         expect(expired).not.toHaveBeenCalled();
         expect(tokenStore.getToken()).toBe('existing-session');
       }
-    },
+    }
   );
 
   it('rejects recovery-path failures as sanitized errors without the raw Axios error', async () => {
@@ -241,13 +243,29 @@ describe('api session generation (SP-105G M2)', () => {
   const USER = { id: 'user-1', name: 'Ada', email: 'ada@example.com' };
 
   function fail(config: InternalAxiosRequestConfig, status: number, data: unknown): AxiosError {
-    const response = { data, status, statusText: String(status), headers: {}, config } as AxiosResponse;
-    return new AxiosError(`Request failed with status code ${status}`, 'ERR_BAD_REQUEST', config, null, response);
+    const response = {
+      data,
+      status,
+      statusText: String(status),
+      headers: {},
+      config,
+    } as AxiosResponse;
+    return new AxiosError(
+      `Request failed with status code ${status}`,
+      'ERR_BAD_REQUEST',
+      config,
+      null,
+      response
+    );
   }
 
   const resetSend = () =>
     api
-      .post('/auth/reset-password', { token: GEN_TOKEN, password: 'new-pass-9', confirmPassword: 'new-pass-9' })
+      .post('/auth/reset-password', {
+        token: GEN_TOKEN,
+        password: 'new-pass-9',
+        confirmPassword: 'new-pass-9',
+      })
       .then((r) => r.data as { message: string });
 
   interface PendingCall {
@@ -296,9 +314,11 @@ describe('api session generation (SP-105G M2)', () => {
     expect(harness.count('/auth/refresh')).toBe(0); // deferred — never dispatched yet
     expect(harness.count('/auth/reset-password')).toBe(1);
 
-    harness
-      .pendingFor('/auth/reset-password')
-      .resolve(ok(harness.pendingFor('/auth/reset-password').config, { message: 'Password updated. Please sign in.' }));
+    harness.pendingFor('/auth/reset-password').resolve(
+      ok(harness.pendingFor('/auth/reset-password').config, {
+        message: 'Password updated. Please sign in.',
+      })
+    );
     await expect(reset).resolves.toEqual({ message: 'Password updated. Please sign in.' });
     expect(snapshotSessionGeneration()).toBe(genBefore + 1);
     expect(isRecoveryBarrierActive()).toBe(false);
@@ -307,9 +327,12 @@ describe('api session generation (SP-105G M2)', () => {
     expect(harness.count('/auth/refresh')).toBe(1); // single-flight preserved
 
     // Adversarial: the server still "rotates" — the write must be rejected.
-    harness
-      .pendingFor('/auth/refresh')
-      .resolve(ok(harness.pendingFor('/auth/refresh').config, { accessToken: 'stale-token', user: USER } as AuthResponse));
+    harness.pendingFor('/auth/refresh').resolve(
+      ok(harness.pendingFor('/auth/refresh').config, {
+        accessToken: 'stale-token',
+        user: USER,
+      } as AuthResponse)
+    );
     await expect(staleRefresh).resolves.toBeTruthy();
     await expect(staleRefresh2).resolves.toBeTruthy();
     expect(tokenStore.getToken()).toBeNull(); // generation rejected the stale write
@@ -326,9 +349,11 @@ describe('api session generation (SP-105G M2)', () => {
 
     const reset = runRecoveryReset(resetSend);
     await flush();
-    harness
-      .pendingFor('/auth/reset-password')
-      .resolve(ok(harness.pendingFor('/auth/reset-password').config, { message: 'Password updated. Please sign in.' }));
+    harness.pendingFor('/auth/reset-password').resolve(
+      ok(harness.pendingFor('/auth/reset-password').config, {
+        message: 'Password updated. Please sign in.',
+      })
+    );
     await expect(reset).resolves.toBeTruthy();
     expect(tokenStore.getToken()).toBeNull(); // cleared by the reset
 
@@ -355,22 +380,25 @@ describe('api session generation (SP-105G M2)', () => {
     const resetFailure = reset.catch((e) => e);
     await flush();
 
-    harness
-      .pendingFor('/auth/refresh')
-      .resolve(ok(harness.pendingFor('/auth/refresh').config, { accessToken: 'rotated-token', user: USER } as AuthResponse));
+    harness.pendingFor('/auth/refresh').resolve(
+      ok(harness.pendingFor('/auth/refresh').config, {
+        accessToken: 'rotated-token',
+        user: USER,
+      } as AuthResponse)
+    );
     await refresh;
     expect(tokenStore.getToken()).toBe('rotated-token');
     await flush(); // the drained reset POST dispatches once the drain settles
 
-    harness
-      .pendingFor('/auth/reset-password')
-      .reject(
-        fail(
-          harness.pendingFor('/auth/reset-password').config,
-          400,
-          { statusCode: 400, message: 'This reset link is invalid or has expired. Please request a new one.', error: 'Bad Request', path: '/auth/reset-password', timestamp: '2026-10-15T12:00:00.000Z' },
-        ),
-      );
+    harness.pendingFor('/auth/reset-password').reject(
+      fail(harness.pendingFor('/auth/reset-password').config, 400, {
+        statusCode: 400,
+        message: 'This reset link is invalid or has expired. Please request a new one.',
+        error: 'Bad Request',
+        path: '/auth/reset-password',
+        timestamp: '2026-10-15T12:00:00.000Z',
+      })
+    );
     const error = (await resetFailure) as { status: number; retryable: boolean };
     expect(error).toMatchObject({ status: 400, retryable: false });
 
@@ -383,9 +411,12 @@ describe('api session generation (SP-105G M2)', () => {
     const next = refreshAccessToken();
     await flush();
     expect(harness.count('/auth/refresh')).toBe(2);
-    harness
-      .pendingFor('/auth/refresh')
-      .resolve(ok(harness.pendingFor('/auth/refresh').config, { accessToken: 'later-token', user: USER } as AuthResponse));
+    harness.pendingFor('/auth/refresh').resolve(
+      ok(harness.pendingFor('/auth/refresh').config, {
+        accessToken: 'later-token',
+        user: USER,
+      } as AuthResponse)
+    );
     await next;
     expect(tokenStore.getToken()).toBe('later-token');
   });

@@ -19,7 +19,7 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        
+
         {/* Public routes */}
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />

@@ -55,5 +55,6 @@ const authSlice = createSlice({
   // login, updateProfile handled via createAsyncThunk auto-cases
 });
 
-export const { setUser, clearUser, setLoading, setError, clearError, setBannerDismissed } = authSlice.actions;
+export const { setUser, clearUser, setLoading, setError, clearError, setBannerDismissed } =
+  authSlice.actions;
 export default authSlice.reducer;

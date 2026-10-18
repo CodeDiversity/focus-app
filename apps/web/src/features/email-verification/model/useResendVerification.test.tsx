@@ -29,7 +29,11 @@ function resendOk(config: InternalAxiosRequestConfig): AxiosResponse {
   };
 }
 
-function resendFailure(config: InternalAxiosRequestConfig, status: number, message: string): AxiosError {
+function resendFailure(
+  config: InternalAxiosRequestConfig,
+  status: number,
+  message: string
+): AxiosError {
   return new AxiosError('Request failed', 'ERR_BAD_REQUEST', config, null, {
     config,
     data: { message },
@@ -139,8 +143,10 @@ describe('useResendVerification', () => {
       await result.current.sendEmail('ada@example.com');
     });
 
-    await waitFor(() => expect(result.current.error).toBe(
-      'We could not request a verification email. Check your connection and try again.',
-    ));
+    await waitFor(() =>
+      expect(result.current.error).toBe(
+        'We could not request a verification email. Check your connection and try again.'
+      )
+    );
   });
 });

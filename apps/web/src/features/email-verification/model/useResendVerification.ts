@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { useResendVerificationMutation, resendErrorMessage } from '@/features/session/api/sessionApi';
+import {
+  useResendVerificationMutation,
+  resendErrorMessage,
+} from '@/features/session/api/sessionApi';
 
-export const resendFeedback = 'If this email needs verification, a link will be sent. Check your inbox and wait a minute before requesting another.';
+export const resendFeedback =
+  'If this email needs verification, a link will be sent. Check your inbox and wait a minute before requesting another.';
 
 export function useResendVerification() {
   const [deadline, setDeadline] = useState(0);
@@ -12,7 +16,8 @@ export function useResendVerification() {
 
   useEffect(() => {
     if (!deadline) return;
-    const update = () => setSecondsRemaining(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+    const update = () =>
+      setSecondsRemaining(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
     update();
     const interval = window.setInterval(update, 1000);
     return () => window.clearInterval(interval);

@@ -43,9 +43,7 @@ const LINK_TOKEN = 'AbC123_-'.repeat(6).slice(0, 43);
 const renderLogin = (state?: unknown) =>
   render(
     <Provider store={makeTestStore()}>
-      <MemoryRouter
-        initialEntries={[{ pathname: '/login', state } as never]}
-      >
+      <MemoryRouter initialEntries={[{ pathname: '/login', state } as never]}>
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -56,7 +54,7 @@ const renderLogin = (state?: unknown) =>
           </Routes>
         </AuthProvider>
       </MemoryRouter>
-    </Provider>,
+    </Provider>
   );
 
 // The reset handoff enters from the email link's destination; the same route
@@ -73,7 +71,7 @@ const renderReset = () =>
           </Routes>
         </AuthProvider>
       </MemoryRouter>
-    </Provider>,
+    </Provider>
   );
 
 describe('LoginPage', () => {
@@ -89,7 +87,7 @@ describe('LoginPage', () => {
     const user = userEvent.setup();
     renderLogin();
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled(),
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
     );
 
     await user.type(screen.getByLabelText(/email/i), 'ada@example.com');
@@ -99,7 +97,7 @@ describe('LoginPage', () => {
     // The login thunk rejects asynchronously through the Redux store, so the
     // toast assertion waits for the dispatched rejection to settle.
     await waitFor(() =>
-      expect(mockedToast.error).toHaveBeenCalledWith('Invalid email or password'),
+      expect(mockedToast.error).toHaveBeenCalledWith('Invalid email or password')
     );
     expect(screen.queryByText('Dashboard page')).not.toBeInTheDocument();
   });
@@ -112,7 +110,7 @@ describe('LoginPage', () => {
     const user = userEvent.setup();
     renderLogin();
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled(),
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
     );
 
     const emailInput = screen.getByLabelText(/email/i);
@@ -134,7 +132,7 @@ describe('LoginPage', () => {
   it('uses a responsive single-column layout that fits mobile widths', async () => {
     const { container } = renderLogin();
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled(),
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
     );
 
     const outer = container.firstElementChild as HTMLElement;
@@ -155,11 +153,11 @@ describe('LoginPage', () => {
     const user = userEvent.setup();
     renderLogin({ from: { pathname: '/profile' }, sessionExpired: true });
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled(),
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
     );
 
     expect(mockedToast.error).toHaveBeenCalledWith(
-      'Your session has expired. Please sign in again.',
+      'Your session has expired. Please sign in again.'
     );
 
     await user.type(screen.getByLabelText(/email/i), 'ada@example.com');
@@ -173,7 +171,7 @@ describe('LoginPage', () => {
     const user = userEvent.setup();
     renderLogin();
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled(),
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
     );
 
     await user.click(screen.getByRole('link', { name: /forgot password/i }));
@@ -185,7 +183,7 @@ describe('LoginPage', () => {
   it('does not show the reset notice on an ordinary visit', async () => {
     renderLogin();
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled(),
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
     );
     expect(mockedToast.success).not.toHaveBeenCalled();
   });
@@ -200,8 +198,8 @@ describe('LoginPage', () => {
     // The handoff lands on /login with the notice state (C3/C10).
     await waitFor(() =>
       expect(mockedToast.success).toHaveBeenCalledWith(
-        'Password updated — sign in with your new password.',
-      ),
+        'Password updated — sign in with your new password.'
+      )
     );
     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
 

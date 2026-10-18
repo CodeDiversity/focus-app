@@ -289,15 +289,12 @@ export function sanitizeRecoveryError(error: unknown): RecoveryError {
     return error;
   }
 
-  const carrier = (
-    typeof error === 'object' && error !== null ? error : {}
-  ) as {
+  const carrier = (typeof error === 'object' && error !== null ? error : {}) as {
     response?: { status?: number; data?: unknown; headers?: unknown };
   };
   const status = carrier.response?.status ?? 0;
   const data = carrier.response?.data;
-  const envelope =
-    typeof data === 'object' && data !== null ? (data as ErrorEnvelope) : undefined;
+  const envelope = typeof data === 'object' && data !== null ? (data as ErrorEnvelope) : undefined;
 
   const message = envelopeMessage(envelope) ?? fallbackMessage(status);
 
@@ -305,8 +302,8 @@ export function sanitizeRecoveryError(error: unknown): RecoveryError {
   // Network/503 retries are manual — no countdown (shared retry wire contract).
   const retryAfterSeconds =
     status === 429
-      ? parseRetryAfterSeconds(readHeader(carrier.response?.headers, 'Retry-After')) ??
-        FALLBACK_RETRY_AFTER_SECONDS
+      ? (parseRetryAfterSeconds(readHeader(carrier.response?.headers, 'Retry-After')) ??
+        FALLBACK_RETRY_AFTER_SECONDS)
       : undefined;
 
   const retryable = status === 0 || status === 429 || status >= 500;
@@ -323,7 +320,7 @@ function newRecoveryError(
   status: number,
   message: string,
   retryable: boolean,
-  retryAfterSeconds?: number,
+  retryAfterSeconds?: number
 ): RecoveryError {
   const error: RecoveryError = { status, message, retryable };
   if (retryAfterSeconds !== undefined) {
@@ -364,9 +361,7 @@ function drainInFlightRefresh(): Promise<void> {
         return;
       }
       settled = true;
-      reject(
-        newRecoveryError(409, DRAIN_TIMEOUT_MESSAGE, true),
-      );
+      reject(newRecoveryError(409, DRAIN_TIMEOUT_MESSAGE, true));
     }, RECOVERY_DRAIN_TIMEOUT_MS);
     const onSettled = () => {
       if (settled) {
@@ -403,7 +398,7 @@ function drainInFlightRefresh(): Promise<void> {
  * never escape this function.
  */
 export async function runRecoveryReset(
-  send: () => Promise<ResetPasswordResult>,
+  send: () => Promise<ResetPasswordResult>
 ): Promise<ResetPasswordResult> {
   if (isRecoveryBarrierActive()) {
     throw newRecoveryError(409, RECOVERY_IN_PROGRESS_MESSAGE, true);

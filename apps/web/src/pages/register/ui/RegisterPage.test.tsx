@@ -38,14 +38,11 @@ const renderRegisterPage = () =>
           <AuthProbe />
           <Routes>
             <Route path="/register" element={<RegisterPage />} />
-            <Route
-              path="/login"
-              element={<div data-testid="login-page">Login page</div>}
-            />
+            <Route path="/login" element={<div data-testid="login-page">Login page</div>} />
           </Routes>
         </AuthProvider>
       </MemoryRouter>
-    </Provider>,
+    </Provider>
   );
 
 // Exposes auth state so tests can assert registration signs nobody in.
@@ -112,15 +109,11 @@ describe('RegisterPage', () => {
       email: 'ada@example.com',
       password: 'Password123',
     });
-    await waitFor(() =>
-      expect(screen.getByTestId('login-page')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByTestId('login-page')).toBeInTheDocument());
     expect(tokenStore.getToken()).toBeNull();
     expect(authProbe?.isAuthenticated).toBe(false);
     expect(authProbe?.user).toBeNull();
-    expect(mockedToast.success).toHaveBeenCalledWith(
-      'Account created successfully!',
-    );
+    expect(mockedToast.success).toHaveBeenCalledWith('Account created successfully!');
   });
 
   it('shows an actionable error on a 409 duplicate email', async () => {
@@ -134,9 +127,7 @@ describe('RegisterPage', () => {
     await validUser.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() =>
-      expect(mockedToast.error).toHaveBeenCalledWith(
-        expect.stringContaining('already exists'),
-      ),
+      expect(mockedToast.error).toHaveBeenCalledWith(expect.stringContaining('already exists'))
     );
     expect(screen.queryByTestId('login-page')).not.toBeInTheDocument();
   });
@@ -147,7 +138,7 @@ describe('RegisterPage', () => {
       () =>
         new Promise((resolve) => {
           resolveSubmission = resolve;
-        }),
+        })
     );
     renderRegisterPage();
 
@@ -162,9 +153,7 @@ describe('RegisterPage', () => {
     resolveSubmission!({ id: 'user-1', name: 'Ada Lovelace', email: 'ada@example.com' });
     // Completing the submission navigates to /login, so the disabled
     // state is proven during the flight and completion by the redirect.
-    await waitFor(() =>
-      expect(screen.getByTestId('login-page')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByTestId('login-page')).toBeInTheDocument());
   });
 
   it('completes the entire form with keyboard only', async () => {
@@ -196,8 +185,6 @@ describe('RegisterPage', () => {
       email: 'ada@example.com',
       password: 'Password123',
     });
-    await waitFor(() =>
-      expect(screen.getByTestId('login-page')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByTestId('login-page')).toBeInTheDocument());
   });
 });

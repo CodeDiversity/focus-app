@@ -83,7 +83,7 @@ _No corrections yet — this is a fresh breakdown._
 
 | Story | Status | Notes |
 |---|---|---|
-| STUDY-21A | Plan Ready | Package deps already present; jsx-a11y strictness settled to `recommended` (lighter); config files to create |
+| STUDY-21A | Implemented — awaiting STUDY-21 parent review | Configs created/extended; code pre-fixed (lint + format clean); one D21-6 rule-name deviation recorded (F-21A-7) for the reviewer to adjudicate |
 | STUDY-21B | Plan Ready (blocked for implementation) | Depends on STUDY-21A configs being in place |
 | STUDY-21C | Plan Ready (blocked for implementation) | Depends on STUDY-21A configs being in place |
 
@@ -91,12 +91,12 @@ _No corrections yet — this is a fresh breakdown._
 
 | Story | State | Dependencies / Blockers | Next Action | Evidence / Artifacts |
 |---|---|---|---|---|
-| STUDY-21A | Ready | — | Implement | `docs/stories/STUDY-21/STUDY-21A.md` |
-| STUDY-21B | Queued | STUDY-21A | — | `docs/stories/STUDY-21/STUDY-21B.md` |
-| STUDY-21C | Queued | STUDY-21A | — | `docs/stories/STUDY-21/STUDY-21C.md` |
+| STUDY-21A | Done — awaiting parent review | — | Parent review (reviewer role, unit STUDY-21) | `artifacts/STUDY-21A/implementation.md` |
+| STUDY-21B | Queued | STUDY-21A review outcome | — | `docs/stories/STUDY-21/STUDY-21B.md` |
+| STUDY-21C | Queued | STUDY-21A review outcome | — | `docs/stories/STUDY-21/STUDY-21C.md` |
 
-**Active substory:** STUDY-21A
-**Next substory:** STUDY-21A — implement shared Prettier config and per-app ESLint configs
+**Active substory:** none — STUDY-21A implemented, awaiting the STUDY-21 parent review
+**Next substory:** STUDY-21 parent review (unit STUDY-21; record at `artifacts/STUDY-21/`); then STUDY-21B
 
 ## Final Implementation Review
 

@@ -16,7 +16,9 @@ const SPA_ORIGIN = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 /** 43-character base64url token (shape-valid, value-unknown). */
 function randomToken(): string {
-  return Buffer.from(uuidv4() + uuidv4()).toString('base64url').slice(0, 43);
+  return Buffer.from(uuidv4() + uuidv4())
+    .toString('base64url')
+    .slice(0, 43);
 }
 
 describeIntegration('recovery per-IP limits (integration, real database)', () => {
@@ -174,7 +176,13 @@ describeIntegration('recovery per-IP limits (integration, real database)', () =>
     expect(rows).toHaveLength(1);
     const row = rows[0];
     // Exactly the four columns — no emails, tokens, or bodies anywhere.
-    expect(Object.keys(row).sort()).toEqual(['admittedAt', 'endpoint', 'id', 'normalizedIp', 'updatedAt']);
+    expect(Object.keys(row).sort()).toEqual([
+      'admittedAt',
+      'endpoint',
+      'id',
+      'normalizedIp',
+      'updatedAt',
+    ]);
     expect(row.normalizedIp).toMatch(/^[0-9a-f.:]+$/i);
     expect(row.admittedAt).toHaveLength(3);
     expect(JSON.stringify(rows)).not.toContain(marker);

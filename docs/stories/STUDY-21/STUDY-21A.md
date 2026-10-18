@@ -6,7 +6,7 @@
 **Parent Story:** [STUDY-21](./README.md)
 **Milestone:** M1
 **Layer:** Backend + Frontend (cross-cutting)
-**Status:** Ready
+**Status:** Done — awaiting STUDY-21 parent review (record: `artifacts/STUDY-21A/implementation.md`)
 **Dependencies:** None (depends on STUDY-20 scaffold which installed packages)
 **Jira:** STUDY-22
 

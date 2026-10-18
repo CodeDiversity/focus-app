@@ -1,12 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { configureStore } from '@reduxjs/toolkit';
-import authSlice, {
-  setUser,
-  clearUser,
-  setLoading,
-  setError,
-  clearError,
-} from './authSlice';
+import authSlice, { setUser, clearUser, setLoading, setError, clearError } from './authSlice';
 
 function makeStore() {
   // authSlice is the default export which IS the reducer function

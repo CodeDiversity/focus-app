@@ -91,9 +91,7 @@ export class AuthService {
   private async authenticate(
     email: string,
     password: string
-  ): Promise<
-    (AuthenticatedUser & { emailVerifiedAt: Date | null; passwordHash: string }) | null
-  > {
+  ): Promise<(AuthenticatedUser & { emailVerifiedAt: Date | null; passwordHash: string }) | null> {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {

@@ -15,9 +15,7 @@ describe('store', () => {
     // Dispatch a no-op action to confirm the middleware chain is active
     store.dispatch({ type: '@@test/no-op' });
     expect(Object.keys(store.getState()).sort()).toEqual(['api', 'auth']);
-    expect(store.getState().api).toEqual(
-      expect.objectContaining({ queries: {}, mutations: {} }),
-    );
+    expect(store.getState().api).toEqual(expect.objectContaining({ queries: {}, mutations: {} }));
   });
 
   it('dispatching an unknown action is rejected by the serializability middleware', () => {
@@ -41,10 +39,7 @@ describe('store', () => {
       return (
         <div>
           <span data-testid="state-size">{Object.keys(state).length}</span>
-          <button
-            data-testid="dispatch-btn"
-            onClick={() => dispatch({ type: 'test/action' })}
-          >
+          <button data-testid="dispatch-btn" onClick={() => dispatch({ type: 'test/action' })}>
             dispatch
           </button>
         </div>

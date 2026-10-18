@@ -26,7 +26,7 @@ let requestHandler: (config: InternalAxiosRequestConfig) => Promise<AxiosRespons
 function ok(
   config: InternalAxiosRequestConfig,
   data: unknown,
-  headers: Record<string, string> = {},
+  headers: Record<string, string> = {}
 ): AxiosResponse {
   return { config, data, status: 200, statusText: 'OK', headers } as AxiosResponse;
 }
@@ -35,7 +35,7 @@ function fail(
   config: InternalAxiosRequestConfig,
   status: number,
   data: unknown,
-  headers: Record<string, string> = {},
+  headers: Record<string, string> = {}
 ): AxiosError {
   const response = {
     data,
@@ -54,7 +54,7 @@ function renderPage() {
       <AuthProvider>
         <App />
       </AuthProvider>
-    </Providers>,
+    </Providers>
   );
 }
 
@@ -72,7 +72,8 @@ describe('ForgotPasswordPage', () => {
         return ok(config, { accessToken: 'existing-session', user: student });
       }
       if (config.url === '/auth/forgot-password') return requestHandler(config);
-      if (config.url === '/users/me') return ok(config, { ...student, createdAt: '', updatedAt: '' });
+      if (config.url === '/users/me')
+        return ok(config, { ...student, createdAt: '', updatedAt: '' });
       throw new Error(`Unexpected test request: ${config.url}`);
     };
   });
@@ -129,7 +130,9 @@ describe('ForgotPasswordPage', () => {
     const user = setupUser();
     await user.type(await screen.findByRole('textbox', { name: /email/i }), 'ada@example.com');
     await user.click(screen.getByRole('button', { name: /send reset link/i }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Please enter a valid email address');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Please enter a valid email address'
+    );
     expect(screen.getByRole('textbox', { name: /email/i })).toBeEnabled();
     expect(screen.getByRole('button', { name: /send reset link/i })).toBeEnabled();
   });
@@ -157,7 +160,7 @@ describe('ForgotPasswordPage', () => {
 
   it.each([false, true])(
     'is reachable while signed in=%s and the request preserves the session',
-    async signed => {
+    async (signed) => {
       signedIn = signed;
       renderPage();
       const user = setupUser();
@@ -171,7 +174,7 @@ describe('ForgotPasswordPage', () => {
       } else {
         expect(tokenStore.getToken()).toBeNull();
       }
-    },
+    }
   );
 
   it('waits out a 429 Retry-After, keeps the email, and offers explicit retry without resubmitting', async () => {
@@ -181,7 +184,7 @@ describe('ForgotPasswordPage', () => {
         config,
         429,
         { statusCode: 429, message: RATE_LIMITED, error: 'Too Many Requests' },
-        { 'Retry-After': '5' },
+        { 'Retry-After': '5' }
       );
     };
     renderPage();
@@ -209,38 +212,41 @@ describe('ForgotPasswordPage', () => {
     ['malformed', { 'Retry-After': 'soon' }],
     ['zero', { 'Retry-After': '0' }],
     ['out of range', { 'Retry-After': '61' }],
-  ])(
-    'falls back to the 60-second wait for a %s Retry-After',
-    async (_name, headers) => {
-      requestHandler = (config) => {
-        throw fail(
-          config,
-          429,
-          { statusCode: 429, message: RATE_LIMITED, error: 'Too Many Requests' },
-          headers,
-        );
-      };
-      renderPage();
-      const user = setupUser();
-      await user.type(await screen.findByRole('textbox', { name: /email/i }), 'ada@example.com');
-      await user.click(screen.getByRole('button', { name: /send reset link/i }));
-      expect(await screen.findByRole('alert')).toHaveTextContent(/too many recovery requests/i);
-      expect(screen.getByText(/try again in 60 seconds/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /send reset link/i })).toBeDisabled();
-    },
-  );
+  ])('falls back to the 60-second wait for a %s Retry-After', async (_name, headers) => {
+    requestHandler = (config) => {
+      throw fail(
+        config,
+        429,
+        { statusCode: 429, message: RATE_LIMITED, error: 'Too Many Requests' },
+        headers
+      );
+    };
+    renderPage();
+    const user = setupUser();
+    await user.type(await screen.findByRole('textbox', { name: /email/i }), 'ada@example.com');
+    await user.click(screen.getByRole('button', { name: /send reset link/i }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/too many recovery requests/i);
+    expect(screen.getByText(/try again in 60 seconds/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /send reset link/i })).toBeDisabled();
+  });
 
   it.each([
-    ['a 503', (config: InternalAxiosRequestConfig, reject: (e: unknown) => void) =>
-      reject(
-        fail(config, 503, {
-          statusCode: 503,
-          message: UNAVAILABLE,
-          error: 'Service Unavailable',
-        }),
-      )],
-    ['a network failure', (config: InternalAxiosRequestConfig, reject: (e: unknown) => void) =>
-      reject(new AxiosError('Network Error', 'ERR_NETWORK', config))],
+    [
+      'a 503',
+      (config: InternalAxiosRequestConfig, reject: (e: unknown) => void) =>
+        reject(
+          fail(config, 503, {
+            statusCode: 503,
+            message: UNAVAILABLE,
+            error: 'Service Unavailable',
+          })
+        ),
+    ],
+    [
+      'a network failure',
+      (config: InternalAxiosRequestConfig, reject: (e: unknown) => void) =>
+        reject(new AxiosError('Network Error', 'ERR_NETWORK', config)),
+    ],
   ])(
     'offers retry for %s without a rate-limit countdown and keeps the email',
     async (_name, produce) => {
@@ -250,11 +256,13 @@ describe('ForgotPasswordPage', () => {
       const user = setupUser();
       await user.type(await screen.findByRole('textbox', { name: /email/i }), 'ada@example.com');
       await user.click(screen.getByRole('button', { name: /send reset link/i }));
-      expect(await screen.findByRole('alert')).toHaveTextContent(/try again|check your connection/i);
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        /try again|check your connection/i
+      );
       expect(screen.queryByText(/try again in/i)).not.toBeInTheDocument();
       expect(screen.getByRole('textbox', { name: /email/i })).toHaveValue('ada@example.com');
       expect(screen.getByRole('button', { name: /send reset link/i })).toBeEnabled();
-    },
+    }
   );
 
   it('completes the request using keyboard only', async () => {

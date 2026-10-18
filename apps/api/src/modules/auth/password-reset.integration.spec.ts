@@ -406,7 +406,9 @@ describe('Recovery credential concurrency (real PostgreSQL)', () => {
     await expect(
       auth.login({ email: emailFor(owner.userId), password: OLD_PASSWORD })
     ).rejects.toBeInstanceOf(UnauthorizedException);
-    expect(await harness.client.refreshToken.count({ where: { userId: owner.userId } })).toBe(before);
+    expect(await harness.client.refreshToken.count({ where: { userId: owner.userId } })).toBe(
+      before
+    );
   });
 
   it('login before reset has its new family revoked', async () => {
@@ -555,7 +557,9 @@ describe('Recovery credential concurrency (real PostgreSQL)', () => {
         where: { userId: owner.userId, revokedAt: null },
       })
     ).toBe(0);
-    await expect(auth.refresh(successor.refreshToken)).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(auth.refresh(successor.refreshToken)).rejects.toBeInstanceOf(
+      UnauthorizedException
+    );
   });
 
   // ---------------------------------------------------------------------------
@@ -607,13 +611,14 @@ describe('Recovery credential concurrency (real PostgreSQL)', () => {
     const owner = await harness.seed({ passwordHash });
     const secondToken = await addResetToken(owner.userId);
     const secondHash = sha256(secondToken);
-    const service = buildPasswordReset(throwingPasswordWritePrisma(harness.client), createEmailStub());
-    const passwordBefore = (
-      await harness.client.user.findUnique({
-        where: { id: owner.userId },
-        select: { passwordHash: true },
-      })
-    )!.passwordHash;
+    const service = buildPasswordReset(
+      throwingPasswordWritePrisma(harness.client),
+      createEmailStub()
+    );
+    const passwordBefore = (await harness.client.user.findUnique({
+      where: { id: owner.userId },
+      select: { passwordHash: true },
+    }))!.passwordHash;
 
     await expect(service.resetPassword(resetDto(owner.resetToken))).rejects.toThrow(
       'injected password write failure'
@@ -636,12 +641,10 @@ describe('Recovery credential concurrency (real PostgreSQL)', () => {
       })
     ).toBe(1);
     expect(
-      (
-        await harness.client.user.findUnique({
-          where: { id: owner.userId },
-          select: { passwordHash: true },
-        })
-      )!.passwordHash
+      (await harness.client.user.findUnique({
+        where: { id: owner.userId },
+        select: { passwordHash: true },
+      }))!.passwordHash
     ).toBe(passwordBefore);
   });
 

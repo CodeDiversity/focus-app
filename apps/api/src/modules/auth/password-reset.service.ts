@@ -65,7 +65,7 @@ export class PasswordResetService {
     setImmediate(() => {
       void this.deliverReset(to, rawToken).catch((error) => {
         this.logger.warn(
-          `event=reset_email_delivery_failed correlation=${randomUUID()} error=${failureName(error)}`,
+          `event=reset_email_delivery_failed correlation=${randomUUID()} error=${failureName(error)}`
         );
       });
     });
@@ -177,7 +177,7 @@ export class PasswordResetService {
       // PrismaClientInitializationException = database down).  Only the error
       // name is logged — never the message, which may contain the email.
       this.logger.warn(
-        `event=reset_issuance_failed correlation=${randomUUID()} error=${failureName(error)}`,
+        `event=reset_issuance_failed correlation=${randomUUID()} error=${failureName(error)}`
       );
     }
 

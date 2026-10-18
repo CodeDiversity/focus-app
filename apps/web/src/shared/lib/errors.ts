@@ -33,9 +33,7 @@ export function extractApiError(error: unknown): ApiError | undefined {
  * one sanitized sentence; string messages pass through unchanged.
  */
 export function apiErrorMessage(apiError: ApiError): string {
-  return Array.isArray(apiError.message)
-    ? apiError.message.join(' ')
-    : apiError.message;
+  return Array.isArray(apiError.message) ? apiError.message.join(' ') : apiError.message;
 }
 
 /**
@@ -62,9 +60,7 @@ export function getFieldError(error: unknown, field: string): string | null {
     return null;
   }
   const messages = (errors as Record<string, unknown>)[field];
-  return Array.isArray(messages) &&
-    messages.length > 0 &&
-    typeof messages[0] === 'string'
+  return Array.isArray(messages) && messages.length > 0 && typeof messages[0] === 'string'
     ? messages[0]
     : null;
 }

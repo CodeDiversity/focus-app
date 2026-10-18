@@ -3,10 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../generated/prisma/client';
 
 @Injectable()
-export class PrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
     super({
       // Prisma 7 connects through a driver adapter; the connection string
@@ -15,17 +12,14 @@ export class PrismaService
       adapter: new PrismaPg({
         connectionString: process.env.DATABASE_URL ?? '',
       }),
-      log:
-        process.env.NODE_ENV === 'development'
-          ? ['query', 'info', 'warn', 'error']
-          : ['error'],
+      log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
     });
   }
 
   async onModuleInit() {
     if (!process.env.DATABASE_URL) {
       throw new Error(
-        'DATABASE_URL is not configured. Set it in apps/api/.env.local (see apps/api/.env.example) or as an environment variable.',
+        'DATABASE_URL is not configured. Set it in apps/api/.env.local (see apps/api/.env.example) or as an environment variable.'
       );
     }
     await this.$connect();

@@ -1,0 +1,7 @@
+{
+  "name": "@studypilot/prettier-config",
+  "version": "1.0.0",
+  "description": "StudyPilot shared Prettier configuration (single source of truth for all apps)",
+  "private": true,
+  "main": ".prettierrc.cjs"
+}

@@ -160,10 +160,7 @@ describeIntegration('profile and preferences integration (real database, SP-106D
       });
 
       // 3. Log out for real (the login cookie is used and the session is revoked).
-      await agent
-        .post('/auth/logout')
-        .set('Cookie', studentA.refreshCookie)
-        .expect(HttpStatus.OK);
+      await agent.post('/auth/logout').set('Cookie', studentA.refreshCookie).expect(HttpStatus.OK);
 
       // 4. A new session: a fresh real login with a new refresh credential.
       //    (Access tokens are not compared byte-wise: their `iat`/`exp` make

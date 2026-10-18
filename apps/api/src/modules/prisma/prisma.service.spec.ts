@@ -7,9 +7,7 @@ describe('PrismaService', () => {
 
     const service = new PrismaService();
 
-    await expect(service.onModuleInit()).rejects.toThrow(
-      /DATABASE_URL is not configured/,
-    );
+    await expect(service.onModuleInit()).rejects.toThrow(/DATABASE_URL is not configured/);
 
     if (previous !== undefined) {
       process.env.DATABASE_URL = previous;

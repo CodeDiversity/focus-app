@@ -31,8 +31,12 @@ type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean; _generat
 const RECOVERY_PATHS = ['/auth/forgot-password', '/auth/reset-password'];
 
 const AUTH_PATHS = [
-  '/auth/login', '/auth/refresh', '/auth/logout', '/auth/register',
-  '/auth/verify-email', '/auth/resend-verification',
+  '/auth/login',
+  '/auth/refresh',
+  '/auth/logout',
+  '/auth/register',
+  '/auth/verify-email',
+  '/auth/resend-verification',
   ...RECOVERY_PATHS,
 ];
 
@@ -122,7 +126,7 @@ api.interceptors.request.use(
   },
   (error: AxiosError) => {
     return Promise.reject(error);
-  },
+  }
 );
 
 // Response interceptor to handle errors
@@ -170,7 +174,9 @@ api.interceptors.response.use(
     }
 
     if (status === 401 && originalRequest?._retry) {
-      if ((originalRequest._generation ?? snapshotSessionGeneration()) === snapshotSessionGeneration()) {
+      if (
+        (originalRequest._generation ?? snapshotSessionGeneration()) === snapshotSessionGeneration()
+      ) {
         tokenStore.clearToken();
         if (sessionExpiredHandler) {
           sessionExpiredHandler();
@@ -186,23 +192,20 @@ api.interceptors.response.use(
 
     // Extract error message
     const message =
-      (error.response?.data?.message as string) ||
-      error.message ||
-      'An unexpected error occurred';
+      (error.response?.data?.message as string) || error.message || 'An unexpected error occurred';
 
     // Return rejected promise with custom error
     return Promise.reject({
       ...error,
       message,
     });
-  },
+  }
 );
 
 export default api;
 
 // Helper functions
-export const apiGet = <T>(url: string, config?: AxiosRequestConfig) =>
-  api.get<T>(url, config);
+export const apiGet = <T>(url: string, config?: AxiosRequestConfig) => api.get<T>(url, config);
 export const apiPost = <T>(url: string, data?: unknown, config?: AxiosRequestConfig) =>
   api.post<T>(url, data, config);
 export const apiPut = <T>(url: string, data?: unknown, config?: AxiosRequestConfig) =>

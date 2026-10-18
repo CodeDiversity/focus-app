@@ -132,13 +132,7 @@ export function ProfilePage() {
       <div className="card">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
-            <Input
-              label="Email"
-              type="email"
-              value={user?.email || ''}
-              disabled
-              readOnly
-            />
+            <Input label="Email" type="email" value={user?.email || ''} disabled readOnly />
 
             <Input
               label="Display Name"
@@ -162,11 +156,7 @@ export function ProfilePage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isSubmitting || isLoading}
-            >
+            <Button type="submit" variant="primary" isLoading={isSubmitting || isLoading}>
               Save Changes
             </Button>
             <Button
@@ -184,11 +174,7 @@ export function ProfilePage() {
 
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-secondary-900">Account Actions</h2>
-          <Button
-            variant="danger"
-            onClick={logout}
-            className="w-full sm:w-auto"
-          >
+          <Button variant="danger" onClick={logout} className="w-full sm:w-auto">
             Logout
           </Button>
         </div>

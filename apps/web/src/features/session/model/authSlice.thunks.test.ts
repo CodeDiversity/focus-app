@@ -77,7 +77,9 @@ describe('auth thunks — login', () => {
     mockedLogin.mockRejectedValue(new Error('Invalid email or password'));
     const store = makeStore();
 
-    const result = await store.dispatch(login({ email: 'ada@example.com', password: 'wrong-password' }));
+    const result = await store.dispatch(
+      login({ email: 'ada@example.com', password: 'wrong-password' })
+    );
 
     expect(login.rejected.match(result)).toBe(true);
     if (login.rejected.match(result)) {
@@ -110,7 +112,9 @@ describe('auth thunks — updateProfile', () => {
   });
 
   it('updateProfile rejection stores the sanitized message, clears loading, and keeps the session', async () => {
-    mockedUpdateProfile.mockRejectedValue(new Error('We could not update your profile. Try again.'));
+    mockedUpdateProfile.mockRejectedValue(
+      new Error('We could not update your profile. Try again.')
+    );
     const store = makeStore();
     store.dispatch(setUser(sessionUser));
 
@@ -161,7 +165,7 @@ describe('auth thunks — updateProfile', () => {
       });
     }
     expect(store.getState().auth.error).toBe(
-      'timeZone must be a valid IANA time zone, e.g. America/New_York',
+      'timeZone must be a valid IANA time zone, e.g. America/New_York'
     );
     expect(store.getState().auth.user).toMatchObject({ id: 'user-1' });
   });

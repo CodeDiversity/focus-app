@@ -181,12 +181,10 @@ function resetDatabase() {
       throw new Error(`unexpected raw query in test double: ${sql}`);
     }),
     passwordResetToken: {
-      findUnique: jest.fn(
-        async ({ where }: { where: { tokenHash: string } }) => {
-          const row = state.tokens.find((t) => t.tokenHash === where.tokenHash);
-          return row ? { id: row.id, userId: row.userId } : null;
-        }
-      ),
+      findUnique: jest.fn(async ({ where }: { where: { tokenHash: string } }) => {
+        const row = state.tokens.find((t) => t.tokenHash === where.tokenHash);
+        return row ? { id: row.id, userId: row.userId } : null;
+      }),
       updateMany: jest.fn(
         async ({
           where,
@@ -519,7 +517,7 @@ describe('PasswordResetService', () => {
       const calls = JSON.stringify(warn.mock.calls);
       expect(calls).toContain('event=reset_issuance_failed');
       expect(calls).toMatch(
-        /correlation=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+        /correlation=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
       );
       // The error *name* identifies the failure class; the message (which
       // may contain the requester's email) must never be logged.
@@ -531,14 +529,14 @@ describe('PasswordResetService', () => {
 
     it('logs a structured delivery-failure event without recipient or token details', async () => {
       provider.send.mockRejectedValue(
-        new Error(`smtp rejected for ada@example.com token ${tokenA}`),
+        new Error(`smtp rejected for ada@example.com token ${tokenA}`)
       );
       await service.forgotPassword('ada@example.com');
       await new Promise<void>((resolve) => setImmediate(resolve));
       const calls = JSON.stringify(warn.mock.calls);
       expect(calls).toContain('event=reset_email_delivery_failed');
       expect(calls).toMatch(
-        /correlation=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+        /correlation=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/
       );
       expect(calls).toContain('error=Error');
       expect(calls).not.toContain('smtp rejected');
@@ -575,13 +573,51 @@ describe('PasswordResetService', () => {
           expiresAt: oneHour,
           usedAt: new Date(now.getTime() - 1000),
         },
-        { id: 'tOther', userId: 'other', tokenHash: hash(tokenOther), expiresAt: oneHour, usedAt: null },
+        {
+          id: 'tOther',
+          userId: 'other',
+          tokenHash: hash(tokenOther),
+          expiresAt: oneHour,
+          usedAt: null,
+        }
       );
       db.state.refreshTokens.push(
-        { id: 'rA1', userId: 'owner', familyId: 'F1', tokenHash: 'h-rA1', expiresAt: oneHour, revokedAt: null, replacedByTokenId: null },
-        { id: 'rA2', userId: 'owner', familyId: 'F1', tokenHash: 'h-rA2', expiresAt: oneHour, revokedAt: new Date(now.getTime() - 5000), replacedByTokenId: 'rA1' },
-        { id: 'rB', userId: 'owner', familyId: 'F2', tokenHash: 'h-rB', expiresAt: oneHour, revokedAt: null, replacedByTokenId: null },
-        { id: 'rOther', userId: 'other', familyId: 'F3', tokenHash: 'h-rOther', expiresAt: oneHour, revokedAt: null, replacedByTokenId: null },
+        {
+          id: 'rA1',
+          userId: 'owner',
+          familyId: 'F1',
+          tokenHash: 'h-rA1',
+          expiresAt: oneHour,
+          revokedAt: null,
+          replacedByTokenId: null,
+        },
+        {
+          id: 'rA2',
+          userId: 'owner',
+          familyId: 'F1',
+          tokenHash: 'h-rA2',
+          expiresAt: oneHour,
+          revokedAt: new Date(now.getTime() - 5000),
+          replacedByTokenId: 'rA1',
+        },
+        {
+          id: 'rB',
+          userId: 'owner',
+          familyId: 'F2',
+          tokenHash: 'h-rB',
+          expiresAt: oneHour,
+          revokedAt: null,
+          replacedByTokenId: null,
+        },
+        {
+          id: 'rOther',
+          userId: 'other',
+          familyId: 'F3',
+          tokenHash: 'h-rOther',
+          expiresAt: oneHour,
+          revokedAt: null,
+          replacedByTokenId: null,
+        }
       );
       service = new PasswordResetService(
         db.prisma as unknown as PrismaService,
@@ -640,7 +676,7 @@ describe('PasswordResetService', () => {
       const markerBefore = owner().passwordResetRequestedAt!;
       await service.resetPassword(dto(tokenA));
       expect(owner().passwordResetRequestedAt).toEqual(markerBefore);
-      const call = (db.tx.user.update.mock.calls[0][0] as { data: Record<string, unknown> });
+      const call = db.tx.user.update.mock.calls[0][0] as { data: Record<string, unknown> };
       expect(call.data).toHaveProperty('passwordHash');
       expect(call.data).not.toHaveProperty('passwordResetRequestedAt');
     });
@@ -654,7 +690,9 @@ describe('PasswordResetService', () => {
     });
 
     it('returns the uniform 400 for a malformed token without touching the database', async () => {
-      await expect(service.resetPassword(dto('a'.repeat(42)))).rejects.toThrow(INVALID_RESET_MESSAGE);
+      await expect(service.resetPassword(dto('a'.repeat(42)))).rejects.toThrow(
+        INVALID_RESET_MESSAGE
+      );
       expect(db.prisma.$transaction).not.toHaveBeenCalled();
       expect(argon2.hash).not.toHaveBeenCalled(); // no wasted work before the DB
     });

@@ -44,7 +44,7 @@ export function ownedWhere(userId: string, id: string): { id: string; userId: st
  */
 export function assertOwned(
   userId: string,
-  record: { userId: string } | null | undefined,
+  record: { userId: string } | null | undefined
 ): asserts record is { userId: string } {
   if (!record || record.userId !== userId) {
     throw new NotFoundException(RESOURCE_NOT_FOUND);

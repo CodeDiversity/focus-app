@@ -66,14 +66,12 @@ describe('AuthService', () => {
       findById: jest.fn(),
     };
     verification = {
-      prepareToken: jest
-        .fn()
-        .mockReturnValue({
-          rawToken: 'raw-verification',
-          tokenHash: 'hashed-verification',
-          expiresAt: new Date('2026-10-14T12:00:00Z'),
-          requestedAt: new Date('2026-10-13T12:00:00Z'),
-        }),
+      prepareToken: jest.fn().mockReturnValue({
+        rawToken: 'raw-verification',
+        tokenHash: 'hashed-verification',
+        expiresAt: new Date('2026-10-14T12:00:00Z'),
+        requestedAt: new Date('2026-10-13T12:00:00Z'),
+      }),
       sendVerification: jest.fn(),
     };
     jwtService = { sign: jest.fn().mockReturnValue('signed-token') };
@@ -292,7 +290,10 @@ describe('AuthService', () => {
 
     it('persists no session when a password reset commits between verify and the lock', async () => {
       // The pre-lock verify succeeds against the *old* hash...
-      usersService.findByEmail.mockResolvedValue({ ...userRecord, passwordHash: 'argon2-hash-old' });
+      usersService.findByEmail.mockResolvedValue({
+        ...userRecord,
+        passwordHash: 'argon2-hash-old',
+      });
       (argon2.verify as jest.Mock).mockResolvedValue(true);
       // ...but a reset that committed first leaves a *different* stored hash
       // when the account is re-read under the owner lock.
@@ -312,12 +313,10 @@ describe('AuthService', () => {
       usersService.findByEmail.mockResolvedValue(userRecord);
       (argon2.verify as jest.Mock).mockResolvedValue(true);
       // lockOwner finds no row -> the FOR UPDATE select returns nothing.
-      prismaService.$queryRaw.mockImplementation(
-        (strings: { raw: string[] } | string) => {
-          const sql = typeof strings === 'string' ? strings : strings.raw.join('');
-          return /FOR UPDATE/i.test(sql) ? Promise.resolve([]) : Promise.resolve([]);
-        }
-      );
+      prismaService.$queryRaw.mockImplementation((strings: { raw: string[] } | string) => {
+        const sql = typeof strings === 'string' ? strings : strings.raw.join('');
+        return /FOR UPDATE/i.test(sql) ? Promise.resolve([]) : Promise.resolve([]);
+      });
 
       await expect(
         service.login({ email: 'student@example.com', password: 'Password123' })
@@ -467,14 +466,13 @@ describe('AuthService', () => {
         ...activeRecord(),
         expiresAt: new Date(base + 60_000),
       });
-      prismaService.$queryRaw.mockImplementation(
-        (strings: { raw: string[] } | string) => {
-          const sql = typeof strings === 'string' ? strings : strings.raw.join('');
-          if (/FOR UPDATE/i.test(sql)) return Promise.resolve([{ id: 'user-1' }]);
-          if (/clock_timestamp/i.test(sql)) return Promise.resolve([{ checkedAt: new Date(base + 120_000) }]);
-          return Promise.resolve([]);
-        }
-      );
+      prismaService.$queryRaw.mockImplementation((strings: { raw: string[] } | string) => {
+        const sql = typeof strings === 'string' ? strings : strings.raw.join('');
+        if (/FOR UPDATE/i.test(sql)) return Promise.resolve([{ id: 'user-1' }]);
+        if (/clock_timestamp/i.test(sql))
+          return Promise.resolve([{ checkedAt: new Date(base + 120_000) }]);
+        return Promise.resolve([]);
+      });
 
       await expect(service.refresh('raw-old-token')).rejects.toThrow(UnauthorizedException);
       expect(prismaService.refreshToken.create).not.toHaveBeenCalled();

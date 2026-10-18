@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useCallback,
-  useRef,
-  ReactNode,
-} from 'react';
+import React, { createContext, useContext, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { SessionUser, User } from '@/entities/user/model/types';
@@ -22,12 +15,14 @@ import {
   setUser,
   clearUser,
 } from '@/features/session/model/authSlice';
-import {
-  login,
-  updateProfile,
-} from '@/features/session/model/authSlice.thunks';
+import { login, updateProfile } from '@/features/session/model/authSlice.thunks';
 import { getErrorMessage } from '@/shared/lib/errors';
-import { selectUser, selectIsLoading, selectError, selectIsVerificationBannerDismissed } from '@/features/session/model/authSlice.selectors';
+import {
+  selectUser,
+  selectIsLoading,
+  selectError,
+  selectIsVerificationBannerDismissed,
+} from '@/features/session/model/authSlice.selectors';
 // RD7: sanctioned features → app import for typed dispatch hook
 // eslint-disable-next-line import/no-restricted-paths
 import { useAppDispatch } from '@/app/store/hooks';
@@ -70,7 +65,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Local refs retained in the adapter (not in the slice) — decisions D1/D2
   const sessionVersion = useRef(0);
-  const profileFlight = useRef<{ version: number; promise: Promise<void>; needsFresh: boolean } | null>(null);
+  const profileFlight = useRef<{
+    version: number;
+    promise: Promise<void>;
+    needsFresh: boolean;
+  } | null>(null);
   const restoreFlight = useRef<Promise<void> | null>(null);
   const userRef = useRef<SessionUser | null>(null);
 
@@ -83,61 +82,71 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const isAuthenticated = !!user;
 
   // applyUser equivalent: advances sessionVersion and dispatches setUser
-  const applyUser = useCallback((next: SessionUser | null) => {
-    const currentId = userRef.current?.id;
-    const nextId = next?.id;
-    if (currentId !== nextId) {
-      sessionVersion.current += 1;
-    }
-    userRef.current = next;
-    dispatch(setUser(next));
-  }, [dispatch]);
+  const applyUser = useCallback(
+    (next: SessionUser | null) => {
+      const currentId = userRef.current?.id;
+      const nextId = next?.id;
+      if (currentId !== nextId) {
+        sessionVersion.current += 1;
+      }
+      userRef.current = next;
+      dispatch(setUser(next));
+    },
+    [dispatch]
+  );
 
   // Reconcile only this session's profile. Transient failures leave access usable.
-  const refreshProfile = useCallback((options?: { fresh?: boolean }): Promise<void> => {
-    const current = userRef.current;
-    const version = sessionVersion.current;
-    const generation = snapshotSessionGeneration();
-    if (!current) {
-      // The public page can confirm before boot has restored its existing session.
-      if (options?.fresh && restoreFlight.current) {
-        return restoreFlight.current.then(() => refreshProfile({ fresh: true }));
+  const refreshProfile = useCallback(
+    (options?: { fresh?: boolean }): Promise<void> => {
+      const current = userRef.current;
+      const version = sessionVersion.current;
+      const generation = snapshotSessionGeneration();
+      if (!current) {
+        // The public page can confirm before boot has restored its existing session.
+        if (options?.fresh && restoreFlight.current) {
+          return restoreFlight.current.then(() => refreshProfile({ fresh: true }));
+        }
+        return Promise.resolve();
       }
-      return Promise.resolve();
-    }
-    if (profileFlight.current?.version === version) {
-      // A pre-confirmation read cannot establish the state after confirmation.
-      if (options?.fresh) profileFlight.current.needsFresh = true;
-      return profileFlight.current.promise;
-    }
-    const promise = userService.getProfile().then((profile) => {
-      // A flight that predates a successful reset is a no-op (SP-105G R3).
-      if (
-        sessionVersion.current === version &&
-        userRef.current?.id === current.id &&
-        profile.id === current.id &&
-        generation === snapshotSessionGeneration()
-      ) {
-        applyUser(profile);
+      if (profileFlight.current?.version === version) {
+        // A pre-confirmation read cannot establish the state after confirmation.
+        if (options?.fresh) profileFlight.current.needsFresh = true;
+        return profileFlight.current.promise;
       }
-    }).catch(() => {
-      // A real 401 still follows the API interceptor's existing refresh semantics.
-    }).finally(() => {
-      if (profileFlight.current?.promise !== promise) return;
-      const needsFresh = profileFlight.current.needsFresh;
-      profileFlight.current = null;
-      if (
-        needsFresh &&
-        sessionVersion.current === version &&
-        userRef.current?.id === current.id &&
-        generation === snapshotSessionGeneration()
-      ) {
-        return refreshProfile();
-      }
-    });
-    profileFlight.current = { version, promise, needsFresh: false };
-    return promise;
-  }, [applyUser]);
+      const promise = userService
+        .getProfile()
+        .then((profile) => {
+          // A flight that predates a successful reset is a no-op (SP-105G R3).
+          if (
+            sessionVersion.current === version &&
+            userRef.current?.id === current.id &&
+            profile.id === current.id &&
+            generation === snapshotSessionGeneration()
+          ) {
+            applyUser(profile);
+          }
+        })
+        .catch(() => {
+          // A real 401 still follows the API interceptor's existing refresh semantics.
+        })
+        .finally(() => {
+          if (profileFlight.current?.promise !== promise) return;
+          const needsFresh = profileFlight.current.needsFresh;
+          profileFlight.current = null;
+          if (
+            needsFresh &&
+            sessionVersion.current === version &&
+            userRef.current?.id === current.id &&
+            generation === snapshotSessionGeneration()
+          ) {
+            return refreshProfile();
+          }
+        });
+      profileFlight.current = { version, promise, needsFresh: false };
+      return promise;
+    },
+    [applyUser]
+  );
 
   useEffect(() => {
     const onFocus = () => {
@@ -181,9 +190,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const generation = snapshotSessionGeneration();
     // A restore that predates a successful reset is a no-op (SP-105G R3).
     const isStale = () =>
-      !active ||
-      sessionVersion.current !== version ||
-      generation !== snapshotSessionGeneration();
+      !active || sessionVersion.current !== version || generation !== snapshotSessionGeneration();
     const initializeAuth = async () => {
       try {
         const response = await authService.refreshToken();
@@ -205,7 +212,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     void promise.finally(() => {
       if (restoreFlight.current === promise) restoreFlight.current = null;
     });
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [applyUser, dispatch]);
 
   // A successful password reset clears the local user through the recovery
@@ -218,13 +227,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // The thunks swallow the service rejection into `rejectWithValue` (the
   // sanitized message). Re-throw it here so `await login(...)` still rejects —
   // callers render the error and must not navigate on a failed sign-in.
-  const loginFn = useCallback(async (email: string, password: string) => {
-    sessionVersion.current += 1;
-    const result = await dispatch(login({ email, password }));
-    if (login.rejected.match(result)) {
-      throw new Error(thunkErrorMessage(result.payload, result.error));
-    }
-  }, [dispatch]);
+  const loginFn = useCallback(
+    async (email: string, password: string) => {
+      sessionVersion.current += 1;
+      const result = await dispatch(login({ email, password }));
+      if (login.rejected.match(result)) {
+        throw new Error(thunkErrorMessage(result.payload, result.error));
+      }
+    },
+    [dispatch]
+  );
 
   // Registration issues no token and signs nobody in — the student is
   // redirected to login (SP-102's flow) to authenticate.
@@ -241,7 +253,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         dispatch(setLoading(false));
       }
     },
-    [dispatch],
+    [dispatch]
   );
 
   const logout = useCallback(async () => {
@@ -256,31 +268,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [dispatch]);
 
-  const updateProfileFn = useCallback(async (data: Partial<User>) => {
-    const result = await dispatch(updateProfile(data));
-    if (updateProfile.rejected.match(result)) {
-      const payload = result.payload;
-      // SP-106C: the structured rejection pairs the sanitized message with
-      // the parsed ApiError; rethrow with the ApiError attached so the
-      // Profile form can render field-level 400 messages (AC-106-06) while
-      // `getErrorMessage` still sees the sanitized string.
-      if (payload && typeof payload === 'object' && 'message' in payload) {
-        const record = payload as {
-          message?: unknown;
-          apiError?: unknown;
-        };
-        throw Object.assign(
-          new Error(
-            typeof record.message === 'string'
-              ? record.message
-              : getErrorMessage(result.error),
-          ),
-          { apiError: record.apiError },
-        );
+  const updateProfileFn = useCallback(
+    async (data: Partial<User>) => {
+      const result = await dispatch(updateProfile(data));
+      if (updateProfile.rejected.match(result)) {
+        const payload = result.payload;
+        // SP-106C: the structured rejection pairs the sanitized message with
+        // the parsed ApiError; rethrow with the ApiError attached so the
+        // Profile form can render field-level 400 messages (AC-106-06) while
+        // `getErrorMessage` still sees the sanitized string.
+        if (payload && typeof payload === 'object' && 'message' in payload) {
+          const record = payload as {
+            message?: unknown;
+            apiError?: unknown;
+          };
+          throw Object.assign(
+            new Error(
+              typeof record.message === 'string' ? record.message : getErrorMessage(result.error)
+            ),
+            { apiError: record.apiError }
+          );
+        }
+        throw new Error(thunkErrorMessage(result.payload, result.error));
       }
-      throw new Error(thunkErrorMessage(result.payload, result.error));
-    }
-  }, [dispatch]);
+    },
+    [dispatch]
+  );
 
   const clearErrorFn = useCallback(() => {
     dispatch(clearError());
@@ -301,11 +314,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dismissVerificationBanner,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = (): AuthContextType => {

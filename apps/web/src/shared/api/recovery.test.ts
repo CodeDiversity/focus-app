@@ -31,7 +31,7 @@ interface PendingCall {
 function ok(
   config: InternalAxiosRequestConfig,
   data: unknown,
-  headers: Record<string, string> = {},
+  headers: Record<string, string> = {}
 ): AxiosResponse {
   return { data, status: 200, statusText: 'OK', headers, config } as AxiosResponse;
 }
@@ -40,7 +40,7 @@ function fail(
   config: InternalAxiosRequestConfig,
   status: number,
   data: unknown,
-  headers: Record<string, string> = {},
+  headers: Record<string, string> = {}
 ): AxiosError {
   const response = {
     data,
@@ -120,7 +120,9 @@ describe('recovery operation boundary (runRecoveryReset)', () => {
 
     harness
       .pendingFor('/auth/refresh')
-      .resolve(ok(harness.pendingFor('/auth/refresh').config, { accessToken: 'rotated-token', user: USER }));
+      .resolve(
+        ok(harness.pendingFor('/auth/refresh').config, { accessToken: 'rotated-token', user: USER })
+      );
     await refresh;
     await flush();
 
@@ -128,7 +130,9 @@ describe('recovery operation boundary (runRecoveryReset)', () => {
 
     harness
       .pendingFor('/auth/reset-password')
-      .resolve(ok(harness.pendingFor('/auth/reset-password').config, { message: RESET_SUCCESS_MESSAGE }));
+      .resolve(
+        ok(harness.pendingFor('/auth/reset-password').config, { message: RESET_SUCCESS_MESSAGE })
+      );
     await expect(reset).resolves.toEqual({ message: RESET_SUCCESS_MESSAGE });
 
     // Success commits the session change: generation advances, token clears,
@@ -154,7 +158,9 @@ describe('recovery operation boundary (runRecoveryReset)', () => {
 
     harness
       .pendingFor('/auth/reset-password')
-      .resolve(ok(harness.pendingFor('/auth/reset-password').config, { message: RESET_SUCCESS_MESSAGE }));
+      .resolve(
+        ok(harness.pendingFor('/auth/reset-password').config, { message: RESET_SUCCESS_MESSAGE })
+      );
     await expect(reset).resolves.toEqual({ message: RESET_SUCCESS_MESSAGE });
     expect(isRecoveryBarrierActive()).toBe(false);
 
@@ -163,9 +169,9 @@ describe('recovery operation boundary (runRecoveryReset)', () => {
 
     // Server-side all refresh rows were revoked, so the deferred rotation fails;
     // the held request resolves as a failure, not as a resurrected session.
-    harness.pendingFor('/auth/refresh').reject(
-      fail(harness.pendingFor('/auth/refresh').config, 401, { message: 'Unauthorized' }),
-    );
+    harness
+      .pendingFor('/auth/refresh')
+      .reject(fail(harness.pendingFor('/auth/refresh').config, 401, { message: 'Unauthorized' }));
     await expect(deferred).rejects.toBeTruthy();
     expect(tokenStore.getToken()).toBeNull();
   });
@@ -202,7 +208,9 @@ describe('recovery operation boundary (runRecoveryReset)', () => {
     // Complete the lifecycle: the in-flight settles late and the barrier releases.
     harness
       .pendingFor('/auth/refresh')
-      .resolve(ok(harness.pendingFor('/auth/refresh').config, { accessToken: 'rotated-token', user: USER }));
+      .resolve(
+        ok(harness.pendingFor('/auth/refresh').config, { accessToken: 'rotated-token', user: USER })
+      );
     await refresh;
     await vi.advanceTimersByTimeAsync(0);
     expect(isRecoveryBarrierActive()).toBe(false);
@@ -227,7 +235,9 @@ describe('recovery operation boundary (runRecoveryReset)', () => {
     // turn the already-rejected reset into a dispatch.
     harness
       .pendingFor('/auth/refresh')
-      .resolve(ok(harness.pendingFor('/auth/refresh').config, { accessToken: 'rotated-token', user: USER }));
+      .resolve(
+        ok(harness.pendingFor('/auth/refresh').config, { accessToken: 'rotated-token', user: USER })
+      );
     await refresh;
     await vi.advanceTimersByTimeAsync(0);
 
@@ -240,7 +250,9 @@ describe('recovery operation boundary (runRecoveryReset)', () => {
     expect(harness.count('/auth/reset-password')).toBe(1);
     harness
       .pendingFor('/auth/reset-password')
-      .resolve(ok(harness.pendingFor('/auth/reset-password').config, { message: RESET_SUCCESS_MESSAGE }));
+      .resolve(
+        ok(harness.pendingFor('/auth/reset-password').config, { message: RESET_SUCCESS_MESSAGE })
+      );
     await expect(retry).resolves.toEqual({ message: RESET_SUCCESS_MESSAGE });
   });
 
@@ -260,7 +272,9 @@ describe('recovery operation boundary (runRecoveryReset)', () => {
 
     harness
       .pendingFor('/auth/reset-password')
-      .resolve(ok(harness.pendingFor('/auth/reset-password').config, { message: RESET_SUCCESS_MESSAGE }));
+      .resolve(
+        ok(harness.pendingFor('/auth/reset-password').config, { message: RESET_SUCCESS_MESSAGE })
+      );
     await expect(first).resolves.toEqual({ message: RESET_SUCCESS_MESSAGE });
     expect(isRecoveryBarrierActive()).toBe(false);
   });
@@ -279,14 +293,20 @@ describe('sanitizeRecoveryError', () => {
     status: number,
     data: unknown,
     headers: Record<string, string> = {},
-    url = '/auth/reset-password',
+    url = '/auth/reset-password'
   ): AxiosError {
     const config = {
       url,
       data: JSON.stringify({ token: RAW_TOKEN, password: 'short', confirmPassword: 'short' }),
     } as InternalAxiosRequestConfig;
     const response = { data, status, statusText: String(status), headers, config } as AxiosResponse;
-    return new AxiosError(`Request failed with status code ${status}`, 'ERR_BAD_REQUEST', config, null, response);
+    return new AxiosError(
+      `Request failed with status code ${status}`,
+      'ERR_BAD_REQUEST',
+      config,
+      null,
+      response
+    );
   }
 
   it.each([
@@ -308,12 +328,16 @@ describe('sanitizeRecoveryError', () => {
         axiosError(
           429,
           envelope(429, 'Too many recovery requests. Wait and try again.', 'Too Many Requests'),
-          header === undefined ? {} : { 'Retry-After': header },
-        ),
+          header === undefined ? {} : { 'Retry-After': header }
+        )
       );
-      expect(sanitized).toMatchObject({ status: 429, retryable: true, retryAfterSeconds: expected });
+      expect(sanitized).toMatchObject({
+        status: 429,
+        retryable: true,
+        retryAfterSeconds: expected,
+      });
       expect(sanitized.message).toBe('Too many recovery requests. Wait and try again.');
-    },
+    }
   );
 
   it('sanitized errors exclude the Axios config, request body and response headers', () => {
@@ -321,7 +345,7 @@ describe('sanitizeRecoveryError', () => {
       axiosError(400, envelope(400, INVALID_RESET_MESSAGE, 'BadRequestException'), {
         'Set-Cookie': 'refresh_token=; Path=/auth; Max-Age=0',
         'Retry-After': '30',
-      }),
+      })
     );
     const rendered = JSON.stringify(sanitized);
     expect(rendered).not.toContain('T0k3n'); // the raw link token in the request body
@@ -335,31 +359,33 @@ describe('sanitizeRecoveryError', () => {
 
   it('400 validation failures surface the envelope field messages', () => {
     const sanitized = sanitizeRecoveryError(
-      axiosError(400, envelope(400, ['Password must be at least 8 characters', 'Passwords do not match'])),
+      axiosError(
+        400,
+        envelope(400, ['Password must be at least 8 characters', 'Passwords do not match'])
+      )
     );
-    expect(sanitized.message).toBe('Password must be at least 8 characters. Passwords do not match');
+    expect(sanitized.message).toBe(
+      'Password must be at least 8 characters. Passwords do not match'
+    );
     expect(sanitized.retryable).toBe(false);
   });
 
   it('keeps the uniform invalid-link message byte-identical when repeated constraints duplicate it', () => {
     const sanitized = sanitizeRecoveryError(
-      axiosError(400, envelope(400, [INVALID_RESET_MESSAGE, INVALID_RESET_MESSAGE])),
+      axiosError(400, envelope(400, [INVALID_RESET_MESSAGE, INVALID_RESET_MESSAGE]))
     );
     expect(sanitized.message).toBe(INVALID_RESET_MESSAGE);
   });
 
   it('surfaces field errors from the envelope error field when it is a field map', () => {
     const sanitized = sanitizeRecoveryError(
-      axiosError(
-        400,
-        {
-          statusCode: 400,
-          message: 'Validation failed',
-          error: { password: ['Password must be at least 8 characters'] },
-          path: '/auth/reset-password',
-          timestamp: '2026-10-15T12:00:00.000Z',
-        },
-      ),
+      axiosError(400, {
+        statusCode: 400,
+        message: 'Validation failed',
+        error: { password: ['Password must be at least 8 characters'] },
+        path: '/auth/reset-password',
+        timestamp: '2026-10-15T12:00:00.000Z',
+      })
     );
     expect(sanitized.fieldErrors).toEqual({ password: ['Password must be at least 8 characters'] });
   });
@@ -381,8 +407,12 @@ describe('sanitizeRecoveryError', () => {
     const sanitized = sanitizeRecoveryError(
       axiosError(
         503,
-        envelope(503, 'Password recovery is temporarily unavailable. Please try again later.', 'Service Unavailable'),
-      ),
+        envelope(
+          503,
+          'Password recovery is temporarily unavailable. Please try again later.',
+          'Service Unavailable'
+        )
+      )
     );
     expect(sanitized).toMatchObject({ status: 503, retryable: true });
     expect(sanitized).not.toHaveProperty('retryAfterSeconds');
@@ -393,8 +423,8 @@ describe('sanitizeRecoveryError', () => {
       axiosError(
         429,
         envelope(429, 'Too many recovery requests. Wait and try again.', 'Too Many Requests'),
-        { 'Retry-After': '12' },
-      ),
+        { 'Retry-After': '12' }
+      )
     );
     expect(sanitizeRecoveryError(original)).toBe(original);
   });

@@ -34,9 +34,9 @@ describe('ForgotPasswordDto', () => {
     }
   });
   it('rejects an overlong email', async () => {
-    await expect(
-      validate({ email: 'a'.repeat(255) + '@example.com' })
-    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(validate({ email: 'a'.repeat(255) + '@example.com' })).rejects.toBeInstanceOf(
+      BadRequestException
+    );
   });
   it.each(['userId', 'emailVerifiedAt'])('rejects non-whitelisted %s', async (field) => {
     await expect(validate({ email: 'ada@example.com', [field]: 'owner' })).rejects.toThrow(

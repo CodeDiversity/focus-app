@@ -23,7 +23,7 @@ describe('ownership helpers', () => {
       expect(() => assertOwned(OWNER, { userId: OWNER })).not.toThrow();
     });
 
-    it('throws 404 for another user\'s record', () => {
+    it("throws 404 for another user's record", () => {
       expectUniform404(caught(() => assertOwned(OWNER, { userId: STRANGER })));
     });
 

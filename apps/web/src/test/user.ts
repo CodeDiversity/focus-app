@@ -5,10 +5,25 @@ import userEvent from '@testing-library/user-event';
 export function setupUser() {
   const user = userEvent.setup();
   return {
-    click: (element: Element) => act(async () => { await user.click(element); }),
-    dblClick: (element: Element) => act(async () => { await user.dblClick(element); }),
-    type: (element: Element, text: string) => act(async () => { await user.type(element, text); }),
-    tab: () => act(async () => { await user.tab(); }),
-    keyboard: (text: string) => act(async () => { await user.keyboard(text); }),
+    click: (element: Element) =>
+      act(async () => {
+        await user.click(element);
+      }),
+    dblClick: (element: Element) =>
+      act(async () => {
+        await user.dblClick(element);
+      }),
+    type: (element: Element, text: string) =>
+      act(async () => {
+        await user.type(element, text);
+      }),
+    tab: () =>
+      act(async () => {
+        await user.tab();
+      }),
+    keyboard: (text: string) =>
+      act(async () => {
+        await user.keyboard(text);
+      }),
   };
 }

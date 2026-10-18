@@ -1,9 +1,4 @@
-import {
-  ArgumentsHost,
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { ArgumentsHost, BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client';
 import { AllExceptionsFilter } from './all-exceptions.filter';
 
@@ -49,7 +44,7 @@ describe('AllExceptionsFilter', () => {
   it('maps Prisma unique-constraint violations to 409 with an actionable message', () => {
     const prismaError = new Prisma.PrismaClientKnownRequestError(
       'Unique constraint failed on the fields: (`email`)',
-      { code: 'P2002', clientVersion: '5.22.0' },
+      { code: 'P2002', clientVersion: '5.22.0' }
     );
 
     const body = run(prismaError);
@@ -62,7 +57,7 @@ describe('AllExceptionsFilter', () => {
   it('maps Prisma not-found errors to 404', () => {
     const prismaError = new Prisma.PrismaClientKnownRequestError(
       'An operation failed because it depends on a record that was not found',
-      { code: 'P2025', clientVersion: '5.22.0' },
+      { code: 'P2025', clientVersion: '5.22.0' }
     );
 
     const body = run(prismaError);
@@ -89,7 +84,7 @@ describe('AllExceptionsFilter', () => {
         message: ['timeZone must be a valid IANA time zone'],
         error: 'Bad Request',
         errors: { timeZone: ['timeZone must be a valid IANA time zone, e.g. America/New_York'] },
-      }),
+      })
     );
 
     expect(status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);

@@ -18,9 +18,7 @@ describe('JwtStrategy', () => {
 
   it('fails fast with an actionable message when JWT_SECRET is missing', () => {
     const { configService, prisma } = makeDeps(undefined);
-    expect(() => new JwtStrategy(configService, prisma)).toThrow(
-      /JWT_SECRET is not configured/,
-    );
+    expect(() => new JwtStrategy(configService, prisma)).toThrow(/JWT_SECRET is not configured/);
   });
 
   it('returns the user for a valid payload', async () => {
@@ -40,7 +38,7 @@ describe('JwtStrategy', () => {
 
     const strategy = new JwtStrategy(configService, prisma);
     await expect(
-      strategy.validate({ sub: 'deleted', email: 'student@example.com' }),
+      strategy.validate({ sub: 'deleted', email: 'student@example.com' })
     ).rejects.toThrow(UnauthorizedException);
   });
 });

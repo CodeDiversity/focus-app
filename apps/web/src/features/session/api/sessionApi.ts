@@ -26,11 +26,9 @@ export interface AxiosBaseQueryError {
  * refresh, recovery barrier, session generations, `AUTH_PATHS`, error
  * sanitization) stays the single transport — RD4.
  */
-export const axiosBaseQuery: BaseQueryFn<
-  AxiosBaseQueryArgs,
-  unknown,
-  AxiosBaseQueryError
-> = async (args) => {
+export const axiosBaseQuery: BaseQueryFn<AxiosBaseQueryArgs, unknown, AxiosBaseQueryError> = async (
+  args
+) => {
   const { url, method, body } = args;
   try {
     const config: AxiosRequestConfig = { url, method, data: body };

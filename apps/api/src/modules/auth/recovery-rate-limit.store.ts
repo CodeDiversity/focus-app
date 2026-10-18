@@ -43,8 +43,7 @@ export const RECOVERY_WINDOW_MS = 60_000;
 const ADMISSION_ATTEMPTS = 2;
 
 export type Admission =
-  | { readonly allowed: true }
-  | { readonly allowed: false; readonly retryAfterSeconds: number };
+  { readonly allowed: true } | { readonly allowed: false; readonly retryAfterSeconds: number };
 
 /**
  * Sanitized, account-independent failure message. Deliberately generic: it
@@ -77,7 +76,7 @@ function toTimestamps(values: readonly Timestamp[] | null): Date[] {
  */
 export function retryAfterSeconds(earliestRetained: Date, checkedAt: Date): number {
   const seconds = Math.ceil(
-    (earliestRetained.getTime() + RECOVERY_WINDOW_MS - checkedAt.getTime()) / 1000,
+    (earliestRetained.getTime() + RECOVERY_WINDOW_MS - checkedAt.getTime()) / 1000
   );
   return Math.min(60, Math.max(1, seconds));
 }
@@ -113,7 +112,7 @@ export class RecoveryRateLimitStore {
   private async admitAttempt(
     tx: Prisma.TransactionClient,
     endpoint: RecoveryEndpoint,
-    normalizedIp: string,
+    normalizedIp: string
   ): Promise<Admission | null> {
     // 1. Ensure the bucket exists. The create branch starts with an empty
     //    window; the update branch is a no-op — the decision re-reads the

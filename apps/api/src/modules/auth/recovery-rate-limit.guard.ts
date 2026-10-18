@@ -107,7 +107,7 @@ export class RecoveryRateLimitGuard implements CanActivate {
           message: RATE_LIMITED_MESSAGE,
           error: 'Too Many Requests',
         },
-        HttpStatus.TOO_MANY_REQUESTS,
+        HttpStatus.TOO_MANY_REQUESTS
       );
     }
     return true;

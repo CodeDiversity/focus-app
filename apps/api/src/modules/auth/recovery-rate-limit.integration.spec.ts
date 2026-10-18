@@ -43,16 +43,13 @@ function seededWindow(baseMs: number, count: number, oldestAgeMs: number): Date[
   const oldest = new Date(baseMs - oldestAgeMs);
   const rest = Array.from(
     { length: count - 1 },
-    (_, index) => new Date(baseMs - 3_000 + index * 10),
+    (_, index) => new Date(baseMs - 3_000 + index * 10)
   );
   return [oldest, ...rest].sort((left, right) => left.getTime() - right.getTime());
 }
 
 function staleWindow(baseMs: number, count: number): Date[] {
-  return Array.from(
-    { length: count },
-    (_, index) => new Date(baseMs - 120_000 - index * 1_000),
-  );
+  return Array.from({ length: count }, (_, index) => new Date(baseMs - 120_000 - index * 1_000));
 }
 
 function stamp(values: readonly Date[]): number[] {
@@ -68,7 +65,7 @@ async function waitUntilBlockedCount(
   client: PrismaClient,
   holderPid: number,
   expected: number,
-  timeoutMs = 5_000,
+  timeoutMs = 5_000
 ): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   let count = 0;
@@ -95,11 +92,7 @@ async function waitUntilBlockedCount(
   throw new Error(`expected ${expected} blocked backends, observed ${count}`);
 }
 
-async function readBucket(
-  client: PrismaClient,
-  endpoint: RecoveryEndpoint,
-  normalizedIp: string,
-) {
+async function readBucket(client: PrismaClient, endpoint: RecoveryEndpoint, normalizedIp: string) {
   return client.recoveryRateLimitBucket.findUnique({
     where: { endpoint_normalizedIp: { endpoint, normalizedIp } },
   });
@@ -108,12 +101,10 @@ async function readBucket(
 function expectSingleAdmission(results: PromiseSettledResult<Admission>[]): void {
   const rejected = results.filter((result) => result.status === 'rejected');
   expect(rejected).toHaveLength(0);
-  const values = results.map(
-    (result) => (result as PromiseFulfilledResult<Admission>).value,
-  );
+  const values = results.map((result) => (result as PromiseFulfilledResult<Admission>).value);
   const allowed = values.filter((value) => value.allowed);
   const denied = values.filter(
-    (value): value is { allowed: false; retryAfterSeconds: number } => !value.allowed,
+    (value): value is { allowed: false; retryAfterSeconds: number } => !value.allowed
   );
   expect(allowed).toHaveLength(1);
   expect(denied).toHaveLength(1);
@@ -126,17 +117,18 @@ async function raceAdmit(
   harness: RecoveryDbHarness,
   endpoint: RecoveryEndpoint,
   normalizedIp: string,
-  onBlocked?: (holderPid: number) => Promise<void>,
+  onBlocked?: (holderPid: number) => Promise<void>
 ): Promise<PromiseSettledResult<Admission>[]> {
   const left = storeFor(await harness.connection());
   const right = storeFor(await harness.connection());
-  const held = await harness.hold((tx) =>
-    tx.$queryRaw`
+  const held = await harness.hold(
+    (tx) =>
+      tx.$queryRaw`
       SELECT "id"
       FROM "recovery_rate_limit_buckets"
       WHERE "endpoint" = ${endpoint} AND "normalizedIp" = ${normalizedIp}
       FOR UPDATE
-    `,
+    `
   );
   const both = Promise.allSettled([
     left.admit(endpoint, normalizedIp),
@@ -282,9 +274,9 @@ describe('Recovery shared-limiter concurrency (real PostgreSQL)', () => {
       admittedAt: seeded,
     });
 
-    await expect(
-      storeFor(harness.client).admit(FORGOT, fixture.normalizedIp),
-    ).resolves.toEqual({ allowed: true });
+    await expect(storeFor(harness.client).admit(FORGOT, fixture.normalizedIp)).resolves.toEqual({
+      allowed: true,
+    });
 
     const row = await readBucket(harness.client, FORGOT, fixture.normalizedIp);
     expect(row?.admittedAt).toHaveLength(RECOVERY_LIMITS[FORGOT]);
@@ -327,9 +319,7 @@ describe('Recovery shared-limiter concurrency (real PostgreSQL)', () => {
 
     const results = await raceAdmit(harness, FORGOT, fixture.normalizedIp);
     expect(results.filter((result) => result.status === 'rejected')).toHaveLength(0);
-    const values = results.map(
-      (result) => (result as PromiseFulfilledResult<Admission>).value,
-    );
+    const values = results.map((result) => (result as PromiseFulfilledResult<Admission>).value);
     expect(values).toEqual([{ allowed: true }, { allowed: true }]);
 
     const rows = await harness.client.recoveryRateLimitBucket.findMany({

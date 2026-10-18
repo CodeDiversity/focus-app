@@ -61,7 +61,7 @@ const renderProvider = () => {
           </Routes>
         </AuthProvider>
       </Provider>
-    </MemoryRouter>,
+    </MemoryRouter>
   );
 };
 
@@ -134,7 +134,7 @@ describe('AuthContext', () => {
             </Routes>
           </AuthProvider>
         </Provider>
-      </MemoryRouter>,
+      </MemoryRouter>
     );
 
     expect(await screen.findByText('Dashboard page')).toBeInTheDocument();
@@ -150,7 +150,9 @@ describe('AuthContext', () => {
       throw new AxiosError('Unauthorized', 'ERR_BAD_REQUEST', config, null, response);
     };
 
-    await act(async () => { await expect(api.get('/protected-data')).rejects.toBeTruthy(); });
+    await act(async () => {
+      await expect(api.get('/protected-data')).rejects.toBeTruthy();
+    });
 
     await waitFor(() => {
       expect(screen.getByTestId('nav-path')).toHaveTextContent('/login');
@@ -170,9 +172,7 @@ describe('AuthContext', () => {
     function LogoutProbe() {
       const { logout, isAuthenticated } = useAuth();
       return (
-        <button onClick={() => void logout()}>
-          {isAuthenticated ? 'sign-out' : 'signed-out'}
-        </button>
+        <button onClick={() => void logout()}>{isAuthenticated ? 'sign-out' : 'signed-out'}</button>
       );
     }
 
@@ -184,16 +184,23 @@ describe('AuthContext', () => {
             <LogoutProbe />
           </AuthProvider>
         </Provider>
-      </MemoryRouter>,
+      </MemoryRouter>
     );
 
     const button = await screen.findByRole('button', { name: 'sign-out' });
-    await act(async () => { button.click(); });
+    await act(async () => {
+      button.click();
+    });
     expect(await screen.findByRole('button', { name: 'signed-out' })).toBeInTheDocument();
     expect(tokenStore.getToken()).toBeNull();
   });
 
-  const sessionUser = { id: 'user-1', name: 'Ada', email: 'ada@example.com', emailVerifiedAt: null };
+  const sessionUser = {
+    id: 'user-1',
+    name: 'Ada',
+    email: 'ada@example.com',
+    emailVerifiedAt: null,
+  };
   let currentAuth: ReturnType<typeof useAuth>;
   function VerificationProbe() {
     currentAuth = useAuth();
@@ -202,27 +209,52 @@ describe('AuthContext', () => {
   async function renderVerificationProvider() {
     mockedRefresh.mockResolvedValue({ accessToken: 'session', user: sessionUser });
     const store = makeStore();
-    render(<MemoryRouter><Provider store={store}><AuthProvider><VerificationProbe /></AuthProvider></Provider></MemoryRouter>);
+    render(
+      <MemoryRouter>
+        <Provider store={store}>
+          <AuthProvider>
+            <VerificationProbe />
+          </AuthProvider>
+        </Provider>
+      </MemoryRouter>
+    );
     await waitFor(() => expect(currentAuth.user?.id).toBe('user-1'));
   }
 
   it('refreshes the current profile on focus without rotating the session', async () => {
     await renderVerificationProvider();
-    vi.mocked(userService.getProfile).mockResolvedValue({ ...sessionUser, emailVerifiedAt: '2026-10-14T12:00:00Z', createdAt: '', updatedAt: '' });
-    await act(async () => { window.dispatchEvent(new Event('focus')); });
+    vi.mocked(userService.getProfile).mockResolvedValue({
+      ...sessionUser,
+      emailVerifiedAt: '2026-10-14T12:00:00Z',
+      createdAt: '',
+      updatedAt: '',
+    });
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+    });
     expect(currentAuth.user?.emailVerifiedAt).toBe('2026-10-14T12:00:00Z');
     expect(mockedRefresh).toHaveBeenCalledTimes(1);
-    await act(async () => { window.dispatchEvent(new Event('focus')); });
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+    });
     expect(userService.getProfile).toHaveBeenCalledTimes(1);
   });
 
   it('deduplicates verification profile refresh', async () => {
     await renderVerificationProvider();
     let resolveProfile!: (value: Awaited<ReturnType<typeof userService.getProfile>>) => void;
-    vi.mocked(userService.getProfile).mockImplementation(() => new Promise(resolve => { resolveProfile = resolve; }));
+    vi.mocked(userService.getProfile).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveProfile = resolve;
+        })
+    );
     let first!: Promise<void>;
     let second!: Promise<void>;
-    act(() => { first = currentAuth.refreshProfile(); second = currentAuth.refreshProfile(); });
+    act(() => {
+      first = currentAuth.refreshProfile();
+      second = currentAuth.refreshProfile();
+    });
     expect(userService.getProfile).toHaveBeenCalledTimes(1);
     await act(async () => {
       resolveProfile({ ...sessionUser, createdAt: '', updatedAt: '' });
@@ -234,7 +266,9 @@ describe('AuthContext', () => {
     await renderVerificationProvider();
     tokenStore.setToken('usable-session');
     vi.mocked(userService.getProfile).mockRejectedValue(new Error('network unavailable'));
-    await act(async () => { await currentAuth.refreshProfile(); });
+    await act(async () => {
+      await currentAuth.refreshProfile();
+    });
     expect(currentAuth.isAuthenticated).toBe(true);
     expect(currentAuth.isLoading).toBe(false);
     expect(currentAuth.error).toBeNull();
@@ -243,36 +277,70 @@ describe('AuthContext', () => {
 
   it('keeps the signed-in account when another account is verified', async () => {
     await renderVerificationProvider();
-    vi.mocked(userService.getProfile).mockResolvedValue({ ...sessionUser, createdAt: '', updatedAt: '' });
-    await act(async () => { await currentAuth.refreshProfile(); });
+    vi.mocked(userService.getProfile).mockResolvedValue({
+      ...sessionUser,
+      createdAt: '',
+      updatedAt: '',
+    });
+    await act(async () => {
+      await currentAuth.refreshProfile();
+    });
     expect(currentAuth.user).toMatchObject(sessionUser);
   });
 
-  it.each(['logout', 'account change'] as const)('ignores a late profile response and queued fresh read after %s', async (change) => {
-    await renderVerificationProvider();
-    let resolveProfile!: (value: Awaited<ReturnType<typeof userService.getProfile>>) => void;
-    vi.mocked(userService.getProfile).mockImplementation(() => new Promise(resolve => { resolveProfile = resolve; }));
-    let flight!: Promise<void>;
-    let queued!: Promise<void>;
-    act(() => { flight = currentAuth.refreshProfile(); queued = currentAuth.refreshProfile({ fresh: true }); });
-    if (change === 'logout') {
-      vi.mocked(authService.logout).mockResolvedValue();
-      await act(async () => { await currentAuth.logout(); });
-    } else {
-      vi.mocked(authService.login).mockResolvedValue({ accessToken: 'other-session', user: { ...sessionUser, id: 'user-2', email: 'grace@example.com' } });
-      await act(async () => { await currentAuth.login('grace@example.com', 'password'); });
+  it.each(['logout', 'account change'] as const)(
+    'ignores a late profile response and queued fresh read after %s',
+    async (change) => {
+      await renderVerificationProvider();
+      let resolveProfile!: (value: Awaited<ReturnType<typeof userService.getProfile>>) => void;
+      vi.mocked(userService.getProfile).mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveProfile = resolve;
+          })
+      );
+      let flight!: Promise<void>;
+      let queued!: Promise<void>;
+      act(() => {
+        flight = currentAuth.refreshProfile();
+        queued = currentAuth.refreshProfile({ fresh: true });
+      });
+      if (change === 'logout') {
+        vi.mocked(authService.logout).mockResolvedValue();
+        await act(async () => {
+          await currentAuth.logout();
+        });
+      } else {
+        vi.mocked(authService.login).mockResolvedValue({
+          accessToken: 'other-session',
+          user: { ...sessionUser, id: 'user-2', email: 'grace@example.com' },
+        });
+        await act(async () => {
+          await currentAuth.login('grace@example.com', 'password');
+        });
+      }
+      await act(async () => {
+        resolveProfile({
+          ...sessionUser,
+          emailVerifiedAt: '2026-10-14',
+          createdAt: '',
+          updatedAt: '',
+        });
+        await Promise.all([flight, queued]);
+      });
+      expect(currentAuth.user?.id ?? null).toBe(change === 'logout' ? null : 'user-2');
+      expect(userService.getProfile).toHaveBeenCalledTimes(1);
     }
-    await act(async () => {
-      resolveProfile({ ...sessionUser, emailVerifiedAt: '2026-10-14', createdAt: '', updatedAt: '' });
-      await Promise.all([flight, queued]);
-    });
-    expect(currentAuth.user?.id ?? null).toBe(change === 'logout' ? null : 'user-2');
-    expect(userService.getProfile).toHaveBeenCalledTimes(1);
-  });
+  );
 });
 
 describe('AuthContext recovery session generation (SP-105G M2)', () => {
-  const sessionUser = { id: 'user-1', name: 'Ada', email: 'ada@example.com', emailVerifiedAt: null };
+  const sessionUser = {
+    id: 'user-1',
+    name: 'Ada',
+    email: 'ada@example.com',
+    emailVerifiedAt: null,
+  };
   let currentAuth: ReturnType<typeof useAuth>;
 
   function ok(config: InternalAxiosRequestConfig, data: unknown): AxiosResponse {
@@ -282,11 +350,16 @@ describe('AuthContext recovery session generation (SP-105G M2)', () => {
   function Probe() {
     currentAuth = useAuth();
     const location = useLocation();
-    const state = location.state as { sessionExpired?: boolean; from?: { pathname?: string } } | null;
+    const state = location.state as {
+      sessionExpired?: boolean;
+      from?: { pathname?: string };
+    } | null;
     if (currentAuth.isLoading) return <div>loading</div>;
     return (
       <div>
-        <span data-testid="auth-state">{currentAuth.isAuthenticated ? currentAuth.user?.email : 'logged-out'}</span>
+        <span data-testid="auth-state">
+          {currentAuth.isAuthenticated ? currentAuth.user?.email : 'logged-out'}
+        </span>
         <span data-testid="nav-path">{location.pathname}</span>
         <span data-testid="nav-expired">{String(Boolean(state?.sessionExpired))}</span>
       </div>
@@ -305,7 +378,7 @@ describe('AuthContext recovery session generation (SP-105G M2)', () => {
             </Routes>
           </AuthProvider>
         </Provider>
-      </MemoryRouter>,
+      </MemoryRouter>
     );
   }
 
@@ -320,17 +393,27 @@ describe('AuthContext recovery session generation (SP-105G M2)', () => {
     tokenStore.setToken('live-token');
     // The silent boot refresh is in flight (its generation snapshot predates the reset).
     let resolveRefresh!: (value: AuthResponse) => void;
-    mockedRefresh.mockImplementation(() => new Promise((resolve) => { resolveRefresh = resolve; }));
+    mockedRefresh.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveRefresh = resolve;
+        })
+    );
 
     renderProvider();
     await act(async () => {
-      await runRecoveryReset(() => Promise.resolve({ message: 'Password updated. Please sign in.' }));
+      await runRecoveryReset(() =>
+        Promise.resolve({ message: 'Password updated. Please sign in.' })
+      );
     });
     expect(tokenStore.getToken()).toBeNull(); // cleared by the reset
 
     // The pre-reset boot refresh "succeeds" late: it must not resurrect the cleared session.
     await act(async () => {
-      resolveRefresh({ accessToken: 'stale-token', user: { ...sessionUser, emailVerifiedAt: '2026-10-14' } } as AuthResponse);
+      resolveRefresh({
+        accessToken: 'stale-token',
+        user: { ...sessionUser, emailVerifiedAt: '2026-10-14' },
+      } as AuthResponse);
     });
     expect(await screen.findByTestId('auth-state')).toHaveTextContent('logged-out');
     expect(tokenStore.getToken()).toBeNull();
@@ -343,18 +426,32 @@ describe('AuthContext recovery session generation (SP-105G M2)', () => {
 
     // A profile flight is in flight (focus-driven verification read).
     let resolveProfile!: (value: Awaited<ReturnType<typeof userService.getProfile>>) => void;
-    vi.mocked(userService.getProfile).mockImplementation(() => new Promise((resolve) => { resolveProfile = resolve; }));
-    await act(async () => { window.dispatchEvent(new Event('focus')); });
+    vi.mocked(userService.getProfile).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveProfile = resolve;
+        })
+    );
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+    });
     expect(userService.getProfile).toHaveBeenCalledTimes(1);
 
     await act(async () => {
-      await runRecoveryReset(() => Promise.resolve({ message: 'Password updated. Please sign in.' }));
+      await runRecoveryReset(() =>
+        Promise.resolve({ message: 'Password updated. Please sign in.' })
+      );
     });
     expect(screen.getByTestId('auth-state')).toHaveTextContent('logged-out');
 
     // The stale profile read completes: it must not re-apply the old session.
     await act(async () => {
-      resolveProfile({ ...sessionUser, emailVerifiedAt: '2026-10-14', createdAt: '', updatedAt: '' });
+      resolveProfile({
+        ...sessionUser,
+        emailVerifiedAt: '2026-10-14',
+        createdAt: '',
+        updatedAt: '',
+      });
       await Promise.resolve();
     });
     await waitFor(() => expect(screen.getByTestId('auth-state')).toHaveTextContent('logged-out'));
@@ -366,7 +463,9 @@ describe('AuthContext recovery session generation (SP-105G M2)', () => {
     await screen.findByText('ada@example.com');
 
     await act(async () => {
-      await runRecoveryReset(() => Promise.resolve({ message: 'Password updated. Please sign in.' }));
+      await runRecoveryReset(() =>
+        Promise.resolve({ message: 'Password updated. Please sign in.' })
+      );
     });
     expect(screen.getByTestId('auth-state')).toHaveTextContent('logged-out');
     expect(tokenStore.getToken()).toBeNull();
@@ -377,7 +476,9 @@ describe('AuthContext recovery session generation (SP-105G M2)', () => {
       tokenStore.setToken('new-token');
       return { accessToken: 'new-token', user: sessionUser } as AuthResponse;
     });
-    await act(async () => { await currentAuth.login('ada@example.com', 'brand-new-password'); });
+    await act(async () => {
+      await currentAuth.login('ada@example.com', 'brand-new-password');
+    });
     expect(screen.getByTestId('auth-state')).toHaveTextContent('ada@example.com');
     expect(tokenStore.getToken()).toBe('new-token');
   });
@@ -401,7 +502,7 @@ describe('AuthContext recovery session generation (SP-105G M2)', () => {
             </Routes>
           </AuthProvider>
         </Provider>
-      </MemoryRouter>,
+      </MemoryRouter>
     );
     await screen.findByText('ada@example.com');
 
@@ -416,13 +517,25 @@ describe('AuthContext recovery session generation (SP-105G M2)', () => {
         return ok(config, { accessToken: 'session', user: sessionUser } as AuthResponse);
       }
       const response = {
-        data: { statusCode: 400, message: invalidLink, error: 'Bad Request', path: config.url, timestamp: '2026-10-15T12:00:00.000Z' },
+        data: {
+          statusCode: 400,
+          message: invalidLink,
+          error: 'Bad Request',
+          path: config.url,
+          timestamp: '2026-10-15T12:00:00.000Z',
+        },
         status: 400,
         statusText: 'Bad Request',
         headers: {},
         config,
       } as AxiosResponse;
-      throw new AxiosError('Request failed with status code 400', 'ERR_BAD_REQUEST', config, null, response);
+      throw new AxiosError(
+        'Request failed with status code 400',
+        'ERR_BAD_REQUEST',
+        config,
+        null,
+        response
+      );
     };
     await expect(runRecoveryReset(resetSend)).rejects.toBeTruthy();
 
@@ -437,7 +550,13 @@ describe('AuthContext recovery session generation (SP-105G M2)', () => {
       if (config.url === '/auth/refresh') {
         return ok(config, { accessToken: 'session', user: sessionUser } as AuthResponse);
       }
-      const response = { data: { message: 'Unauthorized' }, status: 401, statusText: 'Unauthorized', headers: {}, config } as AxiosResponse;
+      const response = {
+        data: { message: 'Unauthorized' },
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {},
+        config,
+      } as AxiosResponse;
       throw new AxiosError('Unauthorized', 'ERR_BAD_REQUEST', config, null, response);
     };
     await act(async () => {

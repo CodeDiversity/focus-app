@@ -18,21 +18,30 @@ export const authService = {
       return response.data;
     } catch (error: unknown) {
       const status = (error as { response?: { status?: number } })?.response?.status;
-      throw Object.assign(new Error(status === 400
-        ? 'This verification link is invalid or has expired. Request a new email.'
-        : 'We could not verify your email. Check your connection and try again.'), { statusCode: status });
+      throw Object.assign(
+        new Error(
+          status === 400
+            ? 'This verification link is invalid or has expired. Request a new email.'
+            : 'We could not verify your email. Check your connection and try again.'
+        ),
+        { statusCode: status }
+      );
     }
   },
 
   async resendVerification(email: string): Promise<VerificationResponse> {
     try {
-      const response = await api.post<VerificationResponse>('/auth/resend-verification', { email: email.trim().toLowerCase() });
+      const response = await api.post<VerificationResponse>('/auth/resend-verification', {
+        email: email.trim().toLowerCase(),
+      });
       return response.data;
     } catch (error: unknown) {
       const status = (error as { response?: { status?: number } })?.response?.status;
-      throw new Error(status === 400
-        ? 'Please enter a valid email address'
-        : 'We could not request a verification email. Check your connection and try again.');
+      throw new Error(
+        status === 400
+          ? 'Please enter a valid email address'
+          : 'We could not request a verification email. Check your connection and try again.'
+      );
     }
   },
 
@@ -53,7 +62,9 @@ export const authService = {
   // thrown carries it beyond the sanitized RecoveryError / ResetPasswordResult.
   async resetPassword(request: ResetPasswordRequest): Promise<ResetPasswordResult> {
     return runRecoveryReset(() =>
-      api.post<ResetPasswordResult>('/auth/reset-password', request).then((response) => response.data),
+      api
+        .post<ResetPasswordResult>('/auth/reset-password', request)
+        .then((response) => response.data)
     );
   },
 

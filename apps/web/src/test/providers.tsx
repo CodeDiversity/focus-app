@@ -18,7 +18,7 @@ export function makeTestStore() {
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({ serializableCheck: { ignoredActions: [api.reducerPath] } }).concat(
-        api.middleware,
+        api.middleware
       ),
   });
 }
@@ -33,5 +33,9 @@ interface ProvidersProps {
 /** Redux `Provider` with an optional `MemoryRouter` for route-aware tests. */
 export function Providers({ children, store = makeTestStore(), initialEntries }: ProvidersProps) {
   const content = <Provider store={store}>{children}</Provider>;
-  return initialEntries ? <MemoryRouter initialEntries={initialEntries}>{content}</MemoryRouter> : content;
+  return initialEntries ? (
+    <MemoryRouter initialEntries={initialEntries}>{content}</MemoryRouter>
+  ) : (
+    content
+  );
 }

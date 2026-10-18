@@ -354,7 +354,9 @@ describe('AuthController HTTP verification contracts', () => {
   });
 
   it('returns the uniform invalid-token 400 envelope and emits no cookie cleanup on token failure', async () => {
-    passwordReset.resetPassword.mockRejectedValueOnce(new BadRequestException(INVALID_RESET_MESSAGE));
+    passwordReset.resetPassword.mockRejectedValueOnce(
+      new BadRequestException(INVALID_RESET_MESSAGE)
+    );
     const response = await post('/auth/reset-password', validResetBody);
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({
@@ -384,16 +386,27 @@ describe('AuthController HTTP verification contracts', () => {
   it.each([
     // Field failures stay field errors — never proof about the token (SP-105B AC4).
     ['/auth/reset-password', { ...validResetBody, password: 'short', confirmPassword: 'short' }],
-    ['/auth/reset-password', { ...validResetBody, password: 'Password123', confirmPassword: 'Different123' }],
+    [
+      '/auth/reset-password',
+      { ...validResetBody, password: 'Password123', confirmPassword: 'Different123' },
+    ],
     ['/auth/reset-password', { ...validResetBody, userId: 'other' }],
-  ])('keeps password/confirmation/whitelist failures as field errors %s %o', async (path, payload) => {
-    const response = await post(path as string, payload);
-    expect(response.status).toBe(400);
-    const error = (await response.json()) as { message: unknown };
-    expect(error).toMatchObject({ statusCode: 400, path, error: 'Bad Request', timestamp: expect.any(String) });
-    expect(Array.isArray(error.message)).toBe(true);
-    expect(JSON.stringify(error.message)).not.toContain(INVALID_RESET_MESSAGE);
-    expect(response.headers.get('set-cookie')).toBeNull();
-    expect(passwordReset.resetPassword).not.toHaveBeenCalled();
-  });
+  ])(
+    'keeps password/confirmation/whitelist failures as field errors %s %o',
+    async (path, payload) => {
+      const response = await post(path as string, payload);
+      expect(response.status).toBe(400);
+      const error = (await response.json()) as { message: unknown };
+      expect(error).toMatchObject({
+        statusCode: 400,
+        path,
+        error: 'Bad Request',
+        timestamp: expect.any(String),
+      });
+      expect(Array.isArray(error.message)).toBe(true);
+      expect(JSON.stringify(error.message)).not.toContain(INVALID_RESET_MESSAGE);
+      expect(response.headers.get('set-cookie')).toBeNull();
+      expect(passwordReset.resetPassword).not.toHaveBeenCalled();
+    }
+  );
 });

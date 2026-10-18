@@ -57,7 +57,7 @@ export async function createIntegrationApp(): Promise<IntegrationApp> {
       'DATABASE_URL is not set. Integration specs run against a real database: ' +
         'start it with `docker compose up db` and apply migrations with ' +
         '`pnpm --filter @studypilot/api exec prisma migrate deploy` (the app ' +
-        'reads apps/api/.env.local), or run the suite in CI, which provides one.',
+        'reads apps/api/.env.local), or run the suite in CI, which provides one.'
     );
   }
 
@@ -88,7 +88,7 @@ export async function createIntegrationApp(): Promise<IntegrationApp> {
       transformOptions: {
         enableImplicitConversion: true,
       },
-    }),
+    })
   );
   app.useGlobalFilters(new AllExceptionsFilter());
   // main.ts parity: CORS with the limiter's Retry-After exposed (SP-105F).

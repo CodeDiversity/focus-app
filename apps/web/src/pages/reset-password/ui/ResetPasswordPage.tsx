@@ -14,7 +14,8 @@ import { readLinkToken } from '@/shared/lib/linkToken';
 // (SP-105B `INVALID_RESET_MESSAGE`). G's dedup keeps it byte-stable across
 // the DTO-validation and service-exception paths, so this equality check —
 // alongside a successful reset — is the only thing that consumes the token.
-const INVALID_RESET_MESSAGE = 'This reset link is invalid or has expired. Please request a new one.';
+const INVALID_RESET_MESSAGE =
+  'This reset link is invalid or has expired. Please request a new one.';
 
 // Mirrors the backend ResetPasswordDto: min 8, confirm must match. The
 // password is taken exactly as sent (no trim, no max on the server), so the
@@ -163,13 +164,23 @@ export function ResetPasswordPage() {
 
         {invalid ? (
           <>
-            <p role="alert" className="text-red-700">{INVALID_RESET_MESSAGE}</p>
-            <Link className="inline-block underline rounded focus-visible:ring-2" to="/forgot-password">
+            <p role="alert" className="text-red-700">
+              {INVALID_RESET_MESSAGE}
+            </p>
+            <Link
+              className="inline-block underline rounded focus-visible:ring-2"
+              to="/forgot-password"
+            >
               Request a new reset link
             </Link>
           </>
         ) : token ? (
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4" aria-busy={isSubmitting}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            noValidate
+            className="space-y-4"
+            aria-busy={isSubmitting}
+          >
             <Input
               label="New password"
               type="password"
@@ -186,7 +197,11 @@ export function ResetPasswordPage() {
               disabled={isSubmitting || secondsRemaining > 0}
               {...register('confirmPassword')}
             />
-            {formError && <p role="alert" className="text-red-700">{formError}</p>}
+            {formError && (
+              <p role="alert" className="text-red-700">
+                {formError}
+              </p>
+            )}
             {secondsRemaining > 0 && (
               <p className="text-sm text-secondary-700">
                 Try again in {secondsRemaining} second{secondsRemaining === 1 ? '' : 's'}.
@@ -206,7 +221,10 @@ export function ResetPasswordPage() {
             <p className="text-secondary-700">
               This page needs the link from your reset email. Check your inbox, including spam.
             </p>
-            <Link className="inline-block underline rounded focus-visible:ring-2" to="/forgot-password">
+            <Link
+              className="inline-block underline rounded focus-visible:ring-2"
+              to="/forgot-password"
+            >
               Request a new reset link
             </Link>
           </>

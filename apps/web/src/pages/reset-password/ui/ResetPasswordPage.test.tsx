@@ -30,7 +30,7 @@ let restoreHandler: ((config: InternalAxiosRequestConfig) => Promise<AxiosRespon
 function ok(
   config: InternalAxiosRequestConfig,
   data: unknown,
-  headers: Record<string, string> = {},
+  headers: Record<string, string> = {}
 ): AxiosResponse {
   return { config, data, status: 200, statusText: 'OK', headers } as AxiosResponse;
 }
@@ -39,7 +39,7 @@ function fail(
   config: InternalAxiosRequestConfig,
   status: number,
   data: unknown,
-  headers: Record<string, string> = {},
+  headers: Record<string, string> = {}
 ): AxiosError {
   const response = {
     data,
@@ -72,7 +72,7 @@ function renderPage(path = `/reset-password#token=${TOKEN}`) {
         <LocationProbe />
         <App />
       </AuthProvider>
-    </Providers>,
+    </Providers>
   );
 }
 
@@ -92,7 +92,8 @@ describe('ResetPasswordPage', () => {
         return ok(config, { accessToken: 'existing-session', user: student });
       }
       if (config.url === '/auth/reset-password') return resetHandler(config);
-      if (config.url === '/users/me') return ok(config, { ...student, createdAt: '', updatedAt: '' });
+      if (config.url === '/users/me')
+        return ok(config, { ...student, createdAt: '', updatedAt: '' });
       throw new Error(`Unexpected test request: ${config.url}`);
     };
   });
@@ -115,7 +116,9 @@ describe('ResetPasswordPage', () => {
   it('strips the token fragment from the displayed URL', async () => {
     renderPage();
     await screen.findByLabelText(/^new password$/i);
-    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(/^\/reset-password$/));
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent(/^\/reset-password$/)
+    );
   });
 
   it.each([
@@ -147,29 +150,38 @@ describe('ResetPasswordPage', () => {
   });
 
   it.each([
-    ['a string message', (config: InternalAxiosRequestConfig) =>
-      fail(config, 400, { statusCode: 400, message: INVALID_MESSAGE, error: 'Bad Request' })],
-    ['a repeated constraint array', (config: InternalAxiosRequestConfig) =>
-      fail(config, 400, {
-        statusCode: 400,
-        message: [INVALID_MESSAGE, INVALID_MESSAGE, INVALID_MESSAGE],
-        error: 'Bad Request',
-      })],
-  ])('shows the uniform invalid-link message and offers a new request on 400 (%s)', async (_what, produce) => {
-    resetHandler = (config) => {
-      throw produce(config);
-    };
-    renderPage();
-    const user = setupUser();
-    await user.type(await screen.findByLabelText(/^new password$/i), 'NewPassword1!');
-    await user.type(screen.getByLabelText(/^confirm new password$/i), 'NewPassword1!');
-    await user.click(screen.getByRole('button', { name: /update password/i }));
-    expect(await screen.findByRole('alert')).toHaveTextContent(INVALID_MESSAGE);
-    // C11: the captured token is consumed — the form is gone, no retry possible.
-    expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /request a new reset link/i })).toBeInTheDocument();
-    expect(calls.filter((c) => c.path === '/auth/reset-password')).toHaveLength(1);
-  });
+    [
+      'a string message',
+      (config: InternalAxiosRequestConfig) =>
+        fail(config, 400, { statusCode: 400, message: INVALID_MESSAGE, error: 'Bad Request' }),
+    ],
+    [
+      'a repeated constraint array',
+      (config: InternalAxiosRequestConfig) =>
+        fail(config, 400, {
+          statusCode: 400,
+          message: [INVALID_MESSAGE, INVALID_MESSAGE, INVALID_MESSAGE],
+          error: 'Bad Request',
+        }),
+    ],
+  ])(
+    'shows the uniform invalid-link message and offers a new request on 400 (%s)',
+    async (_what, produce) => {
+      resetHandler = (config) => {
+        throw produce(config);
+      };
+      renderPage();
+      const user = setupUser();
+      await user.type(await screen.findByLabelText(/^new password$/i), 'NewPassword1!');
+      await user.type(screen.getByLabelText(/^confirm new password$/i), 'NewPassword1!');
+      await user.click(screen.getByRole('button', { name: /update password/i }));
+      expect(await screen.findByRole('alert')).toHaveTextContent(INVALID_MESSAGE);
+      // C11: the captured token is consumed — the form is gone, no retry possible.
+      expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /request a new reset link/i })).toBeInTheDocument();
+      expect(calls.filter((c) => c.path === '/auth/reset-password')).toHaveLength(1);
+    }
+  );
 
   it('keeps the token and form on a 400 password field error and resubmits with the token', async () => {
     resetHandler = (config) => {
@@ -187,7 +199,7 @@ describe('ResetPasswordPage', () => {
     await user.type(screen.getByLabelText(/^confirm new password$/i), 'ValidPass1!');
     await user.click(screen.getByRole('button', { name: /update password/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Password must be at least 8 characters. Passwords do not match',
+      'Password must be at least 8 characters. Passwords do not match'
     );
     // C11: a field error does not consume the token — the form stays usable.
     expect(password).toHaveValue('ValidPass1!');
@@ -195,28 +207,45 @@ describe('ResetPasswordPage', () => {
     await user.click(screen.getByRole('button', { name: /update password/i }));
     const resets = calls.filter((c) => c.path === '/auth/reset-password');
     expect(resets).toHaveLength(2);
-    expect(resets[1].data).toEqual({ token: TOKEN, password: 'ValidPass1!', confirmPassword: 'ValidPass1!' });
+    expect(resets[1].data).toEqual({
+      token: TOKEN,
+      password: 'ValidPass1!',
+      confirmPassword: 'ValidPass1!',
+    });
   });
 
   it.each([
-    ['a 503', (config: InternalAxiosRequestConfig, reject: (e: unknown) => void) =>
-      reject(fail(config, 503, { statusCode: 503, message: UNAVAILABLE, error: 'Service Unavailable' }))],
-    ['a network failure', (config: InternalAxiosRequestConfig, reject: (e: unknown) => void) =>
-      reject(new AxiosError('Network Error', 'ERR_NETWORK', config))],
-  ])('keeps the token and offers retry for %s without a rate-limit countdown', async (_what, produce) => {
-    resetHandler = (config) =>
-      new Promise<AxiosResponse>((_resolve, reject) => produce(config, reject));
-    renderPage();
-    const user = setupUser();
-    const password = await screen.findByLabelText(/^new password$/i);
-    await user.type(password, 'NewPassword1!');
-    await user.type(screen.getByLabelText(/^confirm new password$/i), 'NewPassword1!');
-    await user.click(screen.getByRole('button', { name: /update password/i }));
-    expect(await screen.findByRole('alert')).toHaveTextContent(/try again|check your connection/i);
-    expect(screen.queryByText(/try again in/i)).not.toBeInTheDocument();
-    expect(password).toHaveValue('NewPassword1!');
-    expect(screen.getByRole('button', { name: /update password/i })).toBeEnabled();
-  });
+    [
+      'a 503',
+      (config: InternalAxiosRequestConfig, reject: (e: unknown) => void) =>
+        reject(
+          fail(config, 503, { statusCode: 503, message: UNAVAILABLE, error: 'Service Unavailable' })
+        ),
+    ],
+    [
+      'a network failure',
+      (config: InternalAxiosRequestConfig, reject: (e: unknown) => void) =>
+        reject(new AxiosError('Network Error', 'ERR_NETWORK', config)),
+    ],
+  ])(
+    'keeps the token and offers retry for %s without a rate-limit countdown',
+    async (_what, produce) => {
+      resetHandler = (config) =>
+        new Promise<AxiosResponse>((_resolve, reject) => produce(config, reject));
+      renderPage();
+      const user = setupUser();
+      const password = await screen.findByLabelText(/^new password$/i);
+      await user.type(password, 'NewPassword1!');
+      await user.type(screen.getByLabelText(/^confirm new password$/i), 'NewPassword1!');
+      await user.click(screen.getByRole('button', { name: /update password/i }));
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        /try again|check your connection/i
+      );
+      expect(screen.queryByText(/try again in/i)).not.toBeInTheDocument();
+      expect(password).toHaveValue('NewPassword1!');
+      expect(screen.getByRole('button', { name: /update password/i })).toBeEnabled();
+    }
+  );
 
   it('renders a retryable drain failure when the in-flight refresh does not settle within the 10s bound', async () => {
     let settle: (() => void) | undefined;
@@ -271,7 +300,7 @@ describe('ResetPasswordPage', () => {
         config,
         429,
         { statusCode: 429, message: RATE_LIMITED, error: 'Too Many Requests' },
-        { 'Retry-After': '5' },
+        { 'Retry-After': '5' }
       );
     };
     renderPage();
@@ -299,7 +328,7 @@ describe('ResetPasswordPage', () => {
         config,
         429,
         { statusCode: 429, message: RATE_LIMITED, error: 'Too Many Requests' },
-        { 'Retry-After': '5' },
+        { 'Retry-After': '5' }
       );
     };
     renderPage();
@@ -336,7 +365,7 @@ describe('ResetPasswordPage', () => {
           config,
           429,
           { statusCode: 429, message: RATE_LIMITED, error: 'Too Many Requests' },
-          headers,
+          headers
         );
       };
       renderPage();
@@ -349,7 +378,7 @@ describe('ResetPasswordPage', () => {
       expect(screen.getByText(/try again in 60 seconds/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /update password/i })).toBeDisabled();
       expect(password).toHaveValue('NewPassword1!');
-    },
+    }
   );
 
   it('clears the local token and user on success and navigates to /login with the notice state', async () => {
@@ -359,7 +388,9 @@ describe('ResetPasswordPage', () => {
     await user.type(await screen.findByLabelText(/^new password$/i), 'NewPassword1!');
     await user.type(screen.getByLabelText(/^confirm new password$/i), 'NewPassword1!');
     await user.click(screen.getByRole('button', { name: /update password/i }));
-    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(/^\/login\|reset$/));
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent(/^\/login\|reset$/)
+    );
     expect(tokenStore.getToken()).toBeNull();
     // The local user is cleared (G) — the signed-in header is gone.
     expect(screen.queryByRole('button', { name: /logout/i })).not.toBeInTheDocument();

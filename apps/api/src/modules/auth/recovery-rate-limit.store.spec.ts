@@ -36,14 +36,20 @@ function database() {
   }
 
   const upsert = jest.fn(
-    async (args: { where: { endpoint_normalizedIp: BucketKey }; create: { admittedAt: Date[] } }) => {
+    async (args: {
+      where: { endpoint_normalizedIp: BucketKey };
+      create: { admittedAt: Date[] };
+    }) => {
       if (state.failUpsertWith) throw state.failUpsertWith;
-      const k = key(args.where.endpoint_normalizedIp.endpoint, args.where.endpoint_normalizedIp.normalizedIp);
+      const k = key(
+        args.where.endpoint_normalizedIp.endpoint,
+        args.where.endpoint_normalizedIp.normalizedIp
+      );
       if (!state.windows.has(k)) {
         state.windows.set(k, [...args.create.admittedAt]);
       }
       return { id: k, ...args.where.endpoint_normalizedIp };
-    },
+    }
   );
   const update = jest.fn(
     async (args: { where: { id: string }; data: { admittedAt: Date[]; updatedAt: Date } }) => {
@@ -52,14 +58,14 @@ function database() {
       window.length = 0;
       window.push(...args.data.admittedAt);
       return { id: args.where.id, admittedAt: [...window], updatedAt: args.data.updatedAt };
-    },
+    }
   );
   const create = jest.fn(
     async (args: { data: { endpoint: string; normalizedIp: string; admittedAt: Date[] } }) => {
       const k = key(args.data.endpoint, args.data.normalizedIp);
       state.windows.set(k, [...args.data.admittedAt]);
       return { ...args.data, id: k };
-    },
+    }
   );
   const del = jest.fn(async (args: { where: { id: string } }) => {
     state.windows.delete(args.where.id);
@@ -82,7 +88,7 @@ function database() {
         return [{ id: k, admittedAt: [...window] }];
       }
       throw new Error(`test: unexpected raw query: ${sql}`);
-    },
+    }
   );
 
   const tx = {
@@ -91,9 +97,7 @@ function database() {
   };
 
   const prisma = {
-    $transaction: jest.fn(async (callback: (t: typeof tx) => Promise<unknown>) =>
-      callback(tx),
-    ),
+    $transaction: jest.fn(async (callback: (t: typeof tx) => Promise<unknown>) => callback(tx)),
   } as unknown as PrismaService;
 
   return {
@@ -117,7 +121,7 @@ function seedWindow(db: TestDb, endpoint: RecoveryEndpoint, oldestAgoMs: number,
   const base = db.state.now.getTime();
   db.state.windows.set(
     `${endpoint}:${IP}`,
-    Array.from({ length: count }, (_, i) => new Date(base - (oldestAgoMs - i * 1000))),
+    Array.from({ length: count }, (_, i) => new Date(base - (oldestAgoMs - i * 1000)))
   );
 }
 
@@ -134,7 +138,18 @@ describe('RecoveryRateLimitStore', () => {
     }
 
     expect(results).toEqual([
-      true, true, true, true, true, true, true, true, true, true, false, false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
     ]);
     // The window stays bounded by the limit; denials appended nothing.
     expect(db.state.windows.get(`${FORGOT}:${IP}`)).toHaveLength(10);
@@ -296,10 +311,7 @@ describe('RecoveryRateLimitStore', () => {
         create?: Record<string, unknown>;
         data?: Record<string, unknown>;
       };
-      const written = [
-        ...Object.keys(args.create ?? {}),
-        ...Object.keys(args.data ?? {}),
-      ];
+      const written = [...Object.keys(args.create ?? {}), ...Object.keys(args.data ?? {})];
       expect(written.length).toBeGreaterThan(0);
       for (const field of written) {
         expect(writableFields.has(field)).toBe(true);

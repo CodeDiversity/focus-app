@@ -22,7 +22,12 @@ const mockedRegister = vi.mocked(authService.register);
 const mockedRefresh = vi.mocked(authService.refreshToken);
 const mockedLogout = vi.mocked(authService.logout);
 
-const sessionUser = { id: 'user-1', name: 'Ada Lovelace', email: 'ada@example.com', emailVerifiedAt: null };
+const sessionUser = {
+  id: 'user-1',
+  name: 'Ada Lovelace',
+  email: 'ada@example.com',
+  emailVerifiedAt: null,
+};
 
 let currentAuth: ReturnType<typeof useAuth>;
 
@@ -45,7 +50,7 @@ function renderProvider() {
       <AuthProvider>
         <Probe />
       </AuthProvider>
-    </Providers>,
+    </Providers>
   );
   return store;
 }
@@ -72,14 +77,16 @@ describe('AuthContext register callback', () => {
 
     let thrown: unknown;
     await act(async () => {
-      thrown = await currentAuth.register('Ada Lovelace', 'ada@example.com', 'password123').catch(
-        (err: unknown) => err,
-      );
+      thrown = await currentAuth
+        .register('Ada Lovelace', 'ada@example.com', 'password123')
+        .catch((err: unknown) => err);
     });
 
     // The caller still sees the rejection (RegisterPage renders it / must not navigate).
     expect((thrown as Error).message).toBe('An account with this email already exists.');
-    expect(screen.getByTestId('auth-error')).toHaveTextContent('An account with this email already exists.');
+    expect(screen.getByTestId('auth-error')).toHaveTextContent(
+      'An account with this email already exists.'
+    );
     expect(screen.getByTestId('auth-loading')).toHaveTextContent('false');
     expect(store.getState().auth.user).toBeNull();
     expect(tokenStore.getToken()).toBeNull();

@@ -142,7 +142,7 @@ describe('resend error message parity with authService', () => {
 
   async function serviceAndEndpointMessage(
     status: number,
-    payloadMessage: string,
+    payloadMessage: string
   ): Promise<{ service: string; endpoint: string }> {
     httpClient.defaults.adapter = async (config) => {
       throw failure(config, status, payloadMessage);
@@ -164,7 +164,7 @@ describe('resend error message parity with authService', () => {
   it('the endpoint error message matches authService.resendVerification for 400', async () => {
     const { service, endpoint } = await serviceAndEndpointMessage(
       400,
-      'Please enter a valid email address',
+      'Please enter a valid email address'
     );
     expect(service).toBe(RESEND_INVALID_EMAIL_MESSAGE);
     expect(endpoint).toBe(service);
@@ -182,7 +182,9 @@ describe('resend error message parity with authService', () => {
     };
 
     const store = makeStore();
-    const trigger = store.dispatch(storeApi.endpoints.resendVerification.initiate('ada@example.com'));
+    const trigger = store.dispatch(
+      storeApi.endpoints.resendVerification.initiate('ada@example.com')
+    );
     const result = await trigger;
 
     expect(result.error).toEqual({

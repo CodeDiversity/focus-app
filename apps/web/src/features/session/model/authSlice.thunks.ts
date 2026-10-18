@@ -26,7 +26,7 @@ export const login = createAsyncThunk(
     } finally {
       dispatch(setLoading(false));
     }
-  },
+  }
 );
 
 export const updateProfile = createAsyncThunk(
@@ -50,7 +50,7 @@ export const updateProfile = createAsyncThunk(
     } finally {
       dispatch(setLoading(false));
     }
-  },
+  }
 );
 
 // Plain async dispatch for register (no user set on success)
@@ -58,7 +58,7 @@ export const registerThunk = async (
   dispatch: AppDispatch,
   name: string,
   email: string,
-  password: string,
+  password: string
 ) => {
   dispatch(setLoading(true));
   dispatch(setError(null));
@@ -75,11 +75,14 @@ export const registerThunk = async (
 // Plain async dispatch for logout (always clears token regardless of server response)
 // Returns a no-op action to satisfy Redux's plain object check after thunk middleware
 export const logoutThunk = (dispatch: AppDispatch): { type: string } => {
-  authService.logout().catch((err: unknown) => {
-    console.error('Logout error:', getErrorMessage(err));
-  }).finally(() => {
-    tokenStore.clearToken();
-    dispatch(clearUser());
-  });
+  authService
+    .logout()
+    .catch((err: unknown) => {
+      console.error('Logout error:', getErrorMessage(err));
+    })
+    .finally(() => {
+      tokenStore.clearToken();
+      dispatch(clearUser());
+    });
   return { type: '@@logout/no-op' };
 };

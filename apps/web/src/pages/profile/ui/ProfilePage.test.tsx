@@ -82,7 +82,7 @@ const renderProfilePage = (user: User = storedStudent, profile?: User): AppStore
           <ProfilePage />
         </AuthProvider>
       </MemoryRouter>
-    </Provider>,
+    </Provider>
   );
   return store;
 };
@@ -123,7 +123,9 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
   it('pre-fills the browser-detected zone when the stored value is "UTC" (D106-3)', async () => {
     const resolvedOptionsSpy = vi
       .spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions')
-      .mockReturnValue({ timeZone: 'Europe/Paris' } as unknown as Intl.ResolvedDateTimeFormatOptions);
+      .mockReturnValue({
+        timeZone: 'Europe/Paris',
+      } as unknown as Intl.ResolvedDateTimeFormatOptions);
     renderProfilePage({ ...storedStudent, timeZone: 'UTC' });
 
     await waitForBoot();
@@ -146,7 +148,7 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
     await validUser.click(screen.getByRole('button', { name: /save changes/i }));
 
     expect(
-      await screen.findByText('Enter a valid IANA time zone, e.g. America/New_York'),
+      await screen.findByText('Enter a valid IANA time zone, e.g. America/New_York')
     ).toBeInTheDocument();
     expect(mockedUpdateProfile).not.toHaveBeenCalled();
   });
@@ -166,7 +168,7 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
       expect(mockedUpdateProfile).toHaveBeenCalledWith({
         name: 'Ada Lovelace',
         timeZone: 'America/New_York',
-      }),
+      })
     );
     expect(mockedToast.success).toHaveBeenCalledWith('Profile updated successfully!');
     // The thunk's setUser round-trips the PATCH response into the session.
@@ -192,7 +194,7 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
     await validUser.click(screen.getByRole('button', { name: /save changes/i }));
 
     expect(
-      await screen.findByText('timeZone must be a valid IANA time zone, e.g. America/New_York'),
+      await screen.findByText('timeZone must be a valid IANA time zone, e.g. America/New_York')
     ).toBeInTheDocument();
     expect(timeZoneInput()).toHaveAttribute('aria-invalid', 'true');
     expect(mockedToast.error).not.toHaveBeenCalled();
@@ -222,9 +224,7 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
     await fillValidForm();
     await validUser.click(screen.getByRole('button', { name: /save changes/i }));
 
-    await waitFor(() =>
-      expect(mockedToast.error).toHaveBeenCalledWith('Network failure occurred'),
-    );
+    await waitFor(() => expect(mockedToast.error).toHaveBeenCalledWith('Network failure occurred'));
   });
 
   it('displays the stored zone through the shared date/time helper', async () => {
@@ -240,7 +240,7 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
     // Same shared helper, same frozen instant — the page renders what the
     // helper formats (no local re-implementation).
     expect(screen.getByText(/your time zone/i)).toHaveTextContent(
-      formatDateTime(new Date('2026-10-17T18:30:00.000Z'), 'America/New_York'),
+      formatDateTime(new Date('2026-10-17T18:30:00.000Z'), 'America/New_York')
     );
 
     vi.useRealTimers();
@@ -273,7 +273,7 @@ describe('ProfilePage stored-zone hydration (IR-106-01)', () => {
     await waitFor(() => expect(timeZoneInput()).toHaveValue('America/New_York'));
     // The stored-zone display line follows the hydrated value too.
     await waitFor(() =>
-      expect(screen.getByText(/your time zone/i)).toHaveTextContent('America/New_York'),
+      expect(screen.getByText(/your time zone/i)).toHaveTextContent('America/New_York')
     );
   });
 
@@ -321,7 +321,7 @@ describe('ProfilePage stored-zone hydration (IR-106-01)', () => {
       () =>
         new Promise<User>((resolve) => {
           releaseProfile = resolve;
-        }),
+        })
     );
     renderProfilePage(loginShapeUser);
     await waitFor(() => expect(mockedGetProfile).toHaveBeenCalled());

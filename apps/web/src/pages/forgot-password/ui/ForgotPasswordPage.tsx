@@ -102,7 +102,8 @@ export function ForgotPasswordPage() {
     <div className="max-w-xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <h1 className="text-3xl font-bold mb-3">Reset your password</h1>
       <p className="text-secondary-700 mb-6">
-        Enter the email address of your account and we&apos;ll send you a link to choose a new password.
+        Enter the email address of your account and we&apos;ll send you a link to choose a new
+        password.
       </p>
       <div className="card space-y-6">
         <div role="status" aria-live="polite" aria-atomic="true">
@@ -110,7 +111,12 @@ export function ForgotPasswordPage() {
           {successMessage && <p className="text-green-800">{successMessage}</p>}
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4" aria-busy={isSubmitting}>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+          className="space-y-4"
+          aria-busy={isSubmitting}
+        >
           <Input
             label="Email address"
             type="email"
@@ -120,7 +126,11 @@ export function ForgotPasswordPage() {
             disabled={isSubmitting || secondsRemaining > 0}
             {...register('email')}
           />
-          {formError && <p role="alert" className="text-red-700">{formError}</p>}
+          {formError && (
+            <p role="alert" className="text-red-700">
+              {formError}
+            </p>
+          )}
           {secondsRemaining > 0 && (
             <p className="text-sm text-secondary-700">
               Try again in {secondsRemaining} second{secondsRemaining === 1 ? '' : 's'}.

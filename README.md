@@ -11,6 +11,9 @@ studypilot/
 ├── apps/
 │   ├── api/          # NestJS Backend
 │   └── web/          # React + Vite Frontend
+├── packages/
+│   └── config/
+│       └── prettier/ # Shared Prettier config (@studypilot/prettier-config)
 ├── docs/             # Documentation & Epics
 ├── .github/          # GitHub Actions
 ├── package.json      # Root package.json
@@ -175,6 +178,55 @@ pnpm preview       # Preview production build
 pnpm lint         # Run linter
 pnpm test         # Run tests
 ```
+
+### Linting & Formatting
+
+Both apps share a single Prettier configuration from the workspace package
+[`packages/config/prettier`](packages/config/prettier)
+(`@studypilot/prettier-config`). The root `.prettierrc.cjs` points to it so
+editor integrations and root-level runs resolve the same settings.
+
+**Formatting** (Prettier):
+
+```bash
+pnpm --filter @studypilot/api format         # check; fails if any file is unformatted
+pnpm --filter @studypilot/api format:write   # apply fixes
+pnpm --filter @studypilot/web format
+pnpm --filter @studypilot/web format:write
+```
+
+From an app directory, `pnpm format` / `pnpm format:write` work the same way.
+`format` runs Prettier in `--check` mode, so it is safe to use as a gate;
+`format:write` is the fix step.
+
+**Linting** (ESLint):
+
+```bash
+pnpm --filter @studypilot/api lint   # TypeScript + Prettier-as-rule; fails on any error or warning
+pnpm --filter @studypilot/web lint   # adds React, React Hooks, and jsx-a11y; fails on any error or warning
+pnpm lint                            # both apps via Turbo
+```
+
+The backend config (`apps/api/.eslintrc.cjs`) extends `eslint:recommended`,
+`@typescript-eslint/recommended`, and `prettier/recommended` (Prettier runs as
+an ESLint rule, so formatting problems surface in lint output). The frontend
+config (`apps/web/.eslintrc.cjs`) adds `react/recommended`,
+`react-hooks/recommended`, and `jsx-a11y/recommended` plus explicit
+accessibility rules. The generated Prisma client (`apps/api/src/generated`) is
+excluded from linting and formatting.
+
+**Overriding rules:** use an `eslint-disable` comment for a one-off exception,
+or add an `overrides` entry to the app's `.eslintrc.cjs` for file-specific
+rules:
+
+```js
+// eslint-disable-next-line no-console
+console.log('one-off debug statement');
+```
+
+Formatting has no per-file override: change the shared settings in
+`packages/config/prettier/.prettierrc.cjs` (affects all apps) and re-run
+`format:write` in each app.
 
 ## Project Organization
 

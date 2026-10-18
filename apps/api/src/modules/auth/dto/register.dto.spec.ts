@@ -1,8 +1,4 @@
-import {
-  ArgumentMetadata,
-  BadRequestException,
-  ValidationPipe,
-} from '@nestjs/common';
+import { ArgumentMetadata, BadRequestException, ValidationPipe } from '@nestjs/common';
 import { RegisterDto } from './register.dto';
 
 // Mirrors the global pipe configured in main.ts so these tests exercise
@@ -56,32 +52,30 @@ describe('RegisterDto', () => {
   it('rejects a missing display name with an actionable message', async () => {
     const { name: _name, ...payload } = validPayload;
 
-    await expect(
-      rejectionMessages(payload),
-    ).resolves.toMatch(/Display name is required/);
+    await expect(rejectionMessages(payload)).resolves.toMatch(/Display name is required/);
   });
 
   it('rejects a whitespace-only display name with an actionable message', async () => {
-    await expect(
-      rejectionMessages({ ...validPayload, name: '   ' }),
-    ).resolves.toMatch(/Display name is required/);
+    await expect(rejectionMessages({ ...validPayload, name: '   ' })).resolves.toMatch(
+      /Display name is required/
+    );
   });
 
   it('rejects a malformed email with an actionable message', async () => {
-    await expect(
-      rejectionMessages({ ...validPayload, email: 'not-an-email' }),
-    ).resolves.toMatch(/valid email/);
+    await expect(rejectionMessages({ ...validPayload, email: 'not-an-email' })).resolves.toMatch(
+      /valid email/
+    );
   });
 
   it('rejects a password shorter than 8 characters with an actionable message', async () => {
-    await expect(
-      rejectionMessages({ ...validPayload, password: 'short' }),
-    ).resolves.toMatch(/at least 8 characters/);
+    await expect(rejectionMessages({ ...validPayload, password: 'short' })).resolves.toMatch(
+      /at least 8 characters/
+    );
   });
 
   it('rejects non-whitelisted fields such as isAdmin', async () => {
-    await expect(
-      rejectionMessages({ ...validPayload, isAdmin: true }),
-    ).resolves.toMatch(/property isAdmin should not exist/i);
+    await expect(rejectionMessages({ ...validPayload, isAdmin: true })).resolves.toMatch(
+      /property isAdmin should not exist/i
+    );
   });
 });

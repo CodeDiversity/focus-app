@@ -26,7 +26,12 @@ vi.mock('@/entities/user/api/userService', () => ({
 
 const mockedRefresh = vi.mocked(authService.refreshToken);
 
-const sessionUser = { id: 'user-1', name: 'Ada Lovelace', email: 'ada@example.com', emailVerifiedAt: null };
+const sessionUser = {
+  id: 'user-1',
+  name: 'Ada Lovelace',
+  email: 'ada@example.com',
+  emailVerifiedAt: null,
+};
 
 /** The real guards' spinner is the only `.animate-spin` element they render. */
 function spinner(container: HTMLElement) {
@@ -61,7 +66,7 @@ function renderGuards(initialEntry: string) {
           </Route>
         </Routes>
       </AuthProvider>
-    </Providers>,
+    </Providers>
   );
   return { store, ...utils };
 }

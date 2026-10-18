@@ -14,7 +14,9 @@ import {
 @ValidatorConstraint({ name: 'isPlainObject', async: false })
 export class IsPlainObjectValidator implements ValidatorConstraintInterface {
   validate(value: unknown): boolean {
-    return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value);
+    return (
+      value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
+    );
   }
 
   defaultMessage(_validationArguments?: ValidationArguments): string {

@@ -13,12 +13,12 @@ export interface JwtPayload {
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     configService: ConfigService,
-    private readonly prisma: PrismaService,
+    private readonly prisma: PrismaService
   ) {
     const secret = configService.get<string>('JWT_SECRET');
     if (!secret) {
       throw new Error(
-        'JWT_SECRET is not configured. Set it in apps/api/.env.local (see apps/api/.env.example) or as an environment variable.',
+        'JWT_SECRET is not configured. Set it in apps/api/.env.local (see apps/api/.env.example) or as an environment variable.'
       );
     }
 

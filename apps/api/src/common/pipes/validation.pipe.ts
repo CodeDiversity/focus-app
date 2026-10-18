@@ -22,7 +22,9 @@ import { BadRequestException, ValidationPipe } from '@nestjs/common';
 export class FieldValidationPipe extends ValidationPipe {
   // Override as a property (Nest's ValidationPipe defines exceptionFactory
   // as a property, not a method — using a method causes TS2425).
-  protected exceptionFactory = (errors: { property: string; constraints?: Record<string, string> }[]): BadRequestException => {
+  protected exceptionFactory = (
+    errors: { property: string; constraints?: Record<string, string> }[]
+  ): BadRequestException => {
     // Build the field-level errors map.
     const errorsMap: Record<string, string[]> = {};
     const messageArray: string[] = [];
