@@ -39,7 +39,7 @@ Per-story deltas are recorded in each story file under "Existing scaffold code".
 | [SP-103](./SP-103-email-verification.md) | Email verification (non-blocking) | SP-101 | STUDY-12 |
 | [SP-104](./SP-104-auth-guards-data-scoping.md) | Auth guards and student data scoping | SP-102 | STUDY-10 |
 | [SP-105](./SP-105/README.md) | Password reset — split into [10 children](./SP-105/README.md) | SP-102, SP-103 | STUDY-7 (parent) |
-| [SP-106](./SP-106/README.md) | Student profile and preferences — split into [4 children](./SP-106/README.md) | SP-104 | STUDY-11 (parent) |
+| [SP-106](./SP-106/README.md) | Student profile and preferences — split into [5 children](./SP-106/README.md) | SP-104 | STUDY-11 (parent) |
 | [SP-107](./SP-107/README.md) | Onboarding wizard — split into [6 children](./SP-107/README.md) | SP-103, SP-106 | STUDY-8 (parent) |
 
 Epic: **STUDY-5**.

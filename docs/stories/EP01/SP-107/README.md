@@ -230,9 +230,44 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
   remaining occurrences are inside this preserved finding.
 - **Status:** `Fixed in plan`.
 
-## Quality gate
+### CF-107-02 — EP01 README undercounts SP-106's children
 
-Draft — finalized after the last child lands (see [SP-106 README](../SP-106/README.md#quality-gate-2026-10-17) for the applied format).
+- **Discovery:** 2026-10-18, during the SP-107 final cross-file gate (quality
+  gate row 9), while re-verifying the EP01 stories table against each
+  breakdown's child inventory.
+- **Original finding (preserved):** the SP-106 row in
+  `docs/stories/EP01/README.md` read "Student profile and preferences — split
+  into [4 children](./SP-106/README.md)", but the SP-106 breakdown lists five
+  children (A–E; SP-106E was added 2026-10-17, commit `ee7b825`).
+- **Consequence:** the EP01 index understates SP-106's scope by one child; a
+  reader following the table would expect a four-child breakdown and find five.
+- **Correction:** the SP-106 row in `docs/stories/EP01/README.md` rewritten to
+  "split into [5 children](./SP-106/README.md)". No other EP01 table row
+  affected (the SP-107 row already reads 6).
+- **Verification:** re-read the corrected row and the SP-106 breakdown's child
+  inventory (A–E, all implemented per its queue).
+- **Status:** `Fixed in plan`.
+
+## Quality gate (2026-10-18)
+
+| Gate | Status | Evidence / limitation |
+|---|---|---|
+| 1. Child separation and sizing | Pass | Six children, each with a full sizing block grounded in inspected code. Concrete split rationale per child: A owns the `User` migration + the terminal/monotonic state invariant (one atomic core); B owns two near-identical create endpoints that share the EP02-handoff concern and fit one 2 h session (splitting them would manufacture near-duplicate children); C combines shell + step 1 as one verifiable vertical slice (~2–2.5 h, within target) — shell alone has no user-visible outcome, step 1 alone has no home; D/E are separate forms with separate API contracts (`POST /semesters` vs `POST /courses`) and separate upstream dependencies; F is the integration sign-off + parent index (SP-106D precedent — a real verification outcome, not a status child). No README-only/status-only children. |
+| 2. Original AC/TR coverage | Pass | AC-107-01…08 and TR-107-01…04 all mapped in the traceability table; no requirement owned only in prose; epic ACs 3/4/5/6 mapped, 1/2 owned by sibling stories (SP-101/102, SP-105). |
+| 3. Applicable DoD, incl. item 10 | Pass | DoD map above: items 1–8 owned by the relevant children, 9 by A/B (migrations + contracts), 10 by F (manual sign-off) + the combined parent review; every N/A row carries a reason in its child ticket. |
+| 4. Contract consistency and integration ownership | Pass | One shared contract section; A/B implement the four endpoints, C/D/E consume them (re-verified field-by-field against each child's ACs), F is the named cross-layer integration owner with explicit dependencies on A–E. |
+| 5. Code paths inspected | Pass | `schema.prisma` (User, Semester, Course, StudyPlan.date precedent), `users.{controller,service,module}` + DTOs, `app.module.ts`, `prisma.module.ts` (`@Global`), `common/ownership/ownership.ts`, `common/pipes/validation.pipe.ts`, `common/filters/all-exceptions.filter.ts` (P2002/P2025 mapping), `test/test-http.ts`, `prisma/migrations/` (seven migrations), `Layout.tsx`, `ProtectedRoute.tsx`, `App.tsx`, `LoginPage.tsx`, `authSlice.thunks.ts`, `entities/user/{api,model}`, `ProfilePage.tsx`, `shared/ui/{Input,Select,Button}.tsx`, `shared/lib/{datetime,errors}.ts`, `shared/types/academic.ts`, `docker-compose.yml` reference via SP-106D. Unverified: none material. |
+| 6. Feature-specific risks/counterexamples | Pass | Four invariants with concrete counterexamples, mechanisms, and owning tests (data-ownership CRUD + scheduling/date + terminal single-use completion + frontend flow); activated checklists: data CRUD/ownership, scheduling/time calculations (`@db.Date`, D107-7), concurrent single-use (terminal completion, conditional update), frontend flows, cross-layer API. |
+| 7. Dependency mapping and sequencing | Pass | A → B → C → D → E → F, one sequential writer; upstream SP-103/SP-106 implemented in code (SP-106 pass-2 review open — recorded, not a blocker per delivery-state), SP-104 implemented + reviewed; downstream EP02 extend-don't-duplicate flagged (D107-9). |
+| 8. Material decisions | Pass | D107-2 user-approved 2026-10-18 (existing users backfilled completed); D107-1/3/4/5/6/7/8/9 planner decisions, each grounded in the ticket, inspected code, or the locked EP01 decisions, each marked reversible where applicable. No open material question. |
+| 9. Correction log | Pass | CF-107-01 (D107-3 presentation claim) fixed with verification; CF-107-02 (stale EP01 README child count) fixed with verification. History preserved. |
+| 10. Jira identity/sync | Not applicable | No sync authorized for this planning task. Parent keeps existing STUDY-8; children A–F are `Pending creation`; no duplicate keys, no tracker mutation. |
+
+**Outcome:** **Plan Ready** — all applicable planning gate rows pass; no
+unresolved material planning findings. Implementation is **not blocked**:
+upstream SP-103/SP-106 are implemented in code and SP-104 is implemented and
+reviewed. No implementation or passing tests are claimed; the plan approves
+planning obligations only. Next actionable: **SP-107A** (execution queue).
 
 ## Final implementation review unit
 
