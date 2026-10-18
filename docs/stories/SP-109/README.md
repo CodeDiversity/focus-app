@@ -46,15 +46,15 @@ precedent). Report: `./artifacts/SP-109/review.md`.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-109A-fsd-foundation-config.md) | Reviewed (2026-10-17) | None | — | `./artifacts/SP-109A/` |
-| [B](./SP-109B-shared-lib-and-types.md) | Reviewed (2026-10-17) | A | — | `./artifacts/SP-109B/` |
-| [C](./SP-109C-shared-ui-and-transport.md) | Reviewed (2026-10-17) | B | — | `./artifacts/SP-109C/` |
-| [D](./SP-109D-entity-user.md) | Reviewed (2026-10-17) | B, C | — | `./artifacts/SP-109D/` |
-| [E](./SP-109E-feature-auth.md) | Reviewed (2026-10-17) | C, D | — | `./artifacts/SP-109E/` |
-| [F](./SP-109F-feature-session-store.md) | Reviewed (2026-10-17) | E | — | `./artifacts/SP-109F/` |
-| [G](./SP-109G-widgets.md) | Reviewed (2026-10-17) | C, E, F | — | `./artifacts/SP-109G/` |
-| [H](./SP-109H-pages-and-app-shell.md) | Reviewed (2026-10-17) | G | — | `./artifacts/SP-109H/` |
-| [I](./SP-109I-boundaries-docs-verification.md) | Reviewed (2026-10-17) | B–H | — | `./artifacts/SP-109I/` · report `./artifacts/SP-109/review.md` |
+| [A](../../jira-sync/tombstones.md#story-sp-109a) | Reviewed (2026-10-17) | None | — | `./artifacts/SP-109A/` |
+| [B](../../jira-sync/tombstones.md#story-sp-109b) | Reviewed (2026-10-17) | A | — | `./artifacts/SP-109B/` |
+| [C](../../jira-sync/tombstones.md#story-sp-109c) | Reviewed (2026-10-17) | B | — | `./artifacts/SP-109C/` |
+| [D](../../jira-sync/tombstones.md#story-sp-109d) | Reviewed (2026-10-17) | B, C | — | `./artifacts/SP-109D/` |
+| [E](../../jira-sync/tombstones.md#story-sp-109e) | Reviewed (2026-10-17) | C, D | — | `./artifacts/SP-109E/` |
+| [F](../../jira-sync/tombstones.md#story-sp-109f) | Reviewed (2026-10-17) | E | — | `./artifacts/SP-109F/` |
+| [G](../../jira-sync/tombstones.md#story-sp-109g) | Reviewed (2026-10-17) | C, E, F | — | `./artifacts/SP-109G/` |
+| [H](../../jira-sync/tombstones.md#story-sp-109h) | Reviewed (2026-10-17) | G | — | `./artifacts/SP-109H/` |
+| [I](../../jira-sync/tombstones.md#story-sp-109i) | Reviewed (2026-10-17) | B–H | — | `./artifacts/SP-109I/` · report `./artifacts/SP-109/review.md` |
 
 All children (A–I) are implemented (2026-10-17) and the combined parent review
 passed (verdict PASS, 2026-10-17 — report `./artifacts/SP-109/review.md`); the
@@ -64,15 +64,15 @@ queue above is the canonical record.
 
 | ID | Layer / owner | Outcome | Dependency | Target size | Jira |
 |---|---|---|---|---|---|
-| [A](./SP-109A-fsd-foundation-config.md) | Implemented — awaiting parent review (2026-10-17) | Frontend config, `implementer` | `@/` alias in tsconfig + Vite, layer folder skeleton, ESLint layer-direction rules | None | One 45–60 min session | STUDY-45 |
-| [B](./SP-109B-shared-lib-and-types.md) | Implemented — awaiting parent review (2026-10-17) | Frontend, `implementer` | `shared/lib` + `shared/api/types` + per-layer type homes replace `src/utils` and `src/types` | A | One 60–90 min session | STUDY-46 |
-| [C](./SP-109C-shared-ui-and-transport.md) | Frontend, `implementer` | `shared/ui` (Button/Input) and `shared/api` (httpClient, tokenStore, recovery) | B | One 60–90 min session | STUDY-47 |
-| [D](./SP-109D-entity-user.md) | Frontend, `implementer` | `entities/user` — user types + `getProfile`/`updateProfile` extracted from `authService` | B, C | One 60–90 min session | STUDY-48 |
-| [E](./SP-109E-feature-auth.md) | Frontend, `implementer` | `features/auth` — auth API service, auth types, `AuthProvider`/`useAuth` context | C, D | One 60–90 min session | STUDY-49 |
-| [F](./SP-109F-feature-session-store.md) | Frontend, `implementer` | `features/session` (slice, thunks, selectors, RTK Query API), `features/email-verification` hook, `app/store` | E | One 60–90 min session | STUDY-50 |
-| [G](./SP-109G-widgets.md) | Frontend, `implementer` | `widgets/` — layout, header, verification banner, route guards | C, E, F | One 45–60 min session | STUDY-51 |
-| [H](./SP-109H-pages-and-app-shell.md) | Frontend, `implementer` | `pages/<route>/ui/*` + `app/App.tsx` router + `app/providers/AppProviders.tsx` + `main.tsx` | G | One 60–90 min session | STUDY-52 |
-| [I](./SP-109I-boundaries-docs-verification.md) | Frontend/verification + docs, `implementer` | Proved boundary enforcement, legacy folders gone, repo docs repointed, full green verification | B–H | One 60–90 min session | STUDY-53 |
+| [A](../../jira-sync/tombstones.md#story-sp-109a) | Implemented — awaiting parent review (2026-10-17) | Frontend config, `implementer` | `@/` alias in tsconfig + Vite, layer folder skeleton, ESLint layer-direction rules | None | One 45–60 min session | STUDY-45 |
+| [B](../../jira-sync/tombstones.md#story-sp-109b) | Implemented — awaiting parent review (2026-10-17) | Frontend, `implementer` | `shared/lib` + `shared/api/types` + per-layer type homes replace `src/utils` and `src/types` | A | One 60–90 min session | STUDY-46 |
+| [C](../../jira-sync/tombstones.md#story-sp-109c) | Frontend, `implementer` | `shared/ui` (Button/Input) and `shared/api` (httpClient, tokenStore, recovery) | B | One 60–90 min session | STUDY-47 |
+| [D](../../jira-sync/tombstones.md#story-sp-109d) | Frontend, `implementer` | `entities/user` — user types + `getProfile`/`updateProfile` extracted from `authService` | B, C | One 60–90 min session | STUDY-48 |
+| [E](../../jira-sync/tombstones.md#story-sp-109e) | Frontend, `implementer` | `features/auth` — auth API service, auth types, `AuthProvider`/`useAuth` context | C, D | One 60–90 min session | STUDY-49 |
+| [F](../../jira-sync/tombstones.md#story-sp-109f) | Frontend, `implementer` | `features/session` (slice, thunks, selectors, RTK Query API), `features/email-verification` hook, `app/store` | E | One 60–90 min session | STUDY-50 |
+| [G](../../jira-sync/tombstones.md#story-sp-109g) | Frontend, `implementer` | `widgets/` — layout, header, verification banner, route guards | C, E, F | One 45–60 min session | STUDY-51 |
+| [H](../../jira-sync/tombstones.md#story-sp-109h) | Frontend, `implementer` | `pages/<route>/ui/*` + `app/App.tsx` router + `app/providers/AppProviders.tsx` + `main.tsx` | G | One 60–90 min session | STUDY-52 |
+| [I](../../jira-sync/tombstones.md#story-sp-109i) | Frontend/verification + docs, `implementer` | Proved boundary enforcement, legacy folders gone, repo docs repointed, full green verification | B–H | One 60–90 min session | STUDY-53 |
 
 Sequence A → B → C → D → E → F → G → H → I, one sequential writer. D and G/H
 have partial independence from E, but they are ordered so only one child touches
@@ -433,7 +433,7 @@ lands (they consume the `@/` alias); A itself is unblocked.
 
 ## Final implementation review unit
 
-Parent: [SP-109](./SP-109.md) · In-scope children: A–I · Integration/index
+Parent: [SP-109](../../jira-sync/tombstones.md#story-sp-109) · In-scope children: A–I · Integration/index
 owner: SP-109I (`./artifacts/SP-109/implementation.md`) · One combined review
 after every child is implemented: `./artifacts/SP-109/review.md`. Child
 completion — not review approval — unblocks dependents; no per-child review
@@ -449,3 +449,9 @@ and authorization to transition STUDY-44–STUDY-53 to Done. It does not close
 IR-001/002/003/004/006/007/008, revise the preserved review, or establish a new
 independent passing review. Preserve complete specification bytes in Git before
 pruning, keep this README and all artifacts, and record recovery tombstones.
+
+**Removal completed:** 2026-10-18 — STUDY-44–STUDY-53 verified Done; the
+parent and nine child specifications were pruned under the exception above.
+Exact specifications remain recoverable from Git via the
+[removal tombstones](../../jira-sync/tombstones.md#story-sp-109).
+This README, traceability and all existing artifacts remain local.

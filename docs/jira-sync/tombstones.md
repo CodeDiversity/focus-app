@@ -200,3 +200,133 @@ It retains that entry through reopen/removal cycles; detailed history lives in
 - [Committed specification](https://github.com/CodeDiversity/focus-app/blob/e0bc484e5b25e27f23ce1af84cd071a03e3089eb/docs/stories/EP01/SP-102-login-logout-sessions.md); requires that commit on the remote. Local recovery works without a push.
 - [Passing saved review](../artifacts/STUDY-9/review.md) and [implementation](../artifacts/STUDY-9/implementation.md) retained unchanged.
 - Sign-off accepted explicitly by the user on 2026-10-17 despite the report’s disclosed same-implementer review. This records acceptance for deletion, not a new independent-review claim.
+
+<a id="story-sp-109"></a>
+
+## SP-109
+
+- Jira: [STUDY-44](https://adhdstudy.atlassian.net/browse/STUDY-44) — verified Done 2026-10-18T06:10:33Z.
+- Former file: `docs/stories/SP-109/SP-109.md`.
+- Exact content: commit `62fee18195252af90a44dae78acf868dd49ba9bf`, SHA-256 `0bf31bdd2cac0d799c8a9f10644cc5d4d315e5dd4dee15ef3c72fef869f55583`.
+- Recover: `git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109.md`.
+- [Committed specification](https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109.md); remote link requires a push; local Git recovery is available.
+- Retained [parent review](../stories/SP-109/artifacts/SP-109/review.md) and [delivery README](../stories/SP-109/README.md).
+- User exception 2026-10-18: accepted disclosed unresolved required findings and authorized Done/prune. Findings remain disclosed; no new passing review claimed. Full details in ledger.
+- Removal prepared 2026-10-18T06:10:33Z; see ledger for verified removedAt.
+
+<a id="story-sp-109a"></a>
+
+## SP-109A
+
+- Jira: [STUDY-45](https://adhdstudy.atlassian.net/browse/STUDY-45) — verified Done 2026-10-18T06:10:33Z.
+- Former file: `docs/stories/SP-109/SP-109A-fsd-foundation-config.md`.
+- Exact content: commit `62fee18195252af90a44dae78acf868dd49ba9bf`, SHA-256 `a43fb1c05641d57e6e4cd982a685a21852166730946c75bdf23c159ffe3767ce`.
+- Recover: `git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109A-fsd-foundation-config.md`.
+- [Committed specification](https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109A-fsd-foundation-config.md); remote link requires a push; local Git recovery is available.
+- Retained [parent review](../stories/SP-109/artifacts/SP-109/review.md) and [delivery README](../stories/SP-109/README.md).
+- User exception 2026-10-18: accepted disclosed unresolved required findings and authorized Done/prune. Findings remain disclosed; no new passing review claimed. Full details in ledger.
+- Removal prepared 2026-10-18T06:10:33Z; see ledger for verified removedAt.
+
+<a id="story-sp-109b"></a>
+
+## SP-109B
+
+- Jira: [STUDY-46](https://adhdstudy.atlassian.net/browse/STUDY-46) — verified Done 2026-10-18T06:10:33Z.
+- Former file: `docs/stories/SP-109/SP-109B-shared-lib-and-types.md`.
+- Exact content: commit `62fee18195252af90a44dae78acf868dd49ba9bf`, SHA-256 `c6e977bb73edb5b7633d7adcb3a4676ca85f207039daa3a2eb107a3cadd70e79`.
+- Recover: `git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109B-shared-lib-and-types.md`.
+- [Committed specification](https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109B-shared-lib-and-types.md); remote link requires a push; local Git recovery is available.
+- Retained [parent review](../stories/SP-109/artifacts/SP-109/review.md) and [delivery README](../stories/SP-109/README.md).
+- User exception 2026-10-18: accepted disclosed unresolved required findings and authorized Done/prune. Findings remain disclosed; no new passing review claimed. Full details in ledger.
+- Removal prepared 2026-10-18T06:10:33Z; see ledger for verified removedAt.
+
+<a id="story-sp-109c"></a>
+
+## SP-109C
+
+- Jira: [STUDY-47](https://adhdstudy.atlassian.net/browse/STUDY-47) — verified Done 2026-10-18T06:10:33Z.
+- Former file: `docs/stories/SP-109/SP-109C-shared-ui-and-transport.md`.
+- Exact content: commit `62fee18195252af90a44dae78acf868dd49ba9bf`, SHA-256 `1260095841e0e19a3151f51d318d24bce1d2e5de540c6e82ce6d9022aad065f7`.
+- Recover: `git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109C-shared-ui-and-transport.md`.
+- [Committed specification](https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109C-shared-ui-and-transport.md); remote link requires a push; local Git recovery is available.
+- Retained [parent review](../stories/SP-109/artifacts/SP-109/review.md) and [delivery README](../stories/SP-109/README.md).
+- User exception 2026-10-18: accepted disclosed unresolved required findings and authorized Done/prune. Findings remain disclosed; no new passing review claimed. Full details in ledger.
+- Removal prepared 2026-10-18T06:10:33Z; see ledger for verified removedAt.
+
+<a id="story-sp-109d"></a>
+
+## SP-109D
+
+- Jira: [STUDY-48](https://adhdstudy.atlassian.net/browse/STUDY-48) — verified Done 2026-10-18T06:10:33Z.
+- Former file: `docs/stories/SP-109/SP-109D-entity-user.md`.
+- Exact content: commit `62fee18195252af90a44dae78acf868dd49ba9bf`, SHA-256 `6bb519e5bb0b7b713389f70f2e2d2a8b41183cec21869e158de7e0381c26da5f`.
+- Recover: `git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109D-entity-user.md`.
+- [Committed specification](https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109D-entity-user.md); remote link requires a push; local Git recovery is available.
+- Retained [parent review](../stories/SP-109/artifacts/SP-109/review.md) and [delivery README](../stories/SP-109/README.md).
+- User exception 2026-10-18: accepted disclosed unresolved required findings and authorized Done/prune. Findings remain disclosed; no new passing review claimed. Full details in ledger.
+- Removal prepared 2026-10-18T06:10:33Z; see ledger for verified removedAt.
+
+<a id="story-sp-109e"></a>
+
+## SP-109E
+
+- Jira: [STUDY-49](https://adhdstudy.atlassian.net/browse/STUDY-49) — verified Done 2026-10-18T06:10:33Z.
+- Former file: `docs/stories/SP-109/SP-109E-feature-auth.md`.
+- Exact content: commit `62fee18195252af90a44dae78acf868dd49ba9bf`, SHA-256 `08b87914d504766a12a6053c06964219189a6ad78c554674207c175c336b9ad5`.
+- Recover: `git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109E-feature-auth.md`.
+- [Committed specification](https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109E-feature-auth.md); remote link requires a push; local Git recovery is available.
+- Retained [parent review](../stories/SP-109/artifacts/SP-109/review.md) and [delivery README](../stories/SP-109/README.md).
+- User exception 2026-10-18: accepted disclosed unresolved required findings and authorized Done/prune. Findings remain disclosed; no new passing review claimed. Full details in ledger.
+- Removal prepared 2026-10-18T06:10:33Z; see ledger for verified removedAt.
+
+<a id="story-sp-109f"></a>
+
+## SP-109F
+
+- Jira: [STUDY-50](https://adhdstudy.atlassian.net/browse/STUDY-50) — verified Done 2026-10-18T06:10:33Z.
+- Former file: `docs/stories/SP-109/SP-109F-feature-session-store.md`.
+- Exact content: commit `62fee18195252af90a44dae78acf868dd49ba9bf`, SHA-256 `8554e83fe9d1317086c55a6935bd395bfdbf7b113307967453806aacb08185d1`.
+- Recover: `git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109F-feature-session-store.md`.
+- [Committed specification](https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109F-feature-session-store.md); remote link requires a push; local Git recovery is available.
+- Retained [parent review](../stories/SP-109/artifacts/SP-109/review.md) and [delivery README](../stories/SP-109/README.md).
+- User exception 2026-10-18: accepted disclosed unresolved required findings and authorized Done/prune. Findings remain disclosed; no new passing review claimed. Full details in ledger.
+- Removal prepared 2026-10-18T06:10:33Z; see ledger for verified removedAt.
+
+<a id="story-sp-109g"></a>
+
+## SP-109G
+
+- Jira: [STUDY-51](https://adhdstudy.atlassian.net/browse/STUDY-51) — verified Done 2026-10-18T06:10:33Z.
+- Former file: `docs/stories/SP-109/SP-109G-widgets.md`.
+- Exact content: commit `62fee18195252af90a44dae78acf868dd49ba9bf`, SHA-256 `c1d1957ac55b54855ccfe0028329279fac11ccfd4b10157c37696981197b688b`.
+- Recover: `git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109G-widgets.md`.
+- [Committed specification](https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109G-widgets.md); remote link requires a push; local Git recovery is available.
+- Retained [parent review](../stories/SP-109/artifacts/SP-109/review.md) and [delivery README](../stories/SP-109/README.md).
+- User exception 2026-10-18: accepted disclosed unresolved required findings and authorized Done/prune. Findings remain disclosed; no new passing review claimed. Full details in ledger.
+- Removal prepared 2026-10-18T06:10:33Z; see ledger for verified removedAt.
+
+<a id="story-sp-109h"></a>
+
+## SP-109H
+
+- Jira: [STUDY-52](https://adhdstudy.atlassian.net/browse/STUDY-52) — verified Done 2026-10-18T06:10:33Z.
+- Former file: `docs/stories/SP-109/SP-109H-pages-and-app-shell.md`.
+- Exact content: commit `62fee18195252af90a44dae78acf868dd49ba9bf`, SHA-256 `5ec9884c53351594d68ced0e8af8ffee71e737c86c6e3daa3c4f6abf3fe0ceeb`.
+- Recover: `git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109H-pages-and-app-shell.md`.
+- [Committed specification](https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109H-pages-and-app-shell.md); remote link requires a push; local Git recovery is available.
+- Retained [parent review](../stories/SP-109/artifacts/SP-109/review.md) and [delivery README](../stories/SP-109/README.md).
+- User exception 2026-10-18: accepted disclosed unresolved required findings and authorized Done/prune. Findings remain disclosed; no new passing review claimed. Full details in ledger.
+- Removal prepared 2026-10-18T06:10:33Z; see ledger for verified removedAt.
+
+<a id="story-sp-109i"></a>
+
+## SP-109I
+
+- Jira: [STUDY-53](https://adhdstudy.atlassian.net/browse/STUDY-53) — verified Done 2026-10-18T06:10:33Z.
+- Former file: `docs/stories/SP-109/SP-109I-boundaries-docs-verification.md`.
+- Exact content: commit `62fee18195252af90a44dae78acf868dd49ba9bf`, SHA-256 `3bd4e63f4b07f4beaf342d2b0e28728876ea52de80d33d0d1384f33e64c164e2`.
+- Recover: `git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109I-boundaries-docs-verification.md`.
+- [Committed specification](https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109I-boundaries-docs-verification.md); remote link requires a push; local Git recovery is available.
+- Retained [parent review](../stories/SP-109/artifacts/SP-109/review.md) and [delivery README](../stories/SP-109/README.md).
+- User exception 2026-10-18: accepted disclosed unresolved required findings and authorized Done/prune. Findings remain disclosed; no new passing review claimed. Full details in ledger.
+- Removal prepared 2026-10-18T06:10:33Z; see ledger for verified removedAt.

@@ -47,7 +47,7 @@ The dashboard should prioritize clarity and avoid overwhelming the user.
 Use RTK Query (SP-108 decision RD2, 2026-10-16 — RTK Query replaces TanStack
 Query) to retrieve dashboard data, over the shared axios transport in
 `apps/web/src/shared/api/httpClient.ts` (moved from `src/services/api.ts` by
-[SP-109C](../stories/SP-109/SP-109C-shared-ui-and-transport.md) under the
+[SP-109C](../jira-sync/tombstones.md#story-sp-109c) under the
 [frontend architecture convention](./README.md#frontend-architecture)). Prefer
 composing domain-specific endpoints — one RTK Query API per feature — over
 creating a large service that owns unrelated business rules. (Historical note:

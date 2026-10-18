@@ -3193,9 +3193,9 @@
       "jira": {
         "key": "STUDY-44",
         "url": "https://adhdstudy.atlassian.net/browse/STUDY-44",
-        "updatedAt": "2026-10-17T14:14:47.843-0400",
-        "statusId": "10000",
-        "status": "To Do",
+        "updatedAt": "2026-10-18T02:09:42.925-0400",
+        "statusId": "10003",
+        "status": "Done",
         "issuetype": "Task",
         "labels": [
           "mvp",
@@ -3205,7 +3205,7 @@
       "localPath": "docs/stories/SP-109/SP-109.md",
       "epicId": null,
       "parentId": null,
-      "lifecycle": "active",
+      "lifecycle": "pruned",
       "baseline": {
         "description": {
           "value": null,
@@ -3227,12 +3227,12 @@
         "summary": {
           "value": "SP-109: Frontend feature-sliced (FSD) folder structure (parent coordination)",
           "sha256": "59658fe203dc7a323dbb8f4fd6ce328c4273919466b49c2a0ffd02ed50b73389",
-          "verifiedAt": "2026-10-17T18:20:13Z"
+          "verifiedAt": "2026-10-18T06:08:15Z"
         }
       },
       "observed": {
-        "observedAt": "2026-10-17T16:37:12Z",
-        "localFileSha256": "011d0d4a233f3911a9b0e4c986c3f3c111bdaec261f026932fa588fc20e51cbd",
+        "observedAt": "2026-10-18T06:10:33Z",
+        "localFileSha256": "0bf31bdd2cac0d799c8a9f10644cc5d4d315e5dd4dee15ef3c72fef869f55583",
         "localBodyWords": 515,
         "localBodyFingerprint": "28b764720011dddc",
         "localTitle": "SP-109: Frontend feature-sliced (FSD) folder structure (parent coordination)",
@@ -3241,25 +3241,79 @@
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 57,
         "remoteDescFingerprint": "30c59a9c0001f09e",
-        "remoteUpdatedAt": "2026-10-17T14:14:47.843-0400",
+        "remoteUpdatedAt": "2026-10-18T02:09:42.925-0400",
         "remoteLabels": [
           "mvp",
           "studypilot"
         ],
         "remoteIssuetype": "Task",
-        "remoteParentKey": null
+        "remoteParentKey": null,
+        "remoteStatus": "Done",
+        "remoteDescriptionSha256": "85191a8f28acb32b016feb22bd4a890ef113904f1cae7d367c33c80a9195bf02"
       },
       "conflicts": {},
       "blockers": [],
-      "tombstones": []
+      "tombstones": [
+        {
+          "formerPath": "docs/stories/SP-109/SP-109.md",
+          "localContentSha256": "0bf31bdd2cac0d799c8a9f10644cc5d4d315e5dd4dee15ef3c72fef869f55583",
+          "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf",
+          "jiraKey": "STUDY-44",
+          "jiraUrl": "https://adhdstudy.atlassian.net/browse/STUDY-44",
+          "remoteSpecSha256": "85191a8f28acb32b016feb22bd4a890ef113904f1cae7d367c33c80a9195bf02",
+          "verifiedAt": "2026-10-18T06:10:33Z",
+          "removedAt": "2026-10-18T06:10:47Z",
+          "implementationPaths": [
+            "docs/stories/SP-109/artifacts/SP-109/implementation.md"
+          ],
+          "finalReviewPath": "docs/stories/SP-109/artifacts/SP-109/review.md",
+          "reviewedCommit": "fe3b7d4",
+          "navigationAnchor": "docs/jira-sync/tombstones.md#story-sp-109",
+          "preservation": "git-history",
+          "recoveryCommand": "git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109.md",
+          "recoveryUrl": "https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109.md",
+          "remoteContentModel": "curated-summary+pointer",
+          "finalReviewSha256": "f73ea615d7606dbd0d3d9516a65f8103f121bf01e4871e18ee58763f9b202d1a",
+          "userException": {
+            "authorizedAt": "2026-10-18T06:09:34Z",
+            "source": "User: override, following disclosure of prune blockers.",
+            "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+            "unresolvedFindings": [
+              "IR-001",
+              "IR-002",
+              "IR-003",
+              "IR-004",
+              "IR-006",
+              "IR-007",
+              "IR-008"
+            ],
+            "independentReviewUnchanged": true
+          }
+        }
+      ],
+      "pruneException": {
+        "authorizedAt": "2026-10-18T06:09:34Z",
+        "source": "User: override, following disclosure of prune blockers.",
+        "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+        "unresolvedFindings": [
+          "IR-001",
+          "IR-002",
+          "IR-003",
+          "IR-004",
+          "IR-006",
+          "IR-007",
+          "IR-008"
+        ],
+        "independentReviewUnchanged": true
+      }
     },
     "SP-109A": {
       "jira": {
         "key": "STUDY-45",
         "url": "https://adhdstudy.atlassian.net/browse/STUDY-45",
-        "updatedAt": "2026-10-17T14:14:48.868-0400",
-        "statusId": "10000",
-        "status": "To Do",
+        "updatedAt": "2026-10-18T02:09:45.518-0400",
+        "statusId": "10003",
+        "status": "Done",
         "issuetype": "Task",
         "labels": [
           "mvp",
@@ -3269,7 +3323,7 @@
       "localPath": "docs/stories/SP-109/SP-109A-fsd-foundation-config.md",
       "epicId": null,
       "parentId": "SP-109",
-      "lifecycle": "active",
+      "lifecycle": "pruned",
       "baseline": {
         "description": {
           "value": null,
@@ -3291,12 +3345,12 @@
         "summary": {
           "value": "SP-109A: FSD foundation — `@/` alias, layer folders, lint boundaries",
           "sha256": "8e868f3260294a8bad789741268e7a09b53972aa587f1b14db60ff524fde2b6c",
-          "verifiedAt": "2026-10-17T18:20:13Z"
+          "verifiedAt": "2026-10-18T06:08:15Z"
         }
       },
       "observed": {
-        "observedAt": "2026-10-17T16:37:12Z",
-        "localFileSha256": "5056511e9cbf97067a4d63fe9e31d4df5f63af0e577e08f882de00a3b64d30c1",
+        "observedAt": "2026-10-18T06:10:33Z",
+        "localFileSha256": "a43fb1c05641d57e6e4cd982a685a21852166730946c75bdf23c159ffe3767ce",
         "localBodyWords": 1015,
         "localBodyFingerprint": "a79ffbc600214228",
         "localTitle": "SP-109A: FSD foundation — `@/` alias, layer folders, lint boundaries",
@@ -3305,25 +3359,79 @@
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 65,
         "remoteDescFingerprint": "a5e004e500021d46",
-        "remoteUpdatedAt": "2026-10-17T14:14:48.868-0400",
+        "remoteUpdatedAt": "2026-10-18T02:09:45.518-0400",
         "remoteLabels": [
           "mvp",
           "studypilot"
         ],
         "remoteIssuetype": "Task",
-        "remoteParentKey": null
+        "remoteParentKey": null,
+        "remoteStatus": "Done",
+        "remoteDescriptionSha256": "425344eefd67d75c1b3a67805cf32804ba1ea09e4e0281ddcfd9db73c4122201"
       },
       "conflicts": {},
       "blockers": [],
-      "tombstones": []
+      "tombstones": [
+        {
+          "formerPath": "docs/stories/SP-109/SP-109A-fsd-foundation-config.md",
+          "localContentSha256": "a43fb1c05641d57e6e4cd982a685a21852166730946c75bdf23c159ffe3767ce",
+          "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf",
+          "jiraKey": "STUDY-45",
+          "jiraUrl": "https://adhdstudy.atlassian.net/browse/STUDY-45",
+          "remoteSpecSha256": "425344eefd67d75c1b3a67805cf32804ba1ea09e4e0281ddcfd9db73c4122201",
+          "verifiedAt": "2026-10-18T06:10:33Z",
+          "removedAt": "2026-10-18T06:10:47Z",
+          "implementationPaths": [
+            "docs/stories/SP-109/artifacts/SP-109A/implementation.md"
+          ],
+          "finalReviewPath": "docs/stories/SP-109/artifacts/SP-109/review.md",
+          "reviewedCommit": "fe3b7d4",
+          "navigationAnchor": "docs/jira-sync/tombstones.md#story-sp-109a",
+          "preservation": "git-history",
+          "recoveryCommand": "git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109A-fsd-foundation-config.md",
+          "recoveryUrl": "https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109A-fsd-foundation-config.md",
+          "remoteContentModel": "curated-summary+pointer",
+          "finalReviewSha256": "f73ea615d7606dbd0d3d9516a65f8103f121bf01e4871e18ee58763f9b202d1a",
+          "userException": {
+            "authorizedAt": "2026-10-18T06:09:34Z",
+            "source": "User: override, following disclosure of prune blockers.",
+            "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+            "unresolvedFindings": [
+              "IR-001",
+              "IR-002",
+              "IR-003",
+              "IR-004",
+              "IR-006",
+              "IR-007",
+              "IR-008"
+            ],
+            "independentReviewUnchanged": true
+          }
+        }
+      ],
+      "pruneException": {
+        "authorizedAt": "2026-10-18T06:09:34Z",
+        "source": "User: override, following disclosure of prune blockers.",
+        "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+        "unresolvedFindings": [
+          "IR-001",
+          "IR-002",
+          "IR-003",
+          "IR-004",
+          "IR-006",
+          "IR-007",
+          "IR-008"
+        ],
+        "independentReviewUnchanged": true
+      }
     },
     "SP-109B": {
       "jira": {
         "key": "STUDY-46",
         "url": "https://adhdstudy.atlassian.net/browse/STUDY-46",
-        "updatedAt": "2026-10-17T14:14:50.121-0400",
-        "statusId": "10000",
-        "status": "To Do",
+        "updatedAt": "2026-10-18T02:09:47.678-0400",
+        "statusId": "10003",
+        "status": "Done",
         "issuetype": "Task",
         "labels": [
           "mvp",
@@ -3333,7 +3441,7 @@
       "localPath": "docs/stories/SP-109/SP-109B-shared-lib-and-types.md",
       "epicId": null,
       "parentId": "SP-109",
-      "lifecycle": "active",
+      "lifecycle": "pruned",
       "baseline": {
         "description": {
           "value": null,
@@ -3355,12 +3463,12 @@
         "summary": {
           "value": "SP-109B: Shared layer foundations — `shared/lib` and per-layer type homes",
           "sha256": "5efee2e3d8f7b36dd8210ec1f200a31d052339e2ea72581410496d1f77096851",
-          "verifiedAt": "2026-10-17T18:20:13Z"
+          "verifiedAt": "2026-10-18T06:08:15Z"
         }
       },
       "observed": {
-        "observedAt": "2026-10-17T16:37:12Z",
-        "localFileSha256": "bd12905e9b46b9c82939ffa6c4cddb726413f63379623bf8e38914dac3853d96",
+        "observedAt": "2026-10-18T06:10:33Z",
+        "localFileSha256": "c6e977bb73edb5b7633d7adcb3a4676ca85f207039daa3a2eb107a3cadd70e79",
         "localBodyWords": 1028,
         "localBodyFingerprint": "c50f7d4900225999",
         "localTitle": "SP-109B: Shared layer foundations — `shared/lib` and per-layer type homes",
@@ -3369,25 +3477,79 @@
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 64,
         "remoteDescFingerprint": "fe008afd0001e519",
-        "remoteUpdatedAt": "2026-10-17T14:14:50.121-0400",
+        "remoteUpdatedAt": "2026-10-18T02:09:47.678-0400",
         "remoteLabels": [
           "mvp",
           "studypilot"
         ],
         "remoteIssuetype": "Task",
-        "remoteParentKey": null
+        "remoteParentKey": null,
+        "remoteStatus": "Done",
+        "remoteDescriptionSha256": "86dc813f1190fa445722e25c60d9270eb6a0744fb6fb278dd56378df12b3b31e"
       },
       "conflicts": {},
       "blockers": [],
-      "tombstones": []
+      "tombstones": [
+        {
+          "formerPath": "docs/stories/SP-109/SP-109B-shared-lib-and-types.md",
+          "localContentSha256": "c6e977bb73edb5b7633d7adcb3a4676ca85f207039daa3a2eb107a3cadd70e79",
+          "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf",
+          "jiraKey": "STUDY-46",
+          "jiraUrl": "https://adhdstudy.atlassian.net/browse/STUDY-46",
+          "remoteSpecSha256": "86dc813f1190fa445722e25c60d9270eb6a0744fb6fb278dd56378df12b3b31e",
+          "verifiedAt": "2026-10-18T06:10:33Z",
+          "removedAt": "2026-10-18T06:10:47Z",
+          "implementationPaths": [
+            "docs/stories/SP-109/artifacts/SP-109B/implementation.md"
+          ],
+          "finalReviewPath": "docs/stories/SP-109/artifacts/SP-109/review.md",
+          "reviewedCommit": "fe3b7d4",
+          "navigationAnchor": "docs/jira-sync/tombstones.md#story-sp-109b",
+          "preservation": "git-history",
+          "recoveryCommand": "git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109B-shared-lib-and-types.md",
+          "recoveryUrl": "https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109B-shared-lib-and-types.md",
+          "remoteContentModel": "curated-summary+pointer",
+          "finalReviewSha256": "f73ea615d7606dbd0d3d9516a65f8103f121bf01e4871e18ee58763f9b202d1a",
+          "userException": {
+            "authorizedAt": "2026-10-18T06:09:34Z",
+            "source": "User: override, following disclosure of prune blockers.",
+            "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+            "unresolvedFindings": [
+              "IR-001",
+              "IR-002",
+              "IR-003",
+              "IR-004",
+              "IR-006",
+              "IR-007",
+              "IR-008"
+            ],
+            "independentReviewUnchanged": true
+          }
+        }
+      ],
+      "pruneException": {
+        "authorizedAt": "2026-10-18T06:09:34Z",
+        "source": "User: override, following disclosure of prune blockers.",
+        "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+        "unresolvedFindings": [
+          "IR-001",
+          "IR-002",
+          "IR-003",
+          "IR-004",
+          "IR-006",
+          "IR-007",
+          "IR-008"
+        ],
+        "independentReviewUnchanged": true
+      }
     },
     "SP-109C": {
       "jira": {
         "key": "STUDY-47",
         "url": "https://adhdstudy.atlassian.net/browse/STUDY-47",
-        "updatedAt": "2026-10-17T14:14:51.071-0400",
-        "statusId": "10000",
-        "status": "To Do",
+        "updatedAt": "2026-10-18T02:09:49.870-0400",
+        "statusId": "10003",
+        "status": "Done",
         "issuetype": "Task",
         "labels": [
           "mvp",
@@ -3397,7 +3559,7 @@
       "localPath": "docs/stories/SP-109/SP-109C-shared-ui-and-transport.md",
       "epicId": null,
       "parentId": "SP-109",
-      "lifecycle": "active",
+      "lifecycle": "pruned",
       "baseline": {
         "description": {
           "value": null,
@@ -3419,12 +3581,12 @@
         "summary": {
           "value": "SP-109C: `shared/ui` and `shared/api` — design system, transport, recovery",
           "sha256": "f44b39da3a828568d1581af52163c9252f4b26916ebbfb2f55407ed695cc1a15",
-          "verifiedAt": "2026-10-17T18:20:13Z"
+          "verifiedAt": "2026-10-18T06:08:15Z"
         }
       },
       "observed": {
-        "observedAt": "2026-10-17T16:37:12Z",
-        "localFileSha256": "afeac11344dd5ee309b8f99c1869700eaf9603ec8565c220b2c545512617f44d",
+        "observedAt": "2026-10-18T06:10:33Z",
+        "localFileSha256": "1260095841e0e19a3151f51d318d24bce1d2e5de540c6e82ce6d9022aad065f7",
         "localBodyWords": 1121,
         "localBodyFingerprint": "3699e73f00271f11",
         "localTitle": "SP-109C: `shared/ui` and `shared/api` — design system, transport, recovery",
@@ -3433,25 +3595,79 @@
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 51,
         "remoteDescFingerprint": "f2a0823d0001c6cf",
-        "remoteUpdatedAt": "2026-10-17T14:14:51.071-0400",
+        "remoteUpdatedAt": "2026-10-18T02:09:49.870-0400",
         "remoteLabels": [
           "mvp",
           "studypilot"
         ],
         "remoteIssuetype": "Task",
-        "remoteParentKey": null
+        "remoteParentKey": null,
+        "remoteStatus": "Done",
+        "remoteDescriptionSha256": "bb79e4f02848259523b922857511d11b298e6596c1c984a9a0ae2c403f12bbe0"
       },
       "conflicts": {},
       "blockers": [],
-      "tombstones": []
+      "tombstones": [
+        {
+          "formerPath": "docs/stories/SP-109/SP-109C-shared-ui-and-transport.md",
+          "localContentSha256": "1260095841e0e19a3151f51d318d24bce1d2e5de540c6e82ce6d9022aad065f7",
+          "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf",
+          "jiraKey": "STUDY-47",
+          "jiraUrl": "https://adhdstudy.atlassian.net/browse/STUDY-47",
+          "remoteSpecSha256": "bb79e4f02848259523b922857511d11b298e6596c1c984a9a0ae2c403f12bbe0",
+          "verifiedAt": "2026-10-18T06:10:33Z",
+          "removedAt": "2026-10-18T06:10:47Z",
+          "implementationPaths": [
+            "docs/stories/SP-109/artifacts/SP-109C/implementation.md"
+          ],
+          "finalReviewPath": "docs/stories/SP-109/artifacts/SP-109/review.md",
+          "reviewedCommit": "fe3b7d4",
+          "navigationAnchor": "docs/jira-sync/tombstones.md#story-sp-109c",
+          "preservation": "git-history",
+          "recoveryCommand": "git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109C-shared-ui-and-transport.md",
+          "recoveryUrl": "https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109C-shared-ui-and-transport.md",
+          "remoteContentModel": "curated-summary+pointer",
+          "finalReviewSha256": "f73ea615d7606dbd0d3d9516a65f8103f121bf01e4871e18ee58763f9b202d1a",
+          "userException": {
+            "authorizedAt": "2026-10-18T06:09:34Z",
+            "source": "User: override, following disclosure of prune blockers.",
+            "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+            "unresolvedFindings": [
+              "IR-001",
+              "IR-002",
+              "IR-003",
+              "IR-004",
+              "IR-006",
+              "IR-007",
+              "IR-008"
+            ],
+            "independentReviewUnchanged": true
+          }
+        }
+      ],
+      "pruneException": {
+        "authorizedAt": "2026-10-18T06:09:34Z",
+        "source": "User: override, following disclosure of prune blockers.",
+        "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+        "unresolvedFindings": [
+          "IR-001",
+          "IR-002",
+          "IR-003",
+          "IR-004",
+          "IR-006",
+          "IR-007",
+          "IR-008"
+        ],
+        "independentReviewUnchanged": true
+      }
     },
     "SP-109D": {
       "jira": {
         "key": "STUDY-48",
         "url": "https://adhdstudy.atlassian.net/browse/STUDY-48",
-        "updatedAt": "2026-10-17T14:14:52.002-0400",
-        "statusId": "10000",
-        "status": "To Do",
+        "updatedAt": "2026-10-18T02:09:52.456-0400",
+        "statusId": "10003",
+        "status": "Done",
         "issuetype": "Task",
         "labels": [
           "mvp",
@@ -3461,7 +3677,7 @@
       "localPath": "docs/stories/SP-109/SP-109D-entity-user.md",
       "epicId": null,
       "parentId": "SP-109",
-      "lifecycle": "active",
+      "lifecycle": "pruned",
       "baseline": {
         "description": {
           "value": null,
@@ -3483,12 +3699,12 @@
         "summary": {
           "value": "SP-109D: `entities/user` — user types and the extracted user API",
           "sha256": "fb12161efdaa93eaae3433d995d4dab211d33ea0ab10c54c7463a4572fa545d7",
-          "verifiedAt": "2026-10-17T18:20:13Z"
+          "verifiedAt": "2026-10-18T06:08:15Z"
         }
       },
       "observed": {
-        "observedAt": "2026-10-17T16:37:12Z",
-        "localFileSha256": "846ce494f62aa1a1db9ed97e51ad79f5284224280de7221c4bc87422d98b4275",
+        "observedAt": "2026-10-18T06:10:33Z",
+        "localFileSha256": "6bb519e5bb0b7b713389f70f2e2d2a8b41183cec21869e158de7e0381c26da5f",
         "localBodyWords": 1037,
         "localBodyFingerprint": "b527ef940023de5d",
         "localTitle": "SP-109D: `entities/user` — user types and the extracted user API",
@@ -3497,25 +3713,79 @@
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 56,
         "remoteDescFingerprint": "c17eb2360001be04",
-        "remoteUpdatedAt": "2026-10-17T14:14:52.002-0400",
+        "remoteUpdatedAt": "2026-10-18T02:09:52.456-0400",
         "remoteLabels": [
           "mvp",
           "studypilot"
         ],
         "remoteIssuetype": "Task",
-        "remoteParentKey": null
+        "remoteParentKey": null,
+        "remoteStatus": "Done",
+        "remoteDescriptionSha256": "2085b82d802b81a1e75c2507666aa80f6ac58952ddf57dde4bbc43a965dee168"
       },
       "conflicts": {},
       "blockers": [],
-      "tombstones": []
+      "tombstones": [
+        {
+          "formerPath": "docs/stories/SP-109/SP-109D-entity-user.md",
+          "localContentSha256": "6bb519e5bb0b7b713389f70f2e2d2a8b41183cec21869e158de7e0381c26da5f",
+          "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf",
+          "jiraKey": "STUDY-48",
+          "jiraUrl": "https://adhdstudy.atlassian.net/browse/STUDY-48",
+          "remoteSpecSha256": "2085b82d802b81a1e75c2507666aa80f6ac58952ddf57dde4bbc43a965dee168",
+          "verifiedAt": "2026-10-18T06:10:33Z",
+          "removedAt": "2026-10-18T06:10:47Z",
+          "implementationPaths": [
+            "docs/stories/SP-109/artifacts/SP-109D/implementation.md"
+          ],
+          "finalReviewPath": "docs/stories/SP-109/artifacts/SP-109/review.md",
+          "reviewedCommit": "fe3b7d4",
+          "navigationAnchor": "docs/jira-sync/tombstones.md#story-sp-109d",
+          "preservation": "git-history",
+          "recoveryCommand": "git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109D-entity-user.md",
+          "recoveryUrl": "https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109D-entity-user.md",
+          "remoteContentModel": "curated-summary+pointer",
+          "finalReviewSha256": "f73ea615d7606dbd0d3d9516a65f8103f121bf01e4871e18ee58763f9b202d1a",
+          "userException": {
+            "authorizedAt": "2026-10-18T06:09:34Z",
+            "source": "User: override, following disclosure of prune blockers.",
+            "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+            "unresolvedFindings": [
+              "IR-001",
+              "IR-002",
+              "IR-003",
+              "IR-004",
+              "IR-006",
+              "IR-007",
+              "IR-008"
+            ],
+            "independentReviewUnchanged": true
+          }
+        }
+      ],
+      "pruneException": {
+        "authorizedAt": "2026-10-18T06:09:34Z",
+        "source": "User: override, following disclosure of prune blockers.",
+        "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+        "unresolvedFindings": [
+          "IR-001",
+          "IR-002",
+          "IR-003",
+          "IR-004",
+          "IR-006",
+          "IR-007",
+          "IR-008"
+        ],
+        "independentReviewUnchanged": true
+      }
     },
     "SP-109E": {
       "jira": {
         "key": "STUDY-49",
         "url": "https://adhdstudy.atlassian.net/browse/STUDY-49",
-        "updatedAt": "2026-10-17T14:14:53.167-0400",
-        "statusId": "10000",
-        "status": "To Do",
+        "updatedAt": "2026-10-18T02:09:54.706-0400",
+        "statusId": "10003",
+        "status": "Done",
         "issuetype": "Task",
         "labels": [
           "mvp",
@@ -3525,7 +3795,7 @@
       "localPath": "docs/stories/SP-109/SP-109E-feature-auth.md",
       "epicId": null,
       "parentId": "SP-109",
-      "lifecycle": "active",
+      "lifecycle": "pruned",
       "baseline": {
         "description": {
           "value": null,
@@ -3547,12 +3817,12 @@
         "summary": {
           "value": "SP-109E: `features/auth` — auth API service, auth types, `useAuth` context",
           "sha256": "c2932485f960e866a93c67d75fef36964f1874347edaef3202f784b01f3a7fc5",
-          "verifiedAt": "2026-10-17T18:20:13Z"
+          "verifiedAt": "2026-10-18T06:08:15Z"
         }
       },
       "observed": {
-        "observedAt": "2026-10-17T16:37:12Z",
-        "localFileSha256": "3581f5586e0f24bde2d52142a7340ae040953e0e935849ef75c10d2e9ecd0c0e",
+        "observedAt": "2026-10-18T06:10:33Z",
+        "localFileSha256": "08b87914d504766a12a6053c06964219189a6ad78c554674207c175c336b9ad5",
         "localBodyWords": 1080,
         "localBodyFingerprint": "e20abfd4002690dc",
         "localTitle": "SP-109E: `features/auth` — auth API service, auth types, `useAuth` context",
@@ -3561,25 +3831,77 @@
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 47,
         "remoteDescFingerprint": "a0dea95300018436",
-        "remoteUpdatedAt": "2026-10-17T14:14:53.167-0400",
+        "remoteUpdatedAt": "2026-10-18T02:09:54.706-0400",
         "remoteLabels": [
           "mvp",
           "studypilot"
         ],
         "remoteIssuetype": "Task",
-        "remoteParentKey": null
+        "remoteParentKey": null,
+        "remoteStatus": "Done",
+        "remoteDescriptionSha256": "6fc0066dcfead032348db61d8c810553fa73b2c07eb16664396449b7790dbd5b"
       },
       "conflicts": {},
       "blockers": [],
-      "tombstones": []
+      "tombstones": [
+        {
+          "formerPath": "docs/stories/SP-109/SP-109E-feature-auth.md",
+          "localContentSha256": "08b87914d504766a12a6053c06964219189a6ad78c554674207c175c336b9ad5",
+          "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf",
+          "jiraKey": "STUDY-49",
+          "jiraUrl": "https://adhdstudy.atlassian.net/browse/STUDY-49",
+          "remoteSpecSha256": "6fc0066dcfead032348db61d8c810553fa73b2c07eb16664396449b7790dbd5b",
+          "verifiedAt": "2026-10-18T06:10:33Z",
+          "removedAt": "2026-10-18T06:10:47Z",
+          "implementationPaths": [],
+          "finalReviewPath": "docs/stories/SP-109/artifacts/SP-109/review.md",
+          "reviewedCommit": "fe3b7d4",
+          "navigationAnchor": "docs/jira-sync/tombstones.md#story-sp-109e",
+          "preservation": "git-history",
+          "recoveryCommand": "git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109E-feature-auth.md",
+          "recoveryUrl": "https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109E-feature-auth.md",
+          "remoteContentModel": "curated-summary+pointer",
+          "finalReviewSha256": "f73ea615d7606dbd0d3d9516a65f8103f121bf01e4871e18ee58763f9b202d1a",
+          "userException": {
+            "authorizedAt": "2026-10-18T06:09:34Z",
+            "source": "User: override, following disclosure of prune blockers.",
+            "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+            "unresolvedFindings": [
+              "IR-001",
+              "IR-002",
+              "IR-003",
+              "IR-004",
+              "IR-006",
+              "IR-007",
+              "IR-008"
+            ],
+            "independentReviewUnchanged": true
+          }
+        }
+      ],
+      "pruneException": {
+        "authorizedAt": "2026-10-18T06:09:34Z",
+        "source": "User: override, following disclosure of prune blockers.",
+        "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+        "unresolvedFindings": [
+          "IR-001",
+          "IR-002",
+          "IR-003",
+          "IR-004",
+          "IR-006",
+          "IR-007",
+          "IR-008"
+        ],
+        "independentReviewUnchanged": true
+      }
     },
     "SP-109F": {
       "jira": {
         "key": "STUDY-50",
         "url": "https://adhdstudy.atlassian.net/browse/STUDY-50",
-        "updatedAt": "2026-10-17T14:14:54.158-0400",
-        "statusId": "10000",
-        "status": "To Do",
+        "updatedAt": "2026-10-18T02:09:56.671-0400",
+        "statusId": "10003",
+        "status": "Done",
         "issuetype": "Task",
         "labels": [
           "mvp",
@@ -3589,7 +3911,7 @@
       "localPath": "docs/stories/SP-109/SP-109F-feature-session-store.md",
       "epicId": null,
       "parentId": "SP-109",
-      "lifecycle": "active",
+      "lifecycle": "pruned",
       "baseline": {
         "description": {
           "value": null,
@@ -3611,12 +3933,12 @@
         "summary": {
           "value": "SP-109F: `features/session`, `features/email-verification`, `app/store`",
           "sha256": "9fcf928ba6056a855e7beeb755e3f66ef68f3c847dfd94fec36a4dbd7c3678b8",
-          "verifiedAt": "2026-10-17T18:20:13Z"
+          "verifiedAt": "2026-10-18T06:08:15Z"
         }
       },
       "observed": {
-        "observedAt": "2026-10-17T16:37:12Z",
-        "localFileSha256": "c0dc1292452a090a7e901ec84d4cea5b8331f8d4db43b2697c7134f570e09ac8",
+        "observedAt": "2026-10-18T06:10:33Z",
+        "localFileSha256": "8554e83fe9d1317086c55a6935bd395bfdbf7b113307967453806aacb08185d1",
         "localBodyWords": 1199,
         "localBodyFingerprint": "8d36ee95002a0228",
         "localTitle": "SP-109F: `features/session`, `features/email-verification`, `app/store`",
@@ -3625,25 +3947,79 @@
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 76,
         "remoteDescFingerprint": "75ae0d720002a858",
-        "remoteUpdatedAt": "2026-10-17T14:14:54.158-0400",
+        "remoteUpdatedAt": "2026-10-18T02:09:56.671-0400",
         "remoteLabels": [
           "mvp",
           "studypilot"
         ],
         "remoteIssuetype": "Task",
-        "remoteParentKey": null
+        "remoteParentKey": null,
+        "remoteStatus": "Done",
+        "remoteDescriptionSha256": "b5d0fcb93effffaacc50ed86e33315a9d466c57c03ee29463eeee5cf95d7be09"
       },
       "conflicts": {},
       "blockers": [],
-      "tombstones": []
+      "tombstones": [
+        {
+          "formerPath": "docs/stories/SP-109/SP-109F-feature-session-store.md",
+          "localContentSha256": "8554e83fe9d1317086c55a6935bd395bfdbf7b113307967453806aacb08185d1",
+          "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf",
+          "jiraKey": "STUDY-50",
+          "jiraUrl": "https://adhdstudy.atlassian.net/browse/STUDY-50",
+          "remoteSpecSha256": "b5d0fcb93effffaacc50ed86e33315a9d466c57c03ee29463eeee5cf95d7be09",
+          "verifiedAt": "2026-10-18T06:10:33Z",
+          "removedAt": "2026-10-18T06:10:47Z",
+          "implementationPaths": [
+            "docs/stories/SP-109/artifacts/SP-109F/implementation.md"
+          ],
+          "finalReviewPath": "docs/stories/SP-109/artifacts/SP-109/review.md",
+          "reviewedCommit": "fe3b7d4",
+          "navigationAnchor": "docs/jira-sync/tombstones.md#story-sp-109f",
+          "preservation": "git-history",
+          "recoveryCommand": "git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109F-feature-session-store.md",
+          "recoveryUrl": "https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109F-feature-session-store.md",
+          "remoteContentModel": "curated-summary+pointer",
+          "finalReviewSha256": "f73ea615d7606dbd0d3d9516a65f8103f121bf01e4871e18ee58763f9b202d1a",
+          "userException": {
+            "authorizedAt": "2026-10-18T06:09:34Z",
+            "source": "User: override, following disclosure of prune blockers.",
+            "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+            "unresolvedFindings": [
+              "IR-001",
+              "IR-002",
+              "IR-003",
+              "IR-004",
+              "IR-006",
+              "IR-007",
+              "IR-008"
+            ],
+            "independentReviewUnchanged": true
+          }
+        }
+      ],
+      "pruneException": {
+        "authorizedAt": "2026-10-18T06:09:34Z",
+        "source": "User: override, following disclosure of prune blockers.",
+        "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+        "unresolvedFindings": [
+          "IR-001",
+          "IR-002",
+          "IR-003",
+          "IR-004",
+          "IR-006",
+          "IR-007",
+          "IR-008"
+        ],
+        "independentReviewUnchanged": true
+      }
     },
     "SP-109G": {
       "jira": {
         "key": "STUDY-51",
         "url": "https://adhdstudy.atlassian.net/browse/STUDY-51",
-        "updatedAt": "2026-10-17T14:14:55.143-0400",
-        "statusId": "10000",
-        "status": "To Do",
+        "updatedAt": "2026-10-18T02:09:58.885-0400",
+        "statusId": "10003",
+        "status": "Done",
         "issuetype": "Task",
         "labels": [
           "mvp",
@@ -3653,7 +4029,7 @@
       "localPath": "docs/stories/SP-109/SP-109G-widgets.md",
       "epicId": null,
       "parentId": "SP-109",
-      "lifecycle": "active",
+      "lifecycle": "pruned",
       "baseline": {
         "description": {
           "value": null,
@@ -3675,12 +4051,12 @@
         "summary": {
           "value": "SP-109G: `widgets/` — layout, header, verification banner, route guards",
           "sha256": "a8a4e6bda3a31945a9e6ec935b88f3665bf4b49e3f59fd824d54e43e0823dfee",
-          "verifiedAt": "2026-10-17T18:20:13Z"
+          "verifiedAt": "2026-10-18T06:08:15Z"
         }
       },
       "observed": {
-        "observedAt": "2026-10-17T16:37:12Z",
-        "localFileSha256": "d2a0f29b53ae317617e110d7c30acbff0924ad8dfb40d4c90aaaa4d4485625b9",
+        "observedAt": "2026-10-18T06:10:33Z",
+        "localFileSha256": "c1d1957ac55b54855ccfe0028329279fac11ccfd4b10157c37696981197b688b",
         "localBodyWords": 944,
         "localBodyFingerprint": "1664235c0021766c",
         "localTitle": "SP-109G: `widgets/` — layout, header, verification banner, route guards",
@@ -3689,25 +4065,79 @@
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 65,
         "remoteDescFingerprint": "150419c200022f22",
-        "remoteUpdatedAt": "2026-10-17T14:14:55.143-0400",
+        "remoteUpdatedAt": "2026-10-18T02:09:58.885-0400",
         "remoteLabels": [
           "mvp",
           "studypilot"
         ],
         "remoteIssuetype": "Task",
-        "remoteParentKey": null
+        "remoteParentKey": null,
+        "remoteStatus": "Done",
+        "remoteDescriptionSha256": "03f10d432d6e026fc1b18632289c862fc63d28188488c804d428469804f6a7b2"
       },
       "conflicts": {},
       "blockers": [],
-      "tombstones": []
+      "tombstones": [
+        {
+          "formerPath": "docs/stories/SP-109/SP-109G-widgets.md",
+          "localContentSha256": "c1d1957ac55b54855ccfe0028329279fac11ccfd4b10157c37696981197b688b",
+          "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf",
+          "jiraKey": "STUDY-51",
+          "jiraUrl": "https://adhdstudy.atlassian.net/browse/STUDY-51",
+          "remoteSpecSha256": "03f10d432d6e026fc1b18632289c862fc63d28188488c804d428469804f6a7b2",
+          "verifiedAt": "2026-10-18T06:10:33Z",
+          "removedAt": "2026-10-18T06:10:47Z",
+          "implementationPaths": [
+            "docs/stories/SP-109/artifacts/SP-109G/implementation.md"
+          ],
+          "finalReviewPath": "docs/stories/SP-109/artifacts/SP-109/review.md",
+          "reviewedCommit": "fe3b7d4",
+          "navigationAnchor": "docs/jira-sync/tombstones.md#story-sp-109g",
+          "preservation": "git-history",
+          "recoveryCommand": "git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109G-widgets.md",
+          "recoveryUrl": "https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109G-widgets.md",
+          "remoteContentModel": "curated-summary+pointer",
+          "finalReviewSha256": "f73ea615d7606dbd0d3d9516a65f8103f121bf01e4871e18ee58763f9b202d1a",
+          "userException": {
+            "authorizedAt": "2026-10-18T06:09:34Z",
+            "source": "User: override, following disclosure of prune blockers.",
+            "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+            "unresolvedFindings": [
+              "IR-001",
+              "IR-002",
+              "IR-003",
+              "IR-004",
+              "IR-006",
+              "IR-007",
+              "IR-008"
+            ],
+            "independentReviewUnchanged": true
+          }
+        }
+      ],
+      "pruneException": {
+        "authorizedAt": "2026-10-18T06:09:34Z",
+        "source": "User: override, following disclosure of prune blockers.",
+        "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+        "unresolvedFindings": [
+          "IR-001",
+          "IR-002",
+          "IR-003",
+          "IR-004",
+          "IR-006",
+          "IR-007",
+          "IR-008"
+        ],
+        "independentReviewUnchanged": true
+      }
     },
     "SP-109H": {
       "jira": {
         "key": "STUDY-52",
         "url": "https://adhdstudy.atlassian.net/browse/STUDY-52",
-        "updatedAt": "2026-10-17T14:14:56.027-0400",
-        "statusId": "10000",
-        "status": "To Do",
+        "updatedAt": "2026-10-18T02:10:01.030-0400",
+        "statusId": "10003",
+        "status": "Done",
         "issuetype": "Task",
         "labels": [
           "mvp",
@@ -3717,7 +4147,7 @@
       "localPath": "docs/stories/SP-109/SP-109H-pages-and-app-shell.md",
       "epicId": null,
       "parentId": "SP-109",
-      "lifecycle": "active",
+      "lifecycle": "pruned",
       "baseline": {
         "description": {
           "value": null,
@@ -3739,12 +4169,12 @@
         "summary": {
           "value": "SP-109H: `pages/<route>/ui` and the app shell (`App.tsx`, `AppProviders`)",
           "sha256": "a1d14a53b7ab82cc3499e4c0c0f90bfe90329eea8cf498d5e4a3d42063cddf19",
-          "verifiedAt": "2026-10-17T18:20:13Z"
+          "verifiedAt": "2026-10-18T06:08:15Z"
         }
       },
       "observed": {
-        "observedAt": "2026-10-17T16:37:12Z",
-        "localFileSha256": "5277a4f887754ebe5d40078ac68af5251ba6b90007c47bf753077ea7b1a01d62",
+        "observedAt": "2026-10-18T06:10:33Z",
+        "localFileSha256": "5ec9884c53351594d68ced0e8af8ffee71e737c86c6e3daa3c4f6abf3fe0ceeb",
         "localBodyWords": 1055,
         "localBodyFingerprint": "9dd700940024a2d7",
         "localTitle": "SP-109H: `pages/<route>/ui` and the app shell (`App.tsx`, `AppProviders`)",
@@ -3753,25 +4183,79 @@
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 85,
         "remoteDescFingerprint": "979dddc20002aafe",
-        "remoteUpdatedAt": "2026-10-17T14:14:56.027-0400",
+        "remoteUpdatedAt": "2026-10-18T02:10:01.030-0400",
         "remoteLabels": [
           "mvp",
           "studypilot"
         ],
         "remoteIssuetype": "Task",
-        "remoteParentKey": null
+        "remoteParentKey": null,
+        "remoteStatus": "Done",
+        "remoteDescriptionSha256": "49b60f1dc40688983b416272a015af347910b409222a4a9792b3df8c8f691b28"
       },
       "conflicts": {},
       "blockers": [],
-      "tombstones": []
+      "tombstones": [
+        {
+          "formerPath": "docs/stories/SP-109/SP-109H-pages-and-app-shell.md",
+          "localContentSha256": "5ec9884c53351594d68ced0e8af8ffee71e737c86c6e3daa3c4f6abf3fe0ceeb",
+          "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf",
+          "jiraKey": "STUDY-52",
+          "jiraUrl": "https://adhdstudy.atlassian.net/browse/STUDY-52",
+          "remoteSpecSha256": "49b60f1dc40688983b416272a015af347910b409222a4a9792b3df8c8f691b28",
+          "verifiedAt": "2026-10-18T06:10:33Z",
+          "removedAt": "2026-10-18T06:10:47Z",
+          "implementationPaths": [
+            "docs/stories/SP-109/artifacts/SP-109H/implementation.md"
+          ],
+          "finalReviewPath": "docs/stories/SP-109/artifacts/SP-109/review.md",
+          "reviewedCommit": "fe3b7d4",
+          "navigationAnchor": "docs/jira-sync/tombstones.md#story-sp-109h",
+          "preservation": "git-history",
+          "recoveryCommand": "git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109H-pages-and-app-shell.md",
+          "recoveryUrl": "https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109H-pages-and-app-shell.md",
+          "remoteContentModel": "curated-summary+pointer",
+          "finalReviewSha256": "f73ea615d7606dbd0d3d9516a65f8103f121bf01e4871e18ee58763f9b202d1a",
+          "userException": {
+            "authorizedAt": "2026-10-18T06:09:34Z",
+            "source": "User: override, following disclosure of prune blockers.",
+            "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+            "unresolvedFindings": [
+              "IR-001",
+              "IR-002",
+              "IR-003",
+              "IR-004",
+              "IR-006",
+              "IR-007",
+              "IR-008"
+            ],
+            "independentReviewUnchanged": true
+          }
+        }
+      ],
+      "pruneException": {
+        "authorizedAt": "2026-10-18T06:09:34Z",
+        "source": "User: override, following disclosure of prune blockers.",
+        "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+        "unresolvedFindings": [
+          "IR-001",
+          "IR-002",
+          "IR-003",
+          "IR-004",
+          "IR-006",
+          "IR-007",
+          "IR-008"
+        ],
+        "independentReviewUnchanged": true
+      }
     },
     "SP-109I": {
       "jira": {
         "key": "STUDY-53",
         "url": "https://adhdstudy.atlassian.net/browse/STUDY-53",
-        "updatedAt": "2026-10-17T14:14:56.957-0400",
-        "statusId": "10000",
-        "status": "To Do",
+        "updatedAt": "2026-10-18T02:10:03.453-0400",
+        "statusId": "10003",
+        "status": "Done",
         "issuetype": "Task",
         "labels": [
           "mvp",
@@ -3781,7 +4265,7 @@
       "localPath": "docs/stories/SP-109/SP-109I-boundaries-docs-verification.md",
       "epicId": null,
       "parentId": "SP-109",
-      "lifecycle": "active",
+      "lifecycle": "pruned",
       "baseline": {
         "description": {
           "value": null,
@@ -3803,12 +4287,12 @@
         "summary": {
           "value": "SP-109I: Boundary proof, legacy-folder proof, docs repoint, parent verification",
           "sha256": "cefbc791abc13e3817ab1d466c3843e956e60ac3b090afb8f99de421b60812b2",
-          "verifiedAt": "2026-10-17T18:20:13Z"
+          "verifiedAt": "2026-10-18T06:08:15Z"
         }
       },
       "observed": {
-        "observedAt": "2026-10-17T16:37:12Z",
-        "localFileSha256": "75623c9aaf03128af592d8240601180907f9292e7d59a08331dff1f75d259a9d",
+        "observedAt": "2026-10-18T06:10:33Z",
+        "localFileSha256": "3bd4e63f4b07f4beaf342d2b0e28728876ea52de80d33d0d1384f33e64c164e2",
         "localBodyWords": 1121,
         "localBodyFingerprint": "61a80e830023a36f",
         "localTitle": "SP-109I: Boundary proof, legacy-folder proof, docs repoint, parent verification",
@@ -3817,17 +4301,71 @@
         "createdInRun": "2026-10-17T16:37:12Z",
         "remoteDescWords": 81,
         "remoteDescFingerprint": "f810a5a00002cc8b",
-        "remoteUpdatedAt": "2026-10-17T14:14:56.957-0400",
+        "remoteUpdatedAt": "2026-10-18T02:10:03.453-0400",
         "remoteLabels": [
           "mvp",
           "studypilot"
         ],
         "remoteIssuetype": "Task",
-        "remoteParentKey": null
+        "remoteParentKey": null,
+        "remoteStatus": "Done",
+        "remoteDescriptionSha256": "cb7aa7051f19cc4d1659ab15d3a14133f961c7e77d9dd36a6511911bc764e2ab"
       },
       "conflicts": {},
       "blockers": [],
-      "tombstones": []
+      "tombstones": [
+        {
+          "formerPath": "docs/stories/SP-109/SP-109I-boundaries-docs-verification.md",
+          "localContentSha256": "3bd4e63f4b07f4beaf342d2b0e28728876ea52de80d33d0d1384f33e64c164e2",
+          "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf",
+          "jiraKey": "STUDY-53",
+          "jiraUrl": "https://adhdstudy.atlassian.net/browse/STUDY-53",
+          "remoteSpecSha256": "cb7aa7051f19cc4d1659ab15d3a14133f961c7e77d9dd36a6511911bc764e2ab",
+          "verifiedAt": "2026-10-18T06:10:33Z",
+          "removedAt": "2026-10-18T06:10:47Z",
+          "implementationPaths": [
+            "docs/stories/SP-109/artifacts/SP-109I/implementation.md"
+          ],
+          "finalReviewPath": "docs/stories/SP-109/artifacts/SP-109/review.md",
+          "reviewedCommit": "fe3b7d4",
+          "navigationAnchor": "docs/jira-sync/tombstones.md#story-sp-109i",
+          "preservation": "git-history",
+          "recoveryCommand": "git show 62fee18195252af90a44dae78acf868dd49ba9bf:docs/stories/SP-109/SP-109I-boundaries-docs-verification.md",
+          "recoveryUrl": "https://github.com/CodeDiversity/focus-app/blob/62fee18195252af90a44dae78acf868dd49ba9bf/docs/stories/SP-109/SP-109I-boundaries-docs-verification.md",
+          "remoteContentModel": "curated-summary+pointer",
+          "finalReviewSha256": "f73ea615d7606dbd0d3d9516a65f8103f121bf01e4871e18ee58763f9b202d1a",
+          "userException": {
+            "authorizedAt": "2026-10-18T06:09:34Z",
+            "source": "User: override, following disclosure of prune blockers.",
+            "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+            "unresolvedFindings": [
+              "IR-001",
+              "IR-002",
+              "IR-003",
+              "IR-004",
+              "IR-006",
+              "IR-007",
+              "IR-008"
+            ],
+            "independentReviewUnchanged": true
+          }
+        }
+      ],
+      "pruneException": {
+        "authorizedAt": "2026-10-18T06:09:34Z",
+        "source": "User: override, following disclosure of prune blockers.",
+        "scope": "SP-109 and A-I; accept outstanding findings for removal, transition Jira Done, preserve exact current specs in Git.",
+        "unresolvedFindings": [
+          "IR-001",
+          "IR-002",
+          "IR-003",
+          "IR-004",
+          "IR-006",
+          "IR-007",
+          "IR-008"
+        ],
+        "independentReviewUnchanged": true
+      }
     },
     "JIRA-STUDY-1": {
       "jira": {
@@ -6395,6 +6933,556 @@
           "detail": "Removed only specification; Git recovery, accepted review provenance and navigation retained"
         }
       ]
+    },
+    {
+      "id": "ef4a442f1640bf524817727e7addecf4a18dac1da30f3aed25f5b21906795018",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109",
+      "action": "transition",
+      "target": "STUDY-44",
+      "intendedFields": {
+        "status": "Done",
+        "transitionId": "41",
+        "authorization": "Explicit user override 2026-10-18; accepts disclosed unresolved findings and authorizes sync/prune."
+      },
+      "sourceSha256": "0bf31bdd2cac0d799c8a9f10644cc5d4d315e5dd4dee15ef3c72fef869f55583",
+      "targetSha256": "b9dd45b2725d11e9b707f4cb86ddfeeab9c08adb81ec0660bec1d899d678343a",
+      "preparedAt": "2026-10-18T06:09:34Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:09:34Z",
+          "state": "pending",
+          "summary": "User-authorized Done transition; validated available transition 41."
+        },
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "verified",
+          "summary": "Jira transition returned Done; subsequent issue fetch confirmed Done.",
+          "verifiedKey": "STUDY-44"
+        }
+      ]
+    },
+    {
+      "id": "72ad3fc91faf0b3e4c22aa12e93313ff7ed39d33ef6cd933869896180cf13e6e",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109A",
+      "action": "transition",
+      "target": "STUDY-45",
+      "intendedFields": {
+        "status": "Done",
+        "transitionId": "41",
+        "authorization": "Explicit user override 2026-10-18; accepts disclosed unresolved findings and authorizes sync/prune."
+      },
+      "sourceSha256": "a43fb1c05641d57e6e4cd982a685a21852166730946c75bdf23c159ffe3767ce",
+      "targetSha256": "b9dd45b2725d11e9b707f4cb86ddfeeab9c08adb81ec0660bec1d899d678343a",
+      "preparedAt": "2026-10-18T06:09:34Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:09:34Z",
+          "state": "pending",
+          "summary": "User-authorized Done transition; validated available transition 41."
+        },
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "verified",
+          "summary": "Jira transition returned Done; subsequent issue fetch confirmed Done.",
+          "verifiedKey": "STUDY-45"
+        }
+      ]
+    },
+    {
+      "id": "78a90a962fe9f6e1994be36008c9f3539226635caae14e5be7ed399a3be3985f",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109B",
+      "action": "transition",
+      "target": "STUDY-46",
+      "intendedFields": {
+        "status": "Done",
+        "transitionId": "41",
+        "authorization": "Explicit user override 2026-10-18; accepts disclosed unresolved findings and authorizes sync/prune."
+      },
+      "sourceSha256": "c6e977bb73edb5b7633d7adcb3a4676ca85f207039daa3a2eb107a3cadd70e79",
+      "targetSha256": "b9dd45b2725d11e9b707f4cb86ddfeeab9c08adb81ec0660bec1d899d678343a",
+      "preparedAt": "2026-10-18T06:09:34Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:09:34Z",
+          "state": "pending",
+          "summary": "User-authorized Done transition; validated available transition 41."
+        },
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "verified",
+          "summary": "Jira transition returned Done; subsequent issue fetch confirmed Done.",
+          "verifiedKey": "STUDY-46"
+        }
+      ]
+    },
+    {
+      "id": "466982a27b76d006ebe9b3775b2c9d23b10859b39f7ee217b057eb192f78de53",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109C",
+      "action": "transition",
+      "target": "STUDY-47",
+      "intendedFields": {
+        "status": "Done",
+        "transitionId": "41",
+        "authorization": "Explicit user override 2026-10-18; accepts disclosed unresolved findings and authorizes sync/prune."
+      },
+      "sourceSha256": "1260095841e0e19a3151f51d318d24bce1d2e5de540c6e82ce6d9022aad065f7",
+      "targetSha256": "b9dd45b2725d11e9b707f4cb86ddfeeab9c08adb81ec0660bec1d899d678343a",
+      "preparedAt": "2026-10-18T06:09:34Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:09:34Z",
+          "state": "pending",
+          "summary": "User-authorized Done transition; validated available transition 41."
+        },
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "verified",
+          "summary": "Jira transition returned Done; subsequent issue fetch confirmed Done.",
+          "verifiedKey": "STUDY-47"
+        }
+      ]
+    },
+    {
+      "id": "f76f331a8ec734560db0aa9ba52e68278ce1821e975d7dfc6ffe79e4979fe806",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109D",
+      "action": "transition",
+      "target": "STUDY-48",
+      "intendedFields": {
+        "status": "Done",
+        "transitionId": "41",
+        "authorization": "Explicit user override 2026-10-18; accepts disclosed unresolved findings and authorizes sync/prune."
+      },
+      "sourceSha256": "6bb519e5bb0b7b713389f70f2e2d2a8b41183cec21869e158de7e0381c26da5f",
+      "targetSha256": "b9dd45b2725d11e9b707f4cb86ddfeeab9c08adb81ec0660bec1d899d678343a",
+      "preparedAt": "2026-10-18T06:09:34Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:09:34Z",
+          "state": "pending",
+          "summary": "User-authorized Done transition; validated available transition 41."
+        },
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "verified",
+          "summary": "Jira transition returned Done; subsequent issue fetch confirmed Done.",
+          "verifiedKey": "STUDY-48"
+        }
+      ]
+    },
+    {
+      "id": "c790df85356abd03ca5be4a06f9709ef8dbfc8e7066957c94b18b526037c1130",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109E",
+      "action": "transition",
+      "target": "STUDY-49",
+      "intendedFields": {
+        "status": "Done",
+        "transitionId": "41",
+        "authorization": "Explicit user override 2026-10-18; accepts disclosed unresolved findings and authorizes sync/prune."
+      },
+      "sourceSha256": "08b87914d504766a12a6053c06964219189a6ad78c554674207c175c336b9ad5",
+      "targetSha256": "b9dd45b2725d11e9b707f4cb86ddfeeab9c08adb81ec0660bec1d899d678343a",
+      "preparedAt": "2026-10-18T06:09:34Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:09:34Z",
+          "state": "pending",
+          "summary": "User-authorized Done transition; validated available transition 41."
+        },
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "verified",
+          "summary": "Jira transition returned Done; subsequent issue fetch confirmed Done.",
+          "verifiedKey": "STUDY-49"
+        }
+      ]
+    },
+    {
+      "id": "ac38793a516191bd6016950385fe760fcecbfa0972569faec329ef654dade874",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109F",
+      "action": "transition",
+      "target": "STUDY-50",
+      "intendedFields": {
+        "status": "Done",
+        "transitionId": "41",
+        "authorization": "Explicit user override 2026-10-18; accepts disclosed unresolved findings and authorizes sync/prune."
+      },
+      "sourceSha256": "8554e83fe9d1317086c55a6935bd395bfdbf7b113307967453806aacb08185d1",
+      "targetSha256": "b9dd45b2725d11e9b707f4cb86ddfeeab9c08adb81ec0660bec1d899d678343a",
+      "preparedAt": "2026-10-18T06:09:34Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:09:34Z",
+          "state": "pending",
+          "summary": "User-authorized Done transition; validated available transition 41."
+        },
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "verified",
+          "summary": "Jira transition returned Done; subsequent issue fetch confirmed Done.",
+          "verifiedKey": "STUDY-50"
+        }
+      ]
+    },
+    {
+      "id": "f94e4648e16a132ad9b122008a8723d1844c186a217aa7aa28332e114ed6b897",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109G",
+      "action": "transition",
+      "target": "STUDY-51",
+      "intendedFields": {
+        "status": "Done",
+        "transitionId": "41",
+        "authorization": "Explicit user override 2026-10-18; accepts disclosed unresolved findings and authorizes sync/prune."
+      },
+      "sourceSha256": "c1d1957ac55b54855ccfe0028329279fac11ccfd4b10157c37696981197b688b",
+      "targetSha256": "b9dd45b2725d11e9b707f4cb86ddfeeab9c08adb81ec0660bec1d899d678343a",
+      "preparedAt": "2026-10-18T06:09:34Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:09:34Z",
+          "state": "pending",
+          "summary": "User-authorized Done transition; validated available transition 41."
+        },
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "verified",
+          "summary": "Jira transition returned Done; subsequent issue fetch confirmed Done.",
+          "verifiedKey": "STUDY-51"
+        }
+      ]
+    },
+    {
+      "id": "09116e1aa9a57c5a3188474b6f0568b283ecabab38a220e7cea842ba9215394b",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109H",
+      "action": "transition",
+      "target": "STUDY-52",
+      "intendedFields": {
+        "status": "Done",
+        "transitionId": "41",
+        "authorization": "Explicit user override 2026-10-18; accepts disclosed unresolved findings and authorizes sync/prune."
+      },
+      "sourceSha256": "5ec9884c53351594d68ced0e8af8ffee71e737c86c6e3daa3c4f6abf3fe0ceeb",
+      "targetSha256": "b9dd45b2725d11e9b707f4cb86ddfeeab9c08adb81ec0660bec1d899d678343a",
+      "preparedAt": "2026-10-18T06:09:34Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:09:34Z",
+          "state": "pending",
+          "summary": "User-authorized Done transition; validated available transition 41."
+        },
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "verified",
+          "summary": "Jira transition returned Done; subsequent issue fetch confirmed Done.",
+          "verifiedKey": "STUDY-52"
+        }
+      ]
+    },
+    {
+      "id": "a366a43c24440d8286d1bd4a34e080959c84554376d1e0b1304402fbab5eb41f",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109I",
+      "action": "transition",
+      "target": "STUDY-53",
+      "intendedFields": {
+        "status": "Done",
+        "transitionId": "41",
+        "authorization": "Explicit user override 2026-10-18; accepts disclosed unresolved findings and authorizes sync/prune."
+      },
+      "sourceSha256": "3bd4e63f4b07f4beaf342d2b0e28728876ea52de80d33d0d1384f33e64c164e2",
+      "targetSha256": "b9dd45b2725d11e9b707f4cb86ddfeeab9c08adb81ec0660bec1d899d678343a",
+      "preparedAt": "2026-10-18T06:09:34Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:09:34Z",
+          "state": "pending",
+          "summary": "User-authorized Done transition; validated available transition 41."
+        },
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "verified",
+          "summary": "Jira transition returned Done; subsequent issue fetch confirmed Done.",
+          "verifiedKey": "STUDY-53"
+        }
+      ]
+    },
+    {
+      "id": "1ea50ad3ffe6ad8e4a2ff03be4a51c8848995b068e2a24a2a99eda1023a533b1",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109",
+      "action": "prune",
+      "target": "docs/stories/SP-109/SP-109.md",
+      "intendedFields": {
+        "path": "docs/stories/SP-109/SP-109.md",
+        "contentSha256": "0bf31bdd2cac0d799c8a9f10644cc5d4d315e5dd4dee15ef3c72fef869f55583",
+        "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf"
+      },
+      "sourceSha256": "0bf31bdd2cac0d799c8a9f10644cc5d4d315e5dd4dee15ef3c72fef869f55583",
+      "targetSha256": "d2308e70caab58b64438e9d7fa33b216fbe14822ea06f6b5b7fa594c91f7dd3c",
+      "preparedAt": "2026-10-18T06:10:33Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "pending",
+          "summary": "Exact committed blob and Done verified; explicit user exception recorded; tombstone persisted before removal."
+        },
+        {
+          "at": "2026-10-18T06:10:47Z",
+          "state": "verified",
+          "summary": "Deleted exact specification after preserving Git blob/tombstone and repairing live links."
+        }
+      ]
+    },
+    {
+      "id": "83d514d738b3eb0299c01ab41fae90f2c6abffb2ba3fcf285ae0a5656121de1a",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109A",
+      "action": "prune",
+      "target": "docs/stories/SP-109/SP-109A-fsd-foundation-config.md",
+      "intendedFields": {
+        "path": "docs/stories/SP-109/SP-109A-fsd-foundation-config.md",
+        "contentSha256": "a43fb1c05641d57e6e4cd982a685a21852166730946c75bdf23c159ffe3767ce",
+        "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf"
+      },
+      "sourceSha256": "a43fb1c05641d57e6e4cd982a685a21852166730946c75bdf23c159ffe3767ce",
+      "targetSha256": "4ab061152d749aa9b9f04b6db22828f00e1308804091f4f162b7880816215878",
+      "preparedAt": "2026-10-18T06:10:33Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "pending",
+          "summary": "Exact committed blob and Done verified; explicit user exception recorded; tombstone persisted before removal."
+        },
+        {
+          "at": "2026-10-18T06:10:47Z",
+          "state": "verified",
+          "summary": "Deleted exact specification after preserving Git blob/tombstone and repairing live links."
+        }
+      ]
+    },
+    {
+      "id": "8b98f31b0aa8ad5eb1c6284732daf50cab5b70091d668bcf9bd172dc85220af9",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109B",
+      "action": "prune",
+      "target": "docs/stories/SP-109/SP-109B-shared-lib-and-types.md",
+      "intendedFields": {
+        "path": "docs/stories/SP-109/SP-109B-shared-lib-and-types.md",
+        "contentSha256": "c6e977bb73edb5b7633d7adcb3a4676ca85f207039daa3a2eb107a3cadd70e79",
+        "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf"
+      },
+      "sourceSha256": "c6e977bb73edb5b7633d7adcb3a4676ca85f207039daa3a2eb107a3cadd70e79",
+      "targetSha256": "13fed4dbbb9f00244a2d18798459048dd64cd8b636466be290dfd582fd5acb01",
+      "preparedAt": "2026-10-18T06:10:33Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "pending",
+          "summary": "Exact committed blob and Done verified; explicit user exception recorded; tombstone persisted before removal."
+        },
+        {
+          "at": "2026-10-18T06:10:47Z",
+          "state": "verified",
+          "summary": "Deleted exact specification after preserving Git blob/tombstone and repairing live links."
+        }
+      ]
+    },
+    {
+      "id": "d411991f551819f31eb7b4e9e7918ec21b76ccb19d5b8c980390fbfcfc372679",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109C",
+      "action": "prune",
+      "target": "docs/stories/SP-109/SP-109C-shared-ui-and-transport.md",
+      "intendedFields": {
+        "path": "docs/stories/SP-109/SP-109C-shared-ui-and-transport.md",
+        "contentSha256": "1260095841e0e19a3151f51d318d24bce1d2e5de540c6e82ce6d9022aad065f7",
+        "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf"
+      },
+      "sourceSha256": "1260095841e0e19a3151f51d318d24bce1d2e5de540c6e82ce6d9022aad065f7",
+      "targetSha256": "4a79912a77464428a6281b3acde423598670ed66153072f16619f3b7f67e535f",
+      "preparedAt": "2026-10-18T06:10:33Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "pending",
+          "summary": "Exact committed blob and Done verified; explicit user exception recorded; tombstone persisted before removal."
+        },
+        {
+          "at": "2026-10-18T06:10:47Z",
+          "state": "verified",
+          "summary": "Deleted exact specification after preserving Git blob/tombstone and repairing live links."
+        }
+      ]
+    },
+    {
+      "id": "0340e648196b62dab1a51536b382b093521d1b382c69bdb9977752125f898ba7",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109D",
+      "action": "prune",
+      "target": "docs/stories/SP-109/SP-109D-entity-user.md",
+      "intendedFields": {
+        "path": "docs/stories/SP-109/SP-109D-entity-user.md",
+        "contentSha256": "6bb519e5bb0b7b713389f70f2e2d2a8b41183cec21869e158de7e0381c26da5f",
+        "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf"
+      },
+      "sourceSha256": "6bb519e5bb0b7b713389f70f2e2d2a8b41183cec21869e158de7e0381c26da5f",
+      "targetSha256": "cbe94adaf16a0110f53f3e9cb161dd79f62c87a32d509823e00e5693f69abc59",
+      "preparedAt": "2026-10-18T06:10:33Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "pending",
+          "summary": "Exact committed blob and Done verified; explicit user exception recorded; tombstone persisted before removal."
+        },
+        {
+          "at": "2026-10-18T06:10:47Z",
+          "state": "verified",
+          "summary": "Deleted exact specification after preserving Git blob/tombstone and repairing live links."
+        }
+      ]
+    },
+    {
+      "id": "95d2e40cbf9d5502c20b8fcc4ab0d87a0f8c1d2cec4f03ddac3ab47711238e9e",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109E",
+      "action": "prune",
+      "target": "docs/stories/SP-109/SP-109E-feature-auth.md",
+      "intendedFields": {
+        "path": "docs/stories/SP-109/SP-109E-feature-auth.md",
+        "contentSha256": "08b87914d504766a12a6053c06964219189a6ad78c554674207c175c336b9ad5",
+        "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf"
+      },
+      "sourceSha256": "08b87914d504766a12a6053c06964219189a6ad78c554674207c175c336b9ad5",
+      "targetSha256": "3b097834a2b9778b80ec294286c0c36e3b1d01164c499e0229a440230cb7af64",
+      "preparedAt": "2026-10-18T06:10:33Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "pending",
+          "summary": "Exact committed blob and Done verified; explicit user exception recorded; tombstone persisted before removal."
+        },
+        {
+          "at": "2026-10-18T06:10:47Z",
+          "state": "verified",
+          "summary": "Deleted exact specification after preserving Git blob/tombstone and repairing live links."
+        }
+      ]
+    },
+    {
+      "id": "46b0b5e7fdd46677c80809285f6ada2a73154e8dfbe25b228cefb21649eaf2c7",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109F",
+      "action": "prune",
+      "target": "docs/stories/SP-109/SP-109F-feature-session-store.md",
+      "intendedFields": {
+        "path": "docs/stories/SP-109/SP-109F-feature-session-store.md",
+        "contentSha256": "8554e83fe9d1317086c55a6935bd395bfdbf7b113307967453806aacb08185d1",
+        "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf"
+      },
+      "sourceSha256": "8554e83fe9d1317086c55a6935bd395bfdbf7b113307967453806aacb08185d1",
+      "targetSha256": "00c096ffe042864b5beb1eca6929b5714f1a112e47ec4cd3ef757c44a25fb8df",
+      "preparedAt": "2026-10-18T06:10:33Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "pending",
+          "summary": "Exact committed blob and Done verified; explicit user exception recorded; tombstone persisted before removal."
+        },
+        {
+          "at": "2026-10-18T06:10:47Z",
+          "state": "verified",
+          "summary": "Deleted exact specification after preserving Git blob/tombstone and repairing live links."
+        }
+      ]
+    },
+    {
+      "id": "eaa87136ddbc0cc6e594d27a7071df04fe0adf19768905ba4ad987ec142cdd7a",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109G",
+      "action": "prune",
+      "target": "docs/stories/SP-109/SP-109G-widgets.md",
+      "intendedFields": {
+        "path": "docs/stories/SP-109/SP-109G-widgets.md",
+        "contentSha256": "c1d1957ac55b54855ccfe0028329279fac11ccfd4b10157c37696981197b688b",
+        "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf"
+      },
+      "sourceSha256": "c1d1957ac55b54855ccfe0028329279fac11ccfd4b10157c37696981197b688b",
+      "targetSha256": "ddea8153dab6772f8dcff4b7151cda4682f704e62c8d0e537c008c4cf8525c0a",
+      "preparedAt": "2026-10-18T06:10:33Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "pending",
+          "summary": "Exact committed blob and Done verified; explicit user exception recorded; tombstone persisted before removal."
+        },
+        {
+          "at": "2026-10-18T06:10:47Z",
+          "state": "verified",
+          "summary": "Deleted exact specification after preserving Git blob/tombstone and repairing live links."
+        }
+      ]
+    },
+    {
+      "id": "5a6b5055c523f40d84dd2524f15787819f7b2c272f36a152b68bbea9c4f7a8aa",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109H",
+      "action": "prune",
+      "target": "docs/stories/SP-109/SP-109H-pages-and-app-shell.md",
+      "intendedFields": {
+        "path": "docs/stories/SP-109/SP-109H-pages-and-app-shell.md",
+        "contentSha256": "5ec9884c53351594d68ced0e8af8ffee71e737c86c6e3daa3c4f6abf3fe0ceeb",
+        "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf"
+      },
+      "sourceSha256": "5ec9884c53351594d68ced0e8af8ffee71e737c86c6e3daa3c4f6abf3fe0ceeb",
+      "targetSha256": "0c5e2ff0b230583229c01958f802d1449eb585f617876a92e2a01ade04de54f9",
+      "preparedAt": "2026-10-18T06:10:33Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "pending",
+          "summary": "Exact committed blob and Done verified; explicit user exception recorded; tombstone persisted before removal."
+        },
+        {
+          "at": "2026-10-18T06:10:47Z",
+          "state": "verified",
+          "summary": "Deleted exact specification after preserving Git blob/tombstone and repairing live links."
+        }
+      ]
+    },
+    {
+      "id": "5ec84dd887541f5f00510b942c855c114c033201720c2059621318058c78c293",
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "storyId": "SP-109I",
+      "action": "prune",
+      "target": "docs/stories/SP-109/SP-109I-boundaries-docs-verification.md",
+      "intendedFields": {
+        "path": "docs/stories/SP-109/SP-109I-boundaries-docs-verification.md",
+        "contentSha256": "3bd4e63f4b07f4beaf342d2b0e28728876ea52de80d33d0d1384f33e64c164e2",
+        "contentCommit": "62fee18195252af90a44dae78acf868dd49ba9bf"
+      },
+      "sourceSha256": "3bd4e63f4b07f4beaf342d2b0e28728876ea52de80d33d0d1384f33e64c164e2",
+      "targetSha256": "1a919a1013a88181dd510d9d46a49ddac4a8440da087f5738af5adbf2ead6118",
+      "preparedAt": "2026-10-18T06:10:33Z",
+      "attempts": [
+        {
+          "at": "2026-10-18T06:10:33Z",
+          "state": "pending",
+          "summary": "Exact committed blob and Done verified; explicit user exception recorded; tombstone persisted before removal."
+        },
+        {
+          "at": "2026-10-18T06:10:47Z",
+          "state": "verified",
+          "summary": "Deleted exact specification after preserving Git blob/tombstone and repairing live links."
+        }
+      ]
     }
   ],
   "runs": [
@@ -6530,6 +7618,42 @@
       "navigationFiles": [
         "docs/stories/EP01/README.md"
       ]
+    },
+    {
+      "runId": "sp109-sync-prune-2026-10-18T06:08:15Z",
+      "mode": "sync+prune",
+      "authorization": "User: sync jira, and remove SP109 locally. Scope SP-109 and A-I only; no status transitions inferred from prune request.",
+      "startedAt": "2026-10-18T06:08:15Z",
+      "completedAt": "2026-10-18T06:08:15Z",
+      "counts": {
+        "unchanged": 10,
+        "conflicted": 0,
+        "blocked": 10,
+        "pruned": 0,
+        "updated": 0
+      },
+      "scope": "STUDY-44 through STUDY-53; bounded full inventory verified (10 issues).",
+      "note": "Verified all summaries unchanged against local titles and common baselines; preserved Jira-curated descriptions and remote-owned statuses. No external writes required or made. No pruning: nonterminal issues, unresolved required review findings, dirty parent specification. Existing report/docs edits preserved. Global discovery cursor not advanced by scoped run."
+    },
+    {
+      "runId": "sp109-override-2026-10-18T06:09:34Z",
+      "mode": "sync+prune",
+      "authorization": "Explicit user override; SP-109 and A-I only",
+      "startedAt": "2026-10-18T06:09:34Z",
+      "state": "complete",
+      "counts": {
+        "updated": 10,
+        "pruned": 10,
+        "conflicted": 0,
+        "blocked": 0
+      },
+      "completedAt": "2026-10-18T06:10:47Z",
+      "navigationFiles": [
+        "docs/stories/SP-109/README.md",
+        "docs/epics/EP05-student-dashboard.md",
+        "docs/epics/README.md"
+      ],
+      "note": "Explicit user override accepted outstanding findings for this scope. Current exact specs preserved in Git; report and all existing artifacts retained unchanged. No Git push or Jira deletion."
     }
   ],
   "fingerprintAlgorithms": {

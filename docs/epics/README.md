@@ -54,7 +54,7 @@ Cross-cutting technical tasks, such as initial NestJS setup, Prisma migrations, 
 ### Frontend architecture
 
 `apps/web` uses **Feature-Sliced Design** layers, decided 2026-10-17
-([SP-109](../stories/SP-109/SP-109.md), user decision; breakdown and per-story
+([SP-109](../jira-sync/tombstones.md#story-sp-109), user decision; breakdown and per-story
 sizing in [docs/stories/SP-109](../stories/SP-109/README.md)):
 
 ```text
