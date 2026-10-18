@@ -28,6 +28,11 @@ model User {
   // backfill to "UTC" / NULL.
   timeZone                    String    @default("UTC")
   preferences                 Json?
+  // SP-107A: onboarding wizard state (D107-1) — three additive columns.
+  // Existing users are backfilled to completed (D107-2).
+  onboardingStep              Int       @default(1)
+  onboardingCompletedAt       DateTime?
+  onboardingSemesterId        String?
   createdAt                   DateTime  @default(now())
   updatedAt                   DateTime  @updatedAt
 

@@ -14,6 +14,7 @@ import cookieParser = require('cookie-parser');
 import { AuthModule } from '../modules/auth/auth.module';
 import { UsersModule } from '../modules/users/users.module';
 import { PrismaModule } from '../modules/prisma/prisma.module';
+import { OnboardingModule } from '../modules/onboarding/onboarding.module';
 import { PrismaService } from '../modules/prisma/prisma.service';
 import { EMAIL_PROVIDER } from '../modules/email/email-provider';
 import { AllExceptionsFilter } from '../common/filters/all-exceptions.filter';
@@ -71,6 +72,7 @@ export async function createIntegrationApp(): Promise<IntegrationApp> {
       AuthModule,
       UsersModule,
       PrismaModule,
+      OnboardingModule,
     ],
   })
     .overrideProvider(EMAIL_PROVIDER)
