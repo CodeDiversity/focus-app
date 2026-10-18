@@ -2,7 +2,7 @@
 
 **Epic:** [EP01: Authentication & Onboarding](../../epics/EP01-authentication-and-onboarding.md) (cross-cutting technical task)
 **Milestone:** M1
-**Status:** In progress — STUDY-21A implemented + reviewed (pass, qualified, 2026-10-18); STUDY-21B/21C queued
+**Status:** In progress — STUDY-21A implemented + reviewed (pass, qualified, 2026-10-18); STUDY-21B implemented (2026-10-18); STUDY-21C implemented (2026-10-18); awaiting STUDY-21 final parent review
 **Jira:** [STUDY-21](https://adhdstudy.atlassian.net/browse/STUDY-21)
 **Dependencies:** STUDY-20 (TECH-01 — scaffold with baseline scripts and package deps)
 
@@ -91,7 +91,7 @@ Verdict record: **PASS (qualified)** — 2026-10-18, reviewer. Qualifications: (
 |---|---|---|
 | STUDY-21A | Reviewed — **pass (qualified)** (2026-10-18, reviewer) | All 8 ACs + DoD 1/8/9/10 met; F-21A-7 accepted deviation (adjudicated, closed); execution gates CANNOT VERIFY by reviewer (implementer-recorded evidence + static verification). Report: `artifacts/STUDY-21/review.md` |
 | STUDY-21B | Plan Ready (unblocked) | STUDY-21A configs in place and reviewed (pass) |
-| STUDY-21C | Plan Ready (unblocked) | STUDY-21A configs in place and reviewed (pass) |
+| STUDY-21C | Implemented (all ACs met) | CI workflow from STUDY-20 satisfies AC-21C-1 through AC-21C-5; README CI section added (AC-21C-6). No new workflow file needed. |
 
 ## Execution Queue
 
@@ -99,10 +99,10 @@ Verdict record: **PASS (qualified)** — 2026-10-18, reviewer. Qualifications: (
 |---|---|---|---|---|
 | STUDY-21A | Done — awaiting parent review | — | Parent review (reviewer role, unit STUDY-21) | `artifacts/STUDY-21A/implementation.md` |
 | STUDY-21B | Implemented — awaiting parent review | STUDY-21A configs in place (`f6ed6ee`); implemented 2026-10-18 on user direction ahead of the pending parent review | Parent review (reviewer role, unit STUDY-21 — needs all children, so after STUDY-21C) | `artifacts/STUDY-21B/implementation.md`, `artifacts/STUDY-21B/checkpoint.md` |
-| STUDY-21C | Queued | STUDY-21A review outcome | — | `docs/stories/STUDY-21/STUDY-21C.md` |
+| STUDY-21C | Implemented — awaiting parent review | STUDY-21A configs in place (`f6ed6ee`); CI workflow already exists from STUDY-20 (verified all ACs); README CI section added 2026-10-18 | Parent review (reviewer role, unit STUDY-21 — needs all children) | `docs/stories/STUDY-21/STUDY-21C.md`, `artifacts/STUDY-21C/checkpoint.md`, `artifacts/STUDY-21C/implementation.md` |
 
-**Active substory:** none — STUDY-21B implemented 2026-10-18, awaiting the STUDY-21 parent review
-**Next substory:** resume the interrupted STUDY-21A parent review (coordinator/reviewer; partial report at `artifacts/STUDY-21/review.md` ends at `<!--APPEND-2b-->`, no verdict — F-21B-7); then STUDY-21C
+**Active substory:** none — all three children (STUDY-21A, STUDY-21B, STUDY-21C) implemented
+**Next substory:** STUDY-21 final parent review (reviewer role) — all children implemented; resume the interrupted STUDY-21A parent review (coordinator/reviewer; partial report at `artifacts/STUDY-21/review.md` ends at `<!--APPEND-2b-->`, no verdict — F-21B-7), then complete the STUDY-21 final gate
 
 ## Final Implementation Review
 

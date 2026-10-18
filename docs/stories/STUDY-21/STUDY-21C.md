@@ -6,7 +6,7 @@
 **Parent Story:** [STUDY-21](./README.md)
 **Milestone:** M1
 **Layer:** Infrastructure
-**Status:** Queued (blocked for implementation)
+**Status:** Implemented — awaiting the STUDY-21 parent review (2026-10-18; record at `artifacts/STUDY-21C/implementation.md`)
 **Dependencies:** STUDY-21A (configs must exist before CI references them)
 **Jira:** STUDY-24
 
@@ -30,12 +30,12 @@ Create a GitHub Actions CI workflow that runs `npm run lint` (via `turbo run lin
 
 ## Acceptance Criteria
 
-- [ ] **AC-21C-1:** A GitHub Actions workflow file exists at `.github/workflows/ci.yml` (or equivalent path).
-- [ ] **AC-21C-2:** The workflow runs on `push` and `pull_request` events targeting the default branch (and all branches for PRs).
-- [ ] **AC-21C-3:** The workflow installs dependencies (`pnpm install` or equivalent) and runs `turbo run lint` (which delegates to each app via `turbo.json`).
-- [ ] **AC-21C-4:** The lint step **fails the build** (non-zero exit code) when lint errors are present in either app.
-- [ ] **AC-21C-5:** The workflow uses the same Node.js version specified in `package.json` `engines.node` (`>=18.0.0`).
-- [ ] **AC-21C-6:** README documents the CI lint step and how to run it locally as a proxy for CI.
+- [x] **AC-21C-1:** A GitHub Actions workflow file exists at `.github/workflows/ci.yml`.
+- [x] **AC-21C-2:** The workflow runs on `push` and `pull_request` events targeting the default branch (and all branches for PRs).
+- [x] **AC-21C-3:** The workflow installs dependencies (`pnpm install` or equivalent) and runs `turbo run lint` (which delegates to each app via `turbo.json`).
+- [x] **AC-21C-4:** The lint step **fails the build** (non-zero exit code) when lint errors are present in either app.
+- [x] **AC-21C-5:** The workflow uses the same Node.js version specified in `package.json` `engines.node` (`>=18.0.0`).
+- [x] **AC-21C-6:** README documents the CI lint step and how to run it locally as a proxy for CI.
 
 ## Tests
 
@@ -82,11 +82,11 @@ Create a GitHub Actions CI workflow that runs `npm run lint` (via `turbo run lin
 
 ## Definition of Done
 
-- [ ] AC-21C-1 through AC-21C-6 all pass.
-- [ ] TR-03 obligation met.
-- [ ] DoD items 1 (functional), 8 (tests), 9 (documentation), 10 (review) satisfied.
-- [ ] No ESLint/Prettier configs — those are STUDY-21A.
-- [ ] No pre-commit hooks — those are STUDY-21B.
+- [x] AC-21C-1 through AC-21C-6 all pass.
+- [x] TR-03 obligation met.
+- [x] DoD items 1 (functional), 8 (tests), 9 (documentation), 10 (review) satisfied.
+- [x] No ESLint/Prettier configs — those are STUDY-21A.
+- [x] No pre-commit hooks — those are STUDY-21B.
 
 ## Sizing Block
 

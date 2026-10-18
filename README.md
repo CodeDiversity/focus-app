@@ -248,6 +248,29 @@ To bypass the hook for a deliberate exception (for example a work-in-progress
 file), use `git commit --no-verify`. The same lint rules run in CI, so a
 bypassed file will still fail the pipeline.
 
+## Continuous Integration
+
+A GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every push and
+pull request targeting `main` or `develop`. The single `build-and-test` job:
+
+1. Checks out the repository.
+2. Sets up Node.js 20 and pnpm.
+3. Installs dependencies (`pnpm install --frozen-lockfile`).
+4. Generates the Prisma client.
+5. **Runs the linter** (`pnpm lint` — which delegates to each app via Turbo).
+6. Typechecks, builds, and runs tests (both apps) against a PostgreSQL service.
+7. Runs a secret scan (gitleaks).
+
+The **lint step fails the build** when lint errors are present, so fixing lint
+errors locally before pushing is required. To run the same check locally:
+
+```bash
+pnpm lint
+```
+
+This is `turbo run lint` which runs each app's ESLint. A local exit code of 0
+means the CI lint step would also pass.
+
 ## Project Organization
 
 ### Backend (apps/api)

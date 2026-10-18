@@ -5,6 +5,15 @@ provides the same roles for Vibe, and `.opencode/agents/` for OpenCode.
 Otherwise read its definition and shared skill.
 Role availability does not require delegation.
 
+Resolve ownership once, then act. A role identifies the permitted writes; it
+does not require asking another agent to perform work already within that scope.
+Routine status/evidence updates and scoped commits are part of finishing the
+task. Use the [responsibility routing rule](.agents/context-efficiency.md#resolve-responsibility-once)
+for a genuine boundary: perform permitted work, route one concrete outstanding
+action when delegation is authorized, and continue independent work. Do not
+repeatedly debate ownership, bounce the same action between roles, or ask the
+user to arbitrate routine bookkeeping.
+
 | Role | Shared skill | Write boundary |
 | --- | --- | --- |
 | implementer | `.agents/skills/studypilot-implementer/SKILL.md` | Code, tests, implementation/checkpoint artifacts; scoped execution-status updates |

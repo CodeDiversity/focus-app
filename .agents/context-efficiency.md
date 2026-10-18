@@ -42,6 +42,38 @@ Explicit Jira-sync pruning may remove a completed specification under its skill
 gates; preserve historical evidence and repair live navigation to its tombstone.
 Required child status pointers and final review status sync remain scoped updates.
 
+## Resolve responsibility once
+
+Use the requested outcome, explicit session authorization and the role's actual
+write boundary to choose the next action. A file described as planner-owned may
+still have execution fields explicitly writable by the implementer or reviewer.
+Apply that existing exception directly; do not invent another approval gate.
+
+| Needed action | Act without an ownership debate |
+| --- | --- |
+| Implementation findings, tests, checkpoints, implementation records, active child's status/artifact pointers, queue execution fields, and scoped commits | The current implementer completes them as part of the assigned implementation. |
+| Review report and permitted verdict-dependent sync | The reviewer completes these within runtime permissions; a completed non-passing review returns concrete findings. |
+| Reviewer Git commit or restricted-runtime persistence fallback | The coordinating parent performs the specified writes/commit within its authority, preserving the report verbatim. Do not send it back to the reviewer to commit. |
+| Required scope, AC, dependency or readiness change | Use the planner/refiner boundary; preserve implementation progress and identify the precise unresolved decision. |
+| Authorized Jira reconciliation/prune | Follow jira-sync and existing authorization; role naming alone never grants tracker permission. |
+
+For a genuine out-of-scope action, specify the exact path/field, requested change,
+evidence and permitted recipient once. When delegation is authorized and useful,
+send that bounded action to the permitted role and consume its result. Do not
+delegate an action you can already complete solely because another role also
+mentions it. With no delegation authority/tool, finish all independent work and
+return one concrete handoff, rather than repeated ownership questions. Do not
+silently switch restricted roles to bypass write limits or concurrent-writer
+rules. The unrestricted coordinating parent can execute already-authorized
+routine work directly; creating another agent is not a prerequisite.
+
+A returned handoff includes the next concrete action, not merely "someone else
+owns this." The recipient acts or identifies one specific authorization/runtime
+blocker; it does not bounce the same unchanged action back. Reconsider ownership
+only when scope, authorization or the active writer changes. User clarification
+is for an unresolved consequential decision or actual permission gap, not for
+choosing who updates an already-authorized status field.
+
 ## Bounded handoff
 
 At a deliberate handoff or fresh-context start, pass the following compact facts
@@ -100,8 +132,9 @@ Remaining: <open work/blockers + next action and owner, or none in assigned scop
 ```
 
 The coordinator checks this closeout against the linked records and Git before
-dispatching final review. Return missing status/evidence/commit closeout to its
-owner as one bounded correction; do not launch a reviewer to reconstruct it.
+dispatching final review. Complete missing closeout directly when within the
+current role's authority; otherwise route one bounded correction using the
+responsibility rule above. Do not launch a reviewer to reconstruct it.
 Do not poll an already finished agent for repeated completion acknowledgements.
 Once a review report is returned, the coordinator persists any permitted fallback
 writes, reconciles deferred non-passing status updates, and commits the report
