@@ -1,7 +1,7 @@
 # StudyPilot story sizing
 
 Use this policy when planning, refining, reviewing, or implementing a story.
-Optimize for a small local coding session with a narrow context footprint.
+Optimize for a cohesive, useful implementation outcome with a bounded context footprint.
 Story length alone is not a size measure: a short ticket can hide several jobs.
 Small slices do not create separate formal review gates: follow
 [review cadence](review-cadence.md) for one final review of the completed parent.
@@ -12,19 +12,21 @@ artifact paths. A sizing/refinement gap is `Needs refinement`, not `Ready` to co
 
 ## Default implementation slice
 
-- Target **30–90 minutes** for code, focused tests, required checks, and the
-  implementation handoff for a small slice. A cohesive task may span fresh
+- Target **1–3 hours** for a substantive outcome including code, focused tests,
+  required checks, documentation and handoff. This is a guide, not a split trigger.
+  A cohesive task may span fresh
   windows using [checkpoint-based execution](checkpoint-execution.md); plan
   bounded code/test milestones rather than forcing it into one context.
   This is a planning estimate, not a runtime or token
-  guarantee. A nominal 1–4-hour estimate is no longer enough to pass sizing.
+  guarantee. Ground estimates in actual implementation work; do not inflate
+  them with repeated reads, agent handoffs or bookkeeping to justify a story.
 - Deliver **one observable outcome**, normally with **2–4 acceptance criteria**.
   Negative cases for that outcome belong in its test matrix. More than five
   criteria is a signal to inspect for separate outcomes, not to hide requirements
   in prose or merge unrelated criteria.
-- Expect roughly **1–3 production files and 1–2 focused test files**. Include
-  required wiring, migrations and documentation in the estimate. Larger footprints
-  trigger a split assessment; these numbers are not a quota or permission to
+- Record the actual production/test footprint. Include required wiring,
+  migrations and documentation in the estimate. File counts alone never require
+  a split; they are not a quota or permission to
   omit necessary tests, security checks, accessibility, or documentation.
 - State how the result can be tested and inspected before dependent stories land.
   An internal service or component can unblock later implementation while formal
@@ -35,7 +37,7 @@ artifact paths. A sizing/refinement gap is `Needs refinement`, not `Ready` to co
 Write this compact block, grounded in inspected code:
 
 - **Outcome:** one sentence describing the behavior this slice delivers.
-- **Time estimate:** 30–90 minutes by default, including verification; explain
+- **Time estimate:** 1–3 hours by default, including verification; explain
   uncertainty. For a justified cohesive multi-window task, give the total estimate
   and bounded milestones rather than claiming the whole task fits one window.
 - **Files:** expected production and focused test paths, with new paths marked.
@@ -51,12 +53,33 @@ Write this compact block, grounded in inspected code:
 Expand code inspection when a discovered dependency or security invariant requires
 it. A start-context list is a useful entry point, not a read-access restriction.
 
-## Split before declaring ready
+## Require meaningful work before splitting
+
+Split only when inspected scope is too large or contains substantial independent
+outcomes, and each proposed child has a useful independently verifiable result.
+For every proposed split, record the concrete complexity/risk/context problem it
+solves and the substantive work in each child. Separate verification or a layer
+label alone does not justify another story.
+
+A proposed child with less than roughly 30 minutes of substantive work normally
+belongs as a checklist item in the related story. Reading instructions, writing
+its checkpoint/implementation record, committing and waiting for agents do not
+count toward that minimum. Do not pad estimates to pass it. Small standalone
+user-requested fixes remain valid; this is a rule against manufacturing children.
+
+README updates, status/queue reconciliation, evidence/index records, routine
+wiring and normal tests belong to the implementation they support. Do not create
+a child solely to write a README, record completion, rerun existing gates or
+request review. Assign integration/index ownership to an existing substantial
+child. A separate integration story requires real integration implementation or
+a substantial new test harness. Documentation-only stories require an independent
+substantive deliverable, such as a researched architecture contract or migration
+runbook, rather than routine documentation of the sibling implementation.
 
 Assess service/domain logic separately from HTTP/DTO/controller behavior, shared
 frontend state separately from screens, infrastructure setup separately from
 test-suite construction, and test-suite construction separately from integration
-sign-off. Split those outcomes when they can be verified independently. A backend
+sign-off. Split those outcomes only when they meet the meaningful-work gate above. A backend
 or frontend label, subtask checklist, or "one endpoint" label does not establish
 small scope. Each implementation slice gets its own story file and stable ID.
 
@@ -74,7 +97,8 @@ cost or weaken an invariant to meet an estimate.
 A cohesive multi-window task includes a checkpoint sequence: each step names a
 code/test outcome, its verification, and its resume inputs. It remains one story
 and one implementation task; needing another context window alone is not a reason
-to split or reject it. Independent outcomes still belong in separate stories.
+to split or reject it. Substantial independent outcomes may belong in separate stories;
+small supporting steps remain with their cohesive outcome.
 
 ## Existing stories and execution feedback
 

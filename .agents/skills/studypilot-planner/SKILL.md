@@ -62,16 +62,16 @@ If an expected file or code path is missing, state that it is missing or unverif
 
 Classify proposed changes into **Backend**, **Frontend**, **Integration**, and, when needed, **Documentation / Infrastructure**. Use only applicable categories. This classification is about delivery ownership, not a mandate to invent work in every layer.
 
-- When a capability requires backend and frontend work, create separate, independently testable child stories for each. Write one shared API contract in the breakdown README and reference it from each child.
+- When backend and frontend each require substantial independently testable work, create separate child stories. Small supporting edits stay with their cohesive outcome; layer labels alone do not require a split. Write one shared API contract in the breakdown README and reference it from affected children.
 - Create a **parent coordination summary** that links the backend and frontend children. The parent is **not** a combined implementation story or a second Jira implementation ticket.
-- Assign cross-layer integration verification to a **named integration story** with explicit dependencies, rather than leaving it between tickets.
-- Split further within a layer when one child contains multiple independently testable outcomes. A frontend/backend split alone is not evidence of proper sizing.
+- Assign cross-layer integration verification to a named child with explicit dependencies. Create a separate integration story only for substantial integration implementation or a new test harness, not ordinary verification/index writing.
+- Split further only for substantial independently testable outcomes that meet the shared sizing policy's meaningful-work gate. Routine README updates, tests, status updates and evidence records stay with the implementation they support.
 - Preserve existing story IDs and child separation on regeneration. Do not recreate a combined ticket after it has been split.
 
 ### 4. Size and sequence stories
 
-- Target **30–90 minutes** per implementation slice, including tests, required checks and handoff, using the shared sizing policy. Record inspected files, start context and verification in each child's sizing block; an estimate alone does not pass the gate.
-- Split independently verifiable outcomes within a layer before finalizing. Keep atomic security operations together and document any indivisible-core sizing rationale. Preserve existing IDs/history when splitting; do not turn in-progress or completed work back into unimplemented children.
+- Target **1–3 hours** per substantive implementation outcome, including tests, docs, required checks and handoff, using the shared sizing policy. Record inspected files, start context and verification; an estimate alone does not pass the gate.
+- Before splitting, identify the concrete complexity/risk/context problem and each child's substantial independent work. Children below roughly 30 minutes of substantive work normally become checklist items, not stories; never pad estimates with agent overhead. Keep atomic security operations together. Preserve existing IDs/history; do not turn in-progress or completed work back into unimplemented children.
 - Each story should deliver one coherent, independently verifiable outcome and name the behavior it changes.
 - Prefer a vertical sequence that supports incremental integration: agree the contract, create required persistence/backend behavior, build frontend behavior, verify integration. Execute ready children sequentially through the single implementer; independent dependencies do not authorize parallel implementation writers.
 - A story should not claim to be independently shippable if a required counterpart is absent. Distinguish **can start**, **can be reviewed**, and **can be released**.
