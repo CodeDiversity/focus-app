@@ -33,8 +33,17 @@ ride-along polish IR-106-02/03/06/15(a–c) the same day (web 201/201, API
 confirmed the select-based `/profile` page tested and passing, extending the
 2026-10-17 integrated sign-off to the select UI (the review's user-ratification
 closure path; DoD 10 satisfied). All five children with all pass-2 findings
-closed are handed to the combined parent re-review (next finding IDs continue
-at IR-106-16); only planner-owned polish IR-106-08/15(d) remains open.
+closed were handed back for the combined parent re-review, their finding IDs
+intact from IR-106-16 onward. 2026-10-18: **combined parent
+re-review pass 3 returned `Pass`** — all pass-2 should-fix findings
+(IR-106-09/10/11/13/14) closed and independently verified at `390a510`; IR-106-14
+via the review's user-ratification closure path (coordinator, 2026-10-18);
+gates recorded in `./artifacts/SP-106/review.md` (web 201/201, API 26 suites /
+292/292 zero skips, typechecks/lints clean; implementer-executed fix-pass gates
+reused after reviewer Git reconciliation); the only new finding is polish
+IR-106-16 (optional fix-pass commit-hash records cleanup). Report saved at
+`./artifacts/SP-106/review.md`, children A–E marked `Reviewed`, SP-106
+sign-off established.
 
 ## Execution queue
 
@@ -45,20 +54,25 @@ at IR-106-16); only planner-owned polish IR-106-08/15(d) remains open.
 **Parent artifacts:** `./artifacts/SP-106/` (created when the parent
 checkpoint/index is written)
 
-**Active substory:** None — all five children (A–E) implemented; pass-2 review
-findings fixed 2026-10-18 and IR-106-14 closed by coordinator ratification
-the same day; awaiting the combined SP-106 parent re-review. Checkpoints
+**Active substory:** None — the combined SP-106 parent re-review returned **Pass**
+2026-10-18 (pass 3, report at
+[./artifacts/SP-106/review.md](./artifacts/SP-106/review.md)): all pass-2
+should-fix findings (IR-106-09/10/11/13/14) closed and independently verified;
+IR-106-14 closed by coordinator ratification 2026-10-18; children A–E marked
+`Reviewed`. Checkpoints
 [./artifacts/SP-106A/checkpoint.md](./artifacts/SP-106A/checkpoint.md) ·
 [./artifacts/SP-106B/checkpoint.md](./artifacts/SP-106B/checkpoint.md) ·
 [./artifacts/SP-106C/checkpoint.md](./artifacts/SP-106C/checkpoint.md) ·
 [./artifacts/SP-106D/checkpoint.md](./artifacts/SP-106D/checkpoint.md) ·
 [./artifacts/SP-106E/checkpoint.md](./artifacts/SP-106E/checkpoint.md).
 
-**Next substory:** None — all five children implemented and all pass-2 findings
-closed (IR-106-14 via coordinator ratification 2026-10-18); the combined
-SP-106 parent re-review is next (report at `./artifacts/SP-106/review.md`, new
-finding IDs from IR-106-16). Only planner-owned polish IR-106-08/15(d) remains
-open; neither conditions sign-off.
+**Next substory:** None with a reason — SP-106 is complete and signed off
+(only the passing combined parent review establishes sign-off; report at
+`./artifacts/SP-106/review.md`). Remaining open items are planner-owned polish
+that do not condition sign-off: IR-106-08 (SP-107 capture point), IR-106-15(d)
+(E tracker key on an authorized push), IR-106-16 (optional records polish:
+name the fix-pass commit hashes). The next actionable epic work is SP-107
+(planned, planner-owned).
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C → D;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -66,22 +80,24 @@ backend/frontend/integration are scope labels, not concurrent writers).
 **Final review:** One combined SP-106 review after every child and the integration
 obligation are implemented; no automatic child reviews. Final artifact path:
 `./artifacts/SP-106/review.md`; integration/index owner: SP-106D (parent index
-written at `./artifacts/SP-106/implementation.md`).
+written at `./artifacts/SP-106/implementation.md`) — **executed 2026-10-18:
+pass 3 returned `Pass`; SP-106 signed off** (report at `./artifacts/SP-106/review.md`).
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-106A-profile-schema-and-get.md) | Implemented — awaiting parent review | SP-104 implemented and reviewed (STUDY-10 review PASS) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106A/checkpoint.md) · [implementation](./artifacts/SP-106A/implementation.md) · commits `fbd0ab7`, `71aff0d`, `775d4eb` (2026-10-17: 260/260 tests, typecheck, lint clean) |
-| [B](./SP-106B-patch-profile-validation.md) | Implemented — awaiting parent review | A implemented (fields exist on the model and GET response — `fbd0ab7`/`71aff0d`) | — (combined parent re-review; pass-2 polish IR-106-02/03/06 fixed 2026-10-18) | [checkpoint](./artifacts/SP-106B/checkpoint.md) · 292/292 tests on disposable Postgres (fix pass; was 288), typecheck, lint clean · fix-pass section in checkpoint |
-| [C](./SP-106C-profile-preferences-form.md) | Implemented — awaiting parent review | B implemented (PATCH + 400 `errors` contract; GET fields) | — (combined parent re-review; IR-106-01 fixed in `5050b82`) | [checkpoint](./artifacts/SP-106C/checkpoint.md) · [implementation](./artifacts/SP-106C/implementation.md) · commits `6ece311`, `5050b82` (2026-10-17: 193/193 web tests, typecheck, lint clean; error-plumb deviation recorded for the parent review; stored-zone hydration fix after review pass 1) |
-| [D](./SP-106D-profile-integration.md) | Implemented — awaiting parent review | A, B, C implemented | — (combined parent review after all children; report at `./artifacts/SP-106/review.md`) | [checkpoint](./artifacts/SP-106D/checkpoint.md) · [implementation](./artifacts/SP-106D/implementation.md) · commits `426459e` (2026-10-17: integration suite 7/7 on disposable Postgres, API 288/288 zero skips, web 188/188, typecheck+lint clean; manual browser sign-off approved with recorded limitations) · [parent index](./artifacts/SP-106/implementation.md) |
-| [E](./SP-106E-profile-timezone-select.md) | Implemented — awaiting parent review | C implemented (form wiring, `updateProfile` thunk, error contract) | — (combined parent re-review; IR-106-09/10/11/15a-c fixed 2026-10-18) | [checkpoint](./artifacts/SP-106E/checkpoint.md) · [implementation](./artifacts/SP-106E/implementation.md) · commits `4def5c2` + 2026-10-18 fix pass (2026-10-18: 201/201 web tests, typecheck, lint clean; review pass-2 findings recorded in checkpoint) |
+| [A](./SP-106A-profile-schema-and-get.md) | Reviewed | SP-104 implemented and reviewed (STUDY-10 review PASS) | — (Reviewed in the combined parent review pass 3, 2026-10-18) | [checkpoint](./artifacts/SP-106A/checkpoint.md) · [implementation](./artifacts/SP-106A/implementation.md) · commits `fbd0ab7`, `71aff0d`, `775d4eb` (2026-10-17: 260/260 tests, typecheck, lint clean) |
+| [B](./SP-106B-patch-profile-validation.md) | Reviewed | A implemented (fields exist on the model and GET response — `fbd0ab7`/`71aff0d`) | — (Reviewed in the combined parent review pass 3, 2026-10-18; IR-106-02/03/06 verified closed) | [checkpoint](./artifacts/SP-106B/checkpoint.md) · 292/292 tests on disposable Postgres (fix pass; was 288), typecheck, lint clean · fix-pass section in checkpoint |
+| [C](./SP-106C-profile-preferences-form.md) | Reviewed | B implemented (PATCH + 400 `errors` contract; GET fields) | — (Reviewed in the combined parent review pass 3, 2026-10-18; IR-106-01 fixed in `5050b82`) | [checkpoint](./artifacts/SP-106C/checkpoint.md) · [implementation](./artifacts/SP-106C/implementation.md) · commits `6ece311`, `5050b82` (2026-10-17: 193/193 web tests, typecheck, lint clean; error-plumb deviation recorded for the parent review; stored-zone hydration fix after review pass 1) |
+| [D](./SP-106D-profile-integration.md) | Reviewed | A, B, C implemented | — (Reviewed in the combined parent review pass 3, 2026-10-18; DoD 10 sign-off extended to the select UI by ratification) | [checkpoint](./artifacts/SP-106D/checkpoint.md) · [implementation](./artifacts/SP-106D/implementation.md) · commits `426459e` (2026-10-17: integration suite 7/7 on disposable Postgres, API 288/288 zero skips, web 188/188, typecheck+lint clean; manual browser sign-off approved with recorded limitations) · [parent index](./artifacts/SP-106/implementation.md) |
+| [E](./SP-106E-profile-timezone-select.md) | Reviewed | C implemented (form wiring, `updateProfile` thunk, error contract) | — (Reviewed in the combined parent review pass 3, 2026-10-18; IR-106-09/10/11/13/14 verified closed) | [checkpoint](./artifacts/SP-106E/checkpoint.md) · [implementation](./artifacts/SP-106E/implementation.md) · commits `4def5c2` + `8ecedbc` (code+tests fix pass), `759eec8`, `390a510` (records) (2026-10-18: 201/201 web tests, typecheck, lint clean; review pass-2 findings recorded in checkpoint) |
 
 The queue is the current execution record. All five children (A–E) are
-implemented — A–D on 2026-10-17, E on 2026-10-18 — and awaiting the single
-combined SP-106 parent re-review; pass-2 findings IR-106-09/10/11/13 plus
-polish ride-alongs were fixed 2026-10-18, and IR-106-14 (DoD-10 coverage of
-the select UI) was closed the same day by coordinator ratification. No child
-review is performed and none replaces that sign-off.
+implemented — A–D on 2026-10-17, E on 2026-10-18 — and were **Reviewed** by the
+combined SP-106 parent re-review (pass 3, 2026-10-18: **Pass**; report at
+`./artifacts/SP-106/review.md`). Pass-2 findings IR-106-09/10/11/13/14 are
+closed and verified; IR-106-14 (DoD-10 coverage of the select UI) was closed by
+coordinator ratification. No child review is performed and none replaces that
+sign-off.
 
 ## Child inventory
 
@@ -256,6 +272,32 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
   `ProfilePage.test.tsx` (355 lines of free-text tests — need rewriting).
   All evidence confirmed in the SP-106E story file.
 - **Status:** `Fixed in plan` (SP-106E created; D106-8 overridden by D106-10).
+
+## Implementation review correction log (pass 3, 2026-10-18)
+
+Recorded by the reviewer on the passing parent re-review (report at
+[`./artifacts/SP-106/review.md`](./artifacts/SP-106/review.md)). Passes 1–2
+entries are back-filled dispositions (marked); pass-3 entries record this pass's
+verification. User-decision provenance is recorded inline (IR-106-14).
+
+| ID | Discovered | Original claim / consequence | Disposition and closure evidence |
+|---|---|---|---|
+| IR-106-01 (should-fix, pass 1 — back-filled) | 2026-10-17 | SP-106C: the SPA never read the stored time zone — display showed the browser zone; a name-only save silently overwrote the stored zone. | Closed, verified pass 2: fix commit `5050b82` (hydration + re-seed + unknown-zone PATCH guard, 5 tests); re-verified at `390a510` (`ProfilePage.test.tsx` hydration block, 5 cases in the 201-run tree). |
+| IR-106-02 (polish, pass 1 — fixed pass 3 ride-along) | 2026-10-17 | Preferences cap measured in UTF-16 code units; D106-5 says ≤ 4096 **bytes**. | Closed, verified pass 3: `Buffer.byteLength(serialized, 'utf8')` (`validate-bounded-size.validator.ts:23`) + falsifiable multi-byte test (`update-user.dto.spec.ts` "measures the cap in UTF-8 bytes…"). |
+| IR-106-03 (polish, pass 1 — fixed pass 3 ride-along) | 2026-10-17 | Custom `exceptionFactory` dropped nested-DTO constraint subtrees from the `message` array. | Closed, verified pass 3: Nest's own `flattenValidationErrors` (`validation.pipe.ts:50`) + new `validation.pipe.spec.ts` (flat + nested cases). |
+| IR-106-04 (polish, pass 1) | 2026-10-17 | Root README documented `PUT /users/me`. | Closed, verified pass 2: root README documents `PATCH /users/me`; fixed in `5050b82`. |
+| IR-106-05 (polish, pass 1) | 2026-10-17 | Child-inventory Jira column said "Pending creation" for A–D. | Closed, verified pass 2: STUDY-32…35 recorded (authorized bootstrap sync). |
+| IR-106-06 (polish, pass 1 — fixed pass 3 ride-along) | 2026-10-17 | PATCH accepted an empty display name. | Closed, verified pass 3: `@IsNotEmpty()` on `UpdateUserDto.name` + DTO test. |
+| IR-106-07 (observation, pass 1) | 2026-10-17 | 404 message echo concern. | No defect — no id parameter on `/users/me`; no existence oracle. Standing observation. |
+| IR-106-08 (recording, pass 1 — **open, planner-owned**) | 2026-10-17 | Stored zone stays `UTC` until the first Profile save; SP-107 must state it persists the browser-detected zone or record approval of the status quo. | Open — SP-107 refinement obligation; does not condition SP-106 sign-off (confirmed pass 3). |
+| IR-106-09 (should-fix, pass 2) | 2026-10-18 | AC-106E-4 not implemented: the display line read the stored value only; E record's AC-4 claim inaccurate. | Closed, verified pass 3: `watch('timeZone')` (`ProfilePage.tsx:76-80`) + story-listed live-update test (`ProfilePage.test.tsx:198-218`, falsifiable); AC-4 record corrected. |
+| IR-106-10 (should-fix, pass 2) | 2026-10-18 | Story-listed keyboard + responsive tests missing. | Closed, verified pass 3: both tests delivered (`ProfilePage.test.tsx:220-247`, `:249-264`) on the structure/classes the component renders per pass-2's closure condition; jsdom limitations recorded as deviations; real-browser dimension under IR-106-14. |
+| IR-106-11 (should-fix, pass 2) | 2026-10-18 | `getTimeZones()` dead `Intl.DateTimeFormat.supportedValuesOf` probe + `UTC±HH:MM` parser that never matched → ~115-zone alphabetical list; tautological tests. AC-106E-1/2 unmet. | Closed, verified pass 3: standard `Intl.supportedValuesOf` + `GMT±HH:MM` parsing with precomputed offsets (`datetime.ts`); falsifiable count/order tests in `datetime.test.ts` + the page suite (fallback list exceeded; Midway first/Kiritimati last; London<Tokyo; Majuro<Kiritimati). |
+| IR-106-12 (pass 2) | 2026-10-18 | *Not assigned in pass 2 — the pass-2 report jumped from IR-106-11 to IR-106-13; logged here to keep the record contiguous.* | N/A — gap intentionally left by pass 2; no finding was suppressed. |
+| IR-106-13 (should-fix, pass 2) | 2026-10-18 | Parent index omitted SP-106E; "all four children" status/narration stale. | Closed, verified pass 3: E row in the parent index; "all five children" status + queue narration; residual "all four children" strings are dated historical narration, not status claims. |
+| IR-106-14 (should-fix, pass 2 — **closed by user decision 2026-10-18**) | 2026-10-18 | DoD-10 browser sign-off (2026-10-17) predates the select UI. | Closed 2026-10-18 by **coordinator ratification**: the user confirmed the select-based `/profile` page tested and passing, extending the 2026-10-17 integrated sign-off to the SP-106E select UI — the pass-2 report's explicit user-ratification closure path; recorded with provenance in `SP-106E/checkpoint.md`, committed `390a510`; no browser-session details fabricated. Limitation carried: no per-step browser session details (D precedent). Verified pass 3. |
+| IR-106-15 (polish, pass 2 — (a)–(c) closed pass 3; (d) **open, planner-owned**) | 2026-10-18 | (a) fallback list local/untested; (b) per-render re-sort; (c) stored alias silently re-resolved; (d) E Jira key "Pending creation". | (a)–(c) closed, verified pass 3 (exported/tested fallback, module-scope memoization, alias option guard + `US/Pacific` test). (d) open: create/record E's tracker key on an authorized push; does not condition sign-off. |
+| IR-106-16 (polish, pass 3 — **open, optional**) | 2026-10-18 | Fix-pass commits cited only by unresolvable pointers ("see README queue row"); hashes `8ecedbc`/`759eec8`/`390a510` named nowhere in the records (spine recorded in the pass-3 report). | Open — optional implementer records cleanup; non-blocking. |
 
 ## Quality gate (2026-10-17)
 
