@@ -3,7 +3,8 @@
 **Story:** SP-106E — Profile Time-Zone Select (UX Improvement)
 **Parent:** SP-106 (STUDY-11)
 **Layer:** Frontend
-**Status:** In progress — implementation started 2026-10-18
+**Status:** Implemented — awaiting combined parent review (commit `4def5c2`)
+**Completed:** 2026-10-18
 
 ## Pre-implementation findings
 
@@ -14,16 +15,19 @@
 5. **`ProfilePage.tsx` lines 145–151** render a free-text `<Input>` for timeZone — this is replaced with `<Select>`.
 6. **`datetime.ts`** exports `isValidTimeZone`, `getBrowserTimeZone`, `formatDate/Time/DateTime` — no `supportedValuesOf` polyfill exists yet.
 
-## Implementation plan
+## Implementation completed
 
-1. Add `getTimeZones()` to `shared/lib/datetime.ts` — uses `Intl.DateTimeFormat.supportedValuesOf('timeZone')` when available, falls back to a curated list of ~100 common IANA zones. Exports the list and a `sortTimeZoneList()` helper.
-2. Create `shared/ui/Select.tsx` — follows `Input.tsx` pattern (label, error, hint, disabled, aria-invalid, aria-describedby, id/useId).
-3. Replace `<Input>` with `<Select>` in `ProfilePage.tsx` (lines 145–151).
-4. Rewrite time-zone test cases in `ProfilePage.test.tsx` — change `getByLabelText(/time zone/i)` to `getByRole('combobox')` or `getByLabelText(/time zone/i)` pointing to `<select>`.
+- **Commit:** `4def5c2` (2026-10-18)
+- **Files changed:** `datetime.ts` (add `getTimeZones()` + `sortTimeZoneList()`), `Select.tsx` (new), `ProfilePage.tsx` (replace Input → Select), `ProfilePage.test.tsx` (rewrite 14 test cases)
+- **Tests:** 193/193 pass (19 test files)
+- **Typecheck:** clean
+- **Lint:** clean
+- **Implementation record:** `./artifacts/SP-106E/implementation.md`
 
-## Commit plan
+## AC verification
 
-- Commit 1: `datetime.ts` add `getTimeZones()` + curated fallback list
-- Commit 2: `Select.tsx` new component
-- Commit 3: `ProfilePage.tsx` replace Input → Select + update tests
-- Commit 4: `ProfilePage.test.tsx` rewrite time-zone cases
+All 8 acceptance criteria verified (see implementation.md AC table).
+
+## Remaining work
+
+None — awaiting combined SP-106 parent review.
