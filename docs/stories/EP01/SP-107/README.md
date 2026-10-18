@@ -273,10 +273,10 @@ planning obligations only. Next actionable: **SP-107A** (execution queue).
 
 - **Scope and entry:** Full SP-107 parent (children A–F + combined parent review). Entry: SP-107A (first child).
 - **Coordinator:** workspace `/Users/michael/Documents/GitHub/focus-app`, branch `main`, HEAD `8abb20f`.
-- **Stage:** Implementing SP-107B (second child).
-- **Active dispatch:** `SP107-implementer-B` — implementer — SP-107B minimal `POST /semesters` + `POST /courses`.
-- **Last result / retry state:** `SP107-implementer-A2` returned: SP-107A complete — commit `9885601` (schema + migration + onboarding module + both specs + queue + records); race-branch defect fixed via `updateMany` + count (F-107A findings closed); full suite **28/28 suites, 327/327 tests, 0 skipped** (re-verified by coordinator on committed code); checkpoint + implementation record persisted. The earlier `SP107-implementer-A` stall is fully recovered. `docs/jira-sync/ledger.json` was owner-committed as `032b66d` (jira-sync scope, not this run's).
-- **Resume:** Dispatched fresh isolated implementer `SP107-implementer-B` for SP-107B (queue row B `Ready`; dependency A now implemented).
+- **Stage:** Implementing SP-107C (third child).
+- **Active dispatch:** `SP107-implementer-C` — implementer — SP-107C wizard shell + step 1.
+- **Last result / retry state:** `SP107-implementer-B` returned: SP-107B complete — commit `03a412a` (semesters + courses modules, `@db.Date` migration `20261018232322`, `calendar-date.ts`, both integration specs, queue + records; F-107B-1…5 fixed); full suite **32/32 suites, 390/390 tests, 0 skipped**; typecheck/lint clean; tree clean. (Prior: `SP107-implementer-A2` closed SP-107A at `9885601`, 28/28 suites, 327/327 tests — coordinator re-verified.)
+- **Resume:** Dispatched fresh isolated implementer `SP107-implementer-C` for SP-107C (queue row C `Queued` → eligible: A implemented, SP-106C/E in code).
 
 ## Final implementation review unit
 
