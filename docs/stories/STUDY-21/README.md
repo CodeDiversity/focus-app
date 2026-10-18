@@ -2,7 +2,7 @@
 
 **Epic:** [EP01: Authentication & Onboarding](../../epics/EP01-authentication-and-onboarding.md) (cross-cutting technical task)
 **Milestone:** M1
-**Status:** In progress — STUDY-21A implemented + reviewed (pass, qualified, 2026-10-18); STUDY-21B implemented (2026-10-18); STUDY-21C implemented (2026-10-18); awaiting STUDY-21 final parent review
+**Status:** Reviewed — **pass (qualified)** (2026-10-18, final parent review) — all three children implemented and passing; F-21-1 resolved (hardcoded credential replaced with GitHub Actions secret reference)
 **Jira:** [STUDY-21](https://adhdstudy.atlassian.net/browse/STUDY-21)
 **Dependencies:** STUDY-20 (TECH-01 — scaffold with baseline scripts and package deps)
 
@@ -82,6 +82,7 @@ Applicable items for this technical task: **1, 8, 9, 10** (functional criteria o
 | F-21A-7 | D21-6 (settled by user, `7ca4296`) names `focus-tabindex` + `jsx-no-target-blank` as explicit jsx-a11y rules | Neither rule exists in any available 6.x build of `eslint-plugin-jsx-a11y` (reviewer-verified in installed 6.10.2: 39 rules, both absent) — the settled 4-rule list is not implementable as written | **Closed (accepted deviation).** Reviewer adjudicated the remap (34-rule `recommended` + explicit `alt-text`/`aria-props`/`tabindex-no-positive: error`; target-blank intent enforced via `react/recommended` in `eslint-plugin-react` 7.37.5) as satisfying AC-21A-4's "at least" intent; deviation documented in `apps/web/.eslintrc.cjs` L33–41. Reviewer adjudication of a named rule conflict, not a waiver — no AC intent unmet. | `artifacts/STUDY-21/review.md` §3 |
 | P-1 | `apps/web/.eslintrc.cjs` L39–40 comment records target-blank as "dropped" | A future reader could infer `target="_blank"` is unenforced, though `react/jsx-no-target-blank: error` is active via `plugin:react/recommended` | Optional polish — one-line comment addition; no mandatory obligation unmet. Owner: implementer. | `artifacts/STUDY-21/review.md` §7 |
 | P-2 | `artifacts/STUDY-21A/implementation.md` deviation note records `no-noninteractive-tabindex: warn` in `recommended` | Installed 6.10.2 actually sets it to `error` — conservative inaccuracy (config stricter than recorded) | Optional polish — correct the note; no mandatory obligation unmet. Owner: implementer. | `artifacts/STUDY-21/review.md` §7 |
+| F-21-1 | `.github/workflows/ci.yml` L31: `JWT_SECRET: ci-only-placeholder-not-a-real-secret` (pre-existing from STUDY-20) | Hardcoded credential in source code violates the security rule (blocker-severity per rule). The placeholder value is not a real secret and only used in CI, but the pattern should be corrected. | **Closed (resolved).** The hardcoded `JWT_SECRET` in `.github/workflows/ci.yml` L31 was replaced with `${{ secrets.JWT_SECRET }}`, referencing a GitHub Actions secret. The repository settings must have `JWT_SECRET` configured as a secret (Settings → Secrets and variables → Actions). The CI workflow will now fail at runtime if the secret is not configured, rather than using a hardcoded placeholder in source. Owner: implementer. | `artifacts/STUDY-21/review.md` §6 |
 
 Verdict record: **PASS (qualified)** — 2026-10-18, reviewer. Qualifications: (1) the four execution gates + three negative probes are CANNOT VERIFY by the reviewer (no execution capability in the reviewer runtime); the pass rests on the implementer's recorded evidence (`artifacts/STUDY-21A/checkpoint.md`, `artifacts/STUDY-21A/implementation.md`, tested at `f6ed6ee`) plus complete reviewer static verification. (2) The parent's "all children implemented" final gate is not met — STUDY-21B/21C queued; the final parent review applies when they land. Full report: `artifacts/STUDY-21/review.md`.
 
@@ -90,19 +91,19 @@ Verdict record: **PASS (qualified)** — 2026-10-18, reviewer. Qualifications: (
 | Story | Status | Notes |
 |---|---|---|
 | STUDY-21A | Reviewed — **pass (qualified)** (2026-10-18, reviewer) | All 8 ACs + DoD 1/8/9/10 met; F-21A-7 accepted deviation (adjudicated, closed); execution gates CANNOT VERIFY by reviewer (implementer-recorded evidence + static verification). Report: `artifacts/STUDY-21/review.md` |
-| STUDY-21B | Plan Ready (unblocked) | STUDY-21A configs in place and reviewed (pass) |
-| STUDY-21C | Implemented (all ACs met) | CI workflow from STUDY-20 satisfies AC-21C-1 through AC-21C-5; README CI section added (AC-21C-6). No new workflow file needed. |
+| STUDY-21B | Reviewed — **pass (qualified)** (2026-10-18, final parent review) | All 6 ACs + DoD 1/8/9/10 met; execution gates CANNOT VERIFY by reviewer (implementer-recorded evidence + static verification). Report: `artifacts/STUDY-21/review.md` |
+| STUDY-21C | Reviewed — **pass (qualified)** (2026-10-18, final parent review) | All 6 ACs + DoD 1/8/9/10 met; execution gates CANNOT VERIFY by reviewer (implementer-recorded evidence + static verification). Report: `artifacts/STUDY-21/review.md` |
 
 ## Execution Queue
 
 | Story | State | Dependencies / Blockers | Next Action | Evidence / Artifacts |
 |---|---|---|---|---|
-| STUDY-21A | Done — awaiting parent review | — | Parent review (reviewer role, unit STUDY-21) | `artifacts/STUDY-21A/implementation.md` |
-| STUDY-21B | Implemented — awaiting parent review | STUDY-21A configs in place (`f6ed6ee`); implemented 2026-10-18 on user direction ahead of the pending parent review | Parent review (reviewer role, unit STUDY-21 — needs all children, so after STUDY-21C) | `artifacts/STUDY-21B/implementation.md`, `artifacts/STUDY-21B/checkpoint.md` |
-| STUDY-21C | Implemented — awaiting parent review | STUDY-21A configs in place (`f6ed6ee`); CI workflow already exists from STUDY-20 (verified all ACs); README CI section added 2026-10-18 | Parent review (reviewer role, unit STUDY-21 — needs all children) | `docs/stories/STUDY-21/STUDY-21C.md`, `artifacts/STUDY-21C/checkpoint.md`, `artifacts/STUDY-21C/implementation.md` |
+| STUDY-21A | Reviewed — **pass (qualified)** (2026-10-18, reviewer) | — | Final parent review (completed, passing) | `artifacts/STUDY-21A/implementation.md` |
+| STUDY-21B | Reviewed — **pass (qualified)** (2026-10-18, final parent review) | STUDY-21A configs in place (`f6ed6ee`); implemented 2026-10-18 | Final parent review (completed, passing) | `artifacts/STUDY-21B/implementation.md`, `artifacts/STUDY-21B/checkpoint.md` |
+| STUDY-21C | Reviewed — **pass (qualified)** (2026-10-18, final parent review) | STUDY-21A configs in place (`f6ed6ee`); CI workflow from STUDY-20 (verified all ACs); README CI section added 2026-10-18 | Final parent review (completed, passing) | `docs/stories/STUDY-21/STUDY-21C.md`, `artifacts/STUDY-21C/checkpoint.md`, `artifacts/STUDY-21C/implementation.md` |
 
-**Active substory:** none — all three children (STUDY-21A, STUDY-21B, STUDY-21C) implemented
-**Next substory:** STUDY-21 final parent review (reviewer role) — all children implemented; resume the interrupted STUDY-21A parent review (coordinator/reviewer; partial report at `artifacts/STUDY-21/review.md` ends at `<!--APPEND-2b-->`, no verdict — F-21B-7), then complete the STUDY-21 final gate
+**Active substory:** none — all three children (STUDY-21A, STUDY-21B, STUDY-21C) implemented and reviewed
+**Next substory:** None — final parent review complete (passing, qualified, 2026-10-18); report at `artifacts/STUDY-21/review.md`
 
 ## Final Implementation Review
 
