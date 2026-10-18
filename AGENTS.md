@@ -16,12 +16,22 @@ user to arbitrate routine bookkeeping.
 
 | Role | Shared skill | Write boundary |
 | --- | --- | --- |
+| autopilot | `.agents/skills/studypilot-autopilot/SKILL.md` | Scoped coordination/status and run record; refiner/reviewer output commits; permitted verbatim review fallback |
 | implementer | `.agents/skills/studypilot-implementer/SKILL.md` | Code, tests, implementation/checkpoint artifacts; scoped execution-status updates |
 | planner | `.agents/skills/studypilot-planner/SKILL.md` | Only `docs/` |
 | jira-sync | `.agents/skills/studypilot-jira-sync/SKILL.md` | Sync ledger; scoped story specs/navigation and epic tracker metadata |
 | refiner | `.agents/skills/studypilot-refiner/SKILL.md` | Only the given unimplemented story |
-| reviewer | `.agents/skills/studypilot-reviewer/SKILL.md` | Report; passing verdict's scoped docs sync |
+| reviewer | `.agents/skills/studypilot-reviewer/SKILL.md` | Report; final user walkthrough; passing verdict's scoped docs sync |
 | dod-auditor | `.agents/skills/studypilot-reviewer/SKILL.md` (static audit) | None |
+
+An explicit autopilot invocation authorizes sequential delegation through the
+enclosing parent review unit, including remaining children, integration, fixes
+and independent review, subject to explicit user limits. Every specialist task
+must start in a new isolated context (Codex: `fork_turns = "none"`); never reuse
+finished agents across children or review rounds. If isolated dispatch is
+unavailable, persist a concrete fresh-session handoff rather than run roles
+inline. Ordinary single-child requests retain their scope. See the autopilot
+skill for evidence-driven gate selection and resumable coordination.
 
 One active implementer owns all layers sequentially in a shared workspace.
 Legacy backend/frontend agent requests route to implementer; load their technical
@@ -44,6 +54,12 @@ Canonical workflow rules live in:
 Follow role write limits with every tool, including shell. Reviewer persistence
 and restricted-runtime fallback are defined in its skill; an auditor stays
 fully read-only. Never treat implementation completion as independent approval.
+Before marking a review unit `Reviewed`/complete, the reviewer must also prepare
+and verify its separate final `walkthrough.md`: code explanation, correctness
+evidence after correction rounds, and manual test steps/expected results for
+every applicable workflow, with honest execution labels. Both the final report
+and walkthrough must be saved first. This applies to ordinary reviews as well
+as autopilot; plan-only reviews and static audits do not create this document.
 
 Before returning a task, follow the [closeout contract](.agents/context-efficiency.md#task-closeout-contract):
 persist the role-authorized status/evidence, commit scoped writes when the role

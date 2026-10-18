@@ -404,13 +404,63 @@ pnpm install
 
 ### Repo agents in Codex
 
-The five repo agents are available as project-scoped Codex agents in `.codex/agents/`: `implementer`, `planner`, `refiner`, `reviewer`, and `dod-auditor`. The single implementer handles backend, frontend and integration substories sequentially, using layer-specific skills in `.agents/skills/`. It resumes through durable checkpoints and requests one final parent review. See [AGENTS.md](./AGENTS.md) for each role's scope. Reload your agent tool/session after changing role definitions so it discovers `implementer` instead of the retired backend/frontend roles.
+The repo agents are available as project-scoped Codex agents in `.codex/agents/`: `autopilot`, `implementer`, `planner`, `refiner`, `reviewer`, `dod-auditor`, and `jira-sync`. The single implementation owner handles backend, frontend and integration work sequentially, using layer-specific skills in `.agents/skills/`. It resumes through durable checkpoints and requests one final parent review. See [AGENTS.md](./AGENTS.md) for each role's scope. Reload your agent tool/session after changing role definitions.
 
 Every role starts from the parent story README execution queue to find the active/next substory and artifact paths. New and migrated features keep plans and records together under `docs/stories/<epic>/<parent>/`, with per-story records in `artifacts/<story-id>/`. For the active password-reset work, start at [SP-105 execution queue](docs/stories/EP01/SP-105/README.md#execution-queue).
 
-Start a new Codex session in this repository after adding or changing agent definitions. For example: “Use the refiner agent to refine SP-105” or “Have the dod-auditor agent audit STUDY-20.” Models and approval settings inherit from the parent session; the two review roles specify a read-only sandbox. Planner and refiner write limits are enforced by instructions.
+Start a new Codex session in this repository after adding or changing agent definitions. For example: “Use the refiner agent to refine SP-105” or “Have the dod-auditor agent audit STUDY-20.” Models, sandbox and approval settings inherit from the parent session. Each role's write limits also apply through its instructions.
 
-The original `.vibe/agents/` definitions remain available for Vibe. Codex uses the [project agent TOML format](https://learn.chatgpt.com/docs/agent-configuration/subagents).
+The `.vibe/agents/` and `.opencode/agents/` definitions provide the same roles for Vibe and OpenCode. Codex uses the [project agent TOML format](https://learn.chatgpt.com/docs/agent-configuration/subagents).
+
+### Autopilot through parent approval
+
+Use [autopilot](.agents/skills/studypilot-autopilot/SKILL.md) to coordinate the
+remaining delivery gates from any point in a parent's lifecycle. For example:
+
+> Use autopilot for SP-106, starting at implement SP-106B, through final parent approval.
+
+Autopilot reconciles the execution queue, checkpoints, Git and review evidence;
+runs planning/whole-plan review when needed; refines eligible unimplemented
+children; implements them sequentially; completes integration; and requests one
+combined parent review. It routes mandatory findings to the appropriate role
+and requests fresh parent reviews until the gate passes or a concrete blocker
+needs attention. The named child is an entry hint; this explicit autopilot
+invocation authorizes finishing the enclosing parent, including earlier fixes.
+Ordinary requests to implement one child keep their original scope.
+
+Every specialist task gets a **new isolated context**, including each child,
+resumed task and correction/review pass. Codex dispatch uses
+`fork_turns = "none"`; finished agents are never reused. Compact handoffs point
+to repository evidence instead of forwarding conversation history. A runtime
+without isolated dispatch receives a concrete fresh-session handoff.
+
+The parent README's `Autopilot` section records run scope, stage, in-flight task,
+retry state and resume action; its existing execution queue still owns ordering.
+To resume after an interruption:
+
+> Resume autopilot for SP-106. Read docs/stories/EP01/SP-106/README.md, reconcile the Autopilot record, live writer ownership, queue and evidence, and continue through final parent approval.
+
+Autopilot pauses for material unanswered decisions, unavailable required gates,
+missing permissions, external blockers or repeated corrections without progress.
+It preserves tracker/deployment authorization and required human evidence gates.
+These instructions coordinate a live agent session; they do not schedule future
+sessions automatically. This setup change does not start SP-106 execution.
+
+### Final reviewer walkthrough
+
+For every final implementation review, including reviews without autopilot, the
+reviewer creates `walkthrough.md` beside the final `review.md` in the resolved
+parent/standalone artifact directory. This separate document explains how the
+code works and why the review/test evidence supports correctness after the
+correction rounds. It also provides manual steps, prerequisites and expected
+results for every applicable workflow, labeling performed checks separately
+from unexecuted user instructions or justified non-applicable checks.
+
+Both final documents must be saved and verified before `Reviewed`/complete.
+Required manual gates still need actual evidence; a written checklist does not
+execute them. Plan-only reviews, interim child reviews and static audits do not
+create this final document. See the
+[reviewer contract](.agents/skills/studypilot-reviewer/SKILL.md#final-user-walkthrough).
 
 ### Development workflow
 

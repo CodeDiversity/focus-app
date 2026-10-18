@@ -74,3 +74,26 @@ Findings are fixed in the affected implementation scope and re-reviewed together
 at the parent; no automatic child-by-child review cycle. Only the final passing
 parent report establishes formal sign-off. Before that, parent and children
 must distinguish implementation completion from review approval or release.
+
+## Final user walkthrough before completion
+
+After all mandatory review corrections and required manual gates are independently
+verified, the reviewer writes a separate `walkthrough.md` beside the final
+`review.md`, using the parent README-resolved artifact directory. It explains the
+finished code and why the evidence supports correctness, with concrete manual
+steps and expected results for every applicable workflow. Label executed checks
+with their provenance separately from unexecuted user test instructions; optional
+user repeats do not replace required manual evidence.
+
+This final deliverable is required for ordinary reviews and autopilot alike,
+once per full parent review unit or standalone story. Plan reviews, interim
+reviews and static audits do not generate it. It is reviewer-owned and is not
+an implementer prerequisite to the initial review. Refresh it after later code
+corrections so it matches the final reviewed scope. Follow the shared reviewer
+skill's content and restricted-runtime fallback rules.
+
+Save and verify both the walkthrough and final report before passing docs sync
+marks the parent or children `Reviewed`/complete. The coordinator owns scoped
+commits and any permitted verbatim fallback persistence for both documents; until
+that persistence is verified, completion remains pending. A passing report alone
+does not satisfy the final gate.

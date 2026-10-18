@@ -60,12 +60,26 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
   in documented order. A request for one child does not authorize every sibling.
   If the requested child is blocked, explain its blocker and the suggested next
   action rather than skipping the dependency or starting unauthorized work.
+- An explicit autopilot request authorizes the enclosing parent review unit
+  through final approval, including remaining descendants, integration and
+  mandatory corrections, subject to user limits. A named child/stage is an
+  entry hint; reconcile prerequisites and existing progress first. Autopilot
+  dispatches each bounded specialist task in a new isolated context and records
+  scope/stage/handoffs in the README's Autopilot section. That section links to
+  this queue and existing evidence; it is not a second execution queue. Normal
+  single-child requests keep the preceding scope rule.
 - If code/artifacts disagree with the queue, reconcile and record the evidence
   before proceeding. Missing evidence is unverified, not done. No new mandatory
   user approval is introduced for routine status reconciliation.
 
 ## Role-specific updates
 
+- **Autopilot:** coordinates the explicitly authorized parent using fresh
+  specialist contexts and the [autopilot skill](skills/studypilot-autopilot/SKILL.md).
+  Owns its README run record, scoped execution/status reconciliation,
+  refiner/reviewer output commits and permitted verbatim reviewer fallback.
+  Planning, implementation evidence and independent verdicts remain with their
+  specialist owners; one implementation writer transfers ownership per task.
 - **Planner:** owns folder layout, queue initialization/order/dependencies, story
   breakdown and refinement readiness. Uses implementation evidence to reconcile
   existing progress; does not fabricate tests/reviewer sign-off.
@@ -90,9 +104,10 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
   It cannot edit README, create artifacts or mark other stories ready.
 - **Reviewer:** reads the queue and colocated evidence independently; never
   moves files. The review is read-only and its only own writes are the saved
-  report plus, on a passing verdict, the reviewer skill's passing-review docs
+  report, final implementation walkthrough, plus on a passing verdict the reviewer skill's passing-review docs
   sync: finding/correction-log entries, verdict-dependent queue fields
-  (including `Reviewed` after the passing final parent review) and a stale
+  (including `Reviewed` after the passing final parent review and saved/verified
+  final `walkthrough.md`) and a stale
   parent status line. Non-passing verdicts save the report only and defer
   those edits. One final combined parent review after every child and
   integration task is implemented; gaps are findings, not status edits.
@@ -101,5 +116,6 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
 - **Coordinating parent:** the reviewer saves its own report at the resolved
   path, using its skill's restricted-runtime fallback when needed; the parent
   reconciles queue/status edits the reviewer deferred on a
-  non-passing verdict. Only a passing final parent review allows `Reviewed`;
+  non-passing verdict. Only a passing final parent review with both report and
+  user walkthrough saved and verified allows `Reviewed`;
   child self-checks never do.

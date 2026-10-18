@@ -33,6 +33,9 @@ passing verdict before writing the findings.
 - Child implementation record: completed behavior, verification and known gaps.
 - Parent implementation index: child/evidence links and complete combined Git scope.
 - Reviewer report: independent findings, closure evidence and verdict.
+- Final reviewer walkthrough: user-facing code explanation, correctness evidence
+  and workflow-specific manual test instructions/status, saved beside the final
+  report before completion. Applies equally to ordinary and autopilot reviews.
 - Jira-sync ledger: tracker identity, last common spec baseline, pending mutations
   and removal tombstones; never a duplicate execution queue.
 
@@ -52,7 +55,7 @@ Apply that existing exception directly; do not invent another approval gate.
 | Needed action | Act without an ownership debate |
 | --- | --- |
 | Implementation findings, tests, checkpoints, implementation records, active child's status/artifact pointers, queue execution fields, and scoped commits | The current implementer completes them as part of the assigned implementation. |
-| Review report and permitted verdict-dependent sync | The reviewer completes these within runtime permissions; a completed non-passing review returns concrete findings. |
+| Review report, final user walkthrough and permitted verdict-dependent sync | The reviewer completes these within runtime permissions; both final documents precede completion sync; a completed non-passing review returns concrete findings. |
 | Reviewer Git commit or restricted-runtime persistence fallback | The coordinating parent performs the specified writes/commit within its authority, preserving the report verbatim. Do not send it back to the reviewer to commit. |
 | Required scope, AC, dependency or readiness change | Use the planner/refiner boundary; preserve implementation progress and identify the precise unresolved decision. |
 | Authorized Jira reconciliation/prune | Follow jira-sync and existing authorization; role naming alone never grants tracker permission. |
@@ -99,7 +102,8 @@ existing queue/checkpoint/implementation record; do not add a parallel tracker.
 1. Persist completed and remaining work within the role's write boundary.
    The implementer updates the queue row, active/next fields, child's status and
    artifact pointers. Use `Implemented — awaiting parent review` for finished
-   implementation; reserve `Reviewed` for a passing final parent review.
+   implementation; reserve `Reviewed` for a passing final parent review with
+   both final report and user walkthrough saved and verified.
    Mark completed checklist items in the record that owns them. If a runtime
    task list exists, close finished entries there too; incomplete work remains
    pending or blocked. Runtime status never replaces repository evidence.
@@ -137,10 +141,13 @@ current role's authority; otherwise route one bounded correction using the
 responsibility rule above. Do not launch a reviewer to reconstruct it.
 Do not poll an already finished agent for repeated completion acknowledgements.
 Once a review report is returned, the coordinator persists any permitted fallback
-writes, reconciles deferred non-passing status updates, and commits the report
+writes (including the final walkthrough), reconciles deferred non-passing status updates, and commits the report
 and authorized docs changes. Preserve the review verdict verbatim. A completed
 review task may have a non-passing verdict; it does not remain running merely
 because implementation fixes are required.
+For a final passing review, verify that both `review.md` and `walkthrough.md`
+are saved at the resolved artifact directory and cover the final scope before
+applying deferred `Reviewed`/complete status. A report alone is insufficient.
 
 ## Measure before claiming savings
 

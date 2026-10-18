@@ -17,7 +17,8 @@ docs/stories/<epic>/<parent>/
     ├── <parent-story-id>/
     │   ├── checkpoint.md
     │   ├── implementation.md         # final child/evidence index
-    │   └── review.md                 # one combined formal implementation review
+    │   ├── review.md                 # one combined formal implementation review
+    │   └── walkthrough.md            # reviewer code explanation + manual tests
     └── <child-story-id>/
         ├── checkpoint.md
         └── implementation.md
@@ -46,6 +47,17 @@ Do not duplicate records or rename directories just because a Jira key appears.
   the reviewer, with the same restricted-runtime fallback. Planner corrections
   go in the README log, never in this report.
   Later reviewer passes replace the latest report; committed history remains.
+- **walkthrough.md:** reviewer-owned final user document saved beside the final
+  implementation `review.md`, once per complete review unit. Explains the code,
+  correctness evidence after all mandatory corrections, and manual test steps
+  with expected results for each applicable workflow. Distinguishes executed
+  evidence, unexecuted user instructions and justified non-applicable checks.
+  Required before `Reviewed`/complete in both ordinary and autopilot reviews;
+  plan-only reviews and static audits do not create it. The reviewer verifies
+  and saves it before completion sync; the coordinator commits it and handles
+  permitted verbatim fallback persistence. Regenerate for a changed final scope,
+  preserving prior committed versions. See the
+  [final walkthrough gate](../../.agents/skills/studypilot-reviewer/SKILL.md#final-user-walkthrough).
 
 The Jira-sync role may remove a completed story specification only under its
 [prune gates](../../.agents/skills/studypilot-jira-sync/SKILL.md), preserving this
@@ -55,7 +67,7 @@ folder, parent delivery READMEs, contracts, traceability and all artifacts. Its
 Only the planner owns scope/dependency/decision changes. The implementer may
 update the README execution fields/table and active child status/artifact pointers
 as the narrow exception in delivery state. Refiners still write only their given
-story; reviewers write only their report and passing-verdict scoped sync; auditors write
+story; reviewers write only their report, final walkthrough and passing-verdict scoped sync; auditors write
 nothing. Deferred persistence never grants another role broader write authority.
 Record final review outcome only from actual independent reviewer evidence.
 

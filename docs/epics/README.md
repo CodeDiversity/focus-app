@@ -37,6 +37,17 @@ Every completed story must satisfy the following applicable conditions:
 8. Business rules have automated tests.
 9. API changes and migrations are documented.
 10. The feature has been reviewed in an integrated development environment.
+11. Before final completion, the reviewer has saved a user-facing walkthrough
+    explaining the code, evidence for correctness after review corrections,
+    and manual test steps/expected results for each applicable workflow.
+
+Item 11 is a final reviewer-owned deliverable, once per complete parent review
+unit (or standalone story), in both ordinary and autopilot reviews. It is not
+required from the implementer before initial review. Save `walkthrough.md`
+beside the resolved final `review.md`; verify both before marking `Reviewed`
+or complete. Label performed manual checks separately from unexecuted user
+instructions; required manual gates still need actual evidence. See the
+[reviewer workflow](../../.agents/skills/studypilot-reviewer/SKILL.md#final-user-walkthrough).
 
 **Target accessibility:** WCAG 2.2 AA.
 
