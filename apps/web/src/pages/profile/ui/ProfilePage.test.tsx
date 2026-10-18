@@ -10,7 +10,12 @@ import { authService } from '@/features/auth/api/authService';
 import { userService } from '@/entities/user/api/userService';
 import { makeTestStore } from '@/test/providers';
 import { setUser } from '@/features/session/model/authSlice';
-import { formatDateTime, getBrowserTimeZone } from '@/shared/lib/datetime';
+import {
+  formatDateTime,
+  getBrowserTimeZone,
+  getTimeZones,
+  isValidTimeZone,
+} from '@/shared/lib/datetime';
 import type { User } from '@/entities/user/model/types';
 // RD7: sanctioned pages → app import for typed AppStore
 // eslint-disable-next-line import/no-restricted-paths
@@ -92,13 +97,12 @@ const waitForBoot = async () => {
   await waitFor(() => expect(mockedRefreshToken).toHaveBeenCalled());
 };
 
-const timeZoneInput = () => screen.getByLabelText(/time zone/i);
+const timeZoneSelect = () => screen.getByLabelText(/time zone/i) as HTMLSelectElement;
 
 const fillValidForm = async () => {
   await validUser.clear(screen.getByLabelText(/display name/i));
   await validUser.type(screen.getByLabelText(/display name/i), 'Ada Lovelace');
-  await validUser.clear(timeZoneInput());
-  await validUser.type(timeZoneInput(), 'America/New_York');
+  await validUser.selectOptions(timeZoneSelect(), 'America/New_York');
 };
 
 describe('ProfilePage time-zone editing (SP-106C)', () => {
@@ -117,7 +121,7 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
   it('pre-fills the stored time zone when it is not the schema default (D106-3)', async () => {
     renderProfilePage({ ...storedStudent, timeZone: 'America/New_York' });
     expect(await screen.findByLabelText(/display name/i)).toHaveValue('Ada Lovelace');
-    expect(timeZoneInput()).toHaveValue('America/New_York');
+    expect(timeZoneSelect()).toHaveValue('America/New_York');
   });
 
   it('pre-fills the browser-detected zone when the stored value is "UTC" (D106-3)', async () => {
@@ -129,28 +133,33 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
     renderProfilePage({ ...storedStudent, timeZone: 'UTC' });
 
     await waitForBoot();
-    expect(timeZoneInput()).toHaveValue('Europe/Paris');
+    expect(timeZoneSelect()).toHaveValue('Europe/Paris');
     resolvedOptionsSpy.mockRestore();
   });
 
   it('falls back to the browser zone for a session user without a stored zone (login shape)', async () => {
     renderProfilePage({ ...storedStudent, timeZone: undefined });
     expect(await screen.findByLabelText(/display name/i)).toHaveValue('Ada Lovelace');
-    expect(timeZoneInput()).toHaveValue(getBrowserTimeZone());
+    expect(timeZoneSelect()).toHaveValue(getBrowserTimeZone());
   });
 
-  it('rejects invalid IANA identifiers client-side and sends no request (AC-106-03, TR-106-01)', async () => {
+  it('renders all supported zones sorted by offset then region (AC-106-03, TR-106-01 by construction)', async () => {
     renderProfilePage();
     await waitForBoot();
 
-    await validUser.clear(timeZoneInput());
-    await validUser.type(timeZoneInput(), 'Mars/Olympus');
-    await validUser.click(screen.getByRole('button', { name: /save changes/i }));
+    const select = timeZoneSelect();
+    const options = select.querySelectorAll('option');
 
-    expect(
-      await screen.findByText('Enter a valid IANA time zone, e.g. America/New_York')
-    ).toBeInTheDocument();
-    expect(mockedUpdateProfile).not.toHaveBeenCalled();
+    // The select should have all supported zones (ES2022 supportedValuesOf count
+    // or the fallback list count — both validated against isValidTimeZone).
+    expect(options.length).toBeGreaterThan(0);
+
+    // The list should be sorted by offset (ascending) then by region name.
+    const values = Array.from(options).map((o) => o.value);
+    expect(values).toEqual(getTimeZones());
+
+    // Every option must be a valid IANA zone (by construction from the runtime's list).
+    expect(values.every((v) => isValidTimeZone(v))).toBe(true);
   });
 
   it('submits { name, timeZone } via PATCH and updates the session user (AC-106-02, TR-106-02)', async () => {
@@ -175,7 +184,7 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
     await waitFor(() => expect(store.getState().auth.user?.timeZone).toBe('Pacific/Auckland'));
   });
 
-  it('renders an API 400 with errors.timeZone under the input and keeps the message-array toast silent (AC-106-06, D106-6)', async () => {
+  it('renders an API 400 with errors.timeZone under the select and keeps the message-array toast silent (AC-106-06, D106-6)', async () => {
     const apiError = {
       statusCode: 400,
       message: ['timeZone must be a valid IANA time zone, e.g. America/New_York'],
@@ -196,7 +205,7 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
     expect(
       await screen.findByText('timeZone must be a valid IANA time zone, e.g. America/New_York')
     ).toBeInTheDocument();
-    expect(timeZoneInput()).toHaveAttribute('aria-invalid', 'true');
+    expect(timeZoneSelect()).toHaveAttribute('aria-invalid', 'true');
     expect(mockedToast.error).not.toHaveBeenCalled();
   });
 
@@ -213,7 +222,7 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
     // While loading the button swaps its label for a spinner; the same
     // element must stay disabled for the whole submission.
     expect(saveButton).toBeDisabled();
-    expect(timeZoneInput()).toBeDisabled();
+    expect(timeZoneSelect()).toBeDisabled();
   });
 
   it('shows the sanitized error toast when a non-400 failure occurs', async () => {
@@ -270,7 +279,7 @@ describe('ProfilePage stored-zone hydration (IR-106-01)', () => {
     renderProfilePage(loginShapeUser, storedNewYork);
 
     await waitFor(() => expect(mockedGetProfile).toHaveBeenCalled());
-    await waitFor(() => expect(timeZoneInput()).toHaveValue('America/New_York'));
+    await waitFor(() => expect(timeZoneSelect()).toHaveValue('America/New_York'));
     // The stored-zone display line follows the hydrated value too.
     await waitFor(() =>
       expect(screen.getByText(/your time zone/i)).toHaveTextContent('America/New_York')
@@ -279,7 +288,7 @@ describe('ProfilePage stored-zone hydration (IR-106-01)', () => {
 
   it('hydrates before the student edits: a name-only save re-sends the stored zone, not a fallback', async () => {
     renderProfilePage(loginShapeUser, storedNewYork);
-    await waitFor(() => expect(timeZoneInput()).toHaveValue('America/New_York'));
+    await waitFor(() => expect(timeZoneSelect()).toHaveValue('America/New_York'));
     mockedUpdateProfile.mockResolvedValue(storedNewYork);
 
     const nameInput = screen.getByLabelText(/display name/i);
@@ -326,15 +335,15 @@ describe('ProfilePage stored-zone hydration (IR-106-01)', () => {
     renderProfilePage(loginShapeUser);
     await waitFor(() => expect(mockedGetProfile).toHaveBeenCalled());
 
-    await validUser.clear(timeZoneInput());
-    await validUser.type(timeZoneInput(), 'Europe/Berlin');
+    // For the select: change the selected option instead of typing.
+    await validUser.selectOptions(timeZoneSelect(), 'Europe/Berlin');
 
     await act(async () => {
       releaseProfile(storedNewYork);
     });
 
     // The late hydration settles state, but the unsaved edit wins.
-    expect(timeZoneInput()).toHaveValue('Europe/Berlin');
+    expect(timeZoneSelect()).toHaveValue('Europe/Berlin');
   });
 
   it('still lets the student choose a zone when the stored zone is unknown', async () => {
@@ -342,8 +351,7 @@ describe('ProfilePage stored-zone hydration (IR-106-01)', () => {
     await waitForBoot();
     mockedUpdateProfile.mockResolvedValue(storedNewYork);
 
-    await validUser.clear(timeZoneInput());
-    await validUser.type(timeZoneInput(), 'Europe/Berlin');
+    await validUser.selectOptions(timeZoneSelect(), 'Europe/Berlin');
     await validUser.click(screen.getByRole('button', { name: /save changes/i }));
 
     await waitFor(() => expect(mockedUpdateProfile).toHaveBeenCalled());

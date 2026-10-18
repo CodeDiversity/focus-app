@@ -6,8 +6,14 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/features/auth/model/AuthContext';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
+import { Select } from '@/shared/ui/Select';
 import { getFieldError, getErrorMessage } from '@/shared/lib/errors';
-import { formatDateTime, getBrowserTimeZone, isValidTimeZone } from '@/shared/lib/datetime';
+import {
+  formatDateTime,
+  getBrowserTimeZone,
+  getTimeZones,
+  isValidTimeZone,
+} from '@/shared/lib/datetime';
 
 // Validation schema — the time zone is free text (D106-8) validated with the
 // shared TECH-01 IANA check (D106-4). Refinement runs before any request, so
@@ -142,13 +148,23 @@ export function ProfilePage() {
               {...register('name', { onChange: markEdited })}
             />
 
-            <Input
+            {/* D106-10: replace free-text input with a pre-loaded select dropdown.
+                 The select is pre-populated with all IANA zones supported by the
+                 runtime (sorted by offset then region), and pre-selects the stored
+                 zone (or browser-detected zone when stored is "UTC") per D106-3.
+                 The backend IANA validator (SP-106B) remains as a safety net. */}
+            <Select
               label="Time Zone"
-              placeholder="America/New_York"
               error={errors.timeZone?.message}
               disabled={isSubmitting || isLoading}
               {...register('timeZone', { onChange: markEdited })}
-            />
+            >
+              {getTimeZones().map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz}
+                </option>
+              ))}
+            </Select>
             <p className="text-sm text-secondary-500">
               Your time zone: <span className="font-mono">{storedTimeZone ?? defaultTimeZone}</span>{' '}
               (currently {formatDateTime(new Date(), storedTimeZone ?? defaultTimeZone)} there)
