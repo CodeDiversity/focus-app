@@ -89,7 +89,7 @@ Create a shared Prettier configuration and per-app ESLint configurations (backen
 3. **Frontend ESLint config:** Create `apps/web/.eslintrc.cjs` (or `eslint.config.js`):
    - Extends everything from backend **plus**:
    - `plugin:react/recommended`, `plugin:react-hooks/recommended`
-   - `plugin:jsx-a11y/recommended` (or `all` for stricter coverage)
+   - `plugin:jsx-a11y/recommended` (lighter set — explicit rules for `alt-text`, `aria-props`, `focus-tabindex`, `jsx-no-target-blank`)
    - Import resolver: `typescript` + `alias` (already installed)
    - React version detection via `react` package
 

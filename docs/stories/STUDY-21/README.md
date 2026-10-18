@@ -73,7 +73,7 @@ Applicable items for this technical task: **1, 8, 9, 10** (functional criteria o
 | D21-3 | Pre-commit framework | `husky` v9+ with `lint-staged` (staged-files-only to avoid reformatting unrelated files) | 2026-10-18 |
 | D21-4 | CI platform | GitHub Actions (`.github/workflows/ci.yml`) matching TECH-01's CI description; lint as a failing step | 2026-10-18 |
 | D21-5 | Monorepo lint orchestration | Root `package.json` `lint` script delegates to each app via `turbo run lint` (already wired in `turbo.json`) | 2026-10-18 |
-| D21-6 | jsx-a11y scope | `eslint-plugin-jsx-a11y` added to frontend `devDependencies`; rules applied only to `.tsx`/`.jsx` files in `apps/web/src/` | 2026-10-18 |
+| D21-6 | jsx-a11y scope + strictness | `eslint-plugin-jsx-a11y` added to frontend `devDependencies`; rules set to `recommended` (lighter, fewer false positives) applied only to `.tsx`/`.jsx` files in `apps/web/src/`; explicit rules for `alt-text`, `aria-props`, `focus-tabindex`, `jsx-no-target-blank` | 2026-10-18 (settled by user) |
 
 ## Correction Log
 
@@ -83,7 +83,7 @@ _No corrections yet — this is a fresh breakdown._
 
 | Story | Status | Notes |
 |---|---|---|
-| STUDY-21A | Plan Ready | Package deps already present; config files to create |
+| STUDY-21A | Plan Ready | Package deps already present; jsx-a11y strictness settled to `recommended` (lighter); config files to create |
 | STUDY-21B | Plan Ready (blocked for implementation) | Depends on STUDY-21A configs being in place |
 | STUDY-21C | Plan Ready (blocked for implementation) | Depends on STUDY-21A configs being in place |
 
