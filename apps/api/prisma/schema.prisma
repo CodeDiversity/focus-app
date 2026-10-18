@@ -116,8 +116,11 @@ model Semester {
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   name        String   // e.g., "Fall 2024"
-  startDate   DateTime
-  endDate     DateTime
+  // SP-107B (D107-7): calendar dates, not instants — follows the
+  // `StudyPlan.date @db.Date` precedent; the API serializes them as
+  // `yyyy-MM-dd` (no time-zone ambiguity).
+  startDate   DateTime @db.Date
+  endDate     DateTime @db.Date
   isActive    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
