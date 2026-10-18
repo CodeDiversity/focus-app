@@ -19,9 +19,9 @@ answered in-session with **Feature-Sliced Design (FSD) layers** as the conventio
 
 **Parent artifacts:** `./artifacts/SP-109/` (parent checkpoint / final index)
 
-**Active substory:** None — SP-109A–SP-109H implemented (queued for combined parent review 2026-10-17).
+**Active substory:** [SP-109I](./SP-109I-boundaries-docs-verification.md) — In progress (2026-10-17); checkpoint `./artifacts/SP-109I/checkpoint.md`.
 
-**Next substory:** [SP-109I](./SP-109I-boundaries-docs-verification.md) — implement last (enforcement proof, docs paths, full verification), unblocked by H.
+**Next substory:** SP-109I — resume from its checkpoint (enforcement proof, docs paths, full verification, parent index).
 
 **Implementation owner:** `implementer`, sequential. All children are
 frontend-scope moves/config work; single writer, one commit per child.
@@ -40,7 +40,7 @@ at `./artifacts/SP-109/review.md`; integration/index owner: SP-109I (parent inde
 | [F](./SP-109F-feature-session-store.md) | Implemented — awaiting parent review (2026-10-17) | E | — | `./artifacts/SP-109F/` |
 | [G](./SP-109G-widgets.md) | Implemented — awaiting parent review (2026-10-17) | C, E, F | — | `./artifacts/SP-109G/` |
 | [H](./SP-109H-pages-and-app-shell.md) | Implemented — awaiting parent review (2026-10-17) | G (implemented 2026-10-17) | — | `./artifacts/SP-109H/` |
-| [I](./SP-109I-boundaries-docs-verification.md) | Queued (file written 2026-10-17) | B–H | Implement last: enforcement proof, docs paths, full verification | `./artifacts/SP-109I/` |
+| [I](./SP-109I-boundaries-docs-verification.md) | In progress (2026-10-17) | B–H (all implemented 2026-10-17) | Resume from checkpoint: enforcement proof, docs paths, full verification, parent index | `./artifacts/SP-109I/checkpoint.md` |
 
 SP-109A and SP-109B are implemented; C–I are `Queued` because they need A's alias and B's relocated modules.
 

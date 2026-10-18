@@ -4,7 +4,7 @@
 **Epic:** Cross-cutting technical task (standalone; see [SP-109](./SP-109.md))
 **Milestone:** M1
 **Layer / owner:** Frontend verification + docs (root `README.md`), `implementer`
-**Status:** Queued (SP-109B–H must land first)
+**Status:** In progress (2026-10-17; checkpoint `./artifacts/SP-109I/checkpoint.md`)
 **Dependencies:** SP-109A–H
 **Jira key:** STUDY-53 (verified 2026-10-17)
 

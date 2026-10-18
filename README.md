@@ -30,7 +30,7 @@ studypilot/
 - **Framework**: React 18
 - **Bundler**: Vite
 - **Styling**: Tailwind CSS
-- **State Management**: Redux Toolkit + RTK Query (auth state in an RTK slice; server data via RTK Query over the shared axios transport in `apps/web/src/services/api.ts`)
+- **State Management**: Redux Toolkit + RTK Query (auth state in an RTK slice; server data via RTK Query over the shared axios transport in `apps/web/src/shared/api/httpClient.ts`)
 - **Forms**: React Hook Form + Zod
 
 ## Getting Started

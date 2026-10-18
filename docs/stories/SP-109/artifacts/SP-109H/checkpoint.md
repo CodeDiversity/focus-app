@@ -2,7 +2,7 @@
 
 **Story:** SP-109H — `pages/<route>/ui` + `app/App.tsx` + `app/providers/AppProviders.tsx`
 **Date:** 2026-10-17
-**Status:** In progress
+**Status:** Implementation complete — awaiting parent review (commit `23fe1b5`; see `implementation.md`)
 
 ## State found on resume
 

@@ -4,7 +4,7 @@
 **Epic:** Cross-cutting technical task (standalone; see [SP-109](./SP-109.md))
 **Milestone:** M1
 **Layer / owner:** Frontend, `implementer` (single writer)
-**Status:** Queued (SP-109G must land first)
+**Status:** Implemented — awaiting parent review (2026-10-17; commit `23fe1b5`, evidence `./artifacts/SP-109H/implementation.md`)
 **Dependencies:** SP-109G (widgets exist as folders), SP-109F (`app/store`)
 **Jira key:** STUDY-52 (verified 2026-10-17)
 
