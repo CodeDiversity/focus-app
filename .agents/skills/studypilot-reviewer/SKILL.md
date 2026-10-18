@@ -73,6 +73,42 @@ Save the returned Markdown verbatim, replacing only the latest `plan-review.md` 
 - Finish with a one-line verdict: the story meets the DoD and acceptance criteria, or the list of conditions it fails.
 - Be direct about gaps. Do not approve work you have not verified.
 
+## Severity and verdict contract
+
+Classify against the current requirements, not the effort to fix the issue or
+a previous review's severity precedent:
+
+| Severity | Required classification |
+| --- | --- |
+| Blocker | Security exposure, data loss/corruption, or a critical broken flow that prevents safe acceptance. |
+| Should-fix | Any unmet explicit AC, applicable DoD condition, required deliverable or mandatory workflow obligation; missing implementation evidence or inaccurate review-scope/completion claims. This includes documentation-only requirements. |
+| Polish | An optional improvement with no unmet mandatory obligation and no effect on the ability to verify the review scope. |
+
+Green tests, unchanged runtime behavior, a small fix, redundant documentation
+elsewhere, or a historical polish classification cannot downgrade an explicit
+requirement. A user-approved waiver must have a recorded source and exact scope;
+the reviewer cannot grant one. Required evidence that cannot be verified stays
+CANNOT VERIFY and prevents an unqualified pass.
+
+For each finding record: requirement/source, observed gap, severity rationale,
+owner, and concrete closure condition. Examples: an AC requiring preserved
+comments with a missing comment is should-fix; a missing required child
+implementation record/checkpoint is should-fix; stale required completion
+status or a scope index omitting a child is should-fix. Optional wording cleanup
+with accurate status and complete evidence is polish.
+
+Keep findings grouped by shared cause and fix owner when one correction closes
+them together; preserve each affected child/path and requirement in the details.
+Keep prior finding IDs stable on re-review rather than renumbering history.
+
+Decide the verdict before passing-review docs sync. That sync may record the
+verified verdict and update review-dependent status; it cannot supply missing
+implementation deliverables, repair an implementer's AC, or justify passing
+because it will close a required finding. On a non-passing verdict, save the
+report only and hand required fixes to their owner. Close a finding only after
+the correction is persisted and independently verified, citing its actual Git
+state (commit or explicit working-tree paths); a planned sync is not closure.
+
 ## Passing-review docs sync
 
 A verdict **passes** when a plan review returns `Plan Ready`, or an
