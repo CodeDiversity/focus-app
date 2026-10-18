@@ -31,17 +31,14 @@ are handed to the combined parent re-review.
 **Parent artifacts:** `./artifacts/SP-106/` (created when the parent
 checkpoint/index is written)
 
-**Active substory:** None — SP-106C's IR-106-01 fix (commit `5050b82`) landed
-2026-10-17 after review pass 1; all four children are implemented and handed to
-the combined parent re-review. Checkpoints
+**Active substory:** None — all five children (A–E) implemented and awaiting the combined SP-106 parent review. SP-106E commit `4def5c2` landed 2026-10-18 (193/193 web tests, typecheck, lint clean). Checkpoints
 [./artifacts/SP-106A/checkpoint.md](./artifacts/SP-106A/checkpoint.md) ·
 [./artifacts/SP-106B/checkpoint.md](./artifacts/SP-106B/checkpoint.md) ·
 [./artifacts/SP-106C/checkpoint.md](./artifacts/SP-106C/checkpoint.md) ·
-[./artifacts/SP-106D/checkpoint.md](./artifacts/SP-106D/checkpoint.md).
+[./artifacts/SP-106D/checkpoint.md](./artifacts/SP-106D/checkpoint.md) ·
+[./artifacts/SP-106E/checkpoint.md](./artifacts/SP-106E/checkpoint.md).
 
-**Next substory:** SP-106E — implement the profile time-zone select (UX
-improvement: replace free-text input with pre-loaded dropdown). See
-[SP-106E](./SP-106E-profile-timezone-select.md).
+**Next substory:** None — all five children implemented; combined parent review next.
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C → D;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -57,7 +54,7 @@ written at `./artifacts/SP-106/implementation.md`).
 | [B](./SP-106B-patch-profile-validation.md) | Implemented — awaiting parent review | A implemented (fields exist on the model and GET response — `fbd0ab7`/`71aff0d`) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106B/checkpoint.md) · 258/281 tests (2 skipped — integration need DATABASE_URL), typecheck, lint clean |
 | [C](./SP-106C-profile-preferences-form.md) | Implemented — awaiting parent review | B implemented (PATCH + 400 `errors` contract; GET fields) | — (combined parent re-review; IR-106-01 fixed in `5050b82`) | [checkpoint](./artifacts/SP-106C/checkpoint.md) · [implementation](./artifacts/SP-106C/implementation.md) · commits `6ece311`, `5050b82` (2026-10-17: 193/193 web tests, typecheck, lint clean; error-plumb deviation recorded for the parent review; stored-zone hydration fix after review pass 1) |
 | [D](./SP-106D-profile-integration.md) | Implemented — awaiting parent review | A, B, C implemented | — (combined parent review after all children; report at `./artifacts/SP-106/review.md`) | [checkpoint](./artifacts/SP-106D/checkpoint.md) · [implementation](./artifacts/SP-106D/implementation.md) · commits `426459e` (2026-10-17: integration suite 7/7 on disposable Postgres, API 288/288 zero skips, web 188/188, typecheck+lint clean; manual browser sign-off approved with recorded limitations) · [parent index](./artifacts/SP-106/implementation.md) |
-| [E](./SP-106E-profile-timezone-select.md) | Queued | C implemented (form wiring, `updateProfile` thunk, error contract) | — (combined parent review after all children) | Pending creation |
+| [E](./SP-106E-profile-timezone-select.md) | Implemented — awaiting parent review | C implemented (form wiring, `updateProfile` thunk, error contract) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106E/checkpoint.md) · [implementation](./artifacts/SP-106E/implementation.md) · commit `4def5c2` (2026-10-18: 193/193 web tests, typecheck, lint clean) |
 
 The queue is the current execution record. All four children are implemented
 2026-10-17 and awaiting the single combined SP-106 parent review; no child review
