@@ -7,9 +7,9 @@ Role / scope: implementer; shared Prettier package + per-app ESLint configs + sc
 
 ## Repository state
 - Workspace / branch: `main`, single shared workspace
-- HEAD at last update: `cffc4c2` (user commit of SP-109 artifact deletions); planner commit `7ca4296` (STUDY-21 docs settle) is the parent of HEAD
-- Saved work: all STUDY-21A changes uncommitted in the working tree — 81 modified files (mostly prettier reformat of both apps), 1 deleted (`.prettierrc`), untracked: `.prettierrc.cjs`, `packages/`, `docs/stories/STUDY-21/artifacts/STUDY-21A/`; `pnpm-lock.yaml` +79 lines
-- Other work to preserve: none else (user commits in parallel — re-check `git log`/`status` before committing; do not `git add -A` blindly)
+- HEAD at last update: `f6ed6ee` (this story's commit); below it: `cffc4c2` (user commit of SP-109 artifact deletions), `7ca4296` (planner STUDY-21 docs settle)
+- Saved work: all STUDY-21A changes committed in `f6ed6ee` (89 files: shared package, configs, scripts, 72 pre-formatted source files, root pointer, docs); working tree clean
+- Other work to preserve: none else (user commits in parallel — re-check `git log`/`status` before committing; stage scoped paths explicitly, never blind `git add -A`)
 
 ## Baseline (verified before changes)
 - Existing configs (story note "no existing configs" is stale): root `.prettierrc` JSON (settings identical to planned shared config), root `.prettierignore`, `apps/api/.eslintrc.cjs` (extends `prettier` config only, no prettier plugin), `apps/web/.eslintrc.cjs` (react + react-hooks + import + FSD zones; no jsx-a11y, no prettier plugin).
@@ -69,6 +69,6 @@ Role / scope: implementer; shared Prettier package + per-app ESLint configs + sc
 ## Resume next
 1. [x] Wrote `docs/stories/STUDY-21/artifacts/STUDY-21A/implementation.md` (AC outcomes, findings dispositions, verification).
 2. [x] Updated parent README queue row + story status to Done/awaiting-review.
-3. [ ] Commit scoped work (code + docs together); backfill the commit hash into implementation.md.
+3. [x] Committed scoped work as `f6ed6ee` (89 files); commit hash backfilled into implementation.md.
 4. [ ] Request one independent parent review (reviewer role, review unit STUDY-21); do not self-approve.
 - Open for reviewer: F-21A-7 D21-6 rule-name deviation (2 of 4 named rules don't exist in any registry jsx-a11y 6.x build).

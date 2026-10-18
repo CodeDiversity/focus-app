@@ -2,6 +2,7 @@
 
 **Story:** [STUDY-21A](../../STUDY-21A.md) · **Parent:** [STUDY-21](../../README.md) · **Milestone:** M1 · **Layer:** Backend + Frontend (cross-cutting) · **Jira:** STUDY-22
 **Implemented:** 2026-10-18 · **Record written:** 2026-10-18 by the implementer
+**Commit:** `f6ed6ee` — `feat(tooling): STUDY-21A shared Prettier config + per-app ESLint` (89 files: shared package, configs, scripts, 72 pre-formatted source files, docs)
 **State:** Implemented — awaiting the STUDY-21 parent review.
 
 ## Summary
