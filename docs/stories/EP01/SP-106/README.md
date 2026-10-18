@@ -20,7 +20,19 @@ the combined SP-106 parent review, parent index at
 page never read the stored time zone), saved at `./artifacts/SP-106/review.md`;
 the finding was fixed in `5050b82` (stored-zone hydration + re-seed, unknown-zone
 PATCH guard, 5 new page tests, root README `PUT`→`PATCH`) and all four children
-are handed to the combined parent re-review.
+are handed to the combined parent re-review. 2026-10-18: SP-106E implementation
+complete (D106-10 time-zone select, commit `4def5c2`) — all five children handed
+to the combined parent review. 2026-10-18: combined parent review pass 2
+returned **Changes Required** (findings IR-106-09…14: E's AC-1/2/4 gaps in
+`getTimeZones()` and the display line, two missing E tests, stale parent
+records, and the DoD-10 browser gate predating the select UI), saved at
+`./artifacts/SP-106/review.md`; the implementer fixed IR-106-09/10/11/13 plus
+ride-along polish IR-106-02/03/06/15(a–c) the same day (web 201/201, API
+292/292 zero skips on a disposable Postgres, typechecks and lints clean).
+**Open gate: IR-106-14** — one recorded human browser pass on `/profile` with
+the select (or a recorded user ratification of the 2026-10-17 sign-off) is
+required before the parent re-review can pass. All five children are handed to
+that re-review (next finding IDs continue at IR-106-16).
 
 ## Execution queue
 
@@ -31,14 +43,21 @@ are handed to the combined parent re-review.
 **Parent artifacts:** `./artifacts/SP-106/` (created when the parent
 checkpoint/index is written)
 
-**Active substory:** None — all five children (A–E) implemented and awaiting the combined SP-106 parent review. SP-106E commit `4def5c2` landed 2026-10-18 (193/193 web tests, typecheck, lint clean). Checkpoints
+**Active substory:** None — all five children (A–E) implemented; pass-2 review
+findings fixed 2026-10-18 and awaiting the combined SP-106 parent re-review.
+**Open gate:** IR-106-14 — a recorded human browser pass on `/profile` with the
+select UI (DoD 10) or a recorded user ratification extending the 2026-10-17
+sign-off; not fabricable by the implementer. Checkpoints
 [./artifacts/SP-106A/checkpoint.md](./artifacts/SP-106A/checkpoint.md) ·
 [./artifacts/SP-106B/checkpoint.md](./artifacts/SP-106B/checkpoint.md) ·
 [./artifacts/SP-106C/checkpoint.md](./artifacts/SP-106C/checkpoint.md) ·
 [./artifacts/SP-106D/checkpoint.md](./artifacts/SP-106D/checkpoint.md) ·
 [./artifacts/SP-106E/checkpoint.md](./artifacts/SP-106E/checkpoint.md).
 
-**Next substory:** None — all five children implemented; combined parent review next.
+**Next substory:** None — all five children implemented and pass-2 findings
+fixed; the combined SP-106 parent re-review is next (after the IR-106-14
+browser gate; report at `./artifacts/SP-106/review.md`, new finding IDs from
+IR-106-16).
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C → D;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -51,14 +70,17 @@ written at `./artifacts/SP-106/implementation.md`).
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [A](./SP-106A-profile-schema-and-get.md) | Implemented — awaiting parent review | SP-104 implemented and reviewed (STUDY-10 review PASS) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106A/checkpoint.md) · [implementation](./artifacts/SP-106A/implementation.md) · commits `fbd0ab7`, `71aff0d`, `775d4eb` (2026-10-17: 260/260 tests, typecheck, lint clean) |
-| [B](./SP-106B-patch-profile-validation.md) | Implemented — awaiting parent review | A implemented (fields exist on the model and GET response — `fbd0ab7`/`71aff0d`) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106B/checkpoint.md) · 258/281 tests (2 skipped — integration need DATABASE_URL), typecheck, lint clean |
+| [B](./SP-106B-patch-profile-validation.md) | Implemented — awaiting parent review | A implemented (fields exist on the model and GET response — `fbd0ab7`/`71aff0d`) | — (combined parent re-review; pass-2 polish IR-106-02/03/06 fixed 2026-10-18) | [checkpoint](./artifacts/SP-106B/checkpoint.md) · 292/292 tests on disposable Postgres (fix pass; was 288), typecheck, lint clean · fix-pass section in checkpoint |
 | [C](./SP-106C-profile-preferences-form.md) | Implemented — awaiting parent review | B implemented (PATCH + 400 `errors` contract; GET fields) | — (combined parent re-review; IR-106-01 fixed in `5050b82`) | [checkpoint](./artifacts/SP-106C/checkpoint.md) · [implementation](./artifacts/SP-106C/implementation.md) · commits `6ece311`, `5050b82` (2026-10-17: 193/193 web tests, typecheck, lint clean; error-plumb deviation recorded for the parent review; stored-zone hydration fix after review pass 1) |
 | [D](./SP-106D-profile-integration.md) | Implemented — awaiting parent review | A, B, C implemented | — (combined parent review after all children; report at `./artifacts/SP-106/review.md`) | [checkpoint](./artifacts/SP-106D/checkpoint.md) · [implementation](./artifacts/SP-106D/implementation.md) · commits `426459e` (2026-10-17: integration suite 7/7 on disposable Postgres, API 288/288 zero skips, web 188/188, typecheck+lint clean; manual browser sign-off approved with recorded limitations) · [parent index](./artifacts/SP-106/implementation.md) |
-| [E](./SP-106E-profile-timezone-select.md) | Implemented — awaiting parent review | C implemented (form wiring, `updateProfile` thunk, error contract) | — (combined parent review after all children) | [checkpoint](./artifacts/SP-106E/checkpoint.md) · [implementation](./artifacts/SP-106E/implementation.md) · commit `4def5c2` (2026-10-18: 193/193 web tests, typecheck, lint clean) |
+| [E](./SP-106E-profile-timezone-select.md) | Implemented — awaiting parent review | C implemented (form wiring, `updateProfile` thunk, error contract) | — (combined parent re-review; IR-106-09/10/11/15a-c fixed 2026-10-18) | [checkpoint](./artifacts/SP-106E/checkpoint.md) · [implementation](./artifacts/SP-106E/implementation.md) · commits `4def5c2` + 2026-10-18 fix pass (2026-10-18: 201/201 web tests, typecheck, lint clean; review pass-2 findings recorded in checkpoint) |
 
-The queue is the current execution record. All four children are implemented
-2026-10-17 and awaiting the single combined SP-106 parent review; no child review
-is performed and none replaces that sign-off.
+The queue is the current execution record. All five children (A–E) are
+implemented — A–D on 2026-10-17, E on 2026-10-18 — and awaiting the single
+combined SP-106 parent re-review; pass-2 findings IR-106-09/10/11/13 plus
+polish ride-alongs were fixed 2026-10-18, and IR-106-14 (DoD-10 browser pass
+on the select UI) remains an open human gate. No child review is performed and
+none replaces that sign-off.
 
 ## Child inventory
 

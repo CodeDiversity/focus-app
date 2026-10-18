@@ -43,3 +43,21 @@
 - AC-106-06: 400 responses include field-level `errors` map; `message` array preserved ✓
 - AC-106-05 (cross-student): PATCH by student A never modifies student B's row ✓
 - D106-7: Dead `findAll`/`remove` deleted ✓
+
+## Fix pass 2026-10-18 — parent review polish ride-alongs (IR-106-02, IR-106-03, IR-106-06)
+
+Combined parent review pass 2 left three B-scoped polish findings open; they were
+fixed as ride-alongs with the SP-106E fix pass (same verification run).
+
+| ID | Affected paths | Observed issue | Disposition | Closure evidence |
+|---|---|---|---|---|
+| IR-106-02 | `dto/validate-bounded-size.validator.ts`, `dto/update-user.dto.spec.ts` | 4096 cap measured in UTF-16 code units (`String.length`) while D106-5 says bytes — a multi-byte-heavy bag could exceed the byte cap | fixed | `Buffer.byteLength(serialized, 'utf8') <= 4096`; new DTO test "measures the cap in UTF-8 bytes, not UTF-16 units" (2050×`é`: units < 4096, bytes > 4096 → rejected) |
+| IR-106-03 | `common/pipes/validation.pipe.ts`, new `common/pipes/validation.pipe.spec.ts` | Custom `exceptionFactory` collected only top-level `constraints`, silently dropping nested-DTO subtrees from the `message` array | fixed | `message` now comes from the stock `this.flattenValidationErrors(errors)` (nested-aware; byte-identical for flat DTOs); `errors` map stays flat. New pipe spec covers flat + nested cases |
+| IR-106-06 | `dto/update-user.dto.ts`, `dto/update-user.dto.spec.ts` | PATCH accepted an empty display name (`@IsOptional` + `@IsString` only) | fixed | `@IsNotEmpty()` added to `name`; DTO test "an empty display name fails" |
+
+**Verification (fix pass, 2026-10-18):** full API suite with `DATABASE_URL`
+(disposable Postgres `studypilot_sp106_fix`, all migrations via
+`prisma migrate deploy`, dropped after the run): **26 suites / 292 tests
+passed, 0 skipped** (was 25/288; +1 suite = the new pipe spec, +4 tests).
+`pnpm --filter @studypilot/api typecheck` clean; `npx eslint "src/**/*.ts"`
+no findings (the repo `lint` script's `--fix` was deliberately not run).
