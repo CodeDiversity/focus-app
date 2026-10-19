@@ -274,11 +274,11 @@ planning obligations only. Next actionable: **SP-107A** (execution queue).
 ## Autopilot
 
 - **Scope and entry:** Full SP-107 parent (children A–F + combined parent review). Entry: SP-107A (first child).
-- **Coordinator:** workspace `/Users/michael/Documents/GitHub/focus-app`, branch `main`, HEAD `8abb20f`.
-- **Stage:** Implementing SP-107F (sixth child — integration + DoD 10 + parent index).
-- **Active dispatch:** `SP107-implementer-F` — implementer — SP-107F wizard integration verification + sign-off + parent index.
-- **Last result / retry state:** `SP107-implementer-E` returned: SP-107E complete — commit `14e7a25` (Step3Course + courseApi entity, both completion paths, shell swap; F-107E-1…4 closed); web suite **26/26 files, 283/283 tests, 0 skipped**; typecheck/lint clean; tree clean. (Prior: D `687a876` 24/258; C `5863b44` 22/238; B `03a412a` 32/390; A `9885601` 28/327.)
-- **Resume:** Dispatched fresh isolated implementer `SP107-implementer-F` for SP-107F (queue row F eligible: A–E implemented).
+- **Coordinator:** workspace `/Users/michael/Documents/GitHub/focus-app`, branch `main`, run baseline `8abb20f` (before the first SP-107 change), current HEAD `216cdfe`.
+- **Stage:** Human DoD-10 sign-off pending → then combined SP-107 parent review.
+- **Active dispatch:** `None` — all children A–F implemented; awaiting the human AC-7 browser walk, then a fresh reviewer.
+- **Last result / retry state:** SP-107F closed via resume dispatch `SP107-implementer-F2` (the first `SP107-implementer-F` died mid-task on a runtime output-truncation error with partial work persisted; F2 completed it): commits `b2662d0` + `216cdfe` (e2e spec 10/10, parent index, queue closeout). Final state: API **33/33 suites, 400/400 tests, 0 skipped**; web **26/26 files, 283/283 tests, 0 skipped**; typecheck/lint clean both apps; tree clean. All six children: A `9885601`, B `03a412a`, C `5863b44`, D `687a876`, E `14e7a25`, F `b2662d0`. Open DoD item: AC-7 manual browser sign-off recorded **CANNOT VERIFY** (human gate; 12-step walk in `./artifacts/SP-107F/implementation.md`; closure = user ratification recorded by coordinator per SP-106D precedent).
+- **Resume:** User performs the AC-7 walk (dev stack up); coordinator records the ratification with provenance; then dispatch a fresh reviewer for the combined SP-107 parent review (report `./artifacts/SP-107/review.md`).
 
 ## Final implementation review unit
 
