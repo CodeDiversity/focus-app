@@ -39,7 +39,7 @@ record, DoD 10 sign-off, this index).
 | [C](../../SP-107C-wizard-shell-and-step1.md) | `/onboarding` route (inside `ProtectedRoute`, standard `Layout`, D107-3), onboarding slice + thunks, `WizardShell` (skip from step 2+, sign-out, loading/error), step 1 preferences form (SP-106 `PATCH /users/me` reuse), login-entry redirect | [implementation](../SP-107C/implementation.md) | [checkpoint](../SP-107C/checkpoint.md) | `5863b44` |
 | [D](../../SP-107D-wizard-step2-semester.md) | Step 2 first-semester form (name + dates, end-after-start client validation, 400/409/network + progress-save-failure retry), `semesterApi` entity, `advanceOnboarding { step, semesterId? }` (D107-8) | [implementation](../SP-107D/implementation.md) | [checkpoint](../SP-107D/checkpoint.md) | `687a876` |
 | [E](../../SP-107E-wizard-step3-course.md) | Step 3 optional-first-course form (both exit paths, 400/409/404/network handling, shared busy flag), `courseApi` entity, placeholder removed — all three steps are real forms | [implementation](../SP-107E/implementation.md) | [checkpoint](../SP-107E/checkpoint.md) | `14e7a25` |
-| [F](../../SP-107F-wizard-integration.md) | Real-Postgres e2e student-journey suite (10 tests: complete, resume, skip, terminal, two-student isolation, backfill); full-suite re-runs; backfill record; DoD 10 sign-off **CANNOT VERIFY** (human gate); this parent index | [implementation](../SP-107F/implementation.md) | [checkpoint](../SP-107F/checkpoint.md) | this closeout commit (hash recorded in the returned handoff) |
+| [F](../../SP-107F-wizard-integration.md) | Real-Postgres e2e student-journey suite (10 tests: complete, resume, skip, terminal, two-student isolation, backfill); full-suite re-runs; backfill record; DoD 10 sign-off **CANNOT VERIFY** (human gate); this parent index | [implementation](../SP-107F/implementation.md) | [checkpoint](../SP-107F/checkpoint.md) | `b2662d0` (closeout commit) |
 
 ## Per-child scope and verification
 
@@ -93,6 +93,7 @@ Baseline: `8abb20f` (the commit before the first SP-107 change).
 | `00141c0` | autopilot bookkeeping |
 | `14e7a25` | SP-107E — 9 files: `courseApi` (+ test), `Step3Course` (+ test), `WizardShell`, `OnboardingPage.test`, README execution fields, `artifacts/SP-107E/` |
 | `3dfa317` | autopilot bookkeeping (HEAD at F dispatch) |
+| `b2662d0` | SP-107F — 5 files: `onboarding-e2e.spec.ts` (new, 10 tests), README execution fields, `artifacts/SP-107F/` (checkpoint + implementation record), `artifacts/SP-107/implementation.md` (this index) |
 
 Non-SP-107 commit inside the range: `032b66d` (jira-sync ledger —
 `docs/jira-sync/ledger.json` only; owned by jira-sync, **not** part of the
@@ -106,13 +107,15 @@ index), `docs/stories/EP01/SP-107/README.md` (execution fields only). The
 README's `## Autopilot` run-record section is coordinator-owned and is not
 part of the implementation commits.
 
-Code scope summary across the unit: `apps/api` — `schema.prisma` + 2
-migrations, onboarding module, semesters + courses modules,
-`common/lib/calendar-date.ts`, `app.module.ts`, `test/test-http.ts`, 9 new
-spec files (18 unit + 16 + 26 + 10 integration/e2e tests). `apps/web` —
-onboarding feature (api/slice/shell/steps 1–3), onboarding page, `App.tsx`
-route, store + test providers, `LoginPage`. No CI, `package.json` or secret
-changes anywhere in the unit.
+Code scope summary across the unit (baseline `8abb20f`): `apps/api` —
+`schema.prisma` + 2 migrations, onboarding module, semesters + courses
+modules, `common/lib/calendar-date.ts`, `app.module.ts`, `test/test-http.ts`,
+7 new spec files (+108 API tests: 292 → 400 — A 19 unit + 16 integration,
+B 37 unit + 26 integration, F 10 e2e). `apps/web` — onboarding feature
+(api/slice/shell/steps 1–3), onboarding page, `App.tsx` route, store + test
+providers, `LoginPage`, 7 new test files (+77 web tests: 201 → 283 — C 34 +
+3 login cases, D 18 + 2 slice, E 25). No CI, `package.json` or secret changes
+anywhere in the unit.
 
 ## AC / TR / DoD coverage
 

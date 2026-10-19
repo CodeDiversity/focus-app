@@ -14,11 +14,13 @@ here, unless it is a harness-wiring defect).
 ## Repository state
 
 - Workspace / branch: `/Users/michael/Documents/GitHub/focus-app`, `main`
-- HEAD at last update: `3dfa317` (autopilot dispatch commit on top of `14e7a25`
-  = SP-107E). Coordinator snapshot said `14e7a25`; the extra commit is
-  coordinator bookkeeping only — no code difference (see F-107F-1).
+- HEAD at last update: `3dfa317` at dispatch (autopilot bookkeeping on top of
+  `14e7a25` = SP-107E; coordinator snapshot said `14e7a25` — see F-107F-1);
+  after closeout: `b2662d0` (this child's commit).
 - Saved work: A `9885601`, B `03a412a`, C `5863b44`, D `687a876`, E `14e7a25`
-  (all verified in the queue).
+  (all verified in the queue). F closeout: `b2662d0` (e2e spec + SP-107F/SP-107
+  artifacts + README execution fields; hash also recorded in the returned
+  handoff and the coordinator's `## Autopilot` run record).
 - Other work to preserve: none (working tree clean at dispatch).
 
 ## Progress
