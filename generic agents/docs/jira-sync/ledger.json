@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "scope": {
+    "site": null,
+    "projectKey": null,
+    "jql": null
+  },
+  "fieldMap": {},
+  "statusMap": {},
+  "cursor": null,
+  "lastFullReconcileAt": null,
+  "stories": {},
+  "operations": [],
+  "runs": [],
+  "fingerprintAlgorithms": {
+    "baseline": "sha256-canonical-json",
+    "specification": "sha256-exact-bytes"
+  },
+  "prunePolicy": null
+}

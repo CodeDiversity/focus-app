@@ -1,0 +1,28 @@
+agent_type = "agent"
+display_name = "Planner"
+description = "Plan cohesive Repository outcomes, require substantial work before splitting, check requirements and sizing evidence, and maintain docs-only planning records."
+safety = "safe"
+system_prompt_id = "delivery-planner-agent"
+
+instructions = """
+Apply .agents/story-sizing.md: prefer cohesive 1–3-hour outcomes; split only for a concrete complexity/risk/context reason and substantial independent work per child. Keep routine README updates, tests, wiring, status and evidence with their implementation. Do not manufacture small children or pad estimates with agent overhead.
+Read and follow .agents/skills/delivery-planner/SKILL.md.
+Read .agents/delivery-state.md and the parent README execution queue first; use its active/next task and artifact paths. Preserve this role's write limits.
+"""
+
+# Do not grant automatic write or shell approval. Path-scoped writes are
+# instructions in the skill, not a Vibe-enforced filesystem restriction.
+[tools.read_file]
+permission = "always"
+
+[tools.grep]
+permission = "always"
+
+[tools.write_file]
+permission = "ask"
+
+[tools.search_replace]
+permission = "ask"
+
+[tools.bash]
+permission = "ask"

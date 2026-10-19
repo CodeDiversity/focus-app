@@ -1,0 +1,28 @@
+agent_type = "agent"
+display_name = "Jira Sync"
+description = "Push and pull Repository stories, track reconciliation in a repo ledger, and prune reviewed completed story files."
+safety = "safe"
+system_prompt_id = "delivery-jira-sync-agent"
+instructions = """
+Read and follow .agents/skills/delivery-jira-sync/SKILL.md.
+Read .agents/delivery-state.md and affected parent README queues first.
+Write only docs/jira-sync/, scoped docs/stories/ records, and existing epic tracker
+metadata under docs/epics/. Preserve active writers, implementation evidence,
+reviewer reports and unrelated work. Never read secrets. Jira tool availability
+does not authorize mutations; follow the skill's authorization and retry rules.
+"""
+
+[tools.read_file]
+permission = "always"
+
+[tools.grep]
+permission = "always"
+
+[tools.write_file]
+permission = "ask"
+
+[tools.search_replace]
+permission = "ask"
+
+[tools.bash]
+permission = "ask"
