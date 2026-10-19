@@ -273,10 +273,10 @@ planning obligations only. Next actionable: **SP-107A** (execution queue).
 
 - **Scope and entry:** Full SP-107 parent (children A–F + combined parent review). Entry: SP-107A (first child).
 - **Coordinator:** workspace `/Users/michael/Documents/GitHub/focus-app`, branch `main`, HEAD `8abb20f`.
-- **Stage:** Implementing SP-107C (third child).
-- **Active dispatch:** `SP107-implementer-C` — implementer — SP-107C wizard shell + step 1.
-- **Last result / retry state:** `SP107-implementer-B` returned: SP-107B complete — commit `03a412a` (semesters + courses modules, `@db.Date` migration `20261018232322`, `calendar-date.ts`, both integration specs, queue + records; F-107B-1…5 fixed); full suite **32/32 suites, 390/390 tests, 0 skipped**; typecheck/lint clean; tree clean. (Prior: `SP107-implementer-A2` closed SP-107A at `9885601`, 28/28 suites, 327/327 tests — coordinator re-verified.)
-- **Resume:** Dispatched fresh isolated implementer `SP107-implementer-C` for SP-107C (queue row C `Queued` → eligible: A implemented, SP-106C/E in code).
+- **Stage:** Implementing SP-107D (fourth child).
+- **Active dispatch:** `SP107-implementer-D` — implementer — SP-107D wizard step 2 (first-semester form).
+- **Last result / retry state:** `SP107-implementer-C` returned: SP-107C complete — commit `5863b44` (onboarding feature: api/slice/WizardShell/Step1Preferences, OnboardingPage, LoginPage redirect, +3 test files; F-107C-1…5 fixed; F-107C-3 post-login fetch-failure → `/onboarding` flagged for parent review); web suite **22/22 files, 238/238 tests, 0 skipped**; typecheck/lint clean; tree clean. (Prior: B `03a412a` 32/32 suites 390/390; A `9885601` 28/28 suites 327/327 — coordinator re-verified A.)
+- **Resume:** Dispatched fresh isolated implementer `SP107-implementer-D` for SP-107D (queue row D eligible: B + C implemented).
 
 ## Final implementation review unit
 
