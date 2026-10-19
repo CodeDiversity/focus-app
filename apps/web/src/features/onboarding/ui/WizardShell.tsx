@@ -2,8 +2,9 @@ import { clsx } from 'clsx';
 import { Button } from '@/shared/ui/Button';
 import type { OnboardingStatus } from '../model/onboardingSlice';
 import { Step1Preferences } from './Step1Preferences';
+import { Step2Semester } from './Step2Semester';
 
-/** Per-step titles for the indicator and the "coming" placeholders. */
+/** Per-step titles for the indicator and the "coming" placeholder. */
 const STEP_TITLES: Record<number, string> = {
   1: 'Your preferences',
   2: 'Your first semester',
@@ -11,9 +12,9 @@ const STEP_TITLES: Record<number, string> = {
 };
 
 /**
- * Steps 2/3 render as "coming" placeholders until SP-107D/E land their forms
- * in this folder; the shell renders step content by step number so the real
- * forms drop in by replacing the placeholder branches (ticket Technical Notes).
+ * Step 3 renders as a "coming" placeholder until SP-107E lands its form in
+ * this folder; the shell renders step content by step number so the real
+ * form drops in by replacing the placeholder branch (ticket Technical Notes).
  */
 function StepPlaceholder({ step }: { step: number }) {
   return (
@@ -31,7 +32,7 @@ function stepContent(step: number) {
     case 1:
       return <Step1Preferences />;
     case 2:
-      return <StepPlaceholder step={2} />;
+      return <Step2Semester />;
     case 3:
       return <StepPlaceholder step={3} />;
     default:

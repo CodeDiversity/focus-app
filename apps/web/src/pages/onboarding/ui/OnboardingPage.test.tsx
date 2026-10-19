@@ -180,8 +180,8 @@ describe('OnboardingPage resume and terminal redirect (AC 1, 5, 7)', () => {
     await waitForBoot();
 
     expect(await screen.findByText(/step 2 of 3/i)).toBeInTheDocument();
-    // The placeholder stands in for the SP-107D form.
-    expect(screen.getByText('Your first semester')).toBeInTheDocument();
+    // The SP-107D form stands in for the step-2 content.
+    expect(screen.getByLabelText(/semester name/i)).toBeInTheDocument();
     // The step indicator marks the current step for assistive tech.
     const indicator = screen.getByRole('list', { name: /setup progress/i });
     const items = Array.from(indicator.querySelectorAll('li'));
@@ -307,9 +307,9 @@ describe('OnboardingPage step 1 (AC 3, 6, 8)', () => {
     );
     await waitFor(() => expect(store.getState().onboarding.step).toBe(2));
 
-    // The shell re-renders the (placeholder) step 2 with the announced step.
+    // The shell re-renders the SP-107D step 2 with the announced step.
     expect(await screen.findByText(/step 2 of 3/i)).toBeInTheDocument();
-    expect(screen.getByText('Your first semester')).toBeInTheDocument();
+    expect(screen.getByLabelText(/semester name/i)).toBeInTheDocument();
   });
 
   it('fits the responsive wizard container on mobile and desktop widths', async () => {

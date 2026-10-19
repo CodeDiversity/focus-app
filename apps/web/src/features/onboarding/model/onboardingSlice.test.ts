@@ -130,13 +130,36 @@ describe('onboardingSlice — advanceOnboarding', () => {
     const store = makeStore();
     store.dispatch(applyOnboardingState(freshState));
 
-    const result = await store.dispatch(advanceOnboarding(2));
+    const result = await store.dispatch(advanceOnboarding({ step: 2 }));
 
     expect(advanceOnboarding.fulfilled.match(result)).toBe(true);
     const state = store.getState().onboarding;
     expect(state.step).toBe(2);
     expect(state.status).toBe('ready');
     expect(state.error).toBeNull();
+    expect(mockedUpdateState).toHaveBeenCalledWith({ step: 2 });
+  });
+
+  it('persists the created semester id for step-3 resume (D107-8, SP-107D)', async () => {
+    mockedUpdateState.mockResolvedValue({ ...freshState, step: 3, semesterId: 'sem-1' });
+    const store = makeStore();
+    store.dispatch(applyOnboardingState(freshState));
+
+    const result = await store.dispatch(advanceOnboarding({ step: 3, semesterId: 'sem-1' }));
+
+    expect(advanceOnboarding.fulfilled.match(result)).toBe(true);
+    expect(mockedUpdateState).toHaveBeenCalledWith({ step: 3, semesterId: 'sem-1' });
+    expect(store.getState().onboarding.step).toBe(3);
+    expect(store.getState().onboarding.semesterId).toBe('sem-1');
+  });
+
+  it('omits the semester id from the body when it is not provided', async () => {
+    mockedUpdateState.mockResolvedValue({ ...freshState, step: 2 });
+    const store = makeStore();
+    store.dispatch(applyOnboardingState(freshState));
+
+    await store.dispatch(advanceOnboarding({ step: 2 }));
+
     expect(mockedUpdateState).toHaveBeenCalledWith({ step: 2 });
   });
 
@@ -148,7 +171,7 @@ describe('onboardingSlice — advanceOnboarding', () => {
     const store = makeStore();
     store.dispatch(applyOnboardingState(freshState));
 
-    const result = await store.dispatch(advanceOnboarding(2));
+    const result = await store.dispatch(advanceOnboarding({ step: 2 }));
 
     expect(advanceOnboarding.rejected.match(result)).toBe(true);
     if (advanceOnboarding.rejected.match(result)) {

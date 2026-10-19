@@ -162,7 +162,7 @@ export function Step1Preferences() {
       // the slice keeps the previous step and records the error the shell
       // displays (the idempotent submit is the retry); on success the slice's
       // step becomes 2 and the shell re-renders step 2.
-      await dispatch(advanceOnboarding(2));
+      await dispatch(advanceOnboarding({ step: 2 }));
     } catch (err: unknown) {
       // A 400 carrying the SP-106B `errors` map renders its messages under
       // the matching inputs (the a11y wiring picks up aria-invalid/

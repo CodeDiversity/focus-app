@@ -1,6 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import { onboardingService, type OnboardingState } from '../api/onboardingApi';
+import {
+  onboardingService,
+  type OnboardingState,
+  type UpdateOnboardingRequest,
+} from '../api/onboardingApi';
 import { apiErrorMessage, extractApiError, getErrorMessage } from '@/shared/lib/errors';
 // RD7: sanctioned features → app import for typed store types
 // eslint-disable-next-line import/no-restricted-paths
@@ -111,18 +115,33 @@ export const fetchOnboardingState = createAsyncThunk<
 });
 
 /**
- * Advances the onboarding pointer to `step` (`PATCH /onboarding { step }`).
- * The backend only moves the pointer forward (regression → 400) and rejects
- * any write to a completed state (409) — the slice keeps the previous step
- * on failure.
+ * `advanceOnboarding` payload: the next step, plus (from step 2 onward) the
+ * semester to persist in the onboarding state for step-3 resume (D107-8).
+ */
+export interface AdvanceOnboardingArgs {
+  /** The next step, 1–3 (the backend moves the pointer forward only). */
+  step: number;
+  /** Semester created in step 2; omitted for step-1 advances. */
+  semesterId?: string | null;
+}
+
+/**
+ * Advances the onboarding pointer to `step` (`PATCH /onboarding { step,
+ * semesterId? }`). The backend only moves the pointer forward (regression →
+ * 400) and rejects any write to a completed state (409) — the slice keeps the
+ * previous step on failure.
  */
 export const advanceOnboarding = createAsyncThunk<
   OnboardingState,
-  number,
+  AdvanceOnboardingArgs,
   { rejectValue: string; dispatch: AppDispatch }
->('onboarding/advance', async (step, { dispatch, rejectWithValue }) => {
+>('onboarding/advance', async ({ step, semesterId }, { dispatch, rejectWithValue }) => {
   try {
-    const state = await onboardingService.updateState({ step });
+    const body: UpdateOnboardingRequest = { step };
+    if (semesterId) {
+      body.semesterId = semesterId;
+    }
+    const state = await onboardingService.updateState(body);
     dispatch(applyOnboardingState(state));
     return state;
   } catch (err: unknown) {
