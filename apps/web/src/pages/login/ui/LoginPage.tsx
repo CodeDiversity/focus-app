@@ -5,9 +5,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/features/auth/model/AuthContext';
+import { fetchOnboardingState } from '@/features/onboarding/model/onboardingSlice';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
 import { getErrorMessage } from '@/shared/lib/errors';
+// RD7: sanctioned pages → app import for typed dispatch hook
+// eslint-disable-next-line import/no-restricted-paths
+import { useAppDispatch } from '@/app/store/hooks';
 
 // Validation schema
 const loginSchema = z.object({
@@ -19,6 +23,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export function LoginPage() {
   const { login, isLoading, clearError } = useAuth();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,7 +77,16 @@ export function LoginPage() {
     try {
       await login(data.email, data.password);
       toast.success('Logged in successfully!');
-      navigate(from, { replace: true });
+
+      // SP-107C (AC-107-01): route to the wizard unless onboarding is already
+      // complete. F-107C-3: on fetch failure we still navigate to
+      // /onboarding — the page shows an actionable error + retry, so a new
+      // student is never stranded on the login screen.
+      const result = await dispatch(fetchOnboardingState());
+      // A rejected fetch carries the sanitized message (a string) as its
+      // payload; only a fulfilled result carries the state object.
+      const completed = fetchOnboardingState.fulfilled.match(result) && result.payload.completed;
+      navigate(completed ? from : '/onboarding', { replace: true });
     } catch (err: unknown) {
       toast.error(getErrorMessage(err) || 'Login failed');
     } finally {

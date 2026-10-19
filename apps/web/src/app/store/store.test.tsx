@@ -14,7 +14,8 @@ describe('store', () => {
 
     // Dispatch a no-op action to confirm the middleware chain is active
     store.dispatch({ type: '@@test/no-op' });
-    expect(Object.keys(store.getState()).sort()).toEqual(['api', 'auth']);
+    // SP-107C added the onboarding reducer alongside auth and the RTK Query api.
+    expect(Object.keys(store.getState()).sort()).toEqual(['api', 'auth', 'onboarding']);
     expect(store.getState().api).toEqual(expect.objectContaining({ queries: {}, mutations: {} }));
   });
 
@@ -53,14 +54,15 @@ describe('store', () => {
       </Provider>
     );
 
-    // The store registers the auth and api (RTK Query) reducers, so state has two keys
-    expect(getByTestId('state-size').textContent).toBe('2');
+    // The store registers the auth, onboarding and api (RTK Query) reducers,
+    // so state has three keys
+    expect(getByTestId('state-size').textContent).toBe('3');
 
     // Dispatch should work without error
     const btn = getByTestId('dispatch-btn');
     btn.click();
 
     // Verify dispatch changed nothing (no reducers listening)
-    expect(getByTestId('state-size').textContent).toBe('2');
+    expect(getByTestId('state-size').textContent).toBe('3');
   });
 });

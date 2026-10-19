@@ -5,6 +5,7 @@ import { LoginPage } from '@/pages/login/ui/LoginPage';
 import { RegisterPage } from '@/pages/register/ui/RegisterPage';
 import { DashboardPage } from '@/pages/dashboard/ui/DashboardPage';
 import { ProfilePage } from '@/pages/profile/ui/ProfilePage';
+import { OnboardingPage } from '@/pages/onboarding/ui/OnboardingPage';
 import { VerifyEmailPage } from '@/pages/verify-email/ui/VerifyEmailPage';
 import { ForgotPasswordPage } from '@/pages/forgot-password/ui/ForgotPasswordPage';
 import { ResetPasswordPage } from '@/pages/reset-password/ui/ResetPasswordPage';
@@ -30,6 +31,9 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          {/* SP-107C: onboarding wizard (D107-3: inside ProtectedRoute,
+              rendered within the standard Layout like all existing pages) */}
+          <Route path="/onboarding" element={<OnboardingPage />} />
         </Route>
 
         {/* Redirects */}

@@ -3,17 +3,19 @@ import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
 import authReducer from '@/features/session/model/authSlice';
+import onboardingReducer from '@/features/onboarding/model/onboardingSlice';
 import { api } from '@/features/session/api/sessionApi';
 
 /**
- * A fresh store per test, mirroring `src/app/store/store.ts` (auth + api reducers,
- * api.middleware) so tests never share mutable session or RTK Query cache
- * state.
+ * A fresh store per test, mirroring `src/app/store/store.ts` (auth + onboarding
+ * + api reducers, api.middleware) so tests never share mutable session,
+ * onboarding or RTK Query cache state.
  */
 export function makeTestStore() {
   return configureStore({
     reducer: {
       auth: authReducer,
+      onboarding: onboardingReducer,
       [api.reducerPath]: api.reducer,
     },
     middleware: (getDefaultMiddleware) =>

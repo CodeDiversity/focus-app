@@ -17,7 +17,7 @@ checkpoint/index is written)
 
 **Active substory:** None
 
-**Next substory:** [SP-107C](./SP-107C-wizard-shell-and-step1.md) — implement
+**Next substory:** [SP-107D](./SP-107D-wizard-step2-semester.md) — implement
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C →
 D → E → F; backend/frontend/integration are scope labels, not concurrent writers).
@@ -31,13 +31,13 @@ written at `./artifacts/SP-107/implementation.md`).
 |---|---|---|---|---|
 | [A](./SP-107A-onboarding-state-backend.md) | Implemented — awaiting parent review | SP-104 implemented and reviewed (STUDY-10 review PASS); SP-106 implemented in code (upstream review state noted below) | Parent review (combined SP-107 review after all children) | `./artifacts/SP-107A/` — [implementation record](./artifacts/SP-107A/implementation.md) (2026-10-18: 28/28 suites, 327/327 tests, zero skips) |
 | [B](./SP-107B-minimal-semester-course-endpoints.md) | Implemented — awaiting parent review | SP-104 implemented (global guard + ownership helpers verified in code) | Parent review (combined SP-107 review after all children) | `./artifacts/SP-107B/` — [implementation record](./artifacts/SP-107B/implementation.md) (2026-10-18: 32/32 suites, 390/390 tests, zero skips) |
-| [C](./SP-107C-wizard-shell-and-step1.md) | Queued | A implemented (onboarding state endpoints); SP-106C/E implemented in code (`PATCH /users/me` + `Select`) | Implement after B | — |
+| [C](./SP-107C-wizard-shell-and-step1.md) | Implemented — awaiting parent review | A implemented (onboarding state endpoints); SP-106C/E implemented in code (`PATCH /users/me` + `Select`) | Parent review (combined SP-107 review after all children) | `./artifacts/SP-107C/` — [implementation record](./artifacts/SP-107C/implementation.md) (2026-10-18: 22/22 files, 238/238 tests, zero skips) |
 | [D](./SP-107D-wizard-step2-semester.md) | Queued | B implemented (`POST /semesters`); C implemented (wizard shell) | Implement after C | — |
 | [E](./SP-107E-wizard-step3-course.md) | Queued | B implemented (`POST /courses`); C implemented (wizard shell) | Implement after D | — |
 | [F](./SP-107F-wizard-integration.md) | Queued | A–E implemented | Implement after E (integration + DoD 10 sign-off) | — |
 
-The queue is the current execution record. SP-107A and SP-107B are
-implemented (2026-10-18, awaiting the combined parent review); rows C–F are
+The queue is the current execution record. SP-107A, SP-107B and SP-107C are
+implemented (2026-10-18, awaiting the combined parent review); rows D–F are
 planning state.
 
 ## Upstream dependency status (2026-10-18)

@@ -9,6 +9,7 @@ import { ForgotPasswordPage } from '@/pages/forgot-password/ui/ForgotPasswordPag
 import { ResetPasswordPage } from '@/pages/reset-password/ui/ResetPasswordPage';
 import { AuthProvider } from '@/features/auth/model/AuthContext';
 import { authService } from '@/features/auth/api/authService';
+import { onboardingService } from '@/features/onboarding/api/onboardingApi';
 import { tokenStore } from '@/shared/api/tokenStore';
 import toast from 'react-hot-toast';
 
@@ -28,9 +29,17 @@ vi.mock('@/features/auth/api/authService', () => ({
   },
 }));
 
+vi.mock('@/features/onboarding/api/onboardingApi', () => ({
+  onboardingService: {
+    getState: vi.fn(),
+    updateState: vi.fn(),
+  },
+}));
+
 const mockedLogin = vi.mocked(authService.login);
 const mockedRefresh = vi.mocked(authService.refreshToken);
 const mockedReset = vi.mocked(authService.resetPassword);
+const mockedGetOnboarding = vi.mocked(onboardingService.getState);
 const mockedToast = toast as unknown as {
   success: ReturnType<typeof vi.fn>;
   error: ReturnType<typeof vi.fn>;
@@ -51,6 +60,7 @@ const renderLogin = (state?: unknown) =>
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/dashboard" element={<div>Dashboard page</div>} />
             <Route path="/profile" element={<div>Profile page</div>} />
+            <Route path="/onboarding" element={<div>Onboarding page</div>} />
           </Routes>
         </AuthProvider>
       </MemoryRouter>
@@ -80,6 +90,16 @@ describe('LoginPage', () => {
     tokenStore.clearToken();
     mockedRefresh.mockRejectedValue(new Error('no session'));
     mockedReset.mockResolvedValue({ message: 'Password updated. Please sign in.' });
+    // SP-107C: the post-login onboarding fetch defaults to a *completed*
+    // state so the pre-existing cases keep asserting the original
+    // `from`/`/dashboard` navigation; the not-completed branch gets its own
+    // cases below.
+    mockedGetOnboarding.mockResolvedValue({
+      step: 1,
+      completed: true,
+      completedAt: '2026-10-18T12:00:00.000Z',
+      semesterId: null,
+    });
   });
 
   it('shows an actionable error on 401 invalid credentials', async () => {
@@ -165,6 +185,76 @@ describe('LoginPage', () => {
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     expect(await screen.findByText('Profile page')).toBeInTheDocument();
+  });
+
+  it('routes to /onboarding after login when onboarding is not completed (AC-107-01)', async () => {
+    mockedGetOnboarding.mockResolvedValue({
+      step: 1,
+      completed: false,
+      completedAt: null,
+      semesterId: null,
+    });
+    mockedLogin.mockResolvedValue({
+      accessToken: 'token-1',
+      user: { id: 'user-1', name: 'Ada Lovelace', email: 'ada@example.com' },
+    } as never);
+    const user = userEvent.setup();
+    renderLogin();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
+    );
+
+    await user.type(screen.getByLabelText(/email/i), 'ada@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'Password123');
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
+
+    // The state fetch runs, sees the incomplete wizard, and routes there.
+    await waitFor(() => expect(mockedGetOnboarding).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText('Onboarding page')).toBeInTheDocument();
+    expect(screen.queryByText('Dashboard page')).not.toBeInTheDocument();
+  });
+
+  it('routes to the original destination after login when onboarding is completed', async () => {
+    // The completed default from `beforeEach` applies.
+    mockedLogin.mockResolvedValue({
+      accessToken: 'token-1',
+      user: { id: 'user-1', name: 'Ada Lovelace', email: 'ada@example.com' },
+    } as never);
+    const user = userEvent.setup();
+    renderLogin({ from: { pathname: '/profile' } });
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
+    );
+
+    await user.type(screen.getByLabelText(/email/i), 'ada@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'Password123');
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
+
+    expect(await screen.findByText('Profile page')).toBeInTheDocument();
+    expect(screen.queryByText('Onboarding page')).not.toBeInTheDocument();
+  });
+
+  it('still routes to /onboarding when the post-login state fetch fails (F-107C-3)', async () => {
+    // A new student must never be stranded on the login screen: the wizard
+    // page renders the actionable error + retry instead.
+    mockedGetOnboarding.mockRejectedValue({ message: 'Network failure occurred' });
+    mockedLogin.mockResolvedValue({
+      accessToken: 'token-1',
+      user: { id: 'user-1', name: 'Ada Lovelace', email: 'ada@example.com' },
+    } as never);
+    const user = userEvent.setup();
+    renderLogin();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
+    );
+
+    await user.type(screen.getByLabelText(/email/i), 'ada@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'Password123');
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
+
+    expect(await screen.findByText('Onboarding page')).toBeInTheDocument();
+    // The login itself succeeded — the success toast still fired.
+    expect(mockedToast.success).toHaveBeenCalledWith('Logged in successfully!');
   });
 
   it('routes the forgot-password link to the request screen', async () => {

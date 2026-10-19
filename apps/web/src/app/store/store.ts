@@ -1,10 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from '@/features/session/model/authSlice';
+import onboardingReducer from '@/features/onboarding/model/onboardingSlice';
 import { api } from '@/features/session/api/sessionApi';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+    // SP-107C: wizard onboarding state (SP-107A endpoints)
+    onboarding: onboardingReducer,
     [api.reducerPath]: api.reducer,
   },
   middleware: (getDefaultMiddleware) =>
