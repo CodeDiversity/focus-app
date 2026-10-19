@@ -15,9 +15,9 @@ gate finalized in the last commit. No implementation performed or claimed.
 **Parent artifacts:** `./artifacts/SP-107/` (created when the parent
 checkpoint/index is written)
 
-**Active substory:** None
+**Active substory:** None (all children implemented)
 
-**Next substory:** [SP-107F](./SP-107F-wizard-integration.md) — implement (integration + DoD 10 sign-off)
+**Next substory:** None (all children implemented; the combined SP-107 parent review is next — see Final implementation review unit)
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C →
 D → E → F; backend/frontend/integration are scope labels, not concurrent writers).
@@ -34,11 +34,13 @@ written at `./artifacts/SP-107/implementation.md`).
 | [C](./SP-107C-wizard-shell-and-step1.md) | Implemented — awaiting parent review | A implemented (onboarding state endpoints); SP-106C/E implemented in code (`PATCH /users/me` + `Select`) | Parent review (combined SP-107 review after all children) | `./artifacts/SP-107C/` — [implementation record](./artifacts/SP-107C/implementation.md) (2026-10-18: 22/22 files, 238/238 tests, zero skips) |
 | [D](./SP-107D-wizard-step2-semester.md) | Implemented — awaiting parent review | B implemented (`POST /semesters`); C implemented (wizard shell) | Parent review (combined SP-107 review after all children) | `./artifacts/SP-107D/` — [implementation record](./artifacts/SP-107D/implementation.md) (2026-10-18: 24/24 files, 258/258 tests, zero skips) |
 | [E](./SP-107E-wizard-step3-course.md) | Implemented — awaiting parent review | B implemented (`POST /courses`); C implemented (wizard shell) | Parent review (combined SP-107 review after all children) | `./artifacts/SP-107E/` — [implementation record](./artifacts/SP-107E/implementation.md) (2026-10-18: 26/26 files, 283/283 tests, zero skips) |
-| [F](./SP-107F-wizard-integration.md) | Queued | A–E implemented | Implement after E (integration + DoD 10 sign-off) | — |
+| [F](./SP-107F-wizard-integration.md) | Implemented — awaiting parent review | A–E implemented | Parent review (combined SP-107 review after all children) | `./artifacts/SP-107F/` — [implementation record](./artifacts/SP-107F/implementation.md) (2026-10-18: e2e 10/10 on real Postgres; API 33/33 suites, 400/400 tests, zero skips; web 26/26 files, 283/283 tests; DoD 10 manual sign-off CANNOT VERIFY — human closure path recorded) |
 
-The queue is the current execution record. SP-107A, SP-107B, SP-107C,
-SP-107D and SP-107E are implemented (2026-10-18, awaiting the combined
-parent review); row F is planning state.
+The queue is the current execution record. All six children (SP-107A,
+SP-107B, SP-107C, SP-107D, SP-107E, SP-107F) are implemented (2026-10-18,
+awaiting the combined parent review); the next step is the combined SP-107
+parent review (Final implementation review unit — one review after every
+child and the integration obligation).
 
 ## Upstream dependency status (2026-10-18)
 
