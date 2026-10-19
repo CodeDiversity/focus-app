@@ -273,10 +273,10 @@ planning obligations only. Next actionable: **SP-107A** (execution queue).
 
 - **Scope and entry:** Full SP-107 parent (children A–F + combined parent review). Entry: SP-107A (first child).
 - **Coordinator:** workspace `/Users/michael/Documents/GitHub/focus-app`, branch `main`, HEAD `8abb20f`.
-- **Stage:** Implementing SP-107E (fifth child).
-- **Active dispatch:** `SP107-implementer-E` — implementer — SP-107E wizard step 3 (optional first course).
-- **Last result / retry state:** `SP107-implementer-D` returned: SP-107D complete — commit `687a876` (Step2Semester + semesterApi entity, `advanceOnboarding { step, semesterId }`, shell swap; F-107D-1…4 fixed); web suite **24/24 files, 258/258 tests, 0 skipped**; typecheck/lint clean; tree clean. (Prior: C `5863b44` 22/238; B `03a412a` 32/390; A `9885601` 28/327.)
-- **Resume:** Dispatched fresh isolated implementer `SP107-implementer-E` for SP-107E (queue row E eligible: B + C implemented).
+- **Stage:** Implementing SP-107F (sixth child — integration + DoD 10 + parent index).
+- **Active dispatch:** `SP107-implementer-F` — implementer — SP-107F wizard integration verification + sign-off + parent index.
+- **Last result / retry state:** `SP107-implementer-E` returned: SP-107E complete — commit `14e7a25` (Step3Course + courseApi entity, both completion paths, shell swap; F-107E-1…4 closed); web suite **26/26 files, 283/283 tests, 0 skipped**; typecheck/lint clean; tree clean. (Prior: D `687a876` 24/258; C `5863b44` 22/238; B `03a412a` 32/390; A `9885601` 28/327.)
+- **Resume:** Dispatched fresh isolated implementer `SP107-implementer-F` for SP-107F (queue row F eligible: A–E implemented).
 
 ## Final implementation review unit
 
