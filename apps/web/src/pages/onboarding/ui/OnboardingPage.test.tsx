@@ -189,12 +189,13 @@ describe('OnboardingPage resume and terminal redirect (AC 1, 5, 7)', () => {
     expect(items[0]).not.toHaveAttribute('aria-current');
   });
 
-  it('renders the step-3 placeholder at the last step', async () => {
+  it('renders the step-3 course form at the last step', async () => {
     renderPage({ step: 3 });
     await waitForBoot();
 
     expect(await screen.findByText(/step 3 of 3/i)).toBeInTheDocument();
-    expect(screen.getByText('Your first course')).toBeInTheDocument();
+    // The SP-107E form stands in for the step-3 content.
+    expect(screen.getByLabelText(/course code/i)).toBeInTheDocument();
   });
 });
 

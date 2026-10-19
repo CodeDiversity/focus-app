@@ -3,8 +3,9 @@ import { Button } from '@/shared/ui/Button';
 import type { OnboardingStatus } from '../model/onboardingSlice';
 import { Step1Preferences } from './Step1Preferences';
 import { Step2Semester } from './Step2Semester';
+import { Step3Course } from './Step3Course';
 
-/** Per-step titles for the indicator and the "coming" placeholder. */
+/** Per-step titles for the indicator and the announced step line. */
 const STEP_TITLES: Record<number, string> = {
   1: 'Your preferences',
   2: 'Your first semester',
@@ -12,21 +13,8 @@ const STEP_TITLES: Record<number, string> = {
 };
 
 /**
- * Step 3 renders as a "coming" placeholder until SP-107E lands its form in
- * this folder; the shell renders step content by step number so the real
- * form drops in by replacing the placeholder branch (ticket Technical Notes).
+ * Step content by step number: all three steps are real forms (SP-107C/D/E).
  */
-function StepPlaceholder({ step }: { step: number }) {
-  return (
-    <div className="py-8 text-center">
-      <h2 className="text-lg font-semibold text-secondary-900">{STEP_TITLES[step]}</h2>
-      <p className="mt-2 text-secondary-600">
-        This step is coming — we&apos;ll set up {STEP_TITLES[step].toLowerCase()} here.
-      </p>
-    </div>
-  );
-}
-
 function stepContent(step: number) {
   switch (step) {
     case 1:
@@ -34,7 +22,7 @@ function stepContent(step: number) {
     case 2:
       return <Step2Semester />;
     case 3:
-      return <StepPlaceholder step={3} />;
+      return <Step3Course />;
     default:
       // Defensive: the backend only stores 1–3; nothing to render otherwise.
       return null;
