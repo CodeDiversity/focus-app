@@ -4,6 +4,7 @@ import { HomePage } from '@/pages/home/ui/HomePage';
 import { LoginPage } from '@/pages/login/ui/LoginPage';
 import { RegisterPage } from '@/pages/register/ui/RegisterPage';
 import { DashboardPage } from '@/pages/dashboard/ui/DashboardPage';
+import { SemestersPage } from '@/pages/semesters/ui/SemestersPage';
 import { ProfilePage } from '@/pages/profile/ui/ProfilePage';
 import { OnboardingPage } from '@/pages/onboarding/ui/OnboardingPage';
 import { VerifyEmailPage } from '@/pages/verify-email/ui/VerifyEmailPage';
@@ -30,6 +31,9 @@ function App() {
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          {/* SP-110B: semester management page (D110-4: inside ProtectedRoute,
+              rendered within the standard Layout like all existing pages) */}
+          <Route path="/semesters" element={<SemestersPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           {/* SP-107C: onboarding wizard (D107-3: inside ProtectedRoute,
               rendered within the standard Layout like all existing pages) */}

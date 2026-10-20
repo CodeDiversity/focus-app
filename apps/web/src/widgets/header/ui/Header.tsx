@@ -37,6 +37,14 @@ export function Header() {
                   Dashboard
                 </Link>
                 <Link
+                  to="/semesters"
+                  className={
+                    location.pathname === '/semesters' ? 'text-primary-600 font-medium' : ''
+                  }
+                >
+                  Semesters
+                </Link>
+                <Link
                   to="/profile"
                   className={location.pathname === '/profile' ? 'text-primary-600 font-medium' : ''}
                 >

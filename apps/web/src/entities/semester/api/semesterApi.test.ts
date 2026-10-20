@@ -2,7 +2,13 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import httpClient from '@/shared/api/httpClient';
 import { tokenStore } from '@/shared/api/tokenStore';
-import { createSemester } from './semesterApi';
+import {
+  createSemester,
+  deleteSemester,
+  getSemester,
+  listSemesters,
+  updateSemester,
+} from './semesterApi';
 
 const originalAdapter = httpClient.defaults.adapter;
 
@@ -98,6 +104,196 @@ describe('semesterApi.createSemester', () => {
       response: {
         data: { statusCode: 400, errors: { endDate: ['endDate must be after startDate'] } },
       },
+    });
+  });
+});
+
+/** The 200 body `GET /semesters` returns (SP-110A; the 8-key contract shape). */
+const countedSemester = { ...createdSemester, courseCount: 4 };
+
+describe('semesterApi.listSemesters (SP-110A contract)', () => {
+  beforeEach(() => {
+    tokenStore.clearToken();
+  });
+
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+    vi.restoreAllMocks();
+  });
+
+  it('GETs /semesters and maps the 200 body to SemesterWithCount[] (dates stay yyyy-MM-dd)', async () => {
+    let seenConfig: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seenConfig = config;
+      return ok(config, [countedSemester], 200);
+    };
+
+    const result = await listSemesters();
+
+    expect(seenConfig?.url).toBe('/semesters');
+    expect(seenConfig?.method).toBe('get');
+    // The API order (startDate desc, then name asc) is preserved as-is — the
+    // list renders it without a client re-sort.
+    expect(result).toEqual([countedSemester]);
+  });
+});
+
+describe('semesterApi.getSemester (SP-110A contract)', () => {
+  beforeEach(() => {
+    tokenStore.clearToken();
+  });
+
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+    vi.restoreAllMocks();
+  });
+
+  it('GETs /semesters/:id and maps the 200 body to SemesterWithCount', async () => {
+    let seenConfig: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seenConfig = config;
+      return ok(config, countedSemester, 200);
+    };
+
+    await expect(getSemester('sem-1')).resolves.toEqual(countedSemester);
+    expect(seenConfig?.url).toBe('/semesters/sem-1');
+    expect(seenConfig?.method).toBe('get');
+  });
+
+  it('rejects the uniform 404 (missing OR foreign id — no existence oracle)', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 404, {
+        statusCode: 404,
+        message: 'Resource not found',
+        error: 'Not Found',
+      });
+    };
+
+    await expect(getSemester('someone-elses-semester')).rejects.toMatchObject({
+      message: 'Resource not found',
+      response: { data: { statusCode: 404 } },
+    });
+  });
+});
+
+describe('semesterApi.updateSemester (SP-110A contract, D110-5)', () => {
+  beforeEach(() => {
+    tokenStore.clearToken();
+  });
+
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+    vi.restoreAllMocks();
+  });
+
+  it('PATCHes the partial body as-is to /semesters/:id (yyyy-MM-dd strings, no instant conversion)', async () => {
+    let seenConfig: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seenConfig = config;
+      return ok(config, { ...countedSemester, isActive: true, courseCount: 4 }, 200);
+    };
+
+    const result = await updateSemester('sem-1', {
+      name: 'Fall 2026 (updated)',
+      startDate: '2026-09-01',
+      endDate: '2026-12-20',
+      isActive: true,
+    });
+
+    expect(seenConfig?.url).toBe('/semesters/sem-1');
+    expect(seenConfig?.method).toBe('patch');
+    expect(JSON.parse(seenConfig!.data as string)).toEqual({
+      name: 'Fall 2026 (updated)',
+      startDate: '2026-09-01',
+      endDate: '2026-12-20',
+      isActive: true,
+    });
+    // The response re-derives the single-active state (D110-1).
+    expect(result).toMatchObject({ id: 'sem-1', isActive: true, courseCount: 4 });
+  });
+
+  it('rejects a field-level 400 on the merged values with the `errors` map preserved', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 400, {
+        statusCode: 400,
+        message: ['endDate must be after startDate'],
+        error: 'Bad Request',
+        errors: { endDate: ['endDate must be after startDate'] },
+      });
+    };
+
+    await expect(updateSemester('sem-1', { endDate: '2026-08-01' })).rejects.toMatchObject({
+      response: {
+        data: { statusCode: 400, errors: { endDate: ['endDate must be after startDate'] } },
+      },
+    });
+  });
+
+  it('rejects a duplicate-name 409 with the sanitized interceptor shape', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 409, {
+        statusCode: 409,
+        message: 'A semester with this name already exists.',
+        error: 'Conflict',
+      });
+    };
+
+    await expect(updateSemester('sem-1', { name: 'Spring 2026' })).rejects.toMatchObject({
+      message: 'A semester with this name already exists.',
+      response: { data: { statusCode: 409 } },
+    });
+  });
+
+  it('rejects the uniform 404 (missing OR foreign id)', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 404, {
+        statusCode: 404,
+        message: 'Resource not found',
+        error: 'Not Found',
+      });
+    };
+
+    await expect(updateSemester('missing-id', { name: 'X' })).rejects.toMatchObject({
+      message: 'Resource not found',
+      response: { data: { statusCode: 404 } },
+    });
+  });
+});
+
+describe('semesterApi.deleteSemester (SP-110A contract, D110-2)', () => {
+  beforeEach(() => {
+    tokenStore.clearToken();
+  });
+
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+    vi.restoreAllMocks();
+  });
+
+  it('DELETEs /semesters/:id and resolves on the 204 (empty body)', async () => {
+    let seenConfig: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seenConfig = config;
+      return ok(config, '', 204);
+    };
+
+    await expect(deleteSemester('sem-1')).resolves.toBeUndefined();
+    expect(seenConfig?.url).toBe('/semesters/sem-1');
+    expect(seenConfig?.method).toBe('delete');
+  });
+
+  it('rejects the uniform 404 (missing OR foreign id)', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 404, {
+        statusCode: 404,
+        message: 'Resource not found',
+        error: 'Not Found',
+      });
+    };
+
+    await expect(deleteSemester('someone-elses-semester')).rejects.toMatchObject({
+      message: 'Resource not found',
+      response: { data: { statusCode: 404 } },
     });
   });
 });
