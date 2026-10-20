@@ -15,7 +15,7 @@
 
 **Active substory:** None
 
-**Next substory:** SP-110A — implement
+**Next substory:** SP-110B — implement (A implemented 2026-10-20; record: `./artifacts/SP-110A/implementation.md`)
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -27,7 +27,7 @@ obligation are implemented; no per-child review gates. Final artifact path:
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-110A-semester-management-api.md) | Ready | SP-107B implemented (module exists in code); SP-104 implemented + reviewed; D110-1/D110-2 user-confirmed 2026-10-20 | Implement | — |
+| [A](./SP-110A-semester-management-api.md) | Implemented — awaiting parent review | SP-107B implemented (module exists in code); SP-104 implemented + reviewed; D110-1/D110-2 user-confirmed 2026-10-20 | — | `./artifacts/SP-110A/implementation.md` (2026-10-20; unit 42 + data-scoping 31 green on disposable Postgres) |
 | [B](./SP-110B-semester-management-ui.md) | Ready | Contract fixed in this README; SP-109 + SP-107D implemented; A implemented (sequence) | Implement after A | — |
 | [C](./SP-110C-semester-integration-signoff.md) | Queued | A, B implemented | Implement after B (integration + DoD 10 sign-off) | — |
 
