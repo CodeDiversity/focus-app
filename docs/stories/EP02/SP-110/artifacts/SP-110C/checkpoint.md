@@ -9,7 +9,7 @@ Role / scope: implementer; integration only — real-Postgres e2e lifecycle, cro
 - Workspace / branch: `/Users/michael/Documents/GitHub/focus-app`, branch `main`
 - HEAD at start: `c5e3fb5` (SP-110B closeout — baseline before the first included change)
 - Workspace clean at start; no other work to preserve.
-- Closeout: one scoped commit (e2e spec + closeout docs + queue/status fields) on `main`; hash recorded in the queue row and the returned handoff.
+- After closeout: `fed59dc` (this child's commit — e2e spec + closeout docs + queue/status fields); the hash is recorded in the queue row, the parent index, and the returned handoff.
 
 ## Progress
 - [x] Queue reconciled (row C → In progress, Active → SP-110C)

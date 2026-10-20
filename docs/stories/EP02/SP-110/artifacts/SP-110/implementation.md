@@ -38,7 +38,7 @@ this index).
 |---|---|---|---|---|
 | [A](../../SP-110A-semester-management-api.md) | Full semester management API: `GET /semesters` (list + `courseCount`, `startDate` desc / `name` asc), `GET /semesters/:id`, `PATCH` (partial merge, validation on merged values, single-active activation, D110-1), `DELETE` (courses orphaned, D110-2) — all principal-scoped, uniform-404; no schema change | [implementation](../SP-110A/implementation.md) | [checkpoint](../SP-110A/checkpoint.md) | `85d665e` |
 | [B](../../SP-110B-semester-management-ui.md) | `/semesters` page (FSD): list (name, readable dates, Active badge, course count, API order), create/edit form, activate/deactivate, delete-with-confirmation (focus trap + Escape); loading/empty/error+retry, keyboard, responsive; header "Semesters" link; route inside `ProtectedRoute`; `semesterApi` covers the full contract | [implementation](../SP-110B/implementation.md) | [checkpoint](../SP-110B/checkpoint.md) | `c5e3fb5` |
-| [C](../../SP-110C-semester-integration-signoff.md) | Real-Postgres e2e student-journey suite (10 tests: full lifecycle, cross-student matrix, single-active race, delete-orphan proof); full-suite re-runs; dev-stack HTTP pre-flight; DoD 10 sign-off **CANNOT VERIFY** (human gate); this parent index | [implementation](../SP-110C/implementation.md) | [checkpoint](../SP-110C/checkpoint.md) | `…` (closeout commit — hash recorded in the queue row, not amended into this record) |
+| [C](../../SP-110C-semester-integration-signoff.md) | Real-Postgres e2e student-journey suite (10 tests: full lifecycle, cross-student matrix, single-active race, delete-orphan proof); full-suite re-runs; dev-stack HTTP pre-flight; DoD 10 sign-off **CANNOT VERIFY** (human gate); this parent index | [implementation](../SP-110C/implementation.md) | [checkpoint](../SP-110C/checkpoint.md) | `fed59dc` (closeout commit) |
 
 ## Per-child scope and verification
 
@@ -77,7 +77,7 @@ Baseline: `37db4b0` (the plan commit, before the first SP-110 change).
 |---|---|
 | `85d665e` | SP-110A — 10 files: `update-semester.dto.ts` (new), `semesters.service.ts` + spec (+427 lines) + `semesters-data-scoping.spec.ts` (+398) + controller + module header, README execution fields, `artifacts/SP-110A/` |
 | `c5e3fb5` | SP-110B — 17 files: `semesterApi` (+ test), `SemesterList`/`SemesterForm`/`DeleteSemesterDialog` (+ tests), `SemestersPage` (+ test), `Header` (+ new test), `App.tsx`, README execution fields, `artifacts/SP-110B/` |
-| `…` (this closeout commit) | SP-110C — 5 paths: `semesters-e2e.spec.ts` (new, 10 tests), README execution fields, `SP-110C` status line, `artifacts/SP-110C/` (checkpoint + implementation record), `artifacts/SP-110/implementation.md` (this index) |
+| `fed59dc` | SP-110C — 6 files: `semesters-e2e.spec.ts` (new, 10 tests), README execution fields, `SP-110C` status line, `artifacts/SP-110C/` (checkpoint + implementation record), `artifacts/SP-110/implementation.md` (this index) |
 
 No non-SP-110 commit lies inside the range `37db4b0..c5e3fb5`. Working-tree
 paths committed by C's closeout commit (baseline `c5e3fb5`):
