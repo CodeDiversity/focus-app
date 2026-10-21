@@ -60,3 +60,11 @@ detail), next actionable **SP-112A**.
 ## Quality gate — SP-111 plan (2026-10-21)
 
 **Plan Ready** — D111-1 (new nullable `instructor` column on `Course` + migration) user-confirmed 2026-10-21; D111-2…5 planner-recorded (reversible). Implementation not blocked (SP-107B/SP-104/SP-109/SP-110 all implemented in code). Full gate table: [SP-111 README](./SP-111/README.md#quality-gate-2026-10-21). No Jira sync was authorized for this planning task; all SP-111 keys are `Pending creation`.
+
+## Quality gate — SP-112 plan (2026-10-21)
+
+**Plan Ready** — D112-1…6 all planner-recorded (grounded in the
+`AvailabilitySlot` precedent / epic text, reversible; no material decision
+needs user confirmation). **Implementation Blocked** on SP-111 being
+implemented first (SP-112A extends its module) — a sequencing dependency, not
+a planning gap. Full gate table: [SP-112 README](./SP-112/README.md#quality-gate-2026-10-21). No Jira sync was authorized for this planning task; all SP-112 keys are `Pending creation`.
