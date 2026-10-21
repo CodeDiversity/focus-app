@@ -3,7 +3,7 @@
 **Epic:** [EP02: Semester & Course Management](../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1 (functional academic tracker)
 **Epic dependency:** EP01 (Authentication & Onboarding) — complete in code (see baseline)
-**Status:** Proposed story 1 broken down 2026-10-20 as [SP-110](./SP-110/README.md) — implemented + reviewed PASS 2026-10-21. Proposed stories 2–4 broken down 2026-10-21 as [SP-111](./SP-111/README.md) (**Plan Ready**; instructor field user-confirmed); proposed stories 5–6 await the same planning pass (owner: planner).
+**Status:** All six proposed stories broken down. Story 1 → [SP-110](./SP-110/README.md) (implemented + reviewed PASS 2026-10-21). Stories 2–4 → [SP-111](./SP-111/README.md) and 5–6 → [SP-112](./SP-112/README.md), both planned 2026-10-21 and **Plan Ready** (instructor field user-confirmed). Sequencing: SP-111 → SP-112.
 
 ## Code baseline (2026-10-20)
 
@@ -23,12 +23,13 @@ EP01 is complete in code (SP-101…SP-109 all implemented; SP-107 awaits its com
 |---|---|---|---|
 | [SP-110](./SP-110/README.md) | 1. Create and manage semesters | [3 children](./SP-110/README.md) (A backend, B frontend, C integration) — implemented + reviewed PASS 2026-10-21 | Pending creation |
 | [SP-111](./SP-111/README.md) | 2. Create a course · 3. Edit course information · 4. Archive and restore courses | [3 children](./SP-111/README.md) (A backend, B frontend, C integration) — planned 2026-10-21, **Plan Ready** | Pending creation |
-| — | 3. Edit course information | Not yet broken down | Pending creation |
-| — | 4. Archive and restore courses | Not yet broken down | Pending creation |
-| — | 5. Manage recurring class meetings | Not yet broken down | Pending creation |
-| — | 6. Course list and detail views | Not yet broken down | Pending creation |
+| [SP-112](./SP-112/README.md) | 5. Manage recurring class meetings · 6. Course list and detail views | [3 children](./SP-112/README.md) (A backend, B frontend, C integration) — planned 2026-10-21, **Plan Ready** (implements after SP-111) | Pending creation |
 
-Proposed stories 2–6 remain the epic's accepted scope — not deferred or dropped; they await a later planning pass (owner: planner). Sequencing intent: semesters first (SP-110) — courses attach to semesters, and the course stories will consume the semester list/activation behavior.
+All six proposed stories are now broken down — none deferred or dropped.
+Sequencing intent: semesters first (SP-110, complete) — courses attach to
+semesters and consume the semester list/activation behavior; course management
+(SP-111) before meetings + course detail (SP-112), because meetings attach to
+courses and the detail page is the meetings' home (D112-2/3).
 
 ## Epic acceptance criteria — ownership
 
@@ -37,18 +38,20 @@ Proposed stories 2–6 remain the epic's accepted scope — not deferred or drop
 | Students can create semesters with start and end dates. | AC-E02-01 | Creation: SP-107B (EP01, implemented). Management (list/get/update/delete/activate): **SP-110** A/B/C. |
 | Courses belong to a valid semester owned by the student. | AC-E02-02 | Creation check: SP-107B (implemented). Ongoing enforcement: **SP-111** A/B/C. |
 | Students can create and edit course information. | AC-E02-03 | **SP-111** A/B/C (incl. the new `instructor` field, D111-1). |
-| Students can add recurring class meetings with start and end times. | AC-E02-04 | Meetings story (proposed 5; not yet broken down). |
+| Students can add recurring class meetings with start and end times. | AC-E02-04 | **SP-112** A/B/C. |
 | Archived courses remain accessible with historical data. | AC-E02-05 | **SP-111** A/B/C (archive/restore + show-archived). Boundary: SP-110C proves courses **survive** semester deletion (D110-2). |
-| Course details display related assignments and class meetings. | AC-E02-06 | Course views story (proposed 6; not yet broken down). |
+| Course details display related assignments and class meetings. | AC-E02-06 | **SP-112** A/B/C (assignments read-only until EP03 builds management — D112-3/6). |
 
-The epic defines no test requirements; story-level test obligations are owned per child in the [SP-110](./SP-110/README.md) and [SP-111](./SP-111/README.md) breakdowns.
+The epic defines no test requirements; story-level test obligations are owned per child in the [SP-110](./SP-110/README.md), [SP-111](./SP-111/README.md), and [SP-112](./SP-112/README.md) breakdowns.
 
 ## Execution queue
 
 SP-110 is complete (implemented + reviewed PASS 2026-10-21 — queue at
 [SP-110/README.md](./SP-110/README.md#execution-queue)). The next EP02 delivery
 home is [SP-111](./SP-111/README.md#execution-queue) (course management):
-next actionable **SP-111A** (implement).
+next actionable **SP-111A** (implement). After SP-111 completes, the queue
+moves to [SP-112](./SP-112/README.md#execution-queue) (meetings + course
+detail), next actionable **SP-112A**.
 
 ## Quality gate — SP-110 plan (2026-10-20)
 
