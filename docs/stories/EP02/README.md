@@ -3,7 +3,7 @@
 **Epic:** [EP02: Semester & Course Management](../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1 (functional academic tracker)
 **Epic dependency:** EP01 (Authentication & Onboarding) — complete in code (see baseline)
-**Status:** Planned 2026-10-20 — proposed story 1 broken down as [SP-110](./SP-110/README.md) (3 children; decisions user-confirmed, **Plan Ready**); proposed stories 2–6 await a later EP02 planning pass.
+**Status:** Proposed story 1 broken down 2026-10-20 as [SP-110](./SP-110/README.md) — implemented + reviewed PASS 2026-10-21. Proposed stories 2–4 broken down 2026-10-21 as [SP-111](./SP-111/README.md) (**Plan Ready**; instructor field user-confirmed); proposed stories 5–6 await the same planning pass (owner: planner).
 
 ## Code baseline (2026-10-20)
 
@@ -21,8 +21,8 @@ EP01 is complete in code (SP-101…SP-109 all implemented; SP-107 awaits its com
 
 | Story | Epic proposed story | Breakdown | Jira |
 |---|---|---|---|
-| [SP-110](./SP-110/README.md) | 1. Create and manage semesters | [3 children](./SP-110/README.md) (A backend, B frontend, C integration) | Pending creation |
-| — | 2. Create a course | Not yet broken down | Pending creation |
+| [SP-110](./SP-110/README.md) | 1. Create and manage semesters | [3 children](./SP-110/README.md) (A backend, B frontend, C integration) — implemented + reviewed PASS 2026-10-21 | Pending creation |
+| [SP-111](./SP-111/README.md) | 2. Create a course · 3. Edit course information · 4. Archive and restore courses | [3 children](./SP-111/README.md) (A backend, B frontend, C integration) — planned 2026-10-21, **Plan Ready** | Pending creation |
 | — | 3. Edit course information | Not yet broken down | Pending creation |
 | — | 4. Archive and restore courses | Not yet broken down | Pending creation |
 | — | 5. Manage recurring class meetings | Not yet broken down | Pending creation |
@@ -35,18 +35,25 @@ Proposed stories 2–6 remain the epic's accepted scope — not deferred or drop
 | Epic AC (original wording) | Stable ID | Owner |
 |---|---|---|
 | Students can create semesters with start and end dates. | AC-E02-01 | Creation: SP-107B (EP01, implemented). Management (list/get/update/delete/activate): **SP-110** A/B/C. |
-| Courses belong to a valid semester owned by the student. | AC-E02-02 | Creation check: SP-107B (implemented). Ongoing enforcement: course stories (proposed 2–4; not yet broken down). |
-| Students can create and edit course information. | AC-E02-03 | Course stories (proposed 2–3; not yet broken down). |
+| Courses belong to a valid semester owned by the student. | AC-E02-02 | Creation check: SP-107B (implemented). Ongoing enforcement: **SP-111** A/B/C. |
+| Students can create and edit course information. | AC-E02-03 | **SP-111** A/B/C (incl. the new `instructor` field, D111-1). |
 | Students can add recurring class meetings with start and end times. | AC-E02-04 | Meetings story (proposed 5; not yet broken down). |
-| Archived courses remain accessible with historical data. | AC-E02-05 | Archive story (proposed 4; not yet broken down). Boundary: SP-110C proves courses **survive** semester deletion (D110-2). |
+| Archived courses remain accessible with historical data. | AC-E02-05 | **SP-111** A/B/C (archive/restore + show-archived). Boundary: SP-110C proves courses **survive** semester deletion (D110-2). |
 | Course details display related assignments and class meetings. | AC-E02-06 | Course views story (proposed 6; not yet broken down). |
 
-The epic defines no test requirements; story-level test obligations are owned per child in the [SP-110 breakdown](./SP-110/README.md).
+The epic defines no test requirements; story-level test obligations are owned per child in the [SP-110](./SP-110/README.md) and [SP-111](./SP-111/README.md) breakdowns.
 
 ## Execution queue
 
-The SP-110 delivery home owns the queue: [docs/stories/EP02/SP-110/README.md](./SP-110/README.md#execution-queue).
+SP-110 is complete (implemented + reviewed PASS 2026-10-21 — queue at
+[SP-110/README.md](./SP-110/README.md#execution-queue)). The next EP02 delivery
+home is [SP-111](./SP-111/README.md#execution-queue) (course management):
+next actionable **SP-111A** (implement).
 
 ## Quality gate — SP-110 plan (2026-10-20)
 
 **Plan Ready** — D110-1 (single-active semester) and D110-2 (delete orphans courses) user-confirmed 2026-10-20; implementation not blocked (all upstream children implemented in code). Full gate table: [SP-110 README](./SP-110/README.md#quality-gate-2026-10-20). No Jira sync was authorized for this planning task; all SP-110 keys are `Pending creation`.
+
+## Quality gate — SP-111 plan (2026-10-21)
+
+**Plan Ready** — D111-1 (new nullable `instructor` column on `Course` + migration) user-confirmed 2026-10-21; D111-2…5 planner-recorded (reversible). Implementation not blocked (SP-107B/SP-104/SP-109/SP-110 all implemented in code). Full gate table: [SP-111 README](./SP-111/README.md#quality-gate-2026-10-21). No Jira sync was authorized for this planning task; all SP-111 keys are `Pending creation`.
