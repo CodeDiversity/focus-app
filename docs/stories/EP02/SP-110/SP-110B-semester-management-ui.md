@@ -5,7 +5,7 @@
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** Implemented — awaiting parent review (implemented 2026-10-20; record: [artifacts/SP-110B/implementation.md](./artifacts/SP-110B/implementation.md))
+**Status:** Reviewed (2026-10-21, combined SP-110 review PASS; record: [artifacts/SP-110B/implementation.md](./artifacts/SP-110B/implementation.md))
 **Dependencies:** SP-110A (contract fixed in the breakdown README), SP-109 (FSD, implemented + reviewed), SP-107D (existing `entities/semester` API)
 **Jira key:** Pending creation
 

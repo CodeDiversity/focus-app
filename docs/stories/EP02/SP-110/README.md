@@ -3,7 +3,7 @@
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Parent:** [SP-110](./SP-110-create-and-manage-standalone.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Planned 2026-10-20 — breakdown complete (three children A–C); decisions D110-1/D110-2 user-confirmed 2026-10-20; quality gate **Plan Ready**. No implementation performed or claimed.
+**Status:** Implemented 2026-10-20 (A/B/C); final combined parent review **PASS** 2026-10-21 (report `./artifacts/SP-110/review.md`; walkthrough `./artifacts/SP-110/walkthrough.md`) — all DoD items closed, including DoD 10 (human browser walk ratified 2026-10-21). Review unit complete.
 
 ## Execution queue
 
@@ -13,9 +13,9 @@
 
 **Parent artifacts:** `./artifacts/SP-110/` (parent index written by C)
 
-**Active substory:** None — all three children implemented (2026-10-20)
+**Active substory:** None — all three children implemented (2026-10-20) and Reviewed (final combined parent review PASS 2026-10-21)
 
-**Next substory:** None — all children implemented; the **combined SP-110 parent review** is next (coordinator requests the independent reviewer; report at `./artifacts/SP-110/review.md`). DoD-10 human browser walk ratified 2026-10-21 (recorded in `./artifacts/SP-110C/implementation.md`); DoD 10 closes via that ratification + the review.
+**Next substory:** None — complete: all children implemented and the final combined parent review **passed 2026-10-21** (report `./artifacts/SP-110/review.md`; walkthrough `./artifacts/SP-110/walkthrough.md`). Next EP02 work is the course-stories planning pass (owner: planner) — not part of this queue.
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -27,9 +27,9 @@ obligation are implemented; no per-child review gates. Final artifact path:
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-110A-semester-management-api.md) | Implemented — awaiting parent review | SP-107B implemented (module exists in code); SP-104 implemented + reviewed; D110-1/D110-2 user-confirmed 2026-10-20 | — | `./artifacts/SP-110A/implementation.md` (2026-10-20; unit 42 + data-scoping 31 green on disposable Postgres) |
-| [B](./SP-110B-semester-management-ui.md) | Implemented — awaiting parent review | Contract fixed in this README; SP-109 + SP-107D implemented; A implemented (sequence) | — | `./artifacts/SP-110B/implementation.md` (2026-10-20; web suite 340/340, typecheck + lint + build clean) |
-| [C](./SP-110C-semester-integration-signoff.md) | Implemented — awaiting parent review | A, B implemented (both 2026-10-20) | Parent review (combined SP-110 review after all children) | `./artifacts/SP-110C/implementation.md` (2026-10-20; e2e 10/10 + full API suite 34/34 · 456/456 on disposable Postgres; DoD 10 browser walk PASSED — user ratified 2026-10-21; parent index at `./artifacts/SP-110/implementation.md`) · closeout commit `fed59dc` |
+| [A](./SP-110A-semester-management-api.md) | Reviewed (2026-10-21) | SP-107B implemented (module exists in code); SP-104 implemented + reviewed; D110-1/D110-2 user-confirmed 2026-10-20 | — | `./artifacts/SP-110A/implementation.md` (2026-10-20; unit 42 + data-scoping 31 green on disposable Postgres) |
+| [B](./SP-110B-semester-management-ui.md) | Reviewed (2026-10-21) | Contract fixed in this README; SP-109 + SP-107D implemented; A implemented (sequence) | — | `./artifacts/SP-110B/implementation.md` (2026-10-20; web suite 340/340, typecheck + lint + build clean) |
+| [C](./SP-110C-semester-integration-signoff.md) | Reviewed (2026-10-21) | A, B implemented (both 2026-10-20) | — (parent review completed 2026-10-21 — PASS) | `./artifacts/SP-110C/implementation.md` (2026-10-20; e2e 10/10 + full API suite 34/34 · 456/456 on disposable Postgres; DoD 10 browser walk PASSED — user ratified 2026-10-21; parent index at `./artifacts/SP-110/implementation.md`) · closeout commit `fed59dc` |
 
 ## Upstream dependency status (2026-10-20)
 
@@ -165,6 +165,17 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
 
 (Empty at planning time — no findings yet. Entries are appended with stable IDs;
 original findings are preserved, never overwritten.)
+
+- **2026-10-21 — final combined implementation review (verdict PASS; report
+  `./artifacts/SP-110/review.md`; walkthrough `./artifacts/SP-110/walkthrough.md`):**
+  no new findings raised. The seven implementer-side findings of the unit
+  (F110A-1/2, F110B-1…5, F110C-1/2) were independently verified as closed in
+  the final code (`8242efc`) — all fixed or recorded as design decisions /
+  non-defects; none required a correction pass. **DoD 10 manual gate closed**
+  via the recorded user ratification: the 13-step `/semesters` browser walk was
+  performed by the user (session owner) on 2026-10-21 and returned approval
+  with no deviations reported (browser/version not provided — recorded
+  limitation; provenance in `./artifacts/SP-110C/implementation.md`).
 
 ## Quality gate (2026-10-20)
 

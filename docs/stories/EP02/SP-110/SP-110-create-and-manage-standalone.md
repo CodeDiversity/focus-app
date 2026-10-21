@@ -4,7 +4,7 @@
 **Parent epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1
 **Type:** Parent coordination record — **not** an implementation ticket and **not** a Jira implementation issue
-**Status:** Planned 2026-10-20
+**Status:** Implemented 2026-10-20 (A/B/C); final combined parent review **PASS** 2026-10-21 (report `./artifacts/SP-110/review.md`; walkthrough `./artifacts/SP-110/walkthrough.md`) — complete
 **Jira key:** Pending creation
 
 ## Scope
