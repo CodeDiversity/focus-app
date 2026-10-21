@@ -49,9 +49,11 @@ The epic defines no test requirements; story-level test obligations are owned pe
 SP-110 is complete (implemented + reviewed PASS 2026-10-21 — queue at
 [SP-110/README.md](./SP-110/README.md#execution-queue)). The next EP02 delivery
 home is [SP-111](./SP-111/README.md#execution-queue) (course management):
-next actionable **SP-111A** (implement). After SP-111 completes, the queue
-moves to [SP-112](./SP-112/README.md#execution-queue) (meetings + course
-detail), next actionable **SP-112A**.
+next actionable **SP-111A** (implement) — planner judgment 2026-10-21: straight
+to implementation, no formal plan review first (SP-110 precedent; recorded in
+the SP-111 queue). After SP-111 completes, the queue moves to
+[SP-112](./SP-112/README.md#execution-queue) (meetings + course detail), next
+actionable **SP-112A**.
 
 ## Quality gate — SP-110 plan (2026-10-20)
 

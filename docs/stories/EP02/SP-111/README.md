@@ -15,7 +15,13 @@
 
 **Active substory:** None — planning only; no implementation started
 
-**Next substory:** SP-111A (implement)
+**Next substory:** SP-111A (implement) — **planner judgment 2026-10-21 (user
+delegated the call):** proceed directly to implementation without a formal
+plan review, on the SP-110 precedent (Plan Ready → implementation → final
+combined review PASS with zero plan-review findings; the plan mirrors reviewed,
+existing patterns). The mandatory final combined parent review still gates
+sign-off. An independent read-only plan review of this breakdown remains
+available on request before or during implementation.
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
 backend/frontend/integration are scope labels, not concurrent writers).
