@@ -141,6 +141,7 @@ model Course {
   code        String   // e.g., "CS101"
   name        String   // e.g., "Introduction to Computer Science"
   description String?
+  instructor  String?  // SP-111A (D111-1): nullable, ≤ 100 chars after trim
   color       String   @default("#6366f1") // Default indigo
   credits     Float?
   isActive    Boolean  @default(true)

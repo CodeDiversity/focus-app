@@ -55,7 +55,12 @@ const SEMESTER_KEYS = [
 /** The `SemesterWithCount` contract keys (SP-110A, D110-3). */
 const SEMESTER_WITH_COUNT_KEYS = [...SEMESTER_KEYS, 'courseCount'].sort();
 
-/** The exact `POST /courses` 201 contract keys (SP-107B; no `semesterId`). */
+/**
+ * The exact `POST /courses` 201 contract keys — the `CourseWithSemester`
+ * shape (SP-111A, D111-4): the SP-107B 8 keys plus `instructor`,
+ * `semesterId`, `semester` (backward-compatible; the onboarding wizard
+ * ignores the extra keys).
+ */
 const COURSE_KEYS = [
   'code',
   'color',
@@ -63,8 +68,11 @@ const COURSE_KEYS = [
   'credits',
   'description',
   'id',
+  'instructor',
   'isActive',
   'name',
+  'semester',
+  'semesterId',
   'updatedAt',
 ].sort();
 
@@ -249,8 +257,9 @@ describeIntegration('semester management end-to-end (real database, SP-110C)', (
     });
 
     it('DELETE /semesters/:id (Fall): 204; the row is gone; its two courses survive with semesterId null (D110-2)', async () => {
-      // Attach two courses to Fall (the SP-107B endpoint; the response omits
-      // semesterId by contract, so the row is the source of truth).
+      // Attach two courses to Fall (the SP-107B endpoint, extended with the
+      // `CourseWithSemester` shape by SP-111A; the row is the source of
+      // truth for the attachment).
       for (const suffix of ['A', 'B']) {
         const course = await agent
           .post('/courses')

@@ -21,6 +21,8 @@ import {
  * Field rules (shared API contract, SP-107 README): `code` non-empty, ≤ 20
  * chars; `name` non-empty, ≤ 100 chars; `credits` when present
  * `0 < c ≤ 30`; `color` when present `#rrggbb`; `description` ≤ 2000 chars.
+ * `instructor` (SP-111A, D111-1) is optional: present must contain a
+ * non-whitespace character (whitespace-only → 400) and be ≤ 100 chars.
  * `semesterId` is a plain string on purpose: a malformed id is "missing"
  * per the contract and 404s (uniform `Resource not found`), never 400.
  */
@@ -56,4 +58,10 @@ export class CreateCourseDto {
   @IsString()
   @Matches(/^#[0-9a-fA-F]{6}$/, { message: 'color must be a #rrggbb hex color' })
   color?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/\S/, { message: 'instructor must not be empty' })
+  @MaxLength(100, { message: 'instructor must be 100 characters or fewer' })
+  instructor?: string | null;
 }
