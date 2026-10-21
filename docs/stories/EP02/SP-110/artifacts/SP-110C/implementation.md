@@ -5,6 +5,7 @@
 **Layer:** Integration (verification child — SP-106D/SP-107F precedent)
 **Baseline:** `c5e3fb5` (SP-110B closeout — the commit before the first included change)
 **Completed:** 2026-10-20, implementer, single sequential writer.
+**Updated:** 2026-10-21 — DoD 10 human browser walk ratified (PASSED).
 **Status:** Implemented — awaiting parent review (combined SP-110 review)
 
 ## Summary
@@ -15,10 +16,11 @@ management feature as a student journey over real HTTP against a real
 PostgreSQL database (AC1 lifecycle, AC2 cross-student matrix, single-active
 race); the automated suites were re-executed green on a disposable migrated
 Postgres; the manual browser sign-off supporting DoD 10 was prepared (dev
-stack + full HTTP pre-flight through the web proxy — all green) but the
-browser-level walk is a **human gate** and is recorded **CANNOT VERIFY** with
-the exact human steps and the established closure path (AC3); the parent
-implementation index was written at `../SP-110/implementation.md` (AC4).
+stack + full HTTP pre-flight through the web proxy — all green), and the
+browser-level walk — a **human gate** — was performed by the user on
+2026-10-21 and returned approval (ratification recorded below, AC3); the
+parent implementation index was written at `../SP-110/implementation.md`
+(AC4).
 
 ## Deliverable
 
@@ -44,7 +46,7 @@ row is the source of truth for attachment).
 |---|---|---|
 | AC1 e2e full lifecycle (AC-E02-01, D110-1/2, DoD 8/10) | ✅ | e2e case AC1 (10/10 suite green on real Postgres) |
 | AC2 cross-student matrix (AC-E01-04, DoD 3) | ✅ | e2e case AC2 (uniform 404 ×3, byte-identical row, wire-level scoping) + the dev-stack pre-flight below |
-| AC3 manual browser sign-off (DoD 10) | ⛔ **CANNOT VERIFY** (browser-level walk) | See below — the human-gate convention (SP-105D/SP-106D/SP-107F). The dev-stack HTTP pre-flight **was performed** and stands on its own; the browser walk is the open human input. |
+| AC3 manual browser sign-off (DoD 10) | ✅ **PASSED** (ratified 2026-10-21) | The 13-step `/semesters` browser walk performed by the user 2026-10-21 — approved, no deviations reported (browser/version not provided — recorded limitation). Recorded CANNOT VERIFY at closeout (2026-10-20) until the human leg landed; see below. The dev-stack HTTP pre-flight + e2e wire proof stand alongside it. |
 | AC4 parent index | ✅ | `../SP-110/implementation.md` (this commit) |
 
 ## Verification actually executed
@@ -95,17 +97,24 @@ was restored to its pre-run state (4 users, 1 semester, 0 courses;
 `refresh_tokens` untouched at 11). Both dev servers were stopped and the
 disposable container removed.
 
-## Manual browser sign-off (DoD 10, AC3) — **CANNOT VERIFY**
+## Manual browser sign-off (DoD 10, AC3) — **PASSED** (ratified 2026-10-21)
 
-**Status: CANNOT VERIFY** for the browser-level walk. Reason: the manual
-browser sign-off is a **human gate** (per the SP-105D/SP-106D/SP-107F
-precedent), and no human browser session is available in this implementation
-runtime — the implementer cannot open a browser, click through `/semesters`,
-or observe viewports. Per the ticket's own rule, the walk is recorded CANNOT
-VERIFY with the reason rather than claimed. **No sign-off is claimed or
-implied.** What **was performed** and stands on its own: the dev-stack
-bring-up + the full HTTP pre-flight above (the wire leg of the same journey)
-and the automated proof (the e2e suite + the A/B component and API tests).
+**Status: PASSED.** The manual browser walk (the 13 steps below) was
+performed by the user on 2026-10-21 and returned approval: the `/semesters`
+walk passed with **no deviations reported**. Provenance: who — the user
+(session owner); when — 2026-10-21; browser/version — **not provided**
+(recorded limitation: the approval is at the feature level, per the user's
+report); per-step observations — none reported.
+
+**History:** at closeout (2026-10-20) this sign-off was recorded
+**CANNOT VERIFY** — the walk is a **human gate** (per the
+SP-105D/SP-106D/SP-107F precedent) and no human browser session was
+available in the implementation runtime; per the ticket's own rule it was
+recorded CANNOT VERIFY with the reason rather than claimed, and no sign-off
+was claimed or implied until the ratification above. What the implementer
+**performed** and stands on its own regardless: the dev-stack bring-up + the
+full HTTP pre-flight above (the wire leg of the same journey) and the
+automated proof (the e2e suite + the A/B component and API tests).
 
 ### Exact steps the human must perform
 
@@ -153,13 +162,15 @@ is fine), `pnpm --filter @studypilot/api dev` (API `:4000`), `pnpm
 13. **Return approval** with the browser/version used and per-step
     observations (or the deviations observed).
 
-### Closure path (SP-106/SP-107 precedent)
+### Closure (SP-106/SP-107 precedent)
 
-The human performs the walk above; the **coordinator records the user's
-ratification with provenance** (who/when/browser/limitations) in this record
-or the parent review, exactly as SP-106D's and SP-107F's sign-offs were
-transcribed. DoD 10 then closes via that recorded ratification **plus** the
-combined SP-110 parent review — this child's CANNOT VERIFY stands until then.
+The human gate is now satisfied: the user performed the walk above, and the
+ratification with provenance is recorded in the Status block (who/when/
+limitations — browser/version not provided), exactly as SP-106D's and
+SP-107F's sign-offs were transcribed. DoD 10 closes via that recorded
+ratification **plus** the combined SP-110 parent review (pending — report at
+`../SP-110/review.md`); until that review passes, the review unit is not
+signed off.
 
 ## Findings / deviations
 
@@ -188,9 +199,8 @@ returned handoff (not amended into this record).
 
 ## Remaining work (outside this child)
 
-- **AC3 human sign-off** (the steps + closure path above) — the only open
-  DoD 10 input; everything else in the review unit is implemented and
-  verified.
 - **Combined SP-110 parent review** (one review after all children; report at
   `../SP-110/review.md`) — the implementer has prepared the parent index;
-  the coordinator requests the independent review.
+  the coordinator requests the independent review. DoD 10 closes via the
+  recorded ratification (2026-10-21) **plus** this review; no other DoD
+  input is open.

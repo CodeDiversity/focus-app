@@ -1,6 +1,6 @@
 # SP-110 parent implementation index
 
-Updated: 2026-10-20 (SP-110C closeout — all three children implemented)
+Updated: 2026-10-21 (DoD 10 human ratification recorded; SP-110C closeout 2026-10-20)
 Prepared by: implementer (single sequential writer) as SP-110C (AC4) — the
 named integration/index owner for the SP-110 review unit.
 Purpose: index of every child's implementation evidence for the one combined
@@ -17,16 +17,16 @@ verification (C) — epic AC-E02-01's management half plus the data-preservation
 boundaries AC-E02-02/05 impose on semester deletion; see the [parent
 README](../../README.md) for the full traceability map.
 
-**One open DoD item:** DoD 10's manual browser sign-off (C AC3) is recorded
-**CANNOT VERIFY** — no human browser session is available in the implementation
-runtime. The exact human steps (13-step `/semesters` walk) and the closure
-path (human performs the walk; the coordinator records the user's ratification
-with provenance — SP-106D/SP-107F precedent) are in
+**DoD 10 is satisfied:** the manual browser sign-off (C AC3) — the 13-step
+`/semesters` walk — was performed by the user on 2026-10-21 and returned
+approval with no deviations reported (ratification with provenance in
 [`SP-110C/implementation.md`](../SP-110C/implementation.md) → "Manual browser
-sign-off (DoD 10, AC3)". No sign-off is claimed or implied; the automated wire
-proof (C e2e suite + the dev-stack HTTP pre-flight through the web proxy) and
-the web component tests (B) stand on their own. Everything else in the review
-unit is implemented and verified.
+sign-off (DoD 10, AC3)"; it was recorded CANNOT VERIFY at closeout 2026-10-20
+until the human leg landed — no sign-off was claimed before then). DoD 10
+closes via that recorded ratification **plus** the combined parent review
+below. The automated wire proof (C e2e suite + the dev-stack HTTP pre-flight
+through the web proxy) and the web component tests (B) stand on their own.
+Everything else in the review unit is implemented and verified.
 
 Sequence: A → B → C, one sequential writer. C is the named cross-layer
 integration owner (e2e journey suite, full-suite re-runs, DoD 10 sign-off,
@@ -38,7 +38,7 @@ this index).
 |---|---|---|---|---|
 | [A](../../SP-110A-semester-management-api.md) | Full semester management API: `GET /semesters` (list + `courseCount`, `startDate` desc / `name` asc), `GET /semesters/:id`, `PATCH` (partial merge, validation on merged values, single-active activation, D110-1), `DELETE` (courses orphaned, D110-2) — all principal-scoped, uniform-404; no schema change | [implementation](../SP-110A/implementation.md) | [checkpoint](../SP-110A/checkpoint.md) | `85d665e` |
 | [B](../../SP-110B-semester-management-ui.md) | `/semesters` page (FSD): list (name, readable dates, Active badge, course count, API order), create/edit form, activate/deactivate, delete-with-confirmation (focus trap + Escape); loading/empty/error+retry, keyboard, responsive; header "Semesters" link; route inside `ProtectedRoute`; `semesterApi` covers the full contract | [implementation](../SP-110B/implementation.md) | [checkpoint](../SP-110B/checkpoint.md) | `c5e3fb5` |
-| [C](../../SP-110C-semester-integration-signoff.md) | Real-Postgres e2e student-journey suite (10 tests: full lifecycle, cross-student matrix, single-active race, delete-orphan proof); full-suite re-runs; dev-stack HTTP pre-flight; DoD 10 sign-off **CANNOT VERIFY** (human gate); this parent index | [implementation](../SP-110C/implementation.md) | [checkpoint](../SP-110C/checkpoint.md) | `fed59dc` (closeout commit) |
+| [C](../../SP-110C-semester-integration-signoff.md) | Real-Postgres e2e student-journey suite (10 tests: full lifecycle, cross-student matrix, single-active race, delete-orphan proof); full-suite re-runs; dev-stack HTTP pre-flight; DoD 10 sign-off **PASSED** (human walk ratified 2026-10-21); this parent index | [implementation](../SP-110C/implementation.md) | [checkpoint](../SP-110C/checkpoint.md) | `fed59dc` (closeout commit) |
 
 ## Per-child scope and verification
 
@@ -64,7 +64,9 @@ this index).
   Re-verified at closeout: API **34/34 suites, 456/456 tests, 0 skipped** on
   a disposable migrated Postgres; 8 suites self-skip (344 pass) without a
   database; typecheck + lint + format clean; dev-stack HTTP pre-flight through
-  the web proxy all green; dev DB restored to its pre-run state. Findings
+  the web proxy all green; dev DB restored to its pre-run state; **DoD 10
+  human browser walk ratified 2026-10-21** (user approval, no deviations
+  reported — browser/version not provided, recorded limitation). Findings
   F110C-1/2 — recorded, no action (expected P2025 log; pre-flight script
   bug, re-run corrected). **Product defects in A–B: none** — every e2e case
   and pre-flight step passed on the first (corrected) run.
@@ -111,12 +113,12 @@ Per the [README traceability tables](../../README.md#source-requirements-and-tes
 | DoD 2 (invalid-input validation) | A (DTO + service re-check on merged values), B (form client rules) | A 400 matrix; B form validation tests |
 | DoD 3 (student data scoping) | A (every route principal-scoped, uniform 404), C (cross-student proof) | A data-scoping matrix; C e2e AC2 + pre-flight (byte-identical row) |
 | DoD 4 (actionable API errors) | A (field-level 400, specific 409, uniform 404), B (display) | A + B tests; C pre-flight |
-| DoD 5 (loading/empty/error states) | B, C (integrated) | B page state tests; C pre-flight (the human leg covers the rendered states — open DoD 10) |
+| DoD 5 (loading/empty/error states) | B, C (integrated) | B page state tests; C pre-flight (the human leg covers the rendered states — ratified 2026-10-21) |
 | DoD 6 (keyboard accessibility) | B | B a11y tests (focus order, dialog trap, Escape, `aria-live`) |
 | DoD 7 (responsive layouts) | B | B mobile-viewport tests |
 | DoD 8 (automated business-rule tests) | A (unit + data-scoping), B (component), C (e2e) | as above — 83 API + 64 web + 10 e2e new tests |
 | DoD 9 (API/migration documentation) | A (contract in the README; **no migration — no schema change**) | README Shared API contract |
-| DoD 10 (integrated development review) | C (manual browser sign-off) + the combined parent review | **open** — see below |
+| DoD 10 (integrated development review) | C (manual browser sign-off) + the combined parent review | **satisfied** — human walk ratified 2026-10-21; closes via the combined parent review (below) |
 
 ## Security invariants and owning proofs
 
@@ -129,29 +131,31 @@ Per the [README invariants table](../../README.md#security-invariants-and-counte
 | Semester deletion never destroys course history | A (data-scoping: one transaction setNull + scoped delete); C e2e (two courses survive with `semesterId: null`) + pre-flight dev-DB row proof |
 | Calendar dates stay calendar dates (D107-7) | A (strict `yyyy-MM-dd` parse + end-after-start on merged values → 400); B (form refinement + local-date rendering, F110B-2); C e2e (dates round-trip `yyyy-MM-dd` on the wire) |
 
-## Open DoD-10 item (AC3 manual sign-off)
+## DoD-10 item (AC3 manual sign-off) — ratified 2026-10-21
 
-- **Status: CANNOT VERIFY** (browser-level walk) — the manual browser
-  sign-off is a human gate (SP-105D/SP-106D/SP-107F precedent) and no human
-  browser session is available in the implementation runtime. No sign-off is
-  claimed or implied.
-- **Performed and standing on its own:** the dev-stack bring-up + the full
-  HTTP pre-flight through the web proxy (register/login, create, list, get,
+- **Status: PASSED.** The 13-step `/semesters` browser walk was performed by
+  the user on 2026-10-21 and returned approval with **no deviations
+  reported**. Provenance: who — the user (session owner); when — 2026-10-21;
+  browser/version — **not provided** (recorded limitation: the approval is
+  at the feature level); per-step observations — none reported.
+- **History:** recorded **CANNOT VERIFY** at closeout (2026-10-20) — the
+  walk is a human gate (SP-105D/SP-106D/SP-107F precedent) and no human
+  browser session was available in the implementation runtime; no sign-off
+  was claimed until the ratification above.
+- **Standing on its own regardless:** the dev-stack bring-up + the full HTTP
+  pre-flight through the web proxy (register/login, create, list, get,
   patch, activate, attach courses, delete, re-list, cross-student 404 ×3,
   unauthenticated 401, SPA shell) and the row-level dev-DB proof (orphaned
   courses, untouched active semester).
-- **Exact human steps** (13 steps: register/login → header link → empty
+- **Exact walk steps** (13 steps: register/login → header link → empty
   state → create with validation → second semester → edit pre-fill →
   activate/deactivate (single-active badge) → course count → delete dialog
   (focus trap, Escape, D110-2 warning) → keyboard pass → error state + retry
-  → mobile viewport → return approval with browser/version):
+  → mobile viewport → return approval):
   [`SP-110C/implementation.md`](../SP-110C/implementation.md) → "Manual
-  browser sign-off (DoD 10, AC3) — CANNOT VERIFY".
-- **Closure path:** the human performs the walk; the coordinator records the
-  user's ratification with provenance (who/when/browser/limitations) in the
-  record or the parent review, exactly as SP-106D's and SP-107F's sign-offs
-  were transcribed. DoD 10 then closes via that recorded ratification
-  **plus** the combined SP-110 parent review.
+  browser sign-off (DoD 10, AC3)".
+- **Closure:** DoD 10 closes via the recorded ratification **plus** the
+  combined SP-110 parent review (this review).
 
 ## Cross-child notes for the reviewer
 

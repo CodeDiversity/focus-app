@@ -15,7 +15,7 @@
 
 **Active substory:** None — all three children implemented (2026-10-20)
 
-**Next substory:** None — all children implemented; the **combined SP-110 parent review** is next (coordinator requests the independent reviewer; report at `./artifacts/SP-110/review.md`). Open DoD-10 input: the human browser walk (steps in `./artifacts/SP-110C/implementation.md`).
+**Next substory:** None — all children implemented; the **combined SP-110 parent review** is next (coordinator requests the independent reviewer; report at `./artifacts/SP-110/review.md`). DoD-10 human browser walk ratified 2026-10-21 (recorded in `./artifacts/SP-110C/implementation.md`); DoD 10 closes via that ratification + the review.
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -29,7 +29,7 @@ obligation are implemented; no per-child review gates. Final artifact path:
 |---|---|---|---|---|
 | [A](./SP-110A-semester-management-api.md) | Implemented — awaiting parent review | SP-107B implemented (module exists in code); SP-104 implemented + reviewed; D110-1/D110-2 user-confirmed 2026-10-20 | — | `./artifacts/SP-110A/implementation.md` (2026-10-20; unit 42 + data-scoping 31 green on disposable Postgres) |
 | [B](./SP-110B-semester-management-ui.md) | Implemented — awaiting parent review | Contract fixed in this README; SP-109 + SP-107D implemented; A implemented (sequence) | — | `./artifacts/SP-110B/implementation.md` (2026-10-20; web suite 340/340, typecheck + lint + build clean) |
-| [C](./SP-110C-semester-integration-signoff.md) | Implemented — awaiting parent review | A, B implemented (both 2026-10-20) | Parent review (combined SP-110 review after all children) | `./artifacts/SP-110C/implementation.md` (2026-10-20; e2e 10/10 + full API suite 34/34 · 456/456 on disposable Postgres; DoD 10 browser walk CANNOT VERIFY — human gate; parent index at `./artifacts/SP-110/implementation.md`) · closeout commit `fed59dc` |
+| [C](./SP-110C-semester-integration-signoff.md) | Implemented — awaiting parent review | A, B implemented (both 2026-10-20) | Parent review (combined SP-110 review after all children) | `./artifacts/SP-110C/implementation.md` (2026-10-20; e2e 10/10 + full API suite 34/34 · 456/456 on disposable Postgres; DoD 10 browser walk PASSED — user ratified 2026-10-21; parent index at `./artifacts/SP-110/implementation.md`) · closeout commit `fed59dc` |
 
 ## Upstream dependency status (2026-10-20)
 
