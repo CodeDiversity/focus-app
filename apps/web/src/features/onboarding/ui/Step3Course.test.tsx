@@ -35,7 +35,11 @@ const mockedToast = toast as unknown as {
   error: ReturnType<typeof vi.fn>;
 };
 
-/** The 201 body `POST /courses` returns (SP-107B shape). */
+/**
+ * The 201 body `POST /courses` returns (SP-111A, D111-4: the 13-key
+ * `CourseWithSemester` shape — the SP-107B 8 keys plus `instructor`,
+ * `semesterId`, and the `semester` projection; the wizard ignores the extras).
+ */
 const createdCourse = {
   id: 'course-1',
   code: 'CS101',
@@ -43,7 +47,10 @@ const createdCourse = {
   description: null,
   color: '#6366f1',
   credits: null,
+  instructor: null,
   isActive: true,
+  semesterId: 'sem-1',
+  semester: { id: 'sem-1', name: 'Fall 2026' },
   createdAt: '2026-10-18T12:00:00.000Z',
   updatedAt: '2026-10-18T12:00:00.000Z',
 };

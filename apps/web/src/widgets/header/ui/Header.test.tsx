@@ -64,10 +64,22 @@ describe('Header semesters navigation (F110B-3)', () => {
     expect(screen.getByRole('link', { name: 'Profile' })).toBeInTheDocument();
   });
 
+  it('shows the Courses link for an authenticated user (SP-111B)', () => {
+    renderHeader('/dashboard', { isAuthenticated: true, user: sessionUser });
+
+    const link = screen.getByRole('link', { name: 'Courses' });
+    expect(link).toHaveAttribute('href', '/courses');
+    // The other authenticated links remain alongside it.
+    expect(screen.getByRole('link', { name: 'Dashboard' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Semesters' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Profile' })).toBeInTheDocument();
+  });
+
   it('hides the Semesters link (and other protected links) when unauthenticated', () => {
     renderHeader('/', { isAuthenticated: false, user: null });
 
     expect(screen.queryByRole('link', { name: 'Semesters' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Courses' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Dashboard' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Profile' })).not.toBeInTheDocument();
     // Public navigation is unaffected.
@@ -83,12 +95,14 @@ describe('Header semesters navigation (F110B-3)', () => {
     const semesters = screen.getByRole('link', { name: 'Semesters' });
     expect(semesters.className).toContain('text-primary-600');
     expect(screen.getByRole('link', { name: 'Dashboard' })).not.toHaveClass('text-primary-600');
+    expect(screen.getByRole('link', { name: 'Courses' })).not.toHaveClass('text-primary-600');
     expect(screen.getByRole('link', { name: 'Profile' })).not.toHaveClass('text-primary-600');
 
     unmount();
     renderHeader('/profile', { isAuthenticated: true, user: sessionUser });
 
     expect(screen.getByRole('link', { name: 'Semesters' })).not.toHaveClass('text-primary-600');
+    expect(screen.getByRole('link', { name: 'Courses' })).not.toHaveClass('text-primary-600');
     expect(screen.getByRole('link', { name: 'Profile' })).toHaveClass('text-primary-600');
   });
 });

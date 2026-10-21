@@ -13,17 +13,20 @@
 
 **Parent artifacts:** `./artifacts/SP-111/` (parent index written by C)
 
-**Active substory:** None — SP-111A implementation complete 2026-10-21
-(checkpoint: `./artifacts/SP-111A/checkpoint.md`)
+**Active substory:** SP-111C (next — integration sign-off; the implementer
+hands off here after SP-111B closeout 2026-10-21). SP-111B implementation
+complete 2026-10-21 (checkpoint: `./artifacts/SP-111B/checkpoint.md`).
+SP-111A implementation complete 2026-10-21 (checkpoint:
+`./artifacts/SP-111A/checkpoint.md`).
 
-**Next substory:** SP-111B (implement) — its dependency (A implemented,
-contract fixed in this README) is satisfied. **Planner judgment 2026-10-21
-(user delegated the call):** this breakdown proceeds directly to implementation
-without a formal plan review, on the SP-110 precedent (Plan Ready →
-implementation → final combined review PASS with zero plan-review findings; the
-plan mirrors reviewed, existing patterns). The mandatory final combined parent
-review still gates sign-off. An independent read-only plan review of this
-breakdown remains available on request before or during implementation.
+**Next substory:** SP-111C. **Planner
+judgment 2026-10-21 (user delegated the call):** this breakdown proceeds
+directly to implementation without a formal plan review, on the SP-110
+precedent (Plan Ready → implementation → final combined review PASS with zero
+plan-review findings; the plan mirrors reviewed, existing patterns). The
+mandatory final combined parent review still gates sign-off. An independent
+read-only plan review of this breakdown remains available on request before or
+during implementation.
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -35,8 +38,8 @@ obligation are implemented; no per-child review gates. Final artifacts:
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [A](./SP-111A-course-management-api.md) | Implemented — awaiting parent review | SP-107B implemented (module exists in code); SP-104 implemented + reviewed; D111-1 user-confirmed 2026-10-21 | — | `./artifacts/SP-111A/implementation.md` (+ `checkpoint.md`) |
-| [B](./SP-111B-course-management-ui.md) | Ready | A implemented (contract fixed in this README); SP-109 + SP-107D/E implemented (FSD + entities) | Implement | — |
-| [C](./SP-111C-course-integration-signoff.md) | Queued | A, B implemented | — | — |
+| [B](./SP-111B-course-management-ui.md) | Implemented — awaiting parent review | A implemented (contract fixed in this README); SP-109 + SP-107D/E implemented (FSD + entities) | — | `./artifacts/SP-111B/implementation.md` (+ `checkpoint.md`) |
+| [C](./SP-111C-course-integration-signoff.md) | Queued | A, B implemented | Implement (next) | — |
 
 Sequence: A → B → C, one sequential writer. C is the named integration owner
 for cross-layer verification.

@@ -45,6 +45,12 @@ export function Header() {
                   Semesters
                 </Link>
                 <Link
+                  to="/courses"
+                  className={location.pathname === '/courses' ? 'text-primary-600 font-medium' : ''}
+                >
+                  Courses
+                </Link>
+                <Link
                   to="/profile"
                   className={location.pathname === '/profile' ? 'text-primary-600 font-medium' : ''}
                 >

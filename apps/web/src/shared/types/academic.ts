@@ -17,6 +17,8 @@ export interface Course {
   description: string | null;
   color: string;
   credits: number | null;
+  /** The course's instructor (SP-111A, D111-1) — null when unset. */
+  instructor: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

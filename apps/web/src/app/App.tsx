@@ -5,6 +5,7 @@ import { LoginPage } from '@/pages/login/ui/LoginPage';
 import { RegisterPage } from '@/pages/register/ui/RegisterPage';
 import { DashboardPage } from '@/pages/dashboard/ui/DashboardPage';
 import { SemestersPage } from '@/pages/semesters/ui/SemestersPage';
+import { CoursesPage } from '@/pages/courses/ui/CoursesPage';
 import { ProfilePage } from '@/pages/profile/ui/ProfilePage';
 import { OnboardingPage } from '@/pages/onboarding/ui/OnboardingPage';
 import { VerifyEmailPage } from '@/pages/verify-email/ui/VerifyEmailPage';
@@ -34,6 +35,9 @@ function App() {
           {/* SP-110B: semester management page (D110-4: inside ProtectedRoute,
               rendered within the standard Layout like all existing pages) */}
           <Route path="/semesters" element={<SemestersPage />} />
+          {/* SP-111B: course management page (mirrors the semesters pattern:
+              inside ProtectedRoute, rendered within the standard Layout) */}
+          <Route path="/courses" element={<CoursesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           {/* SP-107C: onboarding wizard (D107-3: inside ProtectedRoute,
               rendered within the standard Layout like all existing pages) */}
