@@ -5,7 +5,7 @@
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1
 **Layer:** Integration
-**Status:** Queued (planned 2026-10-21)
+**Status:** Implemented — awaiting parent review (2026-10-22)
 **Dependencies:** SP-111A, SP-111B implemented
 **Jira key:** Pending creation
 
