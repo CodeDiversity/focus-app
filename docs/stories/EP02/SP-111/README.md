@@ -3,7 +3,7 @@
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Parent:** [SP-111](./SP-111-course-management.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Planned 2026-10-21 — covers EP02 proposed stories **2 (create a course), 3 (edit course information), 4 (archive and restore courses)**. D111-1 user-confirmed 2026-10-21; D111-2…5 planner-recorded. **Plan Ready** (gate below).
+**Status:** Planned 2026-10-21 — covers EP02 proposed stories **2 (create a course), 3 (edit course information), 4 (archive and restore courses)**. D111-1 user-confirmed 2026-10-21; D111-2…5 planner-recorded. **Plan Ready** (gate below). **Complete 2026-10-22** — all children implemented; final combined parent review **PASS** (F-111R-1 closed by user waiver; [review](./artifacts/SP-111/review.md) + [walkthrough](./artifacts/SP-111/walkthrough.md)).
 
 ## Execution queue
 
@@ -13,25 +13,20 @@
 
 **Parent artifacts:** `./artifacts/SP-111/` (parent index written by C)
 
-**Active substory:** None — all three children implemented (C complete
-2026-10-22; checkpoint: `./artifacts/SP-111C/checkpoint.md`). SP-111B
-implementation complete 2026-10-21 (checkpoint:
-`./artifacts/SP-111B/checkpoint.md`). SP-111A implementation complete
-2026-10-21 (checkpoint: `./artifacts/SP-111A/checkpoint.md`).
+**Active substory:** None — SP-111 complete: all three children implemented
+and `Reviewed` (A/B 2026-10-21, C 2026-10-22; checkpoints in
+`./artifacts/`), final combined parent review passed 2026-10-22 ([review](./artifacts/SP-111/review.md) + [walkthrough](./artifacts/SP-111/walkthrough.md)).
 
-**Next substory:** None — all children implemented (2026-10-22); next is the
-final combined SP-111 parent review (reviewer-owned; report at
-`./artifacts/SP-111/review.md` + `walkthrough.md`). The DoD-10 human
-browser-walk ratification is **done** (user, 2026-10-22 — PASSED with one
-deviation, F111C-3, since fixed; record in
-`./artifacts/SP-111C/implementation.md`). **Planner
-judgment 2026-10-21 (user delegated the call):** this breakdown proceeds
-directly to implementation without a formal plan review, on the SP-110
-precedent (Plan Ready → implementation → final combined review PASS with zero
-plan-review findings; the plan mirrors reviewed, existing patterns). The
-mandatory final combined parent review still gates sign-off. An independent
-read-only plan review of this breakdown remains available on request before or
-during implementation.
+**Next substory:** None — the SP-111 review unit is complete: final combined
+parent review **PASS** 2026-10-22 (F-111R-1 closed by user waiver; F-111R-2/3
+accepted as-is — correction log below) — [review](./artifacts/SP-111/review.md), [walkthrough](./artifacts/SP-111/walkthrough.md).
+Next queued EP02 work: the SP-112 breakdown (`../SP-112/` — separate delivery
+home). *(History: the DoD-10 human browser-walk ratification was done 2026-10-22
+— PASSED with one deviation, F111C-3, since fixed; record in
+`./artifacts/SP-111C/implementation.md`. Planner judgment 2026-10-21 (user
+delegated the call): this breakdown proceeded directly to implementation
+without a formal plan review, on the SP-110 precedent; the mandatory final
+combined parent review gated sign-off and passed.)*
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -39,12 +34,14 @@ backend/frontend/integration are scope labels, not concurrent writers).
 **Final review:** One combined SP-111 review after every child and the integration
 obligation are implemented; no per-child review gates. Final artifacts:
 `./artifacts/SP-111/review.md` + `./artifacts/SP-111/walkthrough.md`.
+**Verdict: PASS 2026-10-22** (F-111R-1 closed by user waiver; F-111R-2/3
+accepted as-is — correction log below). Both artifacts saved and verified.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-111A-course-management-api.md) | Implemented — awaiting parent review | SP-107B implemented (module exists in code); SP-104 implemented + reviewed; D111-1 user-confirmed 2026-10-21 | — | `./artifacts/SP-111A/implementation.md` (+ `checkpoint.md`) |
-| [B](./SP-111B-course-management-ui.md) | Implemented — awaiting parent review | A implemented (contract fixed in this README); SP-109 + SP-107D/E implemented (FSD + entities) | — | `./artifacts/SP-111B/implementation.md` (+ `checkpoint.md`) |
-| [C](./SP-111C-course-integration-signoff.md) | Implemented — awaiting parent review | A, B implemented (satisfied) | — | `./artifacts/SP-111C/implementation.md` (+ `checkpoint.md`) |
+| [A](./SP-111A-course-management-api.md) | Reviewed | SP-107B implemented (module exists in code); SP-104 implemented + reviewed; D111-1 user-confirmed 2026-10-21 | — | `./artifacts/SP-111A/implementation.md` (+ `checkpoint.md`) |
+| [B](./SP-111B-course-management-ui.md) | Reviewed | A implemented (contract fixed in this README); SP-109 + SP-107D/E implemented (FSD + entities) | — | `./artifacts/SP-111B/implementation.md` (+ `checkpoint.md`) |
+| [C](./SP-111C-course-integration-signoff.md) | Reviewed | A, B implemented (satisfied) | — | `./artifacts/SP-111C/implementation.md` (+ `checkpoint.md`) |
 
 Sequence: A → B → C, one sequential writer. C is the named integration owner
 for cross-layer verification.
@@ -159,8 +156,14 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
 
 ## Plan correction log
 
-(Empty at planning time — no findings yet. Entries are appended with stable IDs;
+(Planning-time log was empty. Entries below are appended with stable IDs;
 original findings are preserved, never overwritten.)
+
+| ID | Source | Original finding | Consequence | Disposition |
+|---|---|---|---|---|
+| F-111R-1 | Final combined parent review 2026-10-22 ([review](./artifacts/SP-111/review.md)) | Required implementation deliverables (parent index, A/B/C records + checkpoints) describe the course shape as "13-key" and the baseline as "8-key"; verified actuals are **12** and **9** | Completion evidence misstates the delivered API shape | **Closed by user waiver** (user, 2026-10-22 — confirmed documentation-only inaccuracy, directed to bypass; no fix round). Waiver scope: descriptive key-count labels only — the binding contract enumeration, code, and test assertions are all consistent at 12 keys; no functional/security/test impact. Labels remain in the tree as-is |
+| F-111R-2 | Same review | The same off-by-one labels in code comments/test titles of SP-111-changed files | Cosmetic | **Accepted as-is** (same user decision 2026-10-22; polish — tests assert the correct 12 keys) |
+| F-111R-3 | Same review | Planning prose describes the baseline as "8 keys" (README L54/L56/L66, A ticket L101, B ticket L86); D111-4 omits `semesterId` from the added-keys list | Cosmetic | **Accepted as-is** (same user decision 2026-10-22; polish — the binding 12-key enumeration block is correct) |
 
 ## Quality gate (2026-10-21)
 

@@ -5,7 +5,7 @@
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1
 **Layer:** Backend
-**Status:** Implemented — awaiting parent review (2026-10-21; record in `./artifacts/SP-111A/implementation.md`, checkpoint `./artifacts/SP-111A/checkpoint.md`)
+**Status:** Reviewed 2026-10-22 — final combined parent review **PASS** (F-111R-1 closed by user waiver; F-111R-2/3 accepted as-is). Implemented 2026-10-21 (record in `./artifacts/SP-111A/implementation.md`, checkpoint `./artifacts/SP-111A/checkpoint.md`).
 **Dependencies:** SP-107B (implemented — the `courses` module exists), SP-104 (implemented + reviewed), D111-1 user-confirmed 2026-10-21
 **Jira key:** Pending creation
 

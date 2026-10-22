@@ -4,7 +4,7 @@
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1
 **Covers epic proposed stories:** 2 (create a course), 3 (edit course information), 4 (archive and restore courses)
-**Status:** Planned 2026-10-21 — see the [breakdown README](./README.md) for the queue, decisions, contract, and quality gate.
+**Status:** Complete 2026-10-22 — all children implemented; final combined parent review **PASS** (F-111R-1 closed by user waiver; F-111R-2/3 accepted as-is). See the [breakdown README](./README.md) for the queue, decisions, contract, and quality gate; [final review](./artifacts/SP-111/review.md) + [walkthrough](./artifacts/SP-111/walkthrough.md).
 
 ## Purpose
 
