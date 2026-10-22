@@ -74,7 +74,10 @@ const nameInput = () => screen.getByLabelText(/course name/i);
 const semesterSelect = () => screen.getByLabelText(/semester/i);
 const instructorInput = () => screen.getByLabelText(/instructor/i);
 const creditsInput = () => screen.getByLabelText(/credits/i);
-const colorInput = () => screen.getByLabelText(/color/i);
+// The color swatches (F111C-3) — a radiogroup of preset colors; no free-form
+// hex. Each swatch's accessible name is its color label.
+const colorSwatch = (name: string) => screen.getByRole('radio', { name });
+const allColorSwatches = () => screen.getAllByRole('radio');
 const descriptionInput = () => screen.getByLabelText(/description/i);
 const submitButton = () => screen.getByRole('button', { name: /create course|save changes/i });
 const cancelButton = () => screen.getByRole('button', { name: 'Cancel' });
@@ -127,7 +130,8 @@ describe('CourseForm create mode (AC 3)', () => {
     expect(semesterSelect()).toHaveValue('');
     expect(instructorInput()).toHaveValue('');
     expect(creditsInput()).toHaveValue('');
-    expect(colorInput()).toHaveValue('#6366f1');
+    expect(allColorSwatches()).toHaveLength(10);
+    expect(colorSwatch('Indigo')).toHaveAttribute('aria-checked', 'true');
     expect(descriptionInput()).toHaveValue('');
   });
 
@@ -244,24 +248,6 @@ describe('CourseForm create mode (AC 3)', () => {
       'Credits must be greater than 0 and at most 30',
     ],
     [
-      'a color that is not #rrggbb',
-      async () => {
-        await fillValidForm();
-        await validUser.clear(colorInput());
-        await validUser.type(colorInput(), 'red');
-      },
-      'Color must be a #rrggbb hex color',
-    ],
-    [
-      'a short hex color',
-      async () => {
-        await fillValidForm();
-        await validUser.clear(colorInput());
-        await validUser.type(colorInput(), '#ff00');
-      },
-      'Color must be a #rrggbb hex color',
-    ],
-    [
       'a whitespace-only instructor',
       async () => {
         await fillValidForm();
@@ -294,6 +280,45 @@ describe('CourseForm create mode (AC 3)', () => {
 
     expect(await screen.findByText(message)).toBeInTheDocument();
     expect(mockedCreateCourse).not.toHaveBeenCalled();
+  });
+
+  it('offers the preset colors as visible swatches with the default checked (F111C-3)', () => {
+    renderForm();
+
+    const swatches = allColorSwatches();
+    expect(swatches).toHaveLength(10);
+    expect(colorSwatch('Indigo')).toHaveAttribute('aria-checked', 'true');
+    expect(colorSwatch('Red')).toHaveAttribute('aria-checked', 'false');
+    // The swatches show the actual colors.
+    expect(colorSwatch('Red')).toHaveStyle({ backgroundColor: '#ef4444' });
+    expect(colorSwatch('Gray')).toHaveStyle({ backgroundColor: '#64748b' });
+  });
+
+  it('selects a color swatch and submits it (F111C-3)', async () => {
+    renderForm();
+    await fillValidForm();
+
+    await validUser.click(colorSwatch('Red'));
+    expect(colorSwatch('Red')).toHaveAttribute('aria-checked', 'true');
+    expect(colorSwatch('Indigo')).toHaveAttribute('aria-checked', 'false');
+
+    await validUser.click(submitButton());
+    await waitFor(() =>
+      expect(mockedCreateCourse).toHaveBeenCalledWith(expect.objectContaining({ color: '#ef4444' }))
+    );
+  });
+
+  it('moves the color selection with the arrow keys (F111C-3)', async () => {
+    renderForm();
+
+    const indigo = colorSwatch('Indigo');
+    indigo.focus();
+    await validUser.keyboard('{ArrowRight}');
+
+    const blue = colorSwatch('Blue');
+    expect(blue).toHaveAttribute('aria-checked', 'true');
+    expect(blue).toHaveFocus();
+    expect(indigo).toHaveAttribute('aria-checked', 'false');
   });
 
   it('renders a 400 `errors` map under the matching fields without a toast (AC 3)', async () => {
@@ -391,7 +416,9 @@ describe('CourseForm create mode (AC 3)', () => {
     expect(semesterSelect()).toBeDisabled();
     expect(instructorInput()).toBeDisabled();
     expect(creditsInput()).toBeDisabled();
-    expect(colorInput()).toBeDisabled();
+    for (const swatch of allColorSwatches()) {
+      expect(swatch).toBeDisabled();
+    }
     expect(descriptionInput()).toBeDisabled();
   });
 
@@ -424,7 +451,7 @@ describe('CourseForm edit mode (AC 4)', () => {
     expect(semesterSelect()).toHaveValue('sem-1');
     expect(instructorInput()).toHaveValue('Ada Lovelace');
     expect(creditsInput()).toHaveValue('4');
-    expect(colorInput()).toHaveValue('#6366f1');
+    expect(colorSwatch('Indigo')).toHaveAttribute('aria-checked', 'true');
     expect(descriptionInput()).toHaveValue('Algorithms.');
 
     await validUser.clear(nameInput());
@@ -448,9 +475,10 @@ describe('CourseForm edit mode (AC 4)', () => {
   it('sends null for blanked optional fields (the backend keeps the stored value — F111B-1)', async () => {
     const { onSuccess } = renderForm('edit');
 
+    // The color dropdown can't be blanked — not touching it round-trips the
+    // stored color (the null-no-op applies to instructor/credits).
     await validUser.clear(instructorInput());
     await validUser.clear(creditsInput());
-    await validUser.clear(colorInput());
     await validUser.click(submitButton());
 
     await waitFor(() =>
@@ -461,7 +489,7 @@ describe('CourseForm edit mode (AC 4)', () => {
         instructor: null,
         description: 'Algorithms.',
         credits: null,
-        color: null,
+        color: '#6366f1',
       })
     );
     await waitFor(() => expect(onSuccess).toHaveBeenCalledWith('Intro to Computer Science'));
@@ -504,6 +532,35 @@ describe('CourseForm edit mode (AC 4)', () => {
       .querySelector('option[value=""]') as HTMLOptionElement;
     expect(noSemester).not.toBeDisabled();
     unmount();
+  });
+
+  it('offers a stored non-palette color as a "Custom" swatch and round-trips it (F111C-3)', async () => {
+    const customColor = '#123456';
+    const onSuccess = vi.fn();
+    render(
+      <CourseForm
+        mode="edit"
+        course={{ ...editingCourse, color: customColor }}
+        semesters={semesters}
+        onSuccess={onSuccess}
+        onClose={vi.fn()}
+      />
+    );
+
+    // The stored custom color is checked, shown as its own swatch…
+    const custom = colorSwatch(`Custom ${customColor}`);
+    expect(custom).toHaveAttribute('aria-checked', 'true');
+    expect(custom).toHaveStyle({ backgroundColor: customColor });
+
+    // …and saving without touching the swatches round-trips it.
+    await validUser.click(submitButton());
+    await waitFor(() =>
+      expect(mockedUpdateCourse).toHaveBeenCalledWith(
+        'course-1',
+        expect.objectContaining({ color: customColor })
+      )
+    );
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledWith('Intro to Computer Science'));
   });
 
   it('applies the same client validation as create (a whitespace-only instructor)', async () => {
@@ -591,7 +648,7 @@ describe('CourseForm dialog behavior (AC 6, D111B-2)', () => {
     await validUser.tab();
     expect(creditsInput()).toHaveFocus();
     await validUser.tab();
-    expect(colorInput()).toHaveFocus();
+    expect(colorSwatch('Indigo')).toHaveFocus();
     await validUser.tab();
     expect(descriptionInput()).toHaveFocus();
     await validUser.tab();
@@ -611,7 +668,7 @@ describe('CourseForm dialog behavior (AC 6, D111B-2)', () => {
       nameInput(),
       instructorInput(),
       creditsInput(),
-      colorInput(),
+      colorSwatch('Indigo'),
     ]) {
       input.focus();
       expect(input).toHaveFocus();

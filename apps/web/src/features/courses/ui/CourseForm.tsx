@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import clsx from 'clsx';
 import toast from 'react-hot-toast';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
@@ -22,6 +23,28 @@ import type { SemesterWithCount } from '@/entities/semester/api/semesterApi';
 /** The schema's default color (SP-107B) — the create form's default. */
 const DEFAULT_COLOR = '#6366f1';
 
+/** The `#rrggbb` hex shape the backend enforces (mirrored client-side, DoD 2). */
+const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
+
+/**
+ * The preset colors offered as swatches in the color field (F111C-3 — the
+ * DoD-10 walk asked for the colors to be visible: circles of the preset
+ * colors, no free-form hex input). The backend still accepts any `#rrggbb`
+ * (the contract is unchanged); the palette is a client convenience.
+ */
+const COLOR_OPTIONS = [
+  { value: '#6366f1', label: 'Indigo' },
+  { value: '#3b82f6', label: 'Blue' },
+  { value: '#14b8a6', label: 'Teal' },
+  { value: '#22c55e', label: 'Green' },
+  { value: '#f59e0b', label: 'Amber' },
+  { value: '#f97316', label: 'Orange' },
+  { value: '#ef4444', label: 'Red' },
+  { value: '#ec4899', label: 'Pink' },
+  { value: '#a855f7', label: 'Purple' },
+  { value: '#64748b', label: 'Gray' },
+];
+
 /**
  * Client validation mirrors the SP-111A backend field rules (DoD 2 — the
  * backend re-validates the merged values, so the client is a convenience,
@@ -36,10 +59,13 @@ const DEFAULT_COLOR = '#6366f1';
  * - `description`: optional — ≤ 2000 chars.
  *
  * Null-no-op semantics (F111B-1 → D111B-3): the backend `PATCH` treats an
- * explicit `null` as omitted, so a **blank** `instructor`/`credits`/`color`
- * sends `null` and keeps the stored value (the form hints "leave blank to
- * keep…" in edit mode).  `description` is the exception — an empty string
- * clears the stored description, so a blanked textarea sends `''`.
+ * explicit `null` as omitted, so a **blank** `instructor`/`credits` sends
+ * `null` and keeps the stored value (the form hints "leave blank to keep…"
+ * in edit mode).  `color` is a swatch radiogroup that always has a value —
+ * not touching it round-trips the current color.  `description` is the
+ * exception
+ * — an empty string clears the stored description, so a blanked textarea
+ * sends `''`.
  */
 const courseFormSchema = z.object({
   code: z
@@ -70,7 +96,7 @@ const courseFormSchema = z.object({
   color: z
     .string()
     .refine(
-      (value) => value.trim() === '' || /^#[0-9a-fA-F]{6}$/.test(value.trim()),
+      (value) => value.trim() === '' || HEX_COLOR_PATTERN.test(value.trim()),
       'Color must be a #rrggbb hex color'
     ),
   description: z.string().max(2000, 'Description must be 2000 characters or fewer'),
@@ -117,7 +143,8 @@ const FOCUSABLE_SELECTOR =
  * unlike the inline `SemesterForm`, it renders its own overlay and traps
  * focus (the `DeleteSemesterDialog` pattern).  Fields: `code`, `name`,
  * `semester` (optional picker — only the student's own semesters, the active
- * one marked), `instructor` (D111-1), `credits`, `color`, `description`.
+ * one marked), `instructor` (D111-1), `credits`, `color` (a row of preset
+ * color swatches — F111C-3), `description`.
  *
  * Failure handling: a `400` renders its field-level `errors` map under the
  * matching inputs; a `409` (duplicate code) and a `404` (semester) render as
@@ -135,6 +162,8 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     setError,
     formState: { errors },
   } = useForm<CourseFormData>({
@@ -155,6 +184,38 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
   // a no-op, F111B-1) — so "No semester" is disabled in edit mode when the
   // course is attached (D111B-3).
   const noSemesterDisabled = isEdit && course.semesterId !== null;
+
+  // The color swatches (F111C-3) offer the preset palette; in edit mode a
+  // stored color that isn't in the palette (e.g. typed into the old hex
+  // field) is offered as an extra "Custom" swatch so editing the course
+  // never silently overwrites it.
+  const colorOptions =
+    isEdit && course.color && !COLOR_OPTIONS.some((option) => option.value === course.color)
+      ? [...COLOR_OPTIONS, { value: course.color, label: `Custom ${course.color}` }]
+      : COLOR_OPTIONS;
+  const colorValue = watch('color');
+  const swatchRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  // Roving focus for the swatches (the WAI-ARIA radio pattern): one tab stop
+  // (the checked swatch); the arrow keys move the selection (and focus),
+  // Home/End jump to the ends.
+  const handleSwatchKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
+    const count = colorOptions.length;
+    let next: number | null = null;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      next = (index + 1) % count;
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      next = (index - 1 + count) % count;
+    } else if (event.key === 'Home') {
+      next = 0;
+    } else if (event.key === 'End') {
+      next = count - 1;
+    }
+    if (next === null) return;
+    event.preventDefault();
+    setValue('color', colorOptions[next].value, { shouldValidate: true });
+    swatchRefs.current[next]?.focus();
+  };
 
   // Focus management (the DeleteSemesterDialog pattern): on open the dialog
   // takes focus (the first focusable is the code input) and focus is trapped
@@ -274,7 +335,9 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
           // semester or the student's new pick.
           semesterId: data.semesterId || course.semesterId || null,
           // Blank optional fields send null (the backend keeps the stored
-          // value — F111B-1); a blanked description sends '' (clears).
+          // value — F111B-1); a blanked description sends '' (clears). The
+          // color swatches always have a value — not touching them round-
+          // trips the current color.
           instructor: instructor === '' ? null : instructor,
           description: data.description,
           credits,
@@ -376,18 +439,58 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
               />
             </div>
 
-            <Input
-              label="Color"
-              placeholder="#6366f1"
-              error={errors.color?.message}
-              hint={
-                isEdit
-                  ? 'Optional (#rrggbb) — leave blank to keep the current color.'
-                  : 'Optional (#rrggbb) — defaults to indigo if left blank.'
-              }
-              disabled={isSubmitting}
-              {...register('color')}
-            />
+            <div className="w-full">
+              <span
+                id="course-color-label"
+                className="block mb-2 text-sm font-medium text-secondary-700"
+              >
+                Color
+              </span>
+              {/* The color swatches (F111C-3 — the DoD-10 walk asked for the
+                  colors to be visible): a radiogroup of circles, one per
+                  preset color; clicking picks it. The registered input is
+                  hidden — the swatches drive it via `setValue`. */}
+              <div
+                role="radiogroup"
+                aria-labelledby="course-color-label"
+                className="flex flex-wrap gap-2"
+              >
+                {colorOptions.map((option, index) => {
+                  const checked = option.value === colorValue;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={checked}
+                      aria-label={option.label}
+                      title={option.label}
+                      tabIndex={checked ? 0 : -1}
+                      disabled={isSubmitting}
+                      onClick={() => setValue('color', option.value, { shouldValidate: true })}
+                      onKeyDown={(event) => handleSwatchKeyDown(event, index)}
+                      ref={(el) => {
+                        swatchRefs.current[index] = el;
+                      }}
+                      style={{ backgroundColor: option.value }}
+                      className={clsx(
+                        'h-8 w-8 rounded-full border-2 transition-all duration-150',
+                        'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
+                        checked ? 'border-secondary-900' : 'border-transparent',
+                        isSubmitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                      )}
+                    />
+                  );
+                })}
+              </div>
+              <input type="hidden" {...register('color')} />
+              {errors.color?.message && (
+                <p className="mt-1 text-sm text-red-600">{errors.color.message}</p>
+              )}
+              <p className="mt-1 text-sm text-secondary-500">
+                {isEdit ? 'Pick a different color to change it.' : 'Optional — defaults to indigo.'}
+              </p>
+            </div>
 
             <div className="w-full">
               <label
