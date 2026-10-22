@@ -5,7 +5,8 @@
 **Layer:** Integration (verification child — SP-110C precedent)
 **Baseline:** `c0ccb7d` (SP-111B: course management UI — the commit before the first included change)
 **Completed:** 2026-10-22, implementer, single sequential writer.
-**Status:** Implementation complete — awaiting the combined SP-111 parent review. DoD 10 human browser-walk ratification recorded **CANNOT VERIFY** (human gate — with the session owner, exactly as SP-110C ran it).
+**Updated:** 2026-10-22 — DoD 10 human browser walk ratified (PASSED with one deviation, F111C-3, since fixed); F111C-3 swatch design confirmed by the user.
+**Status:** Implementation complete — awaiting the combined SP-111 parent review. DoD 10 human browser-walk ratification recorded **PASSED with one deviation** (human gate — the user, 2026-10-22; the deviation is F111C-3, fixed and confirmed, exactly as SP-110C ran it).
 
 ## Summary
 
@@ -16,9 +17,11 @@ PostgreSQL database (AC1 lifecycle + semester filter, the SP-110-boundary
 orphan case, the AC2 cross-student matrix, 401 on every route); the automated
 suites were re-executed green on a disposable migrated Postgres and the bare
 no-DB path; the manual browser sign-off supporting DoD 10 was prepared (dev
-stack + full HTTP pre-flight through the web proxy — all green), and the
-browser-level walk — a **human gate** — is recorded CANNOT VERIFY with the
-exact steps for the session owner (AC2); the parent implementation index was
+stack + full HTTP pre-flight through the web proxy — all green) and the
+browser-level walk — a **human gate** — was performed by the user on
+2026-10-22 and returned approval with one deviation (F111C-3 — the course
+color field; fixed in `CourseForm.tsx` and the swatch design confirmed by the
+user; ratification recorded below, AC2); the parent implementation index was
 written at `../SP-111/implementation.md` (AC3).
 
 ## Deliverable
@@ -45,7 +48,7 @@ via the harness `prisma` handle.
 | AC | Status | Evidence |
 |---|---|---|
 | AC1 e2e spec (lifecycle, filter, cross-student, orphan) | ✅ | the spec above — 14/14 green on the disposable migrated Postgres (first run after the F111C-1 assertion fix) |
-| AC2 manual browser sign-off (DoD 10) | ⚠️ **CANNOT VERIFY** (human gate) | The dev-stack HTTP pre-flight below (the wire leg of the same journey) + the e2e suite stand on their own; the browser-level walk was **not performed in the implementation runtime** — no human browser session was available, so per the ticket's own rule (and the SP-110C precedent) it is recorded CANNOT VERIFY rather than claimed. The exact steps are written below for the session owner; the ratification (who/when/browser) belongs to them, exactly as SP-110C ran it. |
+| AC2 manual browser sign-off (DoD 10) | ✅ **PASSED with one deviation** (ratified 2026-10-22) | The 14-step `/courses` browser walk performed by the user 2026-10-22 — approved ("everything looks good") with **one deviation**: the course color field should be a color picker (F111C-3 — a UX gap in B's form, not a ticket defect; fixed in `CourseForm.tsx` and the final swatch design re-confirmed by the user the same day). Browser/version not provided — recorded limitation (SP-110C precedent: approval at the feature level). Recorded CANNOT VERIFY at closeout until the human leg landed; see below. The dev-stack HTTP pre-flight + e2e wire proof stand alongside it. |
 | AC3 parent index | ✅ | `../SP-111/implementation.md` (this commit) |
 
 ## Verification actually executed
@@ -102,17 +105,29 @@ pre-flight users were then deleted (cascade); the dev DB was restored to its
 exact pre-run state (5 users, 3 semesters, 1 course, 28 refresh tokens).
 Both dev servers were stopped and the disposable container removed.
 
-## Manual browser sign-off (DoD 10, AC2) — **CANNOT VERIFY** (human gate)
+## Manual browser sign-off (DoD 10, AC2) — **PASSED with one deviation** (ratified 2026-10-22)
 
-**Status: CANNOT VERIFY** at closeout — the walk below is a **human gate**
-(per the SP-105D/SP-106D/SP-107F/SP-110C precedent) and no human browser
-session was available in the implementation runtime; per the ticket's own
-rule it is recorded CANNOT VERIFY with the reason rather than claimed, and no
-sign-off is claimed or implied until the session owner's ratification. What
-the implementer **performed** and stands on its own regardless: the dev-stack
-bring-up + the full HTTP pre-flight above (the wire leg of the same journey)
-and the automated proof (the e2e suite + the SP-111A/B unit/component
-suites, all green).
+**Status: PASSED with one deviation.** The manual browser walk (the 14 steps
+below) was performed by the user on 2026-10-22 and returned approval:
+"everything looks good except color for the course should be a color
+picker." Provenance: who — the user (session owner); when — 2026-10-22;
+browser/version — **not provided** (recorded limitation: the approval is at
+the feature level, per the user's report — the SP-110C precedent);
+per-step observations — overall approval, one deviation (the color field —
+F111C-3). The user then clarified the desired design (a simple dropdown of
+preset colors, no hex input; the options must actually show the colors), the
+fix (a row of color swatches — F111C-3) was committed, and the user
+re-confirmed the result in the browser the same day.
+
+**History:** at closeout this sign-off was recorded **CANNOT VERIFY** — the
+walk is a **human gate** (per the SP-105D/SP-106D/SP-107F/SP-110C precedent)
+and no human browser session was available in the implementation runtime; per
+the ticket's own rule it was recorded CANNOT VERIFY with the reason rather
+than claimed, and no sign-off was claimed or implied until the ratification
+above. What the implementer **performed** and stands on its own regardless:
+the dev-stack bring-up + the full HTTP pre-flight above (the wire leg of the
+same journey) and the automated proof (the e2e suite + the SP-111A/B
+unit/component suites, all green).
 
 ### Exact steps the human must perform
 
@@ -168,12 +183,13 @@ is fine), `pnpm --filter @studypilot/api dev` (API `:4000`), `pnpm
 
 ### Closure (SP-106/SP-107/SP-110 precedent)
 
-The human gate is **open**: when the session owner performs the walk above,
-record the ratification (who/when/browser/per-step observations) in this
-record's Status block, exactly as SP-110C's was transcribed (2026-10-21).
-DoD 10 then closes via that recorded ratification **plus** the combined
-SP-111 parent review (pending — report at `../SP-111/review.md`); until that
-review passes, the review unit is not signed off.
+The human gate is now **satisfied**: the user performed the walk above and
+the ratification with provenance is recorded in the Status block (who/when/
+limitations — browser/version not provided; one deviation, F111C-3), exactly
+as SP-110C's was transcribed. DoD 10 closes via that recorded ratification
+**plus** the combined SP-111 parent review (pending — report at
+`../SP-111/review.md`); until that review passes, the review unit is not
+signed off.
 
 ## Findings / deviations
 
@@ -181,30 +197,41 @@ review passes, the review unit is not signed off.
 |---|---|---|
 | F111C-1 | The first draft of the semester-filter case asserted `toEqual` between the two uniform-404 bodies (foreign vs missing `semesterId`); the error envelope's `path` (which contains the semester id) and `timestamp` differ per request. The uniformity contract covers status + `message` + `error` — the assertion now compares exactly those three. | Fixed (test-only, this session). One test failed on the first run until the update; all green after. No product defect. |
 | F111C-2 | Registration lowercases the email (`preflight.a.9944B033@…` is stored as `…9944b033@…`), so the pre-flight cleanup's `delete from users where email = <as sent>` matched 0 rows. | Fixed (process-level): the two pre-flight users were deleted by id instead; the dev DB was verified back to its exact pre-run state. No product defect (lowercasing is the intended normalization). |
+| F111C-3 | The DoD-10 human browser walk (user, 2026-10-22) passed with one deviation: the course **color field was a plain hex text input** and the user wants a color picker. The B ticket required `#rrggbb` validation (a text input satisfied it) but did not mandate a picker — a UX gap, not a ticket defect. The user then clarified the design: a simple dropdown of preset colors, no hex input, and the options must actually show the colors. | Fixed (B-owned file `CourseForm.tsx`, changed by this session — the implementer is the single owner, per the ticket rule that A/B findings route back to their owner): the color field is now a **row of color swatch circles** (a `role="radiogroup"` of 10 preset colors; indigo `#6366f1` default; click to pick; one tab stop with arrow-key/Home/End navigation). A native `<select>` cannot render colors and a popover would clip in the scrolling dialog. In edit mode a stored non-palette color is offered as an extra `Custom #rrggbb` swatch so editing never silently overwrites it; the `#rrggbb` zod rule stays (mirrors the backend) but is unreachable through the swatches, so the two color validation-matrix cases are removed. The backend contract is unchanged. CourseForm tests 34 → 36; web suite 35 files / 425 tests; typecheck/lint/prettier clean. Committed `7ae6ad0`; the user re-confirmed the swatch design in the browser the same day. |
 
-**Product defects in A–B: none.** Every e2e case and every pre-flight step
-passed on the first (corrected) run; no finding was raised against the
-owning children and no fix was needed in this child (ticket rule: any A/B
-defect routes back to that child's owner as a finding — none occurred).
+**Product defects in A–B:** one UX finding — F111C-3 above (surfaced by the
+DoD-10 walk; fixed in this session in B's file). Every e2e case and every
+pre-flight step otherwise passed on the first (corrected) run.
 
 No Jira mutation occurred (child key remains `Pending creation`).
 
 ## Commit scope
 
-One scoped commit on `main` (baseline `c0ccb7d`):
-`apps/api/src/modules/courses/courses-e2e.spec.ts` (new),
-`docs/stories/EP02/SP-111/artifacts/SP-111C/` (checkpoint + this record),
-`docs/stories/EP02/SP-111/artifacts/SP-111/implementation.md` (parent index,
-AC3), `docs/stories/EP02/SP-111/README.md` (execution fields only — queue row
-C, Active/Next), `docs/stories/EP02/SP-111/SP-111C-course-integration-signoff.md`
-(status line only). The commit hash is recorded in the queue row and the
-returned handoff (not amended into this record).
+Two scoped commits on `main` (baseline `c0ccb7d`):
+
+1. `36e272a` — the sign-off work:
+   `apps/api/src/modules/courses/courses-e2e.spec.ts` (new),
+   `docs/stories/EP02/SP-111/artifacts/SP-111C/` (checkpoint + this record),
+   `docs/stories/EP02/SP-111/artifacts/SP-111/implementation.md` (parent
+   index, AC3), `docs/stories/EP02/SP-111/README.md` (execution fields only —
+   queue row C, Active/Next), `docs/stories/EP02/SP-111/SP-111C-course-integration-signoff.md`
+   (status line only).
+2. `7ae6ad0` — the F111C-3 fix (B-owned file):
+   `apps/web/src/features/courses/ui/CourseForm.tsx` + `CourseForm.test.tsx`
+   (color swatches) + `docs/stories/EP02/SP-111/artifacts/SP-111C/checkpoint.md`
+   (F111C-3 record).
+
+The DoD-10 ratification records (this record's Status/AC2/sign-off sections,
+the parent index DoD-10 section, the queue "Next substory" field) land in a
+third scoped commit, recorded in the queue row and the returned handoff (not
+amended into this record).
 
 ## Remaining work (outside this child)
 
-- **DoD 10 human ratification** — the session owner performs the 14-step
-  `/courses` walk above; the ratification is then recorded in this record
-  (the SP-110C pattern: a follow-up commit transcribing the approval).
+- ~~**DoD 10 human ratification**~~ — **done** (2026-10-22): the user
+  performed the 14-step `/courses` walk above and returned approval with one
+  deviation (F111C-3, fixed and re-confirmed); the ratification is recorded
+  in this record (the SP-110C pattern).
 - **Combined SP-111 parent review** (one review after all children; report at
   `../SP-111/review.md`) — the implementer has prepared the parent index;
   the coordinator requests the independent review. DoD 10 closes via the

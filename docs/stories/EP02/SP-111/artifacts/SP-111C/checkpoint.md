@@ -18,11 +18,15 @@ Role / scope: implementer; integration/verification only (new courses e2e spec, 
 - [x] Full web suite green (35 files / 423 tests)
 - [x] DoD 10: dev-stack bring-up + HTTP pre-flight through the web proxy — all 14 steps green first run
 - [x] DoD 10: browser walk steps written into the implementation record; human gate recorded **CANNOT VERIFY** (no human browser session in the implementation runtime — SP-110C precedent; ratification stays with the session owner)
-- [x] Parent index `../SP-111/implementation.md` (AC3) — written; DoD-10 section open (CANNOT VERIFY) pending the human ratification
+- [x] Parent index `../SP-111/implementation.md` (AC3) — written; DoD-10 section updated to the ratified state (PASSED with one deviation, F111C-3)
 - [x] DoD-10 **human browser walk performed by the user (2026-10-22): PASSED with one deviation** — the course color field should be a color picker (F111C-3)
 - [x] F111C-3 fix in `CourseForm.tsx` (B-owned file; the implementer is the single owner): the user's final design — **a row of color swatch circles** (radiogroup of 10 preset colors, visible colors, arrow-key navigation; + a `Custom` swatch for stored non-palette colors); tests 34 → 36
-- [ ] Closeout: F111C-3 fix commit → DoD-10 ratification records (C implementation.md, parent index, queue) → second commit → stop dev servers → hand off to the combined SP-111 parent review
-- Current step: awaiting the user's visual re-check of the dropdown (dev stack running: API :4000, web :3000), then closeout
+- [x] User visual re-check of the swatches (2026-10-22): confirmed ("looks good")
+- [x] Scoped commit 1: `7ae6ad0` — `CourseForm.tsx` + `CourseForm.test.tsx` + this checkpoint (F111C-3)
+- [x] DoD-10 ratification records — PASSED with one deviation (user, 2026-10-22; F111C-3 fixed in `7ae6ad0`) — in C `implementation.md` (Status/AC2/sign-off), parent index, queue "Next substory"
+- [ ] Scoped commit 2: the ratification records (C `implementation.md`, parent index, queue)
+- [ ] Stop dev servers (API :4000, web :3000) → hand off to the combined SP-111 parent review
+- Current step: commit 2, then stop dev servers and hand off to the combined SP-111 parent review
 
 ## Decisions and dependencies
 - Contract: parent README "Shared API contract" (GET/PATCH/POST + `CourseWithSemester`, 13 keys, D111-1…5) — implemented by A, consumed by B.
@@ -49,4 +53,9 @@ Role / scope: implementer; integration/verification only (new courses e2e spec, 
 - Details + AC outcomes: `./implementation.md`.
 
 ## Resume next
-The F111C-3 swatch fix is implemented and verified. Next: (1) user's visual re-check of the color swatches in the browser (dev stack running: API :4000, web :3000 — stop both when confirmed); (2) scoped commit 1: `CourseForm.tsx` + `CourseForm.test.tsx` + this checkpoint (F111C-3); (3) DoD-10 ratification records — PASSED-with-deviation (user, 2026-10-22; deviation F111C-3 fixed in <commit>) — in C `implementation.md` (Status + AC2), parent index DoD-10 section, and the queue "Next substory" field, then scoped commit 2; (4) hand off to the combined SP-111 parent review (reviewer-owned; report + `walkthrough.md` at `../SP-111/`).
+All SP-111C closeout work is done: F111C-3 fix committed (`7ae6ad0`); DoD-10
+ratification recorded (PASSED with one deviation — user, 2026-10-22; browser/
+version not provided, SP-110C precedent); C `implementation.md`, parent index,
+queue and this checkpoint reconciled. Next: stop the dev servers (API :4000,
+web :3000), then hand off to the combined SP-111 parent review (reviewer-owned;
+report + `walkthrough.md` at `../SP-111/`).

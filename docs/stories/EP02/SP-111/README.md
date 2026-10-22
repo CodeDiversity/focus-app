@@ -22,8 +22,9 @@ implementation complete 2026-10-21 (checkpoint:
 **Next substory:** None — all children implemented (2026-10-22); next is the
 final combined SP-111 parent review (reviewer-owned; report at
 `./artifacts/SP-111/review.md` + `walkthrough.md`). The DoD-10 human
-browser-walk ratification is with the session owner (C recorded CANNOT VERIFY
-with the 14 steps). **Planner
+browser-walk ratification is **done** (user, 2026-10-22 — PASSED with one
+deviation, F111C-3, since fixed; record in
+`./artifacts/SP-111C/implementation.md`). **Planner
 judgment 2026-10-21 (user delegated the call):** this breakdown proceeds
 directly to implementation without a formal plan review, on the SP-110
 precedent (Plan Ready → implementation → final combined review PASS with zero

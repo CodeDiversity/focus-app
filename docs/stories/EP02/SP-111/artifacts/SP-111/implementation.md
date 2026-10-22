@@ -1,6 +1,6 @@
 # SP-111 parent implementation index
 
-Updated: 2026-10-22 (SP-111C closeout)
+Updated: 2026-10-22 (SP-111C closeout; DoD 10 human walk ratified the same day — PASSED with one deviation, F111C-3)
 Prepared by: implementer (single sequential writer) as SP-111C (AC3) — the
 named integration/index owner for the SP-111 review unit.
 Purpose: index of every child's implementation evidence for the one combined
@@ -17,16 +17,19 @@ verification (C) — epic AC-E02-03 (create/edit) and AC-E02-05 (archived
 courses remain accessible) plus the AC-E02-02 ownership boundary; see the
 [parent README](../../README.md) for the full traceability map.
 
-**DoD 10 is open (CANNOT VERIFY at closeout):** the manual browser sign-off
-(C AC2) — the 14-step `/courses` walk — is a **human gate** and no human
-browser session was available in the implementation runtime, so it is
-recorded CANNOT VERIFY with the exact steps in
+**DoD 10 is ratified (PASSED with one deviation):** the manual browser
+sign-off (C AC2) — the 14-step `/courses` walk — is a **human gate** and was
+performed by the user on 2026-10-22: approved ("everything looks good") with
+**one deviation** — the course color field should be a color picker
+(F111C-3: a UX gap in B's form, not a ticket defect; fixed in
+`CourseForm.tsx` as a row of color swatches and the design re-confirmed by
+the user the same day; browser/version not provided — recorded limitation,
+the SP-110C precedent). Provenance and the exact steps are in
 [`SP-111C/implementation.md`](../SP-111C/implementation.md) → "Manual
-browser sign-off (DoD 10, AC2)"; the ratification (who/when/browser) belongs
-to the session owner, exactly as SP-110C ran it. The automated wire proof
-(C e2e suite + the dev-stack HTTP pre-flight through the web proxy — all
-green) and the web component tests (B) stand on their own. Everything else
-in the review unit is implemented and verified.
+browser sign-off (DoD 10, AC2)". The automated wire proof (C e2e suite + the
+dev-stack HTTP pre-flight through the web proxy — all green) and the web
+component tests (B) stand alongside it. Everything else in the review unit
+is implemented and verified.
 
 Sequence: A → B → C, one sequential writer. C is the named cross-layer
 integration owner (e2e journey suite, full-suite re-runs, DoD 10 sign-off
@@ -38,7 +41,7 @@ preparation, this index).
 |---|---|---|---|---|
 | [A](../../SP-111A-course-management-api.md) | Full course management API: `GET /courses` (list, name/code order, `?semesterId` + `?includeArchived` filters, uniform 404 on foreign/missing semester), `GET /courses/:id` (archive-agnostic), `PATCH /courses/:id` (partial merge, merged-value validation, archive/restore via `isActive`, 409 code collision), `POST /courses` extended with `instructor` + the 13-key `CourseWithSemester` shape; `Course.instructor` column + migration (D111-1) — all principal-scoped, uniform 404 | [implementation](../SP-111A/implementation.md) | [checkpoint](../SP-111A/checkpoint.md) | `11f501e` |
 | [B](../../SP-111B-course-management-ui.md) | `/courses` page (FSD): `CourseList` (rows, show-archived `role="switch"`, Archived badge, loading/empty/error+retry), `CourseForm` dialog (RHF+Zod mirroring the backend rules, null-no-op semantics), `ArchiveCourseDialog` (reversible wording, focus trap), `CoursesPage` (page-local state, live region), `courseApi` extended to the full contract, header "Courses" link, route inside `ProtectedRoute` | [implementation](../SP-111B/implementation.md) | [checkpoint](../SP-111B/checkpoint.md) | `c0ccb7d` |
-| [C](../../SP-111C-course-integration-signoff.md) | Real-Postgres e2e student-journey suite (14 tests: lifecycle create→list/filter→edit→archive→restore, semester filter, SP-110-boundary orphan, cross-student matrix, 401s); full API + web suite re-runs; dev-stack HTTP pre-flight; DoD 10 walk steps + CANNOT VERIFY record; this parent index | [implementation](../SP-111C/implementation.md) | [checkpoint](../SP-111C/checkpoint.md) | (this closeout commit — hash in the queue row + handoff) |
+| [C](../../SP-111C-course-integration-signoff.md) | Real-Postgres e2e student-journey suite (14 tests: lifecycle create→list/filter→edit→archive→restore, semester filter, SP-110-boundary orphan, cross-student matrix, 401s); full API + web suite re-runs; dev-stack HTTP pre-flight; DoD 10 walk steps + **ratified** record (PASSED with one deviation, F111C-3); this parent index | [implementation](../SP-111C/implementation.md) | [checkpoint](../SP-111C/checkpoint.md) | `36e272a` (closeout) + `7ae6ad0` (F111C-3 swatch fix) + the ratification commit |
 
 ## Per-child scope and verification
 
@@ -74,11 +77,16 @@ preparation, this index).
   database; typecheck + lint + format clean; web **35/35 files, 423/423
   tests**; dev-stack HTTP pre-flight through the web proxy all green (14
   steps); dev DB restored to its exact pre-run state; disposable container
-  removed; **DoD 10 human browser walk CANNOT VERIFY** (human gate — steps
-  recorded, ratification with the session owner). Findings F111C-1/2 —
-  both test/process-level, fixed this session. **Product defects in A–B:
-  none** — every e2e case and pre-flight step passed on the first (corrected)
-  run.
+  removed; **DoD 10 human browser walk PASSED with one deviation** (user,
+  2026-10-22 — the color field, F111C-3; browser/version not provided,
+  SP-110C precedent). Findings F111C-1/2 — both test/process-level, fixed
+  this session; **F111C-3** — the DoD-10 deviation (a UX gap in B’s form),
+  fixed in `CourseForm.tsx` (`7ae6ad0`): the color field is now a row of
+  color swatches (a `role="radiogroup"` of 10 preset colors, visible
+  circles, arrow-key navigation; a `Custom` swatch for stored non-palette
+  colors; CourseForm tests 34 → 36, web suite 425). **Product defects in
+  A–B:** one UX finding (F111C-3); every e2e case and pre-flight step
+  otherwise passed on the first (corrected) run.
 
 ## Combined Git scope for the review
 
@@ -89,7 +97,9 @@ first SP-111 change).
 |---|---|
 | `11f501e` | SP-111A — 13 files: `schema.prisma` (+1), migration (new), `create-course.dto.ts`, `update-course.dto.ts` (new), `courses.service.ts` (+306), `courses.controller.ts` (+85), `courses.service.spec.ts` (+598), `courses-data-scoping.spec.ts` (+579), `semesters-e2e.spec.ts` (COURSE_KEYS, F111A-2), README execution fields, `artifacts/SP-111A/` |
 | `c0ccb7d` | SP-111B — 19 files: `courseApi` (+ test), `CourseList`/`CourseForm`/`ArchiveCourseDialog` (+ tests), `CoursesPage` (+ test), `academic.ts`, `Header` (+ test), `App.tsx`, `Step3Course.test.tsx` (F111B-3), README execution fields, `artifacts/SP-111B/` |
-| (this commit) | SP-111C — `courses-e2e.spec.ts` (new, 14 tests), README execution fields, `SP-111C` status line, `artifacts/SP-111C/` (checkpoint + implementation record), `artifacts/SP-111/implementation.md` (this index) |
+| `36e272a` | SP-111C — `courses-e2e.spec.ts` (new, 14 tests), README execution fields, `SP-111C` status line, `artifacts/SP-111C/` (checkpoint + implementation record), `artifacts/SP-111/implementation.md` (this index) |
+| `7ae6ad0` | F111C-3 fix (B-owned file) — `CourseForm.tsx` + `CourseForm.test.tsx` (the course color field becomes a row of color swatches; the DoD-10 walk deviation), `artifacts/SP-111C/checkpoint.md` |
+| (ratification commit) | DoD-10 ratification records — `artifacts/SP-111C/implementation.md` (Status/AC2/sign-off), `artifacts/SP-111/implementation.md` (this index), `SP-111/README.md` (queue "Next substory" field) |
 
 No non-SP-111 commit lies inside the range `11bd60e..c0ccb7d`. Working-tree
 paths committed by C's closeout commit (baseline `c0ccb7d`):
@@ -108,7 +118,7 @@ totals with a database: 456 (after SP-110C) → **533** (A: unit +
 data-scoping extensions) → **547** (C: +14 e2e). `apps/web` —
 `entities/course/api` rewritten, `features/courses/` (3 new components),
 `pages/courses/` (new page), `academic.ts`, `Header` (+ test), `App.tsx`.
-Web suite totals: 340 (after SP-110B) → **423** (B).
+Web suite totals: 340 (after SP-110B) → **423** (B) → **425** (C: F111C-3 swatch fix).
 No schema change beyond the user-confirmed `instructor` column (D111-1); no
 migration, CI, `package.json` or secret changes anywhere in the unit.
 
@@ -128,8 +138,8 @@ DoD map (per the README): 1 A/B/C; 2 A (DTO + service re-checks) + B (form);
 form states) + C (integrated); 6 B (list, form, toggle, dialogs); 7 B
 (mobile + desktop); 8 A (unit + data-scoping) + B (component) + C (e2e);
 9 A (contract in the README; `instructor` migration, D111-1); 10 C (manual
-browser sign-off — **CANNOT VERIFY, human gate open**) + the combined parent
-review.
+browser sign-off — **ratified 2026-10-22, PASSED with one deviation**
+F111C-3, since fixed) + the combined parent review.
 
 ## Security invariants and owning proofs
 
@@ -142,14 +152,16 @@ Per the [README invariants table](../../README.md#security-invariants-and-counte
 | Archiving never destroys course data | A (unit + data-scoping: flag flip, row survives); C e2e (archive → row in DB, detail returns it, `includeArchived` lists it, restore returns it; the orphan case: semester deletion leaves the courses, unaffiliated) + pre-flight dev-DB row proof |
 | Per-student code uniqueness | A (unit + data-scoping: `@@unique([userId, code])` → 409 within one student, allowed across students) |
 
-## DoD-10 item (AC2 manual sign-off) — CANNOT VERIFY (human gate open)
+## DoD-10 item (AC2 manual sign-off) — RATIFIED (PASSED with one deviation)
 
-- **Status: CANNOT VERIFY** at closeout (2026-10-22) — the 14-step
-  `/courses` walk is a **human gate** (SP-105D/SP-106D/SP-107F/SP-110C
-  precedent) and no human browser session was available in the implementation
-  runtime; per the ticket's own rule it is recorded CANNOT VERIFY with the
-  reason rather than claimed, and no sign-off is claimed or implied until
-  the session owner's ratification.
+- **Status: PASSED with one deviation** — ratified by the user on
+  2026-10-22 (provenance: who — the user (session owner); when —
+  2026-10-22; browser/version — not provided, recorded limitation per the
+  SP-110C precedent). The 14-step `/courses` walk was approved (“everything
+  looks good”) with **one deviation**: the course color field should be a
+  color picker (F111C-3 — a UX gap in B's form, not a ticket defect). The
+  fix (a row of color swatches) was committed `7ae6ad0` and the design
+  re-confirmed by the user in the browser the same day.
 - **Standing on its own regardless:** the dev-stack bring-up + the full HTTP
   pre-flight through the web proxy (register/login, create ×3, list,
   semester filter, get, patch name+instructor, re-attach, archive,
@@ -163,6 +175,12 @@ Per the [README invariants table](../../README.md#security-invariants-and-counte
   retry → mobile viewport → return approval):
   [`SP-111C/implementation.md`](../SP-111C/implementation.md) → "Manual
   browser sign-off (DoD 10, AC2)".
+- **History:** at closeout this item was recorded **CANNOT VERIFY** — the
+  walk is a **human gate** (SP-105D/SP-106D/SP-107F/SP-110C precedent) and
+  no human browser session was available in the implementation runtime; per
+  the ticket's own rule it was recorded CANNOT VERIFY with the reason rather
+  than claimed, and no sign-off was claimed or implied until the
+  ratification above.
 - **Closure:** DoD 10 closes via the recorded ratification **plus** the
   combined SP-111 parent review (this review).
 
@@ -199,10 +217,21 @@ Per the [README invariants table](../../README.md#security-invariants-and-counte
   request-specific).
 - **F111C-2 (C, process-level):** registration lowercases emails — the
   pre-flight cleanup deleted by id; dev DB restored exactly.
-- **Product defects in A–B: none.** Every e2e case and pre-flight step passed
-  on the first (corrected) run; no finding was raised against the owning
-  children and no fix was needed in C (ticket rule: any A/B defect routes
-  back to that child's owner as a finding — none occurred).
+- **F111C-3 (C, fixed — B-owned file):** the DoD-10 human browser walk
+  (user, 2026-10-22) passed with one deviation: the course color field was a
+  plain hex text input; the user wanted the colors visible. Final design (per
+  the user's clarifications): a **row of color swatch circles** — a
+  `role="radiogroup"` of 10 preset colors (indigo `#6366f1` default), click
+  to pick, one tab stop with arrow-key/Home/End navigation; a native
+  `<select>` cannot render colors and a popover would clip in the scrolling
+  dialog. A stored non-palette color is offered as a `Custom #rrggbb` swatch
+  so editing never silently overwrites it; the `#rrggbb` zod rule stays
+  (mirrors the backend) but is unreachable through the swatches. Backend
+  contract unchanged. CourseForm tests 34 → 36; web suite 425. Committed
+  `7ae6ad0`; the user re-confirmed the design in the browser the same day.
+- **Product defects in A–B:** one UX finding (F111C-3, surfaced by the
+  DoD-10 walk) — fixed in B's file by this session. Every e2e case and
+  pre-flight step otherwise passed on the first (corrected) run.
 
 ## Reviewer inputs
 
