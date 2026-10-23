@@ -5,7 +5,8 @@
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** Queued (planned 2026-10-21)
+**Status:** Needs refinement (planned 2026-10-21; UI/UX gaps recorded
+2026-10-23 — `ui-refiner` pass before implementation)
 **Dependencies:** SP-111B implemented (the `/courses` list page + `features/courses/`), SP-112A implemented (contract fixed in the [breakdown README](./README.md#shared-api-contract))
 **Jira key:** Pending creation
 
@@ -82,8 +83,9 @@ Component (mirror the `features/semesters` test patterns):
   `updateMeeting(courseId, meetingId, patch)`, `deleteMeeting(courseId,
   meetingId)` + `getCourse` returning the extended detail shape — plain-axios
   pattern, no RTK Query), `shared/types/academic.ts` (add `ClassMeeting`
-  type; `Assignment` type already exists), `App.tsx` (route), the SP-111B
-  feature files (form/dialog to reuse).
+  type; `Assignment` type already exists), `apps/web/src/app/App.tsx` (route —
+  the `/courses/:id` route goes inside `ProtectedRoute` beside `/courses`), the
+  SP-111B feature files (form/dialog to reuse).
 - **Feature (`features/courses/`):** add `ui/MeetingsSection.tsx` (list +
   add/edit form + delete dialog) and `ui/AssignmentsSection.tsx` (read-only
   list); extend `CourseDetailPage` in `pages/courses/ui/`.
@@ -91,6 +93,29 @@ Component (mirror the `features/semesters` test patterns):
   convention, D112-1); display as short names.
 - **States:** section-level loading/empty/error; a meeting mutation refetches
   the meetings list (optimistic updates optional).
+
+## UI/UX — open gaps (for the `ui-refiner` pass, 2026-10-23)
+
+The ticket specifies behavior but leaves these UI/UX elements unsettled. The
+`ui-refiner` settles them with the user before implementation (the planner
+deliberately does not decide UI here); each should be grounded in the existing
+design language (`features/semesters`, SP-111B `features/courses`, shared UI):
+
+1. **Desktop section layout (AC 6):** "header + two sections side-by-side or
+   stacked on desktop" is deliberately open — decide side-by-side vs stacked.
+2. **Description collapse (AC 2):** "collapsed when long" — the threshold and
+   mechanism (line-clamp + expand toggle? at what length?) are unspecified.
+3. **Course header hierarchy (AC 2):** which fields are primary vs secondary,
+   where the Edit/Archive actions sit, and the Archived presentation (AC 2 says
+   a banner; the SP-111B list uses a text badge — reconcile).
+4. **Meetings add-form placement (AC 3):** inline under the list vs a dialog —
+   unspecified; also the exact edit/delete control labels and the delete
+   confirmation dialog copy.
+5. **List row → link (AC 1):** how a `CourseList` row becomes a detail link
+   while keeping edit/archive accessible (row click vs a link on the name;
+   keyboard/AT accessible names).
+6. **Assignments presentation (AC 4):** due-date format and the status/priority
+   badge styling (the fields are specified; the visual treatment is not).
 
 ## Definition of Done
 
@@ -115,7 +140,8 @@ the combined parent review.
   test, `apps/web/src/shared/types/academic.ts` (change — `ClassMeeting`),
   `apps/web/src/features/courses/ui/{MeetingsSection,AssignmentsSection}.tsx`
   (**new**) + tests, `apps/web/src/pages/courses/ui/CourseDetailPage.tsx`
-  (**new**) + test, `CoursesPage.tsx` (row links — change), `App.tsx` (route).
+  (**new**) + test, `CoursesPage.tsx` (row links — change),
+  `apps/web/src/app/App.tsx` (route).
 - **Start context:** this ticket, decisions D112-1…6, the
   [shared API contract](./README.md#shared-api-contract), the files above
   (esp. the `features/semesters` + SP-111B `features/courses` templates),

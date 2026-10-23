@@ -179,8 +179,12 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
 
 ## Plan correction log
 
-(Empty at planning time — no findings yet. Entries are appended with stable IDs;
+(Planning-time log was empty. Entries below are appended with stable IDs;
 original findings are preserved, never overwritten.)
+
+| ID | Source | Original finding | Consequence | Disposition |
+|---|---|---|---|---|
+| F-112P-1 | Planner re-verification 2026-10-23 (SP-112B ticket, Technical notes + Sizing) | The route file was referenced as bare `App.tsx`; the actual file is `apps/web/src/app/App.tsx` (verified in the current tree) | Cosmetic — an implementer could mislocate the file | **Fixed in plan** — SP-112B ticket now references the full path (2026-10-23). Verification: `apps/web/src/app/App.tsx` exists and carries the `/courses` route inside `ProtectedRoute`; no `src/App.tsx` exists. |
 
 ## Quality gate (2026-10-21)
 
@@ -194,7 +198,7 @@ original findings are preserved, never overwritten.)
 | 6. Feature-specific risks/counterexamples | Pass | Four invariants with concrete counterexamples, mechanisms, and owning tests (data CRUD/ownership, nested-reference integrity, time validation, per-course uniqueness). |
 | 7. Dependency mapping and sequencing | Pass | SP-111 → SP-112, A → B → C within, one sequential writer; SP-112A extends the SP-111A module (explicit dependency — **satisfied 2026-10-22**: SP-111 implemented + reviewed PASS); upstream SP-104/SP-109/SP-110 implemented + reviewed. |
 | 8. Material decisions | Pass | D112-1…6 are all planner decisions, each grounded in an in-repo precedent or the epic text and marked reversible. No persisted-data or security-policy choice requires user confirmation: the `ClassMeeting` shape follows the existing `AvailabilitySlot` precedent, and the assignments projection is read-only (management stays with EP03). No open material question. |
-| 9. Correction log | Pass | Empty at planning time; no findings to correct. |
+| 9. Correction log | Pass | One cosmetic finding (F-112P-1, bare `App.tsx` path in the SP-112B ticket) logged + fixed 2026-10-23; no functional/security/test impact. |
 | 10. Jira identity/sync | Not applicable | No sync authorized for this planning task. Parent + children are `Pending creation`; no duplicate keys, no tracker mutation. |
 
 **Outcome:** **Plan Ready** — all applicable planning gate rows pass; no
