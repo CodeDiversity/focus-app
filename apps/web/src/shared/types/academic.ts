@@ -24,6 +24,25 @@ export interface Course {
   updatedAt: string;
 }
 
+// Class Meeting Types (SP-112)
+/**
+ * A recurring weekly class meeting (the shared API contract, SP-112 README):
+ * the canonical 6-key `toMeetingResponse` shape — `userId`/`courseId` are
+ * never exposed (the course is the navigation unit, D112-2).  `createdAt`/
+ * `updatedAt` are ISO timestamps.
+ */
+export interface ClassMeeting {
+  id: string;
+  /** 0–6, Sunday=0 … Saturday=6 (D112-1, the `AvailabilitySlot` precedent). */
+  dayOfWeek: number;
+  /** 24-hour `HH:mm`, exactly as stored (recurring time of day — no time-zone). */
+  startTime: string;
+  /** 24-hour `HH:mm`; strictly after `startTime` on the same day (no midnight wrap). */
+  endTime: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Assignment Types
 export type AssignmentStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SUBMITTED' | 'GRADED';
 export type AssignmentPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
@@ -41,6 +60,15 @@ export interface Assignment {
   createdAt: string;
   updatedAt: string;
 }
+
+/**
+ * The read-only assignment projection on the course detail route (SP-112,
+ * D112-3/D112-6): the `Assignment` type minus the nested `course` — the
+ * backend's 10-key `toAssignmentResponse` shape (`dueDate` ISO;
+ * `userId`/`courseId` never exposed).  The full `Assignment` type stays
+ * untouched (it is referenced only by `Task`).
+ */
+export type CourseAssignment = Omit<Assignment, 'course'>;
 
 // Task Types
 export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'ARCHIVED';

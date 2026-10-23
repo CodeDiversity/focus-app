@@ -5,10 +5,11 @@
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** Refined 2026-10-23 — UI/UX (the `ui-refiner` pass; decisions
-D112B-1…11) and technical (this pass; decisions D112B-12…16) both settled and
-grounded in the post-SP-112A code. Dependencies satisfied (SP-111B + SP-112A
-implemented). Queue state (`Ready`) is for planner/coordinator reconciliation.
+**Status:** Implemented 2026-10-23 — awaiting the combined SP-112 parent
+review (implementation record: `./artifacts/SP-112B/implementation.md`).
+Refined 2026-10-23 — UI/UX (the `ui-refiner` pass; decisions D112B-1…11) and
+technical (that pass; decisions D112B-12…16) both settled and grounded in the
+post-SP-112A code. Dependencies satisfied (SP-111B + SP-112A implemented).
 **Refined:** 2026-10-23
 **Dependencies:** SP-111B implemented (the `/courses` list page + `features/courses/`), SP-112A implemented (contract fixed in the [breakdown README](./README.md#shared-api-contract))
 **Jira key:** Pending creation

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Providers } from '@/test/providers';
 import { CoursesPage } from './CoursesPage';
 import {
   listCourses,
@@ -77,7 +78,14 @@ const allCourses = [calculus, cs101, history];
 
 const validUser = userEvent.setup();
 
-const renderPage = () => render(<CoursesPage />);
+// The page's CourseList uses router hooks (row navigation, D112B-6), so the
+// page renders inside a MemoryRouter (Providers with initialEntries).
+const renderPage = () =>
+  render(
+    <Providers initialEntries={['/courses']}>
+      <CoursesPage />
+    </Providers>
+  );
 
 const codeInput = () => screen.getByLabelText(/course code/i);
 const nameInput = () => screen.getByLabelText(/course name/i);

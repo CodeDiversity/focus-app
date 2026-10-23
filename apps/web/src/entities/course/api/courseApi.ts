@@ -1,15 +1,17 @@
 import api from '@/shared/api/httpClient';
-import type { Course } from '@/shared/types/academic';
+import type { ClassMeeting, Course, CourseAssignment } from '@/shared/types/academic';
 
 /**
  * Course API (SP-107E create; SP-111A full management surface — the shared
- * API contract in `docs/stories/EP02/SP-111/README.md`).
+ * API contract in `docs/stories/EP02/SP-111/README.md`; SP-112A/B meetings —
+ * the shared API contract in `docs/stories/EP02/SP-112/README.md`).
  *
  * Routes: `POST /courses` (create), `GET /courses` (list + `semesterId` /
- * `includeArchived` filters), `GET /courses/:id` (archive-agnostic),
- * `PATCH /courses/:id` (partial merge incl. archive/restore).  The remaining
- * EP02 extension of this module is meetings + detail projections (SP-112) —
- * no duplicate endpoints (D107-9): this folder is the entity's home.
+ * `includeArchived` filters), `GET /courses/:id` (archive-agnostic, with the
+ * SP-112A detail projections), `PATCH /courses/:id` (partial merge incl.
+ * archive/restore), and the nested meetings routes (SP-112A, D112-2):
+ * `GET/POST /courses/:id/meetings`, `PATCH/DELETE /courses/:id/meetings/:meetingId`.
+ * No duplicate endpoints (D107-9): this folder is the entity's home.
  *
  * No RTK Query: the entity uses the plain-axios pattern established by
  * SP-107E/SP-110B (`httpClient` + token interceptor).
@@ -27,6 +29,19 @@ import type { Course } from '@/shared/types/academic';
 export interface CourseWithSemester extends Course {
   semesterId: string | null;
   semester: { id: string; name: string } | null;
+}
+
+/**
+ * The `GET /courses/:id` detail shape (SP-112A, D112-3): the 12-key
+ * `CourseWithSemester` plus the two nested projections — `meetings` (ordered
+ * `dayOfWeek` asc, then `startTime` asc) and the read-only `assignments`
+ * (ordered `dueDate` asc, then title; EP03 owns date semantics).  The
+ * **list** route stays light (`CourseWithSemester` only, no nested
+ * collections).
+ */
+export interface CourseDetail extends CourseWithSemester {
+  meetings: ClassMeeting[];
+  assignments: CourseAssignment[];
 }
 
 /** `POST /courses` body (the shared API contract, SP-107B + SP-111A). */
@@ -130,17 +145,19 @@ export async function listCourses(params: ListCoursesParams = {}): Promise<Cours
 }
 
 /**
- * Reads one of the student's courses (SP-111A contract) — **regardless of
- * archive state** (archived courses remain accessible, AC-E02-05).
+ * Reads one of the student's courses (SP-111A contract, extended by SP-112A)
+ * — **regardless of archive state** (archived courses remain accessible,
+ * AC-E02-05) — with the detail projections (D112-3, D112B-12): `meetings` +
+ * read-only `assignments` on the 14-key `CourseDetail` shape.
  *
- * 200 → `CourseWithSemester`.
+ * 200 → `CourseDetail`.
  * 404 → `Resource not found` — the id is missing OR owned by another student
  * (uniform; the API never reveals another student's records).
  * 401 → unauthenticated (global guard; the shared interceptor handles the
  * single-flight refresh and session-expiry path).
  */
-export async function getCourse(id: string): Promise<CourseWithSemester> {
-  const response = await api.get<CourseWithSemester>(`/courses/${id}`);
+export async function getCourse(id: string): Promise<CourseDetail> {
+  const response = await api.get<CourseDetail>(`/courses/${id}`);
   return response.data;
 }
 
@@ -188,4 +205,108 @@ export async function updateCourse(
 ): Promise<CourseWithSemester> {
   const response = await api.patch<CourseWithSemester>(`/courses/${id}`, data);
   return response.data;
+}
+
+/**
+ * `POST /courses/:id/meetings` body (the shared API contract, SP-112 README):
+ * the backend validates `dayOfWeek` integer 0–6, both times `HH:mm` with hour
+ * 00–23 / minute 00–59, and `endTime` strictly after `startTime` (same day —
+ * no midnight wrap); the frontend form mirrors the rules (DoD 2).
+ */
+export interface CreateMeetingRequest {
+  /** 0–6, Sunday=0 … Saturday=6 (D112-1). */
+  dayOfWeek: number;
+  /** 24-hour `HH:mm`. */
+  startTime: string;
+  /** 24-hour `HH:mm`; strictly after `startTime` (same day). */
+  endTime: string;
+}
+
+/**
+ * `PATCH /courses/:id/meetings/:meetingId` body (the shared API contract):
+ * partial merge — at least one field; the backend validates the **merged**
+ * values.
+ */
+export interface UpdateMeetingRequest {
+  /** 0–6, Sunday=0 … Saturday=6 (D112-1). */
+  dayOfWeek?: number;
+  /** 24-hour `HH:mm`. */
+  startTime?: string;
+  /** 24-hour `HH:mm`. */
+  endTime?: string;
+}
+
+/**
+ * Lists the student's recurring meetings for the student's own course
+ * (SP-112A contract, D112-2: nested under the course routes).
+ *
+ * 200 → `ClassMeeting[]` ordered by `dayOfWeek` asc, then `startTime` asc
+ * (the caller renders the API order as-is — no client re-sort).
+ * 404 → `Resource not found` — the course is missing OR owned by another
+ * student (uniform; no existence oracle).
+ * 401 → unauthenticated (global guard).
+ *
+ * The course **detail** page gets its meetings from `getCourse`'s projection
+ * (one fetch drives the header + both sections, D112B-13); this function is
+ * the contract surface (and SP-112C's e2e spec consumes the same route).
+ */
+export async function listMeetings(courseId: string): Promise<ClassMeeting[]> {
+  const response = await api.get<ClassMeeting[]>(`/courses/${courseId}/meetings`);
+  return response.data;
+}
+
+/**
+ * Creates a recurring meeting on the student's own course (SP-112A contract).
+ *
+ * 201 → the created `ClassMeeting` (the canonical 6-key shape —
+ * `userId`/`courseId` are never exposed).
+ * 400 → field-level validation errors (`errors` map on the 400 body:
+ * `dayOfWeek` / `startTime` / `endTime`).
+ * 404 → uniform (the course is missing/foreign).
+ * 409 → a meeting with the same `dayOfWeek` + `startTime` already exists for
+ * this course (`@@unique([courseId, dayOfWeek, startTime])`).
+ * 401 → unauthenticated (global guard).
+ */
+export async function createMeeting(
+  courseId: string,
+  data: CreateMeetingRequest
+): Promise<ClassMeeting> {
+  const response = await api.post<ClassMeeting>(`/courses/${courseId}/meetings`, data);
+  return response.data;
+}
+
+/**
+ * Updates one of the student's meetings (SP-112A contract): partial merge of
+ * `{ dayOfWeek?, startTime?, endTime? }` — the meeting must belong to **both**
+ * the `:id` course and the requesting student (any miss → uniform 404, no
+ * write); validation runs on the merged values.
+ *
+ * 200 → the updated `ClassMeeting`.
+ * 400 → field-level validation errors (merged values; or an empty body).
+ * 404 → uniform (meeting missing, owned by another student, or not belonging
+ * to the `:id` course).
+ * 409 → the same `dayOfWeek` + `startTime` slot is already taken.
+ * 401 → unauthenticated (global guard).
+ */
+export async function updateMeeting(
+  courseId: string,
+  meetingId: string,
+  data: UpdateMeetingRequest
+): Promise<ClassMeeting> {
+  const response = await api.patch<ClassMeeting>(
+    `/courses/${courseId}/meetings/${meetingId}`,
+    data
+  );
+  return response.data;
+}
+
+/**
+ * Deletes one of the student's meetings (SP-112A contract).
+ *
+ * 204 → deleted (no body).
+ * 404 → uniform (same conditions as `updateMeeting`).
+ * 401 → unauthenticated (global guard).
+ */
+export async function deleteMeeting(courseId: string, meetingId: string): Promise<void> {
+  await api.delete(`/courses/${courseId}/meetings/${meetingId}`);
 }

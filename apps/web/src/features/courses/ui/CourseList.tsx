@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/ui/Button';
 import type { CourseWithSemester } from '@/entities/course/api/courseApi';
 
@@ -29,6 +30,12 @@ export interface CourseListProps {
  * "No semester" when unaffiliated — orphaned by semester deletion, D110-2),
  * the credits (when present), and the row actions (edit, archive/restore).
  *
+ * Row navigation (SP-112B, D112B-6): the course **name** is a `Link` to
+ * `/courses/:id` (accessible name = the course name), the non-interactive
+ * row area navigates on mouse click, and the action buttons
+ * `stopPropagation` so they never navigate. The row itself is not
+ * focusable and carries no role — keyboard/AT users use the name link.
+ *
  * Archive (D111-3/D111B-1): active courses show by default; the
  * "Show archived" switch (a real `role="switch"` button with an accessible
  * name — DoD 6) includes the `isActive = false` rows, which carry an
@@ -48,6 +55,7 @@ export function CourseList({
   onEdit,
   onArchiveRestore,
 }: CourseListProps) {
+  const navigate = useNavigate();
   const [showArchived, setShowArchived] = useState(false);
 
   if (isLoading) {
@@ -142,9 +150,18 @@ export function CourseList({
       ) : (
         <ul className="divide-y divide-secondary-100">
           {visible.map((course) => (
+            // D112B-6: the non-interactive row area navigates on mouse click —
+            // a convenience that duplicates the accessible name link below
+            // (WCAG 2.1.1: a feature already operable via a keyboard-accessible
+            // element need not itself be keyboard-operable). The row is not
+            // focusable and carries no role, so the two jsx-a11y heuristics that
+            // flag a non-interactive element with a click handler do not model
+            // that exception and are disabled for this element only.
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
             <li
               key={course.id}
-              className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
+              onClick={() => navigate(`/courses/${course.id}`)}
+              className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between cursor-pointer"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <span
@@ -155,7 +172,16 @@ export function CourseList({
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-mono text-sm text-secondary-700">{course.code}</span>
-                    <span className="font-medium text-secondary-900">{course.name}</span>
+                    {/* D112B-6: the name links to the course detail page;
+                        `stopPropagation` keeps the click from also firing
+                        the row's own navigation (one history entry). */}
+                    <Link
+                      to={`/courses/${course.id}`}
+                      onClick={(event) => event.stopPropagation()}
+                      className="font-medium text-secondary-900 hover:underline"
+                    >
+                      {course.name}
+                    </Link>
                     {!course.isActive && (
                       <span className="inline-flex items-center rounded-full bg-secondary-100 px-2.5 py-0.5 text-xs font-medium text-secondary-600">
                         Archived
@@ -179,11 +205,15 @@ export function CourseList({
               </div>
 
               <div className="flex flex-wrap gap-2">
+                {/* D112B-6: the action buttons never navigate the row. */}
                 <Button
                   size="sm"
                   variant="outline"
                   aria-label={`Edit ${course.name}`}
-                  onClick={() => onEdit(course)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onEdit(course);
+                  }}
                 >
                   Edit
                 </Button>
@@ -192,7 +222,10 @@ export function CourseList({
                     size="sm"
                     variant="secondary"
                     aria-label={`Archive ${course.name}`}
-                    onClick={() => onArchiveRestore(course)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onArchiveRestore(course);
+                    }}
                   >
                     Archive
                   </Button>
@@ -201,7 +234,10 @@ export function CourseList({
                     size="sm"
                     variant="secondary"
                     aria-label={`Restore ${course.name}`}
-                    onClick={() => onArchiveRestore(course)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onArchiveRestore(course);
+                    }}
                   >
                     Restore
                   </Button>

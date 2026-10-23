@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useLocation } from 'react-router-dom';
+import { Providers } from '@/test/providers';
+import { setupUser } from '@/test/user';
 import { CourseList } from './CourseList';
 import type { CourseWithSemester } from '@/entities/course/api/courseApi';
 
@@ -47,18 +50,33 @@ const hist201: CourseWithSemester = {
   ...timestamps,
 };
 
-const renderList = (overrides: Partial<Parameters<typeof CourseList>[0]> = {}) =>
+/**
+ * Reports the MemoryRouter location so row-navigation tests can assert
+ * where a click took the user (D112B-6).
+ */
+function LocationProbe() {
+  const location = useLocation();
+  return <div data-testid="location">{location.pathname}</div>;
+}
+
+const renderList = (
+  overrides: Partial<Parameters<typeof CourseList>[0]> = {},
+  initialEntry = '/'
+) =>
   render(
-    <CourseList
-      courses={[cs101, math101, hist201]}
-      isLoading={false}
-      error={null}
-      onRetry={vi.fn()}
-      onCreate={vi.fn()}
-      onEdit={vi.fn()}
-      onArchiveRestore={vi.fn()}
-      {...overrides}
-    />
+    <Providers initialEntries={[initialEntry]}>
+      <CourseList
+        courses={[cs101, math101, hist201]}
+        isLoading={false}
+        error={null}
+        onRetry={vi.fn()}
+        onCreate={vi.fn()}
+        onEdit={vi.fn()}
+        onArchiveRestore={vi.fn()}
+        {...overrides}
+      />
+      <LocationProbe />
+    </Providers>
   );
 
 describe('CourseList rows (AC 2)', () => {
@@ -187,5 +205,36 @@ describe('CourseList row actions (AC 5)', () => {
     expect(
       screen.queryByRole('button', { name: /archive world history/i })
     ).not.toBeInTheDocument();
+  });
+});
+
+describe('CourseList row navigation (D112B-6)', () => {
+  // setupUser (not raw userEvent) keeps the router navigation inside act.
+  it('navigates to /courses/:id when the course name link is clicked', async () => {
+    const user = setupUser();
+    renderList();
+
+    await user.click(screen.getByRole('link', { name: 'Intro to Computer Science' }));
+    expect(screen.getByTestId('location')).toHaveTextContent('/courses/course-1');
+  });
+
+  it('navigates to /courses/:id when the non-interactive row area is clicked', async () => {
+    const user = setupUser();
+    renderList();
+
+    // The code sits in the row's non-interactive area — the click bubbles to
+    // the row's own navigation handler.
+    await user.click(screen.getByText('MATH101'));
+    expect(screen.getByTestId('location')).toHaveTextContent('/courses/course-2');
+  });
+
+  it('does not navigate when an action button is clicked (stopPropagation)', async () => {
+    const onEdit = vi.fn();
+    const user = setupUser();
+    renderList({ onEdit });
+
+    await user.click(screen.getByRole('button', { name: /edit calculus i/i }));
+    expect(onEdit).toHaveBeenCalledWith(math101);
+    expect(screen.getByTestId('location')).toHaveTextContent('/');
   });
 });

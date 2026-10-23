@@ -13,14 +13,13 @@
 
 **Parent artifacts:** `./artifacts/SP-112/` (parent index written by C)
 
-**Active substory:** None — SP-112A complete (implemented 2026-10-23,
+**Active substory:** None — SP-112B complete (implemented 2026-10-23,
 awaiting the combined parent review)
 
-**Next substory:** SP-112B (implement) — SP-112A is done (awaiting the
-combined parent review after B + C). SP-112B refined 2026-10-23 and committed
-(`303237e`): all six UI/UX gaps settled (D112B-1…11) plus technical decisions
-D112B-12…16, grounded in the post-SP-112A code; queue state reconciled to
-`Ready` by the planner the same day.
+**Next substory:** SP-112C (implement) — the named integration/index owner
+(e2e spec + DoD 10 sign-off + parent index); dependencies satisfied (A + B
+implemented 2026-10-23). SP-112A and SP-112B are done (both awaiting the
+combined parent review after C).
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -32,8 +31,8 @@ obligation are implemented; no per-child review gates. Final artifacts:
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [A](./SP-112A-class-meetings-api.md) | Implemented — awaiting parent review | SP-111A implemented + reviewed (satisfied 2026-10-22 — extends the courses module + `GET /courses/:id`); SP-104 implemented + reviewed | combined SP-112 parent review after B + C | `./artifacts/SP-112A/implementation.md` (+ checkpoint) |
-| [B](./SP-112B-course-detail-ui.md) | Ready | SP-111B implemented (satisfied); SP-112A implemented (satisfied 2026-10-23); contract fixed in this README | implement (refined 2026-10-23, commit `303237e`; decisions D112B-1…16 in the ticket) | refined ticket (commit `303237e`) |
-| [C](./SP-112C-meetings-integration-signoff.md) | Queued | A, B implemented | — | — |
+| [B](./SP-112B-course-detail-ui.md) | Implemented — awaiting parent review | SP-111B implemented (satisfied); SP-112A implemented (satisfied 2026-10-23); contract fixed in this README | combined SP-112 parent review after C | `./artifacts/SP-112B/implementation.md` (+ checkpoint) |
+| [C](./SP-112C-meetings-integration-signoff.md) | Ready | A, B implemented (satisfied 2026-10-23) | implement (e2e spec + DoD 10 sign-off + parent index) | — |
 
 Sequence: SP-111 (A→B→C, **complete 2026-10-22**) **→** SP-112 (A→B→C), one
 sequential writer.

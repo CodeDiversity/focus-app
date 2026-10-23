@@ -17,6 +17,14 @@ export function setupUser() {
       act(async () => {
         await user.type(element, text);
       }),
+    selectOptions: (element: Element, values: HTMLElement | HTMLElement[] | string[] | string) =>
+      act(async () => {
+        await user.selectOptions(element, values);
+      }),
+    clear: (element: Element) =>
+      act(async () => {
+        await user.clear(element);
+      }),
     tab: () =>
       act(async () => {
         await user.tab();

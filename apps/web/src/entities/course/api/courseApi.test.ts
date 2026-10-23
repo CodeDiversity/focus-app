@@ -7,8 +7,14 @@ import {
   listCourses,
   getCourse,
   updateCourse,
+  listMeetings,
+  createMeeting,
+  updateMeeting,
+  deleteMeeting,
+  type CourseDetail,
   type CourseWithSemester,
 } from './courseApi';
+import type { ClassMeeting } from '@/shared/types/academic';
 
 const originalAdapter = httpClient.defaults.adapter;
 
@@ -276,6 +282,40 @@ describe('courseApi.listCourses', () => {
   });
 });
 
+/**
+ * The 200 body `GET /courses/:id` returns (SP-112A, D112-3): the 12-key
+ * `CourseWithSemester` plus the two nested projections — `meetings` (the
+ * canonical 6-key `ClassMeeting` shape) and the read-only 10-key
+ * `CourseAssignment` projection (`dueDate` ISO; no `courseId`).
+ */
+const detailCourse: CourseDetail = {
+  ...createdCourse,
+  meetings: [
+    {
+      id: 'meeting-1',
+      dayOfWeek: 1,
+      startTime: '09:00',
+      endTime: '10:30',
+      createdAt: createdCourse.createdAt,
+      updatedAt: createdCourse.updatedAt,
+    },
+  ],
+  assignments: [
+    {
+      id: 'assignment-1',
+      title: 'Problem set 1',
+      description: null,
+      dueDate: '2026-10-12T12:00:00.000Z',
+      estimatedHours: 3,
+      actualHours: null,
+      status: 'PENDING',
+      priority: 'MEDIUM',
+      createdAt: createdCourse.createdAt,
+      updatedAt: createdCourse.updatedAt,
+    },
+  ],
+};
+
 describe('courseApi.getCourse', () => {
   beforeEach(() => {
     tokenStore.clearToken();
@@ -286,9 +326,9 @@ describe('courseApi.getCourse', () => {
     vi.restoreAllMocks();
   });
 
-  it('GETs /courses/:id and returns the CourseWithSemester (regardless of archive state, D111-3)', async () => {
+  it('GETs /courses/:id and returns the 14-key detail shape (regardless of archive state, D111-3/D112-3)', async () => {
     let seenConfig: InternalAxiosRequestConfig | undefined;
-    const archived: CourseWithSemester = { ...createdCourse, isActive: false };
+    const archived: CourseDetail = { ...detailCourse, isActive: false };
     httpClient.defaults.adapter = async (config) => {
       seenConfig = config;
       return ok(config, archived, 200);
@@ -415,6 +455,265 @@ describe('courseApi.updateCourse', () => {
     };
 
     await expect(updateCourse('course-1', { semesterId: 'foreign' })).rejects.toMatchObject({
+      message: 'Resource not found',
+      response: { data: { statusCode: 404, message: 'Resource not found' } },
+    });
+  });
+});
+
+/** A created meeting — the canonical 6-key shape (no `userId`/`courseId`, D112-2). */
+const createdMeeting: ClassMeeting = {
+  id: 'meeting-1',
+  dayOfWeek: 1,
+  startTime: '09:00',
+  endTime: '10:30',
+  createdAt: createdCourse.createdAt,
+  updatedAt: createdCourse.updatedAt,
+};
+
+describe('courseApi.listMeetings', () => {
+  beforeEach(() => {
+    tokenStore.clearToken();
+  });
+
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+    vi.restoreAllMocks();
+  });
+
+  it('GETs the nested /courses/:id/meetings and returns the API order as-is (no client re-sort)', async () => {
+    let seenConfig: InternalAxiosRequestConfig | undefined;
+    const rows: ClassMeeting[] = [
+      createdMeeting,
+      { ...createdMeeting, id: 'meeting-2', dayOfWeek: 3, startTime: '14:00', endTime: '15:00' },
+    ];
+    httpClient.defaults.adapter = async (config) => {
+      seenConfig = config;
+      return ok(config, rows, 200);
+    };
+
+    await expect(listMeetings('course-1')).resolves.toEqual(rows);
+    expect(seenConfig?.url).toBe('/courses/course-1/meetings');
+    expect(seenConfig?.method).toBe('get');
+  });
+
+  it('rejects a missing/foreign course with the uniform 404 (no existence oracle)', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 404, {
+        statusCode: 404,
+        message: 'Resource not found',
+        error: 'Not Found',
+      });
+    };
+
+    await expect(listMeetings('course-1')).rejects.toMatchObject({
+      message: 'Resource not found',
+      response: { data: { statusCode: 404, message: 'Resource not found' } },
+    });
+  });
+});
+
+describe('courseApi.createMeeting', () => {
+  beforeEach(() => {
+    tokenStore.clearToken();
+  });
+
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+    vi.restoreAllMocks();
+  });
+
+  it('POSTs the three fields to the nested /courses/:id/meetings and returns the 6-key shape', async () => {
+    let seenConfig: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seenConfig = config;
+      return ok(config, createdMeeting, 201);
+    };
+
+    await expect(
+      createMeeting('course-1', { dayOfWeek: 1, startTime: '09:00', endTime: '10:30' })
+    ).resolves.toEqual(createdMeeting);
+    expect(seenConfig?.url).toBe('/courses/course-1/meetings');
+    expect(seenConfig?.method).toBe('post');
+    expect(JSON.parse(seenConfig!.data as string)).toEqual({
+      dayOfWeek: 1,
+      startTime: '09:00',
+      endTime: '10:30',
+    });
+  });
+
+  it('rejects an invalid slot with the field-level 400 `errors` map preserved', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 400, {
+        statusCode: 400,
+        message: ['endTime must be strictly after startTime (same day)'],
+        error: 'Bad Request',
+        errors: { endTime: ['endTime must be strictly after startTime (same day)'] },
+      });
+    };
+
+    await expect(
+      createMeeting('course-1', { dayOfWeek: 1, startTime: '10:30', endTime: '09:00' })
+    ).rejects.toMatchObject({
+      response: {
+        data: {
+          statusCode: 400,
+          errors: { endTime: ['endTime must be strictly after startTime (same day)'] },
+        },
+      },
+    });
+  });
+
+  it('rejects a duplicate weekly slot with the 409', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 409, {
+        statusCode: 409,
+        message: 'A meeting already exists at this time.',
+        error: 'Conflict',
+      });
+    };
+
+    await expect(
+      createMeeting('course-1', { dayOfWeek: 1, startTime: '09:00', endTime: '10:30' })
+    ).rejects.toMatchObject({
+      message: 'A meeting already exists at this time.',
+      response: { data: { statusCode: 409 } },
+    });
+  });
+
+  it('rejects a missing/foreign course with the uniform 404', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 404, {
+        statusCode: 404,
+        message: 'Resource not found',
+        error: 'Not Found',
+      });
+    };
+
+    await expect(
+      createMeeting('course-1', { dayOfWeek: 1, startTime: '09:00', endTime: '10:30' })
+    ).rejects.toMatchObject({
+      message: 'Resource not found',
+      response: { data: { statusCode: 404, message: 'Resource not found' } },
+    });
+  });
+});
+
+describe('courseApi.updateMeeting', () => {
+  beforeEach(() => {
+    tokenStore.clearToken();
+  });
+
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+    vi.restoreAllMocks();
+  });
+
+  it('PATCHes the nested /courses/:id/meetings/:meetingId with the partial body', async () => {
+    let seenConfig: InternalAxiosRequestConfig | undefined;
+    const updated: ClassMeeting = { ...createdMeeting, endTime: '11:00' };
+    httpClient.defaults.adapter = async (config) => {
+      seenConfig = config;
+      return ok(config, updated, 200);
+    };
+
+    await expect(updateMeeting('course-1', 'meeting-1', { endTime: '11:00' })).resolves.toEqual(
+      updated
+    );
+    expect(seenConfig?.url).toBe('/courses/course-1/meetings/meeting-1');
+    expect(seenConfig?.method).toBe('patch');
+    expect(JSON.parse(seenConfig!.data as string)).toEqual({ endTime: '11:00' });
+  });
+
+  it('rejects a meeting of a different course (or another student) with the uniform 404', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 404, {
+        statusCode: 404,
+        message: 'Resource not found',
+        error: 'Not Found',
+      });
+    };
+
+    await expect(
+      updateMeeting('course-1', 'meeting-1', { endTime: '11:00' })
+    ).rejects.toMatchObject({
+      message: 'Resource not found',
+      response: { data: { statusCode: 404, message: 'Resource not found' } },
+    });
+  });
+
+  it('rejects a merged-value violation with the field-level 400 `errors` map', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 400, {
+        statusCode: 400,
+        message: ['endTime must be strictly after startTime (same day)'],
+        error: 'Bad Request',
+        errors: { endTime: ['endTime must be strictly after startTime (same day)'] },
+      });
+    };
+
+    await expect(
+      updateMeeting('course-1', 'meeting-1', { endTime: '09:00' })
+    ).rejects.toMatchObject({
+      response: {
+        data: {
+          statusCode: 400,
+          errors: { endTime: ['endTime must be strictly after startTime (same day)'] },
+        },
+      },
+    });
+  });
+
+  it('rejects a duplicate slot with the 409', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 409, {
+        statusCode: 409,
+        message: 'A meeting already exists at this time.',
+        error: 'Conflict',
+      });
+    };
+
+    await expect(
+      updateMeeting('course-1', 'meeting-1', { dayOfWeek: 3, startTime: '14:00' })
+    ).rejects.toMatchObject({
+      message: 'A meeting already exists at this time.',
+      response: { data: { statusCode: 409 } },
+    });
+  });
+});
+
+describe('courseApi.deleteMeeting', () => {
+  beforeEach(() => {
+    tokenStore.clearToken();
+  });
+
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+    vi.restoreAllMocks();
+  });
+
+  it('DELETEs the nested /courses/:id/meetings/:meetingId (204, no body)', async () => {
+    let seenConfig: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seenConfig = config;
+      return ok(config, undefined, 204);
+    };
+
+    await expect(deleteMeeting('course-1', 'meeting-1')).resolves.toBeUndefined();
+    expect(seenConfig?.url).toBe('/courses/course-1/meetings/meeting-1');
+    expect(seenConfig?.method).toBe('delete');
+  });
+
+  it('rejects a missing/foreign meeting (or different course) with the uniform 404', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 404, {
+        statusCode: 404,
+        message: 'Resource not found',
+        error: 'Not Found',
+      });
+    };
+
+    await expect(deleteMeeting('course-1', 'meeting-1')).rejects.toMatchObject({
       message: 'Resource not found',
       response: { data: { statusCode: 404, message: 'Resource not found' } },
     });
