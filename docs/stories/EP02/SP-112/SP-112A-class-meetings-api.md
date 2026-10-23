@@ -5,7 +5,8 @@
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1
 **Layer:** Backend
-**Status:** Queued (planned 2026-10-21) — implements after SP-111A
+**Status:** Ready (planned 2026-10-21; unblocked 2026-10-23) — SP-111 complete
+(implemented + reviewed PASS 2026-10-22); next in the SP-112 queue
 **Dependencies:** SP-111A implemented (extends the `courses` module + `GET /courses/:id`), SP-104 (implemented + reviewed)
 **Jira key:** Pending creation
 

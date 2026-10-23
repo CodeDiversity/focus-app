@@ -3,7 +3,7 @@
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Parent:** [SP-112](./SP-112-class-meetings-and-course-detail.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Planned 2026-10-21 — covers EP02 proposed stories **5 (manage recurring class meetings), 6 (course list and detail views)**. D112-1…6 planner-recorded (all grounded, reversible). **Plan Ready** (gate below).
+**Status:** Planned 2026-10-21 — covers EP02 proposed stories **5 (manage recurring class meetings), 6 (course list and detail views)**. D112-1…6 planner-recorded (all grounded, reversible). **Plan Ready** (gate below). **Unblocked 2026-10-23** — SP-111 complete (implemented + final combined parent review PASS 2026-10-22); the plan was re-verified against the post-SP-111 code the same day (baseline holds; one cosmetic ticket-path fix, F-112P-1).
 
 ## Execution queue
 
@@ -13,9 +13,13 @@
 
 **Parent artifacts:** `./artifacts/SP-112/` (parent index written by C)
 
-**Active substory:** None — planning only; no implementation started
+**Active substory:** None — SP-111 review unit complete (2026-10-22); SP-112 is
+the next EP02 delivery home, no implementation started
 
-**Next substory:** SP-112A (implement) — **after SP-111 is implemented** (SP-112A extends the SP-111A courses module)
+**Next substory:** SP-112A (implement) — no blockers: SP-111 complete
+(implemented + reviewed PASS 2026-10-22); SP-112A extends the SP-111A courses
+module. After A: **SP-112B needs a `ui-refiner` pass** (UI/UX gaps recorded in
+its ticket, 2026-10-23) before implementation.
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -26,11 +30,12 @@ obligation are implemented; no per-child review gates. Final artifacts:
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-112A-class-meetings-api.md) | Queued | SP-111A implemented (extends the courses module + `GET /courses/:id`); SP-104 implemented + reviewed | — (SP-111 first) | — |
-| [B](./SP-112B-course-detail-ui.md) | Queued | SP-111B + SP-112A implemented (contract fixed in this README) | — | — |
+| [A](./SP-112A-class-meetings-api.md) | Ready | SP-111A implemented + reviewed (satisfied 2026-10-22 — extends the courses module + `GET /courses/:id`); SP-104 implemented + reviewed | implement | — |
+| [B](./SP-112B-course-detail-ui.md) | Needs refinement | SP-111B implemented (satisfied); SP-112A implemented (pending); contract fixed in this README | `ui-refiner` pass, then implement | — |
 | [C](./SP-112C-meetings-integration-signoff.md) | Queued | A, B implemented | — | — |
 
-Sequence: SP-111 (A→B→C) **→** SP-112 (A→B→C), one sequential writer.
+Sequence: SP-111 (A→B→C, **complete 2026-10-22**) **→** SP-112 (A→B→C), one
+sequential writer.
 Rationale: meetings attach to courses (D112-2), and the course detail page —
 the natural home for the meetings UI — is built once, with both the meetings
 and assignments sections (D112-3), rather than twice. C is the named
@@ -54,6 +59,17 @@ integration owner.
   and `pages/courses/ui/CoursesPage.tsx` exists; no detail page yet.
 - SP-111 (course management) is the direct predecessor — its `GET /courses/:id`
   route and `CourseWithSemester` shape are extended, not duplicated (D107-9).
+- **Re-verified 2026-10-23 (post-SP-111):** every baseline claim above still
+  holds in the current tree — `ClassMeeting` still absent from
+  `schema.prisma`; `Course` carries `instructor?` + the `assignments` relation
+  (no meetings relation yet); `AvailabilitySlot` unchanged; the courses module
+  implements the SP-111 contract (list/get/patch, `CourseWithSemester`) and its
+  header comment anticipates exactly this SP-112 extension;
+  `features/courses/ui/` holds `CourseList`/`CourseForm`/`ArchiveCourseDialog`,
+  `pages/courses/ui/CoursesPage.tsx` exists, `entities/course/api/courseApi.ts`
+  has `getCourse`, the `/courses` route sits inside `ProtectedRoute`
+  (`apps/web/src/app/App.tsx`), and the header nav carries Courses.
+  `CourseList` rows carry no navigation yet (B adds the detail links).
 
 ## Decision register
 
@@ -176,17 +192,18 @@ original findings are preserved, never overwritten.)
 | 4. Contract consistency and integration ownership | Pass | One shared contract section (meeting routes + `GET /courses/:id` extension); A implements, B consumes (field-by-field against each child's ACs), C is the named integration owner with explicit dependencies on A + B. |
 | 5. Code paths inspected | Pass | `apps/api/prisma/schema.prisma` (`Course` 135–155, `Assignment` 161–181, `AvailabilitySlot` 253–266), `apps/api/src/modules/courses/*` (SP-107B shape), `apps/api/src/common/ownership/ownership.ts`, `apps/api/src/common/filters/all-exceptions.filter.ts`, `apps/web/src/entities/{course,semester}/api`, `shared/types/academic.ts` (`Assignment` type), the SP-110/SP-111 breakdowns (pattern + decisions), the EP02 baseline. Unverified: none material. |
 | 6. Feature-specific risks/counterexamples | Pass | Four invariants with concrete counterexamples, mechanisms, and owning tests (data CRUD/ownership, nested-reference integrity, time validation, per-course uniqueness). |
-| 7. Dependency mapping and sequencing | Pass | SP-111 → SP-112, A → B → C within, one sequential writer; SP-112A extends the SP-111A module (explicit dependency); upstream SP-104/SP-109/SP-110 implemented (SP-104 + SP-109 + SP-110 reviewed). |
+| 7. Dependency mapping and sequencing | Pass | SP-111 → SP-112, A → B → C within, one sequential writer; SP-112A extends the SP-111A module (explicit dependency — **satisfied 2026-10-22**: SP-111 implemented + reviewed PASS); upstream SP-104/SP-109/SP-110 implemented + reviewed. |
 | 8. Material decisions | Pass | D112-1…6 are all planner decisions, each grounded in an in-repo precedent or the epic text and marked reversible. No persisted-data or security-policy choice requires user confirmation: the `ClassMeeting` shape follows the existing `AvailabilitySlot` precedent, and the assignments projection is read-only (management stays with EP03). No open material question. |
 | 9. Correction log | Pass | Empty at planning time; no findings to correct. |
 | 10. Jira identity/sync | Not applicable | No sync authorized for this planning task. Parent + children are `Pending creation`; no duplicate keys, no tracker mutation. |
 
 **Outcome:** **Plan Ready** — all applicable planning gate rows pass; no
-unresolved material planning findings. Implementation is **blocked on SP-111
-being implemented** (SP-112A extends its module); it is not blocked by any
-planning gap. No implementation or passing tests are claimed; the plan
-approves planning obligations only. Next actionable: **SP-111A** (per the
-SP-111 queue), then SP-112A.
+unresolved material planning findings. Implementation is **unblocked
+2026-10-23**: SP-111 complete (implemented + final combined parent review PASS
+2026-10-22), and the plan was re-verified against the post-SP-111 code the
+same day (baseline holds; F-112P-1 cosmetic fix only). No implementation or
+passing tests are claimed; the plan approves planning obligations only. Next
+actionable: **SP-112A** (execution queue).
 
 ## Final implementation review unit
 

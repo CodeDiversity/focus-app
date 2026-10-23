@@ -3,7 +3,7 @@
 **Epic:** [EP02: Semester & Course Management](../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1 (functional academic tracker)
 **Epic dependency:** EP01 (Authentication & Onboarding) — complete in code (see baseline)
-**Status:** All six proposed stories broken down. Story 1 → [SP-110](./SP-110/README.md) (implemented + reviewed PASS 2026-10-21). Stories 2–4 → [SP-111](./SP-111/README.md) and 5–6 → [SP-112](./SP-112/README.md), both planned 2026-10-21 and **Plan Ready** (instructor field user-confirmed). Sequencing: SP-111 → SP-112.
+**Status:** All six proposed stories broken down. Story 1 → [SP-110](./SP-110/README.md) (implemented + reviewed PASS 2026-10-21). Stories 2–4 → [SP-111](./SP-111/README.md) (implemented + final combined parent review PASS 2026-10-22). Stories 5–6 → [SP-112](./SP-112/README.md) (planned 2026-10-21, **Plan Ready**; **unblocked 2026-10-23** — SP-111 complete, plan re-verified against the current code; next actionable **SP-112A**). Sequencing: SP-110 → SP-111 → SP-112.
 
 ## Code baseline (2026-10-20)
 
@@ -13,7 +13,7 @@ EP01 delivered the onboarding-minimal academic structure that EP02 **extends, no
 - `apps/api/src/modules/courses/` — `POST /courses` only (SP-107B). `Course.semesterId` is **nullable** (a course can exist without a semester — D107-6), `@@unique([userId, code])`, `isActive` default `true`.
 - `apps/web/src/entities/{semester,course}/api/` — `createSemester`/`createCourse` only (SP-107D/E); the `Semester`/`Course` types live in `shared/types/academic.ts`.
 - The FSD layer structure (SP-109, implemented + reviewed PASS 2026-10-17) is the home for all EP02 frontend work.
-- No `/semesters` or course pages exist yet; the header nav is Home / Dashboard / Profile.
+- No `/semesters` or course pages exist yet; the header nav is Home / Dashboard / Profile. *(Superseded — re-verified 2026-10-23: SP-110B/SP-111B since added the `/semesters` and `/courses` pages; the header nav is Home / Dashboard / Semesters / Courses / Profile.)*
 
 EP01 is complete in code (SP-101…SP-109 all implemented; SP-107 awaits its combined parent review with a human DoD-10 gate — a review gap, not an implementation gap). Per delivery-state, an implemented child unblocks dependent work without formal review: **EP02 implementation is not blocked by EP01 review state.**
 
@@ -22,8 +22,8 @@ EP01 is complete in code (SP-101…SP-109 all implemented; SP-107 awaits its com
 | Story | Epic proposed story | Breakdown | Jira |
 |---|---|---|---|
 | [SP-110](./SP-110/README.md) | 1. Create and manage semesters | [3 children](./SP-110/README.md) (A backend, B frontend, C integration) — implemented + reviewed PASS 2026-10-21 | Pending creation |
-| [SP-111](./SP-111/README.md) | 2. Create a course · 3. Edit course information · 4. Archive and restore courses | [3 children](./SP-111/README.md) (A backend, B frontend, C integration) — planned 2026-10-21, **Plan Ready** | Pending creation |
-| [SP-112](./SP-112/README.md) | 5. Manage recurring class meetings · 6. Course list and detail views | [3 children](./SP-112/README.md) (A backend, B frontend, C integration) — planned 2026-10-21, **Plan Ready** (implements after SP-111) | Pending creation |
+| [SP-111](./SP-111/README.md) | 2. Create a course · 3. Edit course information · 4. Archive and restore courses | [3 children](./SP-111/README.md) (A backend, B frontend, C integration) — implemented + reviewed PASS 2026-10-22 | Pending creation |
+| [SP-112](./SP-112/README.md) | 5. Manage recurring class meetings · 6. Course list and detail views | [3 children](./SP-112/README.md) (A backend, B frontend, C integration) — planned 2026-10-21, **Plan Ready**; unblocked 2026-10-23 (SP-111 complete) — next actionable **SP-112A** | Pending creation |
 
 All six proposed stories are now broken down — none deferred or dropped.
 Sequencing intent: semesters first (SP-110, complete) — courses attach to
@@ -47,13 +47,14 @@ The epic defines no test requirements; story-level test obligations are owned pe
 ## Execution queue
 
 SP-110 is complete (implemented + reviewed PASS 2026-10-21 — queue at
-[SP-110/README.md](./SP-110/README.md#execution-queue)). The next EP02 delivery
-home is [SP-111](./SP-111/README.md#execution-queue) (course management):
-next actionable **SP-111A** (implement) — planner judgment 2026-10-21: straight
-to implementation, no formal plan review first (SP-110 precedent; recorded in
-the SP-111 queue). After SP-111 completes, the queue moves to
-[SP-112](./SP-112/README.md#execution-queue) (meetings + course detail), next
-actionable **SP-112A**.
+[SP-110/README.md](./SP-110/README.md#execution-queue)). SP-111 is complete
+(implemented + final combined parent review PASS 2026-10-22 — queue at
+[SP-111/README.md](./SP-111/README.md#execution-queue)). The next EP02 delivery
+home is [SP-112](./SP-112/README.md#execution-queue) (meetings + course
+detail): next actionable **SP-112A** (implement) — no blockers (SP-111
+complete; plan re-verified against the current code 2026-10-23). After
+SP-112A, **SP-112B needs a `ui-refiner` pass** before implementation (UI/UX
+gaps recorded in its ticket, 2026-10-23).
 
 ## Quality gate — SP-110 plan (2026-10-20)
 
@@ -67,6 +68,7 @@ actionable **SP-112A**.
 
 **Plan Ready** — D112-1…6 all planner-recorded (grounded in the
 `AvailabilitySlot` precedent / epic text, reversible; no material decision
-needs user confirmation). **Implementation Blocked** on SP-111 being
-implemented first (SP-112A extends its module) — a sequencing dependency, not
-a planning gap. Full gate table: [SP-112 README](./SP-112/README.md#quality-gate-2026-10-21). No Jira sync was authorized for this planning task; all SP-112 keys are `Pending creation`.
+needs user confirmation). Implementation **unblocked 2026-10-23** — SP-111
+complete (implemented + reviewed PASS 2026-10-22); the plan was re-verified
+against the post-SP-111 code the same day (baseline holds; one cosmetic
+ticket-path fix, F-112P-1). Full gate table: [SP-112 README](./SP-112/README.md#quality-gate-2026-10-21). No Jira sync was authorized for this planning task; all SP-112 keys are `Pending creation`.
