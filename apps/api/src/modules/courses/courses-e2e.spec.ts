@@ -63,7 +63,8 @@ const SEMESTER_KEYS = [
 /**
  * The exact `CourseWithSemester` contract keys (SP-111A, D111-4): the
  * SP-107B 8 keys plus `instructor`, `semesterId`, `semester`. Returned by
- * every courses route, including `POST /courses`.
+ * every courses route, including `POST /courses` — but **not** the detail
+ * route (SP-112A, D112-3: `COURSE_DETAIL_KEYS`).
  */
 const COURSE_KEYS = [
   'code',
@@ -74,6 +75,28 @@ const COURSE_KEYS = [
   'id',
   'instructor',
   'isActive',
+  'name',
+  'semester',
+  'semesterId',
+  'updatedAt',
+].sort();
+
+/**
+ * The exact `GET /courses/:id` detail keys (SP-112A, D112-3): the
+ * `CourseWithSemester` keys plus the `meetings` + read-only `assignments`
+ * projections.  The list route stays light (`COURSE_KEYS` only).
+ */
+const COURSE_DETAIL_KEYS = [
+  'assignments',
+  'code',
+  'color',
+  'createdAt',
+  'credits',
+  'description',
+  'id',
+  'instructor',
+  'isActive',
+  'meetings',
   'name',
   'semester',
   'semesterId',
@@ -194,7 +217,7 @@ describeIntegration('course management end-to-end (real database, SP-111C)', () 
       }
     });
 
-    it('POST /courses ×3: 201, exact 13-key CourseWithSemester shape, semester projected (D111-4)', async () => {
+    it('POST /courses ×3: 201, exact 12-key CourseWithSemester shape, semester projected (D111-4)', async () => {
       // CS101 → Fall, with every optional field (incl. the new instructor,
       // D111-1); CS201 → Spring, minimal; MATH101 → unaffiliated (the
       // orphan shape, D110-2).
@@ -308,13 +331,13 @@ describeIntegration('course management end-to-end (real database, SP-111C)', () 
       expect(missing.body.statusCode).toBe(foreign.body.statusCode);
     });
 
-    it('GET /courses/:id: the own course in the 13-key shape', async () => {
+    it('GET /courses/:id: the own course in the 14-key detail shape (SP-112A, D112-3)', async () => {
       const response = await agent
         .get(`/courses/${courseIds.cs101}`)
         .set('Authorization', `Bearer ${studentA.accessToken}`)
         .expect(HttpStatus.OK);
 
-      expect(Object.keys(response.body).sort()).toEqual(COURSE_KEYS);
+      expect(Object.keys(response.body).sort()).toEqual(COURSE_DETAIL_KEYS);
       expect(response.body).toMatchObject({
         id: courseIds.cs101,
         code: 'CS101',
@@ -322,6 +345,9 @@ describeIntegration('course management end-to-end (real database, SP-111C)', () 
         instructor: 'Prof. Ada',
         semester: { id: fallId, name: `Fall ${runId}` },
         isActive: true,
+        // No meetings/assignments created in this journey — empty arrays.
+        meetings: [],
+        assignments: [],
       });
     });
 

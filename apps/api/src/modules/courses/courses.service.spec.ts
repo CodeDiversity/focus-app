@@ -10,8 +10,8 @@ import { RESOURCE_NOT_FOUND } from '../../common/ownership/ownership';
 import { CoursesService } from './courses.service';
 
 /**
- * SP-107B + SP-111A unit spec (mocked PrismaService, no database): pins the
- * course-management service semantics.
+ * SP-107B + SP-111A + SP-112A unit spec (mocked PrismaService, no database):
+ * pins the course-management service semantics.
  *
  * - create: principal's `userId`; optional fields (incl. `instructor`,
  *   D111-1) pass through, omitted fields stay out of `data` (schema
@@ -22,7 +22,8 @@ import { CoursesService } from './courses.service';
  *   `semesterId` filter passes through, foreign/missing `semesterId` →
  *   uniform 404 with no list query.
  * - get: `findFirst({ where: { id, userId } })` hit (active **and**
- *   archived) → `CourseWithSemester` shape; miss → uniform 404.
+ *   archived) → the SP-112A detail shape (`CourseWithSemester` plus the
+ *   `meetings` + `assignments` projections, D112-3); miss → uniform 404.
  * - update (PATCH): partial merge — each field alone; merged-value
  *   violations → 400 with the field in `errors`, no write; foreign
  *   `semesterId` → 404 with no write; code-collision P2002 → 409;
@@ -92,6 +93,23 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
     'semesterId',
     'updatedAt',
   ].sort();
+
+  /**
+   * The SP-112A detail include (D112-3): the semester projection plus the
+   * two nested collections, each with its contract ordering.
+   */
+  const DETAIL_PROJECTION = {
+    semester: { select: { id: true, name: true } },
+    meetings: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
+    assignments: { orderBy: [{ dueDate: 'asc' }, { title: 'asc' }] },
+  };
+
+  /**
+   * The exact `GET /courses/:id` detail keys (SP-112A, D112-3): the
+   * `CourseWithSemester` keys plus `meetings` and `assignments`.  The
+   * **list** route stays light (`COURSE_WITH_SEMESTER_KEYS` only).
+   */
+  const COURSE_DETAIL_KEYS = [...COURSE_WITH_SEMESTER_KEYS, 'assignments', 'meetings'].sort();
 
   describe('create', () => {
     it("creates the course with the principal's userId", async () => {
@@ -491,20 +509,123 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
     });
   });
 
-  // ==================== get (SP-111A) ====================
+  // ==================== get (SP-111A; SP-112A detail projections) ====================
 
   describe('get', () => {
-    it('returns the course regardless of archive state (AC-E02-05)', async () => {
-      courseFindFirst.mockResolvedValue({ ...createdRow, isActive: false });
+    it('returns the course regardless of archive state (AC-E02-05), with the detail projections', async () => {
+      courseFindFirst.mockResolvedValue({
+        ...createdRow,
+        isActive: false,
+        meetings: [],
+        assignments: [],
+      });
 
       const result = await service.get('user-1', 'course-1');
 
+      // The ownership predicate is in the query; the SP-112A detail include
+      // (D112-3) replaces the plain semester projection.
       expect(courseFindFirst).toHaveBeenCalledWith({
         where: { id: 'course-1', userId: 'user-1' },
-        include: SEMESTER_PROJECTION,
+        include: DETAIL_PROJECTION,
       });
       expect(result).toMatchObject({ id: 'course-1', isActive: false });
-      expect(Object.keys(result).sort()).toEqual(COURSE_WITH_SEMESTER_KEYS);
+      expect(Object.keys(result).sort()).toEqual(COURSE_DETAIL_KEYS);
+      // A course with no meetings/assignments projects empty arrays.
+      expect(result.meetings).toEqual([]);
+      expect(result.assignments).toEqual([]);
+    });
+
+    it('projects meetings + assignments (ISO dates; no userId/courseId; contract ordering passthrough)', async () => {
+      courseFindFirst.mockResolvedValue({
+        ...createdRow,
+        semesterId: 'semester-1',
+        semester: { id: 'semester-1', name: 'Fall 2026' },
+        meetings: [
+          {
+            id: 'meeting-1',
+            userId: 'user-1',
+            courseId: 'course-1',
+            dayOfWeek: 3,
+            startTime: '14:00',
+            endTime: '15:30',
+            createdAt: new Date('2026-10-18T12:00:00.000Z'),
+            updatedAt: new Date('2026-10-18T12:00:00.000Z'),
+          },
+          {
+            id: 'meeting-2',
+            userId: 'user-1',
+            courseId: 'course-1',
+            dayOfWeek: 1,
+            startTime: '09:00',
+            endTime: '10:30',
+            createdAt: new Date('2026-10-18T12:00:00.000Z'),
+            updatedAt: new Date('2026-10-18T12:00:00.000Z'),
+          },
+        ],
+        assignments: [
+          {
+            id: 'assignment-1',
+            userId: 'user-1',
+            courseId: 'course-1',
+            title: 'Problem Set 2',
+            description: 'Chapters 3-4',
+            dueDate: new Date('2026-11-05T00:00:00.000Z'),
+            estimatedHours: 5,
+            actualHours: null,
+            status: 'PENDING',
+            priority: 'MEDIUM',
+            createdAt: new Date('2026-10-18T12:00:00.000Z'),
+            updatedAt: new Date('2026-10-18T12:00:00.000Z'),
+          },
+        ],
+      });
+
+      const result = await service.get('user-1', 'course-1');
+
+      // The nested collections keep the DB ordering (the include's orderBy is
+      // the contract — the service never re-sorts).
+      expect(result.meetings).toEqual([
+        {
+          id: 'meeting-1',
+          dayOfWeek: 3,
+          startTime: '14:00',
+          endTime: '15:30',
+          createdAt: '2026-10-18T12:00:00.000Z',
+          updatedAt: '2026-10-18T12:00:00.000Z',
+        },
+        {
+          id: 'meeting-2',
+          dayOfWeek: 1,
+          startTime: '09:00',
+          endTime: '10:30',
+          createdAt: '2026-10-18T12:00:00.000Z',
+          updatedAt: '2026-10-18T12:00:00.000Z',
+        },
+      ]);
+      // The read-only assignment projection: `dueDate` ISO-serialized, and
+      // `userId`/`courseId`/the nested course are never exposed.
+      expect(result.assignments).toEqual([
+        {
+          id: 'assignment-1',
+          title: 'Problem Set 2',
+          description: 'Chapters 3-4',
+          dueDate: '2026-11-05T00:00:00.000Z',
+          estimatedHours: 5,
+          actualHours: null,
+          status: 'PENDING',
+          priority: 'MEDIUM',
+          createdAt: '2026-10-18T12:00:00.000Z',
+          updatedAt: '2026-10-18T12:00:00.000Z',
+        },
+      ]);
+      for (const meeting of result.meetings) {
+        expect(meeting).not.toHaveProperty('userId');
+        expect(meeting).not.toHaveProperty('courseId');
+      }
+      for (const assignment of result.assignments) {
+        expect(assignment).not.toHaveProperty('userId');
+        expect(assignment).not.toHaveProperty('courseId');
+      }
     });
 
     it('a missing id or another student id → uniform 404 (no existence oracle)', async () => {
@@ -522,7 +643,7 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
       // The ownership predicate is in the query.
       expect(courseFindFirst).toHaveBeenCalledWith({
         where: { id: 'course-1', userId: 'user-1' },
-        include: SEMESTER_PROJECTION,
+        include: DETAIL_PROJECTION,
       });
     });
   });

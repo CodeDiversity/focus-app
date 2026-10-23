@@ -13,13 +13,13 @@
 
 **Parent artifacts:** `./artifacts/SP-112/` (parent index written by C)
 
-**Active substory:** None — SP-111 review unit complete (2026-10-22); SP-112 is
-the next EP02 delivery home, no implementation started
+**Active substory:** None — SP-112A complete (implemented 2026-10-23,
+awaiting the combined parent review)
 
-**Next substory:** SP-112A (implement) — no blockers: SP-111 complete
-(implemented + reviewed PASS 2026-10-22); SP-112A extends the SP-111A courses
-module. After A: **SP-112B needs a `ui-refiner` pass** (UI/UX gaps recorded in
-its ticket, 2026-10-23) before implementation.
+**Next substory:** SP-112B (implement) — SP-112A is done. Its `ui-refiner`
+pass completed in the working tree 2026-10-23 (all six gaps settled; decisions
+D112B-1…11 in its ticket); the queue state (`Needs refinement`) is for
+planner/coordinator reconciliation, then implement.
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -30,8 +30,8 @@ obligation are implemented; no per-child review gates. Final artifacts:
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-112A-class-meetings-api.md) | Ready | SP-111A implemented + reviewed (satisfied 2026-10-22 — extends the courses module + `GET /courses/:id`); SP-104 implemented + reviewed | implement | — |
-| [B](./SP-112B-course-detail-ui.md) | Needs refinement | SP-111B implemented (satisfied); SP-112A implemented (pending); contract fixed in this README | `ui-refiner` pass, then implement | — |
+| [A](./SP-112A-class-meetings-api.md) | Implemented — awaiting parent review | SP-111A implemented + reviewed (satisfied 2026-10-22 — extends the courses module + `GET /courses/:id`); SP-104 implemented + reviewed | combined SP-112 parent review after B + C | `./artifacts/SP-112A/implementation.md` (+ checkpoint) |
+| [B](./SP-112B-course-detail-ui.md) | Needs refinement | SP-111B implemented (satisfied); SP-112A implemented (satisfied 2026-10-23); contract fixed in this README | implement (`ui-refiner` pass complete in the working tree 2026-10-23; state for planner/coordinator reconciliation) | — |
 | [C](./SP-112C-meetings-integration-signoff.md) | Queued | A, B implemented | — | — |
 
 Sequence: SP-111 (A→B→C, **complete 2026-10-22**) **→** SP-112 (A→B→C), one

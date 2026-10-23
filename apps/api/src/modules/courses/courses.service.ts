@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RESOURCE_NOT_FOUND } from '../../common/ownership/ownership';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { toMeetingResponse } from './courses-meetings.service';
 
 /**
  * A course row with its semester projection — the `CourseWithSemester`
@@ -37,13 +38,54 @@ type CourseWithSemesterRow = {
 const SEMESTER_PROJECTION = { semester: { select: { id: true, name: true } } } as const;
 
 /**
- * Course service (SP-107B create; SP-111A full management surface).
+ * A `assignments` row as stored (the model's scalar fields).
+ */
+type AssignmentRow = {
+  id: string;
+  title: string;
+  description: string | null;
+  dueDate: Date;
+  estimatedHours: number | null;
+  actualHours: number | null;
+  status: string;
+  priority: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+/**
+ * The read-only `Assignment` projection for the detail route (SP-112A,
+ * D112-3): the frontend `Assignment` type minus the nested `course` —
+ * `dueDate` ISO-serialized (EP03 owns date semantics); `userId`/`courseId`
+ * are never exposed.  Management stays with EP03 (D112-6).
+ */
+function toAssignmentResponse(assignment: AssignmentRow) {
+  return {
+    id: assignment.id,
+    title: assignment.title,
+    description: assignment.description,
+    dueDate: assignment.dueDate.toISOString(),
+    estimatedHours: assignment.estimatedHours,
+    actualHours: assignment.actualHours,
+    status: assignment.status,
+    priority: assignment.priority,
+    createdAt: assignment.createdAt.toISOString(),
+    updatedAt: assignment.updatedAt.toISOString(),
+  };
+}
+
+/**
+ * Course service (SP-107B create; SP-111A full management surface;
+ * SP-112A detail projections).
  *
- * This module is the **course management surface**: `POST /courses`
- * (onboarding minimal, SP-107B — extended with `instructor`, D111-1) plus
- * list (semester + archive filters) / get / `PATCH` (partial merge incl.
- * archive/restore, D111-2/D111-3).  The remaining EP02 extension is
- * meetings + detail projections (SP-112) — no duplicate endpoints (D107-9).
+ * This module is the **full course surface**: `POST /courses` (onboarding
+ * minimal, SP-107B — extended with `instructor`, D111-1) plus list
+ * (semester + archive filters) / get / `PATCH` (partial merge incl.
+ * archive/restore, D111-2/D111-3), the meetings routes (SP-112A, in
+ * `courses-meetings.service.ts`), and the `GET /courses/:id` detail
+ * projections — `meetings` + read-only `assignments` (SP-112A, D112-3).
+ * EP02's remaining extension of this module is only EP03's assignment
+ * management (out of scope); no duplicate endpoints (D107-9).
  *
  * Every operation is scoped to the requesting student via the JWT principal
  * (SP-104): `userId` comes from the authenticated user, never from the
@@ -208,20 +250,33 @@ export class CoursesService {
 
   /**
    * Read one of the student's courses (SP-111A) — **regardless of archive
-   * state** (archived courses remain accessible, AC-E02-05 / D111-3).  A
-   * missing id or another student's id → uniform 404 `Resource not found`
-   * (the ownership predicate is in the query; both cases are
-   * indistinguishable to the caller — no existence oracle).
+   * state** (archived courses remain accessible, AC-E02-05 / D111-3) — plus
+   * the SP-112A detail projections (D112-3): `meetings` (ordered `dayOfWeek`
+   * asc, then `startTime` asc) and `assignments` (read-only, ordered
+   * `dueDate` asc — the column is NOT NULL, so "nulls last" is a no-op —
+   * then `title` asc).  A missing id or another student's id → uniform 404
+   * `Resource not found` (the ownership predicate is in the query; both
+   * cases are indistinguishable to the caller — no existence oracle).  The
+   * **list** route stays light (`CourseWithSemester` only, no nested
+   * collections).
    */
   async get(userId: string, id: string) {
     const row = await this.prisma.course.findFirst({
       where: { id, userId },
-      include: SEMESTER_PROJECTION,
+      include: {
+        semester: { select: { id: true, name: true } },
+        meetings: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
+        assignments: { orderBy: [{ dueDate: 'asc' }, { title: 'asc' }] },
+      },
     });
     if (!row) {
       throw new NotFoundException(RESOURCE_NOT_FOUND);
     }
-    return this.toResponse(row);
+    return {
+      ...this.toResponse(row),
+      meetings: row.meetings.map((meeting) => toMeetingResponse(meeting)),
+      assignments: row.assignments.map((assignment) => toAssignmentResponse(assignment)),
+    };
   }
 
   /**

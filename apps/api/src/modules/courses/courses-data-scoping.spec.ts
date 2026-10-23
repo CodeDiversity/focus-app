@@ -4,9 +4,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { createIntegrationApp, IntegrationApp } from '../../test/test-http';
 
 /**
- * SP-107B + SP-111A integration spec: the course-management surface on the
- * real stack, over real HTTP against a real database (the `test-http`
- * harness, real Prisma against Postgres).
+ * SP-107B + SP-111A + SP-112A integration spec: the course-management
+ * surface on the real stack, over real HTTP against a real database (the
+ * `test-http` harness, real Prisma against Postgres).
  *
  * - 201 shape: the extended `CourseWithSemester` type exactly (D111-4: the
  *   SP-107B 8 keys plus `instructor`, `semesterId`, `semester` — backward
@@ -51,6 +51,28 @@ const COURSE_KEYS = [
   'id',
   'instructor',
   'isActive',
+  'name',
+  'semester',
+  'semesterId',
+  'updatedAt',
+].sort();
+
+/**
+ * The exact `GET /courses/:id` detail keys (SP-112A, D112-3): the
+ * `CourseWithSemester` keys plus the `meetings` + read-only `assignments`
+ * projections.  The list route stays light (`COURSE_KEYS` only).
+ */
+const COURSE_DETAIL_KEYS = [
+  'assignments',
+  'code',
+  'color',
+  'credits',
+  'createdAt',
+  'description',
+  'id',
+  'instructor',
+  'isActive',
+  'meetings',
   'name',
   'semester',
   'semesterId',
@@ -499,13 +521,18 @@ describeIntegration('Course management data scoping (integration, real database)
 
       const response = await getCourse(studentA, created.body.id).expect(HttpStatus.OK);
 
-      expect(Object.keys(response.body).sort()).toEqual(COURSE_KEYS);
+      // The SP-112A detail shape (D112-3): `CourseWithSemester` plus the
+      // `meetings` + read-only `assignments` projections (both empty for a
+      // freshly created course).
+      expect(Object.keys(response.body).sort()).toEqual(COURSE_DETAIL_KEYS);
       expect(response.body).toMatchObject({
         id: created.body.id,
         code: `GEO${runId}`,
         instructor: 'Prof. Adams',
         isActive: false,
         semester: null,
+        meetings: [],
+        assignments: [],
       });
     });
 

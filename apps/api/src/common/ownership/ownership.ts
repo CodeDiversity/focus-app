@@ -23,7 +23,8 @@ import { NotFoundException } from '@nestjs/common';
  * controller needs.
  *
  * Scope by `userId` on every model that carries one: `Semester`, `Course`,
- * `Assignment`, `Task`, `StudySession`, `StudyPlan`, `AvailabilitySlot`.
+ * `ClassMeeting`, `Assignment`, `Task`, `StudySession`, `StudyPlan`,
+ * `AvailabilitySlot`.
  * `ScheduledTask` has no `userId` column of its own — scope it through its
  * parents (`studyPlan.userId` / `task.userId`). The only legitimate unscoped
  * user lookups are the internal auth flows (login's email lookup); there is
