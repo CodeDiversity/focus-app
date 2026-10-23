@@ -11,9 +11,10 @@ Backend/frontend are layer labels and technical guidance, not separate agents.
 
 Apply [delivery state](../../delivery-state.md): read the parent README's queue
 before choosing/resuming work, resolve colocated artifact paths, and maintain
-active/next status. `Needs refinement` is actionable by the refiner, not ready to
-code. Update execution fields and the active child's status/artifact pointers
-only; all other planning content remains planner-owned.
+active/next status. `Needs refinement` is actionable by the refiner (or the
+ui-refiner for frontend UI/UX gaps), not ready to code. Update execution fields
+and the active child's status/artifact pointers only; all other planning content
+remains planner-owned.
 
 Use [context efficiency](../../context-efficiency.md) for bounded reads and handoffs.
 

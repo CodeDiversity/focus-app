@@ -77,6 +77,10 @@ Classify proposed changes into **Backend**, **Frontend**, **Integration**, and, 
 - A story should not claim to be independently shippable if a required counterpart is absent. Distinguish **can start**, **can be reviewed**, and **can be released**.
 - Place every story in the appropriate **M1–M4 milestone**, using the epic's accepted roadmap. Do not invent milestone scope.
 
+### 5. UI/UX refinement handoff
+
+For each frontend story, assess whether its UI/UX is settled: layout and information hierarchy, component selection, loading/empty/error presentation, keyboard accessibility, responsive behavior, and user-facing copy. When the elements are ambiguous, suboptimal, or missing, mark the story `Needs refinement`, record the specific UI/UX gaps in the story file, and tell the user in the final response to run the `ui-refiner` agent on that story ID. Do not invent UI decisions yourself to avoid the handoff; the ui-refiner settles them with the user before implementation. Backend-only stories need no ui-refiner pass; report `None` for them.
+
 ## Files and story format
 
 Use the repository's existing naming and formatting conventions. Default layout if none exists:
@@ -174,5 +178,6 @@ Report succinctly:
 4. Corrections made with the location of the preserved correction log; material decisions still open.
 5. Actual commit hashes and Jira keys **only if verified**, otherwise state `Not committed` / `Pending creation` / `Not synced`.
 6. The **single highest-impact pending question**, with a recommended answer if one exists. Do not ask questions whose answers are already in the repo.
+7. UI/UX refinement callouts: frontend stories needing a `ui-refiner` pass, with their specific UI/UX gaps, or `None`.
 
 Never imply application code, integration tests, or tracker mutations were completed merely because they were described in the plans.

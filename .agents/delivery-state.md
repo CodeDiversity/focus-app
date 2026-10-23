@@ -102,6 +102,10 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
 - **Refiner:** reads the queue, writes only the given unimplemented story, and
   returns its readiness/dependency result for planner/coordinator reconciliation.
   It cannot edit README, create artifacts or mark other stories ready.
+- **UI refiner:** reads the queue, writes only the given unimplemented frontend
+  story (UI/UX decisions), and returns its readiness/dependency result for
+  planner/coordinator reconciliation. It cannot edit README, create artifacts or
+  mark other stories ready.
 - **Reviewer:** reads the queue and colocated evidence independently; never
   moves files. The review is read-only and its only own writes are the saved
   report, final implementation walkthrough, plus on a passing verdict the reviewer skill's passing-review docs

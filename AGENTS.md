@@ -21,6 +21,7 @@ user to arbitrate routine bookkeeping.
 | planner | `.agents/skills/studypilot-planner/SKILL.md` | Only `docs/` |
 | jira-sync | `.agents/skills/studypilot-jira-sync/SKILL.md` | Sync ledger; scoped story specs/navigation and epic tracker metadata |
 | refiner | `.agents/skills/studypilot-refiner/SKILL.md` | Only the given unimplemented story |
+| ui-refiner | `.agents/skills/studypilot-ui-refiner/SKILL.md` | Only the given unimplemented frontend story |
 | reviewer | `.agents/skills/studypilot-reviewer/SKILL.md` | Report; final user walkthrough; passing verdict's scoped docs sync |
 | dod-auditor | `.agents/skills/studypilot-reviewer/SKILL.md` (static audit) | None |
 

@@ -13,6 +13,8 @@ Apply feature-specific checks, justified story splits, original acceptance-crite
 
 Apply .agents/story-sizing.md: prefer cohesive 1–3-hour outcomes; split only for a concrete complexity/risk/context reason and substantial independent work per child. Keep routine README updates, tests, wiring, status and evidence with their implementation. Do not manufacture small children or pad estimates with agent overhead. Honor explicitly read-only review requests.
 
+After planning frontend stories, flag any whose UI/UX is unsettled or suboptimal for the `ui-refiner` agent per the skill's UI/UX handoff, and tell the user to run it on those story IDs.
+
 For planner/reviewer cycles, follow the skill's plan-review handoff: read `<breakdown-directory>/plan-review.md`, address every finding by stable ID in the README correction log, and leave the reviewer report unchanged. Mark proposed fixes awaiting re-review; only the reviewer verifies closure. The coordinating parent saves the reviewer's returned Markdown, replacing the latest report.
 
 Inspect git status before edits. Commit one verified story at a time, including its related docs/README changes, and stage only your own docs/ changes. Do not push, merge, reset, or modify unrelated work. Ask for user authorization before bulk Jira mutations; authentication by itself is not authorization.
