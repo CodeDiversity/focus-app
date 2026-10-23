@@ -3,7 +3,7 @@
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Parent:** [SP-112](./SP-112-class-meetings-and-course-detail.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Planned 2026-10-21 — covers EP02 proposed stories **5 (manage recurring class meetings), 6 (course list and detail views)**. D112-1…6 planner-recorded (all grounded, reversible). **Plan Ready** (gate below). **Unblocked 2026-10-23** — SP-111 complete (implemented + final combined parent review PASS 2026-10-22); the plan was re-verified against the post-SP-111 code the same day (baseline holds; one cosmetic ticket-path fix, F-112P-1).
+**Status:** Planned 2026-10-21 — covers EP02 proposed stories **5 (manage recurring class meetings), 6 (course list and detail views)**. D112-1…6 planner-recorded (all grounded, reversible). **Plan Ready** (gate below). **Unblocked 2026-10-23** — SP-111 complete (implemented + final combined parent review PASS 2026-10-22); the plan was re-verified against the post-SP-111 code the same day (baseline holds; one cosmetic ticket-path fix, F-112P-1). **All children implemented 2026-10-23** (A `080f2e9`, B `8bbafb5`, C closeout commit) — awaiting the combined parent review (DoD 10 human ratification pending with the user).
 
 ## Execution queue
 
@@ -13,13 +13,11 @@
 
 **Parent artifacts:** `./artifacts/SP-112/` (parent index written by C)
 
-**Active substory:** None — SP-112B complete (implemented 2026-10-23,
-awaiting the combined parent review)
+**Active substory:** None — all children implemented 2026-10-23.
 
-**Next substory:** SP-112C (implement) — the named integration/index owner
-(e2e spec + DoD 10 sign-off + parent index); dependencies satisfied (A + B
-implemented 2026-10-23). SP-112A and SP-112B are done (both awaiting the
-combined parent review after C).
+**Next substory:** None. **Next action: combined SP-112 parent review** (one
+independent review of A + B + C after the DoD 10 human ratification lands;
+final artifacts `./artifacts/SP-112/review.md` + `walkthrough.md`).
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -30,9 +28,9 @@ obligation are implemented; no per-child review gates. Final artifacts:
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-112A-class-meetings-api.md) | Implemented — awaiting parent review | SP-111A implemented + reviewed (satisfied 2026-10-22 — extends the courses module + `GET /courses/:id`); SP-104 implemented + reviewed | combined SP-112 parent review after B + C | `./artifacts/SP-112A/implementation.md` (+ checkpoint) |
-| [B](./SP-112B-course-detail-ui.md) | Implemented — awaiting parent review | SP-111B implemented (satisfied); SP-112A implemented (satisfied 2026-10-23); contract fixed in this README | combined SP-112 parent review after C | `./artifacts/SP-112B/implementation.md` (+ checkpoint) |
-| [C](./SP-112C-meetings-integration-signoff.md) | Ready | A, B implemented (satisfied 2026-10-23) | implement (e2e spec + DoD 10 sign-off + parent index) | — |
+| [A](./SP-112A-class-meetings-api.md) | Implemented — awaiting parent review | SP-111A implemented + reviewed (satisfied 2026-10-22 — extends the courses module + `GET /courses/:id`); SP-104 implemented + reviewed | combined SP-112 parent review | `./artifacts/SP-112A/implementation.md` (+ checkpoint) |
+| [B](./SP-112B-course-detail-ui.md) | Implemented — awaiting parent review | SP-111B implemented (satisfied); SP-112A implemented (satisfied 2026-10-23); contract fixed in this README | combined SP-112 parent review | `./artifacts/SP-112B/implementation.md` (+ checkpoint) |
+| [C](./SP-112C-meetings-integration-signoff.md) | Implemented — awaiting parent review | A, B implemented (satisfied 2026-10-23) | combined SP-112 parent review (DoD 10 human ratification pending) | `./artifacts/SP-112C/implementation.md` (+ checkpoint); parent index `./artifacts/SP-112/implementation.md` |
 
 Sequence: SP-111 (A→B→C, **complete 2026-10-22**) **→** SP-112 (A→B→C), one
 sequential writer.
