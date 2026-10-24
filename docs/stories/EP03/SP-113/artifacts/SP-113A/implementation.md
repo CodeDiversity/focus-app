@@ -34,6 +34,7 @@
 | F113A-2 — AC 3 | Global implicit conversion could accept a numeric title as a string. | **Fixed**, implementer. Preserve raw title during transformation; optional union metadata preserves raw scalar types. Numeric title/numeric duration string rejected by pipe, service and HTTP regression tests. |
 | F113A-3 — AC 6 / repo ownership | Existing nested assignment include relied solely on parent-course ownership rather than an explicit assignment userId predicate. | **Fixed**, implementer. Added nested `where.userId`, updated two query-shape assertions after their initial expected failures, and verified full existing course suite. |
 | F113A-4 — AC 3 | ISO validator accepts formats not representable by JS Date/Prisma. | **Fixed**, implementer. Finite Date.parse guard plus week-date/leap-second negative cases at service, pipe and HTTP levels. Final full suite passes. |
+| F113A-5 — delivery-state reconciliation | Initial closeout repeated stale parent queue claim that B needed UI refinement. | **Fixed**, implementer, following user correction. B's Status and D113B-1…6 show refinement completed in baseline commit `378355c24a2270edeb453dd541773226435b878b`. A completion satisfies its remaining dependency; queue now marks B Ready, next action implement. Docs-only correction; tested API code unchanged. |
 
 Documentation path correction: ticket references `common/validation.pipe.ts`; actual pipe is `common/pipes/validation.pipe.ts`. No AC/contract changes. Service defense-in-depth reuses DTO validation rules rather than duplicating each predicate manually; non-HTTP callers receive the same field-level 400s.
 
@@ -57,4 +58,4 @@ All commands run from repository root against the final implementation working t
 
 Applicable backend DoD 1–4, 8–9 satisfied by the above implementation/tests and documented contract/migration. UI DoD 5–7 belongs to B. Integrated browser sign-off and combined independent review/walkthrough (DoD 10–11) remain C/parent-review obligations, not child approval.
 
-No open findings or implementation blockers in SP-113A. Next: **SP-113B ui-refiner pass** (separate authorization); do not implement B before its recorded UI refinement. SP-113C and final combined review remain unstarted. No child reviewer dispatched.
+No open findings or implementation blockers in SP-113A. Next: **SP-113B implementation** (separate authorization); its UI refinement already completed in `378355c`. SP-113C and final combined review remain unstarted. No child reviewer dispatched.

@@ -23,5 +23,6 @@ Role / scope: implementer; assignment-create API, migration and tests only.
 - No open findings or unfinished SP-113A behavior. No independent approval claimed.
 
 ## Resume / handoff
-- Assigned scope ends at A. Next canonical action: SP-113B UI refinement by ui-refiner under separate authorization; B/C not implemented here.
+- Assigned scope ends at A. Next canonical action: SP-113B implementation under separate authorization; B's UI refinement already completed in `378355c`. B/C not implemented here.
+- Post-closeout finding F113A-5: stale queue handoff corrected; disposition/evidence in implementation record.
 - Final combined SP-113 review remains after B/C and integration evidence; no per-child reviewer.

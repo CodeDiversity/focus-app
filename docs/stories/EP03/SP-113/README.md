@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-113](./SP-113-quick-assignment-creation.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** SP-113A implemented 2026-10-24 — awaiting combined parent review. B/C remain; next actionable **SP-113B UI refinement**. Covers EP03 proposed story **1 (implement quick assignment creation)**. D113-1…6 and the historical planning gate below remain unchanged.
+**Status:** SP-113A implemented 2026-10-24 — awaiting combined parent review. B/C remain; next actionable **SP-113B implementation** (UI refinement already committed). Covers EP03 proposed story **1 (implement quick assignment creation)**. D113-1…6 and the historical planning gate below remain unchanged.
 
 ## Execution queue
 
@@ -13,11 +13,10 @@
 
 **Parent artifacts:** `./artifacts/SP-113/` (parent index written by C)
 
-**Active substory:** None — SP-113A implementation finished; single-child scope closed.
+**Active substory:** SP-113B — implementer; frontend quick-create flow.
 
-**Next substory:** SP-113B. **Next action: `ui-refiner` pass** (API prerequisite
-SP-113A implemented; UI/UX gaps recorded in B's ticket, 2026-10-24).
-SP-113B is not ready for implementation until that refinement completes.
+**Next substory:** SP-113B. **Next action: resume implementation** (SP-113A implemented;
+UI refinement D113B-1…6 completed in `378355c`, 2026-10-24).
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -29,7 +28,7 @@ artifacts: `./artifacts/SP-113/review.md` + `./artifacts/SP-113/walkthrough.md`.
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [A](./SP-113A-assignment-create-api.md) | **Implemented — awaiting parent review** | EP02 complete (satisfied 2026-10-23); no other EP03 work | combined review after B/C | [implementation](./artifacts/SP-113A/implementation.md) · [checkpoint](./artifacts/SP-113A/checkpoint.md) |
-| [B](./SP-113B-quick-create-assignment-ui.md) | **Needs refinement** | SP-113A implemented; SP-112B implemented (satisfied 2026-10-23 — the section it extends) | `ui-refiner` pass, then implement | — |
+| [B](./SP-113B-quick-create-assignment-ui.md) | **In progress** | SP-113A implemented; SP-112B implemented (satisfied 2026-10-23 — the section it extends) | resume implementation | [checkpoint](./artifacts/SP-113B/checkpoint.md) |
 | [C](./SP-113C-quick-create-integration-signoff.md) | Queued | A, B implemented | implement | — |
 
 Sequence: SP-113 (A → B → C), one sequential writer.
