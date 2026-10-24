@@ -7,6 +7,7 @@
 **Milestone:** M1
 **Layer:** Integration
 **Status:** Plan Ready
+**Refined:** 2026-10-24
 **Dependencies:** SP-114D (PATCH + DELETE API), SP-114E (per-row edit/delete UI)
 **Jira key:** Pending creation
 
@@ -14,8 +15,13 @@
 
 Verify end-to-end that assignment editing and deletion work correctly across
 the full stack: API endpoints, frontend forms, ownership enforcement, error
-handling, and the course-detail refetch pattern. Write e2e tests, perform
-DoD-10 manual browser sign-off, and write the parent implementation index.
+handling, and the course-detail refetch pattern. The e2e spec (the API-side
+`test-http` harness — the SP-113C precedent: no browser automation) proves the
+PATCH/DELETE round-trips, the D114-5 null semantics, and the ownership matrix;
+the web side (edit/delete forms, live-region announcements — no success toast,
+D114E-7 — keyboard, responsive) is verified in the DoD-10 manual browser walk.
+Write the e2e tests, perform DoD-10 manual browser sign-off, and write the
+parent implementation index.
 
 ## Source requirement references
 
@@ -30,20 +36,22 @@ DoD-10 manual browser sign-off, and write the parent implementation index.
 
 ## Acceptance criteria
 
-1. **E2E — PATCH:** A student can edit an assignment's editable fields (title, description, due date, estimated hours, priority) via the UI and see the changes reflected after the course refetch.
-2. **E2E — DELETE:** A student can delete an assignment via the UI and see it removed from the list after the course refetch.
-3. **E2E — ownership:** A second student cannot edit or delete the first student's assignment (uniform 404, generic error displayed).
-4. **E2E — validation:** Invalid input on edit (e.g., whitespace-only title, out-of-range duration) is rejected with field-level errors.
-5. **DoD-10 manual sign-off:** Manual browser walkthrough of edit and delete flows, including error states, keyboard interactions, and responsive behavior.
+1. **E2E — PATCH:** `POST` an assignment, `PATCH /assignments/:id` its editable fields (title, description, due date, estimated hours, priority), and verify the updated values in the `GET /courses/:id` projection (the course-detail refetch surface).
+2. **E2E — DELETE:** `DELETE /assignments/:id` (204) and verify the row is gone from the `GET /courses/:id` projection; a seeded task on the assignment survives with `assignmentId: null` (D114-4).
+3. **E2E — ownership:** A second student cannot edit or delete the first student's assignment (uniform 404; the row is unchanged).
+4. **E2E — validation:** Invalid input on edit (e.g., whitespace-only title, out-of-range duration, unknown `status`/`actualHours` fields) is rejected with 400 field-level errors.
+5. **E2E — null semantics (D114-5):** an explicit `null` for `dueDate`/`estimatedHours` keeps the stored value; `description: ''` clears the stored description; an empty body → 400 "At least one field must be provided".
+6. **DoD-10 manual sign-off:** Manual browser walkthrough of the edit and delete flows on the course detail page — including the live-region announcements (`"Assignment updated."` / `"Assignment deleted."` — no success toast, D114E-7), the mode-aware edit hints, error states, keyboard interactions, and responsive behavior.
 
 ## Tests
 
-- **E2E tests** (`assignments-e2e.spec.ts` — extended by this story):
-  - Full-stack PATCH flow: create → edit via UI → verify updated values in list.
-  - Full-stack DELETE flow: create → delete via UI → verify removal from list.
-  - Two-student matrix: student B attempts PATCH/DELETE on student A's assignment → 404.
-  - Validation: invalid edit input → 400 field-level errors displayed.
-  - Error states: network/5xx errors → retry toast.
+- **E2E tests** (`assignments-e2e.spec.ts` — extended by this story; API-side `test-http` harness, real Postgres — the web side is covered by the manual walk, the SP-113C precedent):
+  - Full-stack PATCH flow: create → `PATCH /assignments/:id` → verify updated values in the `GET /courses/:id` projection.
+  - PATCH null semantics (D114-5): explicit `null` keeps the stored `dueDate`/`estimatedHours`; `description: ''` clears the stored description; empty body → 400 "At least one field must be provided".
+  - Full-stack DELETE flow: create → `DELETE /assignments/:id` (204) → verify removal from the projection; a seeded task (via `app.prisma`) survives with `assignmentId: null` (D114-4).
+  - Two-student matrix: student B attempts PATCH/DELETE on student A's assignment → 404; A's row unchanged.
+  - Validation: invalid edit input (whitespace-only title, out-of-range duration, unknown lifecycle fields) → 400 field-level errors.
+  - **Manual walk (AC 6):** the UI edit/delete flows, live-region announcements (no success toast — D114E-7), mode-aware hints, error states (incl. network/5xx → retry toast), keyboard-only pass, and mobile viewport — recorded per the SP-113C DoD-10 format.
 
 ## Technical notes
 
@@ -65,15 +73,15 @@ correctly after each mutation.
 
 All applicable shared DoD (see SP-114 parent). Integration-specific:
 
-- E2E tests for PATCH and DELETE flows (full-stack, real Postgres).
+- E2E tests for PATCH and DELETE flows (full-stack, real Postgres), incl. the D114-5 null-semantics cases (null keeps, `''` clears description, empty body → 400) and the task-cascade survival.
 - Two-student matrix test (cross-student ownership enforcement).
-- Manual browser walkthrough of edit and delete flows.
+- Manual browser walkthrough of edit and delete flows, incl. the live-region announcements (no success toast — D114E-7), mode-aware hints, error states, keyboard, and responsive passes.
 - Parent implementation index at `./artifacts/SP-114/implementation.md`.
 
 ## Sizing block
 
-- **Outcome:** E2E tests for PATCH + DELETE flows, manual DoD-10 sign-off, parent index.
-- **Time estimate:** ~1–1.5 hours.
+- **Outcome:** E2E tests for PATCH + DELETE flows (incl. null semantics + task cascade), manual DoD-10 sign-off, parent index.
+- **Time estimate:** ~2 hours (the SP-113C precedent: one e2e spec + the manual walk + the index).
 - **Production files:** None (integration only).
 - **Test files:** `assignments-e2e.spec.ts` (extend with PATCH/DELETE flows).
 - **Minimal start context:** Read `test-http.ts`, `assignments-e2e.spec.ts`, `SP-113C`.
