@@ -5,19 +5,20 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** **Needs refinement** — UI/UX gaps below recorded 2026-10-24 for
-the `ui-refiner` pass; not ready to code until it lands (planner assessment,
-per the SP-112B precedent)
+**Status:** **Refined** 2026-10-24 — UI/UX decisions settled (the `ui-refiner`
+pass; D113B-1…6, confirmed with the user); grounded in the post-SP-112B code.
+Not ready to code until SP-113A is implemented (the contract it consumes).
+**Refined:** 2026-10-24
 **Dependencies:** SP-113A implemented (contract); SP-112B implemented
 (satisfied 2026-10-23 — the `AssignmentsSection` this child extends)
 **Jira key:** Pending creation
 
 ## Summary
 
-Give the course detail page its quick-assignment-creation flow: a "New
+Give the course detail page its quick-assignment-creation flow: an "Add
 assignment" affordance on the (currently read-only) assignments section, a
-short form (title + optional due date, estimated duration, priority), and the
-row appearing in the section after the page's background refetch.
+short dialog form (title + optional due date, estimated duration, priority),
+and the row appearing in the section after the page's background refetch.
 
 ## Description
 
@@ -27,94 +28,223 @@ due date and priority.
 
 ## Acceptance criteria
 
-1. A **"New assignment"** affordance on the course detail page's assignments
-   section (placement per the ui-refiner decision) opens the quick-create
-   form; the course is implicit — `courseId` comes from the page route, never
-   a form field. *(AC-E03-01, DoD 5/6)*
-2. The form fields (D113-5): **title** (required), **due date** (optional
-   date input), **estimated duration** (optional, hours), **priority**
-   (optional, default Medium). Client-side validation mirrors the API rules
-   (non-whitespace title ≤ 200; valid date; `0 < h ≤ 1000`; enum priority)
-   with field-level error display from the API's 400 `errors` map.
-   *(AC-E03-02, DoD 2/4/8)*
-3. Submit calls `POST /assignments` (new `entities/assignment/api/assignmentApi.ts`,
-   the plain-axios `httpClient` pattern — D113-4) and shows a saving state
-   (button disabled/indeterminate; no double-submit). Success → the page's
-   existing background `getCourse` refetch (D112B-10 pattern — the section
-   gains an `onAssignmentChanged` callback) so the new row renders from the
-   projection; success feedback per the ui-refiner decision (toast vs inline).
-   *(AC-E03-01, DoD 1/5/8)*
-4. Failure states: field-level 400s under the inputs; a form-level alert for
-   a course-level 404 (the course vanished mid-edit); network/5xx → toast
-   (the `<Toaster />` is mounted — F-112B-1). The section's empty state gains
-   the create CTA per the ui-refiner decision. *(DoD 4/5/8)*
-5. The section renders a **null `dueDate`** (D113-1): the
-   `Assignment`/`CourseAssignment` types widen to `dueDate: string | null`
-   and the row shows the ui-refiner-approved treatment; the SP-112
+1. **Affordance (D113B-2):** the assignments section gets an **Add
+   assignment** button (primary, `size="sm"`) on the section header row —
+   mirroring the sibling Meetings section's "Add meeting" — and the empty
+   state becomes "No assignments yet." + an **Add your first assignment** CTA
+   below it (the meetings precedent: the text is kept, the CTA augments it).
+   Both open the quick-create form; the course is implicit — `courseId` comes
+   from the page route, never a form field. *(AC-E03-01, DoD 5/6)*
+2. **Form (D113B-1/3):** the form is a **dialog** (`AssignmentForm`, the
+   `MeetingForm` pattern: `role="dialog"` + `aria-modal`, focus trap, Escape
+   closes, focus returns to the trigger, `w-full max-w-md max-h-[90vh]
+   overflow-y-auto`). Fields in order: **title** (`Input`, required,
+   placeholder "Problem Set 4") → **due date** (`Input type="date"`,
+   optional) + **estimated duration** (`Input type="number"`, label "Estimated
+   duration (hours)", optional) side by side on `sm`+ → **priority**
+   (`Select`, optional, defaults to Medium). Client-side validation mirrors
+   the API rules (D113-5): title non-whitespace ≤ 200; due date — the date
+   input can only yield a valid date or blank (past dates accepted, D113-5);
+   `0 < h ≤ 1000`; priority constrained to the enum. The API's 400 `errors`
+   map renders under the matching fields via `getFieldError`. *(AC-E03-02,
+   DoD 2/4/8)*
+3. **Submit + success (D113B-4):** submit calls `POST /assignments` (new
+   `entities/assignment/api/assignmentApi.ts`, the plain-axios `httpClient`
+   pattern — D113-4) with `courseId` from the route. While in flight the
+   submit button is `isLoading` (disabled — no double-submit) and the fields
+   are disabled. Success → the dialog closes, the page announces
+   **"Assignment added."** through its existing `role="status"` live region,
+   and runs the existing background `getCourse` refetch (the D112B-10 pattern
+   — the section gains an `onAssignmentChanged` callback) so the new row
+   renders from the projection at its API-ordered position. No toast (toasts
+   in this app are reserved for failures) and no row highlight. *(AC-E03-01,
+   DoD 1/5/8)*
+4. **Failure states (D113B-5):** 400 → field-level errors under the matching
+   inputs (title/dueDate/estimatedHours/priority); a 400 whose `errors` map
+   names no form field → toast the sanitized `apiErrorMessage`. 404 (the
+   course vanished mid-edit — the uniform "Resource not found") → form-level
+   alert: the API message + "— this course may no longer exist." + a
+   **Back to courses** link (the `MeetingForm` pattern). Network/5xx → toast
+   "We could not save the assignment. Try again." (the `<Toaster />` is
+   mounted — F-112B-1) with the form values preserved (resubmit is the retry).
+   *(DoD 4/5/8)*
+5. **Null due date (D113B-6):** the `Assignment`/`CourseAssignment` types
+   widen to `dueDate: string | null` (D113-1) and a row with a null due date
+   renders a muted **"No due date"** due line (the course header's "No
+   semester" treatment) instead of the "Due Oct 12, 2026" line; the SP-112
    nulls-last ordering is preserved. *(AC-E03-02, DoD 5/8)*
-6. Keyboard accessible (DoD 6: focus management for the form/dialog, Escape
-   to close, labels on every field) and responsive (DoD 7: the form works at
-   mobile widths within the existing section layout). *(DoD 6/7)*
-
-## UI/UX gaps — for the `ui-refiner` pass
-
-The planner does not settle these; the `ui-refiner` decides with the user
-(per the SP-112B precedent, D112B-*):
-
-1. **Form presentation:** inline expand in the section vs dialog vs side
-   panel — the page already uses a dialog for edit/archive
-   (`CourseForm`/`ArchiveCourseDialog`), but a 4-field quick-create may not
-   need one.
-2. **Affordance placement:** section-header button vs empty-state CTA vs both;
-   the empty state is currently "No assignments yet." with no CTA (SP-112B) —
-   does the CTA replace or augment it?
-3. **Field order + presentation:** title first; due date as a date picker
-   (the `datetime` helpers exist); estimated duration as a number input with
-   an "h" suffix?; priority as a select or segmented control (the badge
-   palette exists for display).
-4. **Success feedback:** toast (the meetings pattern: "Meeting added.") vs
-   inline row highlight; does the new row need a visible "new" cue after the
-   refetch?
-5. **Null due date display:** "No due date" text vs omitting the due line;
-   ordering is already nulls-last (D112-3).
-6. **Copy:** button/heading/empty-state/error strings.
+6. **Keyboard + responsive (DoD 6/7):** the dialog is fully keyboard-operable
+   (focus trap, Escape closes, focus returns to the trigger, a label on every
+   field, `aria-invalid`/`aria-describedby` on errors — the shared `Input`/
+   `Select` components wire these from their `error`/`hint` props); the form
+   works at mobile widths (fields stack below `sm`; the dialog is `w-full
+   max-w-md`); the section header row and empty-state CTA follow the existing
+   responsive section layout. *(DoD 6/7)*
 
 ## Tests
 
-Component — `apps/web/src/features/courses/ui/` (new
-`AssignmentForm.test.tsx`; updated `AssignmentsSection.test.tsx`):
+Component — `apps/web/src/features/courses/ui/` (vitest + Testing Library;
+interactions through the `test/user.ts` wrapper; page-level renders through
+the `test/providers.tsx` `Providers` helper with `vi.mock` of the entity API
+— the D112B-15 pattern):
 
-- form: renders the four fields with correct labels/defaults (priority
-  Medium); title required (submit blocked + field error on whitespace);
-  client-side 400 mapping renders under the right field; saving state
-  disables submit; Escape/focus behavior per the ui-refiner decision
-- section: null `dueDate` renders the ui-refiner-approved treatment; the new
-  row appears after the data update; the empty-state CTA (per the decision)
-  opens the form
-- a11y: keyboard-only completion of the create flow; labels/announcements
+- `AssignmentForm.test.tsx` (**new**):
+  - renders the four fields with the correct labels; priority defaults to
+    Medium; on open the title input receives focus, Tab cycles within the
+    dialog (focus trap), Escape closes, and focus returns to the trigger
+  - title: submit with a whitespace-only title → blocked + "Title is
+    required" under the field; a 201-char title → "Title must be 200
+    characters or fewer"
+  - estimated duration: `0` / `-3` / `100000` → "Estimated duration must be
+    greater than 0 and at most 1000 hours"; blank is accepted
+  - a past due date is accepted (no client error — D113-5)
+  - a 400 `errors` map renders under the matching fields (via
+    `getFieldError`); a 400 naming no form field toasts
+  - a 404 renders the form-level alert + **Back to courses** link
+  - a network failure toasts "We could not save the assignment. Try again."
+    with the form values preserved and the submit re-enabled
+  - while in flight: submit `isLoading` (disabled) and the fields disabled
+  - the date-only input converts to a local-midnight ISO-8601 `dueDate` in
+    the request body (D113B-3); a blank date omits the field
+- `AssignmentsSection.test.tsx` (updated):
+  - the header row offers the **Add assignment** button (primary, `size="sm"`)
+    and it opens the form; the list rows themselves carry **no** per-row
+    controls (the old "no buttons at all" assertion is scoped to the rows —
+    edit/delete belong to story 2)
+  - the empty state renders "No assignments yet." **plus** the **Add your
+    first assignment** CTA (the old "no CTA" assertion is inverted) and the
+    CTA opens the form
+  - a null `dueDate` renders the muted "No due date" line; a non-null date
+    still renders "Due Oct 12, 2026" (the existing `formatDate` +
+    `getBrowserTimeZone` assertion); the SP-112 nulls-last API order is
+    preserved (no client re-sort)
+  - a new row appears when the `assignments` prop updates (the refetch result)
+- `CourseDetailPage` test (updated): the section receives `courseId` +
+  `onAssignmentChanged`; on create success the page announces "Assignment
+  added." through the live region and triggers the background `getCourse`
+  refetch (the `handleMeetingChanged` pattern)
+- `assignmentApi.test.ts` (**new**, `apps/web/src/entities/assignment/api/`
+  — the `courseApi.test.ts` adapter pattern): `createAssignment` posts to
+  `POST /assignments`; blank optionals are omitted from the body (not sent as
+  null/empty); the 10-key 201 shape is returned
 
 ## Technical notes
 
-- **Inspected (2026-10-24):** `apps/web/src/pages/courses/ui/CourseDetailPage.tsx`
-  (single `getCourse` fetch D112B-13; `onMeetingChanged` → background refetch
-  D112B-10; the section grid), `features/courses/ui/AssignmentsSection.tsx`
-  (read-only; `STATUS_STYLES`/`PRIORITY_STYLES` badge palettes; "No
-  assignments yet." empty state), `entities/course/api/courseApi.ts`
-  (plain-axios `@/shared/api/httpClient` pattern; `CourseDetail.assignments:
-  CourseAssignment[]`), `shared/types/academic.ts` (`Assignment.dueDate:
-  string` — widens to `string | null`; the full type is referenced by `Task`
-  per the file comment — typecheck catches any consumer assuming non-null),
-  `shared/lib/datetime.ts` (`formatDate`/`getBrowserTimeZone`), `main.tsx`
-  (`<Toaster />` — F-112B-1).
-- **New:** `entities/assignment/api/assignmentApi.ts`
-  (`createAssignment` + `CreateAssignmentRequest`; typed against the
-  contract) + `assignmentApi.test.ts`. **New:**
-  `features/courses/ui/AssignmentForm.tsx` (D113-4: colocated with the
-  section — the FSD rule forbids a `features/courses` → `features/assignments`
-  lateral import). **Change:** `AssignmentsSection.tsx` (affordance + null
-  due date + CTA per the ui-refiner decisions), `CourseDetailPage.tsx` (wire
-  the form + `onAssignmentChanged` → the existing refetch handler),
-  `shared/types/academic.ts` (`dueDate: string | null`).
+### Decisions
+
+**UI/UX — `ui-refiner` pass, 2026-10-24** (settled with the user; resolves
+the six open gaps recorded in the 2026-10-24 planning ticket):
+
+- **D113B-1 (form presentation):** a **dialog** — the `MeetingForm`/
+  `CourseForm` pattern (RHF + zod, `role="dialog"` + `aria-modal`, focus
+  trap, Escape closes, focus returns to the trigger; `w-full max-w-md
+  max-h-[90vh] overflow-y-auto`). Every other mutation on this page is a
+  dialog, and the section cards are half-width on `lg` (D112B-1) — cramped
+  for a 4-field inline form. *(AC 1/2, DoD 6/7)*
+- **D113B-2 (affordance placement):** **both** — an **Add assignment** button
+  (primary, `size="sm"`) on the section header row (always visible) + the
+  empty state keeps "No assignments yet." and gains an **Add your first
+  assignment** CTA below it. Mirrors the sibling Meetings section exactly.
+  *(AC 1, DoD 5)*
+- **D113B-3 (field order + presentation):** title (full-width `Input`,
+  placeholder "Problem Set 4") → due date (`Input type="date"`) + estimated
+  duration (`Input type="number"`, label "Estimated duration (hours)", hint
+  "Optional") in a 2-column grid on `sm`+ → priority (full-width `Select`,
+  defaults to Medium, hint "Optional — defaults to Medium"). **Date-only
+  picker:** the UI renders date-only ("Due Oct 12, 2026"), so a time picker
+  would be invisible; the form converts the picked `YYYY-MM-DD` to
+  **local-midnight ISO-8601** — build a local `Date` from the date parts
+  (`new Date(y, m - 1, d)`) then `toISOString()`, never `new Date(
+  'YYYY-MM-DD')` (that parses as UTC midnight) — so the due line round-trips
+  exactly for the creating student (the data is scoped per student). No "h"
+  suffix on the duration input (the shared `Input` has no text-suffix slot;
+  the CourseForm credits field is the label+hint precedent). The due date
+  hint is "Optional — leave blank for no due date." *(AC 2, DoD 2/7)*
+- **D113B-4 (success feedback):** **live region only** — "Assignment added."
+  through the page's existing `role="status"` region + the background refetch
+  (the D112B-10 pattern). No toast (toasts in this app mean failure) and no
+  row highlight (no precedent; the row lands at its API-ordered position,
+  which is not necessarily the top). *(AC 3, DoD 5/6)*
+- **D113B-5 (failure presentation):** 400 → per field via `getFieldError`
+  (title/dueDate/estimatedHours/priority); a 400 naming no form field →
+  toast the sanitized `apiErrorMessage`; 404 → form-level alert
+  `${apiErrorMessage} — this course may no longer exist.` + **Back to
+  courses** link (the `MeetingForm` pattern); any other failure → toast "We
+  could not save the assignment. Try again.", values preserved, submit
+  re-enabled. *(AC 4, DoD 4)*
+- **D113B-6 (null due date display):** a row with a null due date renders a
+  muted **"No due date"** due line (the course header's `text-secondary-400`
+  "No semester" treatment) — the row structure stays stable (title + due line
+  + badges) and the absence reads as "no deadline", not "failed to load".
+  *(AC 5, DoD 5)*
+
+**Copy** (concrete strings, the meetings/course parallel): section header
+button "Add assignment"; empty state "No assignments yet." + "Add your first
+assignment"; dialog heading "Add an assignment"; submit "Create assignment" /
+Cancel "Cancel"; live region "Assignment added."; client field errors "Title
+is required" / "Title must be 200 characters or fewer" / "Estimated duration
+must be greater than 0 and at most 1000 hours".
+
+### Inspected (2026-10-24)
+
+- `apps/web/src/features/courses/ui/MeetingsSection.tsx` — the direct pattern
+  donor: header row (`flex items-center justify-between`) with the **Add
+  meeting** button (primary, `size="sm"`); empty state "No meetings yet" +
+  **Add your first meeting** CTA; hosts the form + `onMeetingChanged`
+  callback; per-row action buttons with `aria-label`s.
+- `apps/web/src/features/courses/ui/MeetingForm.tsx` — the dialog-form
+  pattern to copy: RHF + zod, `FOCUSABLE_SELECTOR` focus trap, Escape/Tab
+  keydown handler attached imperatively, focus-restore on close,
+  `getFieldError` 400 mapping, 404 form-level alert + Back-to-courses link,
+  `isLoading` submit, `max-w-md` dialog card.
+- `apps/web/src/features/courses/ui/CourseForm.tsx` — the label/hint/error
+  field layout (2-column `sm` grids, hint copy "Optional (0–30)"), the
+  string-`refine` number-field pattern (credits), `max-w-xl` dialog.
+- `apps/web/src/features/courses/ui/{AssignmentsSection,ArchiveCourseDialog}.tsx`
+  — the section being extended (badge palettes, "No assignments yet." empty
+  state, `formatDate` + `getBrowserTimeZone` due line) and the
+  `FOCUSABLE_SELECTOR` focus-trap precedent.
+- `apps/web/src/pages/courses/ui/CourseDetailPage.tsx` — the `role="status"`
+  live region + `statusMessage`, `handleMeetingChanged` (announce +
+  background `load({ background: true })`), the section grid, the dialog
+  hosting.
+- `apps/web/src/shared/ui/{Input,Select,Button}.tsx` — `label`/`error`/
+  `hint` with auto `id` + `aria-invalid`/`aria-describedby`; `Input`
+  passes through `type`/`inputMode` (so `type="date"`/`"number"` work as in
+  `MeetingForm`'s `type="time"`); `Button` `isLoading` + variants/sizes.
+- `apps/web/src/shared/lib/errors.ts` — `extractApiError` /
+  `apiErrorMessage` / `getFieldError` / `getErrorMessage` (the D112B-8
+  machinery). `apps/web/src/shared/lib/datetime.ts` — `formatDate` /
+  `getBrowserTimeZone` (the due line; no new formatting code).
+- `apps/web/src/entities/course/api/courseApi.ts` (+ `.test.ts`) — the
+  plain-axios `httpClient` pattern, the omit-when-blank body builder
+  (`createCourse`), the adapter-swap test pattern for the new
+  `assignmentApi.test.ts`.
+- `apps/web/src/shared/types/academic.ts` — `Assignment.dueDate: string`
+  widens to `string | null` (the full type is referenced by `Task` per the
+  file comment — typecheck catches any consumer assuming non-null).
+- `apps/web/src/test/{providers,user}.tsx` — the `Providers` render helper
+  (store + `MemoryRouter`) and the `userEvent` wrapper (D112B-15).
+- `apps/web/src/main.tsx` — `<Toaster />` mounted (F-112B-1).
+
+### Implementation notes
+
+- **New:** `entities/assignment/api/assignmentApi.ts` (`createAssignment` +
+  `CreateAssignmentRequest` typed against the [shared API
+  contract](./README.md#shared-api-contract); optional fields omitted when
+  blank — the `createCourse` body-builder precedent) + `assignmentApi.test.ts`.
+- **New:** `features/courses/ui/AssignmentForm.tsx` (D113-4: colocated with
+  the section — the FSD rule forbids a `features/courses` →
+  `features/assignments` lateral import) + `AssignmentForm.test.tsx`.
+- **Change:** `AssignmentsSection.tsx` — gains `courseId` +
+  `onAssignmentChanged` props (the `MeetingsSection` shape, minus the
+  edit/delete actions); header button (D113B-2); empty-state CTA (D113B-2);
+  muted "No due date" line (D113B-6); hosts the `AssignmentForm` (the
+  `formState` pattern from `MeetingsSection`).
+- **Change:** `pages/courses/ui/CourseDetailPage.tsx` — wire the section
+  props + a `handleAssignmentAdded` (`setStatusMessage('Assignment added.')`
+  + background refetch — the `handleMeetingChanged` pattern).
+- **Change:** `shared/types/academic.ts` — `dueDate: string | null`.
 - The form mirrors the API field rules (D113-5) — client validation is UX;
   the backend stays authoritative.
 
@@ -123,28 +253,32 @@ Component — `apps/web/src/features/courses/ui/` (new
 1. ACs 1–6 pass. 2. Client-side validation mirroring the API; actionable
 field errors. 3. N/A — the data is the page's already-scoped fetch. 4.
 Field/form/network failure states all surface actionable feedback. 5.
-Loading/empty/error states incl. the null due date. 6. Keyboard accessibility
-per AC 6. 7. Responsive per AC 6. 8. Component tests above. 9. N/A — no
-API/migration change (the contract is A's). 10. Via SP-113C sign-off + the
-combined parent review.
+Loading/empty/error states incl. the empty-state CTA and the null due date.
+6. Keyboard accessibility per AC 6. 7. Responsive per AC 6. 8. Component
+tests above. 9. N/A — no API/migration change (the contract is A's). 10. Via
+SP-113C sign-off + the combined parent review.
 
 ## Sizing
 
 - **Outcome:** the quick-create flow works on the course detail page — the
   epic's "adding an assignment quick" requirement, end to end in the UI.
-- **Time estimate:** ~2.5 h — one small entity API, one form, the
-  section/page/type changes; the non-mechanical parts are the ui-refiner
-  decisions' implementation, the null-due-date treatment, and the
-  a11y/responsive pass.
+- **Time estimate:** ~2–2.5 h — one small entity API, one dialog form that
+  is a near-mechanical copy of `MeetingForm` (RHF + zod, focus trap, error
+  mapping), the section/page/type changes; the non-mechanical parts are the
+  date-only → local-midnight ISO conversion (D113B-3) and its tests, the
+  null-due-date row treatment (D113B-6), and the a11y/responsive pass.
 - **Files:** `apps/web/src/entities/assignment/api/assignmentApi.ts` (+ test,
   **new**), `apps/web/src/features/courses/ui/AssignmentForm.tsx` (**new**) +
   `AssignmentForm.test.tsx` (**new**), `AssignmentsSection.tsx` (change) +
   test (change), `pages/courses/ui/CourseDetailPage.tsx` (change) + test
   (change), `shared/types/academic.ts` (change).
-- **Start context:** this ticket (incl. the ui-refiner decisions), decisions
-  D113-1…6, the [shared API contract](./README.md#shared-api-contract), the
-  files above, the SP-112B ticket (D112B-4/10/13/16 — the section's existing
-  conventions).
+- **Start context:** this ticket (incl. decisions D113B-1…6 + the copy
+  block), decisions D113-1…6, the [shared API
+  contract](./README.md#shared-api-contract), the files above (esp.
+  `MeetingForm.tsx` + `MeetingsSection.tsx` as the pattern donors), the
+  SP-112B ticket (D112B-4/8/10/13/16 — the section's existing conventions),
+  `shared/api/httpClient.ts`, `shared/lib/{errors,datetime}.ts`,
+  `test/{providers,user}.tsx`.
 - **Verification:** `pnpm --filter @studypilot/web test` all green;
   `pnpm --filter @studypilot/web typecheck` clean; lint clean.
 - **Dependencies / exclusions:** SP-113A (contract), SP-112B (done).
