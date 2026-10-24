@@ -4,7 +4,7 @@
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1
 **Covers epic proposed stories:** 5 (manage recurring class meetings), 6 (course list and detail views)
-**Status:** Planned 2026-10-21 — see the [breakdown README](./README.md) for the queue, decisions, contract, and quality gate.
+**Status:** **Complete 2026-10-23** — all children implemented (A `080f2e9`, B `8bbafb5`, C `469a829`) + combined parent review PASS (DoD 10 ratified 2026-10-23) — see the [breakdown README](./README.md) for the queue, decisions, contract, and quality gate.
 
 ## Purpose
 

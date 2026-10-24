@@ -3,7 +3,7 @@
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Parent:** [SP-112](./SP-112-class-meetings-and-course-detail.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Planned 2026-10-21 — covers EP02 proposed stories **5 (manage recurring class meetings), 6 (course list and detail views)**. D112-1…6 planner-recorded (all grounded, reversible). **Plan Ready** (gate below). **Unblocked 2026-10-23** — SP-111 complete (implemented + final combined parent review PASS 2026-10-22); the plan was re-verified against the post-SP-111 code the same day (baseline holds; one cosmetic ticket-path fix, F-112P-1). **All children implemented 2026-10-23** (A `080f2e9`, B `8bbafb5`, C closeout commit) — awaiting the combined parent review (DoD 10 human ratification pending with the user).
+**Status:** Planned 2026-10-21 — covers EP02 proposed stories **5 (manage recurring class meetings), 6 (course list and detail views)**. D112-1…6 planner-recorded (all grounded, reversible). **Plan Ready** (gate below). **Unblocked 2026-10-23** — SP-111 complete (implemented + final combined parent review PASS 2026-10-22); the plan was re-verified against the post-SP-111 code the same day (baseline holds; one cosmetic ticket-path fix, F-112P-1). **SP-112 complete 2026-10-23** — all children implemented (A `080f2e9`, B `8bbafb5`, C `469a829`); combined parent review **PASS** (pass 1 2026-10-23: DOES NOT PASS, single should-fix F-112B-1 — fixed in `6ce897a`; pass 2 PASS); DoD 10 human ratification **recorded 2026-10-23** (session owner, verbatim: “yes, do what you think is best. approved.”). Final artifacts: `./artifacts/SP-112/review.md` + `walkthrough.md`.
 
 ## Execution queue
 
@@ -13,11 +13,11 @@
 
 **Parent artifacts:** `./artifacts/SP-112/` (parent index written by C)
 
-**Active substory:** None — all children implemented 2026-10-23.
+**Active substory:** None — SP-112 complete (final combined parent review PASS 2026-10-23).
 
-**Next substory:** None. **Next action: combined SP-112 parent review** (one
-independent review of A + B + C after the DoD 10 human ratification lands;
-final artifacts `./artifacts/SP-112/review.md` + `walkthrough.md`).
+**Next substory:** None. **Next action: None** — SP-112 complete (combined
+parent review PASS 2026-10-23; DoD 10 ratification recorded; final artifacts
+`./artifacts/SP-112/review.md` + `walkthrough.md`).
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -28,9 +28,9 @@ obligation are implemented; no per-child review gates. Final artifacts:
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-112A-class-meetings-api.md) | Implemented — awaiting parent review | SP-111A implemented + reviewed (satisfied 2026-10-22 — extends the courses module + `GET /courses/:id`); SP-104 implemented + reviewed | combined SP-112 parent review | `./artifacts/SP-112A/implementation.md` (+ checkpoint) |
-| [B](./SP-112B-course-detail-ui.md) | Implemented — awaiting parent review | SP-111B implemented (satisfied); SP-112A implemented (satisfied 2026-10-23); contract fixed in this README | combined SP-112 parent review | `./artifacts/SP-112B/implementation.md` (+ checkpoint) |
-| [C](./SP-112C-meetings-integration-signoff.md) | Implemented — awaiting parent review | A, B implemented (satisfied 2026-10-23) | combined SP-112 parent review (DoD 10 human ratification pending) | `./artifacts/SP-112C/implementation.md` (+ checkpoint); parent index `./artifacts/SP-112/implementation.md` |
+| [A](./SP-112A-class-meetings-api.md) | **Reviewed** | SP-111A implemented + reviewed (satisfied 2026-10-22 — extends the courses module + `GET /courses/:id`); SP-104 implemented + reviewed | None — parent review PASS 2026-10-23 | `./artifacts/SP-112A/implementation.md` (+ checkpoint); parent review `./artifacts/SP-112/review.md` + `walkthrough.md` |
+| [B](./SP-112B-course-detail-ui.md) | **Reviewed** | SP-111B implemented (satisfied); SP-112A implemented (satisfied 2026-10-23); contract fixed in this README | None — parent review PASS 2026-10-23 | `./artifacts/SP-112B/implementation.md` (+ checkpoint); parent review `./artifacts/SP-112/review.md` + `walkthrough.md` |
+| [C](./SP-112C-meetings-integration-signoff.md) | **Reviewed** | A, B implemented (satisfied 2026-10-23) | None — parent review PASS (DoD 10 ratification recorded 2026-10-23) | `./artifacts/SP-112C/implementation.md` (+ checkpoint); parent index `./artifacts/SP-112/implementation.md`; parent review `./artifacts/SP-112/review.md` + `walkthrough.md` |
 
 Sequence: SP-111 (A→B→C, **complete 2026-10-22**) **→** SP-112 (A→B→C), one
 sequential writer.
@@ -183,6 +183,7 @@ original findings are preserved, never overwritten.)
 | ID | Source | Original finding | Consequence | Disposition |
 |---|---|---|---|---|
 | F-112P-1 | Planner re-verification 2026-10-23 (SP-112B ticket, Technical notes + Sizing) | The route file was referenced as bare `App.tsx`; the actual file is `apps/web/src/app/App.tsx` (verified in the current tree) | Cosmetic — an implementer could mislocate the file | **Fixed in plan** — SP-112B ticket now references the full path (2026-10-23). Verification: `apps/web/src/app/App.tsx` exists and carries the `/courses` route inside `ProtectedRoute`; no `src/App.tsx` exists. |
+| F-112B-1 | Parent review pass 1, 2026-10-23 (`./artifacts/SP-112/review.md`; DoD 4) | No `<Toaster />` was mounted anywhere in `apps/web`, so all 21 `toast.*` call sites (11 production files) were silent no-ops in the built app — incl. the meeting form's 5xx/network save-failure branch and the detail page's background re-fetch notice | DoD 4 (“API errors produce actionable messages”) unmet for that failure class — **should-fix** (not a blocker: the contract-defined 400/409/404 surfaces were fully handled inline) | **Fixed** — `<Toaster />` mounted in `apps/web/src/main.tsx` (inside `AppProviders`) + render test `main.test.tsx`, commit `6ce897a`; web gates re-run green (42 files / 496 tests, typecheck + lint exit 0); SP-112B record updated. Disposition verified by review pass 2 (PASS). User decision closing it (2026-10-23, verbatim: “yes, do what you think is best. approved.”): ratified the DoD-10 walk and approved closing F-112B-1 inside the SP-112 unit. |
 
 ## Quality gate (2026-10-21)
 
