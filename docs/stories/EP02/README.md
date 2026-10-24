@@ -3,7 +3,7 @@
 **Epic:** [EP02: Semester & Course Management](../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1 (functional academic tracker)
 **Epic dependency:** EP01 (Authentication & Onboarding) — complete in code (see baseline)
-**Status:** All six proposed stories broken down. Story 1 → [SP-110](./SP-110/README.md) (implemented + reviewed PASS 2026-10-21). Stories 2–4 → [SP-111](./SP-111/README.md) (implemented + final combined parent review PASS 2026-10-22). Stories 5–6 → [SP-112](./SP-112/README.md) (planned 2026-10-21, **Plan Ready**; **unblocked 2026-10-23** — SP-111 complete, plan re-verified against the current code; next actionable **SP-112A**). Sequencing: SP-110 → SP-111 → SP-112.
+**Status:** **EP02 complete 2026-10-23** — all six proposed stories broken down, implemented, and reviewed. Story 1 → [SP-110](./SP-110/README.md) (implemented + reviewed PASS 2026-10-21). Stories 2–4 → [SP-111](./SP-111/README.md) (implemented + final combined parent review PASS 2026-10-22). Stories 5–6 → [SP-112](./SP-112/README.md) (planned 2026-10-21; implemented + final combined parent review PASS 2026-10-23, DoD 10 ratified). Sequencing: SP-110 → SP-111 → SP-112.
 
 ## Code baseline (2026-10-20)
 
@@ -23,7 +23,7 @@ EP01 is complete in code (SP-101…SP-109 all implemented; SP-107 awaits its com
 |---|---|---|---|
 | [SP-110](./SP-110/README.md) | 1. Create and manage semesters | [3 children](./SP-110/README.md) (A backend, B frontend, C integration) — implemented + reviewed PASS 2026-10-21 | Pending creation |
 | [SP-111](./SP-111/README.md) | 2. Create a course · 3. Edit course information · 4. Archive and restore courses | [3 children](./SP-111/README.md) (A backend, B frontend, C integration) — implemented + reviewed PASS 2026-10-22 | Pending creation |
-| [SP-112](./SP-112/README.md) | 5. Manage recurring class meetings · 6. Course list and detail views | [3 children](./SP-112/README.md) (A backend, B frontend, C integration) — planned 2026-10-21, **Plan Ready**; unblocked 2026-10-23 (SP-111 complete) — next actionable **SP-112A** | Pending creation |
+| [SP-112](./SP-112/README.md) | 5. Manage recurring class meetings · 6. Course list and detail views | [3 children](./SP-112/README.md) (A backend, B frontend, C integration) — implemented + reviewed PASS 2026-10-23 (DoD 10 ratified) | Pending creation |
 
 All six proposed stories are now broken down — none deferred or dropped.
 Sequencing intent: semesters first (SP-110, complete) — courses attach to
@@ -49,12 +49,14 @@ The epic defines no test requirements; story-level test obligations are owned pe
 SP-110 is complete (implemented + reviewed PASS 2026-10-21 — queue at
 [SP-110/README.md](./SP-110/README.md#execution-queue)). SP-111 is complete
 (implemented + final combined parent review PASS 2026-10-22 — queue at
-[SP-111/README.md](./SP-111/README.md#execution-queue)). The next EP02 delivery
-home is [SP-112](./SP-112/README.md#execution-queue) (meetings + course
-detail): next actionable **SP-112A** (implement) — no blockers (SP-111
-complete; plan re-verified against the current code 2026-10-23). After
-SP-112A, **SP-112B needs a `ui-refiner` pass** before implementation (UI/UX
-gaps recorded in its ticket, 2026-10-23).
+[SP-111/README.md](./SP-111/README.md#execution-queue)). SP-112 is complete
+(implemented + final combined parent review PASS 2026-10-23, DoD 10 ratified —
+queue at [SP-112/README.md](./SP-112/README.md#execution-queue)).
+
+**EP02 complete 2026-10-23** — all six proposed stories implemented and
+reviewed. **Next action: None** — no EP02 work remains; the next milestone
+epic is [EP03](../../epics/EP03-assignment-and-task-management.md)
+(Assignment & Task Management), whose EP02 dependency is now satisfied.
 
 ## Quality gate — SP-110 plan (2026-10-20)
 
