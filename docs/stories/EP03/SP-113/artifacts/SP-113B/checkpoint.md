@@ -1,36 +1,41 @@
 # SP-113B checkpoint
+
 Updated: 2026-10-24
-Execution state: **Implemented — awaiting parent review**;
+Execution state: **Implemented — awaiting combined parent re-review**;
 [canonical queue](../../README.md#execution-queue).
 Story: [SP-113B](../../SP-113B-quick-create-assignment-ui.md).
-Review unit: SP-113; C owns parent index/integration.
-Role / scope: implementer; B frontend only. Single writer ownership released at
-committed closeout; no sibling implementation or independent approval claimed.
+Review unit: SP-113; [parent index](../SP-113/implementation.md).
+Role / scope: implementer; authorized F113-001/F113-002 frontend corrections only.
 
 ## Repository state
 - Workspace / branch: focus-app / main.
-- Code baseline: `c6efca5`; docs-only reconciliation advanced HEAD to `00d2eea`
-  during implementation. Source baseline unchanged.
-- B source/tests/status/records are the scoped closeout commit returned in the
-  handoff. Unrelated `.gitignore` change preserved/excluded. Earlier A record
-  edits were committed separately by their owner in `00d2eea`.
+- Correction baseline: `578d44256b088e19d048c39f6168bbebb4696bc1`.
+- Original B: `e3791566f3ef0dcc0d857660e2d766f6c443fd85`.
+- Correction code/tests and closeout docs are committed together; verified hash
+  returned in handoff. Single-writer ownership released after committed closeout.
+- Preserve unrelated `.gitignore` and untracked reviewer-owned parent `review.md`;
+  neither belongs in the implementation commit.
 
 ## Progress
-- [x] Queue, contract, dependencies and UI decisions reconciled.
-- [x] Adapter, form, section/page integration and nullable types implemented.
-- [x] Component/API regressions, timezone run, full tests/typecheck/lint/build.
-- [x] AC outcomes, findings and verification moved to [implementation.md](./implementation.md).
-- [x] Child Status and parent active/next/queue reconciled for B closeout.
-- Current step: scoped commit; verified hash returned in handoff.
+- [x] Confirm both findings against source and record before implementation.
+- [x] Regression-first focused run failed as expected (3 failed / 23 passed).
+- [x] Correct null-date contrast and repeat-success lifecycle for both CTAs.
+- [x] Full frontend suite: 521 tests; typecheck/lint/format and contrast check pass.
+- [x] Final findings dispositions, AC outcomes and commands saved in
+  [implementation correction record](./implementation.md#review-corrections--f113-001--f113-002-2026-10-24).
+- [x] Child Status, parent execution queue and parent index/checkpoint reconciled.
 
-## Findings / verification
-No unfinished B findings. F-B-1 fixed; final disposition and failed/passing check
-history are in [implementation.md](./implementation.md#findings--deviations--final-dispositions).
-Final verification: 519 full-suite tests, 44 non-UTC focused tests;
-typecheck/lint/build pass. See implementation record for commands and limits.
+## Findings / decisions
+No unfinished implementation findings. F113-001 and F113-002 fixed;
+authoritative final dispositions/closure evidence in the implementation record.
+Product/contract deviations: None. Original F-B-1 remains fixed.
+Clear on dialog opening, before a later submit, rather than clearing/restoring
+inside one batched success callback. Preserve exact success copy and mounted
+status region. No unrelated announcement or palette rewrite.
 
-## Resume next
-- No B work remains. Next requested task: SP-113C implementation from the queue;
-  real-HTTP/e2e and integrated browser sign-off, then parent index and one
-  combined independent review. Do not start C under B-only authorization.
-- Preserve unrelated work. Parent is not reviewed/complete.
+## Resume / handoff
+- Coordinator: request combined independent SP-113 re-review using parent index;
+  reviewer must independently verify findings and save final walkthrough before
+  any Reviewed status. No independent approval is claimed here.
+- Coordinator owns persistence of the existing untracked reviewer report.
+- No further implementation work remains in the authorized correction scope.

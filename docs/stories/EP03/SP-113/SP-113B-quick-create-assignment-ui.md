@@ -5,9 +5,9 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** **Implemented — awaiting parent review** 2026-10-24.
+**Status:** **Implemented — awaiting parent review** — F113-001/F113-002 corrected, 2026-10-24.
 [Implementation](./artifacts/SP-113B/implementation.md) ·
-[checkpoint](./artifacts/SP-113B/checkpoint.md). Combined SP-113 review follows C.
+[checkpoint](./artifacts/SP-113B/checkpoint.md). Combined SP-113 re-review next.
 **Refined:** 2026-10-24
 **Dependencies:** SP-113A implemented (contract); SP-112B implemented
 (satisfied 2026-10-23 — the `AssignmentsSection` this child extends)

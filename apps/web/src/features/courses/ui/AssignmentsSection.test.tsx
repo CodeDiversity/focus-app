@@ -146,7 +146,7 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
   it('renders null dates muted, retains API order and updates rows after refetch', () => {
     const undated = { ...labReport, dueDate: null };
     const { rerender } = render(<AssignmentsSection assignments={[problemSet, undated]} />);
-    expect(screen.getByText('No due date')).toHaveClass('text-secondary-400');
+    expect(screen.getByText('No due date')).toHaveClass('text-secondary-500');
     expect(screen.getAllByRole('listitem')[0]).toHaveTextContent(dueLabel(problemSet.dueDate));
     expect(screen.getAllByRole('listitem')[1]).toHaveTextContent('Lab Report');
     rerender(<AssignmentsSection assignments={[problemSet, essay, undated]} />);

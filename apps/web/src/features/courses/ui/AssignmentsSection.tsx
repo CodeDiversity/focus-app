@@ -12,6 +12,7 @@ import type {
 export interface AssignmentsSectionProps {
   courseId: string;
   onAssignmentChanged: () => void;
+  onAssignmentFormOpen?: () => void;
   /**
    * The course's assignments in the API order (`dueDate` asc nulls-last, then
    * title — from the `getCourse` projection, D112B-13). Rendered as-is — no
@@ -77,16 +78,21 @@ export function AssignmentsSection({
   assignments,
   courseId,
   onAssignmentChanged,
+  onAssignmentFormOpen,
 }: AssignmentsSectionProps) {
   const [formOpen, setFormOpen] = useState(false);
   // The student's browser time zone (D112B-16) — resolved once per render.
   const timeZone = getBrowserTimeZone();
+  const openForm = () => {
+    onAssignmentFormOpen?.();
+    setFormOpen(true);
+  };
 
   return (
     <section className="card p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-secondary-900">Assignments</h2>
-        <Button size="sm" variant="primary" onClick={() => setFormOpen(true)}>
+        <Button size="sm" variant="primary" onClick={openForm}>
           Add assignment
         </Button>
       </div>
@@ -94,7 +100,7 @@ export function AssignmentsSection({
       {assignments.length === 0 ? (
         <div className="py-8 text-center">
           <p className="text-sm text-secondary-700">No assignments yet.</p>
-          <Button className="mt-4" onClick={() => setFormOpen(true)}>
+          <Button className="mt-4" onClick={openForm}>
             Add your first assignment
           </Button>
         </div>
@@ -110,7 +116,7 @@ export function AssignmentsSection({
                 <p
                   className={clsx(
                     'mt-1 text-sm',
-                    assignment.dueDate === null ? 'text-secondary-400' : 'text-secondary-600'
+                    assignment.dueDate === null ? 'text-secondary-500' : 'text-secondary-600'
                   )}
                 >
                   {assignment.dueDate === null

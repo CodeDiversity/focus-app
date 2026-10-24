@@ -1,6 +1,6 @@
 # SP-113 combined implementation index
 
-**State:** Ready for one independent combined parent review, 2026-10-24.
+**State:** Ready for one independent combined parent re-review, 2026-10-24.
 Not reviewed/approved. Manual-browser coverage is temporarily substituted by
 automated evidence at the session owner's explicit instruction (C D113C-1).
 
@@ -68,6 +68,26 @@ are authoritative in [C verification](../SP-113C/implementation.md#verification-
   temporary verification exception for the independent reviewer to acknowledge.
 
 ## Independent review request
+
+### F113-001 / F113-002 correction addendum (2026-10-24)
+
+Both findings implemented in B; final dispositions, all B AC outcomes and
+correction verification are in the
+[B correction record](../SP-113B/implementation.md#review-corrections--f113-001--f113-002-2026-10-24).
+Corrections change only section/page and their tests: AA-compliant null-date
+text and a status clear on either assignment-dialog opening, before later
+success restores the exact required copy. Full frontend suite **521 tests**,
+typecheck, lint, scoped formatting and deterministic contrast check pass.
+No actual screen-reader/browser run is claimed; D113C-1 remains unchanged.
+
+Original C closeout/final commit is
+`578d44256b088e19d048c39f6168bbebb4696bc1`.
+For re-review retain the original combined baseline
+`378355c24a2270edeb453dd541773226435b878b`, extending the final range through
+the correction commit introducing this addendum (verified hash returned in
+handoff). The original review report is not changed by the implementer;
+coordinator owns its pending Git persistence. Findings are fixed from the
+implementation perspective, not independently closed/approved.
 
 Coordinator/reviewer: review **the entire SP-113 A/B/C range** above once,
 including original ACs, nullable-deadline compatibility, ownership/no-oracle

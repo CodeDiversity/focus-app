@@ -1,7 +1,7 @@
 # SP-113 parent checkpoint
 
 Updated: 2026-10-24
-State: **Ready for combined independent review**, not approved.
+State: **Ready for combined independent re-review**, not approved.
 Active/next work: [canonical execution queue](../../README.md#execution-queue).
 
 - [x] A/B prerequisites reconciled against commits and implementation evidence.
@@ -11,6 +11,13 @@ Active/next work: [canonical execution queue](../../README.md#execution-queue).
 - [x] Complete child inventory, combined Git scope and review request saved in
   [parent implementation index](./implementation.md).
 - [ ] Independent combined SP-113 review and reviewer-owned final walkthrough.
+
+Correction pass 2026-10-24: F113-001/F113-002 implemented in B; see
+[B correction outcomes and verification](../SP-113B/implementation.md#review-corrections--f113-001--f113-002-2026-10-24).
+Full frontend suite now 521 tests; typecheck/lint/format and deterministic
+contrast check pass. Coordinator requests one combined independent re-review;
+the existing reviewer-owned report remains unchanged/untracked for its owner
+to persist. No approval or actual screen-reader/browser run claimed.
 
 Repository: `main`; A `c6efca5`, docs reconciliation `00d2eea`, B `e379156`.
 C closeout commit introducing this file is returned with verified hash in handoff.

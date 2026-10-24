@@ -153,6 +153,34 @@ describe('CourseDetailPage page states (AC 1/5, DoD 5)', () => {
     expect(mockedToast.success).not.toHaveBeenCalled();
   });
 
+  it.each(['Add assignment', 'Add your first assignment'])(
+    'clears the mounted status on opening via %s and re-announces consecutive creates',
+    async (trigger) => {
+      const user = setupUser();
+      mockedGetCourse.mockResolvedValue({ ...cs101, assignments: [] });
+      vi.mocked(createAssignment).mockResolvedValue({ ...homework, dueDate: null });
+      renderPage();
+      await screen.findByRole('button', { name: trigger });
+      const status = screen.getByRole('status');
+
+      for (const title of ['First assignment', 'Second assignment']) {
+        await user.click(screen.getByRole('button', { name: trigger }));
+        // A separate user interaction commits an empty region BEFORE success;
+        // checking only the final copy would miss React's identical-state bailout.
+        expect(screen.getByRole('status')).toBe(status);
+        expect(status).toBeEmptyDOMElement();
+        await user.type(screen.getByLabelText('Title'), title);
+        await user.click(screen.getByRole('button', { name: 'Create assignment' }));
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        expect(screen.getByRole('status')).toBe(status);
+        expect(status).toHaveTextContent(/^Assignment added\.$/);
+      }
+      expect(createAssignment).toHaveBeenCalledTimes(2);
+      expect(mockedGetCourse).toHaveBeenCalledTimes(3);
+      expect(mockedToast.success).not.toHaveBeenCalled();
+    }
+  );
+
   it('shows the loading state (generic h1 + spinner copy) while the single fetch is in flight', async () => {
     // Never resolves during the test; unmount cleans up.
     mockedGetCourse.mockImplementation(() => new Promise(() => undefined));

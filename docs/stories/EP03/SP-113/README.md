@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-113](./SP-113-quick-assignment-creation.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** SP-113A/B/C implemented 2026-10-24 — ready for combined independent parent review. C's manual browser walk is temporarily substituted by automated checks at the session owner's instruction; see [C exception/evidence](./artifacts/SP-113C/implementation.md). Covers EP03 proposed story **1 (implement quick assignment creation)**. D113-1…6 and the historical planning gate below remain unchanged.
+**Status:** SP-113A/B/C implemented; F113-001/F113-002 corrected 2026-10-24 — awaiting combined independent parent re-review. C's manual browser walk is temporarily substituted by automated checks at the session owner's instruction; see [C exception/evidence](./artifacts/SP-113C/implementation.md). Covers EP03 proposed story **1 (implement quick assignment creation)**. D113-1…6 and the historical planning gate below remain unchanged.
 
 ## Execution queue
 
@@ -13,9 +13,9 @@
 
 **Parent artifacts:** `./artifacts/SP-113/` (parent index written by C)
 
-**Active substory:** None — all authorized implementation finished.
+**Active substory:** None — authorized F113-001/F113-002 corrections implemented.
 
-**Next substory:** None — one combined independent SP-113 review next;
+**Next substory:** None — combined independent SP-113 re-review next;
 [parent index](./artifacts/SP-113/implementation.md) and [checkpoint](./artifacts/SP-113/checkpoint.md).
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
@@ -28,7 +28,7 @@ artifacts: `./artifacts/SP-113/review.md` + `./artifacts/SP-113/walkthrough.md`.
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [A](./SP-113A-assignment-create-api.md) | **Implemented — awaiting parent review** | EP02 complete (satisfied 2026-10-23); no other EP03 work | combined independent parent review | [implementation](./artifacts/SP-113A/implementation.md) · [checkpoint](./artifacts/SP-113A/checkpoint.md) |
-| [B](./SP-113B-quick-create-assignment-ui.md) | **Implemented — awaiting parent review** | SP-113A implemented; SP-112B implemented (satisfied 2026-10-23 — the section it extends) | combined independent parent review | [implementation](./artifacts/SP-113B/implementation.md) · [checkpoint](./artifacts/SP-113B/checkpoint.md) |
+| [B](./SP-113B-quick-create-assignment-ui.md) | **Implemented — awaiting parent review** | SP-113A implemented; SP-112B implemented (satisfied 2026-10-23 — the section it extends) | independently recheck F113-001/F113-002 in combined parent re-review | [implementation](./artifacts/SP-113B/implementation.md) · [checkpoint](./artifacts/SP-113B/checkpoint.md) |
 | [C](./SP-113C-quick-create-integration-signoff.md) | **Implemented — awaiting parent review** | A, B implemented (satisfied 2026-10-24); owner authorized automated substitute for browser walk for now | combined independent parent review | [implementation](./artifacts/SP-113C/implementation.md) · [checkpoint](./artifacts/SP-113C/checkpoint.md) · [parent index](./artifacts/SP-113/implementation.md) |
 
 Sequence: SP-113 (A → B → C), one sequential writer.

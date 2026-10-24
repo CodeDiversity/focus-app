@@ -84,3 +84,66 @@ tests exercise serialized axios requests, not a live server.
   integrated browser sign-off and parent implementation index.
 - Request one independent combined SP-113 review only after C finishes; no
   child review or self-approval. Final report and walkthrough remain outstanding.
+
+## Review corrections — F113-001 / F113-002 (2026-10-24)
+
+This section supersedes the original B-only handoff above. C has finished;
+both requested corrections are implemented, awaiting combined independent
+parent re-review, not independently approved.
+
+### Findings / deviations — final dispositions
+
+| ID | Source / affected paths | Observation | Disposition / owner / closure evidence |
+|---|---|---|---|
+| F113-001 | Shared WCAG AA, B AC5; `AssignmentsSection.tsx` and test | Null-date text used secondary-400 on white (2.564:1). | **Fixed**, implementer: secondary-500 (`#64748b`) on white = **4.758842787868666:1**, above 4.5:1. Updated null-date regression passes, with date/order/refetch assertions retained. |
+| F113-002 | B AC3; `CourseDetailPage.tsx`, `AssignmentsSection.tsx`, page tests | Consecutive successes left identical text in the status region. | **Fixed**, implementer: both CTAs invoke `onAssignmentFormOpen`, clearing the persistent status region in the opening interaction, before a later submission restores exact `Assignment added.` copy. Two parameterized consecutive-create regressions assert the same mounted region is empty before each submission and populated after each success. Refetch/no-success-toast preserved. |
+
+Product/contract deviations: **None**. No outstanding implementation findings
+in this correction scope. The reviewer report remains reviewer-owned and
+unchanged; its open dispositions require independent re-review. No timers,
+same-batch clear/restore, invisible-character workaround, or unrelated palette
+or meeting-announcement changes.
+
+### AC outcomes after corrections
+
+| B AC | Outcome |
+|---|---|
+| 1 — affordances | Pass: both header and empty-state CTA open the form; consecutive tests cover both. |
+| 2 — form/validation | Pass: unchanged implementation; full frontend suite rerun. |
+| 3 — submit/success | Pass: separate clear and success updates now repeat for consecutive creates; exact copy, route context, background refresh and no success toast retained. |
+| 4 — failures | Pass: unchanged form error/retry behavior; full suite rerun. |
+| 5 — nullable dates | Pass: muted AA-compliant null label; dated rows/order/prop updates retained. |
+| 6 — keyboard/responsive | Existing keyboard/static responsive checks pass in full suite. No layout/focus behavior changed; actual browser/mobile/screen-reader execution not claimed. C's temporary D113C-1 exception remains unchanged. |
+
+### Verification / tested state
+
+Cwd: repository root `/Users/michael/Documents/GitHub/focus-app`.
+Tested state: `578d44256b088e19d048c39f6168bbebb4696bc1` plus the four
+correction source/test paths below; later changes are status/closeout docs only.
+
+| Command / check | Result |
+|---|---|
+| `pnpm --filter @studypilot/web test -- src/features/courses/ui/AssignmentsSection.test.tsx src/pages/courses/ui/CourseDetailPage.test.tsx` before production fix | Expected red, exit 1: 3 failed / 23 passed. Null-date class and both second-open status resets fail against old production code. |
+| `pnpm --filter @studypilot/web test` after fix | Exit 0: **44 files / 521 tests passed**, including section/page/form regressions. Existing Vite/PostCSS/Router and unrelated act warnings remain nonfatal. |
+| `pnpm --filter @studypilot/web typecheck` | Exit 0. |
+| `pnpm --filter @studypilot/web lint` | Exit 0. |
+| `pnpm --filter @studypilot/web exec prettier --config ../../packages/config/prettier/.prettierrc.cjs --check src/features/courses/ui/AssignmentsSection.tsx src/features/courses/ui/AssignmentsSection.test.tsx src/pages/courses/ui/CourseDetailPage.tsx src/pages/courses/ui/CourseDetailPage.test.tsx` | Exit 0. |
+| Pure Node WCAG sRGB luminance calculation using source token `#64748b` / white | Exit 0; **4.758842787868666:1**. Deterministic source-color calculation, not browser sampling. |
+
+No API/database/config changes; previous unchanged backend/build evidence
+remains historical, not claimed rerun. Component tests prove the DOM lifecycle,
+not screen-reader speech. No live browser or assistive-technology run performed.
+
+### Correction commit scope / handoff
+
+- Four owned source/test paths: `apps/web/src/features/courses/ui/AssignmentsSection{,.test}.tsx`
+  and `apps/web/src/pages/courses/ui/CourseDetailPage{,.test}.tsx`.
+- Docs: B checkpoint/implementation, B ticket Status/pointers, parent README
+  execution fields, parent checkpoint/index correction pointers.
+- Baseline: `578d44256b088e19d048c39f6168bbebb4696bc1`; correction commit is
+  the commit introducing this section (verified hash returned in handoff).
+- Preserve/exclude unrelated `.gitignore` and untracked reviewer-owned
+  `artifacts/SP-113/review.md`. Coordinator owns report persistence.
+- Next owner: coordinator requests **one combined independent SP-113 re-review**
+  including both corrections. Reviewer owns final verdict and walkthrough;
+  nothing is marked Reviewed by this implementation pass.
