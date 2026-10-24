@@ -1,15 +1,17 @@
 # SP-112 parent implementation index
 
-Updated: 2026-10-23 (SP-112C closeout)
+Updated: 2026-10-23 (post-review fix commit — F-112B-1 fix + DoD 10 ratification record)
 Prepared by: implementer (single sequential writer) as SP-112C (AC 3) — the
 named integration/index owner for the SP-112 review unit.
 Purpose: index of every child's implementation evidence for the one combined
-SP-112 parent review. The review report, when the read-only reviewer returns,
-is saved at `./review.md` (this directory).
+SP-112 parent review. The review report is saved at `./review.md` (this
+directory) — pass 1 (2026-10-23) returned **DOES NOT PASS** with one
+should-fix (F-112B-1); the fix + the DoD 10 ratification record land in this
+post-review fix commit, and the re-review (pass 2) is requested.
 
 ## Status
 
-All three children — A, B, C — are implemented and are hereby handed to the
+All three children — A, B, C — are implemented and were handed to the
 combined SP-112 parent review. No child review has been performed or asserted
 and none replaces this sign-off. SP-112 covers recurring class meetings +
 course detail: the `ClassMeeting` model + four nested meeting routes + the
@@ -19,14 +21,28 @@ verification (C) — epic AC-E02-04 (add recurring meetings) and AC-E02-06
 (course details display assignments + meetings); see the
 [parent README](../../README.md) for the full traceability map.
 
-**DoD 10: the detail-page browser walk was performed — all steps PASS.** The
-manual sign-off (C AC2) is a **human ratification gate** that stays with the
-session owner (SP-110C/SP-111C precedent). Unlike SP-111C (no browser in the
-implementation runtime), this session had a real browser: the 8-step
-detail-page walk was executed at the browser level against the running dev
-stack (headless Google Chrome 155.0.8059.85 via the REA scenario harness) and
-every step passed — no deviations. The user's ratification is requested at
-closeout. Provenance, per-step results and evidence IDs are in
+**Review round 1 (2026-10-23, `./review.md`): DOES NOT PASS** — one open
+should-fix, **F-112B-1** (shared DoD 4: no `<Toaster />` mounted, so the
+feature's "other failure" branches — and all 11 production files / 21
+`toast.*` call sites app-wide — produced no visible message in the built
+app). **Fixed in the post-review fix commit (2026-10-23):** one-line
+`<Toaster />` mount in `apps/web/src/main.tsx` + render test
+(`apps/web/src/main.test.tsx`); web gates re-run green (42 files / 496 tests,
+typecheck, lint, build — exit 0). No blocker findings; no other DoD condition
+fails; no A/B product defects beyond F-112B-1. The **re-review (pass 2)** is
+requested.
+
+**DoD 10: the detail-page browser walk was performed — all steps PASS — and
+the human ratification is now recorded.** The manual sign-off (C AC2) is a
+**human ratification gate** that stays with the session owner (SP-110C/SP-111C
+precedent). Unlike SP-111C (no browser in the implementation runtime), this
+session had a real browser: the 8-step detail-page walk was executed at the
+browser level against the running dev stack (headless Google Chrome
+155.0.8059.85 via the REA scenario harness) and every step passed — no
+deviations. **The session owner ratified the recorded walk 2026-10-23**
+(verbatim: "yes, do what you think is best. approved." — ratifying: all 8
+steps PASS, no product deviations, 15-record evidence bundle). Provenance,
+per-step results and evidence IDs are in
 [`SP-112C/implementation.md`](../SP-112C/implementation.md) → "Manual browser
 sign-off (DoD 10, AC 2)". The automated proof (C e2e suite + the dev-stack
 HTTP pre-flight through the web proxy) and the web component tests (B) stand
@@ -71,11 +87,13 @@ this index).
   `CoursesPage.test.tsx` (wrapper), `test/user.ts` (act-wrapped
   `selectOptions`/`clear`), `App.tsx` (route). At its commit: web **41/41
   files, 495/495 tests**; typecheck + lint + build clean. Findings
-  F-112B-1…3 — F-112B-1 (**open, pre-existing**: no `<Toaster />` mounted
-  anywhere while 9 files call `toast.*` — flagged for the combined parent
-  review); F-112B-2/3 test-only (router wrappers; act-warning wrappers for
-  this child's files — the 16 legacy raw-`userEvent` files remain a
-  repo-wide cleanup).
+  F-112B-1…3 — F-112B-1 (**fixed** in the post-review fix commit,
+  2026-10-23 — pre-existing: no `<Toaster />` mounted anywhere while
+  **11 production files carry 21 `toast.*` call sites**; review pass 1
+  confirmed it as the unit's single should-fix (DoD 4) — `<Toaster />`
+  mounted in `main.tsx` + render test, web gates re-run green); F-112B-2/3
+  test-only (router wrappers; act-warning wrappers for this child's files —
+  the 16 legacy raw-`userEvent` files remain a repo-wide cleanup).
 - **C** (integration, this closeout commit):
   `apps/api/src/modules/courses/courses-meetings-e2e.spec.ts` (**new** — 19
   tests on real Postgres via the `test-http` harness; self-skips without
@@ -104,7 +122,8 @@ Baseline: `43b0a4d` (the commit before the first SP-112 change).
 | `303237e` | docs(SP-112B): refine the course detail UI ticket — D112B-1…16, implementation-ready (refiner pass, docs-only) |
 | `650ab39` | docs(SP-112): reconcile queue — SP-112B Ready (docs-only) |
 | `8bbafb5` | SP-112B — 22 files: 10 modified + 12 new (all `apps/web` — detail page, sections, dialogs, label helper, `courseApi`, types, `CourseList`, `App.tsx`, `test/user.ts` + tests), README execution fields, `artifacts/SP-112B/` |
-| (C closeout) | SP-112C — `courses-meetings-e2e.spec.ts` (new, 19 tests), README execution fields, SP-112C status line, `artifacts/SP-112C/` (checkpoint + implementation record), `artifacts/SP-112/implementation.md` (this index) |
+| `469a829` | SP-112C — `courses-meetings-e2e.spec.ts` (new, 19 tests), README execution fields, SP-112C status line, `artifacts/SP-112C/` (checkpoint + implementation record), `artifacts/SP-112/implementation.md` (this index) |
+| (post-review fix commit) | `fix(web): mount <Toaster /> in app shell — closes F-112B-1 (SP-112 DoD 4); record DoD 10 ratification (SP-112C)` — `apps/web/src/main.tsx` (one-line `<Toaster />` mount) + `apps/web/src/main.test.tsx` (new render test) + the F-112B-1/DoD-10 records in the SP-112B/SP-112C records, the SP-112C ticket status line, the SP-112B/C checkpoints, and this index |
 
 Code scope summary across the unit (baseline `43b0a4d`): `apps/api` —
 `courses` module only (2 new DTOs, 1 new service, service + controller
@@ -116,9 +135,12 @@ migration + the `ownership.ts` comment. API suite totals with a database:
 `shared/types/academic.ts`, `features/courses/ui/` (5 new components + 5 new
 test files), `pages/courses/ui/CourseDetailPage` (new), `CourseList`
 (navigation), `App.tsx`, `test/user.ts`. Web suite totals: 425 (after
-SP-111C) → **495** (B: +70; C makes no web change). No schema change beyond
-the new `class_meetings` table; no migration, CI, `package.json` or secret
-changes anywhere in the unit.
+SP-111C) → **495** (B: +70; C makes no web change) → **496** (post-review
+fix commit: `main.tsx` gains the one-line `<Toaster />` mount + 1 new test
+file / 1 test — `main.test.tsx`). No schema change beyond the new
+`class_meetings` table; no migration, CI, `package.json` or secret changes
+anywhere in the unit (`react-hot-toast` was already a web dependency — the
+mount adds none).
 
 ## AC / DoD coverage
 
@@ -132,12 +154,15 @@ Per the [README traceability tables](../../README.md#source-requirements-and-tes
 DoD map (per the README): 1 A/B/C; 2 A (DTO + service re-checks) + B (form);
 3 A (every route principal-scoped, uniform 404) + C (cross-student +
 dual-ownership proofs); 4 A (field-level 400, specific 409, uniform 404) + B
-(display); 5 B (page + section states) + C (integrated); 6 B (sections,
+(display — the toast channel was a no-op in the built app until the
+`<Toaster />` mount in the post-review fix commit, F-112B-1); 5 B (page +
+section states) + C (integrated); 6 B (sections,
 forms, dialogs); 7 B (mobile + desktop) + C (S8 mobile leg); 8 A (unit +
 data-scoping) + B (component) + C (e2e); 9 A (contract in the README;
 `class_meetings` migration); 10 C (manual browser sign-off — **performed,
-all steps PASS; human ratification requested at closeout**) + the combined
-parent review.
+all steps PASS; human ratification recorded 2026-10-23** — session owner,
+verbatim: "yes, do what you think is best. approved.") + the combined
+parent review (pass 1 DOES NOT PASS on F-112B-1 — fixed; pass 2 requested).
 
 ## Security invariants and owning proofs
 
@@ -150,18 +175,23 @@ Per the [README invariants table](../../README.md#security-invariants-and-counte
 | Meeting times are sane recurring times | A (validator + service re-checks: strict `HH:mm`, hour 00–23 / minute 00–59, `end > start` same day — 11-case unit matrix + the same over real HTTP); B (the form mirrors the rules client-side); C e2e (all seven invalid shapes → 400 field-level, nothing written) + pre-flight + the walk (S3 client-side invalid — no API call; S4 409) |
 | Duplicate weekly slots are rejected | A (unit + data-scoping: `@@unique([courseId, dayOfWeek, startTime])` → 409 `A meeting already exists at this time.`); C e2e + pre-flight + the walk (S4: alert, single row) |
 
-## DoD-10 item (AC 2 manual sign-off) — PERFORMED, all steps PASS
+## DoD-10 item (AC 2 manual sign-off) — PERFORMED, all steps PASS, ratification RECORDED
 
-- **Status: performed — all 8 steps PASS, no deviations.** The detail-page
+- **Status: performed — all 8 steps PASS, no deviations — human ratification
+  recorded 2026-10-23.** The detail-page
   walk (open the course from the list → header fields → add meeting
   (valid + invalid) → edit → delete → assignments empty state → archived
   banner → keyboard-only pass → mobile viewport) was executed at the browser
   level on 2026-10-23 against the running dev stack (headless Google Chrome
   155.0.8059.85 via the REA `capture_browser_scenario` harness; 15 evidence
   records retained in the REA session store). The **human ratification gate
-  stays with the session owner** (SP-110C/SP-111C precedent) — the user's
-  ratification is requested at closeout; DoD 10 closes via that recorded
-  ratification **plus** the combined SP-112 parent review.
+  stays with the session owner** (SP-110C/SP-111C precedent) — **the session
+  owner ratified the recorded walk 2026-10-23** (verbatim: "yes, do what you
+  think is best. approved." — ratifying: all 8 steps PASS, no product
+  deviations, 15-record evidence bundle); DoD 10 closes via that recorded
+  ratification **plus** the combined SP-112 parent review (pass 1 returned
+  DOES NOT PASS on F-112B-1 — fixed in the post-review fix commit; the
+  re-review is requested).
 - **Standing on its own regardless:** the dev-stack bring-up + the full HTTP
   pre-flight through the web proxy (register/login, onboarding, semester +
   CS101 course, two meetings, list, 14-key detail + meeting order, seven
@@ -193,11 +223,16 @@ Per the [README invariants table](../../README.md#security-invariants-and-counte
   ordering note is a no-op — `Assignment.dueDate` is NOT NULL in the
   committed migrations; the implemented ordering is exactly what the column
   allows. Revisit in EP03 if `dueDate` becomes nullable.
-- **F-112B-1 (B, OPEN — pre-existing, flagged for this review):** no
-  `<Toaster />` is mounted anywhere in `apps/web` while 9 files call
-  `toast.*` — toasts (incl. B's "other failure" branch) are no-ops in the
-  built app. Pre-dates SP-112B; a one-line mount in the app shell would fix
-  all 9 callers. Mounting app-shell chrome is a review decision.
+- **F-112B-1 (B, FIXED in the post-review fix commit, 2026-10-23 — was
+  OPEN/pre-existing when this index was written):** no `<Toaster />` was
+  mounted anywhere in `apps/web` while **11 production files carry 21
+  `toast.*` call sites** — toasts (incl. B's "other failure" branch) were
+  no-ops in the built app (shared DoD 4 unmet — the review's single
+  should-fix). Pre-dates SP-112B; the fix mounts `<Toaster />` once in the
+  app shell (`apps/web/src/main.tsx`) + adds a render test
+  (`apps/web/src/main.test.tsx`) that proves a fired toast appears; web gates
+  re-run green (42 files / 496 tests; typecheck + lint + build exit 0).
+  All 21 call sites across the 11 files now produce visible messages.
 - **F-112B-2/3 (B, fixed — test-only):** router wrappers for the
   `Link`/`useNavigate`-using tests; act-wrapped `selectOptions`/`clear`
   added to `test/user.ts` for this child's files (the 16 legacy
@@ -211,8 +246,10 @@ Per the [README invariants table](../../README.md#security-invariants-and-counte
   default is Monday — and the app behaved correctly). All fixed/resolved in
   session; every e2e case, pre-flight step and walk step passes against the
   A+B implementation.
-- **Product defects in A–B:** none found by this child. The only open item
-  in the unit is the pre-existing F-112B-1 (`<Toaster />` mount).
+- **Product defects in A–B:** none found by this child, and review pass 1
+  confirmed none beyond F-112B-1 (the pre-existing `<Toaster />` mount) —
+  which is **fixed** in the post-review fix commit (2026-10-23). No open
+  items remain in the unit; the re-review (pass 2) is requested.
 
 ## Reviewer inputs
 

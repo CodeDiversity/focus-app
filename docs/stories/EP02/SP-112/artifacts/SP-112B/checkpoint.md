@@ -1,6 +1,6 @@
 # SP-112B checkpoint
 
-Updated: 2026-10-23 (implementer session, local time) — **complete**
+Updated: 2026-10-23 (implementer session, local time) — **complete; review fix F-112B-1 landed in the post-review fix commit**
 Execution state: parent queue row B — `docs/stories/EP02/SP-112/README.md` (Implemented — awaiting parent review)
 Story: `docs/stories/EP02/SP-112/SP-112B-course-detail-ui.md`
 Review unit: SP-112 (`./artifacts/SP-112/` parent index written by C)
@@ -30,7 +30,8 @@ Role / scope: implementer; frontend only — course detail page + meetings/assig
 - [x] `App.tsx` — `/courses/:id` route inside `ProtectedRoute`
 - [x] Full verification: typecheck + test (41 files / 495 tests) + lint (`--max-warnings 0`) + build — all exit 0
 - [x] Closeout: `implementation.md` written, queue reconciled (row B → Implemented — awaiting parent review; row C → Ready), ticket status line, scoped commit
-- Current step: **complete** — the child is implemented and committed; the next action is SP-112C (implement), then the combined SP-112 parent review.
+- [x] Review fix (F-112B-1, post-review fix commit 2026-10-23): `<Toaster />` mounted in `apps/web/src/main.tsx` + render test `apps/web/src/main.test.tsx`; web gates re-run green (42 files / 496 tests; typecheck/lint/build exit 0)
+- Current step: **complete** — the child is implemented, committed, and its review pass-1 should-fix (F-112B-1) is fixed; the next action is the combined SP-112 parent review **re-review (pass 2)**.
 
 ## Decisions and dependencies
 - D112-1…6 (parent README) + D112B-1…16 (ticket) govern; shared contract fixed in parent README.
@@ -39,7 +40,7 @@ Role / scope: implementer; frontend only — course detail page + meetings/assig
 - Contract verified against SP-112A code: `toMeetingResponse` = 6 keys (no `userId`/`courseId`); `get()` = 12 + `meetings` + `assignments` (10-key assignment, no `courseId`).
 
 ## Findings
-- **F-112B-1** (pre-existing, out of scope — **open, flagged for the combined parent review**): no `<Toaster />` is mounted anywhere in `apps/web` (checked `main.tsx`, `AppProviders.tsx`, full `src` grep) while 9 files call `toast.*`. Pre-dates SP-112B; the code follows the app convention regardless. A one-line `<Toaster />` mount in the app shell would fix all 9 callers — a decision for the review, not this child.
+- **F-112B-1** (pre-existing — **FIXED in the post-review fix commit, 2026-10-23**): no `<Toaster />` was mounted anywhere in `apps/web` (checked `main.tsx`, `AppProviders.tsx`, full `src` grep) while **11 production files carry 21 `toast.*` call sites** (the "9 files" here was a miscount — the reviewer's pass-1 count stands). Pre-dated SP-112B; the code followed the app convention regardless. Review pass 1 confirmed it as the unit's single should-fix (DoD 4); the fix mounts `<Toaster />` once in `apps/web/src/main.tsx` + adds the render test `apps/web/src/main.test.tsx` (all 21 call sites now visible). Disposition + gate evidence: `implementation.md` → "Findings / deviations" + "Review fix (F-112B-1)".
 - **F-112B-2** (test-only consequence of D112B-6, **fixed**): `CourseList` gains a `Link` + `useNavigate`, so `CourseList.test.tsx` + `CoursesPage.test.tsx` were wrapped in `Providers` (`MemoryRouter` + `initialEntries`) — the `VerifyEmailPage.test.tsx` pattern. No product impact.
 - **F-112B-3** (test harness, **fixed for this child**): RTL v14.3.1 sets `IS_REACT_ACT_ENVIRONMENT=true` per file; user-event v14.6.7 never act-wraps, so raw `userEvent.setup()` clicks warn. All six new SP-112B test files use the act-wrapped `setupUser()`; `test/user.ts` gained `selectOptions` + `clear` wrappers; `DeleteMeetingDialog.test.tsx` converted (10 warnings removed). The five pre-existing raw `userEvent.setup()` calls in `CourseList.test.tsx` (4) / `CoursesPage.test.tsx` (1) left as-is (minimal diff; the pattern spans 16 legacy files — flagged with F-112B-1).
 
@@ -49,4 +50,7 @@ Role / scope: implementer; frontend only — course detail page + meetings/assig
 - Full details (AC-by-AC, per-file test counts, command table) in `implementation.md`.
 
 ## Resume next
-**Nothing** — the child is complete. Next in the SP-112 queue: SP-112C (implement — e2e spec + DoD 10 sign-off + parent index), then the combined SP-112 parent review.
+**Nothing** — the child is complete, and review pass 1's single should-fix
+(F-112B-1) is fixed in the post-review fix commit (2026-10-23). Next in the
+SP-112 unit: the combined SP-112 parent review **re-review (pass 2)**
+(reviewer-owned; report `../SP-112/review.md` + `walkthrough.md`).

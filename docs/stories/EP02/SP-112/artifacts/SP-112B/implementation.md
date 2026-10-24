@@ -5,7 +5,7 @@
 **Layer:** Frontend (React + Vite + Tailwind, `apps/web`)
 **Baseline:** `650ab39` (docs(SP-112): reconcile queue — SP-112B Ready) — the commit before the first included change
 **Completed:** 2026-10-23, implementer, single sequential writer
-**Status:** Implementation complete — awaiting the combined SP-112 parent review.
+**Status:** Implementation complete — awaiting the combined SP-112 parent review. Review pass 1 (2026-10-23, `../SP-112/review.md`) returned **DOES NOT PASS** with one should-fix — **F-112B-1** (the missing `<Toaster />` mount, DoD 4); **fixed** in the post-review fix commit (2026-10-23, recorded in "Review fix (F-112B-1)" below) — awaiting the re-review (pass 2).
 
 ## Summary
 
@@ -164,7 +164,7 @@ three new navigation tests use `setupUser()`.
 
 | ID | Description | Disposition |
 |---|---|---|
-| F-112B-1 | **Pre-existing, out of scope:** no `<Toaster />` is mounted anywhere in `apps/web` (checked `main.tsx`, `AppProviders.tsx`, full `src` grep) while 9 files call `toast.*` — so toasts (including the AC 3 "other failure" branch) are currently no-ops in the built app. Pre-dates SP-112B; the ticket's "toast the sanitized message" follows the app convention regardless, so the code matches the ticket. | **Open — flagged for the combined parent review** (a one-line `<Toaster />` mount in the app shell would fix all 9 callers at once). Not fixed here: outside this child's scope, and mounting app-shell chrome is a decision for the review. |
+| F-112B-1 | **Pre-existing:** no `<Toaster />` is mounted anywhere in `apps/web` (checked `main.tsx`, `AppProviders.tsx`, full `src` grep) while **11 production files carry 21 `toast.*` call sites** (the "9 files" in this child's original record was a miscount — the reviewer's pass-1 count stands) — so toasts (including the AC 3 "other failure" branch) were no-ops in the built app. Pre-dates SP-112B; the ticket's "toast the sanitized message" follows the app convention regardless, so the code matched the ticket. | **FIXED** in the post-review fix commit (2026-10-23, after review pass 1 confirmed it as the single should-fix — DoD 4): a one-line `<Toaster />` mount in the app shell (`apps/web/src/main.tsx`, inside `AppProviders`, beside `<App />`) + a render test (`apps/web/src/main.test.tsx` — mounts `<Toaster />` alongside a trigger that fires `toast.error(...)`, asserts the message appears in the document; stubs jsdom's missing `window.matchMedia`, which the Toaster queries for `prefers-reduced-motion`). All 11 files / 21 call sites now produce visible messages. Gate results in "Review fix (F-112B-1)" below. |
 | F-112B-2 | **Test-only consequence of D112B-6:** `CourseList` now uses `Link`/`useNavigate`, so its standalone test render (and `CoursesPage`'s router-less render) would crash outside a router. Both test files were wrapped in the `Providers` helper (`MemoryRouter` + `initialEntries`) — the `VerifyEmailPage.test.tsx` pattern. | **Fixed (test-only):** `CourseList.test.tsx` 13/13 and `CoursesPage.test.tsx` 14/14 green. No product impact. |
 | F-112B-3 | **Act-warning root cause (test harness):** RTL v14.3.1 sets `IS_REACT_ACT_ENVIRONMENT=true` for the whole test file, and user-event v14.6.7 does not act-wrap its actions — raw `userEvent.setup()` clicks produce "not wrapped in act" warnings. The repo convention is the `setupUser()` helper (act-wrapped in `src/test/user.ts`), which lacked `selectOptions`/`clear` wrappers needed by the dialog tests. | **Fixed for this child:** `test/user.ts` gained the two act-wrapped wrappers; all six new SP-112B test files use `setupUser()` end-to-end; `DeleteMeetingDialog.test.tsx` was converted (10 warnings removed). The five pre-existing raw `userEvent.setup()` calls in `CourseList.test.tsx`/`CoursesPage.test.tsx` were left as-is (minimal diff; the raw-userEvent pattern spans 16 legacy files repo-wide — a separate cleanup, flagged with F-112B-1 for the parent review). |
 
@@ -185,15 +185,52 @@ closeout docs (this record, the refreshed checkpoint, the SP-112 README
 execution fields, the SP-112B ticket status line). The working tree was clean
 of unrelated edits at closeout (verified via `git status`).
 
+## Review fix (F-112B-1) — post-review fix commit, 2026-10-23
+
+Review pass 1 (`../SP-112/review.md`) returned **DOES NOT PASS** with one
+should-fix: **F-112B-1** — shared DoD 4 ("API errors produce actionable
+messages") unmet because no `<Toaster />` was mounted, so every `toast.*`
+call was a no-op in the built app (11 production files / 21 call sites
+app-wide; in this child: `MeetingForm.tsx:195` the 400-unmapped fallback,
+`MeetingForm.tsx:216` the network/5xx save-failure branch, and
+`CourseDetailPage.tsx:95` the failed background re-fetch). The session owner
+directed the fix close inside the SP-112 unit (not a separate story).
+
+**Change (the only production change in the fix commit):** `apps/web/src/
+main.tsx` — mount `<Toaster />` from `react-hot-toast` exactly once in the
+app shell (inside `AppProviders`, beside `<App />`). No other production code
+change; no API-side change.
+
+**Automated proof:** `apps/web/src/main.test.tsx` (**new**) — mounts
+`<Toaster />` alongside a trigger that fires `toast.error(...)`, asserts the
+message appears in the document (jsdom's missing `window.matchMedia` is
+stubbed for the file — the Toaster queries `prefers-reduced-motion` when it
+renders a toast; real browsers always have it, so no production stub).
+
+**Gates (re-run on the fix tree, 2026-10-23, cwd: repo root):**
+
+| Check | Command | Result |
+|---|---|---|
+| Full web suite | `pnpm --filter @studypilot/web test` | exit 0 — **42/42 files, 496/496 tests passed** (pre-change baseline: 41 files / 495 tests; +1 file / +1 test = `main.test.tsx`) |
+| Typecheck | `pnpm --filter @studypilot/web typecheck` | exit 0 |
+| Lint | `pnpm --filter @studypilot/web lint` | exit 0 (`--max-warnings 0`) |
+| Build | `pnpm --filter @studypilot/web build` | exit 0 — 1581 modules, `dist/assets/index-Cj6bNDwI.js` 514.36 kB (the >500 kB chunk-size warning is pre-existing) |
+
+**Closure of F-112B-1:** the affected branches now produce visible messages in
+the built app — the DoD 4 display leg is satisfied; the DoD-10 walk evidence
+covers the feature flows the one-line mount does not change (per the review's
+closure condition). The fix commit also records the DoD 10 human ratification
+(SP-112C — see `../SP-112C/implementation.md`).
+
 ## Remaining work (outside this child)
 
 - **SP-112C** (integration sign-off) — the named integration/index owner:
   the e2e spec (it consumes `listMeetings`, provided by this child), the DoD
   10 manual browser sign-off, and the parent index at
-  `../SP-112/implementation.md`.
-- **F-112B-1** — the missing `<Toaster />` mount (pre-existing; all `toast.*`
-  callers no-op until it lands) — flagged for the combined parent review.
-- **Combined SP-112 parent review** — one review after every child is
-  implemented (`../SP-112/review.md` + `walkthrough.md`); child completion
-  unblocks dependent work, but only the passing combined review establishes
-  sign-off.
+  `../SP-112/implementation.md`. *(Completed 2026-10-23 — `469a829`.)*
+- **F-112B-1** — **resolved** by the post-review fix commit above (2026-10-23).
+- **Combined SP-112 parent review** — pass 1 (2026-10-23) returned DOES NOT
+  PASS with F-112B-1 as the single should-fix; the fix + the DoD 10
+  ratification land in the fix commit; the **re-review (pass 2)** is
+  requested (`../SP-112/review.md` + `walkthrough.md`); only the passing
+  combined review establishes sign-off.

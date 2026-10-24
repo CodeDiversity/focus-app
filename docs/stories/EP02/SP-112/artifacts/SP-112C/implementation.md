@@ -5,7 +5,7 @@
 **Layer:** Integration (verification child — SP-110C/SP-111C precedent)
 **Baseline:** `8bbafb5` (SP-112B: course detail page — the commit before the first included change)
 **Completed:** 2026-10-23, implementer, single sequential writer.
-**Status:** Implementation complete — awaiting the combined SP-112 parent review. DoD 10 manual browser walk **performed — all 8 steps PASS, no deviations** (real headless Chrome 155.0.8059.85, 2026-10-23); the **human ratification gate stays with the session owner** (SP-110C/SP-111C precedent) and is requested at closeout — pending.
+**Status:** Implementation complete — awaiting the combined SP-112 parent review. DoD 10 manual browser walk **performed — all 8 steps PASS, no deviations** (real headless Chrome 155.0.8059.85, 2026-10-23); **human ratification recorded 2026-10-23** — ratified by the session owner (verbatim: "yes, do what you think is best. approved.") of the recorded walk (all 8 steps PASS, no product deviations, 15-record evidence bundle). Review pass 1 (2026-10-23) returned DOES NOT PASS with one should-fix (F-112B-1, B-owned) — fixed in the post-review fix commit; re-review (pass 2) requested.
 
 ## Summary
 
@@ -50,7 +50,7 @@ each asserts on real rows via the harness `prisma` handle.
 | AC | Status | Evidence |
 |---|---|---|
 | AC 1 e2e spec (lifecycle, validation, cross-student, dual-ownership, projections, 401) | ✅ | the spec above — **19/19 green** on the disposable migrated Postgres (the table in "Verification actually executed") |
-| AC 2 manual browser sign-off (DoD 10) | ✅ **performed — all 8 steps PASS** (human ratification pending — requested at closeout) | the detail-page walk in a real browser against the running dev stack — the 8 steps, per-step results, provenance and evidence IDs below; no deviations. The **human ratification gate stays with the session owner** (SP-110C/SP-111C precedent): the user's approval of the recorded result is requested at closeout and is the final DoD-10 input alongside the combined parent review. |
+| AC 2 manual browser sign-off (DoD 10) | ✅ **performed — all 8 steps PASS** (human ratification **recorded 2026-10-23** — session owner, verbatim: "yes, do what you think is best. approved.") | the detail-page walk in a real browser against the running dev stack — the 8 steps, per-step results, provenance and evidence IDs below; no deviations. The **human ratification gate stays with the session owner** (SP-110C/SP-111C precedent): the user **ratified the recorded result 2026-10-23** (all 8 steps PASS, no product deviations, 15-record evidence bundle) — that recorded ratification is the final DoD-10 input alongside the combined parent review (pass 1 returned DOES NOT PASS with F-112B-1 as the single should-fix; fixed in the post-review fix commit; re-review requested). |
 | AC 3 parent index | ✅ | `../SP-112/implementation.md` (this commit) |
 
 ## Verification actually executed
@@ -116,9 +116,13 @@ available in this session, unlike SP-111C); when — 2026-10-23; browser —
 per-step observations — the table below (each step's capture is retained in
 the REA session evidence store — 15 records; DOM/screenshot sha256 prefixes
 recorded). The **human ratification gate stays with the session owner**
-(SP-110C/SP-111C precedent): the user's approval of this recorded result is
-requested at closeout; DoD 10 closes via that recorded ratification **plus**
-the combined SP-112 parent review (pending).
+(SP-110C/SP-111C precedent): **ratified 2026-10-23** — the session owner
+approved this recorded result (verbatim: "yes, do what you think is best.
+approved."), ratifying the walk as performed (all 8 steps PASS, no product
+deviations, 15-record evidence bundle). DoD 10 closes via that recorded
+ratification **plus** the combined SP-112 parent review (pass 1 returned
+DOES NOT PASS with F-112B-1 as the single should-fix — fixed in the
+post-review fix commit; the re-review is requested).
 
 | Step | Walk (per the ticket) | Result | Evidence (id — DOM sha256 prefix) |
 |---|---|---|---|
@@ -150,9 +154,12 @@ is active again after the S6 archive/restore.
 
 **Product defects in A–B: none found** — every e2e case, pre-flight step and
 walk step passes against the A+B implementation. The only open item in the
-SP-112 unit is the pre-existing F-112B-1 (no `<Toaster />` mounted — 9
-`toast.*` callers no-op in the built app; flagged for the combined parent
-review, B-owned, pre-dates this unit).
+SP-112 unit at closeout was the pre-existing F-112B-1 (no `<Toaster />`
+mounted — **11 production files / 21 `toast.*` call sites** no-op in the
+built app; B-owned, pre-dates this unit) — **resolved** in the post-review
+fix commit (2026-10-23): `<Toaster />` mounted in `apps/web/src/main.tsx` +
+render test; review pass 1 confirmed it as the unit's single should-fix
+(DoD 4) and it is now closed.
 
 No Jira mutation occurred (child key remains `Pending creation`).
 
@@ -166,18 +173,24 @@ AC 3), `docs/stories/EP02/SP-112/README.md` (execution fields only — queue
 row C, Active/Next), `docs/stories/EP02/SP-112/SP-112C-meetings-integration-signoff.md`
 (status line only). The DoD-10 ratification records (this record's
 Status/AC2/sign-off sections, the parent index DoD-10 section, the queue
-"Next substory" field) land in a follow-up scoped commit once the user's
-ratification lands, recorded in the queue row and the returned handoff (not
-amended into this commit).
+"Next substory" field) were to land in a follow-up scoped commit once the
+user's ratification lands, recorded in the queue row and the returned handoff
+(not amended into this commit) — **landed 2026-10-23** in the post-review
+fix commit (this record's Status/AC2/sign-off sections + the parent index
+DoD-10 section above; the parent README queue fields remain the reviewer's
+passing-sync territory and land with the passing re-review).
 
 ## Remaining work (outside this child)
 
-- **DoD 10 human ratification** (user gate) — requested at closeout; the
-  walk result is recorded above.
-- **F-112B-1** (pre-existing, B-owned) — the missing `<Toaster />` mount;
-  flagged for the combined parent review.
+- **DoD 10 human ratification** (user gate) — **recorded 2026-10-23**
+  (session owner, verbatim: "yes, do what you think is best. approved.");
+  the walk result is recorded above.
+- **F-112B-1** (pre-existing, B-owned) — the missing `<Toaster />` mount —
+  **resolved** in the post-review fix commit (2026-10-23) after review pass
+  1 (DOES NOT PASS, single should-fix) confirmed it.
 - **Combined SP-112 parent review** (one review after all children; report at
-  `../SP-112/review.md` + `walkthrough.md`) — the implementer has prepared the
-  parent index; the coordinator requests the independent review. DoD 10
-  closes via the recorded ratification **plus** this review; no other DoD
-  input is open.
+  `../SP-112/review.md` + `walkthrough.md`) — pass 1 (2026-10-23) returned
+  DOES NOT PASS with F-112B-1 as the single should-fix; the fix + the DoD 10
+  ratification land in the post-review fix commit; the **re-review (pass 2)**
+  is requested. DoD 10 closes via the recorded ratification **plus** this
+  review; no other DoD input is open.

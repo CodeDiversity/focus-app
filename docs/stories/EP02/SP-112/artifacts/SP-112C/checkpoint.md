@@ -1,7 +1,7 @@
 # SP-112C checkpoint
 
-Updated: 2026-10-23 (implementer session, local time) — **in progress** (all verification done; records + commit remaining)
-Execution state: parent queue row C — `docs/stories/EP02/SP-112/README.md` (In progress)
+Updated: 2026-10-23 (implementer session, local time) — **complete** (closeout committed in `469a829`; DoD 10 human ratification recorded 2026-10-23; review pass 1's should-fix F-112B-1 fixed in the post-review fix commit)
+Execution state: parent queue row C — `docs/stories/EP02/SP-112/README.md` (Implemented — awaiting parent review)
 Story: `docs/stories/EP02/SP-112/SP-112C-meetings-integration-signoff.md`
 Review unit: SP-112 (`./artifacts/SP-112/` parent index written by this child)
 Role / scope: implementer; integration verification only — the e2e spec (new), the DoD 10 manual browser sign-off, the parent implementation index, and the full-suite runs. Excluded: A/B defect fixes (route back to their owner as findings), the combined parent review (reviewer-owned), EP03/EP04.
@@ -20,10 +20,11 @@ Role / scope: implementer; integration verification only — the e2e spec (new),
 - [x] Full web suite — 41 files / 495 tests, all pass
 - [x] Dev stack + HTTP pre-flight through the web proxy (23/25 — the 2 "failures" are the script expecting 201 on login; the API returns 200 by design; effectively all green) — seeded walk-a/walk-b, completed A's onboarding, created CS101 + 2 meetings
 - [x] DoD 10 browser walk (real headless Chrome 155.0.8059.85 via the REA `capture_browser_scenario` harness) — **all steps PASS**; S7b assertion mismatch resolved (DOM re-verification + DB read); mobile viewport leg added (S8)
-- [ ] Parent index `./artifacts/SP-112/implementation.md` (AC 3)
-- [ ] Closeout: `implementation.md`, queue reconciliation, ticket status line, scoped commit
-- [ ] DoD 10 human ratification (user gate — requested at closeout)
-- Current step: write the parent index + closeout record, reconcile the queue, scoped commit; then request ratification + the independent parent review
+- [x] Parent index `./artifacts/SP-112/implementation.md` (AC 3)
+- [x] Closeout: `implementation.md`, queue reconciliation, ticket status line, scoped commit (`469a829`)
+- [x] DoD 10 human ratification (user gate) — **recorded 2026-10-23** (session owner, verbatim: "yes, do what you think is best. approved.")
+- [x] Review pass 1 (2026-10-23) returned DOES NOT PASS with one should-fix (F-112B-1, B-owned) — fixed in the post-review fix commit; re-review (pass 2) requested
+- Current step: **complete** — the child is implemented, committed, ratified, and the review's single should-fix is fixed; the next action is the combined SP-112 parent review **re-review (pass 2)** (reviewer-owned)
 
 ## Decisions and dependencies
 - A + B implemented and committed (A `080f2e9`, B `8bbafb5`); the shared contract is fixed in the parent README — this child verifies it end to end and does not change it.
@@ -59,8 +60,9 @@ Environment: dev stack — API + web on `:3000` (vite proxy `/api/*` → API), t
 (lands in `implementation.md` at completion — commands + results + evidence IDs)
 
 ## Resume next
-1. Parent index `./artifacts/SP-112/implementation.md` (AC 3)
-2. Closeout `./artifacts/SP-112C/implementation.md` (AC outcomes, findings, verification, DoD 10 record)
-3. Reconcile parent README queue (Active → None; C → Implemented — awaiting parent review) + ticket status line
-4. Scoped commit (spec + docs)
-5. Request DoD 10 human ratification (user gate) + the independent SP-112 parent review
+**Nothing** — the child is complete (closeout committed in `469a829`), the
+DoD 10 human ratification is recorded (2026-10-23), and review pass 1's
+single should-fix (F-112B-1) is fixed in the post-review fix commit. Next in
+the SP-112 unit: the combined SP-112 parent review **re-review (pass 2)**
+(reviewer-owned; report `../SP-112/review.md` + `walkthrough.md`; the
+passing pass performs the queue/docs sync).
