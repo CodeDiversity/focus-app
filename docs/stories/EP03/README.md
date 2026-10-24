@@ -20,7 +20,7 @@
 | Story | Epic proposed story | Breakdown | Jira |
 |---|---|---|---|
 | [SP-113](./SP-113/README.md) | 1. Implement quick assignment creation | [3 children](./SP-113/README.md) (A backend, B frontend, C integration) — planned 2026-10-24, **Plan Ready** | Pending creation |
-| — | 2. Implement assignment editing and deletion | Not yet broken down (planned later) | — |
+| [SP-114](./SP-114/README.md) | 2. Implement assignment editing and deletion | [3 children](./SP-114/README.md) (D backend, E frontend, F integration) — planned 2026-10-24, **Plan Ready** | Pending creation |
 | — | 3. Add assignment types, deadlines, and priority | Not yet broken down (planned later) | — |
 | — | 4. Implement assignment subtasks | Not yet broken down (planned later) | — |
 | — | 5. Implement completion and status tracking | Not yet broken down (planned later) | — |
@@ -52,6 +52,12 @@ per child in the [SP-113](./SP-113/README.md) breakdown.
 The next EP03 delivery home is [SP-113](./SP-113/README.md#execution-queue)
 (quick assignment creation): next actionable **SP-113A** (implement) — no
 blockers (EP02 complete 2026-10-23). After SP-113A, **SP-113B needs a
+`ui-refiner` pass** before implementation (UI/UX gaps recorded in its ticket,
+2026-10-24).
+
+The next EP03 parent after SP-113 is [SP-114](./SP-114/README.md#execution-queue)
+(assignment editing and deletion): next actionable **SP-114D** (implement) — no
+blockers (SP-113A complete 2026-10-24). After SP-114D, **SP-114E needs a
 `ui-refiner` pass** before implementation (UI/UX gaps recorded in its ticket,
 2026-10-24).
 
