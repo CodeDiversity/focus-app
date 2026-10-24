@@ -44,7 +44,7 @@ type AssignmentRow = {
   id: string;
   title: string;
   description: string | null;
-  dueDate: Date;
+  dueDate: Date | null;
   estimatedHours: number | null;
   actualHours: number | null;
   status: string;
@@ -64,7 +64,7 @@ function toAssignmentResponse(assignment: AssignmentRow) {
     id: assignment.id,
     title: assignment.title,
     description: assignment.description,
-    dueDate: assignment.dueDate.toISOString(),
+    dueDate: assignment.dueDate?.toISOString() ?? null,
     estimatedHours: assignment.estimatedHours,
     actualHours: assignment.actualHours,
     status: assignment.status,
@@ -253,7 +253,7 @@ export class CoursesService {
    * state** (archived courses remain accessible, AC-E02-05 / D111-3) — plus
    * the SP-112A detail projections (D112-3): `meetings` (ordered `dayOfWeek`
    * asc, then `startTime` asc) and `assignments` (read-only, ordered
-   * `dueDate` asc — the column is NOT NULL, so "nulls last" is a no-op —
+   * `dueDate` asc (PostgreSQL places null deadlines last) —
    * then `title` asc).  A missing id or another student's id → uniform 404
    * `Resource not found` (the ownership predicate is in the query; both
    * cases are indistinguishable to the caller — no existence oracle).  The
@@ -266,7 +266,7 @@ export class CoursesService {
       include: {
         semester: { select: { id: true, name: true } },
         meetings: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
-        assignments: { orderBy: [{ dueDate: 'asc' }, { title: 'asc' }] },
+        assignments: { where: { userId }, orderBy: [{ dueDate: 'asc' }, { title: 'asc' }] },
       },
     });
     if (!row) {

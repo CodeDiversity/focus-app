@@ -192,7 +192,7 @@ model Assignment {
   course      Course?  @relation(fields: [courseId], references: [id])
   title       String
   description String?
-  dueDate     DateTime
+  dueDate     DateTime?
   estimatedHours Float?  // Estimated hours needed
   actualHours  Float?  // Tracked hours spent
   status      AssignmentStatus @default(PENDING)

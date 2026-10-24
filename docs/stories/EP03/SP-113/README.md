@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-113](./SP-113-quick-assignment-creation.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Planned 2026-10-24 — covers EP03 proposed story **1 (implement quick assignment creation)**. D113-1…6 recorded (D113-1 forced by epic AC-2; the rest grounded + reversible). **Plan Ready** (gate below). Implementation not blocked (EP02 complete 2026-10-23). Next actionable **SP-113A**.
+**Status:** SP-113A implemented 2026-10-24 — awaiting combined parent review. B/C remain; next actionable **SP-113B UI refinement**. Covers EP03 proposed story **1 (implement quick assignment creation)**. D113-1…6 and the historical planning gate below remain unchanged.
 
 ## Execution queue
 
@@ -13,11 +13,11 @@
 
 **Parent artifacts:** `./artifacts/SP-113/` (parent index written by C)
 
-**Active substory:** None — planning complete; implementation not started.
+**Active substory:** None — SP-113A implementation finished; single-child scope closed.
 
-**Next substory:** SP-113A. **Next action: implement** (no blockers — EP02
-complete 2026-10-23). After SP-113A, **SP-113B needs a `ui-refiner` pass**
-(UI/UX gaps recorded in its ticket, 2026-10-24) before implementation.
+**Next substory:** SP-113B. **Next action: `ui-refiner` pass** (API prerequisite
+SP-113A implemented; UI/UX gaps recorded in B's ticket, 2026-10-24).
+SP-113B is not ready for implementation until that refinement completes.
 
 **Implementation owner:** `implementer`, sequential across all layers (A → B → C;
 backend/frontend/integration are scope labels, not concurrent writers).
@@ -28,7 +28,7 @@ artifacts: `./artifacts/SP-113/review.md` + `./artifacts/SP-113/walkthrough.md`.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-113A-assignment-create-api.md) | **Ready** | EP02 complete (satisfied 2026-10-23); no other EP03 work | implement | — |
+| [A](./SP-113A-assignment-create-api.md) | **Implemented — awaiting parent review** | EP02 complete (satisfied 2026-10-23); no other EP03 work | combined review after B/C | [implementation](./artifacts/SP-113A/implementation.md) · [checkpoint](./artifacts/SP-113A/checkpoint.md) |
 | [B](./SP-113B-quick-create-assignment-ui.md) | **Needs refinement** | SP-113A implemented; SP-112B implemented (satisfied 2026-10-23 — the section it extends) | `ui-refiner` pass, then implement | — |
 | [C](./SP-113C-quick-create-integration-signoff.md) | Queued | A, B implemented | implement | — |
 

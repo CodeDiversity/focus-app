@@ -6,6 +6,7 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 import { OnboardingModule } from './modules/onboarding/onboarding.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
 import { CoursesModule } from './modules/courses/courses.module';
+import { AssignmentsModule } from './modules/assignments/assignments.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { CoursesModule } from './modules/courses/courses.module';
     // (EP02 extends these modules, D107-9).
     SemestersModule,
     CoursesModule,
+    AssignmentsModule,
   ],
 })
 export class AppModule {}

@@ -101,7 +101,7 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
   const DETAIL_PROJECTION = {
     semester: { select: { id: true, name: true } },
     meetings: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
-    assignments: { orderBy: [{ dueDate: 'asc' }, { title: 'asc' }] },
+    assignments: { where: { userId: 'user-1' }, orderBy: [{ dueDate: 'asc' }, { title: 'asc' }] },
   };
 
   /**
@@ -626,6 +626,32 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
         expect(assignment).not.toHaveProperty('userId');
         expect(assignment).not.toHaveProperty('courseId');
       }
+    });
+
+    it('projects an undated assignment as null (SP-113A nullable migration)', async () => {
+      courseFindFirst.mockResolvedValue({
+        ...createdRow,
+        meetings: [],
+        assignments: [
+          {
+            id: 'undated',
+            userId: 'user-1',
+            courseId: 'course-1',
+            title: 'Undated',
+            description: null,
+            dueDate: null,
+            estimatedHours: null,
+            actualHours: null,
+            status: 'PENDING',
+            priority: 'MEDIUM',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
+      });
+      const result = await service.get('user-1', 'course-1');
+      expect(result.assignments[0].dueDate).toBeNull();
+      expect(Object.keys(result.assignments[0])).toHaveLength(10);
     });
 
     it('a missing id or another student id → uniform 404 (no existence oracle)', async () => {
