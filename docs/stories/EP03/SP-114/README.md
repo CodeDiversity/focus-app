@@ -11,13 +11,13 @@
 **Delivery home:** `docs/stories/EP03/SP-114/`
 **Artifact root:** `./artifacts/` (stable story IDs)
 **Parent artifacts:** `./artifacts/SP-114/` (parent index written by F; review and walkthrough by reviewer)
-**Active substory:** None — awaiting implementation.
-**Next substory:** **SP-114D** (implement) — no blockers (SP-113A complete).
+**Active substory:** None — SP-114D implemented 2026-10-24, awaiting the combined SP-114 parent review.
+**Next substory:** **SP-114E** (refine — `ui-refiner` pass before implementation; its dependencies SP-113A/SP-113B/SP-114D are all implemented).
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [D](./SP-114D-assignment-update-delete-api.md) | **Ready** | SP-113A complete (satisfied 2026-10-24) | Implement: PATCH + DELETE endpoints, DTOs, service methods, tests | Pending |
-| [E](./SP-114E-assignment-edit-delete-ui.md) | **Ready** (needs `ui-refiner` pass) | SP-113A, SP-113B, SP-114D implemented | Implement: per-row controls, form reuse, delete confirmation, API client | Pending (ui-refiner first) |
+| [D](./SP-114D-assignment-update-delete-api.md) | **Implemented — awaiting parent review** | SP-113A complete (satisfied 2026-10-24) | None — awaits the combined SP-114 review | [implementation](./artifacts/SP-114D/implementation.md) |
+| [E](./SP-114E-assignment-edit-delete-ui.md) | **Ready** (needs `ui-refiner` pass) | SP-113A, SP-113B, SP-114D implemented (all satisfied 2026-10-24) | `ui-refiner` pass, then implement: per-row controls, form reuse, delete confirmation, API client | Pending (ui-refiner first) |
 | [F](./SP-114F-assignment-edit-delete-integration.md) | **Ready** | D, E implemented | Implement: e2e tests, DoD-10 sign-off, parent index | Pending |
 
 Sequence: SP-114 (D → E → F), one sequential writer. E requires a `ui-refiner` pass before implementation (see UI/UX gaps in E's ticket).

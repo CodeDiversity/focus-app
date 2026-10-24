@@ -51,6 +51,13 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
 
   const post = (index: number, body: Record<string, unknown>) =>
     agent.post('/assignments').set('Authorization', `Bearer ${students[index].token}`).send(body);
+  const patch = (index: number, id: string, body: Record<string, unknown>) =>
+    agent
+      .patch(`/assignments/${id}`)
+      .set('Authorization', `Bearer ${students[index].token}`)
+      .send(body);
+  const del = (index: number, id: string) =>
+    agent.delete(`/assignments/${id}`).set('Authorization', `Bearer ${students[index].token}`);
   const detail = (index: number, courseId = students[index].courseId) =>
     agent.get(`/courses/${courseId}`).set('Authorization', `Bearer ${students[index].token}`);
 
@@ -178,5 +185,133 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
 
   it('unauthenticated → 401 before validation or writes', async () => {
     await agent.post('/assignments').send({ title: 'No auth' }).expect(401);
+  });
+
+  // ==================== update/delete (SP-114D) ====================
+
+  it('PATCH updates provided fields, keeps the rest, and returns the 10-key projection', async () => {
+    const created = await post(0, {
+      title: 'Patchable',
+      courseId: students[0].courseId,
+      dueDate: '2026-11-15T23:59:00.000Z',
+      estimatedHours: 1,
+      priority: 'LOW',
+      description: 'Original',
+    }).expect(201);
+    const response = await patch(0, created.body.id, {
+      title: '  Patched title  ',
+      dueDate: null, // explicit null keeps the stored value (D114-5)
+      estimatedHours: null,
+      priority: null,
+    }).expect(200);
+    expect(Object.keys(response.body).sort()).toEqual(KEYS);
+    expect(response.body).toMatchObject({
+      title: 'Patched title',
+      dueDate: '2026-11-15T23:59:00.000Z',
+      estimatedHours: 1,
+      priority: 'LOW',
+      description: 'Original',
+    });
+    const row = await app.prisma.assignment.findFirst({
+      where: { id: created.body.id, userId: students[0].id },
+    });
+    expect(row).toMatchObject({
+      title: 'Patched title',
+      dueDate: new Date('2026-11-15T23:59:00.000Z'),
+      estimatedHours: 1,
+      priority: 'LOW',
+      description: 'Original',
+    });
+    const projection = await detail(0).expect(200);
+    expect(projection.body.assignments).toContainEqual(response.body);
+  });
+
+  it("PATCH '' clears the stored description; empty body and unknown fields 400 without writes", async () => {
+    const created = await post(0, { title: 'Clearable', description: 'Some text' }).expect(201);
+    const cleared = await patch(0, created.body.id, { description: '' }).expect(200);
+    expect(cleared.body.description).toBe('');
+
+    const empty = await patch(0, created.body.id, {}).expect(400);
+    expect(empty.body.message).toBe('At least one field must be provided');
+
+    for (const [field, value] of [
+      ['status', 'COMPLETED'],
+      ['actualHours', 5],
+      ['courseId', students[0].courseId],
+      ['userId', students[1].id],
+    ] as const) {
+      const response = await patch(0, created.body.id, { [field]: value }).expect(400);
+      expect(response.body.errors).toHaveProperty(field);
+    }
+
+    const row = await app.prisma.assignment.findFirst({
+      where: { id: created.body.id, userId: students[0].id },
+    });
+    expect(row).toMatchObject({ description: '', status: 'PENDING', actualHours: null });
+  });
+
+  it('student B cannot PATCH student A assignment: foreign/missing/malformed → uniform 404, row unchanged', async () => {
+    const created = await post(0, { title: 'Locked', description: 'Original' }).expect(201);
+    const before = await app.prisma.assignment.findFirst({ where: { id: created.body.id } });
+    for (const id of [created.body.id, uuid(), 'not-an-id']) {
+      const response = await patch(1, id, { title: 'Hijack', description: 'x' }).expect(404);
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        message: 'Resource not found',
+        error: 'Not Found',
+      });
+    }
+    expect(await app.prisma.assignment.findFirst({ where: { id: created.body.id } })).toEqual(
+      before
+    );
+    expect(await app.prisma.assignment.count({ where: { userId: students[1].id } })).toBe(0);
+  });
+
+  it('student B cannot DELETE student A assignment: foreign/missing/malformed → uniform 404, row unchanged', async () => {
+    const created = await post(0, { title: 'Protected' }).expect(201);
+    const before = await app.prisma.assignment.findFirst({ where: { id: created.body.id } });
+    for (const id of [created.body.id, uuid(), 'not-an-id']) {
+      const response = await del(1, id).expect(404);
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        message: 'Resource not found',
+        error: 'Not Found',
+      });
+    }
+    expect(await app.prisma.assignment.findFirst({ where: { id: created.body.id } })).toEqual(
+      before
+    );
+  });
+
+  it('own DELETE → 204 with no body, and the row is gone', async () => {
+    const created = await post(0, { title: 'Doomed' }).expect(201);
+    const response = await del(0, created.body.id).expect(204);
+    expect(response.text).toBe('');
+    expect(
+      await app.prisma.assignment.findFirst({
+        where: { id: created.body.id, userId: students[0].id },
+      })
+    ).toBeNull();
+  });
+
+  it('deleting an assignment orphans its tasks with assignmentId null (D114-4, real DB)', async () => {
+    const created = await post(0, { title: 'Has subtasks' }).expect(201);
+    // No tasks API exists yet (story 4) — seed the task directly.
+    const task = await app.prisma.task.create({
+      data: { userId: students[0].id, assignmentId: created.body.id, title: 'Subtask' },
+    });
+    await del(0, created.body.id).expect(204);
+    expect(await app.prisma.assignment.findFirst({ where: { id: created.body.id } })).toBeNull();
+    const surviving = await app.prisma.task.findUnique({ where: { id: task.id } });
+    expect(surviving).toMatchObject({
+      assignmentId: null,
+      userId: students[0].id,
+      title: 'Subtask',
+    });
+  });
+
+  it('unauthenticated PATCH/DELETE → 401 before writes', async () => {
+    await agent.patch('/assignments/anything').send({ title: 'No auth' }).expect(401);
+    await agent.delete('/assignments/anything').expect(401);
   });
 });
