@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { AssignmentsSection } from './AssignmentsSection';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, within } from '@testing-library/react';
+import { AssignmentsSection as Section } from './AssignmentsSection';
+import { Providers } from '@/test/providers';
+import { setupUser } from '@/test/user';
 import type { CourseAssignment } from '@/shared/types/academic';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 
@@ -48,7 +50,13 @@ const labReport: CourseAssignment = {
 
 const all = [problemSet, essay, labReport];
 
-const dueLabel = (dueDate: string) => `Due ${formatDate(new Date(dueDate), getBrowserTimeZone())}`;
+const dueLabel = (dueDate: string | null) =>
+  `Due ${formatDate(new Date(dueDate!), getBrowserTimeZone())}`;
+const AssignmentsSection = ({ assignments }: { assignments: CourseAssignment[] }) => (
+  <Providers initialEntries={['/courses/course-1']}>
+    <Section courseId="course-1" assignments={assignments} onAssignmentChanged={vi.fn()} />
+  </Providers>
+);
 
 describe('AssignmentsSection (AC 4, D112-6)', () => {
   it('renders the read-only projection in API order: title, due date, status + priority badges', () => {
@@ -106,20 +114,46 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     expect(screen.getByText('Completed')).toHaveClass('bg-green-100', 'text-green-700');
   });
 
-  it('offers no management controls (EP03 owns those — D112-6)', () => {
+  it('offers no per-row management controls (editing/deletion remain out of scope)', () => {
     render(<AssignmentsSection assignments={all} />);
 
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    for (const item of screen.getAllByRole('listitem'))
+      expect(within(item).queryByRole('button')).not.toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     expect(screen.queryByRole('switch')).not.toBeInTheDocument();
   });
 
-  it('renders the empty state without a call-to-action (DoD 5)', () => {
+  it('renders the empty state with a working call-to-action (DoD 5)', async () => {
+    const user = setupUser();
     render(<AssignmentsSection assignments={[]} />);
 
     expect(screen.getByText('No assignments yet.')).toBeInTheDocument();
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Add your first assignment' }));
+    expect(screen.getByRole('dialog', { name: 'Add an assignment' })).toBeInTheDocument();
+  });
+
+  it('opens the form from the primary small header button', async () => {
+    const user = setupUser();
+    render(<AssignmentsSection assignments={all} />);
+    const button = screen.getByRole('button', { name: 'Add assignment' });
+    expect(button).toHaveClass('bg-primary-600', 'text-sm', 'px-3');
+    await user.click(button);
+    expect(screen.getByRole('dialog', { name: 'Add an assignment' })).toBeInTheDocument();
+  });
+
+  it('renders null dates muted, retains API order and updates rows after refetch', () => {
+    const undated = { ...labReport, dueDate: null };
+    const { rerender } = render(<AssignmentsSection assignments={[problemSet, undated]} />);
+    expect(screen.getByText('No due date')).toHaveClass('text-secondary-400');
+    expect(screen.getAllByRole('listitem')[0]).toHaveTextContent(dueLabel(problemSet.dueDate));
+    expect(screen.getAllByRole('listitem')[1]).toHaveTextContent('Lab Report');
+    rerender(<AssignmentsSection assignments={[problemSet, essay, undated]} />);
+    expect(
+      screen
+        .getAllByRole('listitem')
+        .map((item) => within(item).getByText(/Problem Set|Research Essay|Lab Report/).textContent)
+    ).toEqual(['Problem Set 4', 'Research Essay', 'Lab Report']);
   });
 });

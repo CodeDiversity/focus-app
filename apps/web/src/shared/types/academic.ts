@@ -51,7 +51,7 @@ export interface Assignment {
   id: string;
   title: string;
   description: string | null;
-  dueDate: string;
+  dueDate: string | null;
   estimatedHours: number | null;
   actualHours: number | null;
   status: AssignmentStatus;
@@ -64,9 +64,8 @@ export interface Assignment {
 /**
  * The read-only assignment projection on the course detail route (SP-112,
  * D112-3/D112-6): the `Assignment` type minus the nested `course` — the
- * backend's 10-key `toAssignmentResponse` shape (`dueDate` ISO;
- * `userId`/`courseId` never exposed).  The full `Assignment` type stays
- * untouched (it is referenced only by `Task`).
+ * backend's 10-key `toAssignmentResponse` shape (`dueDate` ISO or null;
+ * `userId`/`courseId` never exposed). Also the SP-113 creation response.
  */
 export type CourseAssignment = Omit<Assignment, 'course'>;
 

@@ -11,6 +11,7 @@ import {
   type CourseDetail,
 } from '@/entities/course/api/courseApi';
 import { listSemesters } from '@/entities/semester/api/semesterApi';
+import { createAssignment } from '@/entities/assignment/api/assignmentApi';
 import toast from 'react-hot-toast';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 import type { ClassMeeting, CourseAssignment } from '@/shared/types/academic';
@@ -29,6 +30,8 @@ vi.mock('@/entities/course/api/courseApi', () => ({
 vi.mock('@/entities/semester/api/semesterApi', () => ({
   listSemesters: vi.fn(),
 }));
+
+vi.mock('@/entities/assignment/api/assignmentApi', () => ({ createAssignment: vi.fn() }));
 
 vi.mock('react-hot-toast', () => ({
   default: { success: vi.fn(), error: vi.fn() },
@@ -110,6 +113,44 @@ describe('CourseDetailPage page states (AC 1/5, DoD 5)', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('creates in route context, closes and announces success, then refreshes assignments in the background', async () => {
+    const user = setupUser();
+    const added: CourseAssignment = {
+      ...homework,
+      id: 'new-assignment',
+      title: 'New homework',
+      dueDate: null,
+      status: 'PENDING',
+    };
+    let finishRefresh!: (detail: CourseDetail) => void;
+    mockedGetCourse.mockResolvedValueOnce(cs101).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishRefresh = resolve;
+        })
+    );
+    vi.mocked(createAssignment).mockResolvedValueOnce(added);
+    renderPage();
+    await user.click(await screen.findByRole('button', { name: 'Add assignment' }));
+    await user.type(screen.getByLabelText('Title'), 'New homework');
+    await user.click(screen.getByRole('button', { name: 'Create assignment' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(createAssignment).toHaveBeenCalledWith({
+      title: 'New homework',
+      courseId: 'course-1',
+      priority: 'MEDIUM',
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('Assignment added.');
+    expect(mockedGetCourse).toHaveBeenCalledTimes(2);
+    expect(mockedGetCourse).toHaveBeenLastCalledWith('course-1');
+    expect(screen.queryByText('Loading your course…')).not.toBeInTheDocument();
+    expect(screen.getByText('Problem Set 3')).toBeInTheDocument();
+    finishRefresh({ ...cs101, assignments: [homework, added] });
+    expect(await screen.findByText('New homework')).toBeInTheDocument();
+    expect(screen.getByText('No due date')).toBeInTheDocument();
+    expect(mockedToast.success).not.toHaveBeenCalled();
   });
 
   it('shows the loading state (generic h1 + spinner copy) while the single fetch is in flight', async () => {
@@ -297,7 +338,7 @@ describe('CourseDetailPage sections (AC 3/4, D112-6)', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Assignments' })).toBeInTheDocument();
     expect(screen.getByText('Problem Set 3')).toBeInTheDocument();
     expect(
-      screen.getByText(`Due ${formatDate(new Date(homework.dueDate), getBrowserTimeZone())}`)
+      screen.getByText(`Due ${formatDate(new Date(homework.dueDate!), getBrowserTimeZone())}`)
     ).toBeInTheDocument();
     expect(screen.getByText('In progress')).toBeInTheDocument();
     expect(screen.getByText('High')).toBeInTheDocument();

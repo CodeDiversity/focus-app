@@ -5,9 +5,9 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** **Refined** 2026-10-24 — UI/UX decisions settled (the `ui-refiner`
-pass; D113B-1…6, confirmed with the user); grounded in the post-SP-112B code.
-Not ready to code until SP-113A is implemented (the contract it consumes).
+**Status:** **Implemented — awaiting parent review** 2026-10-24.
+[Implementation](./artifacts/SP-113B/implementation.md) ·
+[checkpoint](./artifacts/SP-113B/checkpoint.md). Combined SP-113 review follows C.
 **Refined:** 2026-10-24
 **Dependencies:** SP-113A implemented (contract); SP-112B implemented
 (satisfied 2026-10-23 — the `AssignmentsSection` this child extends)

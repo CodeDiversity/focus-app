@@ -28,7 +28,7 @@ const NOT_FOUND_MESSAGE = "We couldn't find this course. It may no longer exist.
  * `/courses/:id` (SP-112B, D112-5): the course detail screen — the course's
  * information (header card, D112B-11), its **recurring weekly meetings**
  * (`MeetingsSection` — add/edit/delete, AC-E02-04) and its **related
- * assignments** (`AssignmentsSection` — read-only until EP03, AC-E02-06).
+ * assignments** (`AssignmentsSection` — quick creation in SP-113B).
  *
  * **One fetch drives everything** (D112B-13): the single `getCourse` call
  * returns the 14-key detail (header + meetings + assignments), so there is no
@@ -153,6 +153,11 @@ export function CourseDetailPage() {
           ? 'Meeting updated.'
           : 'Meeting deleted.'
     );
+    void load({ background: true });
+  };
+
+  const handleAssignmentAdded = () => {
+    setStatusMessage('Assignment added.');
     void load({ background: true });
   };
 
@@ -309,7 +314,11 @@ export function CourseDetailPage() {
               meetings={course.meetings}
               onMeetingChanged={handleMeetingChanged}
             />
-            <AssignmentsSection assignments={course.assignments} />
+            <AssignmentsSection
+              courseId={id}
+              assignments={course.assignments}
+              onAssignmentChanged={handleAssignmentAdded}
+            />
           </div>
         </>
       ) : null}
