@@ -5,7 +5,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Layer:** Integration
-**Status:** Queued — starts after A + B are implemented
+**Status:** Implemented — awaiting parent review; session-owner-authorized automated substitute for manual browser walk for now — [implementation / exception](./artifacts/SP-113C/implementation.md) · [checkpoint](./artifacts/SP-113C/checkpoint.md)
 **Dependencies:** SP-113A, SP-113B implemented
 **Jira key:** Pending creation
 
