@@ -14,7 +14,7 @@ assignment-type implementation code; the two planning commits and the later
 | Child | Layer | Implementation record | Checkpoint | Commits (code scope) |
 |---|---|---|---|---|
 | [SP-115G](../../SP-115G-assignment-type-api.md) | Backend (Prisma/REST) | [implementation.md](../SP-115G/implementation.md) | [checkpoint.md](../SP-115G/checkpoint.md) | `77e733f` — schema/enum, nullable `Assignment.type`, migration `20261025000000_assignment_optional_type`, create/update validation, both 11-key mappers, API test updates. (`faf9235`/`36be97c` are G's closeout hashes/README footer doc follow-ups only.) |
-| [SP-115H](../../SP-115H-assignment-type-ui.md) | Frontend | [implementation.md](../SP-115H/implementation.md) | [checkpoint.md](../SP-115H/checkpoint.md) | Scoped commit returned in the implementer handoff (hash recorded in its implementation record's Commits section after commit; commit cannot contain its own hash). |
+| [SP-115H](../../SP-115H-assignment-type-ui.md) | Frontend | [implementation.md](../SP-115H/implementation.md) | [checkpoint.md](../SP-115H/checkpoint.md) | `33075e2` — `AssignmentType` + `Assignment.type`, client payload rules (create omits; update never nulls), dialog Type+Priority row, row type pill, tests/fixtures, plus this index, both closeouts and the README/status updates (`f63dce6` is the separate ui-refiner story commit). |
 
 ## Shared contract status
 

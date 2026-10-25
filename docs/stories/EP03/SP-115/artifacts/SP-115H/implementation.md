@@ -82,5 +82,4 @@ combined unit), not a child-internal closure.
 
 ## Commits
 
-- See the returned handoff hash for the scoped commit (written after commit per
-  the closeout contract); this file and the checkpoint/index are part of that commit's closeout scope.
+- `33075e2` — feat(SP-115H): set and show an optional assignment type in the course UI. Scope: the 13 app/artifact files listed above (server-side none; H is frontend-only) + README queue/status, status in the story file, and the parent index. Working tree verified clean after the commit; pre-commit hooks (eslint --fix, prettier) applied to the staged files and are included. The only follow-up edit is this hash note.
