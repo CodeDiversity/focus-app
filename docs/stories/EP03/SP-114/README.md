@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-114](./SP-114-assignment-editing-and-deletion.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Planned 2026-10-24, **Plan Ready**.
+**Status:** Reviewed 2026-10-24. User approved the parent review and human walkthroughs. Focused web re-verification against `f27c671` passed.
 **Jira key:** Pending creation (no sync authorized)
 
 ## Execution queue
@@ -11,14 +11,14 @@
 **Delivery home:** `docs/stories/EP03/SP-114/`
 **Artifact root:** `./artifacts/` (stable story IDs)
 **Parent artifacts:** `./artifacts/SP-114/` (parent index written by F; review and walkthrough by reviewer)
-**Active substory:** None — IR-114-06 post-delete focus handoff is implemented.
-**Next substory:** None — combined SP-114 parent re-review is next. Do not mark Reviewed until that passing review and its walkthrough exist.
+**Active substory:** None — SP-114 is reviewed.
+**Next substory:** None — parent review and human walkthroughs are approved. No further SP-114 implementation.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [D](./SP-114D-assignment-update-delete-api.md) | **Implemented — awaiting parent review** | IR-114-04 fixture reads scoped 2026-10-24 | None — awaits the combined SP-114 re-review | [implementation](./artifacts/SP-114D/implementation.md) · [checkpoint](./artifacts/SP-114D/checkpoint.md) |
-| [E](./SP-114E-assignment-edit-delete-ui.md) | **Implemented — awaiting parent review** | IR-114-06 focus handoff fixed 2026-10-24 | None — awaits the combined SP-114 re-review | [implementation](./artifacts/SP-114E/implementation.md) · [checkpoint](./artifacts/SP-114E/checkpoint.md) |
-| [F](./SP-114F-assignment-edit-delete-integration.md) | **Implemented — awaiting parent review** | IR-114-03/04/05 fixed 2026-10-24 | None — awaits the combined SP-114 re-review | [implementation](./artifacts/SP-114F/implementation.md) · [browser evidence](./artifacts/SP-114F/browser-error-retry.md) |
+| [D](./SP-114D-assignment-update-delete-api.md) | **Reviewed** | None | None | [implementation](./artifacts/SP-114D/implementation.md) · [review](./artifacts/SP-114/review.md) · [walkthrough](./artifacts/SP-114/walkthrough.md) |
+| [E](./SP-114E-assignment-edit-delete-ui.md) | **Reviewed** | None | None | [implementation](./artifacts/SP-114E/implementation.md) · [review](./artifacts/SP-114/review.md) · [walkthrough](./artifacts/SP-114/walkthrough.md) |
+| [F](./SP-114F-assignment-edit-delete-integration.md) | **Reviewed** | None | None | [implementation](./artifacts/SP-114F/implementation.md) · [review](./artifacts/SP-114/review.md) · [walkthrough](./artifacts/SP-114/walkthrough.md) |
 
 Sequence: SP-114 (D → E → F), one sequential writer. E requires a `ui-refiner` pass before implementation (see UI/UX gaps in E's ticket).
 
@@ -148,6 +148,16 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
 ## Plan correction log
 
 (Empty at planning time — first plan of this parent. Implementation review findings appended below with stable IDs; original findings are preserved.)
+
+| ID | Original claim | Disposition |
+|---|---|---|
+| IR-114-01 | Pending DELETE returned from the whole key handler, so Tab could leave the modal | Fixed in `5b1f33b`. User approved the parent review 2026-10-24. [review](./artifacts/SP-114/review.md) |
+| IR-114-02 | A second deletion did not change the live region | Fixed in `5b1f33b`. User approved the parent review 2026-10-24. [review](./artifacts/SP-114/review.md) |
+| IR-114-03 | Missing integrated error/retry record | Fixed in `b2c1c6e`. User approved the parent review 2026-10-24. [review](./artifacts/SP-114/review.md) |
+| IR-114-04 | Fixture reads were not ownership-scoped | Fixed in `b2c1c6e`. User approved the parent review 2026-10-24. [review](./artifacts/SP-114/review.md) |
+| IR-114-05 | Incorrect baseline and assignment-count claims | Fixed in `b2c1c6e`. User approved the parent review 2026-10-24. [review](./artifacts/SP-114/review.md) |
+| IR-114-06 | Successful deletion lost focus after refetch | Fixed in `f27c671`. Focused web tests re-run exit 0 on 2026-10-24. User approved the parent review. [review](./artifacts/SP-114/review.md) |
+| IR-114-07 | Independent automated execution was unavailable in the review runtime | Closed for the affected web gates by re-running them against `f27c671` (exit 0, 3 files / 47 tests, typecheck exit 0). API suites were not re-run because that commit does not change API code. User approved the parent review and human walkthroughs. [review](./artifacts/SP-114/review.md) |
 
 ## Quality gate (2026-10-24)
 

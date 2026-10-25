@@ -4,7 +4,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Covers epic proposed story:** 2 (implement assignment editing and deletion)
-**Status:** Planned 2026-10-24, **Plan Ready**.
+**Status:** Reviewed 2026-10-24. User approved the parent review and human walkthroughs.
 **Jira key:** Pending creation (no sync authorized)
 
 ## Purpose

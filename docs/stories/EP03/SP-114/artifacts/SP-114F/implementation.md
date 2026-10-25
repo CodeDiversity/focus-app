@@ -1,6 +1,6 @@
 # SP-114F implementation
 
-**Status:** Implemented — awaiting combined SP-114 parent re-review (2026-10-24).
+**Status:** Reviewed 2026-10-24. User approved the parent review and human walkthroughs.
 **Scope:** F only: e2e tests, DoD-10 manual sign-off, parent implementation index.
 **Baseline:** `74822fd` (SP-114E implementation).
 **Contract / story:** [shared API contract](../../README.md#shared-api-contract),

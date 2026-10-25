@@ -1,6 +1,6 @@
 # SP-114D implementation
 
-**Status:** Implemented — awaiting combined SP-114 parent re-review.
+**Status:** Reviewed 2026-10-24. User approved the parent review and human walkthroughs.
 **Date:** 2026-10-24
 **Scope:** SP-114D only; baseline `0f47d72` (refine(SP-114) tickets).
 **Contract:** [parent shared API contract and D114-1…4](../../README.md#shared-api-contract) + ticket decisions D114-1…5.

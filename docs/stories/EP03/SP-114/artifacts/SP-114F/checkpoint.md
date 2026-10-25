@@ -1,7 +1,7 @@
 # SP-114F checkpoint
 
 Updated: 2026-10-24 21:48 EDT (implementer review-fix closeout)
-Execution state: [SP-114 README queue](../../README.md#execution-queue) — row F `Implemented — awaiting parent review`
+Execution state: [SP-114 README queue](../../README.md#execution-queue) — row F `Reviewed`
 Story: [SP-114F-assignment-edit-delete-integration.md](../../SP-114F-assignment-edit-delete-integration.md)
 Review unit: SP-114 ([parent index](../SP-114/implementation.md); [review pass 1](../SP-114/review.md))
 Role / scope: implementer; IR-114-03, IR-114-04 (e2e reads), and IR-114-05 (F wording). D owns the data-scoping half of IR-114-04.
@@ -23,4 +23,4 @@ Role / scope: implementer; IR-114-03, IR-114-04 (e2e reads), and IR-114-05 (F wo
 
 ## Resume next
 
-None in assigned scope. Next action is one combined independent SP-114 parent re-review. Do not self-approve.
+None. Parent review and human walkthroughs were approved 2026-10-24.

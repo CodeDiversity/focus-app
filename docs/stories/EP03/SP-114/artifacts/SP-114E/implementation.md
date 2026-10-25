@@ -1,6 +1,6 @@
 # SP-114E implementation
 
-**Status:** Implemented — awaiting combined SP-114 parent re-review.
+**Status:** Reviewed 2026-10-24. User approved the parent review and human walkthroughs.
 **Date:** 2026-10-24
 **Scope:** SP-114E only (frontend); baseline `286d64f` (SP-114D implementation, `feat(api): implement SP-114D assignment update/delete API`). The earlier `b089cfa` baseline was not a commit in this repository and is withdrawn (IR-114-05).
 **Ticket / decisions:** [SP-114E-assignment-edit-delete-ui.md](../../SP-114E-assignment-edit-delete-ui.md), decisions D114E-1…7.
@@ -80,6 +80,15 @@ Working tree on `b2c1c6e` plus this focus fix. Exit codes are from this run.
 
 The page tests keyboard-activate Delete, hold the course refetch, then assert focus on the next row's Edit control and, for the final assignment, on `Add your first assignment`. This is Vitest/jsdom, not a new browser walk.
 
+### Closeout re-verification (2026-10-24 23:22 EDT, `apps/web`)
+
+Tested commit `f27c671a0df0604013929939902030a42b219301`. SP-114 application paths were clean. Unrelated dirty paths (`.gitignore`, `docs/stories/EP03/SP-113/**`, role-definition edits, and uncommitted review artifacts) were not part of this run.
+
+| Command | Result |
+|---|---|
+| `pnpm test -- run AssignmentsSection.test.tsx DeleteAssignmentDialog.test.tsx CourseDetailPage.test.tsx` | Pass, exit 0 — 3 files, 47 tests. The package script already runs `vitest run`; the extra `run` argument matched no additional file. |
+| `pnpm typecheck` | Pass, exit 0 (`tsc --noEmit`). |
+
 ## DoD and remaining work
 
-E's keyboard gaps from review passes 1 and 2 are fixed, including post-delete focus (IR-114-06). Combined parent re-review remains. No independent approval is claimed. A new browser walk was not run.
+E's keyboard gaps from review passes 1 and 2 are fixed, including post-delete focus (IR-114-06). The user approved the parent review and human walkthroughs on 2026-10-24. No new browser walk was run.
