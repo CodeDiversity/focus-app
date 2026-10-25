@@ -49,7 +49,7 @@ None of the DB-backed suites ran as skipped; all executed against the real datab
 
 ## Commits
 
-- Component commits made per milestone; the final consolidated commit for this story is recorded in the parent README queue row and returned in the task handoff (hash listed in the checkpoint's Repository state).
+- `77e733f` — feat(SP-115G): optional assignment type on create, update, and course projection. Scope: the 10 app files listed under Changed paths + the new migration + this checkpoint/implementation record + the SP-115 README queue/status update. Working tree verified clean after the commit; the only follow-up edit is this hash note inside the record documents.
 
 ## Out of scope (unchanged here)
 

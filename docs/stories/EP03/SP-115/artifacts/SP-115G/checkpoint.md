@@ -8,7 +8,7 @@ Role / scope: implementer; backend only. No UI work (SP-115H).
 ## Repository state
 - Workspace / branch: /Users/michael/Documents/GitHub/focus-app, branch `main`
 - HEAD at last update: 8027671 (pre-implementation baseline)
-- Saved work: scoped closeout commit for SP-115G (hash recorded in the queue row and returned in the task handoff)
+- Saved work: `77e733f` feat(SP-115G): optional assignment type on create, update, and course projection (code+tests+docs, verified clean tree after commit)
 - Other work to preserve: none unrelated dirty at commit time
 
 ## Progress
