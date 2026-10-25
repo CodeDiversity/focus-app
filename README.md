@@ -152,6 +152,7 @@ pnpm dev          # Start all apps in dev mode
 pnpm build        # Build all apps
 pnpm lint         # Run linter
 pnpm test         # Run all tests
+pnpm test:e2e     # Run browser e2e tests (needs the dev stack running: pnpm dev)
 pnpm db:generate  # Generate Prisma client
 pnpm db:migrate   # Run database migrations
 pnpm db:push      # Push schema changes to database
@@ -167,7 +168,6 @@ pnpm build        # Build for production
 pnpm start        # Start production server
 pnpm lint         # Run linter
 pnpm test         # Run unit tests
-pnpm test:e2e     # Run e2e tests
 ```
 
 ### Frontend (apps/web)
@@ -177,6 +177,7 @@ pnpm build        # Build for production
 pnpm preview       # Preview production build
 pnpm lint         # Run linter
 pnpm test         # Run tests
+pnpm test:e2e     # Run Playwright e2e tests (needs the dev stack running: pnpm dev)
 ```
 
 ### Linting & Formatting

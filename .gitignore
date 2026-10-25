@@ -43,6 +43,8 @@ coverage/
 
 # Testing
 .nyc_output/
+test-results/
+playwright-report/
 
 # Prisma
 prisma/migrations/**/migration_lock.toml
