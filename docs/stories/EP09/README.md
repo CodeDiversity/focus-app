@@ -34,7 +34,7 @@ persistence) are caught before release.
 | SP-116 | Playwright infrastructure + login smoke test | Implemented — awaiting parent review | — |
 | SP-117 | Auth journey coverage (register, logout, session) | Implemented — awaiting parent review | SP-116 |
 | SP-118 | Semester & course management E2E coverage | Implemented — awaiting parent review | SP-116 |
-| SP-119 | E2E dedicated test database + self-contained test stack | Ready | SP-116 |
+| SP-119 | E2E dedicated test database + self-contained test stack | In progress | SP-116 |
 
 ## Test inventory (coverage map)
 
@@ -80,14 +80,14 @@ the corresponding features stabilize or when a regression justifies the cover.
 ## Execution queue
 
 Delivery home: `docs/stories/EP09/` · Artifact root: `docs/stories/EP09/artifacts/`
-Active substory: None · Next substory: SP-119 (implement — plan complete 2026-10-25, all decisions settled; autopilot run in progress, see Autopilot section)
+Active substory: SP-119 · Next substory: None (SP-119 is the last child — after its implementation the next step is the final EP09 parent review)
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | SP-116 | Implemented — awaiting parent review | None | Await EP09 parent review | `artifacts/SP-116/implementation.md` |
 | SP-117 | Implemented — awaiting parent review | SP-116 (met) | Await EP09 parent review | `artifacts/SP-117/implementation.md` |
 | SP-118 | Implemented — awaiting parent review | SP-116 (met) | Await EP09 parent review | `artifacts/SP-118/implementation.md` |
-| SP-119 | Ready | SP-116 (met) | Implement (autopilot run in progress) | `SP-119-e2e-dedicated-test-database.md` |
+| SP-119 | In progress | SP-116 (met) | Implement (autopilot run in progress) | `SP-119-e2e-dedicated-test-database.md` · `artifacts/SP-119/checkpoint.md` |
 
 ## Plan correction log
 
