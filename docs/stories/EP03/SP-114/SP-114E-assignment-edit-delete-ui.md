@@ -6,7 +6,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** Implemented — awaiting parent re-review (review-fix pass closed IR-114-01, IR-114-02, and the E baseline claim in IR-114-05; [implementation](./artifacts/SP-114E/implementation.md))
+**Status:** Implemented — awaiting parent re-review (IR-114-06 post-delete focus handoff fixed; [implementation](./artifacts/SP-114E/implementation.md))
 **Artifact:** [implementation](./artifacts/SP-114E/implementation.md) · [checkpoint](./artifacts/SP-114E/checkpoint.md)
 **Refined:** 2026-10-24
 **Dependencies:** SP-113A (API client `createAssignment` in `entities/assignment/api/assignmentApi.ts`), SP-113B (existing `AssignmentForm` + `AssignmentsSection`), SP-114D (PATCH + DELETE API endpoints)

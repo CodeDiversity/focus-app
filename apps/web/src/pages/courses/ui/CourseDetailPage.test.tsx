@@ -221,6 +221,77 @@ describe('CourseDetailPage page states (AC 1/5, DoD 5)', () => {
     expect(mockedToast.success).not.toHaveBeenCalled();
   });
 
+  it('focuses the next row action after refetch removes a deleted assignment', async () => {
+    const user = setupUser();
+    const second: CourseAssignment = {
+      ...homework,
+      id: 'asgn-2',
+      title: 'Lab Report',
+      dueDate: null,
+      status: 'PENDING',
+      priority: 'MEDIUM',
+    };
+    let finishRefresh!: (detail: CourseDetail) => void;
+    mockedGetCourse
+      .mockResolvedValueOnce({ ...cs101, assignments: [homework, second] })
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishRefresh = resolve;
+          })
+      );
+    vi.mocked(deleteAssignment).mockResolvedValue(undefined);
+    renderPage();
+
+    const trigger = await screen.findByRole('button', { name: 'Delete Problem Set 3' });
+    trigger.focus();
+    await user.keyboard('{Enter}');
+    const dialog = await screen.findByRole('dialog', { name: 'Delete Problem Set 3?' });
+    await user.tab();
+    expect(within(dialog).getByRole('button', { name: 'Delete Problem Set 3' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByText('Problem Set 3')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit Lab Report' })).toHaveFocus();
+
+    finishRefresh({ ...cs101, assignments: [second] });
+    await waitFor(() => expect(screen.queryByText('Problem Set 3')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Edit Lab Report' })).toHaveFocus();
+    expect(document.body).not.toHaveFocus();
+  });
+
+  it('focuses the empty-state add control after refetch removes the final assignment', async () => {
+    const user = setupUser();
+    let finishRefresh!: (detail: CourseDetail) => void;
+    mockedGetCourse.mockResolvedValueOnce(cs101).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishRefresh = resolve;
+        })
+    );
+    vi.mocked(deleteAssignment).mockResolvedValue(undefined);
+    renderPage();
+
+    const trigger = await screen.findByRole('button', { name: 'Delete Problem Set 3' });
+    trigger.focus();
+    await user.keyboard('{Enter}');
+    await screen.findByRole('dialog', { name: 'Delete Problem Set 3?' });
+    await user.tab();
+    await user.keyboard('{Enter}');
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByText('Problem Set 3')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add assignment' })).toHaveFocus();
+
+    finishRefresh({ ...cs101, assignments: [] });
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Add your first assignment' })).toHaveFocus()
+    );
+    expect(screen.queryByText('Problem Set 3')).not.toBeInTheDocument();
+    expect(document.body).not.toHaveFocus();
+  });
+
   it('shows the loading state (generic h1 + spinner copy) while the single fetch is in flight', async () => {
     // Never resolves during the test; unmount cleans up.
     mockedGetCourse.mockImplementation(() => new Promise(() => undefined));

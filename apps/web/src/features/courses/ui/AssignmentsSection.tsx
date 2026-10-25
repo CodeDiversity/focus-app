@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import { Button } from '@/shared/ui/Button';
 import { AssignmentForm } from './AssignmentForm';
@@ -84,6 +84,52 @@ export function AssignmentsSection({
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CourseAssignment | null>(null);
   const [deleting, setDeleting] = useState<CourseAssignment | null>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  // Set when delete succeeds, cleared once the deleted row is actually gone.
+  const [focusAfterDelete, setFocusAfterDelete] = useState<{
+    deletedId: string;
+    neighborId: string | null;
+  } | null>(null);
+
+  const focusControl = (selector: string) => {
+    sectionRef.current?.querySelector<HTMLButtonElement>(selector)?.focus();
+  };
+
+  const handleDeleted = () => {
+    if (!deleting) return;
+    const index = assignments.findIndex((item) => item.id === deleting.id);
+    const neighbor = assignments[index + 1] ?? assignments[index - 1] ?? null;
+    setFocusAfterDelete({ deletedId: deleting.id, neighborId: neighbor?.id ?? null });
+    setDeleting(null);
+    onAssignmentChanged('deleted');
+    // Leave the dialog before it unmounts. A neighboring Edit control is
+    // already mounted; the last-row case uses the stable Add control until
+    // the empty-state button exists.
+    if (neighbor) focusControl(`[data-assignment-focus="edit:${CSS.escape(neighbor.id)}"]`);
+    else focusControl('[data-assignment-focus="add"]');
+  };
+
+  useLayoutEffect(() => {
+    if (!focusAfterDelete) return;
+    if (assignments.some((item) => item.id === focusAfterDelete.deletedId)) return;
+    if (assignments.length === 0) {
+      const empty = sectionRef.current?.querySelector<HTMLButtonElement>(
+        '[data-assignment-focus="empty-add"]'
+      );
+      (
+        empty ??
+        sectionRef.current?.querySelector<HTMLButtonElement>('[data-assignment-focus="add"]')
+      )?.focus();
+    } else if (
+      focusAfterDelete.neighborId &&
+      assignments.some((item) => item.id === focusAfterDelete.neighborId)
+    ) {
+      focusControl(`[data-assignment-focus="edit:${CSS.escape(focusAfterDelete.neighborId)}"]`);
+    } else if (assignments[0]) {
+      focusControl(`[data-assignment-focus="edit:${CSS.escape(assignments[0].id)}"]`);
+    }
+    setFocusAfterDelete(null);
+  }, [assignments, focusAfterDelete]);
 
   // The student's browser time zone (D112B-16) — resolved once per render.
   const timeZone = getBrowserTimeZone();
@@ -103,10 +149,10 @@ export function AssignmentsSection({
   };
 
   return (
-    <section className="card p-6">
+    <section ref={sectionRef} className="card p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-secondary-900">Assignments</h2>
-        <Button size="sm" variant="primary" onClick={openForm}>
+        <Button size="sm" variant="primary" data-assignment-focus="add" onClick={openForm}>
           Add assignment
         </Button>
       </div>
@@ -114,7 +160,7 @@ export function AssignmentsSection({
       {assignments.length === 0 ? (
         <div className="py-8 text-center">
           <p className="text-sm text-secondary-700">No assignments yet.</p>
-          <Button className="mt-4" onClick={openForm}>
+          <Button className="mt-4" data-assignment-focus="empty-add" onClick={openForm}>
             Add your first assignment
           </Button>
         </div>
@@ -148,6 +194,7 @@ export function AssignmentsSection({
                 <Button
                   size="sm"
                   variant="outline"
+                  data-assignment-focus={`edit:${assignment.id}`}
                   aria-label={`Edit ${assignment.title}`}
                   onClick={() => openEdit(assignment)}
                 >
@@ -191,10 +238,7 @@ export function AssignmentsSection({
         <DeleteAssignmentDialog
           assignment={deleting}
           onCancel={() => setDeleting(null)}
-          onDeleted={() => {
-            setDeleting(null);
-            onAssignmentChanged('deleted');
-          }}
+          onDeleted={handleDeleted}
         />
       )}
     </section>

@@ -24,8 +24,9 @@ const FOCUSABLE_SELECTOR =
  *
  * Accessibility: `role="dialog"` + `aria-modal="true"`; on open the safe action
  * (Cancel) receives initial focus and focus is trapped to the dialog (Tab/Shift+Tab
- * cycle within; Escape cancels when not in flight); on close focus returns to the
- * trigger that opened the dialog.
+ * cycle within; Escape cancels when not in flight). Cancel returns focus to the
+ * trigger. A successful delete does not: refetch removes that button, and the
+ * section moves focus to a control that remains.
  */
 export function DeleteAssignmentDialog({
   assignment,
@@ -34,17 +35,20 @@ export function DeleteAssignmentDialog({
 }: DeleteAssignmentDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const skipRestoreRef = useRef(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Remember the trigger (the row's Delete button) to return focus to it.
+    // Remember the trigger (the row's Delete button) to return focus to it
+    // on cancel. A successful delete skips this: refetch removes that button.
     restoreFocusRef.current = document.activeElement as HTMLElement | null;
     // Focus the safe action first: the first focusable is Cancel.
     const first = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
     (first ?? dialogRef.current)?.focus();
     return () => {
-      restoreFocusRef.current?.focus();
+      const trigger = restoreFocusRef.current;
+      if (!skipRestoreRef.current && trigger?.isConnected) trigger.focus();
     };
   }, []);
 
@@ -56,6 +60,8 @@ export function DeleteAssignmentDialog({
     dialogRef.current?.focus();
     try {
       await deleteAssignment(assignment.id);
+      // The row trigger is about to disappear. The section moves focus.
+      skipRestoreRef.current = true;
       onDeleted();
     } catch (err: unknown) {
       const apiError = extractApiError(err);

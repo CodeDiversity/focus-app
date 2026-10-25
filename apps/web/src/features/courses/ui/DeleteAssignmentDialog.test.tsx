@@ -218,4 +218,21 @@ describe('DeleteAssignmentDialog (AC 6, AC 7)', () => {
     expect(trigger).toHaveFocus();
     trigger.remove();
   });
+
+  it('does not restore focus to the trigger after a successful delete', async () => {
+    const trigger = document.createElement('button');
+    trigger.textContent = 'Delete trigger';
+    document.body.appendChild(trigger);
+    trigger.focus();
+    mockedDeleteAssignment.mockResolvedValueOnce(undefined);
+
+    const view = renderDialog();
+    expect(cancelButton()).toHaveFocus();
+
+    await validUser.click(deleteButton());
+    await waitFor(() => expect(view.onDeleted).toHaveBeenCalledTimes(1));
+    view.unmount();
+    expect(trigger).not.toHaveFocus();
+    trigger.remove();
+  });
 });

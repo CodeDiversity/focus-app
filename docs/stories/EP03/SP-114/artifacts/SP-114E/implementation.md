@@ -16,7 +16,7 @@
 | 5 — Edit form submission | Pass. Submitting calls `updateAssignment(assignment.id, payload)`. Blank due date and duration send `null` (D114-5 backend keeps stored values), blank description sends `''` (clears it), priority round-trips. On success closes form and fires `onAssignmentChanged('updated')` (page announces "Assignment updated."). 400 errors map to field alerts, 404 displays inline alert `"Resource not found — this course or assignment may no longer exist."` with link to `/courses`, 5xx/network toasts error and enables retry. Verified in `AssignmentForm.test.tsx` and `CourseDetailPage.test.tsx`. |
 | 6 — Delete confirmation dialog | Pass. `DeleteAssignmentDialog` renders modal dialog with `role="dialog"`, `aria-modal="true"`, `aria-labelledby="delete-assignment-title"`, title `"Delete <assignment title>?"`, body copy `"This permanently deletes the assignment. Any subtasks will remain without an assignment."`, safe Cancel button receiving initial focus, and destructive Delete button. Verified in `DeleteAssignmentDialog.test.tsx`. |
 | 7 — Delete execution and dismissal | Pass after IR-114-02. Clicking Delete calls `deleteAssignment(assignment.id)` while setting `isLoading={true}` on button. On success (204) unmounts dialog and fires `onAssignmentChanged('deleted')` (page announces "Assignment deleted."). Opening Delete calls `onAssignmentFormOpen`, which clears that live region before the next identical success, so a second deletion is a new announcement. On error displays inline alert and allows retry. Cancel button / Escape / backdrop click close without API call. Verified in `DeleteAssignmentDialog.test.tsx`, `AssignmentsSection.test.tsx`, and `CourseDetailPage.test.tsx`. |
-| 8 — Keyboard accessibility and focus management | Pass after IR-114-01. Both dialogs trap Tab/Shift+Tab, including while DELETE is pending and after a rejection. Escape is ignored only while the delete request is in flight; focus is held on the dialog when both buttons are disabled, and Tab from outside the dialog is pulled back. Initial focus remains Cancel. Verified in `DeleteAssignmentDialog.test.tsx` (deferred-promise regression with a focusable background control) and the idle trap tests. |
+| 8 — Keyboard accessibility and focus management | Pass after IR-114-01 and IR-114-06. Both dialogs trap Tab/Shift+Tab, including while DELETE is pending and after a rejection. Escape is ignored only while the delete request is in flight. Cancel still restores the trigger. After a successful delete, the dialog does not restore the row button that refetch removes; focus moves to the next or previous row's Edit control, or to `Add your first assignment` once the final row is gone. Verified by the deferred-promise trap regression and the delete/refetch focus regressions in `AssignmentsSection.test.tsx` and `CourseDetailPage.test.tsx`. |
 | 9 — Responsive layout | Pass. Uses `sm:flex-row sm:items-center sm:justify-between` and `flex-wrap gap-2` on row items and action clusters. Verified visually and in DOM structure assertions. |
 | 10 — Empty state transition | Pass. Removing/deleting all assignments transitions `AssignmentsSection` back to empty state (`"No assignments yet."` with `"Add your first assignment"` CTA). Verified in `AssignmentsSection.test.tsx`. |
 
@@ -44,6 +44,7 @@ Original implementation pass found none. Parent review pass 1
 | IR-114-01 | Pending DELETE returned from the whole key handler, so Tab could leave the modal | **Fixed** | `DeleteAssignmentDialog.tsx` suppresses only Escape while deleting, focuses the dialog, and contains Tab/Shift+Tab on a document capture listener. Regression in `DeleteAssignmentDialog.test.tsx`. |
 | IR-114-02 | Opening Delete did not clear `Assignment deleted.`, so a second deletion did not change the live region | **Fixed** | `AssignmentsSection` calls `onAssignmentFormOpen` on delete open; the page already clears status there. Page regression deletes two assignments and checks the intervening empty status plus the second `Assignment deleted.` |
 | IR-114-05 (E record) | Baseline was recorded as `b089cfa`, which is not a commit here | **Fixed** | This record's baseline is `286d64f`, the D implementation commit directly before E `74822fd`. |
+| IR-114-06 | Successful delete restored the row Delete button, then refetch removed it and focus fell to `BODY` | **Fixed** | `DeleteAssignmentDialog` skips trigger restoration after success. `AssignmentsSection` focuses the next or previous Edit control, and after the deleted id leaves the list focuses that surviving control or `Add your first assignment` when empty. Page regressions hold the refetch, remove the row, and assert focus. Cancel/edit restoration is unchanged. No new browser walk was run; the executed journey is the Vitest keyboard/refetch tests below. |
 
 ## Verification (executed)
 
@@ -67,6 +68,18 @@ All commands run from `apps/web` against the final working tree.
 | `pnpm exec prettier --check` on those files | Pass. |
 | `pnpm typecheck` | Pass. |
 
+### IR-114-06 verification (2026-10-24 22:16 EDT, `apps/web`)
+
+Working tree on `b2c1c6e` plus this focus fix. Exit codes are from this run.
+
+| Command | Result |
+|---|---|
+| `pnpm test -- run AssignmentsSection.test.tsx DeleteAssignmentDialog.test.tsx CourseDetailPage.test.tsx` | Pass, exit 0 — 3 files, 47 tests. The package script already runs `vitest run`, so the extra `run` argument matched no additional file. |
+| `pnpm exec eslint` on the five changed web files `--max-warnings 0` | Pass, exit 0. |
+| `pnpm typecheck` | Pass, exit 0 (`tsc --noEmit`). |
+
+The page tests keyboard-activate Delete, hold the course refetch, then assert focus on the next row's Edit control and, for the final assignment, on `Add your first assignment`. This is Vitest/jsdom, not a new browser walk.
+
 ## DoD and remaining work
 
-E's keyboard and announcement gaps from review pass 1 are fixed. Combined parent re-review remains after the D/F review-fix closeout. No independent approval is claimed.
+E's keyboard gaps from review passes 1 and 2 are fixed, including post-delete focus (IR-114-06). Combined parent re-review remains. No independent approval is claimed. A new browser walk was not run.

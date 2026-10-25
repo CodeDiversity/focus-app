@@ -1,6 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { AssignmentsSection as Section } from './AssignmentsSection';
+import { deleteAssignment } from '@/entities/assignment/api/assignmentApi';
+
+vi.mock('@/entities/assignment/api/assignmentApi', () => ({
+  createAssignment: vi.fn(),
+  updateAssignment: vi.fn(),
+  deleteAssignment: vi.fn(),
+}));
 import { Providers } from '@/test/providers';
 import { setupUser } from '@/test/user';
 import type { CourseAssignment } from '@/shared/types/academic';
@@ -240,5 +247,64 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
         .getAllByRole('listitem')
         .map((item) => within(item).getByText(/Problem Set|Research Essay|Lab Report/).textContent)
     ).toEqual(['Problem Set 4', 'Research Essay', 'Lab Report']);
+  });
+
+  it('focuses the next row Edit control after the deleted assignment leaves the list', async () => {
+    const user = setupUser();
+    const onAssignmentChanged = vi.fn();
+    vi.mocked(deleteAssignment).mockResolvedValue(undefined);
+    const view = render(
+      <AssignmentsSection
+        assignments={[problemSet, essay]}
+        onAssignmentChanged={onAssignmentChanged}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Delete Problem Set 4' }));
+    const dialog = screen.getByRole('dialog', { name: 'Delete Problem Set 4?' });
+    await user.click(within(dialog).getByRole('button', { name: 'Delete Problem Set 4' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(onAssignmentChanged).toHaveBeenCalledWith('deleted');
+    expect(screen.getByRole('button', { name: 'Edit Research Essay' })).toHaveFocus();
+
+    view.rerender(
+      <AssignmentsSection assignments={[essay]} onAssignmentChanged={onAssignmentChanged} />
+    );
+    expect(screen.queryByText('Problem Set 4')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit Research Essay' })).toHaveFocus();
+    expect(document.body).not.toHaveFocus();
+  });
+
+  it('focuses the previous row Edit control when the deleted assignment was last', async () => {
+    const user = setupUser();
+    vi.mocked(deleteAssignment).mockResolvedValue(undefined);
+    const view = render(<AssignmentsSection assignments={[problemSet, essay]} />);
+
+    await user.click(screen.getByRole('button', { name: 'Delete Research Essay' }));
+    const dialog = screen.getByRole('dialog', { name: 'Delete Research Essay?' });
+    await user.click(within(dialog).getByRole('button', { name: 'Delete Research Essay' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Edit Problem Set 4' })).toHaveFocus();
+
+    view.rerender(<AssignmentsSection assignments={[problemSet]} />);
+    expect(screen.queryByText('Research Essay')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit Problem Set 4' })).toHaveFocus();
+  });
+
+  it('focuses the empty-state add control after the final assignment leaves the list', async () => {
+    const user = setupUser();
+    vi.mocked(deleteAssignment).mockResolvedValue(undefined);
+    const view = render(<AssignmentsSection assignments={[problemSet]} />);
+
+    await user.click(screen.getByRole('button', { name: 'Delete Problem Set 4' }));
+    const dialog = screen.getByRole('dialog', { name: 'Delete Problem Set 4?' });
+    await user.click(within(dialog).getByRole('button', { name: 'Delete Problem Set 4' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Add assignment' })).toHaveFocus();
+
+    view.rerender(<AssignmentsSection assignments={[]} />);
+    expect(screen.queryByText('Problem Set 4')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add your first assignment' })).toHaveFocus();
+    expect(document.body).not.toHaveFocus();
   });
 });
