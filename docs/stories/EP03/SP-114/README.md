@@ -11,14 +11,14 @@
 **Delivery home:** `docs/stories/EP03/SP-114/`
 **Artifact root:** `./artifacts/` (stable story IDs)
 **Parent artifacts:** `./artifacts/SP-114/` (parent index written by F; review and walkthrough by reviewer)
-**Active substory:** SP-114F — review-fix pass for IR-114-03, IR-114-04, and IR-114-05 after E's keyboard and announcement fixes.
-**Next substory:** None until this F closeout finishes; combined SP-114 parent re-review follows.
+**Active substory:** None — review-fix pass for IR-114-01 through IR-114-05 is implemented.
+**Next substory:** None — combined SP-114 parent re-review is next. Do not mark Reviewed until that passing review and its walkthrough exist.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [D](./SP-114D-assignment-update-delete-api.md) | **Implemented — awaiting parent review** | SP-113A complete (satisfied 2026-10-24) | None — awaits the combined SP-114 review | [implementation](./artifacts/SP-114D/implementation.md) |
+| [D](./SP-114D-assignment-update-delete-api.md) | **Implemented — awaiting parent review** | IR-114-04 fixture reads scoped 2026-10-24 | None — awaits the combined SP-114 re-review | [implementation](./artifacts/SP-114D/implementation.md) · [checkpoint](./artifacts/SP-114D/checkpoint.md) |
 | [E](./SP-114E-assignment-edit-delete-ui.md) | **Implemented — awaiting parent review** | Review pass 1 IR-114-01/02 fixed 2026-10-24 | None — awaits the combined SP-114 re-review | [implementation](./artifacts/SP-114E/implementation.md) · [checkpoint](./artifacts/SP-114E/checkpoint.md) |
-| [F](./SP-114F-assignment-edit-delete-integration.md) | **In progress** | Review pass 1 Changes Required (IR-114-03, IR-114-04, IR-114-05) | Finish fixture-query scoping, record corrections, and browser error/retry evidence | [implementation](./artifacts/SP-114F/implementation.md) · [checkpoint](./artifacts/SP-114F/checkpoint.md) |
+| [F](./SP-114F-assignment-edit-delete-integration.md) | **Implemented — awaiting parent review** | IR-114-03/04/05 fixed 2026-10-24 | None — awaits the combined SP-114 re-review | [implementation](./artifacts/SP-114F/implementation.md) · [browser evidence](./artifacts/SP-114F/browser-error-retry.md) |
 
 Sequence: SP-114 (D → E → F), one sequential writer. E requires a `ui-refiner` pass before implementation (see UI/UX gaps in E's ticket).
 

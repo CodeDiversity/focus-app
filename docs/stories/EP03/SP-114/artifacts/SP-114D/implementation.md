@@ -1,6 +1,6 @@
 # SP-114D implementation
 
-**Status:** Implemented — awaiting combined SP-114 parent review.
+**Status:** Implemented — awaiting combined SP-114 parent re-review.
 **Date:** 2026-10-24
 **Scope:** SP-114D only; baseline `0f47d72` (refine(SP-114) tickets).
 **Contract:** [parent shared API contract and D114-1…4](../../README.md#shared-api-contract) + ticket decisions D114-1…5.
@@ -39,6 +39,7 @@ DoD 9 (API documentation): contract documented in the [parent README](../../READ
 | F114D-1 — AC 1/4 | First `typecheck` failed (TS2322): the declared `data` object type allowed `priority: … \| null`, which Prisma's `AssignmentUpdateInput` rejects. | **Fixed**, implementer. Narrowed the declared `data` field types to non-null (`has()` already excludes nulls before the spread). Typecheck passes; all gates re-run after. |
 | F114D-2 — AC 8 | Authoring slip in the new data-scoping tests: stray third `201` argument on `post()` calls (2-parameter helper). | **Fixed**, implementer, by inspection before the file's first run; no red run occurred. Prettier/lint/typecheck all pass on the final file. |
 | F114D-3 — closeout | First `eslint` pass reported 46 Prettier formatting errors across the four touched files. | **Fixed**, implementer, via `format:write` (only the four owned files changed); typecheck/lint/format + full suite re-verified green afterward. |
+| IR-114-04 — review pass 1 | New data-scoping fixture reads used only the assignment/task id (`assignments-data-scoping.spec.ts` PATCH/DELETE before-after reads and the task-survival read). Production mutation queries were already scoped. | **Fixed**, implementer. Those reads now use `ownedWhere(students[0].id, id)` via `findFirst`. Survival and unchanged-row assertions remain. Re-run on disposable database `sp114_fix_20261024` (dropped after): data-scoping + e2e specs, 69 tests passed. |
 
 Deviation notes (no AC impact): the ticket's "inspected code paths" cite `common/validation.pipe.ts`; the actual path is `common/pipes/validation.pipe.ts` (same doc correction SP-113A recorded). The service reuses one `assertDto()` helper for both the raw-DTO and merged-value `validateSync` re-checks — one rule source, the create pattern, rather than duplicating the 14-line block twice.
 
@@ -59,4 +60,15 @@ All commands run from `apps/api` against the final (post-format) working tree. N
 
 ## DoD and remaining work
 
-Backend DoD 1–4, 8–9 satisfied by the implementation and tests above (DoD 5–7 are UI obligations owned by E; DoD 10 by F + the combined parent review). No open findings. Next: **SP-114E needs its `ui-refiner` pass** before implementation (queue). SP-114F (e2e extension + DoD-10 sign-off + parent index) and the combined SP-114 review remain. No child reviewer dispatched.
+Backend DoD 1–4, 8–9 were satisfied by the original implementation. Review pass 1's fixture-read convention gap (IR-114-04) is fixed in the data-scoping spec; the matching e2e reads are recorded on F. Combined parent re-review remains. No independent approval is claimed.
+
+### Review-fix verification (2026-10-24, `apps/api`)
+
+Disposable local database `sp114_fix_20261024` on the already-running Postgres `:5432`, created for this pass and dropped afterward. No `.env` file was read.
+
+| Command | Result |
+|---|---|
+| `pnpm exec prisma migrate deploy` | Pass; 12 migrations applied. |
+| `pnpm exec jest --runInBand src/modules/assignments/assignments-data-scoping.spec.ts src/modules/assignments/assignments-e2e.spec.ts` | Pass — 2 suites, 69 tests. |
+| `pnpm exec eslint` on those two specs `--max-warnings 0` | Pass. |
+| `pnpm exec prettier --check` on those two specs | Pass. |

@@ -1,6 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
+import { ownedWhere } from '../../common/ownership/ownership';
 import { createIntegrationApp, IntegrationApp } from '../../test/test-http';
 
 // SP-113C: real HTTP + PostgreSQL journey through the same create/refetch
@@ -312,14 +313,20 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
     const response = await del(studentA, created.body.id).expect(HttpStatus.NO_CONTENT);
     expect(response.text).toBe('');
 
-    expect(await app.prisma.assignment.findUnique({ where: { id: created.body.id } })).toBeNull();
+    expect(
+      await app.prisma.assignment.findFirst({
+        where: ownedWhere(studentA.id, created.body.id),
+      })
+    ).toBeNull();
 
     const refetched = await detail(studentA, courseA).expect(HttpStatus.OK);
     expect(refetched.body.assignments.map((a: { id: string }) => a.id)).not.toContain(
       created.body.id
     );
 
-    const survivingTask = await app.prisma.task.findUnique({ where: { id: task.id } });
+    const survivingTask = await app.prisma.task.findFirst({
+      where: ownedWhere(studentA.id, task.id),
+    });
     expect(survivingTask).toMatchObject({
       id: task.id,
       userId: studentA.id,

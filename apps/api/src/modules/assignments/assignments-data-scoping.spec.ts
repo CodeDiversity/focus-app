@@ -1,4 +1,5 @@
 import { v4 as uuid } from 'uuid';
+import { ownedWhere } from '../../common/ownership/ownership';
 import { createIntegrationApp, IntegrationApp } from '../../test/test-http';
 
 const describeIntegration = process.env.DATABASE_URL ? describe : describe.skip;
@@ -252,7 +253,9 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
 
   it('student B cannot PATCH student A assignment: foreign/missing/malformed → uniform 404, row unchanged', async () => {
     const created = await post(0, { title: 'Locked', description: 'Original' }).expect(201);
-    const before = await app.prisma.assignment.findFirst({ where: { id: created.body.id } });
+    const before = await app.prisma.assignment.findFirst({
+      where: ownedWhere(students[0].id, created.body.id),
+    });
     for (const id of [created.body.id, uuid(), 'not-an-id']) {
       const response = await patch(1, id, { title: 'Hijack', description: 'x' }).expect(404);
       expect(response.body).toMatchObject({
@@ -261,15 +264,19 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
         error: 'Not Found',
       });
     }
-    expect(await app.prisma.assignment.findFirst({ where: { id: created.body.id } })).toEqual(
-      before
-    );
+    expect(
+      await app.prisma.assignment.findFirst({
+        where: ownedWhere(students[0].id, created.body.id),
+      })
+    ).toEqual(before);
     expect(await app.prisma.assignment.count({ where: { userId: students[1].id } })).toBe(0);
   });
 
   it('student B cannot DELETE student A assignment: foreign/missing/malformed → uniform 404, row unchanged', async () => {
     const created = await post(0, { title: 'Protected' }).expect(201);
-    const before = await app.prisma.assignment.findFirst({ where: { id: created.body.id } });
+    const before = await app.prisma.assignment.findFirst({
+      where: ownedWhere(students[0].id, created.body.id),
+    });
     for (const id of [created.body.id, uuid(), 'not-an-id']) {
       const response = await del(1, id).expect(404);
       expect(response.body).toMatchObject({
@@ -278,9 +285,11 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
         error: 'Not Found',
       });
     }
-    expect(await app.prisma.assignment.findFirst({ where: { id: created.body.id } })).toEqual(
-      before
-    );
+    expect(
+      await app.prisma.assignment.findFirst({
+        where: ownedWhere(students[0].id, created.body.id),
+      })
+    ).toEqual(before);
   });
 
   it('own DELETE → 204 with no body, and the row is gone', async () => {
@@ -301,8 +310,14 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
       data: { userId: students[0].id, assignmentId: created.body.id, title: 'Subtask' },
     });
     await del(0, created.body.id).expect(204);
-    expect(await app.prisma.assignment.findFirst({ where: { id: created.body.id } })).toBeNull();
-    const surviving = await app.prisma.task.findUnique({ where: { id: task.id } });
+    expect(
+      await app.prisma.assignment.findFirst({
+        where: ownedWhere(students[0].id, created.body.id),
+      })
+    ).toBeNull();
+    const surviving = await app.prisma.task.findFirst({
+      where: ownedWhere(students[0].id, task.id),
+    });
     expect(surviving).toMatchObject({
       assignmentId: null,
       userId: students[0].id,

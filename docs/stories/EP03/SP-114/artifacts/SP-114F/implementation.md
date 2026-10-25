@@ -1,6 +1,6 @@
 # SP-114F implementation
 
-**Status:** Implemented — awaiting combined SP-114 parent review (2026-10-24).
+**Status:** Implemented — awaiting combined SP-114 parent re-review (2026-10-24).
 **Scope:** F only: e2e tests, DoD-10 manual sign-off, parent implementation index.
 **Baseline:** `74822fd` (SP-114E implementation).
 **Contract / story:** [shared API contract](../../README.md#shared-api-contract),
@@ -12,14 +12,20 @@
 |---|---|
 | 1 — E2E PATCH flow | **Pass.** Extended `apps/api/src/modules/assignments/assignments-e2e.spec.ts`: `POST` creates assignment on course; `PATCH /assignments/:id` updates title, description, due date, estimated hours, and priority; returns 10-key projection; verifies DB row merged values; refetches `GET /courses/:id` and verifies updated assignment in projection. |
 | 2 — E2E DELETE flow & task cascade | **Pass.** `DELETE /assignments/:id` returns 204 No Content with empty body; verifies assignment is null in DB; verifies removal from `GET /courses/:id` projection; verifies seeded child task survives deletion with `assignmentId: null` and intact `userId` (D114-4). |
-| 3 — E2E ownership scoping | **Pass.** Student B attempts to PATCH and DELETE student A's assignment, as well as foreign, missing (random UUID), and malformed IDs; all return uniform 404 `Resource not found` without modifying student A's assignment or course detail projection; student B owns 0 assignments. |
+| 3 — E2E ownership scoping | **Pass.** Student B attempts to PATCH and DELETE student A's assignment, as well as foreign, missing (random UUID), and malformed IDs; all return uniform 404 `Resource not found` without modifying student A's assignment or course detail projection. The assertion is that student B's assignment count is unchanged from its pre-test count (`beforeBCount`), not that student B owns zero assignments. An earlier test in the same file creates B's own assignment and does not clean it up per test (IR-114-05). |
 | 4 — E2E validation matrix | **Pass.** Invalid inputs on PATCH (whitespace-only title, title > 200 chars, invalid date string, invalid leap year date `2026-02-30`, estimated hours `<= 0`, `> 1000`, non-numeric, invalid priority enum, description > 2000 chars, lifecycle fields `status`/`actualHours`, `courseId`, `userId`) rejected with 400 field-level errors and zero DB writes. |
 | 5 — E2E null semantics (D114-5) | **Pass.** Explicit `null` for `dueDate`, `estimatedHours`, `priority` retains existing stored values; `description: ''` clears stored description; empty body `{}` and all-null body reject with 400 "At least one field must be provided". |
-| 6 — DoD-10 manual sign-off | **Pass.** Executed against running dev stack using headless Google Chrome 155.0.8059.85 via REA scenario harness: course detail header & row controls (`ev_7a48096d…`), edit flow with mode-aware hints & `"Assignment updated."` live-region announcement with no toast (`ev_bd80d565…`, `ev_83a9386e…`), client validation error (`ev_60464c22…`), description clearing (`ev_ed3fb6cf…`), delete cancel flow (`ev_79d2b82b…`), delete execution with `"Assignment deleted."` announcement & empty state transition (`ev_df4560d3…`), keyboard focus and Escape trap (`ev_e93c10b2…`), and mobile 390x844 responsive pass (`ev_05705984…`). |
+| 6 — DoD-10 manual sign-off | **Pass for the checks executed; prior happy-path IDs are not re-executed.** The original happy-path walk (course header, edit hints, client validation, description clearing, delete cancel, single delete, idle keyboard, mobile 390x844) remains the previously recorded Chrome 155.0.8059.85 REA session cited below and was not repeated where that code is unchanged. Review pass 1 required the missing error/retry cases plus the changed pending-delete and consecutive-announcement workflows. Those were executed 2026-10-24 21:47 EDT and are recorded in [browser-error-retry.md](./browser-error-retry.md) with screenshots and `browser-evidence/observations.json`. |
 
 ## Findings / deviations and final dispositions
 
-Findings/deviations: None.
+Original F pass recorded none. Parent review pass 1 required these corrections:
+
+| ID | Issue | Disposition | Closure |
+|---|---|---|---|
+| IR-114-03 | Network/5xx edit recovery and delete failure/retry were not in the browser record | **Fixed** | [browser-error-retry.md](./browser-error-retry.md). Edit field error, PATCH 500 + retry, PATCH network failure + retry, edit 404, DELETE 500 + retry, pending-delete keyboard, and consecutive announcements were executed in headless Chrome against the local dev stack. |
+| IR-114-04 | New e2e fixture reads used only the assignment/task id | **Fixed** | `assignments-e2e.spec.ts` survival reads use `ownedWhere(studentA.id, id)`. Data-scoping reads are closed on D. Both specs re-ran: 69 tests passed. |
+| IR-114-05 (F record) | AC 3 said student B owns zero assignments | **Fixed** | AC 3 now describes the unchanged pre-test count, which is what `beforeBCount` asserts. |
 
 ## Verification (executed)
 
@@ -39,6 +45,14 @@ All commands ran from repository root or respective package workspace against th
 | `pnpm --filter @studypilot/web lint` | Pass clean with 0 warnings. |
 | `pnpm --filter @studypilot/web build` | Pass clean (`vite build`). |
 
+### Review-fix verification (2026-10-24)
+
+| Command | cwd | Result |
+|---|---|---|
+| `pnpm exec jest --runInBand` on the data-scoping and e2e specs, disposable database `sp114_fix_20261024` (dropped after) | `apps/api` | Pass — 2 suites, 69 tests. |
+| `pnpm exec eslint` on those two specs `--max-warnings 0`; prettier check | `apps/api` | Pass. |
+| Headless Chrome 155.0.8059.85 walk | local web `:3000` / API `:4000` | 12/12 observations passed. See [browser-error-retry.md](./browser-error-retry.md). |
+
 ## Changed paths / commit scope
 
 - `apps/api/src/modules/assignments/assignments-e2e.spec.ts` — extended with PATCH, DELETE, ownership, validation, and null-semantics e2e tests.
@@ -51,4 +65,4 @@ All commands ran from repository root or respective package workspace against th
 
 ## Remaining / review handoff
 
-All authorized implementation work for SP-114 is finished. Request **one combined independent SP-114 parent review** of D/E/F, using the parent index at `./artifacts/SP-114/implementation.md`. Formal DoD-10/11 reviewer-owned `review.md` + `walkthrough.md` remain outstanding for the independent reviewer.
+Review-fix pass for IR-114-01 through IR-114-05 is implemented. Request **one combined independent SP-114 parent re-review** of D/E/F, including the fix commit after E `5b1f33b` and this F closeout commit. Formal passing `review.md` + `walkthrough.md` remain reviewer-owned. This record does not claim approval. The untracked pass-1 `review.md` is preserved and not edited.

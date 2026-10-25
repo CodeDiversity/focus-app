@@ -1,0 +1,434 @@
+{
+  "date": "2026-10-24",
+  "environment": {
+    "browser": "Chrome/155.0.8059.85",
+    "web": "http://localhost:3000",
+    "api": "http://127.0.0.1:4000",
+    "viewport": "1280x800 headless",
+    "courseName": "Editing Recovery",
+    "email": "sp114-fix-1792892856257@studypilot-test.invalid"
+  },
+  "observations": [
+    {
+      "id": "setup",
+      "ok": true,
+      "summary": "Logged in through the SPA and opened the seeded course detail page.",
+      "product": "Chrome/155.0.8059.85",
+      "courseId": "04aedf60-8c31-449d-9e63-55a71b49473c",
+      "userId": "74bd16ae-a990-46cb-964c-fa84e40ca38f",
+      "email": "sp114-fix-1792892856257@studypilot-test.invalid",
+      "screenshot": "browser-evidence/01-course-detail.png",
+      "state": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "BODY",
+        "activeRole": null,
+        "activeName": "SStudyPilotHomeDashboardSemestersCoursesProfileWelcome, SP114 FixEmail verificat",
+        "inDialog": false,
+        "dialogTitle": null,
+        "status": "",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": false,
+          "successToast": false,
+          "loginToast": true
+        },
+        "titleValue": null,
+        "saveEnabled": null,
+        "deleteEnabled": true
+      }
+    },
+    {
+      "id": "edit-field-error",
+      "ok": true,
+      "summary": "Clearing Title and saving shows the client field error, keeps the dialog open, preserves the empty title, and does not announce success.",
+      "screenshot": "browser-evidence/02-edit-field-error.png",
+      "state": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "INPUT",
+        "activeRole": null,
+        "activeName": "",
+        "inDialog": true,
+        "dialogTitle": "Edit assignment",
+        "status": "",
+        "alerts": [],
+        "fieldErrors": [
+          "Title is required"
+        ],
+        "bodyHas": {
+          "saveToast": false,
+          "successToast": false,
+          "loginToast": true
+        },
+        "titleValue": "",
+        "saveEnabled": false,
+        "deleteEnabled": true
+      }
+    },
+    {
+      "id": "edit-500",
+      "ok": true,
+      "summary": "A real browser PATCH fulfilled as HTTP 500 shows the retry toast, preserves the edited title, leaves Save enabled, and does not announce success.",
+      "screenshot": "browser-evidence/03-edit-500.png",
+      "state": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "DIV",
+        "activeRole": "dialog",
+        "activeName": "Edit assignmentTitleDue dateOptional — leave blank to keep the current due date.",
+        "inDialog": true,
+        "dialogTitle": "Edit assignment",
+        "status": "",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": false,
+          "loginToast": true
+        },
+        "titleValue": "Retry Edit revised",
+        "saveEnabled": false,
+        "deleteEnabled": true
+      }
+    },
+    {
+      "id": "edit-500-retry",
+      "ok": true,
+      "summary": "Retrying the same edit after the 500 succeeds, closes the dialog, and announces Assignment updated. A lingering error toast is recorded separately and is not success feedback.",
+      "screenshot": "browser-evidence/04-edit-500-retry.png",
+      "state": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "BODY",
+        "activeRole": null,
+        "activeName": "SStudyPilotHomeDashboardSemestersCoursesProfileWelcome, SP114 FixEmail verificat",
+        "inDialog": false,
+        "dialogTitle": null,
+        "status": "Assignment updated.",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": true,
+          "loginToast": true
+        },
+        "titleValue": null,
+        "saveEnabled": null,
+        "deleteEnabled": true
+      }
+    },
+    {
+      "id": "edit-network",
+      "ok": true,
+      "summary": "Failing the PATCH at the network layer shows the same retry toast, preserves the title, and does not announce success.",
+      "screenshot": "browser-evidence/05-edit-network.png",
+      "state": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "DIV",
+        "activeRole": "dialog",
+        "activeName": "Edit assignmentTitleDue dateOptional — leave blank to keep the current due date.",
+        "inDialog": true,
+        "dialogTitle": "Edit assignment",
+        "status": "",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": false,
+          "loginToast": false
+        },
+        "titleValue": "Retry Edit network",
+        "saveEnabled": false,
+        "deleteEnabled": true
+      }
+    },
+    {
+      "id": "edit-network-retry",
+      "ok": true,
+      "summary": "The network-failed edit retries successfully and announces Assignment updated.",
+      "screenshot": "browser-evidence/06-edit-network-retry.png",
+      "state": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "BODY",
+        "activeRole": null,
+        "activeName": "SStudyPilotHomeDashboardSemestersCoursesProfileWelcome, SP114 FixEmail verificat",
+        "inDialog": false,
+        "dialogTitle": null,
+        "status": "Assignment updated.",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": true,
+          "loginToast": false
+        },
+        "titleValue": null,
+        "saveEnabled": null,
+        "deleteEnabled": true
+      }
+    },
+    {
+      "id": "edit-404",
+      "ok": true,
+      "summary": "Saving an assignment deleted out of band shows the inline 404 alert and Back to courses link, preserves typed input, and does not announce success.",
+      "screenshot": "browser-evidence/07-edit-404.png",
+      "state": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "DIV",
+        "activeRole": "dialog",
+        "activeName": "Edit assignmentTitleDue dateOptional — leave blank to keep the current due date.",
+        "inDialog": true,
+        "dialogTitle": "Edit assignment",
+        "status": "",
+        "alerts": [
+          "Resource not found — this course or assignment may no longer exist.Back to courses"
+        ],
+        "fieldErrors": [
+          "Resource not found — this course or assignment may no longer exist."
+        ],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": false,
+          "loginToast": false
+        },
+        "titleValue": "Missing Edit still typed",
+        "saveEnabled": false,
+        "deleteEnabled": true
+      }
+    },
+    {
+      "id": "delete-500",
+      "ok": true,
+      "summary": "A DELETE fulfilled as HTTP 500 shows an inline alert, re-enables Cancel and Delete, and does not announce success.",
+      "screenshot": "browser-evidence/08-delete-500.png",
+      "state": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "DIV",
+        "activeRole": "dialog",
+        "activeName": "Delete Fail Delete?This permanently deletes the assignment. Any subtasks will re",
+        "inDialog": true,
+        "dialogTitle": "Delete Fail Delete?",
+        "status": "",
+        "alerts": [
+          "Internal server error"
+        ],
+        "fieldErrors": [
+          "Internal server error"
+        ],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": false,
+          "loginToast": false
+        },
+        "titleValue": null,
+        "saveEnabled": null,
+        "deleteEnabled": true
+      },
+      "buttons": [
+        {
+          "name": "Cancel",
+          "disabled": false
+        },
+        {
+          "name": "Delete Fail Delete",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "id": "delete-500-retry",
+      "ok": true,
+      "summary": "Retrying the failed delete succeeds and announces Assignment deleted.",
+      "screenshot": "browser-evidence/09-delete-retry.png",
+      "state": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "BODY",
+        "activeRole": null,
+        "activeName": "SStudyPilotHomeDashboardSemestersCoursesProfileWelcome, SP114 FixEmail verificat",
+        "inDialog": false,
+        "dialogTitle": null,
+        "status": "Assignment deleted.",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": true,
+          "loginToast": false
+        },
+        "titleValue": null,
+        "saveEnabled": null,
+        "deleteEnabled": true
+      }
+    },
+    {
+      "id": "pending-delete-keyboard",
+      "ok": true,
+      "summary": "While DELETE is held, Tab and Shift+Tab stay inside the dialog, Escape does not dismiss it, and Tab after focus is moved to the page is pulled back into the dialog.",
+      "screenshot": "browser-evidence/10-pending-delete-keyboard.png",
+      "tabState": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "DIV",
+        "activeRole": "dialog",
+        "activeName": "Delete First Announce?This permanently deletes the assignment. Any subtasks will",
+        "inDialog": true,
+        "dialogTitle": "Delete First Announce?",
+        "status": "",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": false,
+          "loginToast": false
+        },
+        "titleValue": null,
+        "saveEnabled": null,
+        "deleteEnabled": true
+      },
+      "shiftPrep": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "DIV",
+        "activeRole": "dialog",
+        "activeName": "Delete First Announce?This permanently deletes the assignment. Any subtasks will",
+        "inDialog": true,
+        "dialogTitle": "Delete First Announce?",
+        "status": "",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": false,
+          "loginToast": false
+        },
+        "titleValue": null,
+        "saveEnabled": null,
+        "deleteEnabled": true
+      },
+      "shiftState": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "DIV",
+        "activeRole": "dialog",
+        "activeName": "Delete First Announce?This permanently deletes the assignment. Any subtasks will",
+        "inDialog": true,
+        "dialogTitle": "Delete First Announce?",
+        "status": "",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": false,
+          "loginToast": false
+        },
+        "titleValue": null,
+        "saveEnabled": null,
+        "deleteEnabled": true
+      },
+      "escapeState": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "DIV",
+        "activeRole": "dialog",
+        "activeName": "Delete First Announce?This permanently deletes the assignment. Any subtasks will",
+        "inDialog": true,
+        "dialogTitle": "Delete First Announce?",
+        "status": "",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": false,
+          "loginToast": false
+        },
+        "titleValue": null,
+        "saveEnabled": null,
+        "deleteEnabled": true
+      },
+      "outsideBeforeTab": "Courses",
+      "pulled": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "DIV",
+        "activeRole": "dialog",
+        "activeName": "Delete First Announce?This permanently deletes the assignment. Any subtasks will",
+        "inDialog": true,
+        "dialogTitle": "Delete First Announce?",
+        "status": "",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": false,
+          "loginToast": false
+        },
+        "titleValue": null,
+        "saveEnabled": null,
+        "deleteEnabled": true
+      },
+      "heldCount": 1,
+      "keyboardFocusOnDeleteBeforeActivate": true
+    },
+    {
+      "id": "pending-delete-released",
+      "ok": true,
+      "summary": "Releasing the held DELETE announces Assignment deleted. and closes the dialog.",
+      "state": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "BODY",
+        "activeRole": null,
+        "activeName": "SStudyPilotHomeDashboardSemestersCoursesProfileWelcome, SP114 FixEmail verificat",
+        "inDialog": false,
+        "dialogTitle": null,
+        "status": "Assignment deleted.",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": true,
+          "loginToast": false
+        },
+        "titleValue": null,
+        "saveEnabled": null,
+        "deleteEnabled": true
+      }
+    },
+    {
+      "id": "consecutive-delete-announcement",
+      "ok": true,
+      "summary": "Opening the second delete dialog clears the existing Assignment deleted. status; confirming sets that exact text again on the same live region.",
+      "screenshot": "browser-evidence/11-consecutive-delete.png",
+      "cleared": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "BUTTON",
+        "activeRole": null,
+        "activeName": "Cancel",
+        "inDialog": true,
+        "dialogTitle": "Delete Second Announce?",
+        "status": "",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": false,
+          "loginToast": false
+        },
+        "titleValue": null,
+        "saveEnabled": null,
+        "deleteEnabled": true
+      },
+      "second": {
+        "url": "/courses/04aedf60-8c31-449d-9e63-55a71b49473c",
+        "activeTag": "BODY",
+        "activeRole": null,
+        "activeName": "SStudyPilotHomeDashboardSemestersCoursesProfileWelcome, SP114 FixEmail verificat",
+        "inDialog": false,
+        "dialogTitle": null,
+        "status": "Assignment deleted.",
+        "alerts": [],
+        "fieldErrors": [],
+        "bodyHas": {
+          "saveToast": true,
+          "successToast": true,
+          "loginToast": false
+        },
+        "titleValue": null,
+        "saveEnabled": null,
+        "deleteEnabled": true
+      }
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # SP-114 combined implementation index
 
-**State:** Ready for one independent combined parent review, 2026-10-24.
-Not reviewed/approved.
+**State:** Ready for one independent combined parent re-review, 2026-10-24.
+Review pass 1 returned Changes Required. IR-114-01 through IR-114-05 are fixed in the implementation records linked below. Not approved.
 
 ## Review unit / complete inventory
 
@@ -18,10 +18,11 @@ Execution authority: [canonical queue](../../README.md#execution-queue).
 
 - Baseline **before the first included implementation change**:
   `0f47d72` (`refine(SP-114): D/E/F tickets against codebase + user decisions 2026-10-24`).
-- Final implementation commit: **the commit introducing this index**. Resolve
-  its exact hash with `git log -1 --format=%H -- docs/stories/EP03/SP-114/artifacts/SP-114/implementation.md`.
-  The verified hash is returned in the F closeout handoff; it is deliberately not
-  embedded into its own contents.
+- Original final implementation commit: `fb95e06`.
+- Review-fix commits: E keyboard/announcement fix `5b1f33b`, then the commit
+  that updates this index (fixture-query scoping, browser error/retry evidence,
+  and record corrections). Its hash is returned in the closeout handoff and is
+  not embedded here.
 - Review the full `baseline..final` range:
   - D: `UpdateAssignmentDto`, `AssignmentsService.update` and `delete`, `AssignmentsController` PATCH/DELETE, service/dto unit tests, data-scoping tests.
   - E: `updateAssignment`/`deleteAssignment` API client, `AssignmentForm` edit mode & description, `DeleteAssignmentDialog`, `AssignmentsSection` row buttons, `CourseDetailPage` action-aware announcements, component tests.
@@ -43,7 +44,7 @@ Original requirements and decisions remain in the
 | DoD 6/7 — keyboard & responsive | E accessible button labels, focus trapping in both modals, Escape dismissal, focus restoration to triggers, and responsive layout classes; F keyboard-only and mobile 390x844 walkthrough pass. |
 | DoD 8 — automated tests | D unit and data-scoping tests, E component test suites (542 passing tests), F e2e suite (815 passing tests across API). |
 | DoD 9 — API documentation | Shared API contract in parent README; no database migration required (D114-4 uses Prisma default `SetNull` on tasks relation). |
-| DoD 10 — integrated review | F real headless Chrome 155.0.8059.85 walkthrough against running dev stack: course detail controls (`ev_7a48096d…`), edit flow (`ev_bd80d565…`, `ev_83a9386e…`), client validation (`ev_60464c22…`), description clearing (`ev_ed3fb6cf…`), delete cancel (`ev_79d2b82b…`), delete execution (`ev_df4560d3…`), keyboard navigation (`ev_e93c10b2…`), and mobile responsive pass (`ev_05705984…`). Combined independent review remains next. |
+| DoD 10 — integrated review | Previously recorded happy-path walk remains historical. The missing error/retry cases and the changed pending-delete and consecutive-announcement workflows were executed 2026-10-24 and recorded in [F's browser evidence](../SP-114F/browser-error-retry.md). Combined independent re-review remains next. |
 | DoD 11 — final walkthrough | Reviewer-owned `review.md` and `walkthrough.md` at this directory remain outstanding. |
 
 ## Final verification and limitations
@@ -53,7 +54,7 @@ Executed commands against final code:
 - API `typecheck`, `eslint`, and `build` passed clean.
 - Frontend Vitest suite: **45 files / 542 tests passed, 0 failures**.
 - Frontend `typecheck`, `lint`, and production `build` passed clean.
-- No open code findings across D, E, or F.
+- Review pass 1 findings IR-114-01 through IR-114-05 are fixed and recorded on the child implementation records. This index does not claim the reviewer has accepted those closures.
 
 ## Independent review request
 

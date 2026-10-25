@@ -6,7 +6,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Layer:** Integration
-**Status:** Implemented — awaiting parent review
+**Status:** Implemented — awaiting parent re-review (IR-114-03/04/05 closed; [implementation](./artifacts/SP-114F/implementation.md))
 **Refined:** 2026-10-24
 **Dependencies:** SP-114D (PATCH + DELETE API), SP-114E (per-row edit/delete UI)
 **Artifacts:** [implementation](./artifacts/SP-114F/implementation.md) · [checkpoint](./artifacts/SP-114F/checkpoint.md)
