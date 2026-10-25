@@ -39,6 +39,15 @@ export default defineConfig({
     baseURL: process.env.E2E_BASE_URL ?? SELF_CONTAINED_BASE_URL,
     trace: 'on-first-retry',
     screenshot: 'on',
+    // The self-contained stack is cold-started by Playwright (unlike the warm
+    // dev stack it replaces). Under `fullyParallel` (one worker per CPU), the
+    // login flow's silent session-restore round-trip keeps the form inputs
+    // `disabled` (auth `isLoading` starts true) long enough that Playwright's
+    // default 5s action timeout intermittently expires before they enable —
+    // a `fill()` timeout, not an assertion failure. 30s gives the auto-waiting
+    // room to settle against the cold stack; healthy actions still complete in
+    // milliseconds, and this is a wait bound, not a fixed sleep.
+    actionTimeout: 30_000,
   },
   projects: [
     {

@@ -1,6 +1,6 @@
 # SP-119 checkpoint
 
-Updated: 2026-10-25 (implementer, branch `main`) — **scope A complete**
+Updated: 2026-10-25 (implementer, branch `main`) — **scope A complete** (incl. cold-stack flakiness fix)
 Execution state: `docs/stories/EP09/README.md` — Execution queue, SP-119 row (`In progress`); Active substory SP-119
 Story: `docs/stories/EP09/SP-119-e2e-dedicated-test-database.md`
 Review unit: EP09 parent — `docs/stories/EP09/artifacts/EP09/implementation.md`
@@ -9,8 +9,8 @@ Role / scope: implementer; test infrastructure only (Playwright config, `apps/we
 ## Repository state
 
 - Workspace / branch: `/Users/michael/Documents/GitHub/focus-app`, `main`
-- HEAD at last update: `6793458` (run record — implementer resume after truncated session)
-- Saved work: **all scope A code/config written in the working tree and committed in this closeout** — 4 new files (`apps/web/e2e/test-env.ts`, `apps/web/e2e/global-setup.ts`, `apps/web/e2e/global-teardown.ts`, `apps/api/tsconfig.e2e.json`) + 10 modified (`.gitignore`, `README.md`, `apps/api/package.json`, `apps/web/package.json`, `apps/web/vite.config.ts`, `apps/web/playwright.config.ts`, `apps/web/e2e/helpers.ts`, `apps/web/e2e/login.spec.ts`, `apps/web/e2e/auth-journeys.spec.ts`, `pnpm-lock.yaml`). `dist-test/` build output is gitignored.
+- HEAD at last update: `e9c72d4` (scope A commit) → then the cold-stack flakiness fix commit (this closeout)
+- Saved work: **all scope A code/config committed in two commits** — (1) `e9c72d4`: 4 new files (`apps/web/e2e/test-env.ts`, `apps/web/e2e/global-setup.ts`, `apps/web/e2e/global-teardown.ts`, `apps/api/tsconfig.e2e.json`) + 10 modified (`.gitignore`, `README.md`, `apps/api/package.json`, `apps/web/package.json`, `apps/web/vite.config.ts`, `apps/web/playwright.config.ts`, `apps/web/e2e/helpers.ts`, `apps/web/e2e/login.spec.ts`, `apps/web/e2e/auth-journeys.spec.ts`, `pnpm-lock.yaml`); (2) the `actionTimeout: 30_000` cold-stack flakiness fix in `apps/web/playwright.config.ts` + this checkpoint. `dist-test/` build output is gitignored.
 - Other work to preserve: developer stack is live (Vite :3000, API :4000, Postgres :5432, dev db `studypilot`) — never start/stop/kill it; never read/print/write `.env`/`.env.*`
 
 ## Progress
@@ -24,7 +24,7 @@ Role / scope: implementer; test infrastructure only (Playwright config, `apps/we
 - [x] `apps/api/tsconfig.e2e.json` + `start:e2e` script; `apps/web` devDeps `dotenv` + `postgres`; `.gitignore` `dist-test`
 - [x] Fail-fast wording: `helpers.ts`, `login.spec.ts`, `auth-journeys.spec.ts` (mode-conditional) + auth-journeys header comment (PR-005/PC-EP09-06)
 - [x] Root README `pnpm test:e2e` wording (AC4)
-- [x] **Scope A closeout**: fully green `pnpm test:e2e` (14/14), post-run isolation checks, lint/typecheck/prettier, scoped commit
+- [x] **Scope A closeout**: fully green `pnpm test:e2e` (14/14), cold-stack flakiness fixed (`actionTimeout`), 4 consecutive green runs, post-run isolation checks, lint/typecheck/prettier, scoped commits
 - [ ] **Scope B** (separate later dispatch): 7-item verification matrix + `implementation.md` closeout docs + parent-queue reconciliation + one independent parent review
 
 - Current step: **scope B — verification matrix + closeout docs** (scope A is complete and committed)
@@ -44,11 +44,13 @@ Role / scope: implementer; test infrastructure only (Playwright config, `apps/we
 - **pjs `?schema=` param (implementation finding):** `postgres(url)` forwards unknown URL params as server startup options and the server rejects `schema`; the lifecycle connections strip it. The derived URL handed to the API retains it (Prisma's `@prisma/adapter-pg` consumes it).
 - **`@nestjs/config` v3 dotenv semantics (mirrored in `test-env.ts`):** every configured file is parsed and merged (`.env.local` wins over `.env`), and only keys absent from `process.env` are applied — an explicit shell variable always wins, exactly as the API.
 - **Vite webServer port binding (implementation finding — the run blocker this session):** `pnpm dev -- --port 3100 --strictPort` does **not** work — pnpm 8 forwards the `--` separator as a *literal* argument, so vite never sees the flags and falls back to the config port 3000 (occupied by the live dev server → `--strictPort` exits / it picks 3001). Fixed to `pnpm exec vite --port 3100 --strictPort`, which binds :3100 correctly.
+- **Login-flow flakiness under the cold stack (implementation finding → fixed):** the first committed run was green, but a re-run showed 2 intermittent failures in `loginViaUi` at the `Email` `fill()` (not an assertion). Root cause: the login inputs are `disabled` while the auth `isLoading` flag is true (it starts `true` in `authSlice` and clears only after the silent `refreshToken()` session-restore round-trip on mount). The self-contained stack is **cold-started** by Playwright (unlike the warm dev stack it replaces), so under `fullyParallel` (one worker per CPU, 9 here) that round-trip can exceed Playwright's default 5s `actionTimeout` and `fill()` times out while the input is still disabled. **Fix:** `actionTimeout: 30_000` in the config `use` block — a wait bound, not a fixed sleep, not an assertion change, `fullyParallel` untouched (all within AC1/AC4). After the fix: **4 consecutive fully-green runs** (14/14, ~6s each), satisfying the DoD's "two consecutive self-contained runs green."
 
 ## Verification
 
 - **Green run (scope A gate):** `pnpm test:e2e` from the repo root → **14/14 passed (6.5s, 9 workers)** against the self-contained stack (throwaway `studypilot_e2e_test` DB, test API :4100, test web :3100). Global setup created + migrated the throwaway DB; global teardown dropped it.
-- **Post-run isolation checks (dev stack untouched):** web :3000 → 200, API :4000 → 404 (unchanged); test ports :3100/:4100 released. Dev DB `studypilot` row counts **identical to the pre-run baseline** — users 497, semesters 75, courses 63, class_meetings 1, assignments 18, leaked `e2e-%` users 478; `studypilot_e2e_test` **absent** after teardown.
+- **Reliability (DoD: two consecutive green runs):** the first committed run was green, but a re-run exposed 2 intermittent `loginViaUi` `fill()` timeouts (cold-stack flakiness — see Decisions). After the `actionTimeout: 30_000` fix, **4 consecutive fully-green runs** (14/14, ~6s each).
+- **Post-run isolation checks (dev stack untouched):** web :3000 → 200, API :4000 → 404 (unchanged); test ports :3100/:4100 released. Dev DB `studypilot` row counts **identical to the pre-run baseline** across all runs — users 497, semesters 75, courses 63, class_meetings 1, assignments 18, leaked `e2e-%` users 478; `studypilot_e2e_test` **absent** after every teardown.
 - **Static gates:** root `pnpm lint` passes (api + web); `pnpm --filter @studypilot/web typecheck` passes; Prettier clean on every changed code file. `README.md` has pre-existing Prettier style drift (present at HEAD, outside the format scope) — left untouched to keep the diff scoped.
 - **Scope (AC4):** diff is test infrastructure only — no `apps/*/src` production code, no spec assertion changes.
 
