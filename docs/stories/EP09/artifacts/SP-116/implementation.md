@@ -45,8 +45,8 @@ and no AC behavior changed — plumbing only, as in F10's own scope note.
 | `.gitignore` | Ignore Playwright outputs `test-results/`, `playwright-report/` (was uncommitted since the prior session — F3) |
 | `turbo.json` (F10/F11) | Added `test:e2e:headed` task (`cache: false`, `env: ["E2E_BASE_URL"]`); **without** `interactive: true` (F11: that flag made turbo refuse the headed run outside TUI mode) |
 | `apps/web/package.json` (F10) | Added `test:e2e:headed` script: `playwright test --headed` |
-| `package.json` (root, F10) | Added root script `test:e2e:headed: turbo run test:e2e:headed` |
-| `README.md` (F10/F11/F12) | `pnpm test:e2e:headed` documented under Root and Frontend scripts; note says it "requires a display; won't work on headless CI"; F12: `playwright show-report` documented under Root scripts |
+| `package.json` (root, F10/F14) | Added root script `test:e2e:headed: turbo run test:e2e:headed`; F14: `test:e2e:report: pnpm --filter @studypilot/web exec playwright show-report` |
+| `README.md` (F10/F11/F12/F14) | `pnpm test:e2e:headed` documented under Root and Frontend scripts; note says it "requires a display; won't work on headless CI"; root-scripts line `pnpm test:e2e:report` opens the last run's HTML report (screenshots included) |
 
 Baseline for the combined scope: `4a34fd4` (HEAD before this task's first
 change). The prior session's `2659504` already contained the initial spec,
@@ -110,6 +110,11 @@ Full record with evidence in [checkpoint.md](./checkpoint.md):
   that the HTML report attaches. Verified on a 2-passed run: one
   `test-finished-1.png` per test, byte-identical copies embedded in
   `playwright-report/data/`.
+- **F14 (user-reported error, fixed):** `pnpm exec playwright show-report`
+  from the repo root fails because `@playwright/test` is only a devDep of
+  `apps/web`. Added root script
+  `test:e2e:report: pnpm --filter @studypilot/web exec playwright
+  show-report` and pointed the README line at it.
 
 ## Remaining work
 

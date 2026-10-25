@@ -180,7 +180,7 @@ pnpm lint         # Run linter
 pnpm test         # Run tests
 pnpm test:e2e     # Run Playwright e2e tests (needs the dev stack running: pnpm dev)
 pnpm test:e2e:headed  # Same, with the browser window visible (requires a display; won't work on headless CI)
-cd apps/web && pnpm exec playwright show-report  # Open the e2e HTML report of the last run (screenshots included) http://localhost:9323
+pnpm test:e2e:report  # Open the e2e HTML report of the last run in the browser (screenshots included)
 ```
 
 ### Linting & Formatting
