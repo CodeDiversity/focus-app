@@ -153,6 +153,7 @@ pnpm build        # Build all apps
 pnpm lint         # Run linter
 pnpm test         # Run all tests
 pnpm test:e2e     # Run browser e2e tests (needs the dev stack running: pnpm dev)
+pnpm test:e2e:headed  # Same, with the browser window visible
 pnpm db:generate  # Generate Prisma client
 pnpm db:migrate   # Run database migrations
 pnpm db:push      # Push schema changes to database
@@ -178,6 +179,8 @@ pnpm preview       # Preview production build
 pnpm lint         # Run linter
 pnpm test         # Run tests
 pnpm test:e2e     # Run Playwright e2e tests (needs the dev stack running: pnpm dev)
+pnpm test:e2e:headed  # Same, with the browser window visible (requires a display; won't work on headless CI)
+cd apps/web && pnpm exec playwright show-report  # Open the e2e HTML report of the last run (screenshots included) http://localhost:9323
 ```
 
 ### Linting & Formatting

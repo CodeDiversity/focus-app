@@ -16,6 +16,10 @@
       "cache": false,
       "env": ["E2E_BASE_URL"]
     },
+    "test:e2e:headed": {
+      "cache": false,
+      "env": ["E2E_BASE_URL"]
+    },
     "db:generate": {
       "cache": false
     },
