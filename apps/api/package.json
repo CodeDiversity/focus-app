@@ -11,6 +11,7 @@
     "dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+    "start:e2e": "nest start --path tsconfig.e2e.json",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --max-warnings 0 --fix",
     "typecheck": "tsc --noEmit",
     "test": "jest",

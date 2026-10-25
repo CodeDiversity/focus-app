@@ -256,6 +256,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.16
         version: 10.6.1(postcss@8.5.29)
+      dotenv:
+        specifier: 16.4.5
+        version: 16.4.5
       eslint:
         specifier: ^8.56.0
         version: 8.57.1
@@ -289,6 +292,9 @@ importers:
       postcss:
         specifier: ^8.4.32
         version: 8.5.29
+      postgres:
+        specifier: 3.4.7
+        version: 3.4.7
       prettier:
         specifier: ^3.1.1
         version: 3.9.10

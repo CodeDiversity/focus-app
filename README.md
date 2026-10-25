@@ -152,7 +152,7 @@ pnpm dev          # Start all apps in dev mode
 pnpm build        # Build all apps
 pnpm lint         # Run linter
 pnpm test         # Run all tests
-pnpm test:e2e     # Run browser e2e tests (needs the dev stack running: pnpm dev)
+pnpm test:e2e     # Run browser e2e tests — self-contained: throwaway *_e2e_test database + own API (:4100) + web (:3100); only Postgres must be running (no pnpm dev)
 pnpm test:e2e:headed  # Same, with the browser window visible
 pnpm db:generate  # Generate Prisma client
 pnpm db:migrate   # Run database migrations
@@ -161,6 +161,15 @@ pnpm email:up     # Start the local Mailpit inbox (Docker required)
 pnpm email:down   # Stop and remove the local inbox
 pnpm clean        # Clean all builds and node_modules
 ```
+
+`pnpm test:e2e` is self-contained (SP-119): one-time setup is `pnpm install`,
+an `apps/api/.env.local` with a `DATABASE_URL` whose database exists, and
+`pnpm db:generate`. Every run then only needs Postgres running (no `pnpm
+dev`) — it creates a throwaway `*_e2e_test` database, applies the migrations,
+starts its own API (:4100) and web (:3100), and drops the database when the
+run ends, leaving the developer stack and database untouched. Setting
+`E2E_BASE_URL` runs the browser against an externally provided stack instead
+and skips the self-contained servers and database lifecycle.
 
 ### Backend (apps/api)
 ```bash
@@ -178,7 +187,7 @@ pnpm build        # Build for production
 pnpm preview       # Preview production build
 pnpm lint         # Run linter
 pnpm test         # Run tests
-pnpm test:e2e     # Run Playwright e2e tests (needs the dev stack running: pnpm dev)
+pnpm test:e2e     # Run Playwright e2e tests — self-contained (own API :4100 + web :3100 + throwaway *_e2e_test database); only Postgres must be running
 pnpm test:e2e:headed  # Same, with the browser window visible (requires a display; won't work on headless CI)
 pnpm test:e2e:report  # Open the e2e HTML report of the last run in the browser (screenshots included)
 ```

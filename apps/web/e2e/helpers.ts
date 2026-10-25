@@ -22,12 +22,22 @@ export const PASSWORD = 'E2eAuthPassword123!';
 export const uniqueEmail = () =>
   `e2e-auth-${Date.now()}-${crypto.randomUUID().slice(0, 8)}@example.com`;
 
-/** Fail-fast wrapper message shared by every API setup call. */
+/**
+ * Fail-fast wrapper message shared by every API setup call. The tail is
+ * mode-conditional (SP-119, D119-5): self-contained (default) mode → "ensure
+ * Postgres is running" (the test stack starts automatically); `E2E_BASE_URL`
+ * external-stack mode → keep the SP-116 AC2 semantics (the externally
+ * provided stack must be running).
+ */
 function describeSetupFailure(endpoint: string, error: unknown): Error {
+  const baseUrl = process.env.E2E_BASE_URL ?? 'http://localhost:3100';
+  const remedy = process.env.E2E_BASE_URL
+    ? `The externally provided stack at ${process.env.E2E_BASE_URL} must be running — start it, then re-run the tests.`
+    : 'The self-contained test stack is started automatically — ensure Postgres is running, then re-run `pnpm test:e2e`.';
   return new Error(
-    `Could not reach the API at ${process.env.E2E_BASE_URL ?? 'http://localhost:3000'}/api ` +
+    `Could not reach the API at ${baseUrl}/api ` +
       `(${(error as Error).message}) while calling ${endpoint}. ` +
-      `Start the dev stack with \`pnpm dev\` before running E2E tests.`
+      `${remedy}`
   );
 }
 

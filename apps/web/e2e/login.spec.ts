@@ -29,9 +29,16 @@ test.beforeAll(async ({ request }) => {
   } catch (error) {
     // Connection-level failure (API or Vite proxy down) would otherwise
     // surface as a raw ECONNREFUSED inside beforeAll — say what to do.
+    // The tail is mode-conditional (SP-119, D119-5): self-contained (default)
+    // mode → "ensure Postgres is running" (the test stack starts
+    // automatically); E2E_BASE_URL external-stack mode → keep the SP-116 AC2
+    // semantics (the externally provided stack must be running).
+    const remedy = process.env.E2E_BASE_URL
+      ? `The externally provided stack at ${process.env.E2E_BASE_URL} must be running — start it, then re-run the tests.`
+      : 'The self-contained test stack is started automatically — ensure Postgres is running, then re-run `pnpm test:e2e`.';
     throw new Error(
-      `Could not reach the API at ${process.env.E2E_BASE_URL ?? 'http://localhost:3000'}/api ` +
-        `(${(error as Error).message}). Start the dev stack with \`pnpm dev\` before running E2E tests.`
+      `Could not reach the API at ${process.env.E2E_BASE_URL ?? 'http://localhost:3100'}/api ` +
+        `(${(error as Error).message}). ${remedy}`
     );
   }
 
@@ -40,9 +47,12 @@ test.beforeAll(async ({ request }) => {
   // failure is diagnosable at a glance instead of a timeout cascade.
   if (response.status() !== 201) {
     const body = (await response.text().catch(() => '')).slice(0, 200);
+    // Mode-conditional tail (SP-119, D119-5), same as the catch above.
+    const remedy = process.env.E2E_BASE_URL
+      ? `The externally provided stack at ${process.env.E2E_BASE_URL} must be running and able to reach its database.`
+      : 'The API must be running and able to reach its database — ensure Postgres is running, then re-run `pnpm test:e2e`.';
     throw new Error(
-      `Test user registration failed with status ${response.status()}${body ? ` — ${body}` : ''}. ` +
-        `The API must be running and able to reach its database (start the dev stack with \`pnpm dev\`).`
+      `Test user registration failed with status ${response.status()}${body ? ` — ${body}` : ''}. ${remedy}`
     );
   }
 });

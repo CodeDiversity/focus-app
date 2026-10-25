@@ -3,8 +3,9 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
 /**
  * Auth journey coverage (SP-117): registration, session persistence across
  * reload, logout, and the protected-route redirect — all against the real
- * API/database via the running dev stack. Complements the SP-116 login smoke
- * test in `login.spec.ts`.
+ * API/database via the self-contained test stack (SP-119; or an external one
+ * when E2E_BASE_URL is set). Complements the SP-116 login smoke test in
+ * `login.spec.ts`.
  *
  * Every test is independent and brings its own data: a per-test unique email
  * (timestamp + random suffix, the SP-116 F6 lesson) so tests never share or
@@ -30,16 +31,25 @@ async function registerUserViaApi(request: APIRequestContext, email: string): Pr
       data: { name: 'E2E Auth User', email, password: PASSWORD },
     });
   } catch (error) {
+    // Mode-conditional tail (SP-119, D119-5): self-contained (default) mode
+    // → "ensure Postgres is running" (the test stack starts automatically);
+    // E2E_BASE_URL external-stack mode → keep the SP-116 AC2 semantics.
+    const remedy = process.env.E2E_BASE_URL
+      ? `The externally provided stack at ${process.env.E2E_BASE_URL} must be running — start it, then re-run the tests.`
+      : 'The self-contained test stack is started automatically — ensure Postgres is running, then re-run `pnpm test:e2e`.';
     throw new Error(
-      `Could not reach the API at ${process.env.E2E_BASE_URL ?? 'http://localhost:3000'}/api ` +
-        `(${(error as Error).message}). Start the dev stack with \`pnpm dev\` before running E2E tests.`
+      `Could not reach the API at ${process.env.E2E_BASE_URL ?? 'http://localhost:3100'}/api ` +
+        `(${(error as Error).message}). ${remedy}`
     );
   }
   if (response.status() !== 201) {
     const body = (await response.text().catch(() => '')).slice(0, 200);
+    // Mode-conditional tail (SP-119, D119-5), same as the catch above.
+    const remedy = process.env.E2E_BASE_URL
+      ? `The externally provided stack at ${process.env.E2E_BASE_URL} must be running and able to reach its database.`
+      : 'The API must be running and able to reach its database — ensure Postgres is running, then re-run `pnpm test:e2e`.';
     throw new Error(
-      `Test user registration failed with status ${response.status()}${body ? ` — ${body}` : ''}. ` +
-        `The API must be running and able to reach its database (start the dev stack with \`pnpm dev\`).`
+      `Test user registration failed with status ${response.status()}${body ? ` — ${body}` : ''}. ${remedy}`
     );
   }
 }

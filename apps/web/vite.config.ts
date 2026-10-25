@@ -14,8 +14,11 @@ export default defineConfig({
     port: 3000,
     proxy: {
       // The backend serves routes without an /api prefix, so strip it here.
+      // Target is env-driven (SP-119): the self-contained E2E web instance is
+      // started with E2E_API_PROXY_TARGET=http://localhost:4100; the default
+      // keeps dev behavior byte-identical.
       '/api': {
-        target: 'http://localhost:4000',
+        target: process.env.E2E_API_PROXY_TARGET ?? 'http://localhost:4000',
         changeOrigin: true,
         // Browser requests retain /api, so its refresh-cookie path must match.
         cookiePathRewrite: { '/auth': '/api/auth' },
