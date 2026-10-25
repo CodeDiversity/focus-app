@@ -129,10 +129,10 @@ Active substory: None · Next substory: SP-119 (implement — plan complete 2026
 
 **Coordinator:** branch `main`, run 2026-10-25 (data-cleanup run); Git baseline `c52ebf2` (before the first included change, SP-116's `2659504`) — retained until the parent implementation index owns the combined scope.
 
-**Stage:** plan fix
+**Stage:** plan re-review
 
-**Active dispatch:** `ep09-plan-fix-1` — planner, fresh isolated context: apply plan-review pass 1 corrections PR-001/PR-002 (mandatory) + PR-003/PR-004 (optional polish, same turn) — dispatch pending. Prior dispatches: `sp119-plan` (returned: story file + queue + contract + EP03 ID shift, coordinator-committed `5cad9c7`); `ep09-plan-review` (returned: **Changes Required** — `plan-review.md` saved, coordinator-committed `9d3f546`).
+**Active dispatch:** `ep09-plan-review-2` — reviewer, fresh isolated context: focused re-review (pass 2) of the corrected lines only — **dispatch pending**. Prior dispatches: `sp119-plan` (returned; coordinator-committed `5cad9c7`); `ep09-plan-review` (returned **Changes Required**; `plan-review.md` committed `9d3f546`); `ep09-plan-fix-1` (planner applied PR-001…PR-004, added PC-EP09-02…05, coordinator-committed `9a0aeb8`).
 
-**Last result / retry state:** whole-plan review pass 1 (`plan-review.md`, reviewed at `5cad9c7`): **Changes Required** — PR-001 (Gate line omits carried SP-117 F2), PR-002 (D119-5 fail-fast wording vs. AC5 external-stack semantics); optional PR-003/PR-004. All ten planning gates independently assessed Pass/N-A; no planner code claim found false. Correction cycle 1 of max 2 without progress.
+**Last result / retry state:** whole-plan review pass 1 (`plan-review.md`, reviewed at `5cad9c7`): **Changes Required** — PR-001 (Gate line omits carried SP-117 F2), PR-002 (D119-5 fail-fast wording vs. AC5 external-stack semantics); optional PR-003/PR-004. All ten planning gates independently assessed Pass/N-A; no planner code claim found false. Planner has applied all four corrections (PC-EP09-02…05, `Addressed — awaiting re-review`). Correction cycle 1 of max 2 without progress.
 
-**Resume:** planner applies PR-001…PR-004 → fresh focused re-review (pass 2, corrected lines only) → on `Plan Ready`: implement SP-119 (fresh implementer; reviewer watch items O-3/O-4/O-5 apply) → refresh parent index (O-1) → final EP09 parent review (fresh reviewer; disposes all carried findings per the corrected Gate line) → close.
+**Resume:** fresh focused re-review (pass 2, corrected lines only) → on `Plan Ready`: implement SP-119 (fresh implementer; reviewer watch items O-3/O-4/O-5 apply) → refresh parent index (O-1) → final EP09 parent review (fresh reviewer; disposes all carried findings per the corrected Gate line) → close.
