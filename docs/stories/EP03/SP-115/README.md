@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-115](./SP-115-assignment-types.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** SP-115G and SP-115H implemented (2026-10-25) — awaiting parent review. SP-115H's UI/UX gaps were settled by `ui-refiner` before code. Not reviewed.
+**Status:** Reviewed — the combined SP-115 parent review passed 2026-10-25 ([review](./artifacts/SP-115/review.md) · [walkthrough](./artifacts/SP-115/walkthrough.md)). SP-115H's UI/UX gaps were settled by `ui-refiner` before code; the DoD-10 manual browser pass was executed by the user and passed.
 **Jira key:** Pending creation (no sync authorized)
 
 ## Execution queue
@@ -14,9 +14,9 @@
 
 **Parent artifacts:** `./artifacts/SP-115/` (parent index written by H; review and walkthrough by the reviewer)
 
-**Active substory:** None (SP-115H complete).
+**Active substory:** None (SP-115 reviewed).
 
-**Next substory:** None with reason — both children are implemented; the next action is the one combined SP-115 parent review (`./artifacts/SP-115/review.md` + `walkthrough.md`, reviewer-owned). Open review handoff: F-115H-1 — the DoD-10 manual browser pass is documented in [H's implementation record](./artifacts/SP-115H/implementation.md) for the review's user walkthrough.
+**Next substory:** None with reason — the SP-115 review unit is complete (both children `Reviewed`, F-115H-1 closed by the user's passing manual pass). Remaining EP03 proposed stories 4–7 are not broken down; the next actionable work there belongs to the planner, not this delivery home.
 
 **Implementation owner:** `implementer`, sequential across layers. Backend and frontend are scope labels, not concurrent writers.
 
@@ -24,8 +24,8 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [G](./SP-115G-assignment-type-api.md) | Implemented — awaiting parent review | SP-113 and SP-114 reviewed (2026-10-24) | Complete — no action | [checkpoint](./artifacts/SP-115G/checkpoint.md) · [implementation](./artifacts/SP-115G/implementation.md) — unit 194 ✓, DB-backed 37/38/19 ✓ (not skipped), typecheck ✓ |
-| [H](./SP-115H-assignment-type-ui.md) | Implemented — awaiting parent review | G implemented (`77e733f`); refined by `ui-refiner` 2026-10-25 | Complete — awaiting the combined parent review | [checkpoint](./artifacts/SP-115H/checkpoint.md) · [implementation](./artifacts/SP-115H/implementation.md) — web suites 121/focused + 563/full ✓, typecheck ✓, lint ✓; DoD-10 browser pass open (F-115H-1, see implementation.md) · [parent index](./artifacts/SP-115/implementation.md) |
+| [G](./SP-115G-assignment-type-api.md) | Reviewed | SP-113 and SP-114 reviewed (2026-10-24) | Complete — no action | [checkpoint](./artifacts/SP-115G/checkpoint.md) · [implementation](./artifacts/SP-115G/implementation.md) · [review](./artifacts/SP-115/review.md) — unit 194 ✓, DB-backed 37/38/19 ✓ (not skipped), typecheck ✓ — all re-executed by the reviewer at `9d76950` |
+| [H](./SP-115H-assignment-type-ui.md) | Reviewed | G implemented (`77e733f`); refined by `ui-refiner` 2026-10-25 | Complete — no action | [checkpoint](./artifacts/SP-115H/checkpoint.md) · [implementation](./artifacts/SP-115H/implementation.md) · [review](./artifacts/SP-115/review.md) · [walkthrough](./artifacts/SP-115/walkthrough.md) — web suites 121/full 563 ✓, typecheck ✓, lint ✓, all reviewer-executed; DoD-10 manual pass executed by the user 2026-10-25 (F-115H-1 closed) · [parent index](./artifacts/SP-115/implementation.md) |
 
 Sequence: G → H, one writer. H owns the parent index and the DoD-10 browser note. There is no third integration story.
 
@@ -139,6 +139,8 @@ No prior plan review. Implementation findings, if any, are appended here and not
 |---|---|---|---|---|---|---|---|
 | PC-115-01 | 2026-10-25 | High | `docs/stories/EP03/README.md` Execution queue, lines 50–62 before this plan | The live EP03 queue still named SP-113A and SP-114D as the next implementation actions after both parents were reviewed on 2026-10-24. | Queue now points at SP-115G. Stories 1–2 are marked complete. Story 3 is this parent. | Compared [SP-113 README](../SP-113/README.md) next-substory None and [SP-114 README](../SP-114/README.md) reviewed 2026-10-24 with the updated EP03 queue. | Fixed in plan |
 | PC-115-02 | 2026-10-25 | Medium | `docs/stories/EP03/README.md` Code baseline (2026-10-24) | That section still said `dueDate` was required, no assignments API existed, and the course section had no create control. | Left the dated paragraph as history and added a 2026-10-25 superseding note. SP-113 inventory row now says reviewed. | Checked schema `dueDate DateTime?`, `apps/api/src/modules/assignments/`, and `entities/assignment/api/assignmentApi.ts` against the note. | Fixed in plan |
+| F-115H-1 | 2026-10-25 | Should-fix (review handoff) | [SP-115H implementation record, DoD-10 browser note](./artifacts/SP-115H/implementation.md) | The DoD-10 manual browser pass was not executed in the implementer's agent context (honest blocker, recorded as the story allows); the final review required it for DoD item 10. | Closed by the user: the manual walkthrough was executed on the local dev environment on 2026-10-25 and **passed** (reported in the review handoff as "manual walkthrough passed"). Steps and expected results are in the review's [walkthrough.md](./artifacts/SP-115/walkthrough.md). | Recorded as user-reported evidence in [review.md](./artifacts/SP-115/review.md) DoD item 10; reviewer-verified automated suites cover the same behaviors (confirmation, keyboard/narrow across the dialog and row). | Closed 2026-10-25 |
+| FR-115-1 | 2026-10-25 | Polish | `docker-compose.yml` (committed dev stack config) | The compose file pins local dev database credentials in committed configuration. Localhost-only dev default; no secret content reproduced, no `.env` read. | None for this story — no mandatory obligation unmet. If the compose stack is ever used beyond localhost, rotate and move the credentials to local-only configuration (owner: user decision). | Classification rationale in [review.md](./artifacts/SP-115/review.md) findings table. | Noted — no action |
 
 ## Quality gate (2026-10-25)
 

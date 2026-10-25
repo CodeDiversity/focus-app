@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1 (functional academic tracker)
 **Epic dependency:** EP02 (Semester & Course Management) — **complete 2026-10-23** (implemented + reviewed; queue at [docs/stories/EP02](../EP02/README.md#execution-queue)). EP03 implementation is **not blocked**.
-**Status:** Stories 1–2 are reviewed (SP-113 and SP-114, 2026-10-24). Story 3 → [SP-115](./SP-115/README.md) — planned 2026-10-25, **Plan Ready**; the remaining work is the optional `type` field (deadlines and priority already shipped in SP-113). Stories 4–7 are not broken down. User scope (2026-10-25): **story 3**.
+**Status:** Stories 1–2 are reviewed (SP-113 and SP-114, 2026-10-24). Story 3 → [SP-115](./SP-115/README.md) — **Reviewed 2026-10-25** ([review](./SP-115/artifacts/SP-115/review.md) · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)); the optional `type` field shipped (deadlines and priority shipped in SP-113). Stories 4–7 are not broken down. User scope (2026-10-25): story 3 — complete.
 
 ## Code baseline (2026-10-24)
 
@@ -23,7 +23,7 @@ The 2026-10-24 bullets above are the SP-113 planning baseline. They are not the 
 |---|---|---|---|
 | [SP-113](./SP-113/README.md) | 1. Implement quick assignment creation | [3 children](./SP-113/README.md) (A backend, B frontend, C integration) — reviewed 2026-10-24 | Pending creation |
 | [SP-114](./SP-114/README.md) | 2. Implement assignment editing and deletion | [3 children](./SP-114/README.md) (D backend, E frontend, F integration) — reviewed 2026-10-24 | Pending creation |
-| [SP-115](./SP-115/README.md) | 3. Add assignment types, deadlines, and priority | [2 children](./SP-115/README.md) (G backend, H frontend) — planned 2026-10-25, **Plan Ready**. Deadlines and priority already shipped; this parent is the `type` column. | Pending creation |
+| [SP-115](./SP-115/README.md) | 3. Add assignment types, deadlines, and priority | [2 children](./SP-115/README.md) (G backend, H frontend) — **Reviewed 2026-10-25**. Deadlines and priority shipped in SP-113; this parent owned the `type` column. | Pending creation |
 | — | 4. Implement assignment subtasks | Not yet broken down (planned later) | — |
 | — | 5. Implement completion and status tracking | Not yet broken down (planned later) | — |
 | — | 6. Implement assignment search, sorting, and filters | Not yet broken down (planned later) | — |
@@ -53,17 +53,14 @@ and [SP-115](./SP-115/README.md) breakdowns.
 SP-113 and SP-114 are reviewed (2026-10-24). Their queues have no next
 substory. Do not restart them.
 
-The next EP03 delivery home is [SP-115](./SP-115/README.md#execution-queue)
-(assignment type): next actionable **SP-115G** (implement). No implementation
-blocker. **SP-115H needs a `ui-refiner` pass** before its own implementation
-(UI/UX gaps in that ticket, 2026-10-25). That pass does not block G.
+SP-115 is reviewed (2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md)
+· [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Its queue's next
+substory is None with reason: the review unit is complete.
 
 ## Quality gate — SP-115 plan (2026-10-25)
 
-**Plan Ready** — D115-1 (the five epic categories as a nullable enum) and
-D115-3 (keep-on-null, applying the recorded D114-5 user decision) are the
-contract choices. H is not ready to code until `ui-refiner` settles display.
-Implementation of G is not blocked. Full gate:
+Historical planning gate (see its outcome and the 2026-10-25 review above).
+Full gate:
 [SP-115 README](./SP-115/README.md#quality-gate-2026-10-25). No Jira sync was
 authorized; SP-115 keys are `Pending creation`.
 

@@ -4,7 +4,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Covers epic proposed story:** 3 (add assignment types, deadlines, and priority)
-**Status:** Plan Ready (2026-10-25). SP-115H needs a `ui-refiner` pass before implementation. Not implementation-verified.
+**Status:** Reviewed — the combined parent review passed 2026-10-25 ([review](./artifacts/SP-115/review.md) · [walkthrough](./artifacts/SP-115/walkthrough.md)); both children `Reviewed`, user DoD-10 manual pass executed.
 **Jira key:** Pending creation (parent coordination record — no Jira issue; the children carry the tracker keys)
 
 ## Purpose
