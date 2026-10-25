@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-115](./SP-115-assignment-types.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Draft — SP-115G filed 2026-10-25. SP-115H is the next planning commit. Not Plan Ready until that child exists and the cross-file gate is rerun.
+**Status:** Plan Ready (2026-10-25). SP-115H is not ready to code until `ui-refiner` settles its UI/UX gaps. Not implementation-verified.
 **Jira key:** Pending creation (no sync authorized)
 
 ## Execution queue
@@ -12,29 +12,29 @@
 
 **Artifact root:** `./artifacts/` (stable story IDs)
 
-**Parent artifacts:** `./artifacts/SP-115/` (parent index written by the frontend child once filed; review and walkthrough by the reviewer)
+**Parent artifacts:** `./artifacts/SP-115/` (parent index written by H; review and walkthrough by the reviewer)
 
-**Active substory:** None — planning in progress.
+**Active substory:** None.
 
-**Next substory:** SP-115H — file the frontend child. Do not implement G until this breakdown is Plan Ready.
+**Next substory:** SP-115G — implement. SP-115H needs `ui-refiner` before its own implementation; that pass does not block G.
 
 **Implementation owner:** `implementer`, sequential across layers. Backend and frontend are scope labels, not concurrent writers.
 
-**Final review:** One combined SP-115 review after every child and the integration obligation are implemented. No per-child review gate. Final artifacts: `./artifacts/SP-115/review.md` and `./artifacts/SP-115/walkthrough.md`.
+**Final review:** One combined SP-115 review after G and H are implemented, including H's integration note. No per-child review gate. Final artifacts: `./artifacts/SP-115/review.md` and `./artifacts/SP-115/walkthrough.md`.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [G](./SP-115G-assignment-type-api.md) | Ready | SP-113 and SP-114 reviewed (2026-10-24) | Wait — parent plan is still Draft | — |
-| H | Not filed | G's contract, then ui-refiner before code | File SP-115H | — |
+| [G](./SP-115G-assignment-type-api.md) | Ready | SP-113 and SP-114 reviewed (2026-10-24) | Implement | — |
+| [H](./SP-115H-assignment-type-ui.md) | Needs refinement | G implemented before code; UI/UX gaps in H | Run `ui-refiner` on SP-115H | — |
 
-Sequence once both children exist: G → H, one writer. The frontend child owns the parent index and the DoD-10 browser walk. There is no third integration story: extending the existing assignment e2e specs is G's ordinary test work.
+Sequence: G → H, one writer. H owns the parent index and the DoD-10 browser note. There is no third integration story.
 
 ### Split rationale
 
 One slice would mix a Prisma enum migration and two duplicated response mappers with form, row, and accessibility work. Those are independently testable, and the UI cannot be verified against a live contract until the API exists.
 
 - **G** has the migration, create/update validation, both projections, ownership tests, and the e2e key/round-trip updates (about 2–2.5 hours).
-- **H** (next file) has the create/edit control, row presentation, client payload, web fixtures, and the browser walk (about 2–2.5 hours). A separate integration child would only rerun those checks and write the parent index, which the sizing policy forbids.
+- **H** has the create/edit control, row presentation, client payload, web fixtures, and the browser note (about 2–2.5 hours). Extending the existing e2e specs is G's ordinary test work. The parent index stays with H. A third child would only rerun checks and write that index.
 
 ## Code baseline (2026-10-25)
 
@@ -56,7 +56,7 @@ One slice would mix a Prisma enum migration and two duplicated response mappers 
 
 ## Shared API contract
 
-Fixed cross-child contract. G implements it. The frontend child will consume it. G's e2e covers the API round-trip, including `GET /courses/:id`.
+Fixed cross-child contract. G implements it. H consumes it. G's e2e covers the API round-trip, including `GET /courses/:id`. H's browser note covers the visible control.
 
 ```text
 AssignmentType = "HOMEWORK" | "PAPER" | "PROJECT" | "QUIZ" | "EXAM"
@@ -91,7 +91,7 @@ Cross-student assignment id → uniform 404; target type unchanged.
 401 unauthenticated, unchanged.
 ```
 
-Validation stays backend-authoritative (`FieldValidationPipe` plus service re-check). The frontend must not tell the student that a blank type clears a stored value.
+Validation stays backend-authoritative (`FieldValidationPipe` plus service re-check). H must not tell the student that a blank type clears a stored value.
 
 ## Source requirements and test traceability
 
@@ -99,8 +99,8 @@ Epic wording: [EP03 acceptance criteria](../../../epics/EP03-assignment-and-task
 
 | Req | Requirement (original wording) | Owning children |
 |---|---|---|
-| AC-E03-01 | Students can create an assignment with a title and course. | Unchanged — SP-113. G only adds an optional field on that create. |
-| AC-E03-02 | Optional fields include due date, estimated duration, type, and priority. | Due date, estimated duration, and priority — SP-113/SP-114. **Type API — SP-115G.** Type UI — SP-115H, not yet filed. |
+| AC-E03-01 | Students can create an assignment with a title and course. | Unchanged — SP-113. G and H only add an optional field on that create. |
+| AC-E03-02 | Optional fields include due date, estimated duration, type, and priority. | Due date, estimated duration, and priority — SP-113/SP-114. **Type — SP-115G (API) and SP-115H (UI).** |
 
 AC-E03-03…07 stay with proposed stories 4–7 (not broken down). The epic defines no test requirements.
 
@@ -108,16 +108,16 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
 
 | DoD | Owner / applicability |
 |---|---|
-| 1 functional criteria | G for API type; H for visible type (not filed) |
-| 2 invalid-input validation | G (DTO + service); H mirrors the enum (not filed) |
-| 3 student data scoping | G (existing gates; type does not bypass them) |
-| 4 actionable API errors | G (field-level 400); H displays `type` errors (not filed) |
-| 5 loading/empty/error states | H (not filed). No new empty API state. |
-| 6 keyboard accessibility | H (not filed) |
-| 7 responsive layouts | H (not filed) |
-| 8 automated business-rule tests | G (unit, data-scoping, e2e). H component tests not filed. |
+| 1 functional criteria | G (API type), H (visible type) |
+| 2 invalid-input validation | G (DTO + service); H mirrors the enum |
+| 3 student data scoping | G (existing gates; type does not bypass them). H shows the uniform 404. |
+| 4 actionable API errors | G (field-level 400); H displays `type` errors |
+| 5 loading/empty/error states | H (form in-flight and null type not shown as a category) |
+| 6 keyboard accessibility | H |
+| 7 responsive layouts | H |
+| 8 automated business-rule tests | G (unit, data-scoping, e2e); H (component) |
 | 9 API/migration documentation | G (this contract + one migration) |
-| 10 integrated development review | Frontend child, once filed, plus the combined parent review |
+| 10 integrated development review | H browser note + the combined parent review |
 | 11 reviewer walkthrough | Final reviewer, once, for the parent. Not an implementer child. |
 
 ## Security invariants and counterexamples
@@ -129,7 +129,7 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
 | Type does not unlock lifecycle fields | Client sends `type: "QUIZ"` plus `status: "COMPLETED"` | `status` stays non-whitelisted → 400; no write | G unit and e2e |
 | Projection does not leak ownership | A created typed assignment is read from course detail | Both mappers omit `userId` and `courseId`; cross-student course read stays 404 | G course projection tests and e2e key assertion |
 
-Keep-on-null is a contract invariant, not a security claim: patch `type: null` leaves the stored type. G tests that directly.
+Keep-on-null is a contract invariant, not a security claim: patch `type: null` leaves the stored type. G tests that directly. H must not present a clear affordance for it.
 
 ## Plan correction log
 
@@ -137,15 +137,29 @@ No prior plan review. Implementation findings, if any, are appended here and not
 
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
-| — | — | — | — | None yet. | — | — | — |
+| PC-115-01 | 2026-10-25 | High | `docs/stories/EP03/README.md` Execution queue, lines 50–62 before this plan | The live EP03 queue still named SP-113A and SP-114D as the next implementation actions after both parents were reviewed on 2026-10-24. | Queue now points at SP-115G. Stories 1–2 are marked complete. Story 3 is this parent. | Compared [SP-113 README](../SP-113/README.md) next-substory None and [SP-114 README](../SP-114/README.md) reviewed 2026-10-24 with the updated EP03 queue. | Fixed in plan |
+| PC-115-02 | 2026-10-25 | Medium | `docs/stories/EP03/README.md` Code baseline (2026-10-24) | That section still said `dueDate` was required, no assignments API existed, and the course section had no create control. | Left the dated paragraph as history and added a 2026-10-25 superseding note. SP-113 inventory row now says reviewed. | Checked schema `dueDate DateTime?`, `apps/api/src/modules/assignments/`, and `entities/assignment/api/assignmentApi.ts` against the note. | Fixed in plan |
 
 ## Quality gate (2026-10-25)
 
-Not run as a passing gate. H is not filed, so rows 1–4 and 7–8 are incomplete. Outcome: **Draft**.
+| Gate | Status | Evidence / limitation |
+|---|---|---|
+| 1. Child separation and sizing | Pass | Two children. G and H each have a sizing block and a substantive independent outcome (API/migration/projections vs form/row/client). Split reason is above. No README-only or integration-only child. Estimates are 2–2.5 hours, not padded with agent overhead. |
+| 2. Original AC/TR coverage | Pass | AC-E03-02 type is owned by G and H. The other AC-E03-02 fields stay with SP-113/SP-114. AC-E03-01 stays with SP-113. AC-E03-03…07 stay assigned to stories 4–7 in the EP03 README. No epic TRs. |
+| 3. Applicable DoD, incl. item 10 | Pass | DoD map above. Item 10 is H's browser note plus the combined parent review. Item 11 is reviewer-owned and not pretended done. |
+| 4. Contract consistency and integration ownership | Pass | One contract in this README. G implements it, including e2e. H consumes it and owns the parent index. No third child. |
+| 5. Code paths inspected | Pass | Schema, both mappers, both DTOs, controller, validation pipe, assignment and course tests, form, section, client, and `academic.ts`, as cited in the children. Unverified: none material. Generated Prisma client was not treated as a source file. |
+| 6. Feature-specific risks | Pass | Four counterexamples above, plus keep-on-null. Migration is a nullable add with no backfill; existing rows become null rather than a default type. |
+| 7. Dependency mapping | Pass | SP-113/SP-114 reviewed, so G can start. H waits on G's implementation and on ui-refiner. One writer, G then H. |
+| 8. Material decisions | Pass | D115-1 comes from the epic's named categories. D115-2 follows optional due date. D115-3 applies the recorded D114-5 user decision. D115-4 is the projection shape. Display copy is deliberately left to ui-refiner, not left undecided in the API. |
+| 9. Correction log | Pass | PC-115-01 and PC-115-02 recorded and checked against the child READMEs and the current assignments module. No prior review findings to preserve. |
+| 10. Jira identity/sync | Not applicable | No sync authorized. Parent and children are `Pending creation`. No tracker mutation. |
+
+**Outcome:** **Plan Ready.** Planning gates pass. H is `Needs refinement` for UI/UX, so it is not ready to code. Implementation of G is not blocked. No application code or passing tests are claimed.
 
 ## Final implementation review unit
 
 - **Parent:** SP-115 — `docs/stories/EP03/SP-115/`
-- **In scope:** SP-115G and SP-115H (H not filed)
-- **Integration/index owner:** SP-115H, once filed. G does not write the parent index.
-- **Gate:** one combined review after both children are implemented. Child completion does not sign off the parent.
+- **In scope:** SP-115G and SP-115H
+- **Integration/index owner:** SP-115H (`./artifacts/SP-115/implementation.md`)
+- **Gate:** one combined review after both children are implemented (`./artifacts/SP-115/review.md` and `walkthrough.md`). Child completion does not sign off the parent.

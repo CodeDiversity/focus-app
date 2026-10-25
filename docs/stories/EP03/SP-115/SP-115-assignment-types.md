@@ -4,7 +4,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Covers epic proposed story:** 3 (add assignment types, deadlines, and priority)
-**Status:** Draft — backend child filed; frontend child is the next planning commit
+**Status:** Plan Ready (2026-10-25). SP-115H needs a `ui-refiner` pass before implementation. Not implementation-verified.
 **Jira key:** Pending creation (parent coordination record — no Jira issue; the children carry the tracker keys)
 
 ## Purpose
@@ -14,15 +14,12 @@ ticket. Deadlines, estimated duration, and priority already shipped in
 [SP-113](../SP-113/README.md) and are editable in [SP-114](../SP-114/README.md).
 This parent owns the remaining AC-E03-02 field: optional assignment `type`.
 
-Filed:
-
 - [SP-115G](./SP-115G-assignment-type-api.md) — backend: nullable `type`
-  column, create/update validation, both assignment projections, API tests.
-
-Next planning commit:
-
-- SP-115H — frontend: set and show type on the course-detail assignment form
-  and row. Not an implementation ticket until that file exists.
+  column, create/update validation, both assignment projections, API tests
+  (Ready).
+- [SP-115H](./SP-115H-assignment-type-ui.md) — frontend: set and show type on
+  the course-detail form and row (Needs refinement; owns the parent index
+  and DoD-10 browser note).
 
 ## Outcome
 

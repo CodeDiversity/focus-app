@@ -24,9 +24,10 @@ In: one nullable Prisma enum column, create and update DTO/service handling,
 both existing assignment response mappers, and the tests those changes force
 (including the existing e2e key lists and a type round-trip).
 
-Out: the course-detail control and row presentation (SP-115H, next planning
-commit). Status, `actualHours`, and `courseId` remain uneditable. This story
-does not add a list, filter, or overdue rule for type.
+Out: the course-detail control and row presentation
+([SP-115H](./SP-115H-assignment-type-ui.md)). Status, `actualHours`, and
+`courseId` remain uneditable. This story does not add a list, filter, or
+overdue rule for type.
 
 ## Source requirement references
 
@@ -178,5 +179,6 @@ does not affect that order.
   read the rest of SP-113/SP-114 to start.
 - **Verification:** `pnpm --filter @studypilot/api exec jest --runInBand assignments.service.spec.ts courses.service.spec.ts` passes without a database. With `DATABASE_URL`, `pnpm --filter @studypilot/api exec jest --runInBand assignments-data-scoping.spec.ts assignments-e2e.spec.ts courses-meetings-e2e.spec.ts` passes and is not skipped. Then `pnpm --filter @studypilot/api typecheck`. Pass means the new type cases pass and the old unknown-`type` cases no longer reject `EXAM`.
 - **Dependencies / exclusions:** Requires the existing assignments module and
-  PATCH/DELETE behavior. Excludes the UI (SP-115H) and stories 4–7. Every
-  excluded epic AC stays owned in the [EP03 README](../README.md).
+  PATCH/DELETE behavior. Excludes the UI
+  ([SP-115H](./SP-115H-assignment-type-ui.md)) and stories 4–7. Every excluded
+  epic AC stays owned in the [EP03 README](../README.md).
