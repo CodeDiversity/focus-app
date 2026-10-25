@@ -4,7 +4,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Covers epic proposed story:** 1 (implement quick assignment creation)
-**Status:** Planned 2026-10-24 — see the [breakdown README](./README.md) for the queue, decisions, contract, and quality gate.
+**Status:** Complete — reviewed and passed 2026-10-24. See [breakdown README](./README.md), [review report](./artifacts/SP-113/review.md), and [user walkthrough](./artifacts/SP-113/walkthrough.md).
 **Jira key:** Pending creation (parent coordination record — no Jira issue; the children carry the tracker keys)
 
 ## Purpose
@@ -13,12 +13,11 @@ Coordination record for the quick-assignment-creation unit. Not an
 implementation ticket — the work lives in the children:
 
 - [SP-113A](./SP-113A-assignment-create-api.md) — backend: the assignments
-  module, `POST /assignments`, the nullable-`dueDate` migration.
+  module, `POST /assignments`, the nullable-`dueDate` migration (Reviewed).
 - [SP-113B](./SP-113B-quick-create-assignment-ui.md) — frontend: the
-  quick-create form on the course detail page (**Needs refinement** — the
-  `ui-refiner` pass lands before implementation).
+  quick-create form on the course detail page (Reviewed).
 - [SP-113C](./SP-113C-quick-create-integration-signoff.md) — integration:
-  e2e spec, DoD-10 manual sign-off, parent index.
+  e2e spec, DoD-10 manual sign-off, parent index (Reviewed).
 
 ## Outcome
 
