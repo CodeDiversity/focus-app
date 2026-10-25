@@ -4,7 +4,7 @@
 **Epic:** [EP09: E2E Test Automation](../../epics/EP09-e2e-test-automation.md)
 **Milestone:** Ongoing quality
 **Dependencies:** None (covers existing EP01 auth features)
-**Status:** Implemented — awaiting parent review (EP09)
+**Status:** Reviewed (EP09 complete, 2026-10-25 — final parent review PASS, `review.md`)
 
 ## Summary
 

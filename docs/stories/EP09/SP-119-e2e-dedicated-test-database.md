@@ -4,7 +4,7 @@
 **Epic:** [EP09: E2E Test Automation](../../epics/EP09-e2e-test-automation.md)
 **Milestone:** Ongoing quality
 **Layer:** Test infrastructure (no production code)
-**Status:** Implemented — awaiting parent review (EP09)
+**Status:** Reviewed (EP09 complete, 2026-10-25 — final parent review PASS, `review.md`)
 **Dependencies:** SP-116 (met — Playwright infrastructure exists); must keep the SP-117/SP-118 journeys passing (both met)
 **Jira:** Pending creation
 
