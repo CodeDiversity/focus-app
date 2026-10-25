@@ -22,3 +22,26 @@ export async function createAssignment(data: CreateAssignmentRequest): Promise<C
   const response = await api.post<CourseAssignment>('/assignments', body);
   return response.data;
 }
+
+/** Patch semantics: each field is optional; `null`/omitted keeps the stored value. */
+export interface UpdateAssignmentRequest {
+  title?: string;
+  dueDate?: string | null;
+  estimatedHours?: number | null;
+  priority?: AssignmentPriority | null;
+  description?: string | null;
+}
+
+/** 200: updated 10-key projection; 400: field errors; 404: uniform miss. */
+export async function updateAssignment(
+  assignmentId: string,
+  data: UpdateAssignmentRequest
+): Promise<CourseAssignment> {
+  const response = await api.patch<CourseAssignment>(`/assignments/${assignmentId}`, data);
+  return response.data;
+}
+
+/** 204 on success; 404 when the assignment is missing or foreign. */
+export async function deleteAssignment(assignmentId: string): Promise<void> {
+  await api.delete(`/assignments/${assignmentId}`);
+}

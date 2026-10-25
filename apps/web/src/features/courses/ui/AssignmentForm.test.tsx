@@ -4,21 +4,28 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import toast from 'react-hot-toast';
 import { Providers } from '@/test/providers';
 import { setupUser } from '@/test/user';
-import { createAssignment } from '@/entities/assignment/api/assignmentApi';
-import { AssignmentForm } from './AssignmentForm';
+import { createAssignment, updateAssignment } from '@/entities/assignment/api/assignmentApi';
+import type { CourseAssignment } from '@/shared/types/academic';
+import { AssignmentForm, type AssignmentFormProps } from './AssignmentForm';
 
-vi.mock('@/entities/assignment/api/assignmentApi', () => ({ createAssignment: vi.fn() }));
+vi.mock('@/entities/assignment/api/assignmentApi', () => ({
+  createAssignment: vi.fn(),
+  updateAssignment: vi.fn(),
+}));
 vi.mock('react-hot-toast', () => ({ default: { error: vi.fn() } }));
 const create = vi.mocked(createAssignment);
+const update = vi.mocked(updateAssignment);
 const submit = () => screen.getByRole('button', { name: 'Create assignment' });
+const editSubmit = () => screen.getByRole('button', { name: 'Save changes' });
 const title = () => screen.getByLabelText('Title');
 const duration = () => screen.getByLabelText('Estimated duration (hours)');
-const renderForm = () => {
+const description = () => screen.getByLabelText('Description');
+const renderForm = (props?: Partial<AssignmentFormProps>) => {
   const onSuccess = vi.fn();
   const onClose = vi.fn();
   const view = render(
     <Providers initialEntries={['/courses/course-1']}>
-      <AssignmentForm courseId="course-1" onSuccess={onSuccess} onClose={onClose} />
+      <AssignmentForm courseId="course-1" onSuccess={onSuccess} onClose={onClose} {...props} />
     </Providers>
   );
   return { ...view, onSuccess, onClose };
@@ -51,6 +58,8 @@ describe('AssignmentForm', () => {
     await user.keyboard('3');
     await user.tab();
     expect(screen.getByLabelText('Priority')).toHaveFocus();
+    await user.tab();
+    expect(screen.getByLabelText('Description')).toHaveFocus();
     await user.tab();
     expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
     await user.tab();
@@ -254,5 +263,157 @@ describe('AssignmentForm', () => {
     expect(create).toHaveBeenCalledOnce();
     await act(async () => resolve());
     expect(onSuccess).toHaveBeenCalledOnce();
+  });
+
+  describe('edit mode (AC 3, AC 4, AC 5, D114E-1…6)', () => {
+    const sampleAssignment: CourseAssignment = {
+      id: 'assignment-1',
+      title: 'Problem Set 4',
+      description: 'Chapters 1-3 homework',
+      dueDate: '2026-10-24T12:00:00.000Z',
+      estimatedHours: 3.5,
+      actualHours: null,
+      status: 'PENDING',
+      priority: 'HIGH',
+      createdAt: '2026-10-18T12:00:00.000Z',
+      updatedAt: '2026-10-18T12:00:00.000Z',
+    };
+
+    it('populates initial values in edit mode and switches title, button, and field hints', () => {
+      renderForm({ assignment: sampleAssignment });
+
+      expect(
+        screen.getByRole('heading', { level: 2, name: 'Edit assignment' })
+      ).toBeInTheDocument();
+      expect(editSubmit()).toBeInTheDocument();
+      expect(title()).toHaveValue('Problem Set 4');
+      const d = new Date(sampleAssignment.dueDate!);
+      const expectedDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      expect(screen.getByLabelText('Due date')).toHaveValue(expectedDate);
+      expect(duration()).toHaveValue(3.5);
+      expect(screen.getByLabelText('Priority')).toHaveValue('HIGH');
+      expect(description()).toHaveValue('Chapters 1-3 homework');
+
+      // Edit-mode hints (D114E-6)
+      expect(
+        screen.getByText('Optional — leave blank to keep the current due date.')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Optional — leave blank to keep the current duration.')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Pick a different value to change the priority.')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Optional — up to 2000 characters. Leave blank to clear.')
+      ).toBeInTheDocument();
+    });
+
+    it('submits PATCH request via updateAssignment on edit and handles null semantics for blanks', async () => {
+      const user = setupUser();
+      update.mockResolvedValue({ ...sampleAssignment, title: 'Updated PS4' });
+      const { onSuccess } = renderForm({ assignment: sampleAssignment });
+
+      await user.clear(title());
+      await user.type(title(), 'Updated PS4');
+      fireEvent.change(screen.getByLabelText('Due date'), { target: { value: '2026-11-01' } });
+      fireEvent.change(duration(), { target: { value: '5' } });
+      await user.selectOptions(screen.getByLabelText('Priority'), 'URGENT');
+      await user.clear(description());
+      await user.type(description(), 'New instructions');
+
+      await user.click(editSubmit());
+
+      await waitFor(() =>
+        expect(update).toHaveBeenCalledWith('assignment-1', {
+          title: 'Updated PS4',
+          priority: 'URGENT',
+          dueDate: new Date(2026, 10, 1).toISOString(),
+          estimatedHours: 5,
+          description: 'New instructions',
+        })
+      );
+      expect(onSuccess).toHaveBeenCalledOnce();
+    });
+
+    it('sends null for blank due date/duration and empty string for blanked description', async () => {
+      const user = setupUser();
+      update.mockResolvedValue(sampleAssignment);
+      const { onSuccess } = renderForm({ assignment: sampleAssignment });
+
+      fireEvent.change(screen.getByLabelText('Due date'), { target: { value: '' } });
+      fireEvent.change(duration(), { target: { value: '' } });
+      await user.clear(description());
+
+      await user.click(editSubmit());
+
+      await waitFor(() =>
+        expect(update).toHaveBeenCalledWith('assignment-1', {
+          title: 'Problem Set 4',
+          priority: 'HIGH',
+          dueDate: null,
+          estimatedHours: null,
+          description: '',
+        })
+      );
+      expect(onSuccess).toHaveBeenCalledOnce();
+    });
+
+    it('handles 400 field validation errors on edit', async () => {
+      const user = setupUser();
+      update.mockRejectedValue(
+        failure(400, {
+          title: ['Server title error'],
+          dueDate: ['Server due date error'],
+          estimatedHours: ['Server estimated hours error'],
+          priority: ['Server priority error'],
+          description: ['Server description error'],
+        })
+      );
+      renderForm({ assignment: sampleAssignment });
+
+      await user.click(editSubmit());
+
+      for (const msg of [
+        'Server title error',
+        'Server due date error',
+        'Server estimated hours error',
+        'Server priority error',
+        'Server description error',
+      ]) {
+        expect(await screen.findByText(msg)).toBeInTheDocument();
+      }
+      expect(toast.error).not.toHaveBeenCalled();
+    });
+
+    it('handles 404 not found error on edit', async () => {
+      const user = setupUser();
+      update.mockRejectedValue(failure(404));
+      renderForm({ assignment: sampleAssignment });
+
+      await user.click(editSubmit());
+
+      const alert = await screen.findByRole('alert');
+      expect(alert).toHaveTextContent(
+        'Resource not found — this course or assignment may no longer exist.'
+      );
+      expect(within(alert).getByRole('link', { name: 'Back to courses' })).toHaveAttribute(
+        'href',
+        '/courses'
+      );
+    });
+
+    it('traps Tab key and closes on Escape in edit mode', async () => {
+      const user = setupUser();
+      const { onClose } = renderForm({ assignment: sampleAssignment });
+
+      expect(title()).toHaveFocus();
+      await user.keyboard('{Shift>}{Tab}{/Shift}');
+      expect(editSubmit()).toHaveFocus();
+      await user.tab();
+      expect(title()).toHaveFocus();
+      await user.keyboard('{Escape}');
+      expect(onClose).toHaveBeenCalledOnce();
+    });
   });
 });

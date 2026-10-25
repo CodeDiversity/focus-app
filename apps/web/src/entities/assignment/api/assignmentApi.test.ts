@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { InternalAxiosRequestConfig } from 'axios';
 import httpClient from '@/shared/api/httpClient';
-import { createAssignment } from './assignmentApi';
+import { createAssignment, deleteAssignment, updateAssignment } from './assignmentApi';
 
 const originalAdapter = httpClient.defaults.adapter;
 const assignment = {
@@ -60,4 +60,40 @@ describe('createAssignment', () => {
       expect(body).toEqual({ title: 'Problem Set 4' });
     }
   );
+});
+
+describe('updateAssignment', () => {
+  it('calls PATCH /assignments/:id with payload and returns updated assignment', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    const updatedAssignment = { ...assignment, title: 'Updated Title' };
+    httpClient.defaults.adapter = async (config) => {
+      seen = config;
+      return { config, data: updatedAssignment, status: 200, statusText: 'OK', headers: {} };
+    };
+    const payload = {
+      title: 'Updated Title',
+      dueDate: '2026-10-31T23:59:59.000Z',
+      estimatedHours: 4,
+      priority: 'HIGH' as const,
+      description: 'Updated description',
+    };
+    const result = await updateAssignment('assignment-1', payload);
+    expect(result).toEqual(updatedAssignment);
+    expect(seen?.url).toBe('/assignments/assignment-1');
+    expect(seen?.method).toBe('patch');
+    expect(JSON.parse(seen!.data as string)).toEqual(payload);
+  });
+});
+
+describe('deleteAssignment', () => {
+  it('calls DELETE /assignments/:id and resolves void', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seen = config;
+      return { config, data: undefined, status: 204, statusText: 'No Content', headers: {} };
+    };
+    await expect(deleteAssignment('assignment-1')).resolves.toBeUndefined();
+    expect(seen?.url).toBe('/assignments/assignment-1');
+    expect(seen?.method).toBe('delete');
+  });
 });

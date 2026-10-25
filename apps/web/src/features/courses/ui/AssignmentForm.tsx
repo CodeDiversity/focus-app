@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { clsx } from 'clsx';
 import toast from 'react-hot-toast';
-import { createAssignment } from '@/entities/assignment/api/assignmentApi';
+import { createAssignment, updateAssignment } from '@/entities/assignment/api/assignmentApi';
+import type { CourseAssignment } from '@/shared/types/academic';
 import { apiErrorMessage, extractApiError, getFieldError } from '@/shared/lib/errors';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
@@ -17,6 +19,18 @@ function localDate(value: string): Date {
   // Date's multi-argument constructor treats 0–99 as 1900–1999.
   if (year < 100) date.setFullYear(year);
   return date;
+}
+
+/** Convert ISO date or YYYY-MM-DD to local YYYY-MM-DD for native date input (D114E-5). */
+function toLocalDateInputValue(value: string | null | undefined): string {
+  if (!value) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 const schema = z.object({
@@ -42,19 +56,25 @@ const schema = z.object({
       'Estimated duration must be greater than 0 and at most 1000 hours'
     ),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+  description: z.string().max(2000, 'Description must be 2000 characters or fewer').optional(),
 });
 type FormData = z.infer<typeof schema>;
-const FIELDS = ['title', 'dueDate', 'estimatedHours', 'priority'] as const;
+const FIELDS = ['title', 'dueDate', 'estimatedHours', 'priority', 'description'] as const;
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export interface AssignmentFormProps {
   courseId: string;
+  assignment?: CourseAssignment;
   onSuccess: () => void;
   onClose: () => void;
 }
 
-/** Quick creation in course context; backend validation remains authoritative. */
-export function AssignmentForm({ courseId, onSuccess, onClose }: AssignmentFormProps) {
+/**
+ * Quick creation or editing in course context; backend validation remains authoritative.
+ * Supports create and edit modes (D114E-1, D114E-2, D114E-6).
+ */
+export function AssignmentForm({ courseId, assignment, onSuccess, onClose }: AssignmentFormProps) {
+  const isEdit = Boolean(assignment);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -66,7 +86,13 @@ export function AssignmentForm({ courseId, onSuccess, onClose }: AssignmentFormP
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { title: '', dueDate: '', estimatedHours: '', priority: 'MEDIUM' },
+    defaultValues: {
+      title: assignment?.title ?? '',
+      dueDate: toLocalDateInputValue(assignment?.dueDate),
+      estimatedHours: assignment?.estimatedHours != null ? String(assignment.estimatedHours) : '',
+      priority: assignment?.priority ?? 'MEDIUM',
+      description: assignment?.description ?? '',
+    },
   });
 
   useEffect(() => {
@@ -120,13 +146,24 @@ export function AssignmentForm({ courseId, onSuccess, onClose }: AssignmentFormP
     setIsSubmitting(true);
     setFormError(null);
     try {
-      await createAssignment({
-        title: data.title,
-        courseId,
-        priority: data.priority,
-        ...(data.dueDate ? { dueDate: localDate(data.dueDate).toISOString() } : {}),
-        ...(data.estimatedHours ? { estimatedHours: Number(data.estimatedHours) } : {}),
-      });
+      if (assignment) {
+        await updateAssignment(assignment.id, {
+          title: data.title,
+          priority: data.priority,
+          dueDate: data.dueDate ? localDate(data.dueDate).toISOString() : null,
+          estimatedHours: data.estimatedHours ? Number(data.estimatedHours) : null,
+          description: data.description ?? '',
+        });
+      } else {
+        await createAssignment({
+          title: data.title,
+          courseId,
+          priority: data.priority,
+          ...(data.dueDate ? { dueDate: localDate(data.dueDate).toISOString() } : {}),
+          ...(data.estimatedHours ? { estimatedHours: Number(data.estimatedHours) } : {}),
+          ...(data.description ? { description: data.description } : {}),
+        });
+      }
       onSuccess();
     } catch (err: unknown) {
       const apiError = extractApiError(err);
@@ -141,7 +178,11 @@ export function AssignmentForm({ courseId, onSuccess, onClose }: AssignmentFormP
         }
         if (!mapped) toast.error(apiErrorMessage(apiError));
       } else if (apiError?.statusCode === 404) {
-        setFormError(`${apiErrorMessage(apiError)} — this course may no longer exist.`);
+        setFormError(
+          isEdit
+            ? 'Resource not found — this course or assignment may no longer exist.'
+            : `${apiErrorMessage(apiError)} — this course may no longer exist.`
+        );
       } else {
         toast.error('We could not save the assignment. Try again.');
       }
@@ -169,7 +210,7 @@ export function AssignmentForm({ courseId, onSuccess, onClose }: AssignmentFormP
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
           <h2 id="assignment-form-title" className="text-lg font-semibold text-secondary-900">
-            Add an assignment
+            {isEdit ? 'Edit assignment' : 'Add an assignment'}
           </h2>
           <div className="space-y-4">
             <Input
@@ -184,7 +225,11 @@ export function AssignmentForm({ courseId, onSuccess, onClose }: AssignmentFormP
               <Input
                 label="Due date"
                 type="date"
-                hint="Optional — leave blank for no due date."
+                hint={
+                  isEdit
+                    ? 'Optional — leave blank to keep the current due date.'
+                    : 'Optional — leave blank for no due date.'
+                }
                 error={errors.dueDate?.message}
                 disabled={isSubmitting}
                 {...register('dueDate')}
@@ -193,7 +238,7 @@ export function AssignmentForm({ courseId, onSuccess, onClose }: AssignmentFormP
                 label="Estimated duration (hours)"
                 type="number"
                 step="any"
-                hint="Optional"
+                hint={isEdit ? 'Optional — leave blank to keep the current duration.' : 'Optional'}
                 error={errors.estimatedHours?.message}
                 disabled={isSubmitting}
                 {...register('estimatedHours')}
@@ -201,7 +246,11 @@ export function AssignmentForm({ courseId, onSuccess, onClose }: AssignmentFormP
             </div>
             <Select
               label="Priority"
-              hint="Optional — defaults to Medium"
+              hint={
+                isEdit
+                  ? 'Pick a different value to change the priority.'
+                  : 'Optional — defaults to Medium'
+              }
               error={errors.priority?.message}
               disabled={isSubmitting}
               {...register('priority')}
@@ -211,6 +260,48 @@ export function AssignmentForm({ courseId, onSuccess, onClose }: AssignmentFormP
               <option value="HIGH">High</option>
               <option value="URGENT">Urgent</option>
             </Select>
+            <div className="w-full">
+              <label
+                htmlFor="assignment-description"
+                className="block mb-2 text-sm font-medium text-secondary-700"
+              >
+                Description
+              </label>
+              <textarea
+                id="assignment-description"
+                rows={3}
+                maxLength={2000}
+                aria-invalid={errors.description?.message ? true : undefined}
+                aria-describedby={
+                  errors.description?.message
+                    ? 'assignment-description-error'
+                    : 'assignment-description-hint'
+                }
+                placeholder="Optional notes or instructions"
+                className={clsx(
+                  'w-full px-4 py-2 border rounded-lg bg-white text-secondary-900 placeholder-secondary-400',
+                  'focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors duration-200',
+                  errors.description?.message
+                    ? 'border-red-500 text-red-900 placeholder-red-700'
+                    : 'border-secondary-300',
+                  isSubmitting && 'opacity-50 cursor-not-allowed bg-secondary-50'
+                )}
+                disabled={isSubmitting}
+                {...register('description')}
+              />
+              {errors.description?.message && (
+                <p id="assignment-description-error" className="mt-1 text-sm text-red-600">
+                  {errors.description.message}
+                </p>
+              )}
+              {!errors.description?.message && (
+                <p id="assignment-description-hint" className="mt-1 text-sm text-secondary-500">
+                  {isEdit
+                    ? 'Optional — up to 2000 characters. Leave blank to clear.'
+                    : 'Optional — up to 2000 characters.'}
+                </p>
+              )}
+            </div>
           </div>
           {formError && (
             <div
@@ -234,9 +325,9 @@ export function AssignmentForm({ courseId, onSuccess, onClose }: AssignmentFormP
               type="submit"
               variant="primary"
               isLoading={isSubmitting}
-              aria-label="Create assignment"
+              aria-label={isEdit ? 'Save changes' : 'Create assignment'}
             >
-              Create assignment
+              {isEdit ? 'Save changes' : 'Create assignment'}
             </Button>
           </div>
         </form>

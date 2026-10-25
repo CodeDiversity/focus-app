@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { clsx } from 'clsx';
 import { Button } from '@/shared/ui/Button';
 import { AssignmentForm } from './AssignmentForm';
+import { DeleteAssignmentDialog } from './DeleteAssignmentDialog';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 import type {
   AssignmentPriority,
@@ -11,7 +12,7 @@ import type {
 
 export interface AssignmentsSectionProps {
   courseId: string;
-  onAssignmentChanged: () => void;
+  onAssignmentChanged: (action: 'added' | 'updated' | 'deleted') => void;
   onAssignmentFormOpen?: () => void;
   /**
    * The course's assignments in the API order (`dueDate` asc nulls-last, then
@@ -73,7 +74,7 @@ function Badge({ className, children }: { className: string; children: string })
   );
 }
 
-/** API-ordered assignment rows plus course-context quick creation (SP-113B). */
+/** API-ordered assignment rows plus course-context quick creation and edit/delete controls (SP-114E). */
 export function AssignmentsSection({
   assignments,
   courseId,
@@ -81,11 +82,18 @@ export function AssignmentsSection({
   onAssignmentFormOpen,
 }: AssignmentsSectionProps) {
   const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<CourseAssignment | null>(null);
+  const [deleting, setDeleting] = useState<CourseAssignment | null>(null);
+
   // The student's browser time zone (D112B-16) — resolved once per render.
   const timeZone = getBrowserTimeZone();
   const openForm = () => {
     onAssignmentFormOpen?.();
     setFormOpen(true);
+  };
+  const openEdit = (assignment: CourseAssignment) => {
+    onAssignmentFormOpen?.();
+    setEditing(assignment);
   };
 
   return (
@@ -131,6 +139,22 @@ export function AssignmentsSection({
                 <Badge className={PRIORITY_STYLES[assignment.priority]}>
                   {PRIORITY_LABELS[assignment.priority]}
                 </Badge>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  aria-label={`Edit ${assignment.title}`}
+                  onClick={() => openEdit(assignment)}
+                >
+                  Edit
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  aria-label={`Delete ${assignment.title}`}
+                  onClick={() => setDeleting(assignment)}
+                >
+                  Delete
+                </Button>
               </div>
             </li>
           ))}
@@ -142,7 +166,28 @@ export function AssignmentsSection({
           onClose={() => setFormOpen(false)}
           onSuccess={() => {
             setFormOpen(false);
-            onAssignmentChanged();
+            onAssignmentChanged('added');
+          }}
+        />
+      )}
+      {editing && (
+        <AssignmentForm
+          courseId={courseId}
+          assignment={editing}
+          onClose={() => setEditing(null)}
+          onSuccess={() => {
+            setEditing(null);
+            onAssignmentChanged('updated');
+          }}
+        />
+      )}
+      {deleting && (
+        <DeleteAssignmentDialog
+          assignment={deleting}
+          onCancel={() => setDeleting(null)}
+          onDeleted={() => {
+            setDeleting(null);
+            onAssignmentChanged('deleted');
           }}
         />
       )}

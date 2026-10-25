@@ -52,9 +52,22 @@ const all = [problemSet, essay, labReport];
 
 const dueLabel = (dueDate: string | null) =>
   `Due ${formatDate(new Date(dueDate!), getBrowserTimeZone())}`;
-const AssignmentsSection = ({ assignments }: { assignments: CourseAssignment[] }) => (
+const AssignmentsSection = ({
+  assignments,
+  onAssignmentChanged = vi.fn(),
+  onAssignmentFormOpen = vi.fn(),
+}: {
+  assignments: CourseAssignment[];
+  onAssignmentChanged?: (action: 'added' | 'updated' | 'deleted') => void;
+  onAssignmentFormOpen?: () => void;
+}) => (
   <Providers initialEntries={['/courses/course-1']}>
-    <Section courseId="course-1" assignments={assignments} onAssignmentChanged={vi.fn()} />
+    <Section
+      courseId="course-1"
+      assignments={assignments}
+      onAssignmentChanged={onAssignmentChanged}
+      onAssignmentFormOpen={onAssignmentFormOpen}
+    />
   </Providers>
 );
 
@@ -114,14 +127,84 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     expect(screen.getByText('Completed')).toHaveClass('bg-green-100', 'text-green-700');
   });
 
-  it('offers no per-row management controls (editing/deletion remain out of scope)', () => {
+  it('renders Edit and Delete buttons for each assignment row with accessible labels', () => {
     render(<AssignmentsSection assignments={all} />);
 
-    for (const item of screen.getAllByRole('listitem'))
-      expect(within(item).queryByRole('button')).not.toBeInTheDocument();
-    expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
-    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
+    const items = screen.getAllByRole('listitem');
+    all.forEach((assignment, idx) => {
+      const item = items[idx];
+      expect(
+        within(item).getByRole('button', { name: `Edit ${assignment.title}` })
+      ).toBeInTheDocument();
+      expect(
+        within(item).getByRole('button', { name: `Delete ${assignment.title}` })
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('opens AssignmentForm in edit mode with pre-filled fields when Edit clicked', async () => {
+    const user = setupUser();
+    const onFormOpen = vi.fn();
+    render(<AssignmentsSection assignments={all} onAssignmentFormOpen={onFormOpen} />);
+
+    await user.click(screen.getByRole('button', { name: 'Edit Problem Set 4' }));
+
+    expect(onFormOpen).toHaveBeenCalledOnce();
+    expect(screen.getByRole('heading', { level: 2, name: 'Edit assignment' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Title')).toHaveValue('Problem Set 4');
+  });
+
+  it('opens DeleteAssignmentDialog when Delete clicked', async () => {
+    const user = setupUser();
+    render(<AssignmentsSection assignments={all} />);
+
+    await user.click(screen.getByRole('button', { name: 'Delete Problem Set 4' }));
+
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Delete Problem Set 4?' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
+  });
+
+  it('returns focus to Edit trigger when AssignmentForm closes', async () => {
+    const user = setupUser();
+    render(<AssignmentsSection assignments={all} />);
+
+    const editBtn = screen.getByRole('button', { name: 'Edit Problem Set 4' });
+    await user.click(editBtn);
+
+    expect(screen.getByRole('dialog', { name: 'Edit assignment' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(editBtn).toHaveFocus();
+  });
+
+  it('returns focus to Delete trigger when DeleteAssignmentDialog closes', async () => {
+    const user = setupUser();
+    render(<AssignmentsSection assignments={all} />);
+
+    const deleteBtn = screen.getByRole('button', { name: 'Delete Problem Set 4' });
+    await user.click(deleteBtn);
+
+    expect(screen.getByRole('dialog', { name: 'Delete Problem Set 4?' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(deleteBtn).toHaveFocus();
+  });
+
+  it('transitions to empty state when all assignments are removed', () => {
+    const { rerender } = render(<AssignmentsSection assignments={[problemSet]} />);
+
+    expect(screen.getByText('Problem Set 4')).toBeInTheDocument();
+    expect(screen.queryByText('No assignments yet.')).not.toBeInTheDocument();
+
+    rerender(<AssignmentsSection assignments={[]} />);
+
+    expect(screen.getByText('No assignments yet.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add your first assignment' })).toBeInTheDocument();
   });
 
   it('renders the empty state with a working call-to-action (DoD 5)', async () => {

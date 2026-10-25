@@ -156,8 +156,14 @@ export function CourseDetailPage() {
     void load({ background: true });
   };
 
-  const handleAssignmentAdded = () => {
-    setStatusMessage('Assignment added.');
+  const handleAssignmentChanged = (action: 'added' | 'updated' | 'deleted') => {
+    setStatusMessage(
+      action === 'added'
+        ? 'Assignment added.'
+        : action === 'updated'
+          ? 'Assignment updated.'
+          : 'Assignment deleted.'
+    );
     void load({ background: true });
   };
 
@@ -317,7 +323,7 @@ export function CourseDetailPage() {
             <AssignmentsSection
               courseId={id}
               assignments={course.assignments}
-              onAssignmentChanged={handleAssignmentAdded}
+              onAssignmentChanged={handleAssignmentChanged}
               // Clear on open, a separate interaction from submit, so repeated
               // successes update the live region even with identical copy.
               onAssignmentFormOpen={() => setStatusMessage('')}
