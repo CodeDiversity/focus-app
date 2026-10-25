@@ -52,6 +52,17 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
       .send(body);
   }
 
+  function patch(session: Student, id: string, body: Record<string, unknown>) {
+    return agent
+      .patch(`/assignments/${id}`)
+      .set('Authorization', `Bearer ${session.accessToken}`)
+      .send(body);
+  }
+
+  function del(session: Student, id: string) {
+    return agent.delete(`/assignments/${id}`).set('Authorization', `Bearer ${session.accessToken}`);
+  }
+
   function detail(session: Student, id: string) {
     return agent.get(`/courses/${id}`).set('Authorization', `Bearer ${session.accessToken}`);
   }
@@ -233,5 +244,232 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
       .send({ title: 'Anonymous', courseId: courseA })
       .expect(HttpStatus.UNAUTHORIZED);
     expect(await app.prisma.assignment.count({ where: { userId: studentA.id } })).toBe(before);
+  });
+
+  // ==================== Assignment edit and delete (SP-114F) ====================
+
+  it('PATCHes editable fields, persists merged values, and refetches updated projection (AC 1)', async () => {
+    const created = await create(studentA, {
+      title: 'Initial title',
+      courseId: courseA,
+      description: 'Initial desc',
+      dueDate: '2026-11-01T10:00:00.000Z',
+      estimatedHours: 2,
+      priority: 'LOW',
+    }).expect(HttpStatus.CREATED);
+
+    const updatePayload = {
+      title: 'Updated title',
+      description: 'Updated desc',
+      dueDate: '2026-12-01T15:30:00.000Z',
+      estimatedHours: 4.5,
+      priority: 'URGENT',
+    };
+
+    const response = await patch(studentA, created.body.id, updatePayload).expect(HttpStatus.OK);
+    expect(Object.keys(response.body).sort()).toEqual(ASSIGNMENT_KEYS);
+    expect(response.body).toMatchObject({
+      id: created.body.id,
+      title: 'Updated title',
+      description: 'Updated desc',
+      dueDate: '2026-12-01T15:30:00.000Z',
+      estimatedHours: 4.5,
+      priority: 'URGENT',
+      status: 'PENDING',
+      actualHours: null,
+    });
+
+    const row = await app.prisma.assignment.findFirst({
+      where: { id: created.body.id, userId: studentA.id },
+    });
+    expect(row).toMatchObject({
+      title: 'Updated title',
+      description: 'Updated desc',
+      dueDate: new Date('2026-12-01T15:30:00.000Z'),
+      estimatedHours: 4.5,
+      priority: 'URGENT',
+      status: 'PENDING',
+    });
+
+    const refetched = await detail(studentA, courseA).expect(HttpStatus.OK);
+    expect(refetched.body.assignments).toContainEqual(response.body);
+  });
+
+  it('DELETEs assignment (204), updates projection, and orphans child task with assignmentId null (AC 2, D114-4)', async () => {
+    const created = await create(studentA, {
+      title: 'To be deleted',
+      courseId: courseA,
+    }).expect(HttpStatus.CREATED);
+
+    const task = await app.prisma.task.create({
+      data: {
+        userId: studentA.id,
+        assignmentId: created.body.id,
+        title: 'Surviving task',
+      },
+    });
+
+    const response = await del(studentA, created.body.id).expect(HttpStatus.NO_CONTENT);
+    expect(response.text).toBe('');
+
+    expect(await app.prisma.assignment.findUnique({ where: { id: created.body.id } })).toBeNull();
+
+    const refetched = await detail(studentA, courseA).expect(HttpStatus.OK);
+    expect(refetched.body.assignments.map((a: { id: string }) => a.id)).not.toContain(
+      created.body.id
+    );
+
+    const survivingTask = await app.prisma.task.findUnique({ where: { id: task.id } });
+    expect(survivingTask).toMatchObject({
+      id: task.id,
+      userId: studentA.id,
+      assignmentId: null,
+      title: 'Surviving task',
+    });
+  });
+
+  it('enforces student ownership: foreign, missing and malformed PATCH/DELETE share 404 without writes (AC 3)', async () => {
+    const created = await create(studentA, {
+      title: 'Student A private assignment',
+      courseId: courseA,
+      description: 'Private',
+    }).expect(HttpStatus.CREATED);
+
+    const beforeA = await app.prisma.assignment.findFirst({
+      where: { id: created.body.id, userId: studentA.id },
+    });
+    const beforeBCount = await app.prisma.assignment.count({ where: { userId: studentB.id } });
+
+    for (const targetId of [created.body.id, uuidv4(), 'malformed-id']) {
+      const patchRes = await patch(studentB, targetId, { title: 'B hijacked' }).expect(
+        HttpStatus.NOT_FOUND
+      );
+      expect(patchRes.body).toMatchObject({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'Resource not found',
+      });
+
+      const delRes = await del(studentB, targetId).expect(HttpStatus.NOT_FOUND);
+      expect(delRes.body).toMatchObject({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: 'Resource not found',
+      });
+    }
+
+    expect(
+      await app.prisma.assignment.findFirst({ where: { id: created.body.id, userId: studentA.id } })
+    ).toEqual(beforeA);
+    expect(await app.prisma.assignment.count({ where: { userId: studentB.id } })).toBe(
+      beforeBCount
+    );
+
+    const refetchedA = await detail(studentA, courseA).expect(HttpStatus.OK);
+    expect(refetchedA.body.assignments).toContainEqual(created.body);
+  });
+
+  it.each([
+    ['title', '   '],
+    ['title', 'x'.repeat(201)],
+    ['dueDate', 'invalid-date'],
+    ['dueDate', '2026-02-30T12:00:00Z'],
+    ['estimatedHours', 0],
+    ['estimatedHours', -2],
+    ['estimatedHours', 1001],
+    ['estimatedHours', 'five'],
+    ['priority', 'INVALID_PRIORITY'],
+    ['description', 'x'.repeat(2001)],
+    ['status', 'COMPLETED'],
+    ['actualHours', 10],
+    ['courseId', '00000000-0000-0000-0000-000000000000'],
+    ['userId', '00000000-0000-0000-0000-000000000001'],
+  ])(
+    'rejects invalid edit %s=%p over HTTP with field errors and no write (AC 4)',
+    async (field, value) => {
+      const created = await create(studentA, {
+        title: 'Target for validation',
+        courseId: courseA,
+      }).expect(HttpStatus.CREATED);
+
+      const before = await app.prisma.assignment.findFirst({
+        where: { id: created.body.id, userId: studentA.id },
+      });
+
+      const response = await patch(studentA, created.body.id, { [field]: value }).expect(
+        HttpStatus.BAD_REQUEST
+      );
+      expect(response.body.errors).toHaveProperty(field);
+
+      const after = await app.prisma.assignment.findFirst({
+        where: { id: created.body.id, userId: studentA.id },
+      });
+      expect(after).toEqual(before);
+    }
+  );
+
+  it('enforces PATCH null semantics: explicit null keeps stored values, empty string clears description, empty/all-null body returns 400 (AC 5, D114-5)', async () => {
+    const created = await create(studentA, {
+      title: 'Null semantics target',
+      courseId: courseA,
+      description: 'Initial description',
+      dueDate: '2026-11-20T10:00:00.000Z',
+      estimatedHours: 3,
+      priority: 'HIGH',
+    }).expect(HttpStatus.CREATED);
+
+    // Empty body -> 400
+    const emptyRes = await patch(studentA, created.body.id, {}).expect(HttpStatus.BAD_REQUEST);
+    expect(emptyRes.body.message).toBe('At least one field must be provided');
+
+    // All-null body -> 400
+    const allNullRes = await patch(studentA, created.body.id, {
+      dueDate: null,
+      estimatedHours: null,
+      priority: null,
+    }).expect(HttpStatus.BAD_REQUEST);
+    expect(allNullRes.body.message).toBe('At least one field must be provided');
+
+    // Explicit null keeps stored values
+    const partialWithNulls = await patch(studentA, created.body.id, {
+      title: 'New title with nulls',
+      dueDate: null,
+      estimatedHours: null,
+      priority: null,
+    }).expect(HttpStatus.OK);
+
+    expect(partialWithNulls.body).toMatchObject({
+      title: 'New title with nulls',
+      description: 'Initial description',
+      dueDate: '2026-11-20T10:00:00.000Z',
+      estimatedHours: 3,
+      priority: 'HIGH',
+    });
+
+    // Empty string clears description
+    const clearedDesc = await patch(studentA, created.body.id, {
+      description: '',
+    }).expect(HttpStatus.OK);
+    expect(clearedDesc.body.description).toBe('');
+
+    const row = await app.prisma.assignment.findFirst({
+      where: { id: created.body.id, userId: studentA.id },
+    });
+    expect(row).toMatchObject({
+      title: 'New title with nulls',
+      description: '',
+      dueDate: new Date('2026-11-20T10:00:00.000Z'),
+      estimatedHours: 3,
+      priority: 'HIGH',
+    });
+  });
+
+  it('rejects unauthenticated PATCH and DELETE before writing', async () => {
+    await agent
+      .patch('/assignments/00000000-0000-0000-0000-000000000000')
+      .send({ title: 'Unauthenticated edit' })
+      .expect(HttpStatus.UNAUTHORIZED);
+
+    await agent
+      .delete('/assignments/00000000-0000-0000-0000-000000000000')
+      .expect(HttpStatus.UNAUTHORIZED);
   });
 });

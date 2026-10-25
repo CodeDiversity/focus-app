@@ -11,14 +11,14 @@
 **Delivery home:** `docs/stories/EP03/SP-114/`
 **Artifact root:** `./artifacts/` (stable story IDs)
 **Parent artifacts:** `./artifacts/SP-114/` (parent index written by F; review and walkthrough by reviewer)
-**Active substory:** None — SP-114E implemented 2026-10-24, awaiting the combined SP-114 parent review.
-**Next substory:** **SP-114F** (implement: e2e tests, DoD-10 sign-off, parent index).
+**Active substory:** None — SP-114F implemented 2026-10-24, awaiting the combined SP-114 parent review.
+**Next substory:** None — all children implemented; combined parent review next.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [D](./SP-114D-assignment-update-delete-api.md) | **Implemented — awaiting parent review** | SP-113A complete (satisfied 2026-10-24) | None — awaits the combined SP-114 review | [implementation](./artifacts/SP-114D/implementation.md) |
 | [E](./SP-114E-assignment-edit-delete-ui.md) | **Implemented — awaiting parent review** | SP-113A, SP-113B, SP-114D implemented (all satisfied 2026-10-24) | None — awaits the combined SP-114 review | [implementation](./artifacts/SP-114E/implementation.md) · [checkpoint](./artifacts/SP-114E/checkpoint.md) |
-| [F](./SP-114F-assignment-edit-delete-integration.md) | **Ready** | D, E implemented (all satisfied 2026-10-24) | Implement: e2e tests, DoD-10 sign-off, parent index | Pending |
+| [F](./SP-114F-assignment-edit-delete-integration.md) | **Implemented — awaiting parent review** | D, E implemented (all satisfied 2026-10-24) | None — awaits the combined SP-114 review | [implementation](./artifacts/SP-114F/implementation.md) · [checkpoint](./artifacts/SP-114F/checkpoint.md) |
 
 Sequence: SP-114 (D → E → F), one sequential writer. E requires a `ui-refiner` pass before implementation (see UI/UX gaps in E's ticket).
 
