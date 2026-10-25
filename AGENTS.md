@@ -22,7 +22,7 @@ user to arbitrate routine bookkeeping.
 | jira-sync | `.agents/skills/studypilot-jira-sync/SKILL.md` | Sync ledger; scoped story specs/navigation and epic tracker metadata |
 | refiner | `.agents/skills/studypilot-refiner/SKILL.md` | Only the given unimplemented story |
 | ui-refiner | `.agents/skills/studypilot-ui-refiner/SKILL.md` | Only the given unimplemented frontend story |
-| reviewer | `.agents/skills/studypilot-reviewer/SKILL.md` | Report; final user walkthrough; passing verdict's scoped docs sync |
+| reviewer | `.agents/skills/studypilot-reviewer/SKILL.md` | Report; final user walkthrough; passing verdict's scoped docs sync; **scoped commit of review artifacts and queue/status updates on passing verdict** |
 | dod-auditor | `.agents/skills/studypilot-reviewer/SKILL.md` (static audit) | None |
 
 An explicit autopilot invocation authorizes sequential delegation through the
@@ -65,9 +65,7 @@ as autopilot; plan-only reviews and static audits do not create this document.
 Before returning a task, follow the [closeout contract](.agents/context-efficiency.md#task-closeout-contract):
 persist the role-authorized status/evidence, commit scoped writes when the role
 may mutate Git, and return status, artifact paths, commit hashes, verification
-and remaining work. A reviewer or auditor returns the explicit Git handoff
-instead of committing. The coordinator owns deferred status edits and commits;
-do not leave their ownership implicit or make the reviewer reconstruct progress.
+and remaining work. **On a passing final implementation review, the reviewer commits the final `review.md`, `walkthrough.md`, and the passing-review docs sync (queue/status updates, correction log, parent status line).** On a non-passing verdict the reviewer saves the report only and returns the explicit Git handoff for deferred edits. The coordinator owns deferred status edits and commits only for non-passing verdicts; do not leave their ownership implicit or make the reviewer reconstruct progress.
 
 Never read, display, search inside, or write credential or secret files, including
 `.env` and `.env.*`. Flag exposed secrets by location without reproducing values.

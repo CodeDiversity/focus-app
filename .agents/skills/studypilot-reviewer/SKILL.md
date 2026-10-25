@@ -10,31 +10,13 @@ parent execution queue and resolve its canonical evidence/report paths. Verify
 status claims independently; never move artifacts or require a
 legacy `docs/artifacts/` location when the group records a colocated artifact root.
 
-The review itself is read-only: never modify code, tests, migrations, story
-tickets, plans, or Jira, and never read secrets. The reviewer's own writes are
-exactly the following:
+The review itself is read-only for code, tests, migrations, story tickets, plans, and Jira; never read secrets. The reviewer's own writes are exactly the following:
 
-1. **Always, both modes:** save the full verbatim report at the mode-specific
-   path below, replacing only the latest report on re-review; earlier
-   committed reports remain in Git history.
-2. **Final implementation review:** produce the user-facing
-   `<artifact-root>/<review-unit-id>/walkthrough.md` under
-   [Final user walkthrough](#final-user-walkthrough), after correction rounds
-   and before completion. This is reviewer-owned, not an implementer deliverable.
-3. **Only on a passing verdict:** the docs sync in
-   [Passing-review docs sync](#passing-review-docs-sync) — correction-log
-   entries, verdict-dependent queue fields, and a stale parent status line.
+1. **Always, both modes:** save the full verbatim report at the mode-specific path below, replacing only the latest report on re-review; earlier committed reports remain in Git history.
+2. **Final implementation review:** produce the user-facing `<artifact-root>/<review-unit-id>/walkthrough.md` under [Final user walkthrough](#final-user-walkthrough), after correction rounds and before completion. This is reviewer-owned, not an implementer deliverable.
+3. **Only on a passing verdict:** the docs sync in [Passing-review docs sync](#passing-review-docs-sync) — correction-log entries, verdict-dependent queue fields, and a stale parent status line — **and the scoped commit of `review.md`, `walkthrough.md`, and the queue/status updates to Git**.
 
-On a non-passing verdict save the report only; do not publish a final walkthrough
-or run the docs sync. If tools or permissions prevent saving final outputs,
-return the full Markdown for each report/walkthrough, its exact target path, and
-an explicit list of deferred passing-sync edits. The coordinating parent
-may persist these within its own write authority, verbatim for both documents; otherwise
-leave a concrete handoff. Never bypass runtime restrictions, broaden another
-role's write scope, or claim pending writes succeeded. This is the canonical
-restricted-runtime fallback for both agent frameworks. Auditors never save or sync.
-Until the final report and walkthrough are both saved and verified, completion
-and `Reviewed` remain pending even when substantive review has passed.
+On a non-passing verdict save the report only; do not publish a final walkthrough or run the docs sync. If tools or permissions prevent saving final outputs, return the full Markdown for each report/walkthrough, its exact target path, and an explicit list of deferred passing-sync edits. The coordinating parent may persist these within its own write authority, verbatim for both documents; otherwise leave a concrete handoff. Never bypass runtime restrictions, broaden another role's write scope, or claim pending writes succeeded. This is the canonical restricted-runtime fallback for both agent frameworks. Auditors never save or sync. Until the final report and walkthrough are both saved and verified, completion and `Reviewed` remain pending even when substantive review has passed.
 
 ## Static audit mode
 
@@ -138,8 +120,7 @@ For restricted-runtime fallback, return both exact documents and paths plus
 persists the walkthrough and report verbatim, verifies the saved contents and
 reviewed scope, then applies only the authorized deferred passing sync. If
 persistence/content verification is still blocked, completion remains pending.
-Reviewers never commit. Include both paths and the coordinator Git handoff in
-the closeout. This procedure also applies when no autopilot is involved.
+**On a passing verdict, the reviewer commits `review.md`, `walkthrough.md`, and the passing-review docs sync (queue/status updates, correction log, parent status line). On a non-passing verdict, the reviewer returns the explicit Git handoff for deferred edits.** Include both paths and the coordinator Git handoff in the closeout. This procedure also applies when no autopilot is involved.
 
 ## Severity and verdict contract
 
@@ -188,7 +169,7 @@ report is always saved before sync, in every mode and for every verdict.**
 
 On a passing verdict, after saving the report and, for final implementation
 review, the verified walkthrough, perform the docs-only sync in the same delivery
-home, then report exactly which files you wrote. Defer completion sync when
+home, **commit `review.md`, `walkthrough.md`, and all queue/status/correction-log updates to Git**, then report exactly which files you wrote. Defer completion sync when
 either final document still needs persistence:
 
 1. **Correction log (breakdown README):** record each finding by stable ID with
