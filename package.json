@@ -14,7 +14,7 @@
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "test:e2e:headed": "turbo run test:e2e:headed",
-    "test:e2e:report": "pnpm --filter @studypilot/web exec playwright show-report",
+    "test:e2e:report": "turbo run test:e2e:report",
     "db:generate": "turbo run db:generate",
     "db:migrate": "turbo run db:migrate",
     "db:push": "turbo run db:push",

@@ -20,6 +20,10 @@
       "cache": false,
       "env": ["E2E_BASE_URL"]
     },
+    "test:e2e:report": {
+      "cache": false,
+      "persistent": true
+    },
     "db:generate": {
       "cache": false
     },

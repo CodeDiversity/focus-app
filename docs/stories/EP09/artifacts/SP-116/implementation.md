@@ -25,28 +25,28 @@ and no AC behavior changed — plumbing only, as in F10's own scope note.
 
 ## Acceptance criteria outcomes
 
-| AC | Outcome | Evidence |
-|---|---|---|
-| 1. `@playwright/test` dev dep; `pnpm test:e2e` (repo root) runs the suite; documented in README | **Met** | `@playwright/test ^1.64.1` in `apps/web/package.json`; root script `turbo run test:e2e` now resolves (F1: added the missing `test:e2e` task to `turbo.json`); README documents it under Root and Frontend scripts with the `pnpm dev` prerequisite (F9: it was misfiled under Backend, where no such script exists) |
-| 2. Missing API/DB produces a clear failure, not a timeout cascade | **Met** | `beforeAll` wraps the registration request: connection failures throw "Could not reach the API at … Start the dev stack with `pnpm dev`"; non-201 responses throw with the response body. Verified by pointing `E2E_BASE_URL` at a dead port (F8: declared in the turbo task `env` list so turbo passes it through) — both tests fail fast with the actionable message |
-| 3. Smoke test registers/uses a real user via the API, logs in through the real UI, asserts an authenticated destination | **Met** | `e2e/login.spec.ts`: `POST /api/auth/register` in `beforeAll` (201 required), then the login form (`getByLabel`/`getByRole`) and `toHaveURL(/\/(onboarding|dashboard)/)` — new accounts land on onboarding |
-| 4. Deterministic: no fixed sleeps; unique data per run; passes repeatedly | **Met** | No sleeps anywhere; email is `e2e-smoke-<timestamp>-<uuid8>@example.com` — unique per run and per worker (F6: a bare `Date.now()` collided across workers that load in the same millisecond, producing 409s; Web Crypto `crypto.randomUUID()` suffix removes the collision without new deps). 13 consecutive green runs after the fix |
-| 5. Login failure path (wrong password) shows an error — minimal negative case | **Met** | Second test: wrong password → asserts the `Invalid email or password` error toast (the API's uniform 401 message surfaced by `LoginPage.tsx`) and that the URL stays `/login` (F2: this test was missing from the committed spec) |
+| AC                                                                                                                      | Outcome | Evidence                                                                                                                                                                                                                                                                                                                                                               |
+| ----------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. `@playwright/test` dev dep; `pnpm test:e2e` (repo root) runs the suite; documented in README                         | **Met** | `@playwright/test ^1.64.1` in `apps/web/package.json`; root script `turbo run test:e2e` now resolves (F1: added the missing `test:e2e` task to `turbo.json`); README documents it under Root and Frontend scripts with the `pnpm dev` prerequisite (F9: it was misfiled under Backend, where no such script exists)                                                    |
+| 2. Missing API/DB produces a clear failure, not a timeout cascade                                                       | **Met** | `beforeAll` wraps the registration request: connection failures throw "Could not reach the API at … Start the dev stack with `pnpm dev`"; non-201 responses throw with the response body. Verified by pointing `E2E_BASE_URL` at a dead port (F8: declared in the turbo task `env` list so turbo passes it through) — both tests fail fast with the actionable message |
+| 3. Smoke test registers/uses a real user via the API, logs in through the real UI, asserts an authenticated destination | **Met** | `e2e/login.spec.ts`: `POST /api/auth/register` in `beforeAll` (201 required), then the login form (`getByLabel`/`getByRole`) and `toHaveURL(/\/(onboarding                                                                                                                                                                                                             | dashboard)/)` — new accounts land on onboarding |
+| 4. Deterministic: no fixed sleeps; unique data per run; passes repeatedly                                               | **Met** | No sleeps anywhere; email is `e2e-smoke-<timestamp>-<uuid8>@example.com` — unique per run and per worker (F6: a bare `Date.now()` collided across workers that load in the same millisecond, producing 409s; Web Crypto `crypto.randomUUID()` suffix removes the collision without new deps). 13 consecutive green runs after the fix                                  |
+| 5. Login failure path (wrong password) shows an error — minimal negative case                                           | **Met** | Second test: wrong password → asserts the `Invalid email or password` error toast (the API's uniform 401 message surfaced by `LoginPage.tsx`) and that the URL stays `/login` (F2: this test was missing from the committed spec)                                                                                                                                      |
 
 ## Changes
 
-| Path | Change |
-|---|---|
-| `turbo.json` | Added `test:e2e` task (`cache: false`, `env: ["E2E_BASE_URL"]`) — F1, F8 |
-| `apps/web/e2e/login.spec.ts` | Per-worker unique email (F6); explicit connection/non-201 failure messages (AC2); added wrong-password negative test (F2/AC5) |
-| `apps/web/playwright.config.ts` | `baseURL` honors `E2E_BASE_URL` (default `http://localhost:3000`) — F8; F12: `reporter: [['list'], ['html', { open: 'on-failure' }]]` so every run writes `playwright-report/` and failures auto-open it; F13: `screenshot: 'on'` — every test's screenshot is attached to the report |
-| `apps/web/vite.config.ts` | Vitest `exclude: ['e2e/**', …]` so the unit runner never collects Playwright specs (F7) |
-| `README.md` | `pnpm test:e2e` documented under Root and Frontend scripts with the dev-stack prerequisite; removed from the Backend section (F9) |
-| `.gitignore` | Ignore Playwright outputs `test-results/`, `playwright-report/` (was uncommitted since the prior session — F3) |
-| `turbo.json` (F10/F11) | Added `test:e2e:headed` task (`cache: false`, `env: ["E2E_BASE_URL"]`); **without** `interactive: true` (F11: that flag made turbo refuse the headed run outside TUI mode) |
-| `apps/web/package.json` (F10) | Added `test:e2e:headed` script: `playwright test --headed` |
-| `package.json` (root, F10/F14) | Added root script `test:e2e:headed: turbo run test:e2e:headed`; F14: `test:e2e:report: pnpm --filter @studypilot/web exec playwright show-report` |
-| `README.md` (F10/F11/F12/F14) | `pnpm test:e2e:headed` documented under Root and Frontend scripts; note says it "requires a display; won't work on headless CI"; root-scripts line `pnpm test:e2e:report` opens the last run's HTML report (screenshots included) |
+| Path                               | Change                                                                                                                                                                                                                                                                                |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `turbo.json`                       | Added `test:e2e` task (`cache: false`, `env: ["E2E_BASE_URL"]`) — F1, F8                                                                                                                                                                                                              |
+| `apps/web/e2e/login.spec.ts`       | Per-worker unique email (F6); explicit connection/non-201 failure messages (AC2); added wrong-password negative test (F2/AC5)                                                                                                                                                         |
+| `apps/web/playwright.config.ts`    | `baseURL` honors `E2E_BASE_URL` (default `http://localhost:3000`) — F8; F12: `reporter: [['list'], ['html', { open: 'on-failure' }]]` so every run writes `playwright-report/` and failures auto-open it; F13: `screenshot: 'on'` — every test's screenshot is attached to the report |
+| `apps/web/vite.config.ts`          | Vitest `exclude: ['e2e/**', …]` so the unit runner never collects Playwright specs (F7)                                                                                                                                                                                               |
+| `README.md`                        | `pnpm test:e2e` documented under Root and Frontend scripts with the dev-stack prerequisite; removed from the Backend section (F9)                                                                                                                                                     |
+| `.gitignore`                       | Ignore Playwright outputs `test-results/`, `playwright-report/` (was uncommitted since the prior session — F3)                                                                                                                                                                        |
+| `turbo.json` (F10/F11/F15)         | Added `test:e2e:headed` task (`cache: false`, `env: ["E2E_BASE_URL"]`); **without** `interactive: true` (F11); F15: `test:e2e:report` task (`cache: false`, `persistent: true`)                                                                                                       |
+| `apps/web/package.json` (F10/F15)  | Added `test:e2e:headed` script: `playwright test --headed`; F15: `test:e2e:report` script: `playwright show-report`                                                                                                                                                                   |
+| `package.json` (root, F10/F14/F15) | Added root script `test:e2e:headed: turbo run test:e2e:headed`; F15: `test:e2e:report: turbo run test:e2e:report` (replacing the pnpm-only filter script from F14)                                                                                                                    |
+| `README.md` (F10/F11/F12/F14)      | `pnpm test:e2e:headed` documented under Root and Frontend scripts; note says it "requires a display; won't work on headless CI"; root-scripts line `pnpm test:e2e:report` opens the last run's HTML report (works with npm too after F15)                                             |
 
 Baseline for the combined scope: `4a34fd4` (HEAD before this task's first
 change). The prior session's `2659504` already contained the initial spec,
@@ -58,17 +58,18 @@ diff is the six paths above.
 All commands from the repo root unless noted; dev stack (Postgres :5432, Vite
 :3000, API :4000) was already running and was not started/stopped by this task.
 
-| Command (cwd) | Result |
-|---|---|
-| `pnpm test:e2e` (root) | **2 passed** — 13 consecutive green runs after the F6 fix (happy path + wrong-password) |
-| `pnpm test:e2e:headed` (root, F11 verification) | **2 passed (2.3s)** with turbo in classic UI — no `--ui=tui` / `TURBO_UI=true` needed |
-| `pnpm test:e2e` after F12 (root) | **2 passed (1.1s)**; `apps/web/playwright-report/index.html` written; `playwright show-report` serves it (HTTP 200 verified) |
-| `pnpm test:e2e` after F13 (root) | **2 passed**; per-test screenshots captured (`test-results/*/test-finished-1.png`) and embedded in the report (byte-identical `playwright-report/data/*.png`) |
-| `E2E_BASE_URL=http://localhost:3999 pnpm test:e2e` (root) | Both tests fail fast with "Could not reach the API … (pnpm dev)" — AC2 |
-| `pnpm test` (`apps/web`, vitest) | 45 files / 563 tests passed (after the F7 exclude fix; before it, the e2e spec broke collection) |
-| `pnpm lint` (root, turbo) | api + web both passed |
-| `pnpm typecheck` (`apps/web`) | passed |
-| `npx prettier --check` on changed files | clean (F11 follow-up: `turbo.json`, root/`apps/web/package.json` clean; committed-baseline `README.md` already failed before SP-116, warning not introduced here) |
+| Command (cwd)                                             | Result                                                                                                                                                            |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm test:e2e` (root)                                    | **2 passed** — 13 consecutive green runs after the F6 fix (happy path + wrong-password)                                                                           |
+| `pnpm test:e2e:headed` (root, F11 verification)           | **2 passed (2.3s)** with turbo in classic UI — no `--ui=tui` / `TURBO_UI=true` needed                                                                             |
+| `pnpm test:e2e` after F12 (root)                          | **2 passed (1.1s)**; `apps/web/playwright-report/index.html` written; `playwright show-report` serves it (HTTP 200 verified)                                      |
+| `pnpm test:e2e` after F13 (root)                          | **2 passed**; per-test screenshots captured (`test-results/*/test-finished-1.png`) and embedded in the report (byte-identical `playwright-report/data/*.png`)     |
+| report viewer after F15 (root and `apps/web`)             | `pnpm test:e2e:report` (root) → HTTP 200; `npm run test:e2e:report` (root) → HTTP 200; `npm run test:e2e:report` (`apps/web`) → HTTP 200                          |
+| `E2E_BASE_URL=http://localhost:3999 pnpm test:e2e` (root) | Both tests fail fast with "Could not reach the API … (pnpm dev)" — AC2                                                                                            |
+| `pnpm test` (`apps/web`, vitest)                          | 45 files / 563 tests passed (after the F7 exclude fix; before it, the e2e spec broke collection)                                                                  |
+| `pnpm lint` (root, turbo)                                 | api + web both passed                                                                                                                                             |
+| `pnpm typecheck` (`apps/web`)                             | passed                                                                                                                                                            |
+| `npx prettier --check` on changed files                   | clean (F11 follow-up: `turbo.json`, root/`apps/web/package.json` clean; committed-baseline `README.md` already failed before SP-116, warning not introduced here) |
 
 ## Findings and deviations
 
@@ -103,18 +104,23 @@ Full record with evidence in [checkpoint.md](./checkpoint.md):
   HTML reporter next to it (`[['list'], ['html', { open: 'on-failure' }]]`);
   every run now writes `apps/web/playwright-report/`, failures auto-open it,
   and any run is viewable via `cd apps/web && pnpm exec playwright
-  show-report` (serves http://localhost:9323 — verified 200). The directory
+show-report` (serves http://localhost:9323 — verified 200). The directory
   is already gitignored (F3).
 - **F13 (user follow-up, done):** screenshots in the report — `screenshot:
-  'on'` in `apps/web/playwright.config.ts`; each test captures a screenshot
+'on'` in `apps/web/playwright.config.ts`; each test captures a screenshot
   that the HTML report attaches. Verified on a 2-passed run: one
   `test-finished-1.png` per test, byte-identical copies embedded in
   `playwright-report/data/`.
 - **F14 (user-reported error, fixed):** `pnpm exec playwright show-report`
   from the repo root fails because `@playwright/test` is only a devDep of
-  `apps/web`. Added root script
-  `test:e2e:report: pnpm --filter @studypilot/web exec playwright
-  show-report` and pointed the README line at it.
+  `apps/web`. Added root script `test:e2e:report` and pointed the README line
+  at it. First version used `pnpm --filter …`; reworked under F15.
+- **F15 (user-reported error, fixed):** the pnpm-only root script broke under
+  npm (`Missing script "test:e2e:report"` against the workspace). Reworked to
+  turbo: `apps/web` script `playwright show-report`, turbo task
+  `test:e2e:report` (`cache: false`, `persistent: true`), root
+  `turbo run test:e2e:report`. Verified HTTP 200 from root (both `pnpm` and
+  `npm` entry points) and inside `apps/web`.
 
 ## Remaining work
 
