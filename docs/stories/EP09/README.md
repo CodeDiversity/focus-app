@@ -62,10 +62,24 @@ the corresponding features stabilize or when a regression justifies the cover.
 ## Execution queue
 
 Delivery home: `docs/stories/EP09/` · Artifact root: `docs/stories/EP09/artifacts/`
-Active substory: None · Next substory: None (reason: all children implemented — parent index at `artifacts/EP09/implementation.md`, final parent review next)
+Active substory: None · Next substory: SP-119 (plan — autopilot run in progress; see Autopilot section)
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | SP-116 | Implemented — awaiting parent review | None | Await EP09 parent review | `artifacts/SP-116/implementation.md` |
 | SP-117 | Implemented — awaiting parent review | SP-116 (met) | Await EP09 parent review | `artifacts/SP-117/implementation.md` |
 | SP-118 | Implemented — awaiting parent review | SP-116 (met) | Await EP09 parent review | `artifacts/SP-118/implementation.md` |
+
+## Autopilot
+
+**Scope and entry:** EP09 parent review unit — children SP-116/117/118 (implemented, `awaiting parent review`) + new child **SP-119** (E2E test-data cleanup / dedicated test database). Entry: user request 2026-10-25 — "plan and implement data cleanup as autopilot", resolving the carried findings SP-116 F5 / SP-117 F4 / SP-118 F4. No explicit user limits; standard tracker/database/deployment authorization boundaries apply. The user's "ok" on SP-117 F1 (AC1 wording vs. SP-102 flow) and SP-118 F2 (course removal = archive) defers both to the final parent review for disposition — no implementation work requested for them.
+
+**Coordinator:** branch `main`, run 2026-10-25 (data-cleanup run); Git baseline `c52ebf2` (before the first included change, SP-116's `2659504`) — retained until the parent implementation index owns the combined scope.
+
+**Stage:** plan
+
+**Active dispatch:** `sp119-plan` — planner, fresh isolated context: plan SP-119 (story file + EP09 queue row + EP03 anticipated-ID reconciliation); dispatch running.
+
+**Last result / retry state:** none yet — first dispatch of this run.
+
+**Resume:** await planner return → verify story file/queue → commit planner output → whole-plan review (EP09 has no `plan-review.md`; SP-119 is a scope addition within the epic's documented dedicated-test-DB scope) → implement SP-119 (fresh implementer) → refresh parent index → final EP09 parent review (fresh reviewer; also disposes SP-117 F1 / SP-118 F2) → close.
