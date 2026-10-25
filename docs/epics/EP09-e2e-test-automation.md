@@ -37,6 +37,7 @@ wiring, cross-page navigation).
 | SP-116 | Playwright infrastructure + login smoke test | — |
 | SP-117 | Auth journey coverage (register, login state, logout) | SP-116 |
 | SP-118 | Semester & course management E2E coverage | SP-116 |
+| SP-119 | E2E dedicated test database + self-contained test stack | SP-116 |
 
 ## Acceptance criteria (epic level)
 

@@ -29,8 +29,10 @@ The 2026-10-24 bullets above are the SP-113 planning baseline. They are not the 
 | — | 6. Implement assignment search, sorting, and filters | Not yet broken down (planned later) | — |
 | — | 7. Implement overdue and completed assignment views | Not yet broken down (planned later) | — |
 
-Anticipated IDs for stories 4–7 are SP-116…SP-119 until those stories are
-broken down. IDs may shift if a proposed story splits.
+Anticipated IDs for stories 4–7 are SP-120…SP-123 until those stories are
+broken down. (SP-116…SP-119 were consumed by EP09's E2E automation:
+SP-116/117/118 implemented, SP-119 the dedicated-test-database infra story.)
+IDs may shift if a proposed story splits.
 
 ## Epic acceptance criteria — ownership
 
