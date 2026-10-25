@@ -11,7 +11,7 @@ import {
   type CourseDetail,
 } from '@/entities/course/api/courseApi';
 import { listSemesters } from '@/entities/semester/api/semesterApi';
-import { createAssignment } from '@/entities/assignment/api/assignmentApi';
+import { createAssignment, deleteAssignment } from '@/entities/assignment/api/assignmentApi';
 import toast from 'react-hot-toast';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 import type { ClassMeeting, CourseAssignment } from '@/shared/types/academic';
@@ -31,7 +31,11 @@ vi.mock('@/entities/semester/api/semesterApi', () => ({
   listSemesters: vi.fn(),
 }));
 
-vi.mock('@/entities/assignment/api/assignmentApi', () => ({ createAssignment: vi.fn() }));
+vi.mock('@/entities/assignment/api/assignmentApi', () => ({
+  createAssignment: vi.fn(),
+  updateAssignment: vi.fn(),
+  deleteAssignment: vi.fn(),
+}));
 
 vi.mock('react-hot-toast', () => ({
   default: { success: vi.fn(), error: vi.fn() },
@@ -180,6 +184,42 @@ describe('CourseDetailPage page states (AC 1/5, DoD 5)', () => {
       expect(mockedToast.success).not.toHaveBeenCalled();
     }
   );
+
+  it('clears the status when opening Delete and re-announces consecutive deletions', async () => {
+    const user = setupUser();
+    const second: CourseAssignment = {
+      ...homework,
+      id: 'asgn-2',
+      title: 'Lab Report',
+      dueDate: null,
+      status: 'PENDING',
+      priority: 'MEDIUM',
+    };
+    mockedGetCourse.mockResolvedValue({ ...cs101, assignments: [homework, second] });
+    vi.mocked(deleteAssignment).mockResolvedValue(undefined);
+    renderPage();
+
+    await screen.findByRole('button', { name: 'Delete Problem Set 3' });
+    const status = screen.getByRole('status');
+
+    for (const title of ['Problem Set 3', 'Lab Report']) {
+      await user.click(screen.getByRole('button', { name: `Delete ${title}` }));
+      // Opening Delete is a separate interaction that empties the region
+      // before the identical success copy is set again.
+      expect(screen.getByRole('status')).toBe(status);
+      expect(status).toBeEmptyDOMElement();
+      const dialog = screen.getByRole('dialog', { name: `Delete ${title}?` });
+      await user.click(within(dialog).getByRole('button', { name: `Delete ${title}` }));
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(screen.getByRole('status')).toBe(status);
+      expect(status).toHaveTextContent(/^Assignment deleted\.$/);
+    }
+
+    expect(deleteAssignment).toHaveBeenCalledTimes(2);
+    expect(deleteAssignment).toHaveBeenNthCalledWith(1, 'asgn-1');
+    expect(deleteAssignment).toHaveBeenNthCalledWith(2, 'asgn-2');
+    expect(mockedToast.success).not.toHaveBeenCalled();
+  });
 
   it('shows the loading state (generic h1 + spinner copy) while the single fetch is in flight', async () => {
     // Never resolves during the test; unmount cleans up.

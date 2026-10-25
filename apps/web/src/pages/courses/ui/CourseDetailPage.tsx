@@ -324,8 +324,9 @@ export function CourseDetailPage() {
               courseId={id}
               assignments={course.assignments}
               onAssignmentChanged={handleAssignmentChanged}
-              // Clear on open, a separate interaction from submit, so repeated
-              // successes update the live region even with identical copy.
+              // Clear on Add, Edit, or Delete open — a separate interaction from
+              // submit — so repeated successes update the live region even with
+              // identical copy (including consecutive "Assignment deleted.").
               onAssignmentFormOpen={() => setStatusMessage('')}
             />
           </div>

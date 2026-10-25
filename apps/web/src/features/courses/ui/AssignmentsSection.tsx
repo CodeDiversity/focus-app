@@ -95,6 +95,12 @@ export function AssignmentsSection({
     onAssignmentFormOpen?.();
     setEditing(assignment);
   };
+  const openDelete = (assignment: CourseAssignment) => {
+    // Same re-arm as Add/Edit: opening Delete clears the live region so a
+    // later identical "Assignment deleted." is a new announcement (IR-114-02).
+    onAssignmentFormOpen?.();
+    setDeleting(assignment);
+  };
 
   return (
     <section className="card p-6">
@@ -151,7 +157,7 @@ export function AssignmentsSection({
                   size="sm"
                   variant="ghost"
                   aria-label={`Delete ${assignment.title}`}
-                  onClick={() => setDeleting(assignment)}
+                  onClick={() => openDelete(assignment)}
                 >
                   Delete
                 </Button>

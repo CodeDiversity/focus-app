@@ -52,6 +52,8 @@ export function DeleteAssignmentDialog({
     if (isDeleting) return; // duplicate-submission prevention
     setIsDeleting(true);
     setError(null);
+    // Move focus before the buttons disable so Tab cannot escape during the gap.
+    dialogRef.current?.focus();
     try {
       await deleteAssignment(assignment.id);
       onDeleted();
@@ -67,43 +69,47 @@ export function DeleteAssignmentDialog({
     }
   };
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (isDeleting) return; // frozen while the request is in flight
-    if (event.key === 'Escape') {
-      event.stopPropagation();
-      onCancel();
-      return;
-    }
-    if (event.key !== 'Tab') return;
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-      (el) => !el.hasAttribute('disabled')
-    );
-    if (focusable.length === 0) {
-      event.preventDefault();
-      return;
-    }
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    const active = document.activeElement;
-    if (event.shiftKey && (active === first || !dialog.contains(active))) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  };
+  useEffect(() => {
+    // Disabled controls drop focus in real browsers. Hold it on the dialog.
+    if (isDeleting) dialogRef.current?.focus();
+  }, [isDeleting]);
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    dialog.addEventListener('keydown', handleKeyDown);
-    return () => {
-      dialog.removeEventListener('keydown', handleKeyDown);
+    const onKeyDown = (event: KeyboardEvent) => {
+      const dialog = dialogRef.current;
+      if (!dialog) return;
+      // Escape is the only key suspended in flight. Tab stays contained.
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (!isDeleting) onCancel();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+        (el) => !el.hasAttribute('disabled')
+      );
+      const active = document.activeElement;
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const outside = !active || !dialog.contains(active) || active === dialog;
+      if (event.shiftKey && (active === first || outside)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (active === last || !active || !dialog.contains(active))) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-  });
+    // Capture on document so Tab is contained even after focus has left the modal.
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => document.removeEventListener('keydown', onKeyDown, true);
+  }, [isDeleting, onCancel]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

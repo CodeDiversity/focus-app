@@ -155,12 +155,14 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     expect(screen.getByLabelText('Title')).toHaveValue('Problem Set 4');
   });
 
-  it('opens DeleteAssignmentDialog when Delete clicked', async () => {
+  it('opens DeleteAssignmentDialog when Delete clicked and re-arms status', async () => {
     const user = setupUser();
-    render(<AssignmentsSection assignments={all} />);
+    const onFormOpen = vi.fn();
+    render(<AssignmentsSection assignments={all} onAssignmentFormOpen={onFormOpen} />);
 
     await user.click(screen.getByRole('button', { name: 'Delete Problem Set 4' }));
 
+    expect(onFormOpen).toHaveBeenCalledOnce();
     expect(
       screen.getByRole('heading', { level: 2, name: 'Delete Problem Set 4?' })
     ).toBeInTheDocument();

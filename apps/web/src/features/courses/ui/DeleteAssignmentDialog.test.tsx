@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { act, render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { setupUser } from '@/test/user';
 import { DeleteAssignmentDialog } from './DeleteAssignmentDialog';
 import { deleteAssignment } from '@/entities/assignment/api/assignmentApi';
@@ -113,6 +113,70 @@ describe('DeleteAssignmentDialog (AC 6, AC 7)', () => {
     // Escape is ignored while the request is in flight
     await validUser.keyboard('{Escape}');
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('contains Tab and Shift+Tab while delete is pending, ignores Escape, and recovers after rejection', async () => {
+    const outside = document.createElement('button');
+    outside.type = 'button';
+    outside.textContent = 'Background action';
+    document.body.appendChild(outside);
+
+    let rejectDelete!: (reason: unknown) => void;
+    mockedDeleteAssignment.mockImplementation(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectDelete = reject;
+        })
+    );
+    const { onCancel, onDeleted } = renderDialog();
+
+    await validUser.click(deleteButton());
+    await waitFor(() => expect(deleteButton()).toBeDisabled());
+
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveFocus();
+
+    await validUser.tab();
+    expect(outside).not.toHaveFocus();
+    expect(dialog).toHaveFocus();
+
+    await validUser.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(outside).not.toHaveFocus();
+    expect(dialog).toHaveFocus();
+
+    // Focus that has already left is pulled back on the next Tab.
+    outside.focus();
+    expect(outside).toHaveFocus();
+    await validUser.tab();
+    expect(outside).not.toHaveFocus();
+    expect(dialog).toHaveFocus();
+
+    await validUser.keyboard('{Escape}');
+    expect(onCancel).not.toHaveBeenCalled();
+    expect(dialog).toBeInTheDocument();
+    expect(mockedDeleteAssignment).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      rejectDelete(new Error('Network Error'));
+    });
+    expect(await screen.findByRole('alert')).toHaveTextContent('Network Error');
+    expect(deleteButton()).toBeEnabled();
+    expect(cancelButton()).toBeEnabled();
+    expect(onDeleted).not.toHaveBeenCalled();
+
+    outside.focus();
+    await validUser.tab();
+    expect(outside).not.toHaveFocus();
+    expect(dialog.contains(document.activeElement)).toBe(true);
+
+    await validUser.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(outside).not.toHaveFocus();
+    expect(dialog.contains(document.activeElement)).toBe(true);
+
+    mockedDeleteAssignment.mockResolvedValueOnce(undefined);
+    await validUser.click(deleteButton());
+    await waitFor(() => expect(onDeleted).toHaveBeenCalledTimes(1));
+    outside.remove();
   });
 
   it('displays error alert and permits retry on failure', async () => {
