@@ -3,7 +3,7 @@
 **Story ID:** SP-118
 **Epic:** [EP09: E2E Test Automation](../../epics/EP09-e2e-test-automation.md)
 **Dependencies:** SP-116
-**Status:** Queued
+**Status:** Implemented — awaiting parent review (EP09)
 
 ## Summary
 
