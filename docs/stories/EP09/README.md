@@ -62,7 +62,7 @@ the corresponding features stabilize or when a regression justifies the cover.
 ## Execution queue
 
 Delivery home: `docs/stories/EP09/` · Artifact root: `docs/stories/EP09/artifacts/`
-Active substory: None · Next substory: None (reason: all children implemented — EP09 parent implementation index + final parent review next)
+Active substory: None · Next substory: None (reason: all children implemented — parent index at `artifacts/EP09/implementation.md`, final parent review next)
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
