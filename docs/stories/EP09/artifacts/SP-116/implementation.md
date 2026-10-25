@@ -14,7 +14,7 @@ Runnable with one command from the repo root: `pnpm test:e2e` (dev stack must
 be running via `pnpm dev`).
 
 The initial code was committed in a prior session (`2659504`); this task
-verified it against the acceptance criteria, fixed five defects found during
+verified it against the acceptance criteria, fixed six defects found during
 verification (F1, F2, F6, F7, F8, F9 in the checkpoint), and completed
 closeout. No production code was changed.
 
