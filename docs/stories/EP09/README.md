@@ -30,11 +30,11 @@ persistence) are caught before release.
 
 | Area | Flow | Covered by | Status |
 |---|---|---|---|
-| Auth | Register → auto-login/redirect | SP-117 | Planned |
+| Auth | Register → auto-login/redirect | SP-117 | Implemented with SP-117 (actual flow: register → login → session, F1) |
 | Auth | Login (valid credentials) | SP-116 | Implemented with SP-116 |
-| Auth | Login (invalid credentials error) | SP-117 | Planned |
-| Auth | Logout returns to login, protected route redirects | SP-117 | Planned |
-| Auth | Protected route redirects unauthenticated visitor | SP-117 | Planned |
+| Auth | Login (invalid credentials error) | SP-117 | Implemented with SP-117 (unknown-email path added; wrong-password in SP-116) |
+| Auth | Logout returns to login, protected route redirects | SP-117 | Implemented with SP-117 |
+| Auth | Protected route redirects unauthenticated visitor | SP-117 | Implemented with SP-117 |
 | Semesters | Create, edit, delete semester | SP-118 | Planned |
 | Courses | Create, edit, delete course | SP-118 | Planned |
 | Dashboard | Renders with seeded data | Backlog | Not planned yet |
@@ -62,10 +62,10 @@ the corresponding features stabilize or when a regression justifies the cover.
 ## Execution queue
 
 Delivery home: `docs/stories/EP09/` · Artifact root: `docs/stories/EP09/artifacts/`
-Active substory: None · Next substory: SP-117 (implement — first eligible row; needs its own authorization)
+Active substory: None · Next substory: SP-118 (implement — first eligible row; needs its own authorization)
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | SP-116 | Implemented — awaiting parent review | None | Await EP09 parent review (after SP-117/SP-118) | `artifacts/SP-116/implementation.md` |
-| SP-117 | Queued | SP-116 (met) | Implement auth journey coverage | — |
+| SP-117 | Implemented — awaiting parent review | SP-116 (met) | Await EP09 parent review (after SP-118) | `artifacts/SP-117/implementation.md` |
 | SP-118 | Queued | SP-116 (met) | Implement semester/course E2E coverage | — |
