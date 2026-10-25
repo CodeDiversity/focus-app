@@ -122,10 +122,10 @@ Active substory: None · Next substory: SP-119 (implement — plan complete 2026
 
 **Coordinator:** branch `main`, run 2026-10-25 (data-cleanup run); Git baseline `c52ebf2` (before the first included change, SP-116's `2659504`) — retained until the parent implementation index owns the combined scope.
 
-**Stage:** plan review
+**Stage:** plan fix
 
-**Active dispatch:** `sp119-plan` — planner, fresh isolated context: plan SP-119 — **returned 2026-10-25**. Output: `SP-119-e2e-dedicated-test-database.md` (Status Ready; self-contained test stack — dedicated `*_e2e_test` DB + test-only API :4100 / web :3100, DB dropped per run; decisions D119-1…D119-5; one disclosed implementation checkpoint: verify `nest start --path` output-dir switch, fallback recorded), EP09 queue row + Stories table + environment contract + Decisions + quality-gate table (9 Pass, 1 N/A — Jira not authorized), EP03 anticipated-ID shift (SP-120…SP-123), epic Stories row. Not committed by planner; coordinator committed. Next dispatch: `ep09-plan-review` (reviewer, whole-plan review — pending).
+**Active dispatch:** `ep09-plan-fix-1` — planner, fresh isolated context: apply plan-review pass 1 corrections PR-001/PR-002 (mandatory) + PR-003/PR-004 (optional polish, same turn) — dispatch pending. Prior dispatches: `sp119-plan` (returned: story file + queue + contract + EP03 ID shift, coordinator-committed `5cad9c7`); `ep09-plan-review` (returned: **Changes Required** — `plan-review.md` saved, coordinator-committed `9d3f546`).
 
-**Last result / retry state:** `sp119-plan` returned **Plan Ready** (planner self-check — not independent approval; the whole-plan review is the gate). No correction cycles. One planner observation: EP09 Stories table showed SP-116/117/118 as "Queued" (pre-existing staleness) — coordinator reconciled the status pointers to the queue's `Implemented — awaiting parent review`.
+**Last result / retry state:** whole-plan review pass 1 (`plan-review.md`, reviewed at `5cad9c7`): **Changes Required** — PR-001 (Gate line omits carried SP-117 F2), PR-002 (D119-5 fail-fast wording vs. AC5 external-stack semantics); optional PR-003/PR-004. All ten planning gates independently assessed Pass/N-A; no planner code claim found false. Correction cycle 1 of max 2 without progress.
 
-**Resume:** dispatch `ep09-plan-review` (fresh reviewer, whole-plan review of all four children incl. the SP-119 addition; plan-only — no walkthrough) → if `Plan Ready`: implement SP-119 (fresh implementer) → refresh parent index → final EP09 parent review (fresh reviewer; also disposes SP-117 F1 / SP-118 F2) → close.
+**Resume:** planner applies PR-001…PR-004 → fresh focused re-review (pass 2, corrected lines only) → on `Plan Ready`: implement SP-119 (fresh implementer; reviewer watch items O-3/O-4/O-5 apply) → refresh parent index (O-1) → final EP09 parent review (fresh reviewer; disposes all carried findings per the corrected Gate line) → close.
