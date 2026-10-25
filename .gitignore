@@ -54,3 +54,4 @@ apps/api/src/generated/
 # Misc
 *.tsbuildinfo
 eslint-config-*.js
+.opencode/
