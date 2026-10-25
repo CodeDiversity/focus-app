@@ -128,7 +128,8 @@ keeps dev behavior byte-identical; the test instance passes
 `E2E_BASE_URL` still overrides it and, when set, disables the `webServer`
 entries and the DB lifecycle (external-stack mode).
 
-**D119-5 — No spec changes beyond stale messages.** The three specs +
+**D119-5 — No spec changes beyond stale messages.** The specs that carry the
+stale fail-fast wording (`login.spec.ts`, `auth-journeys.spec.ts`) +
 `helpers.ts` keep their journeys, unique-per-run data, and assertions; only the
 fail-fast wording ("Start the dev stack with `pnpm dev`") is updated — and the
 new tail is **mode-conditional**: self-contained (default) mode → "ensure
@@ -167,8 +168,8 @@ be running"), so AC5's actionable-message promise holds in both modes.
   `apps/web/playwright.config.ts`, `apps/web/vite.config.ts`,
   `apps/web/package.json` (devDeps `dotenv`, `postgres`),
   `apps/api/package.json` (`start:e2e`), `README.md`, `.gitignore`; test-only
-  message wording in `apps/web/e2e/helpers.ts` + `login.spec.ts`. No
-  `apps/*/src` production files.
+  message wording in `apps/web/e2e/helpers.ts` + `login.spec.ts` +
+  `auth-journeys.spec.ts`. No `apps/*/src` production files.
 - **Start context:** this story; EP09 README environment contract + Decisions;
   `apps/web/playwright.config.ts` and `apps/web/e2e/*` (current state);
   `apps/api/src/app.module.ts` (dotenv `envFilePath`),
