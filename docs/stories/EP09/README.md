@@ -61,8 +61,11 @@ the corresponding features stabilize or when a regression justifies the cover.
 
 ## Execution queue
 
+Delivery home: `docs/stories/EP09/` · Artifact root: `docs/stories/EP09/artifacts/`
+Active substory: None · Next substory: SP-117 (implement — first eligible row; needs its own authorization)
+
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| SP-116 | Ready | None | Implement Playwright setup + login smoke test | This file |
-| SP-117 | Queued | SP-116 | Await SP-116 | — |
-| SP-118 | Queued | SP-116 | Await SP-116 | — |
+| SP-116 | Implemented — awaiting parent review | None | Await EP09 parent review (after SP-117/SP-118) | `artifacts/SP-116/implementation.md` |
+| SP-117 | Queued | SP-116 (met) | Implement auth journey coverage | — |
+| SP-118 | Queued | SP-116 (met) | Implement semester/course E2E coverage | — |
