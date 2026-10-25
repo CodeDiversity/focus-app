@@ -38,13 +38,21 @@ only the documented prerequisites — Postgres running).
    most the namespaced `*_e2e_test` database (reused by the next run) — never
    developer data.
 3. **Fail-fast.** With Postgres unreachable, the run fails **before the first
-   test** with a clear, actionable message (Postgres must be running) — not a
-   timeout cascade.
+   test** with a clear, actionable message — not a timeout cascade. The message
+   distinguishes **Postgres unreachable** ("ensure Postgres is running") from
+   **configured dev database missing**: setup must connect to the configured dev
+   database to `CREATE`/`DROP` the `*_e2e_test` database, so a missing dev
+   database fails with its own actionable message (the `apps/api/.env.local`
+   `DATABASE_URL` database does not exist — create it), never a generic one.
 4. **No production code changes.** The diff is limited to test infrastructure:
    Playwright config + new global setup/teardown, `apps/web` test-only
    devDependencies, package scripts, the Vite proxy target made env-driven with
    the existing default, a test-only API build config, `.gitignore`, and root
-   README wording. Dev-stack behavior is unchanged (defaults preserved).
+   README wording — which lists the one-time setup prerequisites (`pnpm
+   install`, `apps/api/.env.local` with a `DATABASE_URL` whose database exists,
+   `pnpm db:generate`) alongside "Postgres running; no `pnpm dev` needed", so
+   epic AC1's "documented prerequisites" is literally complete. Dev-stack
+   behavior is unchanged (defaults preserved).
 5. **`E2E_BASE_URL` escape hatch preserved.** Setting it runs the browser against
    an externally provided stack and skips the self-contained servers and DB
    lifecycle (the existing SP-116 AC2 semantics: a dead port fails fast with the
@@ -122,10 +130,13 @@ entries and the DB lifecycle (external-stack mode).
 
 **D119-5 — No spec changes beyond stale messages.** The three specs +
 `helpers.ts` keep their journeys, unique-per-run data, and assertions; only the
-fail-fast wording ("Start the dev stack with `pnpm dev`") is updated to the new
-prerequisite ("ensure Postgres is running"). `turbo.json` needs no change
-(`E2E_BASE_URL` is already in the `test:e2e` task's `env` list; the harness
-derives everything else internally).
+fail-fast wording ("Start the dev stack with `pnpm dev`") is updated — and the
+new tail is **mode-conditional**: self-contained (default) mode → "ensure
+Postgres is running"; `E2E_BASE_URL` set (external-stack mode) → keep the
+SP-116 AC2 semantics ("the externally provided stack at `<E2E_BASE_URL>` must
+be running"), so AC5's actionable-message promise holds in both modes.
+`turbo.json` needs no change (`E2E_BASE_URL` is already in the `test:e2e` task's
+`env` list; the harness derives everything else internally).
 
 ## Notes
 
@@ -139,8 +150,9 @@ derives everything else internally).
 - `apps/api/dist-test` is gitignored (test-only build output).
 - Verification must include: two consecutive full runs green; developer-database
   row counts identical before/after; the `*_e2e_test` database absent after the
-  run; a run with Postgres stopped failing fast with the clear message; the dev
-  stack (`pnpm dev`) left running throughout and unaffected.
+  run; a run with Postgres stopped failing fast with the clear message; a run
+  with the configured dev database missing failing fast with the distinct
+  message; the dev stack (`pnpm dev`) left running throughout and unaffected.
 
 ## Sizing
 
@@ -167,8 +179,9 @@ derives everything else internally).
 - **Verification:** `pnpm test:e2e` (repo root) twice, consecutive green, with
   the dev stack running and the developer database unchanged; database-level
   check that the `*_e2e_test` database is dropped after the run; a
-  Postgres-stopped run fails fast; `pnpm lint` (root) / `pnpm typecheck`
-  (`apps/web`) / Prettier on changed files.
+  Postgres-stopped run fails fast; a missing-dev-database run fails fast with
+  the distinct message; `pnpm lint` (root) / `pnpm typecheck` (`apps/web`) /
+  Prettier on changed files.
 - **Dependencies / exclusions:** depends on SP-116 (met). Excludes: spec journey
   changes (SP-116/117/118, implemented — untouched), CI wiring, new coverage
   areas (backlog), one-time historical data cleanup (Notes).
