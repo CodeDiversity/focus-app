@@ -197,6 +197,9 @@ model Assignment {
   actualHours  Float?  // Tracked hours spent
   status      AssignmentStatus @default(PENDING)
   priority    AssignmentPriority @default(MEDIUM)
+  // SP-115G (D115-1): optional closed assignment type. Stored identifiers,
+  // nullable with no default — an omitted/untyped create stays null (D115-2).
+  type        AssignmentType?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -219,6 +222,16 @@ enum AssignmentPriority {
   MEDIUM
   HIGH
   URGENT
+}
+
+// SP-115G (D115-1): the epic's named assignment categories, stored as
+// identifiers. Optional on the API means null — not a sixth stored value.
+enum AssignmentType {
+  HOMEWORK
+  PAPER
+  PROJECT
+  QUIZ
+  EXAM
 }
 
 model Task {

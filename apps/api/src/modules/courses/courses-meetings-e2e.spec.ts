@@ -89,6 +89,7 @@ const ASSIGNMENT_KEYS = [
   'priority',
   'status',
   'title',
+  'type', // SP-115G (D115-4): the 11-key projection gains `type`.
   'updatedAt',
 ].sort();
 
@@ -526,7 +527,7 @@ describeIntegration('class meetings + course detail end-to-end (real database, S
       expect(response.body.assignments).toEqual([]);
     });
 
-    it('an assignment attached to the course (seeded directly — no assignments API exists) appears in the read-only projection', async () => {
+    it('an assignment attached to the course (seeded directly) appears in the read-only projection', async () => {
       // Direct DB seed: the read-only projection proof (EP03 owns
       // management; the ticket allows seeding the fixture).
       const dueDate = new Date('2026-11-15T23:59:00.000Z');
@@ -538,6 +539,8 @@ describeIntegration('class meetings + course detail end-to-end (real database, S
           description: 'Recursion exercises',
           dueDate,
           estimatedHours: 2,
+          // No `type` — the untyped seed projects `type: null` (SP-115G,
+          // no schema default, D115-2).
         },
       });
       assignmentId = seeded.id;
@@ -556,6 +559,7 @@ describeIntegration('class meetings + course detail end-to-end (real database, S
         actualHours: null,
         status: 'PENDING', // the schema default
         priority: 'MEDIUM', // the schema default
+        type: null, // the untyped seed stays nullable, no backfilled default (D115-4)
       });
       expect(projected).not.toHaveProperty('userId');
       expect(projected).not.toHaveProperty('courseId');

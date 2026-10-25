@@ -574,6 +574,7 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
             actualHours: null,
             status: 'PENDING',
             priority: 'MEDIUM',
+            type: 'EXAM', // SP-115G (D115-4): the 11-key projection includes type.
             createdAt: new Date('2026-10-18T12:00:00.000Z'),
             updatedAt: new Date('2026-10-18T12:00:00.000Z'),
           },
@@ -603,7 +604,8 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
         },
       ]);
       // The read-only assignment projection: `dueDate` ISO-serialized, and
-      // `userId`/`courseId`/the nested course are never exposed.
+      // `userId`/`courseId`/the nested course are never exposed.  SP-115G
+      // (D115-4): `type` sits immediately after `priority`.
       expect(result.assignments).toEqual([
         {
           id: 'assignment-1',
@@ -614,6 +616,7 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
           actualHours: null,
           status: 'PENDING',
           priority: 'MEDIUM',
+          type: 'EXAM',
           createdAt: '2026-10-18T12:00:00.000Z',
           updatedAt: '2026-10-18T12:00:00.000Z',
         },
@@ -628,7 +631,7 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
       }
     });
 
-    it('projects an undated assignment as null (SP-113A nullable migration)', async () => {
+    it('projects an undated assignment as null (SP-113A nullable migration) with a null type (SP-115G)', async () => {
       courseFindFirst.mockResolvedValue({
         ...createdRow,
         meetings: [],
@@ -644,6 +647,7 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
             actualHours: null,
             status: 'PENDING',
             priority: 'MEDIUM',
+            type: null, // SP-115G: an untyped row projects `type: null` (D115-4).
             createdAt: new Date(),
             updatedAt: new Date(),
           },
@@ -651,7 +655,8 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
       });
       const result = await service.get('user-1', 'course-1');
       expect(result.assignments[0].dueDate).toBeNull();
-      expect(Object.keys(result.assignments[0])).toHaveLength(10);
+      expect(result.assignments[0].type).toBeNull();
+      expect(Object.keys(result.assignments[0])).toHaveLength(11);
     });
 
     it('a missing id or another student id → uniform 404 (no existence oracle)', async () => {

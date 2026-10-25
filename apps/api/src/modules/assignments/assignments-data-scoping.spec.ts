@@ -12,6 +12,7 @@ const KEYS = [
   'actualHours',
   'status',
   'priority',
+  'type', // SP-115G (D115-4): the 11-key projection gains `type`.
   'createdAt',
   'updatedAt',
 ].sort();
@@ -69,6 +70,7 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
       dueDate: '2020-01-01T12:00:00+02:00',
       estimatedHours: 2.5,
       priority: 'HIGH',
+      type: 'QUIZ', // SP-115G: a valid type on create stores and returns it.
       description: 'Outline',
     };
     const created = await post(0, body).expect(201);
@@ -78,6 +80,7 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
       dueDate: '2020-01-01T10:00:00.000Z',
       estimatedHours: 2.5,
       priority: 'HIGH',
+      type: 'QUIZ',
       description: 'Outline',
       actualHours: null,
       status: 'PENDING',
@@ -109,9 +112,30 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
         await app.prisma.assignment.findFirst({
           where: { id: created.body.id, userId: students[0].id },
         })
-      ).toMatchObject({ courseId: null, dueDate: null });
+      ).toMatchObject({ courseId: null, dueDate: null, type: null });
     }
   );
+
+  it('an omitted type stores null (D115-2) and an omitted/null patch keeps it', async () => {
+    const created = await post(0, { title: 'Untitled kind' }).expect(201);
+    expect(created.body).toMatchObject({ title: 'Untitled kind', type: null, status: 'PENDING' });
+    // D115-3: omit keeps, null keeps — both are non-writes for `type`.
+    for (const patchBody of [{ title: 'Renamed' }, { title: 'Renamed again', type: null }]) {
+      const patched = await patch(0, created.body.id, patchBody).expect(200);
+      expect(patched.body).toMatchObject({ type: null });
+    }
+    expect(
+      await app.prisma.assignment.findFirst({
+        where: { id: created.body.id, userId: students[0].id },
+      })
+    ).toMatchObject({ title: 'Renamed again', type: null });
+  });
+
+  it('a type-only patch is a non-empty body and replaces the stored type (SP-115G)', async () => {
+    const created = await post(0, { title: 'Typed', type: 'HOMEWORK' }).expect(201);
+    const patched = await patch(0, created.body.id, { type: 'PROJECT' }).expect(200);
+    expect(patched.body).toMatchObject({ type: 'PROJECT', title: 'Typed' });
+  });
 
   it('projects nullable deadlines safely, nulls last with title tie-break, no cross-student reads', async () => {
     const b = await post(0, { title: 'Z undated', courseId: students[0].courseId }).expect(201);
@@ -174,7 +198,8 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
     ['description', 'x'.repeat(2001)],
     ['description', 42],
     ['status', 'COMPLETED'],
-    ['type', 'EXAM'],
+    ['type', 'ESSAY'], // SP-115G: invalid enum → field-level 400 (no write).
+    ['type', 1],
     ['userId', 'other'],
   ])('invalid/unknown %s=%p → field-level 400 without writes', async (field, value) => {
     const before = await app.prisma.assignment.count({ where: { userId: students[0].id } });
@@ -257,7 +282,11 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
       where: ownedWhere(students[0].id, created.body.id),
     });
     for (const id of [created.body.id, uuid(), 'not-an-id']) {
-      const response = await patch(1, id, { title: 'Hijack', description: 'x' }).expect(404);
+      const response = await patch(1, id, {
+        title: 'Hijack',
+        description: 'x',
+        type: 'HOMEWORK', // SP-115G: a type in the body does not bypass ownership.
+      }).expect(404);
       expect(response.body).toMatchObject({
         statusCode: 404,
         message: 'Resource not found',

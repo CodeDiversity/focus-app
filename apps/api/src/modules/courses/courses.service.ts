@@ -49,6 +49,7 @@ type AssignmentRow = {
   actualHours: number | null;
   status: string;
   priority: string;
+  type: string | null; // SP-115G (D115-4)
   createdAt: Date;
   updatedAt: Date;
 };
@@ -69,6 +70,7 @@ function toAssignmentResponse(assignment: AssignmentRow) {
     actualHours: assignment.actualHours,
     status: assignment.status,
     priority: assignment.priority,
+    type: assignment.type, // SP-115G (D115-4): `type` after `priority`.
     createdAt: assignment.createdAt.toISOString(),
     updatedAt: assignment.updatedAt.toISOString(),
   };

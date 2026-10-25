@@ -16,7 +16,7 @@
 
 **Active substory:** None.
 
-**Next substory:** SP-115G — implement. SP-115H needs `ui-refiner` before its own implementation; that pass does not block G.
+**Next substory:** SP-115H — run `ui-refiner` (H is not ready to code until its UI/UX gaps are settled). G is implemented; H's dependency on G is met.
 
 **Implementation owner:** `implementer`, sequential across layers. Backend and frontend are scope labels, not concurrent writers.
 
@@ -24,11 +24,9 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [G](./SP-115G-assignment-type-api.md) | Ready | SP-113 and SP-114 reviewed (2026-10-24) | Implement | — |
+| [G](./SP-115G-assignment-type-api.md) | Implemented — awaiting parent review | SP-113 and SP-114 reviewed (2026-10-24) | Complete — no action | [checkpoint](./artifacts/SP-115G/checkpoint.md) · [implementation](./artifacts/SP-115G/implementation.md) — unit 194 ✓, DB-backed 37/38/19 ✓ (not skipped), typecheck ✓ |
 | [H](./SP-115H-assignment-type-ui.md) | Needs refinement | G implemented before code; UI/UX gaps in H | Run `ui-refiner` on SP-115H | — |
-
 Sequence: G → H, one writer. H owns the parent index and the DoD-10 browser note. There is no third integration story.
-
 ### Split rationale
 
 One slice would mix a Prisma enum migration and two duplicated response mappers with form, row, and accessibility work. Those are independently testable, and the UI cannot be verified against a live contract until the API exists.

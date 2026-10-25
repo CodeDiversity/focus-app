@@ -28,7 +28,8 @@ import {
  * when the field is present: `title` non-whitespace ≤ 200; `description`
  * ≤ 2000 (the only clearable field — `''` clears the stored description);
  * `dueDate` strict persistable ISO-8601 datetime; `estimatedHours`
- * `0 < h ≤ 1000`; `priority` the 4-value enum.
+ * `0 < h ≤ 1000`; `priority` the 4-value enum; `type` (SP-115G) the 5-value
+ * enum.
  *
  * `title` preserves its raw type despite the global pipe's implicit
  * conversion (the create DTO's F113A-2 fix): a numeric title is not a title.
@@ -70,4 +71,10 @@ export class UpdateAssignmentDto {
   @IsOptional()
   @IsIn(['LOW', 'MEDIUM', 'HIGH', 'URGENT'])
   priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT' | null;
+
+  // SP-115G (D115-3): an explicit `null` is treated as omitted by the
+  // service's `has()` — the stored type is kept; there is no clear sentinel.
+  @IsOptional()
+  @IsIn(['HOMEWORK', 'PAPER', 'PROJECT', 'QUIZ', 'EXAM'])
+  type?: 'HOMEWORK' | 'PAPER' | 'PROJECT' | 'QUIZ' | 'EXAM' | null;
 }

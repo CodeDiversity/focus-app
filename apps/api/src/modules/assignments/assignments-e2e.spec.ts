@@ -16,6 +16,7 @@ const ASSIGNMENT_KEYS = [
   'actualHours',
   'status',
   'priority',
+  'type', // SP-115G (D115-4): the 11-key projection gains `type`.
   'createdAt',
   'updatedAt',
 ].sort();
@@ -107,6 +108,7 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
       dueDate: '2026-11-15T23:59:00.000Z',
       estimatedHours: 2.5,
       priority: 'HIGH',
+      type: 'QUIZ', // SP-115G: create with a type.
     };
     const response = await create(studentA, body).expect(HttpStatus.CREATED);
     expect(Object.keys(response.body).sort()).toEqual(ASSIGNMENT_KEYS);
@@ -117,14 +119,28 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
       estimatedHours: 2.5,
       priority: 'HIGH',
       status: 'PENDING',
+      type: 'QUIZ',
       actualHours: null,
     });
     const row = await app.prisma.assignment.findFirst({
       where: { id: response.body.id, userId: studentA.id },
     });
-    expect(row).toMatchObject({ userId: studentA.id, courseId: courseA, status: 'PENDING' });
+    expect(row).toMatchObject({
+      userId: studentA.id,
+      courseId: courseA,
+      status: 'PENDING',
+      type: 'QUIZ',
+    });
+    // SP-115G: patch replaces the stored type and the course detail
+    // projection round-trips it.
+    const patched = await patch(studentA, response.body.id, { type: 'EXAM' }).expect(200);
+    expect(patched.body).toMatchObject({
+      id: response.body.id,
+      priority: 'HIGH',
+      type: 'EXAM',
+    });
     const refetched = await detail(studentA, courseA).expect(HttpStatus.OK);
-    expect(refetched.body.assignments).toEqual([response.body]);
+    expect(refetched.body.assignments).toContainEqual(patched.body);
   });
 
   it('creates without courseId or dueDate, with database defaults, but does not attach to a course', async () => {
@@ -133,12 +149,17 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
       HttpStatus.CREATED
     );
     expect(Object.keys(response.body).sort()).toEqual(ASSIGNMENT_KEYS);
-    expect(response.body).toMatchObject({ dueDate: null, priority: 'MEDIUM', status: 'PENDING' });
+    expect(response.body).toMatchObject({
+      dueDate: null,
+      priority: 'MEDIUM',
+      status: 'PENDING',
+      type: null, // SP-115G (D115-2): an omitted type stores null.
+    });
     expect(
       await app.prisma.assignment.findFirst({
         where: { id: response.body.id, userId: studentA.id },
       })
-    ).toMatchObject({ courseId: null, dueDate: null });
+    ).toMatchObject({ courseId: null, dueDate: null, type: null });
     expect((await detail(studentA, courseA).expect(HttpStatus.OK)).body.assignments).toEqual(
       before
     );
@@ -384,6 +405,9 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
     ['estimatedHours', 1001],
     ['estimatedHours', 'five'],
     ['priority', 'INVALID_PRIORITY'],
+    ['type', 'ESSAY'], // SP-115G: invalid enum on the patch path.
+    ['type', 1],
+    ['type', ''],
     ['description', 'x'.repeat(2001)],
     ['status', 'COMPLETED'],
     ['actualHours', 10],
@@ -413,7 +437,7 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
     }
   );
 
-  it('enforces PATCH null semantics: explicit null keeps stored values, empty string clears description, empty/all-null body returns 400 (AC 5, D114-5)', async () => {
+  it('enforces PATCH null semantics: explicit null keeps stored values, empty string clears description, empty/all-null body returns 400 (AC 5, D114-5, D115-3)', async () => {
     const created = await create(studentA, {
       title: 'Null semantics target',
       courseId: courseA,
@@ -421,26 +445,29 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
       dueDate: '2026-11-20T10:00:00.000Z',
       estimatedHours: 3,
       priority: 'HIGH',
+      type: 'PAPER',
     }).expect(HttpStatus.CREATED);
 
     // Empty body -> 400
     const emptyRes = await patch(studentA, created.body.id, {}).expect(HttpStatus.BAD_REQUEST);
     expect(emptyRes.body.message).toBe('At least one field must be provided');
 
-    // All-null body -> 400
+    // All-null body -> 400 (a null type is not a write either)
     const allNullRes = await patch(studentA, created.body.id, {
       dueDate: null,
       estimatedHours: null,
       priority: null,
+      type: null,
     }).expect(HttpStatus.BAD_REQUEST);
     expect(allNullRes.body.message).toBe('At least one field must be provided');
 
-    // Explicit null keeps stored values
+    // Explicit null keeps stored values — `type: null` keeps `PAPER` (D115-3)
     const partialWithNulls = await patch(studentA, created.body.id, {
       title: 'New title with nulls',
       dueDate: null,
       estimatedHours: null,
       priority: null,
+      type: null,
     }).expect(HttpStatus.OK);
 
     expect(partialWithNulls.body).toMatchObject({
@@ -449,6 +476,7 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
       dueDate: '2026-11-20T10:00:00.000Z',
       estimatedHours: 3,
       priority: 'HIGH',
+      type: 'PAPER',
     });
 
     // Empty string clears description
@@ -466,6 +494,7 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
       dueDate: new Date('2026-11-20T10:00:00.000Z'),
       estimatedHours: 3,
       priority: 'HIGH',
+      type: 'PAPER',
     });
   });
 

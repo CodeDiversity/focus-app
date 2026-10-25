@@ -29,13 +29,13 @@ export class AssignmentsController {
 
   /**
    * PATCH /assignments/:id — partial merge of `{ title?, description?,
-   * dueDate?, estimatedHours?, priority? }` (at least one field; explicit
-   * nulls keep the stored values, `description: ''` clears, D114-5; unknown
-   * fields → 400).
+   * dueDate?, estimatedHours?, priority?, type? }` (at least one field;
+   * explicit nulls keep the stored values — for `type` the stored one is
+   * kept, D115-3 — `description: ''` clears, D114-5; unknown fields → 400).
    *
-   * 200 → the updated 10-key `CourseAssignment` projection; 400 → field-
-   * level errors (or empty body); 404 → uniform `Resource not found`
-   * (missing/foreign/malformed); 401 → unauthenticated (global guard).
+   * 200 → the updated 11-key projection (`type` after `priority`, SP-115G);
+   * 400 → field-level errors (or empty body); 404 → uniform `Resource not
+   * found` (missing/foreign/malformed); 401 → unauthenticated (global guard).
    */
   @Patch(':id')
   async update(

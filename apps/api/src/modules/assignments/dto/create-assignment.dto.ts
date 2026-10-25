@@ -50,6 +50,12 @@ export class CreateAssignmentDto {
   @IsIn(['LOW', 'MEDIUM', 'HIGH', 'URGENT'])
   priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT' | null;
 
+  // SP-115G (D115-1): the five stored identifiers, not display copy; any
+  // other value (e.g. `ESSAY`) is a 400 field error on `type`.
+  @IsOptional()
+  @IsIn(['HOMEWORK', 'PAPER', 'PROJECT', 'QUIZ', 'EXAM'])
+  type?: 'HOMEWORK' | 'PAPER' | 'PROJECT' | 'QUIZ' | 'EXAM' | null;
+
   @IsOptional()
   @IsString()
   @MaxLength(2000)

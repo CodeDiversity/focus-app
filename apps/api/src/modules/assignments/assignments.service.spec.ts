@@ -25,6 +25,9 @@ const invalid: [string, unknown][] = [
   ['estimatedHours', NaN],
   ['estimatedHours', Infinity],
   ['priority', 'SUPER'],
+  ['type', 'ESSAY'], // SP-115G: invalid enum — no stored display copy.
+  ['type', 1], // SP-115G: numeric type is not an identifier.
+  ['type', ''],
   ['description', 'x'.repeat(2001)],
   ['description', 42],
 ];
@@ -46,6 +49,7 @@ describe('AssignmentsService (SP-113A)', () => {
           actualHours: null,
           status: 'PENDING',
           priority: 'MEDIUM',
+          type: null,
           createdAt: now,
           updatedAt: now,
           ...data,
@@ -55,7 +59,7 @@ describe('AssignmentsService (SP-113A)', () => {
     service = new AssignmentsService(prisma as unknown as PrismaService);
   });
 
-  it('returns exactly the 10-key projection and leaves defaults to Prisma', async () => {
+  it('returns exactly the 11-key projection (type after priority) and leaves defaults to Prisma', async () => {
     expect(await service.create('student', { title: '  Essay  ' })).toEqual({
       id: 'assignment',
       title: 'Essay',
@@ -65,6 +69,7 @@ describe('AssignmentsService (SP-113A)', () => {
       actualHours: null,
       status: 'PENDING',
       priority: 'MEDIUM',
+      type: null,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     });
@@ -74,6 +79,22 @@ describe('AssignmentsService (SP-113A)', () => {
     expect(prisma.course.findFirst).not.toHaveBeenCalled();
   });
 
+  it.each(['HOMEWORK', 'PAPER', 'PROJECT', 'QUIZ', 'EXAM'] as const)(
+    'stores each assignment type (%s) and returns it',
+    async (type) => {
+      const result = await service.create('student', { title: 'Essay', type });
+      expect(prisma.assignment.create).toHaveBeenCalledWith({
+        data: {
+          userId: 'student',
+          courseId: null,
+          title: 'Essay',
+          type,
+        },
+      });
+      expect(result).toMatchObject({ type });
+    }
+  );
+
   it('accepts all fields, past deadlines and upper bounds; scopes the course gate', async () => {
     const dto: CreateAssignmentDto = {
       title: 'x'.repeat(200),
@@ -81,6 +102,7 @@ describe('AssignmentsService (SP-113A)', () => {
       dueDate: '2020-01-01T12:00:00Z',
       estimatedHours: 1000,
       priority: 'URGENT',
+      type: 'EXAM',
       description: 'x'.repeat(2000),
     };
     const result = await service.create('student', dto);
@@ -92,19 +114,21 @@ describe('AssignmentsService (SP-113A)', () => {
       title: dto.title,
       estimatedHours: 1000,
       priority: 'URGENT',
+      type: 'EXAM',
       description: dto.description,
       dueDate: '2020-01-01T12:00:00.000Z',
     });
     expect(result).not.toHaveProperty('courseId');
   });
 
-  it('normalizes optional nulls, including courseId', async () => {
+  it('normalizes optional nulls, including courseId and type (D115-2)', async () => {
     await service.create('student', {
       title: 'Essay',
       courseId: null,
       dueDate: null,
       estimatedHours: null,
       priority: null,
+      type: null,
       description: null,
     });
     expect(prisma.course.findFirst).not.toHaveBeenCalled();
@@ -152,7 +176,9 @@ describe('CreateAssignmentDto with production FieldValidationPipe', () => {
       metatype: CreateAssignmentDto,
     });
 
-  it.each([...invalid, ['status', 'COMPLETED'], ['type', 'EXAM'], ['userId', 'other']])(
+  // `type: 'ESSAY'` is a field-level enum rejection now (SP-115G); `EXAM`
+  // became a whitelisted, valid value and no longer rejects.
+  it.each([...invalid, ['status', 'COMPLETED'], ['userId', 'other']])(
     'rejects %s=%p at pipe level',
     async (field, value) => {
       await expect(validate({ title: 'Essay', [field]: value })).rejects.toMatchObject({
@@ -168,9 +194,16 @@ describe('CreateAssignmentDto with production FieldValidationPipe', () => {
         dueDate: null,
         estimatedHours: 0.25,
         priority: 'LOW',
+        type: 'QUIZ',
         description: '',
       })
     ).resolves.toBeInstanceOf(CreateAssignmentDto);
+  });
+  it('accepts an omitted type and an explicit type null', async () => {
+    await expect(validate({ title: 'Essay', type: null })).resolves.toBeInstanceOf(
+      CreateAssignmentDto
+    );
+    await expect(validate({ title: 'Essay' })).resolves.toBeInstanceOf(CreateAssignmentDto);
   });
 });
 
@@ -189,6 +222,7 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
     actualHours: null,
     status: 'PENDING',
     priority: 'HIGH',
+    type: 'HOMEWORK', // SP-115G: the stored type updates merge against.
     createdAt: now,
     updatedAt: now,
   };
@@ -218,7 +252,7 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
     service = new AssignmentsService(prisma as unknown as PrismaService);
   });
 
-  it('updates only the provided fields, preserves the rest, returns the 10-key projection', async () => {
+  it('updates only the provided fields, preserves the rest, returns the 11-key projection', async () => {
     const result = await service.update('student', 'assignment', { title: '  New title  ' });
     expect(prisma.assignment.findFirst).toHaveBeenCalledWith({
       where: { id: 'assignment', userId: 'student' },
@@ -236,9 +270,42 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
       actualHours: null,
       status: 'PENDING',
       priority: 'HIGH',
+      type: 'HOMEWORK',
       createdAt: now.toISOString(),
       updatedAt: later.toISOString(),
     });
+  });
+
+  it('replaces the stored type when patched with a valid value (D115-3)', async () => {
+    const result = await service.update('student', 'assignment', { type: 'PAPER' });
+    expect(prisma.assignment.update).toHaveBeenCalledWith({
+      where: { id: 'assignment', userId: 'student' },
+      data: { type: 'PAPER' },
+    });
+    expect(result).toMatchObject({ type: 'PAPER' });
+  });
+
+  it.each([null, undefined] as const)(
+    'keeps the stored type when patched with %p (D115-3 keep-on-null)',
+    async (value) => {
+      const body: UpdateAssignmentDto =
+        value === null ? { title: 'Kept', type: null } : { title: 'Kept' };
+      const result = await service.update('student', 'assignment', body);
+      expect(prisma.assignment.update).toHaveBeenCalledWith({
+        where: { id: 'assignment', userId: 'student' },
+        data: { title: 'Kept' },
+      });
+      expect(result).toMatchObject({ type: 'HOMEWORK' });
+    }
+  );
+
+  it('accepts a type-only patch as a non-empty body (SP-115G contract)', async () => {
+    const result = await service.update('student', 'assignment', { type: 'QUIZ' });
+    expect(prisma.assignment.update).toHaveBeenCalledWith({
+      where: { id: 'assignment', userId: 'student' },
+      data: { type: 'QUIZ' },
+    });
+    expect(result).toMatchObject({ type: 'QUIZ' });
   });
 
   it.each([
@@ -258,6 +325,9 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
     ['estimatedHours', NaN],
     ['estimatedHours', Infinity],
     ['priority', 'SUPER'],
+    ['type', 'ESSAY'], // SP-115G: invalid enum, field-level 400, no write.
+    ['type', 1],
+    ['type', ''],
     ['description', 'x'.repeat(2001)],
     ['description', 42],
   ])('rechecks invalid %s=%p with field errors and no query or write', async (field, value) => {
@@ -293,13 +363,14 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
     expect(prisma.assignment.update).not.toHaveBeenCalled();
   });
 
-  it('treats explicit nulls as omitted and keeps the stored values (D114-5)', async () => {
+  it('treats explicit nulls as omitted and keeps the stored values (D114-5, D115-3)', async () => {
     await service.update('student', 'assignment', {
       title: 'Kept',
       description: null,
       dueDate: null,
       estimatedHours: null,
       priority: null,
+      type: null,
     });
     expect(prisma.assignment.update).toHaveBeenCalledWith({
       where: { id: 'assignment', userId: 'student' },
@@ -319,7 +390,14 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
     ['empty', {}],
     [
       'all-null',
-      { title: null, description: null, dueDate: null, estimatedHours: null, priority: null },
+      {
+        title: null,
+        description: null,
+        dueDate: null,
+        estimatedHours: null,
+        priority: null,
+        type: null,
+      },
     ],
   ])('PATCH %s body → 400 at-least-one without a write', async (_label, body) => {
     await expect(
@@ -392,6 +470,9 @@ describe('UpdateAssignmentDto with production FieldValidationPipe', () => {
     ['estimatedHours', 'abc'],
     ['estimatedHours', '2'],
     ['priority', 'SUPER'],
+    ['type', 'ESSAY'], // SP-115G: invalid enum at pipe level.
+    ['type', 1],
+    ['type', ''],
     ['description', 'x'.repeat(2001)],
     ['description', 42],
     ['status', 'COMPLETED'],
@@ -412,8 +493,16 @@ describe('UpdateAssignmentDto with production FieldValidationPipe', () => {
         dueDate: null,
         estimatedHours: 1,
         priority: 'LOW',
+        type: 'PROJECT',
       })
     ).resolves.toBeInstanceOf(UpdateAssignmentDto);
+  });
+
+  it('accepts an omitted type and an explicit type null (D115-3 keep-on-null at pipe level)', async () => {
+    await expect(validate({ title: 'Kept', type: null })).resolves.toBeInstanceOf(
+      UpdateAssignmentDto
+    );
+    await expect(validate({ title: 'Kept' })).resolves.toBeInstanceOf(UpdateAssignmentDto);
   });
 
   it('accepts an empty body at pipe level (the service enforces at-least-one)', async () => {

@@ -16,6 +16,7 @@ function toAssignmentResponse(row: Assignment) {
     actualHours: row.actualHours,
     status: row.status,
     priority: row.priority,
+    type: row.type, // SP-115G (D115-4): 11-key projection, `type` after `priority`.
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -63,6 +64,8 @@ export class AssignmentsService {
         ...(dto.dueDate != null ? { dueDate: new Date(dto.dueDate) } : {}),
         ...(dto.estimatedHours != null ? { estimatedHours: dto.estimatedHours } : {}),
         ...(dto.priority != null ? { priority: dto.priority } : {}),
+        // D115-2: `type` omitted or null stores null — no schema default.
+        ...(dto.type != null ? { type: dto.type } : {}),
         // status and omitted priority deliberately use schema defaults.
       },
     });
@@ -78,12 +81,15 @@ export class AssignmentsService {
    * - At least one field must be provided (empty body → 400).
    * - `description: ''` clears the stored description — the only clearable
    *   field (D114-5); `dueDate`/`estimatedHours` cannot be cleared.
+   * - `type` (SP-115G, D115-3): omitted/null keeps the stored type (no clear
+   *   sentinel); a valid value replaces it; a type-only body counts as a
+   *   non-empty patch.
    * - Unknown fields (`status`, `actualHours`, `courseId`, `userId`) → 400
    *   with a field-level `errors` map (whitelist + `forbidNonWhitelisted`).
    * - A missing, foreign, or malformed assignment id → uniform 404
    *   `Resource not found` (the ownership predicate is in the query; both
    *   cases are indistinguishable — no existence oracle).
-   * - Response: the updated 10-key `CourseAssignment` projection.
+   * - Response: the updated 11-key projection (`type` after `priority`).
    */
   async update(userId: string, id: string, dto: UpdateAssignmentDto) {
     // Defense in depth for non-HTTP callers: rerun the complete DTO rules,
@@ -107,7 +113,8 @@ export class AssignmentsService {
       !has(dto.description) &&
       !has(dto.dueDate) &&
       !has(dto.estimatedHours) &&
-      !has(dto.priority)
+      !has(dto.priority) &&
+      !has(dto.type) // SP-115G: a type-only patch is a non-empty body.
     ) {
       throw new BadRequestException('At least one field must be provided');
     }
@@ -124,6 +131,7 @@ export class AssignmentsService {
       dueDate: has(dto.dueDate) ? dto.dueDate! : (existing.dueDate?.toISOString() ?? null),
       estimatedHours: has(dto.estimatedHours) ? dto.estimatedHours! : existing.estimatedHours,
       priority: has(dto.priority) ? dto.priority! : existing.priority,
+      type: has(dto.type) ? dto.type! : existing.type,
     });
     this.assertDto(merged);
 
@@ -135,6 +143,7 @@ export class AssignmentsService {
       dueDate?: Date;
       estimatedHours?: number;
       priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+      type?: 'HOMEWORK' | 'PAPER' | 'PROJECT' | 'QUIZ' | 'EXAM';
     } = {};
     if (has(dto.title)) {
       data.title = merged.title!;
@@ -150,6 +159,9 @@ export class AssignmentsService {
     }
     if (has(dto.priority)) {
       data.priority = dto.priority!;
+    }
+    if (has(dto.type)) {
+      data.type = merged.type!;
     }
 
     try {
