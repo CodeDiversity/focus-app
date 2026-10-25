@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-115](./SP-115-assignment-types.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Plan Ready (2026-10-25). SP-115H is not ready to code until `ui-refiner` settles its UI/UX gaps. Not implementation-verified.
+**Status:** SP-115G and SP-115H implemented (2026-10-25) — awaiting parent review. SP-115H's UI/UX gaps were settled by `ui-refiner` before code. Not reviewed.
 **Jira key:** Pending creation (no sync authorized)
 
 ## Execution queue
@@ -14,9 +14,9 @@
 
 **Parent artifacts:** `./artifacts/SP-115/` (parent index written by H; review and walkthrough by the reviewer)
 
-**Active substory:** None.
+**Active substory:** None (SP-115H complete).
 
-**Next substory:** SP-115H — run `ui-refiner` (H is not ready to code until its UI/UX gaps are settled). G is implemented; H's dependency on G is met.
+**Next substory:** None with reason — both children are implemented; the next action is the one combined SP-115 parent review (`./artifacts/SP-115/review.md` + `walkthrough.md`, reviewer-owned). Open review handoff: F-115H-1 — the DoD-10 manual browser pass is documented in [H's implementation record](./artifacts/SP-115H/implementation.md) for the review's user walkthrough.
 
 **Implementation owner:** `implementer`, sequential across layers. Backend and frontend are scope labels, not concurrent writers.
 
@@ -25,7 +25,7 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [G](./SP-115G-assignment-type-api.md) | Implemented — awaiting parent review | SP-113 and SP-114 reviewed (2026-10-24) | Complete — no action | [checkpoint](./artifacts/SP-115G/checkpoint.md) · [implementation](./artifacts/SP-115G/implementation.md) — unit 194 ✓, DB-backed 37/38/19 ✓ (not skipped), typecheck ✓ |
-| [H](./SP-115H-assignment-type-ui.md) | Needs refinement | G implemented before code; UI/UX gaps in H | Run `ui-refiner` on SP-115H | — |
+| [H](./SP-115H-assignment-type-ui.md) | Implemented — awaiting parent review | G implemented (`77e733f`); refined by `ui-refiner` 2026-10-25 | Complete — awaiting the combined parent review | [checkpoint](./artifacts/SP-115H/checkpoint.md) · [implementation](./artifacts/SP-115H/implementation.md) — web suites 121/focused + 563/full ✓, typecheck ✓, lint ✓; DoD-10 browser pass open (F-115H-1, see implementation.md) · [parent index](./artifacts/SP-115/implementation.md) |
 
 Sequence: G → H, one writer. H owns the parent index and the DoD-10 browser note. There is no third integration story.
 

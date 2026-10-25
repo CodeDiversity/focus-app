@@ -30,6 +30,7 @@ const problemSet: CourseAssignment = {
   actualHours: null,
   status: 'PENDING',
   priority: 'MEDIUM',
+  type: 'HOMEWORK',
   ...timestamps,
 };
 const essay: CourseAssignment = {
@@ -41,6 +42,7 @@ const essay: CourseAssignment = {
   actualHours: 4,
   status: 'IN_PROGRESS',
   priority: 'HIGH',
+  type: null,
   ...timestamps,
 };
 const labReport: CourseAssignment = {
@@ -52,6 +54,7 @@ const labReport: CourseAssignment = {
   actualHours: 2,
   status: 'GRADED',
   priority: 'LOW',
+  type: null,
   ...timestamps,
 };
 
@@ -117,6 +120,35 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     expect(screen.getByText('Medium')).toHaveClass('bg-amber-100', 'text-amber-800');
     expect(screen.getByText('High')).toHaveClass('bg-orange-100', 'text-orange-700');
     expect(screen.getByText('Low')).toHaveClass('bg-slate-100', 'text-slate-700');
+  });
+
+  it('marks a stored type with the neutral type pill after the priority badge (SP-115H AC 2)', () => {
+    render(<AssignmentsSection assignments={[problemSet]} />);
+
+    const badge = screen.getByText('Homework');
+    expect(badge).toHaveClass('bg-slate-100', 'text-slate-700');
+  });
+
+  it('shows no type category for a null-type row (SP-115H AC 2)', () => {
+    render(<AssignmentsSection assignments={[essay, labReport]} />);
+
+    for (const label of ['Homework', 'Paper', 'Project', 'Quiz', 'Exam']) {
+      expect(screen.queryByText(label)).not.toBeInTheDocument();
+    }
+  });
+
+  it('renders the type badge inside the same wrap cluster as Edit and Delete (SP-115H AC 4)', () => {
+    render(<AssignmentsSection assignments={[problemSet]} />);
+
+    const item = screen.getAllByRole('listitem')[0]!;
+    const badge = within(item).getByText('Homework');
+    const edit = within(item).getByRole('button', { name: 'Edit Problem Set 4' });
+    const del = within(item).getByRole('button', { name: 'Delete Problem Set 4' });
+    // One flex-wrap cluster wraps all three at narrow widths; the badge
+    // displaces neither control.
+    expect(badge.parentElement).toBe(edit.parentElement);
+    expect(del.parentElement).toBe(badge.parentElement);
+    expect(del.parentElement).toHaveClass('flex', 'flex-wrap', 'gap-2');
   });
 
   it('renders the remaining status/priority palette entries', () => {

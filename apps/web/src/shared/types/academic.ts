@@ -46,6 +46,8 @@ export interface ClassMeeting {
 // Assignment Types
 export type AssignmentStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SUBMITTED' | 'GRADED';
 export type AssignmentPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+/** The closed optional assignment classification (SP-115, D115-1 — no `OTHER`, no free text). */
+export type AssignmentType = 'HOMEWORK' | 'PAPER' | 'PROJECT' | 'QUIZ' | 'EXAM';
 
 export interface Assignment {
   id: string;
@@ -56,6 +58,8 @@ export interface Assignment {
   actualHours: number | null;
   status: AssignmentStatus;
   priority: AssignmentPriority;
+  /** Optional type (SP-115): null when unset; PATCH null/omit keeps a stored value (D115-3). */
+  type: AssignmentType | null;
   course: Course | null;
   createdAt: string;
   updatedAt: string;

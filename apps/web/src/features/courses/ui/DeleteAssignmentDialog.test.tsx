@@ -24,6 +24,7 @@ const assignment: CourseAssignment = {
   actualHours: null,
   status: 'PENDING',
   priority: 'MEDIUM',
+  type: null,
   ...timestamps,
 };
 

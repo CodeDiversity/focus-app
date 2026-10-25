@@ -57,6 +57,8 @@ describe('AssignmentForm', () => {
     expect(duration()).toHaveFocus();
     await user.keyboard('3');
     await user.tab();
+    expect(screen.getByLabelText('Type')).toHaveFocus();
+    await user.tab();
     expect(screen.getByLabelText('Priority')).toHaveFocus();
     await user.tab();
     expect(screen.getByLabelText('Description')).toHaveFocus();
@@ -85,6 +87,18 @@ describe('AssignmentForm', () => {
     expect(screen.getByLabelText('Due date')).toHaveAttribute('type', 'date');
     expect(duration()).toHaveAttribute('type', 'number');
     expect(screen.getByLabelText('Priority')).toHaveValue('MEDIUM');
+    // The create-mode type select defaults to the unset "No type" state.
+    expect(screen.getByLabelText('Type')).toHaveValue('');
+    const typeOptions = within(screen.getByLabelText('Type')).getAllByRole('option');
+    expect(typeOptions.map((option) => option.textContent)).toEqual([
+      'No type',
+      'Homework',
+      'Paper',
+      'Project',
+      'Quiz',
+      'Exam',
+    ]);
+    expect(screen.getByText('Optional.')).toBeInTheDocument();
     await user.keyboard('{Shift>}{Tab}{/Shift}');
     expect(submit()).toHaveFocus();
     await user.tab();
@@ -181,7 +195,47 @@ describe('AssignmentForm', () => {
     );
   });
 
-  it('maps server 400 errors to all four fields', async () => {
+  it.each([
+    ['HOMEWORK', 'Homework'],
+    ['PAPER', 'Paper'],
+    ['PROJECT', 'Project'],
+    ['QUIZ', 'Quiz'],
+    ['EXAM', 'Exam'],
+  ])('create submits each closed type (%s → %s) through the shared flow', async (identifier) => {
+    const user = setupUser();
+    const { onSuccess } = renderForm();
+    await user.type(title(), 'Classified work');
+    await user.selectOptions(screen.getByLabelText('Type'), identifier);
+    await user.click(submit());
+    // Exact-object assert: `type` is present, every unset optional key is not.
+    await waitFor(() =>
+      expect(create).toHaveBeenCalledWith({
+        title: 'Classified work',
+        courseId: 'course-1',
+        priority: 'MEDIUM',
+        type: identifier,
+      })
+    );
+    expect(onSuccess).toHaveBeenCalledOnce();
+  });
+
+  it('create "No type" submits no type key at all (never an explicit null)', async () => {
+    const user = setupUser();
+    const { onSuccess } = renderForm();
+    await user.type(title(), 'Untyped work');
+    await user.selectOptions(screen.getByLabelText('Type'), '');
+    await user.click(submit());
+    await waitFor(() =>
+      expect(create).toHaveBeenCalledWith({
+        title: 'Untyped work',
+        courseId: 'course-1',
+        priority: 'MEDIUM',
+      })
+    );
+    expect(onSuccess).toHaveBeenCalledOnce();
+  });
+
+  it('maps server 400 field errors to every form field including type', async () => {
     const user = setupUser();
     create.mockRejectedValue(
       failure(400, {
@@ -189,15 +243,23 @@ describe('AssignmentForm', () => {
         dueDate: ['Server date'],
         estimatedHours: ['Server duration'],
         priority: ['Server priority'],
+        type: ['Server type'],
       })
     );
     renderForm();
     await user.type(title(), 'Homework');
     await user.click(submit());
-    for (const message of ['Server title', 'Server date', 'Server duration', 'Server priority']) {
+    for (const message of [
+      'Server title',
+      'Server date',
+      'Server duration',
+      'Server priority',
+      'Server type',
+    ]) {
       expect(await screen.findByText(message)).toBeInTheDocument();
     }
     expect(screen.getByLabelText('Priority')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText('Type')).toHaveAttribute('aria-invalid', 'true');
     expect(toast.error).not.toHaveBeenCalled();
   });
 
@@ -255,7 +317,7 @@ describe('AssignmentForm', () => {
     await user.type(title(), 'Homework');
     await user.click(submit());
     await waitFor(() => expect(submit()).toBeDisabled());
-    for (const label of ['Title', 'Due date', 'Estimated duration (hours)', 'Priority'])
+    for (const label of ['Title', 'Due date', 'Estimated duration (hours)', 'Type', 'Priority'])
       expect(screen.getByLabelText(label)).toBeDisabled();
     await user.tab();
     expect(screen.getByRole('dialog')).toContainElement(document.activeElement as HTMLElement);
@@ -275,6 +337,7 @@ describe('AssignmentForm', () => {
       actualHours: null,
       status: 'PENDING',
       priority: 'HIGH',
+      type: 'HOMEWORK',
       createdAt: '2026-10-18T12:00:00.000Z',
       updatedAt: '2026-10-18T12:00:00.000Z',
     };
@@ -292,8 +355,17 @@ describe('AssignmentForm', () => {
       expect(screen.getByLabelText('Due date')).toHaveValue(expectedDate);
       expect(duration()).toHaveValue(3.5);
       expect(screen.getByLabelText('Priority')).toHaveValue('HIGH');
-      expect(description()).toHaveValue('Chapters 1-3 homework');
-
+      expect(screen.getByLabelText('Type')).toHaveValue('HOMEWORK');
+      // A stored type offers no "No type" escape: the API cannot return to
+      // null (D115-3), so the select only shows the five identifiers.
+      const typeOptions = within(screen.getByLabelText('Type')).getAllByRole('option');
+      expect(typeOptions.map((option) => option.textContent)).toEqual([
+        'Homework',
+        'Paper',
+        'Project',
+        'Quiz',
+        'Exam',
+      ]);
       // Edit-mode hints (D114E-6)
       expect(
         screen.getByText('Optional — leave blank to keep the current due date.')
@@ -304,6 +376,8 @@ describe('AssignmentForm', () => {
       expect(
         screen.getByText('Pick a different value to change the priority.')
       ).toBeInTheDocument();
+      expect(screen.getByText('Pick a different value to change the type.')).toBeInTheDocument();
+      expect(description()).toHaveValue('Chapters 1-3 homework');
       expect(
         screen.getByText('Optional — up to 2000 characters. Leave blank to clear.')
       ).toBeInTheDocument();
@@ -319,6 +393,7 @@ describe('AssignmentForm', () => {
       fireEvent.change(screen.getByLabelText('Due date'), { target: { value: '2026-11-01' } });
       fireEvent.change(duration(), { target: { value: '5' } });
       await user.selectOptions(screen.getByLabelText('Priority'), 'URGENT');
+      await user.selectOptions(screen.getByLabelText('Type'), 'QUIZ');
       await user.clear(description());
       await user.type(description(), 'New instructions');
 
@@ -330,6 +405,7 @@ describe('AssignmentForm', () => {
           priority: 'URGENT',
           dueDate: new Date(2026, 10, 1).toISOString(),
           estimatedHours: 5,
+          type: 'QUIZ',
           description: 'New instructions',
         })
       );
@@ -353,10 +429,55 @@ describe('AssignmentForm', () => {
           priority: 'HIGH',
           dueDate: null,
           estimatedHours: null,
+          type: 'HOMEWORK',
           description: '',
         })
       );
       expect(onSuccess).toHaveBeenCalledOnce();
+    });
+
+    describe('edit with a stored null type (SP-115H AC 1)', () => {
+      const untypedAssignment: CourseAssignment = { ...sampleAssignment, type: null };
+
+      it('shows "No type" selected and submits no type key when unchanged', async () => {
+        const user = setupUser();
+        update.mockResolvedValue(untypedAssignment);
+        const { onSuccess } = renderForm({ assignment: untypedAssignment });
+        const typeSelect = screen.getByLabelText('Type');
+        expect(typeSelect).toHaveValue('');
+        // A select must display the real unset state — here nothing is
+        // stored, so the label is true. The hint does not promise a clear.
+        expect(within(typeSelect).getByRole('option', { name: 'No type' })).toBeInTheDocument();
+        fireEvent.change(screen.getByLabelText('Due date'), { target: { value: '' } });
+        fireEvent.change(duration(), { target: { value: '' } });
+        await user.clear(description());
+        await user.click(editSubmit());
+        await waitFor(() =>
+          expect(update).toHaveBeenCalledWith('assignment-1', {
+            title: 'Problem Set 4',
+            priority: 'HIGH',
+            dueDate: null,
+            estimatedHours: null,
+            description: '',
+          })
+        );
+        expect(toast.error).not.toHaveBeenCalled();
+        expect(onSuccess).toHaveBeenCalledOnce();
+      });
+
+      it('sets a type from the null state and submits it', async () => {
+        const user = setupUser();
+        update.mockResolvedValue({ ...untypedAssignment, type: 'EXAM' });
+        renderForm({ assignment: untypedAssignment });
+        await user.selectOptions(screen.getByLabelText('Type'), 'EXAM');
+        await user.click(editSubmit());
+        await waitFor(() =>
+          expect(update).toHaveBeenCalledWith(
+            'assignment-1',
+            expect.objectContaining({ type: 'EXAM' })
+          )
+        );
+      });
     });
 
     it('handles 400 field validation errors on edit', async () => {
@@ -367,6 +488,7 @@ describe('AssignmentForm', () => {
           dueDate: ['Server due date error'],
           estimatedHours: ['Server estimated hours error'],
           priority: ['Server priority error'],
+          type: ['Server type error'],
           description: ['Server description error'],
         })
       );
@@ -379,10 +501,15 @@ describe('AssignmentForm', () => {
         'Server due date error',
         'Server estimated hours error',
         'Server priority error',
+        'Server type error',
         'Server description error',
       ]) {
         expect(await screen.findByText(msg)).toBeInTheDocument();
       }
+      // The type 400 is a field error on the type control (SP-115H AC 3),
+      // not a toast.
+      expect(screen.getByLabelText('Type')).toHaveAttribute('aria-invalid', 'true');
+      expect(screen.getByLabelText('Type')).toHaveAccessibleDescription('Server type error');
       expect(toast.error).not.toHaveBeenCalled();
     });
 

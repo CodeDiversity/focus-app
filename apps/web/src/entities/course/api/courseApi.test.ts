@@ -310,6 +310,7 @@ const detailCourse: CourseDetail = {
       actualHours: null,
       status: 'PENDING',
       priority: 'MEDIUM',
+      type: null,
       createdAt: createdCourse.createdAt,
       updatedAt: createdCourse.updatedAt,
     },

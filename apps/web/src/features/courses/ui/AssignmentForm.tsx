@@ -6,7 +6,7 @@ import * as z from 'zod';
 import { clsx } from 'clsx';
 import toast from 'react-hot-toast';
 import { createAssignment, updateAssignment } from '@/entities/assignment/api/assignmentApi';
-import type { CourseAssignment } from '@/shared/types/academic';
+import type { AssignmentType, CourseAssignment } from '@/shared/types/academic';
 import { apiErrorMessage, extractApiError, getFieldError } from '@/shared/lib/errors';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
@@ -56,10 +56,22 @@ const schema = z.object({
       'Estimated duration must be greater than 0 and at most 1000 hours'
     ),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+  /** `''` is the unset state on the wire it is omitted entirely (SP-115, D115-1). */
+  type: z.union([z.enum(['HOMEWORK', 'PAPER', 'PROJECT', 'QUIZ', 'EXAM']), z.literal('')]),
   description: z.string().max(2000, 'Description must be 2000 characters or fewer').optional(),
 });
 type FormData = z.infer<typeof schema>;
-const FIELDS = ['title', 'dueDate', 'estimatedHours', 'priority', 'description'] as const;
+const FIELDS = ['title', 'dueDate', 'estimatedHours', 'priority', 'type', 'description'] as const;
+/** The five stored type identifiers in the D115-1 register order (option order). */
+const ASSIGNMENT_TYPES: AssignmentType[] = ['HOMEWORK', 'PAPER', 'PROJECT', 'QUIZ', 'EXAM'];
+/** Title-cased select option copy; the `value`s stay the API wire format (D115-1). */
+const ASSIGNMENT_TYPE_LABELS: Record<AssignmentType, string> = {
+  HOMEWORK: 'Homework',
+  PAPER: 'Paper',
+  PROJECT: 'Project',
+  QUIZ: 'Quiz',
+  EXAM: 'Exam',
+};
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export interface AssignmentFormProps {
@@ -91,6 +103,7 @@ export function AssignmentForm({ courseId, assignment, onSuccess, onClose }: Ass
       dueDate: toLocalDateInputValue(assignment?.dueDate),
       estimatedHours: assignment?.estimatedHours != null ? String(assignment.estimatedHours) : '',
       priority: assignment?.priority ?? 'MEDIUM',
+      type: assignment?.type ?? '',
       description: assignment?.description ?? '',
     },
   });
@@ -152,6 +165,8 @@ export function AssignmentForm({ courseId, assignment, onSuccess, onClose }: Ass
           priority: data.priority,
           dueDate: data.dueDate ? localDate(data.dueDate).toISOString() : null,
           estimatedHours: data.estimatedHours ? Number(data.estimatedHours) : null,
+          // D115-3: a falsy (unset) select sends no key — never `type: null`.
+          ...(data.type ? { type: data.type } : {}),
           description: data.description ?? '',
         });
       } else {
@@ -161,6 +176,7 @@ export function AssignmentForm({ courseId, assignment, onSuccess, onClose }: Ass
           priority: data.priority,
           ...(data.dueDate ? { dueDate: localDate(data.dueDate).toISOString() } : {}),
           ...(data.estimatedHours ? { estimatedHours: Number(data.estimatedHours) } : {}),
+          ...(data.type ? { type: data.type } : {}),
           ...(data.description ? { description: data.description } : {}),
         });
       }
@@ -244,22 +260,51 @@ export function AssignmentForm({ courseId, assignment, onSuccess, onClose }: Ass
                 {...register('estimatedHours')}
               />
             </div>
-            <Select
-              label="Priority"
-              hint={
-                isEdit
-                  ? 'Pick a different value to change the priority.'
-                  : 'Optional — defaults to Medium'
-              }
-              error={errors.priority?.message}
-              disabled={isSubmitting}
-              {...register('priority')}
-            >
-              <option value="LOW">Low</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="HIGH">High</option>
-              <option value="URGENT">Urgent</option>
-            </Select>
+            {/*
+             * The classification row (SP-115, refined 2026-10-25): scholarship
+             * first, then how the student classifies work — type left of
+             * priority. Tab order is the DOM order, so the existing trap
+             * needs no change.
+             */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Select
+                label="Type"
+                hint={
+                  isEdit && assignment?.type
+                    ? 'Pick a different value to change the type.'
+                    : 'Optional.'
+                }
+                error={errors.type?.message}
+                disabled={isSubmitting}
+                {...register('type')}
+              >
+                {/* "No type" names the resulting unset state — it is never a
+                    clear affordance: the API has no null-clear (D115-3), so
+                    the option is absent when a type is already stored. */}
+                {(!isEdit || assignment?.type === null) && <option value="">No type</option>}
+                {ASSIGNMENT_TYPES.map((value) => (
+                  <option key={value} value={value}>
+                    {ASSIGNMENT_TYPE_LABELS[value]}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                label="Priority"
+                hint={
+                  isEdit
+                    ? 'Pick a different value to change the priority.'
+                    : 'Optional — defaults to Medium'
+                }
+                error={errors.priority?.message}
+                disabled={isSubmitting}
+                {...register('priority')}
+              >
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="URGENT">Urgent</option>
+              </Select>
+            </div>
             <div className="w-full">
               <label
                 htmlFor="assignment-description"

@@ -7,6 +7,7 @@ import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 import type {
   AssignmentPriority,
   AssignmentStatus,
+  AssignmentType,
   CourseAssignment,
 } from '@/shared/types/academic';
 
@@ -59,6 +60,23 @@ const PRIORITY_LABELS: Record<AssignmentPriority, string> = {
   MEDIUM: 'Medium',
   HIGH: 'High',
   URGENT: 'Urgent',
+};
+
+/**
+ * The type label palette (title-cased labels below). The five values carry no
+ * severity semantics, so every type shares one neutral pill palette that the
+ * section already uses (`PENDING`/`LOW`): text plus color — the label is
+ * always rendered (D112B-4). A null type renders no badge: absence of a
+ * category is not a category (SP-115, refined 2026-10-25).
+ */
+const TYPE_STYLE = 'bg-slate-100 text-slate-700';
+
+const TYPE_LABELS: Record<AssignmentType, string> = {
+  HOMEWORK: 'Homework',
+  PAPER: 'Paper',
+  PROJECT: 'Project',
+  QUIZ: 'Quiz',
+  EXAM: 'Exam',
 };
 
 function Badge({ className, children }: { className: string; children: string }) {
@@ -191,6 +209,9 @@ export function AssignmentsSection({
                 <Badge className={PRIORITY_STYLES[assignment.priority]}>
                   {PRIORITY_LABELS[assignment.priority]}
                 </Badge>
+                {assignment.type && (
+                  <Badge className={TYPE_STYLE}>{TYPE_LABELS[assignment.type]}</Badge>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
