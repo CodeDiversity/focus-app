@@ -19,7 +19,7 @@ import {
  * `null` is treated as omitted (the stored value is kept, D114-5), and
  * validation runs on the **merged** (post-patch) values in the service
  * (backend authoritative).  The global `FieldValidationPipe`
- * (whitelist + `forbidNonWhitelisted`) rejects unknown fields — `status`,
+ * (whitelist + `forbidNonWhitelisted`) rejects unknown fields —
  * `actualHours`, `courseId`, `userId` (D114-2: lifecycle fields are not
  * editable here) — with a 400; the controller declares this class as the
  * `@Body()` metatype so the pipe applies.
@@ -29,7 +29,8 @@ import {
  * ≤ 2000 (the only clearable field — `''` clears the stored description);
  * `dueDate` strict persistable ISO-8601 datetime; `estimatedHours`
  * `0 < h ≤ 1000`; `priority` the 4-value enum; `type` (SP-115G) the 5-value
- * enum.
+ * enum; `status` (SP-121A, D121-2) the closed 5-value `AssignmentStatus`
+ * enum — PATCH-only, create still starts `PENDING` (D121-1).
  *
  * `title` preserves its raw type despite the global pipe's implicit
  * conversion (the create DTO's F113A-2 fix): a numeric title is not a title.
@@ -77,4 +78,11 @@ export class UpdateAssignmentDto {
   @IsOptional()
   @IsIn(['HOMEWORK', 'PAPER', 'PROJECT', 'QUIZ', 'EXAM'])
   type?: 'HOMEWORK' | 'PAPER' | 'PROJECT' | 'QUIZ' | 'EXAM' | null;
+
+  // SP-121A (D121-2/3): PATCH accepts the full closed enum; an explicit
+  // `null` is treated as omitted by the service's `has()` — the stored
+  // status is kept; a status-only body is a non-empty patch.
+  @IsOptional()
+  @IsIn(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'SUBMITTED', 'GRADED'])
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SUBMITTED' | 'GRADED' | null;
 }

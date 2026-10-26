@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { validateSync } from 'class-validator';
-import { Assignment, Prisma, TaskStatus } from '../../generated/prisma/client';
+import { Assignment, AssignmentStatus, Prisma, TaskStatus } from '../../generated/prisma/client';
 import { ownedWhere, RESOURCE_NOT_FOUND, assertAffected } from '../../common/ownership/ownership';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
@@ -110,7 +110,10 @@ export class AssignmentsService {
    * - `type` (SP-115G, D115-3): omitted/null keeps the stored type (no clear
    *   sentinel); a valid value replaces it; a type-only body counts as a
    *   non-empty patch.
-   * - Unknown fields (`status`, `actualHours`, `courseId`, `userId`) → 400
+   * - `status` (SP-121A, D121-2/3): the closed five-value `AssignmentStatus`
+   *   enum; omitted/null keeps the stored status; a status-only body counts
+   *   as a non-empty patch; any other value → field-level 400, no write.
+   * - Unknown fields (`actualHours`, `courseId`, `userId`) → 400
    *   with a field-level `errors` map (whitelist + `forbidNonWhitelisted`).
    * - A missing, foreign, or malformed assignment id → uniform 404
    *   `Resource not found` (the ownership predicate is in the query; both
@@ -140,7 +143,8 @@ export class AssignmentsService {
       !has(dto.dueDate) &&
       !has(dto.estimatedHours) &&
       !has(dto.priority) &&
-      !has(dto.type) // SP-115G: a type-only patch is a non-empty body.
+      !has(dto.type) && // SP-115G: a type-only patch is a non-empty body.
+      !has(dto.status) // SP-121A (D121-3): a status-only patch is a non-empty body.
     ) {
       throw new BadRequestException('At least one field must be provided');
     }
@@ -158,6 +162,7 @@ export class AssignmentsService {
       estimatedHours: has(dto.estimatedHours) ? dto.estimatedHours! : existing.estimatedHours,
       priority: has(dto.priority) ? dto.priority! : existing.priority,
       type: has(dto.type) ? dto.type! : existing.type,
+      status: has(dto.status) ? dto.status! : existing.status,
     });
     this.assertDto(merged);
 
@@ -170,6 +175,7 @@ export class AssignmentsService {
       estimatedHours?: number;
       priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
       type?: 'HOMEWORK' | 'PAPER' | 'PROJECT' | 'QUIZ' | 'EXAM';
+      status?: AssignmentStatus;
     } = {};
     if (has(dto.title)) {
       data.title = merged.title!;
@@ -188,6 +194,11 @@ export class AssignmentsService {
     }
     if (has(dto.type)) {
       data.type = merged.type!;
+    }
+    if (has(dto.status)) {
+      // SP-121A: the merged value equals the requested enum value here —
+      // `has()` already excluded omitted/null.
+      data.status = merged.status as AssignmentStatus;
     }
 
     try {

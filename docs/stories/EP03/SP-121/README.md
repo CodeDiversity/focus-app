@@ -14,9 +14,9 @@
 
 **Parent artifacts:** `./artifacts/SP-121/` (parent index written by B; review and walkthrough by the reviewer)
 
-**Active substory:** None (implementation not started).
+**Active substory:** None (SP-121A implemented; SP-121B not yet refined — no active writer).
 
-**Next substory:** **SP-121A — implement** (backend; no blocker). SP-121B is `Needs refinement`: run the `ui-refiner` agent on SP-121B before code.
+**Next substory:** **SP-121B — refine** (run the `ui-refiner` agent on SP-121B, then implement it; its API dependency SP-121A is implemented).
 
 **Implementation owner:** `implementer`, sequential across layers. Backend and frontend are scope labels, not concurrent writers.
 
@@ -24,8 +24,8 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-121A-assignment-status-api.md) | Ready | SP-113/SP-114/SP-115 reviewed (satisfied 2026-10-25). SP-120 is implemented but is **not** a dependency (baseline note below) | Implement | (artifacts after implementation) |
-| [B](./SP-121B-assignment-status-ui.md) | Needs refinement | A implemented; UI/UX gaps open (ui-refiner handoff) | Refine (ui-refiner), then implement | — |
+| [A](./SP-121A-assignment-status-api.md) | Implemented — awaiting parent review | SP-113/SP-114/SP-115 reviewed (satisfied 2026-10-25). SP-120 is implemented but is **not** a dependency (baseline note below) | None — included in the combined SP-121 review after B | [implementation.md](./artifacts/SP-121A/implementation.md), [checkpoint](./artifacts/SP-121A/checkpoint.md) |
+| [B](./SP-121B-assignment-status-ui.md) | Needs refinement | A implemented (satisfied 2026-10-26); UI/UX gaps open (ui-refiner handoff) | Refine (ui-refiner), then implement | — |
 
 Sequence: A → B, one writer, in child-letter order (D121-6). B owns the parent index and the DoD-10 browser note. There is no third integration story.
 

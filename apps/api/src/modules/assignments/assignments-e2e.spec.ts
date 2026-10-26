@@ -415,10 +415,11 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
     ['type', 1],
     ['type', ''],
     ['description', 'x'.repeat(2001)],
-    ['status', 'COMPLETED'],
     ['actualHours', 10],
     ['courseId', '00000000-0000-0000-0000-000000000000'],
     ['userId', '00000000-0000-0000-0000-000000000001'],
+    // SP-121A (D121-2): `status` left the update-path rejection list — it is
+    // a whitelisted enum now. Invalid values are covered below.
   ])(
     'rejects invalid edit %s=%p over HTTP with field errors and no write (AC 4)',
     async (field, value) => {
@@ -502,6 +503,76 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
       priority: 'HIGH',
       type: 'PAPER',
     });
+  });
+
+  it('walks the full status lifecycle over HTTP and refetches the projection (SP-121A AC 1, D121-5)', async () => {
+    const created = await create(studentA, {
+      title: 'Lifecycle journey',
+      courseId: courseA,
+    }).expect(HttpStatus.CREATED);
+    expect(created.body.status).toBe('PENDING'); // D121-1: create starts PENDING.
+
+    const inProgress = await patch(studentA, created.body.id, { status: 'IN_PROGRESS' }).expect(
+      HttpStatus.OK
+    );
+    expect(Object.keys(inProgress.body).sort()).toEqual(ASSIGNMENT_KEYS);
+    expect(inProgress.body).toMatchObject({ id: created.body.id, status: 'IN_PROGRESS' });
+
+    const completed = await patch(studentA, created.body.id, { status: 'COMPLETED' }).expect(
+      HttpStatus.OK
+    );
+    expect(Object.keys(completed.body).sort()).toEqual(ASSIGNMENT_KEYS);
+    expect(completed.body).toMatchObject({ id: created.body.id, status: 'COMPLETED' });
+    expect(
+      await app.prisma.assignment.findFirst({
+        where: ownedWhere(studentA.id, created.body.id),
+      })
+    ).toMatchObject({ status: 'COMPLETED' });
+
+    // Invalid enum values stay field-level 400s with no write (D121-2).
+    for (const invalid of ['DONE', 'completed', 1, true]) {
+      const rejected = await patch(studentA, created.body.id, { status: invalid }).expect(
+        HttpStatus.BAD_REQUEST
+      );
+      expect(rejected.body.errors).toHaveProperty('status');
+    }
+    // `status: null` keeps the stored value (D121-3) and needs a companion
+    // field to satisfy at-least-one; status-only null body → 400.
+    await patch(studentA, created.body.id, { status: null }).expect(HttpStatus.BAD_REQUEST);
+    const kept = await patch(studentA, created.body.id, {
+      title: 'Lifecycle journey',
+      status: null,
+    }).expect(HttpStatus.OK);
+    expect(kept.body).toMatchObject({ status: 'COMPLETED' });
+
+    // D121-5: the finished assignment is still returned by GET /courses/:id
+    // with the final status and the unchanged key set (AC 7).
+    const refetched = await detail(studentA, courseA).expect(HttpStatus.OK);
+    expect(refetched.body.assignments).toContainEqual({ ...kept.body, subtasks: [] });
+    const projected = refetched.body.assignments.find(
+      (row: { id: string }) => row.id === created.body.id
+    );
+    expect(Object.keys(projected).sort()).toEqual(PROJECTED_ASSIGNMENT_KEYS);
+    expect(projected.status).toBe('COMPLETED');
+  });
+
+  it('rejects a foreign-id status PATCH with the uniform 404, target unchanged (SP-121A AC 5)', async () => {
+    const created = await create(studentA, {
+      title: 'A private lifecycle',
+      courseId: courseA,
+    }).expect(HttpStatus.CREATED);
+    const response = await patch(studentB, created.body.id, { status: 'SUBMITTED' }).expect(
+      HttpStatus.NOT_FOUND
+    );
+    expect(response.body).toMatchObject({
+      statusCode: HttpStatus.NOT_FOUND,
+      message: 'Resource not found',
+    });
+    expect(
+      await app.prisma.assignment.findFirst({
+        where: ownedWhere(studentA.id, created.body.id),
+      })
+    ).toMatchObject({ status: 'PENDING' });
   });
 
   it('rejects unauthenticated PATCH and DELETE before writing', async () => {

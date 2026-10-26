@@ -310,6 +310,80 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
     expect(result).toMatchObject({ type: 'QUIZ' });
   });
 
+  // ==================== Status transitions (SP-121A, D121-1…3) ====================
+
+  it.each(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'SUBMITTED', 'GRADED'] as const)(
+    'patches status=%s with a scoped write and the new projection value (AC 1)',
+    async (status) => {
+      const result = await service.update('student', 'assignment', { status });
+      expect(prisma.assignment.findFirst).toHaveBeenCalledWith({
+        where: { id: 'assignment', userId: 'student' },
+      });
+      expect(prisma.assignment.update).toHaveBeenCalledWith({
+        where: { id: 'assignment', userId: 'student' },
+        data: { status },
+      });
+      expect(result).toMatchObject({ status });
+    }
+  );
+
+  it('accepts a status-only patch as a non-empty body and keeps the rest (D121-3, merged re-check)', async () => {
+    // The merged DTO re-check runs against the stored row: the stored title
+    // 'Essay' keeps the merged body valid, so the status-only patch passes.
+    const result = await service.update('student', 'assignment', { status: 'IN_PROGRESS' });
+    expect(prisma.assignment.update).toHaveBeenCalledWith({
+      where: { id: 'assignment', userId: 'student' },
+      data: { status: 'IN_PROGRESS' },
+    });
+    expect(result).toEqual({
+      id: 'assignment',
+      title: 'Essay',
+      description: 'Outline',
+      dueDate: '2026-11-15T23:59:00.000Z',
+      estimatedHours: 2.5,
+      actualHours: null,
+      status: 'IN_PROGRESS',
+      priority: 'HIGH',
+      type: 'HOMEWORK',
+      createdAt: now.toISOString(),
+      updatedAt: later.toISOString(),
+    });
+  });
+
+  it.each([null, undefined] as const)(
+    'keeps the stored status when patched with %p (D121-3 keep-on-null)',
+    async (value) => {
+      const body: UpdateAssignmentDto =
+        value === null ? { title: 'Kept', status: null } : { title: 'Kept' };
+      const result = await service.update('student', 'assignment', body);
+      expect(prisma.assignment.update).toHaveBeenCalledWith({
+        where: { id: 'assignment', userId: 'student' },
+        data: { title: 'Kept' },
+      });
+      expect(result).toMatchObject({ status: 'PENDING' });
+    }
+  );
+
+  it('rejects status combined with a locked field on the locked field, with no query or write (AC 6)', async () => {
+    try {
+      await service.update('student', 'assignment', {
+        status: 'COMPLETED',
+        actualHours: 5,
+      } as unknown as UpdateAssignmentDto);
+      throw new Error('expected validation error');
+    } catch (error) {
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect((error as BadRequestException).getResponse()).toMatchObject({
+        errors: { actualHours: expect.any(Array) },
+      });
+      expect((error as BadRequestException).getResponse()).not.toMatchObject({
+        errors: { status: expect.anything() },
+      });
+    }
+    expect(prisma.assignment.findFirst).not.toHaveBeenCalled();
+    expect(prisma.assignment.update).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['title', 42],
     ['title', '   '],
@@ -330,6 +404,10 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
     ['type', 'ESSAY'], // SP-115G: invalid enum, field-level 400, no write.
     ['type', 1],
     ['type', ''],
+    ['status', 'DONE'], // SP-121A (D121-2): outside the closed enum.
+    ['status', 'completed'], // lowercase is not a stored value.
+    ['status', 1],
+    ['status', true],
     ['description', 'x'.repeat(2001)],
     ['description', 42],
   ])('rechecks invalid %s=%p with field errors and no query or write', async (field, value) => {
@@ -347,10 +425,12 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
   });
 
   it.each([
-    ['status', 'COMPLETED'],
     ['actualHours', 5],
     ['courseId', 'own-course'],
     ['userId', 'other'],
+    // SP-121A (D121-2): `status` left the unknown-fields list; it is now a
+    // whitelisted enum. These locked fields stay rejected, alone or combined
+    // with a valid status (AC 6).
   ])('rejects unknown %s=%p with a field-level 400 and no query or write', async (field, value) => {
     try {
       await service.update('student', 'assignment', { [field]: value } as UpdateAssignmentDto);
@@ -365,7 +445,7 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
     expect(prisma.assignment.update).not.toHaveBeenCalled();
   });
 
-  it('treats explicit nulls as omitted and keeps the stored values (D114-5, D115-3)', async () => {
+  it('treats explicit nulls as omitted and keeps the stored values (D114-5, D115-3, D121-3)', async () => {
     await service.update('student', 'assignment', {
       title: 'Kept',
       description: null,
@@ -373,6 +453,7 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
       estimatedHours: null,
       priority: null,
       type: null,
+      status: null,
     });
     expect(prisma.assignment.update).toHaveBeenCalledWith({
       where: { id: 'assignment', userId: 'student' },
@@ -399,6 +480,7 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
         estimatedHours: null,
         priority: null,
         type: null,
+        status: null, // SP-121A (D121-3): a null status is not a write either.
       },
     ],
   ])('PATCH %s body → 400 at-least-one without a write', async (_label, body) => {
@@ -477,7 +559,10 @@ describe('UpdateAssignmentDto with production FieldValidationPipe', () => {
     ['type', ''],
     ['description', 'x'.repeat(2001)],
     ['description', 42],
-    ['status', 'COMPLETED'],
+    ['status', 'DONE'], // SP-121A (D121-2): outside the closed enum.
+    ['status', 'completed'], // lowercase is not a stored value.
+    ['status', 1],
+    ['status', true],
     ['actualHours', 5],
     ['courseId', 'own-course'],
     ['userId', 'other'],
@@ -496,8 +581,23 @@ describe('UpdateAssignmentDto with production FieldValidationPipe', () => {
         estimatedHours: 1,
         priority: 'LOW',
         type: 'PROJECT',
+        status: 'IN_PROGRESS', // SP-121A: whitelisted enum on the patch path.
       })
     ).resolves.toBeInstanceOf(UpdateAssignmentDto);
+  });
+
+  it.each(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'SUBMITTED', 'GRADED'] as const)(
+    'accepts status=%s at pipe level (SP-121A, D121-2)',
+    async (status) => {
+      await expect(validate({ status })).resolves.toBeInstanceOf(UpdateAssignmentDto);
+    }
+  );
+
+  it('accepts an omitted status and an explicit status null (D121-3 keep-on-null at pipe level)', async () => {
+    await expect(validate({ title: 'Kept', status: null })).resolves.toBeInstanceOf(
+      UpdateAssignmentDto
+    );
+    await expect(validate({ title: 'Kept' })).resolves.toBeInstanceOf(UpdateAssignmentDto);
   });
 
   it('accepts an omitted type and an explicit type null (D115-3 keep-on-null at pipe level)', async () => {

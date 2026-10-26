@@ -266,10 +266,11 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
     expect(empty.body.message).toBe('At least one field must be provided');
 
     for (const [field, value] of [
-      ['status', 'COMPLETED'],
       ['actualHours', 5],
       ['courseId', students[0].courseId],
       ['userId', students[1].id],
+      // SP-121A (D121-2): `status` left the unknown-fields list — it is a
+      // whitelisted enum on the patch path now.
     ] as const) {
       const response = await patch(0, created.body.id, { [field]: value }).expect(400);
       expect(response.body.errors).toHaveProperty(field);
@@ -304,6 +305,53 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
       })
     ).toEqual(before);
     expect(await app.prisma.assignment.count({ where: { userId: students[1].id } })).toBe(0);
+  });
+
+  it('student B cannot PATCH status on student A assignment: uniform 404, A status unchanged (SP-121A)', async () => {
+    const created = await post(0, { title: 'Grade locked', courseId: students[0].courseId }).expect(
+      201
+    );
+    expect(created.body.status).toBe('PENDING');
+    for (const id of [created.body.id, uuid(), 'not-an-id']) {
+      const response = await patch(1, id, {
+        status: 'COMPLETED', // a body value never bypasses ownership (line-610 precedent)
+      }).expect(404);
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        message: 'Resource not found',
+        error: 'Not Found',
+      });
+    }
+    expect(
+      await app.prisma.assignment.findFirst({
+        where: ownedWhere(students[0].id, created.body.id),
+      })
+    ).toMatchObject({ status: 'PENDING' });
+  });
+
+  it('PATCH { status: "GRADED" } round-trips and persists; the course projection still returns it (SP-121A, D121-5)', async () => {
+    const created = await post(0, { title: 'Final exam', courseId: students[0].courseId }).expect(
+      201
+    );
+    const patched = await patch(0, created.body.id, { status: 'GRADED' }).expect(200);
+    expect(Object.keys(patched.body).sort()).toEqual(KEYS);
+    expect(patched.body).toMatchObject({
+      id: created.body.id,
+      title: 'Final exam',
+      status: 'GRADED',
+    });
+    // Every other stored field is untouched by a status-only patch.
+    const { updatedAt: _patchedAt, ...restPatched } = patched.body;
+    const { updatedAt: _createdAt, ...restCreated } = created.body;
+    expect(restPatched).toEqual({ ...restCreated, status: 'GRADED' });
+    expect(
+      await app.prisma.assignment.findFirst({
+        where: ownedWhere(students[0].id, created.body.id),
+      })
+    ).toMatchObject({ status: 'GRADED' });
+    // D121-5: the projection keeps returning every status — no API filter.
+    const projection = await detail(0).expect(200);
+    expect(projection.body.assignments).toContainEqual({ ...patched.body, subtasks: [] });
   });
 
   it('student B cannot DELETE student A assignment: foreign/missing/malformed → uniform 404, row unchanged', async () => {

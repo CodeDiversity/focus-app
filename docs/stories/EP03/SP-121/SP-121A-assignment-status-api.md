@@ -6,7 +6,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Layer:** Backend
-**Status:** Ready
+**Status:** Implemented — awaiting parent review (combined SP-121 review after SP-121B; record at [artifacts/SP-121A/implementation.md](./artifacts/SP-121A/implementation.md))
 **Dependencies:** SP-113A, SP-114D, SP-115G implemented (all reviewed 2026-10-24/25). SP-120 is implemented but is not a dependency (its open review findings are execution evidence, no code defect). No open blocker.
 **Jira key:** Pending creation
 
