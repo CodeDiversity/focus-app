@@ -1,6 +1,7 @@
 import api from '@/shared/api/httpClient';
 import type {
   AssignmentPriority,
+  AssignmentStatus,
   AssignmentType,
   CourseAssignment,
   Subtask,
@@ -42,6 +43,7 @@ export interface UpdateAssignmentRequest {
   priority?: AssignmentPriority | null;
   type?: AssignmentType | null;
   description?: string | null;
+  status?: AssignmentStatus | null;
 }
 
 /** 200: updated 11-key projection; 400: field errors; 404: uniform miss. */

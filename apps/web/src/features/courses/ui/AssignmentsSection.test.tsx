@@ -100,40 +100,26 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     render(<AssignmentsSection assignments={all} />);
 
     const items = screen.getAllByRole('listitem');
-    expect(items).toHaveLength(3);
-    // API order as-is (dueDate asc, then title — no client re-sort): the two
-    // 2026-10-20 rows keep their given order (Lab Report before Research
-    // Essay would be alphabetical, so the order proves no re-sort).
+    expect(items).toHaveLength(2);
+    // Only unfinished assignments render by default (D121-4).
     expect(items[0]).toHaveTextContent('Problem Set 4');
     expect(items[1]).toHaveTextContent('Research Essay');
-    expect(items[2]).toHaveTextContent('Lab Report');
 
     // The due line is the medium date in the browser time zone (D112B-16).
     expect(items[0]).toHaveTextContent(dueLabel(problemSet.dueDate));
     expect(items[1]).toHaveTextContent(dueLabel(essay.dueDate));
-    expect(items[2]).toHaveTextContent(dueLabel(labReport.dueDate));
 
-    // Status badges pair text with color (DoD 6): the labels are present…
-    expect(screen.getByText('Pending')).toBeInTheDocument();
-    expect(screen.getByText('In progress')).toBeInTheDocument();
-    expect(screen.getByText('Graded')).toBeInTheDocument();
-    // …and the priority labels are present.
+    // The priority labels are present.
     expect(screen.getByText('Medium')).toBeInTheDocument();
     expect(screen.getByText('High')).toBeInTheDocument();
-    expect(screen.getByText('Low')).toBeInTheDocument();
   });
 
   it('pairs each badge with its palette (text + color, D112B-4)', () => {
-    render(<AssignmentsSection assignments={[problemSet, essay, labReport]} />);
+    render(<AssignmentsSection assignments={[problemSet, essay]} />);
 
-    // Status palettes (D112B-4): PENDING slate / IN_PROGRESS blue / GRADED teal.
-    expect(screen.getByText('Pending')).toHaveClass('bg-slate-100', 'text-slate-700');
-    expect(screen.getByText('In progress')).toHaveClass('bg-blue-100', 'text-blue-700');
-    expect(screen.getByText('Graded')).toHaveClass('bg-teal-100', 'text-teal-700');
-    // Priority palettes (D112B-4): LOW slate / MEDIUM amber / HIGH orange.
+    // Priority palettes (D112B-4): MEDIUM amber / HIGH orange.
     expect(screen.getByText('Medium')).toHaveClass('bg-amber-100', 'text-amber-800');
     expect(screen.getByText('High')).toHaveClass('bg-orange-100', 'text-orange-700');
-    expect(screen.getByText('Low')).toHaveClass('bg-slate-100', 'text-slate-700');
   });
 
   it('marks a stored type with the neutral type pill after the priority badge (SP-115H AC 2)', () => {
@@ -165,26 +151,26 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     expect(del.parentElement).toHaveClass('flex', 'flex-wrap', 'gap-2');
   });
 
-  it('renders the remaining status/priority palette entries', () => {
+  it('renders the remaining priority palette entries', () => {
     render(
       <AssignmentsSection
         assignments={[
-          { ...problemSet, id: 'a', status: 'SUBMITTED', priority: 'URGENT' },
-          { ...problemSet, id: 'b', status: 'COMPLETED', priority: 'LOW' },
+          { ...problemSet, id: 'a', status: 'PENDING', priority: 'URGENT' },
+          { ...problemSet, id: 'b', status: 'IN_PROGRESS', priority: 'LOW' },
         ]}
       />
     );
 
-    expect(screen.getByText('Submitted')).toHaveClass('bg-violet-100', 'text-violet-700');
     expect(screen.getByText('Urgent')).toHaveClass('bg-red-100', 'text-red-700');
-    expect(screen.getByText('Completed')).toHaveClass('bg-green-100', 'text-green-700');
+    expect(screen.getByText('Low')).toHaveClass('bg-slate-100', 'text-slate-700');
   });
 
   it('renders Edit and Delete buttons for each assignment row with accessible labels', () => {
     render(<AssignmentsSection assignments={all} />);
 
     const items = screen.getAllByRole('listitem');
-    all.forEach((assignment, idx) => {
+    const visible = [problemSet, essay];
+    visible.forEach((assignment, idx) => {
       const item = items[idx];
       expect(
         within(item).getByRole('button', { name: `Edit ${assignment.title}` })
@@ -282,17 +268,17 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
   });
 
   it('renders null dates muted, retains API order and updates rows after refetch', () => {
-    const undated = { ...labReport, dueDate: null };
-    const { rerender } = render(<AssignmentsSection assignments={[problemSet, undated]} />);
+    const undated = { ...problemSet, dueDate: null, id: 'asgn-u' };
+    const { rerender } = render(<AssignmentsSection assignments={[undated, essay]} />);
     expect(screen.getByText('No due date')).toHaveClass('text-secondary-500');
-    expect(screen.getAllByRole('listitem')[0]).toHaveTextContent(dueLabel(problemSet.dueDate));
-    expect(screen.getAllByRole('listitem')[1]).toHaveTextContent('Lab Report');
-    rerender(<AssignmentsSection assignments={[problemSet, essay, undated]} />);
+    expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Problem Set 4');
+    expect(screen.getAllByRole('listitem')[1]).toHaveTextContent('Research Essay');
+    rerender(<AssignmentsSection assignments={[undated, essay]} />);
     expect(
       screen
         .getAllByRole('listitem')
-        .map((item) => within(item).getByText(/Problem Set|Research Essay|Lab Report/).textContent)
-    ).toEqual(['Problem Set 4', 'Research Essay', 'Lab Report']);
+        .map((item) => within(item).getByText(/Problem Set|Research Essay/).textContent)
+    ).toEqual(['Problem Set 4', 'Research Essay']);
   });
 
   it('focuses the next row Edit control after the deleted assignment leaves the list', async () => {
@@ -378,6 +364,7 @@ describe('AssignmentsSection subtask disclosure (SP-120J AC 1, AC 8)', () => {
           { ...essay, subtasks: [subtask('e1', 'Draft', 'PENDING', 0)] },
           {
             ...labReport,
+            status: 'PENDING',
             subtasks: [subtask('l1', 'One', 'PENDING', 0), subtask('l2', 'Two', 'PENDING', 1)],
           },
           {
@@ -502,6 +489,8 @@ describe('AssignmentsSection subtask disclosure (SP-120J AC 1, AC 8)', () => {
     toggle.focus();
     await user.click(toggle);
     expect(toggle).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('combobox', { name: 'Status for Problem Set 4' })).toHaveFocus();
     await user.tab();
     expect(screen.getByRole('button', { name: 'Edit Problem Set 4' })).toHaveFocus();
     await user.tab();

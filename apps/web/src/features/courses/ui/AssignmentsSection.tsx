@@ -1,11 +1,15 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
+import toast from 'react-hot-toast';
 import { ChevronDown } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
+import { Select } from '@/shared/ui/Select';
 import { AssignmentForm } from './AssignmentForm';
 import { DeleteAssignmentDialog } from './DeleteAssignmentDialog';
 import { SubtaskChecklist, type SubtaskChangeAction } from './SubtaskChecklist';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
+import { updateAssignment } from '@/entities/assignment/api/assignmentApi';
+import { isUnfinishedAssignment } from '@/entities/assignment/model/status';
 import type {
   AssignmentPriority,
   AssignmentStatus,
@@ -19,6 +23,7 @@ export type { SubtaskChangeAction };
 export interface AssignmentsSectionProps {
   courseId: string;
   onAssignmentChanged: (action: 'added' | 'updated' | 'deleted') => void;
+  onAssignmentStatusChanged?: (status: AssignmentStatus) => void;
   onAssignmentFormOpen?: () => void;
   /** Subtask success. The page announces and background-refetches. Not assignment copy. */
   onSubtaskChanged: (action: SubtaskChangeAction) => void;
@@ -50,7 +55,7 @@ export function subtaskSummary(subtasks: Subtask[]): string {
  * alone).  The 500-level hue on a 100-level background keeps the pill
  * legible (WCAG 2.2 AA).
  */
-const STATUS_STYLES: Record<AssignmentStatus, string> = {
+export const STATUS_STYLES: Record<AssignmentStatus, string> = {
   PENDING: 'bg-slate-100 text-slate-700',
   IN_PROGRESS: 'bg-blue-100 text-blue-700',
   SUBMITTED: 'bg-violet-100 text-violet-700',
@@ -67,7 +72,7 @@ const PRIORITY_STYLES: Record<AssignmentPriority, string> = {
 };
 
 /** The status labels (title-cased — the raw enum values are API wire format). */
-const STATUS_LABELS: Record<AssignmentStatus, string> = {
+export const STATUS_LABELS: Record<AssignmentStatus, string> = {
   PENDING: 'Pending',
   IN_PROGRESS: 'In progress',
   SUBMITTED: 'Submitted',
@@ -118,6 +123,7 @@ export function AssignmentsSection({
   assignments,
   courseId,
   onAssignmentChanged,
+  onAssignmentStatusChanged,
   onAssignmentFormOpen,
   onSubtaskChanged,
   onSubtaskRefresh,
@@ -128,10 +134,18 @@ export function AssignmentsSection({
   const [deleting, setDeleting] = useState<CourseAssignment | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
   const [busyIds, setBusyIds] = useState<Set<string>>(() => new Set());
+  const [statusBusyIds, setStatusBusyIds] = useState<Set<string>>(() => new Set());
+  const [pendingStatus, setPendingStatus] = useState<Record<string, AssignmentStatus>>({});
   const sectionRef = useRef<HTMLElement>(null);
   // Set when delete succeeds, cleared once the deleted row is actually gone.
   const [focusAfterDelete, setFocusAfterDelete] = useState<{
     deletedId: string;
+    neighborId: string | null;
+  } | null>(null);
+  // Set when a status change finishes an assignment; cleared once the row
+  // leaves the unfinished view (D121-4/D121-7).
+  const [focusAfterStatus, setFocusAfterStatus] = useState<{
+    finishedId: string;
     neighborId: string | null;
   } | null>(null);
 
@@ -151,6 +165,65 @@ export function AssignmentsSection({
     // the empty-state button exists.
     if (neighbor) focusControl(`[data-assignment-focus="edit:${CSS.escape(neighbor.id)}"]`);
     else focusControl('[data-assignment-focus="add"]');
+  };
+
+  const handleStatusChange = async (assignment: CourseAssignment, newStatus: AssignmentStatus) => {
+    if (statusBusyIds.has(assignment.id)) return;
+    if (newStatus === assignment.status && pendingStatus[assignment.id] === undefined) {
+      // no-op when choosing the already-stored value
+      return;
+    }
+    // Block a duplicate submit while a request is in flight.
+    setStatusBusyIds((current) => {
+      const next = new Set(current);
+      next.add(assignment.id);
+      return next;
+    });
+    setPendingStatus((current) => ({ ...current, [assignment.id]: newStatus }));
+    onAssignmentFormOpen?.();
+
+    // Compute the focus neighbor for the case where this row finishes and
+    // leaves the unfinished view (D121-4/D121-7).
+    const idx = assignments.findIndex((item) => item.id === assignment.id);
+    let neighbor: CourseAssignment | null = null;
+    for (let i = idx + 1; i < assignments.length; i++) {
+      const candidate = assignments[i];
+      if (candidate && candidate.id !== assignment.id && isUnfinishedAssignment(candidate)) {
+        neighbor = candidate;
+        break;
+      }
+    }
+    if (!neighbor) {
+      for (let i = idx - 1; i >= 0; i--) {
+        const candidate = assignments[i];
+        if (candidate && candidate.id !== assignment.id && isUnfinishedAssignment(candidate)) {
+          neighbor = candidate;
+          break;
+        }
+      }
+    }
+
+    const finishes = !isUnfinishedAssignment(newStatus);
+    try {
+      await updateAssignment(assignment.id, { status: newStatus });
+      if (finishes) {
+        setFocusAfterStatus({ finishedId: assignment.id, neighborId: neighbor?.id ?? null });
+      }
+      onAssignmentStatusChanged?.(newStatus);
+    } catch {
+      toast.error('We could not update the status. Try again.');
+    } finally {
+      setStatusBusyIds((current) => {
+        const next = new Set(current);
+        next.delete(assignment.id);
+        return next;
+      });
+      setPendingStatus((current) => {
+        const next = { ...current };
+        delete next[assignment.id];
+        return next;
+      });
+    }
   };
 
   useEffect(() => {
@@ -207,6 +280,23 @@ export function AssignmentsSection({
     setFocusAfterDelete(null);
   }, [assignments, focusAfterDelete]);
 
+  useLayoutEffect(() => {
+    if (!focusAfterStatus) return;
+    const stillUnfinished = assignments.some(
+      (item) => item.id === focusAfterStatus.finishedId && isUnfinishedAssignment(item)
+    );
+    if (stillUnfinished) return;
+    if (focusAfterStatus.neighborId) {
+      const sel = sectionRef.current?.querySelector<HTMLSelectElement>(
+        `[data-assignment-focus="status:${CSS.escape(focusAfterStatus.neighborId)}"]`
+      );
+      sel?.focus();
+    } else {
+      focusControl('[data-assignment-focus="add"]');
+    }
+    setFocusAfterStatus(null);
+  }, [assignments, focusAfterStatus]);
+
   // The student's browser time zone (D112B-16) — resolved once per render.
   const timeZone = getBrowserTimeZone();
   const openForm = () => {
@@ -240,9 +330,13 @@ export function AssignmentsSection({
             Add your first assignment
           </Button>
         </div>
+      ) : assignments.filter(isUnfinishedAssignment).length === 0 ? (
+        <div className="py-8 text-center">
+          <p className="text-sm text-secondary-500">All assignments are complete.</p>
+        </div>
       ) : (
         <ul className="divide-y divide-secondary-100">
-          {assignments.map((assignment) => (
+          {assignments.filter(isUnfinishedAssignment).map((assignment) => (
             <li key={assignment.id} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
@@ -283,9 +377,30 @@ export function AssignmentsSection({
                   </Button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Badge className={STATUS_STYLES[assignment.status]}>
-                    {STATUS_LABELS[assignment.status]}
-                  </Badge>
+                  <Select
+                    aria-label={`Status for ${assignment.title}`}
+                    data-assignment-focus={`status:${assignment.id}`}
+                    disabled={statusBusyIds.has(assignment.id)}
+                    value={pendingStatus[assignment.id] ?? assignment.status}
+                    onChange={(event) =>
+                      handleStatusChange(assignment, event.target.value as AssignmentStatus)
+                    }
+                    className="w-auto"
+                  >
+                    {(
+                      [
+                        'PENDING',
+                        'IN_PROGRESS',
+                        'COMPLETED',
+                        'SUBMITTED',
+                        'GRADED',
+                      ] as AssignmentStatus[]
+                    ).map((value) => (
+                      <option key={value} value={value}>
+                        {STATUS_LABELS[value]}
+                      </option>
+                    ))}
+                  </Select>
                   <Badge className={PRIORITY_STYLES[assignment.priority]}>
                     {PRIORITY_LABELS[assignment.priority]}
                   </Badge>

@@ -7,6 +7,7 @@ import { getErrorMessage, extractApiError } from '@/shared/lib/errors';
 import { getCourse, type CourseDetail } from '@/entities/course/api/courseApi';
 import { listSemesters, type SemesterWithCount } from '@/entities/semester/api/semesterApi';
 import { MeetingsSection } from '@/features/courses/ui/MeetingsSection';
+import type { AssignmentStatus } from '@/shared/types/academic';
 import {
   AssignmentsSection,
   type SubtaskChangeAction,
@@ -166,6 +167,21 @@ export function CourseDetailPage() {
         : action === 'updated'
           ? 'Assignment updated.'
           : 'Assignment deleted.'
+    );
+    void load({ background: true });
+  };
+
+  const handleAssignmentStatusChanged = (status: AssignmentStatus) => {
+    setStatusMessage(
+      status === 'PENDING'
+        ? 'Assignment set to pending.'
+        : status === 'IN_PROGRESS'
+          ? 'Assignment marked as in progress.'
+          : status === 'COMPLETED'
+            ? 'Assignment marked as completed.'
+            : status === 'SUBMITTED'
+              ? 'Assignment marked as submitted.'
+              : 'Assignment marked as graded.'
     );
     void load({ background: true });
   };
@@ -342,6 +358,7 @@ export function CourseDetailPage() {
               courseId={id}
               assignments={course.assignments}
               onAssignmentChanged={handleAssignmentChanged}
+              onAssignmentStatusChanged={handleAssignmentStatusChanged}
               onSubtaskChanged={handleSubtaskChanged}
               onSubtaskRefresh={() => void load({ background: true })}
               // Clear before the request so a repeated subtask sentence announces.

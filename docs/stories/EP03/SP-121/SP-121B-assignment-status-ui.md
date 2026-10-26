@@ -6,27 +6,28 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** Needs refinement — UI/UX gaps below; run the `ui-refiner` agent on SP-121B before code
+**Status:** Implemented — awaiting parent review (2026-10-26)
 **Dependencies:** SP-121A implemented (met when A lands). No other blocker.
 **Jira key:** Pending creation
+**Refined:** 2026-10-26
 
 ## Summary
 
 On the course page, a student can set an assignment's status from the
-assignment row (Pending, In progress, Completed, Submitted, Graded — the
-control itself is open UI decision 1 below). The course-detail assignments
-section is the unfinished-work view: it renders only unfinished
-assignments (`PENDING`, `IN_PROGRESS` — D121-4) by default, so setting a
-finished status removes the row after the background refetch. The record
-persists — a status change is a PATCH, never a delete (AC-E03-05).
+assignment row using a `Select` (all five lifecycle values — D121-2). The
+course-detail assignments section is the unfinished-work view: it renders
+only unfinished assignments (`PENDING`, `IN_PROGRESS` — D121-4) by default,
+so setting a finished status removes the row after the background refetch.
+The record persists — a status change is a PATCH, never a delete
+(AC-E03-05).
 
 ## Bounded scope
 
 In: the shared status helper (`entities/assignment/model/status.ts`) and
-its test, the `status` key on `UpdateAssignmentRequest`, the status
-control on the assignment row, the unfinished-only partition and both
-empty states in `AssignmentsSection`, the page wiring for announcements,
-component tests, the DoD-10 browser note, and the parent index.
+its test, the `status` key on `UpdateAssignmentRequest`, the status `Select`
+on the assignment row, the unfinished-only partition and both empty states
+in `AssignmentsSection`, the page wiring for announcements, component
+tests, the DoD-10 browser note, and the parent index.
 
 Out: the API change ([SP-121A](./SP-121A-assignment-status-api.md)).
 Status on create (D121-1). Overdue identification and the
@@ -35,7 +36,7 @@ including any "show completed" affordance (D121-7 records the interim
 gap). Search, sorting, filters — story 6. Assignment editing of other
 fields — SP-114E (shipped). If implementation needs a new screen, stop and
 return that split to the planner. Layout, component choice, and copy are
-open — they are the ui-refiner gaps below.
+settled below (Decisions).
 
 ## Source requirement references
 
@@ -53,65 +54,37 @@ open — they are the ui-refiner gaps below.
 
 ## Acceptance criteria
 
-1. **Control renders.** Each assignment row in `AssignmentsSection` has
-   the settled status control (gap 1 below) showing the current status.
-   The existing priority/type badges, Edit, and Delete stay.
-2. **Change.** Choosing a status PATCHes `{ status }` — exactly that key —
-   to `/assignments/:id` (A's contract). The control disables while in
-   flight; a duplicate submit is blocked.
-3. **Success.** The page re-runs `getCourse` in the background (D112B-10),
-   announces the settled sentence through the always-present `role="status"`
-   region, and moves focus per the settled pattern (gap 3). A failed
-   request toasts the sanitized message and changes nothing.
+1. **Control renders.** Each assignment row in `AssignmentsSection` has a
+   shared `Select` (gap settled: all five statuses) showing the current
+   status, with an accessible name `Status for <title>`. It occupies the
+   status slot in the row's `flex flex-wrap gap-2` cluster; the existing
+   priority/type badges, Edit, and Delete stay. The read-only status
+   `Badge` is removed (the Select replaces it).
+2. **Change.** Choosing a status PATCHes exactly `{ status }` to
+   `/assignments/:id` (A's contract). The Select disables while in flight;
+   a duplicate submit is blocked.
+3. **Success.** The page sets the status-specific sentence in the
+   always-present `role="status"` region, background-refetches `getCourse`,
+   and moves focus per the settled pattern (gap 3). A failed request toasts
+   `We could not update the status. Try again.` and changes nothing.
 4. **Unfinished view.** After the refetch, the section renders only
    unfinished assignments (`PENDING`, `IN_PROGRESS` — D121-4), in API order
    as given (no client re-sort). Setting `COMPLETED`, `SUBMITTED`, or
    `GRADED` removes the row from the default view. No DELETE request is
    ever sent by this flow — assert that in the component test.
 5. **Empty states.** No assignments at all → the existing
-   `No assignments yet.` + Add CTA, unchanged. Assignments exist but all
-   are finished → the settled all-finished copy (gap 4) — never the
-   misleading `No assignments yet.`
-6. **Keyboard and narrow width.** The control is keyboard operable with a
-   visible focus ring and an accessible name; the section works at
-   desktop and mobile widths without horizontal scroll (DoD 6, 7).
+   `No assignments yet.` + `Add your first assignment` CTA, unchanged.
+   Assignments exist but all are finished → `All assignments are complete.`
+   (text-only line) — never the misleading `No assignments yet.`
+6. **Keyboard and narrow width.** The Select is keyboard operable with a
+   visible focus ring and an accessible name; the section works at desktop
+   and mobile widths without horizontal scroll (DoD 6, 7).
 
-## UI/UX gaps (ui-refiner)
+## UI/UX decisions (settled)
 
-Open before implementation. Recorded per the planner's UI/UX handoff; the
-ui-refiner settles them with the user.
-
-1. **Control choice.** How the student sets the status: a `Select` (the
-   `AssignmentForm` priority precedent) replacing or augmenting the
-   read-only status badge, a quick-action **Mark as completed** button, or
-   both. Related: whether the control offers all five statuses (D121-2
-   exposes all five on the API) or a subset.
-2. **Placement.** The status badge sits in the row's
-   `flex flex-wrap gap-2` cluster beside the priority/type badges and
-   Edit/Delete on a half-width card (the SP-120J expand/collapse
-   rationale — the column cannot grow much taller). Where does the control
-   live without crowding the row?
-3. **Disappearing row and focus.** Setting a finished status removes the
-   row after the refetch (D121-4/D121-7). Where does focus go when the
-   row unmounts (the assignment-delete pattern — `data-assignment-focus`
-   plus a layout effect — is the in-page precedent)? What exact sentence
-   is announced (e.g. `Assignment marked as completed.` vs the generic
-   `Assignment updated.`)?
-4. **All-finished empty state.** Exact copy and treatment when every
-   assignment is finished (AC 5 above): a text-only line, a muted hint, or
-   something else. Must not reuse `No assignments yet.`
-5. **Interim reachability.** Until story 7 lands, a finished assignment
-   is not reachable in the UI (D121-7). Confirm the interim UX is
-   acceptable as planned, or adjust within this story's scope (a "show
-   completed" affordance belongs to story 7 — out of scope here).
-6. **Filter mechanics.** Confirm the client-side partition in
-   `AssignmentsSection` from the shared helper (D121-5): one
-   `isUnfinishedAssignment` predicate in `entities/assignment/model/`,
-   no client re-sort, expanded-row ids and busy state survive the
-   background refetch (the SP-120J pattern).
-7. **Copy.** Announcement sentences for each transition outcome and the
-   failure toasts (e.g. `We could not update the status. Try again.`),
-   matching the page's existing sentence style.
+Control choice, placement, disappearing row/focus, all-finished empty
+state, interim reachability, filter mechanics, and copy are settled below
+(Decisions). No open UI gaps remain.
 
 ## Tests
 
@@ -124,12 +97,16 @@ the key set). Vitest + Testing Library, same style as
   `GRADED` are finished.
 - `assignmentApi.test.ts`: `updateAssignment` sends `status` through
   (exact body `{ status: 'COMPLETED' }`); no new API module.
-- `AssignmentsSection.test.tsx`: the control renders the current status;
-  choosing one PATCHes exactly `{ status }`; in-flight disables the
-  control; success refetches and announces; a finished status removes the
-  row from the rendered list and sends no DELETE; unfinished rows render
-  in given order; the two empty states (gap 4 copy once settled); a
-  failed PATCH toasts and keeps the row.
+- `AssignmentsSection.test.tsx`: the Select renders the current status
+  with accessible name `Status for <title>` and all five options in
+  lifecycle order; choosing one PATCHes exactly `{ status }`; in-flight
+  disables the Select; success refetches and announces the status-specific
+  sentence; a finished status removes the row from the rendered list and
+  sends no DELETE; unfinished rows render in given order; the two empty
+  states (`No assignments yet.` and `All assignments are complete.`); a
+  failed PATCH toasts `We could not update the status. Try again.` and
+  keeps the row; focus moves to the next unfinished row's Select (or
+  previous, or the header Add control).
 - `CourseDetailPage` wiring (extend an existing test or add one focused
   case): a status change sets the settled live-region sentence and
   background-refetches.
@@ -163,10 +140,8 @@ the key set). Vitest + Testing Library, same style as
 - `apps/web/src/pages/courses/ui/CourseDetailPage.tsx` — one `getCourse`
   fetch; `role="status"` live region; `handleAssignmentChanged` announces
   `Assignment added.` / `Assignment updated.` / `Assignment deleted.` and
-  background-refetches (D112B-10). A status change may reuse
-  `onAssignmentChanged('updated')` only if the settled announcement (gap
-  3) is the generic sentence — otherwise it needs its own callback, the
-  subtask precedent.
+  background-refetches (D112B-10). A status change uses its own callback
+  (the subtask precedent) because the announcement is status-specific.
 - `apps/web/src/features/courses/ui/AssignmentForm.tsx` — the `Select`
   precedent for priority (the SP-115H control).
 - `apps/web/src/shared/ui/` — `Button` (`primary | outline | ghost |
@@ -176,6 +151,53 @@ the key set). Vitest + Testing Library, same style as
   (D113-4). The helper and client stay in `entities/assignment/`. The
   page keeps importing only `AssignmentsSection`. No new shared primitive
   unless the settled control needs one.
+
+### Decisions (settled 2026-10-26)
+
+1. **Control choice — Select, all five statuses.** Replace the read-only
+   status `Badge` with the shared `Select` (`shared/ui/Select`) offering
+   `PENDING | IN_PROGRESS | COMPLETED | SUBMITTED | GRADED` in lifecycle
+   order. Mirrors `AssignmentForm`'s priority `Select` and D121-2's full
+   enum; one control, no new primitive.
+2. **Placement — status slot in the wrap cluster.** The Select occupies
+   the status slot in the existing `flex flex-wrap gap-2` cluster beside
+   the priority/type badges and Edit/Delete. No relocation to the text
+   column; the Select wraps like the other pills.
+3. **Disappearing row and focus — next unfinished row's Select.** Setting
+   a finished status removes the row after refetch; focus moves to the next
+   unfinished row's status Select (previous if none; when the last row
+   disappears, the header `Add assignment` control). Reuse the
+   `data-assignment-focus` + layout-effect pattern; use a
+   `status:<id>` focus key. Announcement is status-specific (below).
+4. **All-finished empty state — `All assignments are complete.`** A single
+   muted text line, no call-to-action. Distinct from `No assignments yet.`
+   and signals completion rather than absence.
+5. **Interim reachability — accepted as planned.** Finished assignments
+   stay persisted (PATCH, never delete) and reappear in story 7's
+   completed view; the gap is one story wide. No "show completed"
+   affordance is added here (belongs to story 7).
+6. **Filter mechanics — confirmed.** One `isUnfinishedAssignment` predicate
+   in `entities/assignment/model/status.ts`; no client re-sort; expanded-row
+   ids and busy state survive the background refetch (SP-120J pattern).
+7. **Copy — status-specific announcements + settled toasts.** Live-region
+   sentences: `Assignment set to pending.` / `Assignment marked as in
+   progress.` / `Assignment marked as completed.` / `Assignment marked as
+   submitted.` / `Assignment marked as graded.` Failure toast:
+   `We could not update the status. Try again.` Select options are
+   title-cased labels (`Pending`, `In progress`, `Completed`, `Submitted`,
+   `Graded`); the Select carries `aria-label="Status for <title>"`.
+
+### Wiring implications (from the decisions above)
+
+- `AssignmentsSection` gains `onAssignmentStatusChanged: (status: AssignmentStatus) => void`.
+  The page handler sets the status-specific sentence and background-refetches
+  (D112B-10), mirroring the subtask precedent (a dedicated callback, not
+  `onAssignmentChanged('updated')`, because the copy is status-specific).
+- The Select is controlled by the stored status plus an in-flight pending
+  value: on failure the displayed value reverts to the stored status (no
+  optimistic drift). On success the refetch supplies the new value.
+- `STATUS_STYLES`/`STATUS_LABELS` remain (the Select's option labels and
+  any future badge reuse); the row no longer renders the status `Badge`.
 
 ### Decisions this child must not reopen
 
@@ -215,7 +237,7 @@ are stories 6–7.
   `pages/courses/ui/CourseDetailPage.tsx` (wiring only, if the settled
   announcement needs its own callback). Fixture-only changes: none
   expected — `status` already exists on `CourseAssignment`.
-- **Start context:** this file (`UI/UX gaps` + Tests), the SP-121 README
+- **Start context:** this file (`UI/UX decisions` + Tests), the SP-121 README
   contract, and A's implementation record for the live response shape. Do
   not read stories 6–7 or the full correction log.
 - **Verification:** `pnpm --filter @studypilot/web test -- src/entities/assignment src/features/courses/ui/AssignmentsSection.test.tsx src/pages/courses/ui/CourseDetailPage.test.tsx` passes. Then `pnpm --filter @studypilot/web typecheck` and `pnpm --filter @studypilot/web lint`.
