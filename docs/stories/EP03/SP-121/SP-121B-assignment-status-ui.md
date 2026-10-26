@@ -6,7 +6,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** Implemented — awaiting parent review (2026-10-26)
+**Status:** Reviewed 2026-10-26 (combined SP-121 review — [review](./artifacts/SP-121/review.md) · [walkthrough](./artifacts/SP-121/walkthrough.md))
 **Dependencies:** SP-121A implemented (met when A lands). No other blocker.
 **Jira key:** Pending creation
 **Refined:** 2026-10-26

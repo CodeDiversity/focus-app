@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-121](./SP-121-completion-and-status-tracking.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Plan Ready — children broken down 2026-10-26; implementation not started
+**Status:** Reviewed 2026-10-26 (combined parent review passed — [review](./artifacts/SP-121/review.md) · [walkthrough](./artifacts/SP-121/walkthrough.md)). Children A and B are `Reviewed`.
 **Jira key:** Pending creation (no sync authorized)
 
 ## Execution queue
@@ -14,9 +14,9 @@
 
 **Parent artifacts:** `./artifacts/SP-121/` (parent index written by B; review and walkthrough by the reviewer)
 
-**Active substory:** None (SP-121B implemented; both children done).
+**Active substory:** None (review unit complete).
 
-**Next substory:** **None** — both children implemented; combined SP-121 parent review is next (`./artifacts/SP-121/review.md`, `walkthrough.md`).
+**Next substory:** **None** — review unit complete (`Reviewed` 2026-10-26).
 
 **Implementation owner:** `implementer`, sequential across layers. Backend and frontend are scope labels, not concurrent writers.
 
@@ -24,8 +24,8 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-121A-assignment-status-api.md) | Implemented — awaiting parent review | SP-113/SP-114/SP-115 reviewed (satisfied 2026-10-25). SP-120 is implemented but is **not** a dependency (baseline note below) | None — included in the combined SP-121 review after B | [implementation.md](./artifacts/SP-121A/implementation.md), [checkpoint](./artifacts/SP-121A/checkpoint.md) |
-| [B](./SP-121B-assignment-status-ui.md) | Implemented — awaiting parent review | A implemented (satisfied 2026-10-26); UI/UX gaps settled 2026-10-26 | None — included in combined SP-121 review | [implementation.md](./artifacts/SP-121B/implementation.md), [checkpoint](./artifacts/SP-121B/checkpoint.md); parent index [artifacts/SP-121/implementation.md](./artifacts/SP-121/implementation.md) |
+| [A](./SP-121A-assignment-status-api.md) | Reviewed | SP-113/SP-114/SP-115 reviewed (satisfied 2026-10-25). SP-120 is implemented but is **not** a dependency (baseline note below) | None — review unit complete | [implementation.md](./artifacts/SP-121A/implementation.md), [checkpoint](./artifacts/SP-121A/checkpoint.md); [review](./artifacts/SP-121/review.md) · [walkthrough](./artifacts/SP-121/walkthrough.md) |
+| [B](./SP-121B-assignment-status-ui.md) | Reviewed | A implemented (satisfied 2026-10-26); UI/UX gaps settled 2026-10-26 | None — review unit complete | [implementation.md](./artifacts/SP-121B/implementation.md), [checkpoint](./artifacts/SP-121B/checkpoint.md); parent index [artifacts/SP-121/implementation.md](./artifacts/SP-121/implementation.md); [review](./artifacts/SP-121/review.md) · [walkthrough](./artifacts/SP-121/walkthrough.md) |
 
 Sequence: A → B, one writer, in child-letter order (D121-6). B owns the parent index and the DoD-10 browser note. There is no third integration story.
 
@@ -198,6 +198,11 @@ appended here with stable IDs and are never rewritten.)
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
 | PC-121-01 | 2026-10-26 | Medium | `docs/stories/EP03/README.md` Status line and Execution queue, SP-120 paragraphs | The epic-level queue still said SP-120 was Plan Ready with next substory SP-120I — implement, and SP-120J Needs refinement — after SP-120J was refined (2026-10-25) and both children were implemented (`5e65cfc`, `a1ec584`), and the combined review returned changes-required (IR-120-1/2, no code defect). | The EP03 README now records SP-120 as implemented with the combined review's changes-required outcome and open findings, citing the review report path; SP-121 is registered as the next planning unit. SP-120's own README and the reviewer's report are untouched (reviewer/coordinator-owned). | Compared `git log` (`5e65cfc`, `c7007db`, `a1ec584`), [SP-120 README](../SP-120/README.md) queue ("Implemented — awaiting parent review"), and the [SP-120 review report](../SP-120/artifacts/SP-120/review.md) (untracked) verdict "Changes required" against the rewritten paragraphs. | Fixed in plan |
+| IR-121-1 | 2026-10-26 | Should-fix | `apps/web/src/features/courses/ui/AssignmentsSection.test.tsx` | Pass-1 finding: missing frontend component tests for the status control flow (DoD 8; story B Tests list). | Implementer added 7 cases (render/options/aria-label, PATCH exactly `{ status }`, in-flight disable, finished removal + no DELETE, both empty states, failure toast, focus move). Committed `18bab0a5c6adf126bd4d495867e3d07114f4f972`. Statically verified in pass 2. | [review.md](./artifacts/SP-121/review.md) (pass 2) | Resolved |
+| IR-121-2 | 2026-10-26 | Should-fix | `apps/web/src/entities/assignment/api/assignmentApi.test.ts` | Pass-1 finding: missing status-through exact-body assertion. | Implementer added the `{ status: 'COMPLETED' }` exact-body case. Committed `18bab0a5c6adf126bd4d495867e3d07114f4f972`. Statically verified in pass 2. | [review.md](./artifacts/SP-121/review.md) (pass 2) | Resolved |
+| IR-121-3 | 2026-10-26 | Should-fix | `apps/web/src/pages/courses/ui/CourseDetailPage.test.tsx` | Pass-1 finding: missing status-wiring test (live-region sentence + background refetch). | Implementer added the wiring case. Committed `18bab0a5c6adf126bd4d495867e3d07114f4f972`. Statically verified in pass 2. | [review.md](./artifacts/SP-121/review.md) (pass 2) | Resolved |
+| IR-121-4 | 2026-10-26 | Should-fix | `apps/web/src/features/courses/ui/AssignmentsSection.tsx` (DoD-10) | Pass-1 finding: DoD-10 browser pass not executed (CANNOT VERIFY). | User executed all six steps on 2026-10-26 and confirmed pass; recorded in `artifacts/SP-121B/implementation.md` (DoD-10 note). | [review.md](./artifacts/SP-121/review.md) (pass 2) · [walkthrough.md](./artifacts/SP-121/walkthrough.md) | Resolved |
+| IR-121-5 | 2026-10-26 | Polish (optional) | `apps/web/src/features/courses/ui/AssignmentsSection.tsx` | Pass-1 finding (optional): status control hardcodes the lifecycle array instead of reusing `ASSIGNMENT_STATUSES`. | Remains open; non-blocking. No correction applied. | [review.md](./artifacts/SP-121/review.md) (pass 2) | Open (polish) |
 
 ## Quality gate (2026-10-26)
 

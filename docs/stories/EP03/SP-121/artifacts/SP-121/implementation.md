@@ -4,7 +4,7 @@
 **Integration/index owner:** SP-121B.
 **Baseline before first included change:** `0c6a619` (SP-121A start); this index
 covers both children.
-**Status:** both children implemented — awaiting combined parent review.
+**Status:** Reviewed 2026-10-26 (combined parent review passed).
 
 ## Children
 
