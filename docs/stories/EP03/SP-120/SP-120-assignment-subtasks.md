@@ -4,7 +4,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Covers epic proposed story:** 4 (implement assignment subtasks)
-**Status:** Plan Ready — children broken down 2026-10-25; implementation not started
+**Status:** Reviewed — the combined parent review passed 2026-10-26 ([review](./artifacts/SP-120/review.md) · [walkthrough](./artifacts/SP-120/walkthrough.md)); both children `Reviewed`
 **Jira key:** Pending creation (parent coordination record — no Jira issue; the children carry the tracker keys)
 
 ## Purpose
@@ -14,10 +14,10 @@ ticket. This parent owns AC-E03-03: "Assignments can contain ordered,
 independently completable subtasks."
 
 - [SP-120I](./SP-120I-subtask-api.md) — backend: nested subtask routes
-  under assignments, the course-detail projection, and API tests (Ready).
+  under assignments, the course-detail projection, and API tests (Reviewed).
 - [SP-120J](./SP-120J-subtask-ui.md) — frontend: the subtask checklist on
-  the course-detail assignment rows (Needs refinement — UI/UX gaps; owns
-  the parent index and DoD-10 browser note).
+  the course-detail assignment rows (Reviewed; owns the parent index and
+  DoD-10 browser note).
 
 ## Outcome
 

@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-120](./SP-120-assignment-subtasks.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Implemented — awaiting parent review (2026-10-25). I and J are implemented. Combined review has not happened.
+**Status:** Reviewed — the combined SP-120 parent review passed 2026-10-26 ([review](./artifacts/SP-120/review.md) · [walkthrough](./artifacts/SP-120/walkthrough.md)). IR-120-1 closed on the user's walkthrough report; IR-120-2 closed by reviewer-executed gates.
 **Jira key:** Pending creation (no sync authorized)
 
 ## Execution queue
@@ -14,9 +14,9 @@
 
 **Parent artifacts:** `./artifacts/SP-120/` (parent index written by J; review and walkthrough by the reviewer)
 
-**Active substory:** None (SP-120I and SP-120J implemented; awaiting the combined parent review).
+**Active substory:** None (SP-120 reviewed).
 
-**Next substory:** None — final parent review next. Index: [./artifacts/SP-120/implementation.md](./artifacts/SP-120/implementation.md). The user reported the DoD-10 browser walkthrough **passed** on 2026-10-26 (IR-120-1 attestation below). That is not reviewer closure and not `Reviewed`. IR-120-2 (independent automated gates) is still open.
+**Next substory:** None with reason — the SP-120 review unit is complete (both children `Reviewed`). Index: [./artifacts/SP-120/implementation.md](./artifacts/SP-120/implementation.md). Report: [./artifacts/SP-120/review.md](./artifacts/SP-120/review.md). Walkthrough: [./artifacts/SP-120/walkthrough.md](./artifacts/SP-120/walkthrough.md).
 
 **Implementation owner:** `implementer`, sequential across layers. Backend and frontend are scope labels, not concurrent writers.
 
@@ -24,8 +24,8 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [I](./SP-120I-subtask-api.md) | Implemented — awaiting parent review | SP-113/SP-114/SP-115 reviewed (satisfied 2026-10-25) | None (blocked on the combined parent review) | [implementation record](./artifacts/SP-120I/implementation.md) · [checkpoint](./artifacts/SP-120I/checkpoint.md) |
-| [J](./SP-120J-subtask-ui.md) | Implemented — awaiting parent review | I **implemented** (2026-10-25). UI/UX settled in the story file 2026-10-25. User reported the DoD-10 browser walkthrough passed 2026-10-26 (IR-120-1; not reviewer-verified) | None (blocked on the combined parent review; IR-120-2 still open) | [implementation record](./artifacts/SP-120J/implementation.md) · [checkpoint](./artifacts/SP-120J/checkpoint.md) |
+| [I](./SP-120I-subtask-api.md) | Reviewed | SP-113/SP-114/SP-115 reviewed (satisfied 2026-10-25) | Complete — no action | [implementation record](./artifacts/SP-120I/implementation.md) · [review](./artifacts/SP-120/review.md) |
+| [J](./SP-120J-subtask-ui.md) | Reviewed | I implemented (2026-10-25). User walkthrough report accepted 2026-10-26 (IR-120-1) | Complete — no action | [implementation record](./artifacts/SP-120J/implementation.md) · [review](./artifacts/SP-120/review.md) · [walkthrough](./artifacts/SP-120/walkthrough.md) |
 
 Sequence: I → J, one writer. J owns the parent index and the DoD-10 browser note. There is no third integration story.
 
@@ -201,8 +201,8 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
 
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
-| IR-120-1 | 2026-10-25 | Should-fix | [SP-120 review](./artifacts/SP-120/review.md) findings; J implementation DoD-10 note | The DoD-10 manual browser pass was not executed by the implementer or by the first combined review. Component tests are not a live browser pass. | 2026-10-26: the user reported the walkthrough **passed** ("SP-120 walkthru passed"). No environment, commit, or per-step observations were provided. J's implementation note still says the agent pass was not executed; that historical note is unchanged. | Not independently re-run here. Recorded as user-reported evidence only, same provenance class as SP-115 F-115H-1. Reviewer closure still requires the next review pass to accept this attestation against `a1ec584` (or a later commit). | User-reported — awaiting reviewer confirmation |
-| IR-120-2 | 2026-10-25 | Should-fix | [SP-120 review](./artifacts/SP-120/review.md) findings | The first combined review could not run the automated gates (shell denied). Implementer-recorded green results were not treated as a pass. | None. A user walkthrough report does not execute unit, data-scoping, e2e, typecheck, or lint. | Not run in this planning session. | Open |
+| IR-120-1 | 2026-10-25 | Should-fix | [SP-120 review](./artifacts/SP-120/review.md) findings; J implementation DoD-10 note | The DoD-10 manual browser pass was not executed by the implementer or by the first combined review. Component tests are not a live browser pass. | 2026-10-26: the user reported the walkthrough **passed** ("SP-120 walkthru passed"). No environment or per-step observations were provided. J's implementation note still says the agent pass was not executed; that historical note is unchanged. | Pass 2 accepted the user report against unchanged application code `a1ec584` (HEAD `dcb8273` is docs-only). Same provenance class as SP-115 F-115H-1. | Closed 2026-10-26 |
+| IR-120-2 | 2026-10-25 | Should-fix | [SP-120 review](./artifacts/SP-120/review.md) findings | The first combined review could not run the automated gates (shell denied). Implementer-recorded green results were not treated as a pass. | None in code. Pass 2 ran the I and J verification commands. | Reviewer-executed via a bounded helper, 2026-10-26: API unit 284 passed; DB-backed 134 passed, 0 skipped (includes `subtasks-e2e.spec.ts`); web 125 passed; API and web typecheck and lint exit 0. `apps/` unchanged since `a1ec584`. Commands and cwd are in the [pass-2 report](./artifacts/SP-120/review.md). | Closed 2026-10-26 |
 
 ## Quality gate (2026-10-25)
 

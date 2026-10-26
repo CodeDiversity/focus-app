@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1 (functional academic tracker)
 **Epic dependency:** EP02 (Semester & Course Management) — **complete 2026-10-23** (implemented + reviewed; queue at [docs/stories/EP02](../EP02/README.md#execution-queue)). EP03 implementation is **not blocked**.
-**Status:** Stories 1–3 are reviewed (SP-113 and SP-114, 2026-10-24; SP-115, 2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md) · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Story 4 → [SP-120](./SP-120/README.md) — **implemented 2026-10-25** (I and J); the combined review returned **changes required** 2026-10-25 (IR-120-1/2 — execution evidence only, no code defect; report at [SP-120 review](./SP-120/artifacts/SP-120/review.md), uncommitted). Story 5 → [SP-121](./SP-121/README.md) — **Plan Ready 2026-10-26** (A backend `Ready`, B frontend `Needs refinement` for ui-refiner). Stories 6–7 are not broken down. User scope (2026-10-25): story 3 — complete; story 4 — plan. User direction (2026-10-26): story 5 — plan; SP-121 children lettered from A and executed in alphabetical order A → B (D121-6).
+**Status:** Stories 1–3 are reviewed (SP-113 and SP-114, 2026-10-24; SP-115, 2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md) · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Story 4 → [SP-120](./SP-120/README.md) — **Reviewed 2026-10-26** ([review](./SP-120/artifacts/SP-120/review.md) · [walkthrough](./SP-120/artifacts/SP-120/walkthrough.md)). Story 5 → [SP-121](./SP-121/README.md) — **Plan Ready 2026-10-26** (A backend `Ready`, B frontend `Needs refinement` for ui-refiner). Stories 6–7 are not broken down. User scope (2026-10-25): story 3 — complete; story 4 — plan. User direction (2026-10-26): story 5 — plan; SP-121 children lettered from A and executed in alphabetical order A → B (D121-6).
 
 ## Code baseline (2026-10-24)
 
@@ -24,7 +24,7 @@ The 2026-10-24 bullets above are the SP-113 planning baseline. They are not the 
 | [SP-113](./SP-113/README.md) | 1. Implement quick assignment creation | [3 children](./SP-113/README.md) (A backend, B frontend, C integration) — reviewed 2026-10-24 | Pending creation |
 | [SP-114](./SP-114/README.md) | 2. Implement assignment editing and deletion | [3 children](./SP-114/README.md) (D backend, E frontend, F integration) — reviewed 2026-10-24 | Pending creation |
 | [SP-115](./SP-115/README.md) | 3. Add assignment types, deadlines, and priority | [2 children](./SP-115/README.md) (G backend, H frontend) — **Reviewed 2026-10-25**. Deadlines and priority shipped in SP-113; this parent owned the `type` column. | Pending creation |
-| [SP-120](./SP-120/README.md) | 4. Implement assignment subtasks | [2 children](./SP-120/README.md) (I backend, J frontend) — **implemented 2026-10-25**; combined review changes-required (IR-120-1/2, no code defect). Uses the existing `Task` model as subtasks (D120-1 — no migration). | Pending creation |
+| [SP-120](./SP-120/README.md) | 4. Implement assignment subtasks | [2 children](./SP-120/README.md) (I backend, J frontend) — **Reviewed 2026-10-26**. Uses the existing `Task` model as subtasks (D120-1 — no migration). | Pending creation |
 | [SP-121](./SP-121/README.md) | 5. Implement completion and status tracking | [2 children](./SP-121/README.md) (A backend, B frontend) — **Plan Ready 2026-10-26**. A is `Ready`; B is `Needs refinement` (ui-refiner). Children lettered from A per user direction 2026-10-26 (D121-6). | Pending creation |
 | — | 6. Implement assignment search, sorting, and filters | Not yet broken down (planned later) | — |
 | — | 7. Implement overdue and completed assignment views | Not yet broken down (planned later) | — |
@@ -60,17 +60,11 @@ SP-115 is reviewed (2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md)
 · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Its queue's next
 substory is None with reason: the review unit is complete.
 
-SP-120 is **implemented** (2026-10-25 — I `5e65cfc`, J `a1ec584`; [breakdown](./SP-120/README.md)).
-Its queue's next substory is None — the final parent review is next. The
-combined review returned **changes required** (2026-10-25 — [report](./SP-120/artifacts/SP-120/review.md),
-uncommitted): IR-120-1 (the DoD-10 browser pass was not executed) and
-IR-120-2 (the automated gates were not independently run); no code defect
-was found, and no implementer code change is assigned. On 2026-10-26 the
-user reported the browser walkthrough **passed** (IR-120-1 attestation in
-the [SP-120 correction log](./SP-120/README.md#plan-correction-log); not
-reviewer-verified; environment and per-step results were not provided).
-IR-120-2 remains open, so SP-120 is not `Reviewed`. SP-121 does not
-depend on SP-120.
+SP-120 is **Reviewed** (2026-10-26 — [review](./SP-120/artifacts/SP-120/review.md)
+· [walkthrough](./SP-120/artifacts/SP-120/walkthrough.md); [breakdown](./SP-120/README.md)).
+Its queue's next substory is None with reason: the review unit is complete.
+IR-120-1 and IR-120-2 are closed in that report. SP-121 does not depend on
+SP-120.
 
 SP-121 is **Plan Ready** (2026-10-26 — [breakdown](./SP-121/README.md)). Its
 queue's next substory is **SP-121A — implement** (backend; no blocker).

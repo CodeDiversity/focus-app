@@ -7,7 +7,7 @@
 **Milestone:** M1
 **Layer:** Frontend
 **Refined:** 2026-10-25 (ui-refiner — UI/UX gaps settled in `Decisions` below)
-**Status:** Implementation complete — awaiting parent review. Checkpoint: [./artifacts/SP-120J/checkpoint.md](./artifacts/SP-120J/checkpoint.md). Record: [./artifacts/SP-120J/implementation.md](./artifacts/SP-120J/implementation.md).
+**Status:** Reviewed (2026-10-26) — [parent review](./artifacts/SP-120/review.md) · [walkthrough](./artifacts/SP-120/walkthrough.md). Checkpoint: [./artifacts/SP-120J/checkpoint.md](./artifacts/SP-120J/checkpoint.md). Record: [./artifacts/SP-120J/implementation.md](./artifacts/SP-120J/implementation.md).
 **Dependencies:** SP-120I implemented (2026-10-25 — [implementation record](./artifacts/SP-120I/implementation.md)) — met. No remaining pre-code UI gate.
 **Jira key:** Pending creation
 
