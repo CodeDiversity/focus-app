@@ -21,6 +21,36 @@ export function isFinishedAssignment(
   return !isUnfinishedAssignment(value);
 }
 
+/**
+ * SP-123A / D123-1, D123-2: overdue identification. An assignment is overdue
+ * iff it is unfinished (`PENDING` or `IN_PROGRESS`, reused via
+ * `isUnfinishedAssignment`) AND has a non-null `dueDate` whose timestamp is
+ * strictly before `now` (defaulting to the current time). No end-of-day grace.
+ *
+ * Accepts any object carrying `status` and `dueDate` (e.g. `CourseAssignment`,
+ * `AssignmentListItem`), so both surfaces call it without reshaping. `now` may
+ * be a `Date`, epoch millis, or ISO string for deterministic tests.
+ */
+export function isOverdueAssignment(
+  value: { status: AssignmentStatus; dueDate: string | Date | null },
+  now?: Date | number | string
+): boolean {
+  if (!isUnfinishedAssignment(value)) return false;
+  if (value.dueDate === null) return false;
+  const due =
+    value.dueDate instanceof Date ? value.dueDate.getTime() : new Date(value.dueDate).getTime();
+  if (Number.isNaN(due)) return false;
+  const nowMs =
+    now === undefined
+      ? Date.now()
+      : now instanceof Date
+        ? now.getTime()
+        : typeof now === 'number'
+          ? now
+          : new Date(now).getTime();
+  return due < nowMs;
+}
+
 /** Lifecycle order used by the status Select (D121-2). */
 export const ASSIGNMENT_STATUSES: readonly AssignmentStatus[] = [
   'PENDING',

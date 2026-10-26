@@ -25,8 +25,11 @@ import {
   PRIORITY_LABELS,
   TYPE_STYLE,
   TYPE_LABELS,
+  OVERDUE_STYLE,
+  OVERDUE_LABEL,
   subtaskSummary,
 } from '@/features/courses/ui/AssignmentsSection';
+import { isOverdueAssignment } from '@/entities/assignment/model/status';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 
 const STATUS_OPTIONS: AssignmentStatus[] = [
@@ -404,9 +407,23 @@ export function AssignmentsPage() {
                         a.dueDate === null ? 'text-secondary-500' : 'text-secondary-600'
                       )}
                     >
-                      {a.dueDate === null
-                        ? 'No due date'
-                        : `Due ${formatDate(new Date(a.dueDate), timeZone)}`}
+                      {a.dueDate === null ? (
+                        'No due date'
+                      ) : (
+                        <>
+                          {`Due ${formatDate(new Date(a.dueDate), timeZone)}`}
+                          {isOverdueAssignment(a) && (
+                            <span
+                              className={clsx(
+                                'ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                                OVERDUE_STYLE
+                              )}
+                            >
+                              {OVERDUE_LABEL}
+                            </span>
+                          )}
+                        </>
+                      )}
                     </p>
                     <div className="mt-1 flex items-center gap-2 text-sm text-secondary-600">
                       {course ? (

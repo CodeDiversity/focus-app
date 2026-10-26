@@ -9,7 +9,7 @@ import { DeleteAssignmentDialog } from './DeleteAssignmentDialog';
 import { SubtaskChecklist, type SubtaskChangeAction } from './SubtaskChecklist';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 import { updateAssignment } from '@/entities/assignment/api/assignmentApi';
-import { isUnfinishedAssignment } from '@/entities/assignment/model/status';
+import { isUnfinishedAssignment, isOverdueAssignment } from '@/entities/assignment/model/status';
 import type {
   AssignmentPriority,
   AssignmentStatus,
@@ -96,6 +96,10 @@ export const PRIORITY_LABELS: Record<AssignmentPriority, string> = {
  * category is not a category (SP-115, refined 2026-10-25).
  */
 export const TYPE_STYLE = 'bg-slate-100 text-slate-700';
+
+/** Overdue pill palette (SP-123A, D123A-3): red text-plus-color pill. */
+export const OVERDUE_STYLE = 'bg-red-100 text-red-700';
+export const OVERDUE_LABEL = 'Overdue';
 
 export const TYPE_LABELS: Record<AssignmentType, string> = {
   HOMEWORK: 'Homework',
@@ -347,9 +351,23 @@ export function AssignmentsSection({
                       assignment.dueDate === null ? 'text-secondary-500' : 'text-secondary-600'
                     )}
                   >
-                    {assignment.dueDate === null
-                      ? 'No due date'
-                      : `Due ${formatDate(new Date(assignment.dueDate), timeZone)}`}
+                    {assignment.dueDate === null ? (
+                      'No due date'
+                    ) : (
+                      <>
+                        {`Due ${formatDate(new Date(assignment.dueDate), timeZone)}`}
+                        {isOverdueAssignment(assignment) && (
+                          <span
+                            className={clsx(
+                              'ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                              OVERDUE_STYLE
+                            )}
+                          >
+                            {OVERDUE_LABEL}
+                          </span>
+                        )}
+                      </>
+                    )}
                   </p>
                   <Button
                     type="button"
