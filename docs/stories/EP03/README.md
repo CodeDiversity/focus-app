@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1 (functional academic tracker)
 **Epic dependency:** EP02 (Semester & Course Management) — **complete 2026-10-23** (implemented + reviewed; queue at [docs/stories/EP02](../EP02/README.md#execution-queue)). EP03 implementation is **not blocked**.
-**Status:** Stories 1–2 are reviewed (SP-113 and SP-114, 2026-10-24). Story 3 → [SP-115](./SP-115/README.md) — **Reviewed 2026-10-25** ([review](./SP-115/artifacts/SP-115/review.md) · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)); the optional `type` field shipped (deadlines and priority shipped in SP-113). Stories 4–7 are not broken down. User scope (2026-10-25): story 3 — complete.
+**Status:** Stories 1–3 are reviewed (SP-113 and SP-114, 2026-10-24; SP-115, 2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md) · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Story 4 → [SP-120](./SP-120/README.md) — **Plan Ready 2026-10-25** (I backend `Ready`, J frontend `Needs refinement` for ui-refiner). Stories 5–7 are not broken down. User scope (2026-10-25): story 3 — complete; story 4 — plan.
 
 ## Code baseline (2026-10-24)
 
@@ -24,12 +24,12 @@ The 2026-10-24 bullets above are the SP-113 planning baseline. They are not the 
 | [SP-113](./SP-113/README.md) | 1. Implement quick assignment creation | [3 children](./SP-113/README.md) (A backend, B frontend, C integration) — reviewed 2026-10-24 | Pending creation |
 | [SP-114](./SP-114/README.md) | 2. Implement assignment editing and deletion | [3 children](./SP-114/README.md) (D backend, E frontend, F integration) — reviewed 2026-10-24 | Pending creation |
 | [SP-115](./SP-115/README.md) | 3. Add assignment types, deadlines, and priority | [2 children](./SP-115/README.md) (G backend, H frontend) — **Reviewed 2026-10-25**. Deadlines and priority shipped in SP-113; this parent owned the `type` column. | Pending creation |
-| — | 4. Implement assignment subtasks | Not yet broken down (planned later) | — |
+| [SP-120](./SP-120/README.md) | 4. Implement assignment subtasks | [2 children](./SP-120/README.md) (I backend, J frontend) — **Plan Ready 2026-10-25**. I is `Ready`; J is `Needs refinement` (ui-refiner). Uses the existing `Task` model as subtasks (D120-1 — no migration). | Pending creation |
 | — | 5. Implement completion and status tracking | Not yet broken down (planned later) | — |
 | — | 6. Implement assignment search, sorting, and filters | Not yet broken down (planned later) | — |
 | — | 7. Implement overdue and completed assignment views | Not yet broken down (planned later) | — |
 
-Anticipated IDs for stories 4–7 are SP-120…SP-123 until those stories are
+Anticipated IDs for stories 5–7 are SP-121…SP-123 until those stories are
 broken down. (SP-116…SP-119 were consumed by EP09's E2E automation:
 SP-116/117/118 implemented, SP-119 the dedicated-test-database infra story.)
 IDs may shift if a proposed story splits.
@@ -40,7 +40,7 @@ IDs may shift if a proposed story splits.
 |---|---|---|
 | Students can create an assignment with a title and course. | AC-E03-01 | **SP-113** A/B/C. |
 | Optional fields include due date, estimated duration, type, and priority. | AC-E03-02 | **SP-113** (due date, estimated duration, priority) + **SP-115** (the `type` column — G API, H UI). |
-| Assignments can contain ordered, independently completable subtasks. | AC-E03-03 | Story 4 (TBD). |
+| Assignments can contain ordered, independently completable subtasks. | AC-E03-03 | **SP-120** I (API) / J (UI). |
 | Students can update assignment status. | AC-E03-04 | Story 5 (TBD). |
 | Completing an assignment removes it from unfinished-work views without deleting it. | AC-E03-05 | Stories 5 + 7 (TBD). |
 | Overdue work is identified from the deadline and completion status. | AC-E03-06 | Story 7 (TBD). |
@@ -48,7 +48,7 @@ IDs may shift if a proposed story splits.
 
 The epic defines no test requirements. Story-level test obligations are owned
 per child in the [SP-113](./SP-113/README.md), [SP-114](./SP-114/README.md),
-and [SP-115](./SP-115/README.md) breakdowns.
+[SP-115](./SP-115/README.md), and [SP-120](./SP-120/README.md) breakdowns.
 
 ## Execution queue
 
@@ -58,6 +58,20 @@ substory. Do not restart them.
 SP-115 is reviewed (2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md)
 · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Its queue's next
 substory is None with reason: the review unit is complete.
+
+SP-120 is **Plan Ready** (2026-10-25 — [breakdown](./SP-120/README.md)). Its
+queue's next substory is **SP-120I — implement** (backend; no blocker). SP-120J
+is `Needs refinement`: run the `ui-refiner` agent on SP-120J before code.
+
+## Quality gate — SP-120 plan (2026-10-25)
+
+**Plan Ready** — D120-1 (use the existing `Task` model — no migration) is
+grounded in the existing schema relation + D114-4 + the service code
+comments; D120-2…8 are planner-recorded (grounded, reversible). J is
+`Needs refinement` for UI/UX (ui-refiner handoff). Implementation of I is
+not blocked (SP-113/SP-114/SP-115 reviewed). Full gate table:
+[SP-120 README](./SP-120/README.md#quality-gate-2026-10-25). No Jira sync was
+authorized for this planning task; all SP-120 keys are `Pending creation`.
 
 ## Quality gate — SP-115 plan (2026-10-25)
 
