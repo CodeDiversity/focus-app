@@ -38,7 +38,26 @@ type CourseWithSemesterRow = {
 const SEMESTER_PROJECTION = { semester: { select: { id: true, name: true } } } as const;
 
 /**
- * A `assignments` row as stored (the model's scalar fields).
+ * A `Task` row as joined under an assignment in the detail include
+ * (SP-120I, D120-1/D120-5).
+ */
+type SubtaskRow = {
+  id: string;
+  title: string;
+  status: string;
+  orderIndex: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+/**
+ * The read-only `Assignment` projection for the detail route (SP-112A,
+ * D112-3): the frontend `Assignment` type minus the nested `course` —
+ * `dueDate` ISO-serialized (EP03 owns date semantics); `userId`/`courseId`
+ * are never exposed.  Management stays with EP03 (D112-6).  SP-120I
+ * (D120-5): every assignment carries its ordered `subtasks`.  Joined with
+ * its subtask rows as the detail include returns it (the scalars plus
+ * `tasks`).
  */
 type AssignmentRow = {
   id: string;
@@ -52,14 +71,32 @@ type AssignmentRow = {
   type: string | null; // SP-115G (D115-4)
   createdAt: Date;
   updatedAt: Date;
+  tasks: SubtaskRow[]; // SP-120I (D120-5): the owned subtask rows.
 };
 
 /**
- * The read-only `Assignment` projection for the detail route (SP-112A,
- * D112-3): the frontend `Assignment` type minus the nested `course` —
- * `dueDate` ISO-serialized (EP03 owns date semantics); `userId`/`courseId`
- * are never exposed.  Management stays with EP03 (D112-6).
+ * The 6-key subtask projection for the course-detail checklist (SP-120I,
+ * D120-3/D120-5): `userId`/`assignmentId` and the unused Task fields are
+ * never exposed. Mirrors the assignments module's subtask projection shape.
  */
+function toSubtaskResponse(row: {
+  id: string;
+  title: string;
+  status: string;
+  orderIndex: number;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: row.id,
+    title: row.title,
+    status: row.status,
+    orderIndex: row.orderIndex,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
 function toAssignmentResponse(assignment: AssignmentRow) {
   return {
     id: assignment.id,
@@ -73,6 +110,7 @@ function toAssignmentResponse(assignment: AssignmentRow) {
     type: assignment.type, // SP-115G (D115-4): `type` after `priority`.
     createdAt: assignment.createdAt.toISOString(),
     updatedAt: assignment.updatedAt.toISOString(),
+    subtasks: assignment.tasks.map((task) => toSubtaskResponse(task)),
   };
 }
 
@@ -256,7 +294,8 @@ export class CoursesService {
    * the SP-112A detail projections (D112-3): `meetings` (ordered `dayOfWeek`
    * asc, then `startTime` asc) and `assignments` (read-only, ordered
    * `dueDate` asc (PostgreSQL places null deadlines last) —
-   * then `title` asc).  A missing id or another student's id → uniform 404
+   * then `title` asc), each carrying its ordered `subtasks` (SP-120I,
+   * D120-5).  A missing id or another student's id → uniform 404
    * `Resource not found` (the ownership predicate is in the query; both
    * cases are indistinguishable to the caller — no existence oracle).  The
    * **list** route stays light (`CourseWithSemester` only, no nested
@@ -268,7 +307,18 @@ export class CoursesService {
       include: {
         semester: { select: { id: true, name: true } },
         meetings: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
-        assignments: { where: { userId }, orderBy: [{ dueDate: 'asc' }, { title: 'asc' }] },
+        assignments: {
+          where: { userId },
+          orderBy: [{ dueDate: 'asc' }, { title: 'asc' }],
+          // SP-120I (D120-5): the subtask rows — scoped to the course
+          // owner, ordered `orderIndex` asc then `createdAt` asc (D120-7).
+          include: {
+            tasks: {
+              where: { userId },
+              orderBy: [{ orderIndex: 'asc' }, { createdAt: 'asc' }],
+            },
+          },
+        },
       },
     });
     if (!row) {

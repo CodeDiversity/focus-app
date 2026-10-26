@@ -92,7 +92,9 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
     });
     expect(row).toMatchObject({ userId: students[0].id, courseId: students[0].courseId });
     const projection = await detail(0).expect(200);
-    expect(projection.body.assignments).toContainEqual(created.body);
+    // SP-120I (D120-5): the projected assignment now carries its `subtasks`
+    // (none exist yet), so the round-trip compares against that contract.
+    expect(projection.body.assignments).toContainEqual({ ...created.body, subtasks: [] });
   });
 
   it.each([undefined, null])(
@@ -141,7 +143,10 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
     const b = await post(0, { title: 'Z undated', courseId: students[0].courseId }).expect(201);
     const a = await post(0, { title: 'A undated', courseId: students[0].courseId }).expect(201);
     const projection = await detail(0).expect(200);
-    expect(projection.body.assignments.slice(-2)).toEqual([a.body, b.body]);
+    expect(projection.body.assignments.slice(-2)).toEqual([
+      { ...a.body, subtasks: [] }, // D120-5: every projected assignment carries subtasks
+      { ...b.body, subtasks: [] },
+    ]);
     const other = await detail(1).expect(200);
     expect(other.body.assignments).toEqual([]);
     const forbidden = await detail(1, students[0].courseId).expect(404);
@@ -249,7 +254,7 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
       description: 'Original',
     });
     const projection = await detail(0).expect(200);
-    expect(projection.body.assignments).toContainEqual(response.body);
+    expect(projection.body.assignments).toContainEqual({ ...response.body, subtasks: [] }); // D120-5
   });
 
   it("PATCH '' clears the stored description; empty body and unknown fields 400 without writes", async () => {
@@ -357,5 +362,292 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
   it('unauthenticated PATCH/DELETE → 401 before writes', async () => {
     await agent.patch('/assignments/anything').send({ title: 'No auth' }).expect(401);
     await agent.delete('/assignments/anything').expect(401);
+  });
+});
+
+// ==================== subtasks (SP-120I, real HTTP/Postgres) ====================
+
+const SUBTASK_KEYS = ['id', 'title', 'status', 'orderIndex', 'createdAt', 'updatedAt'].sort();
+
+/**
+ * Ownership counterexamples for the nested subtask routes (SP-120I security
+ * table): the assignment gate answers uniformly before any subtask query,
+ * and every subtask read/write requires all of
+ * `{ id, userId, assignmentId }` to match.
+ */
+describeIntegration('Subtask route data scoping (SP-120I, real HTTP/Postgres)', () => {
+  let app: IntegrationApp;
+  let agent: ReturnType<IntegrationApp['request']>;
+  const students: {
+    id: string;
+    token: string;
+    targetId: string; // student a: owns the seeded subtask
+    otherId: string; // a second own assignment for the cross-assignment path
+  }[] = [];
+  const runId = uuid();
+
+  beforeAll(async () => {
+    app = await createIntegrationApp();
+    agent = app.request(app.app.getHttpAdapter().getInstance());
+    for (const label of ['a', 'b']) {
+      const email = `${label}.${runId}.subtask@studypilot-test.invalid`;
+      const password = `S3cure-${runId}`;
+      await agent
+        .post('/auth/register')
+        .send({ name: `Student ${label}`, email, password })
+        .expect(201);
+      const login = await agent.post('/auth/login').send({ email, password }).expect(200);
+      const student = { id: login.body.user.id, token: login.body.accessToken };
+      const createAssignment = (title: string) =>
+        agent
+          .post('/assignments')
+          .set('Authorization', `Bearer ${student.token}`)
+          .send({ title })
+          .expect(201);
+      const target = await createAssignment(`${label}: target assignment`);
+      const other = await createAssignment(`${label}: other assignment`);
+      const record = {
+        id: student.id,
+        token: student.token,
+        targetId: target.body.id,
+        otherId: other.body.id,
+      };
+      students.push(record);
+      // Student a holds one real subtask on the target (the attack fixture);
+      // student b holds none anywhere. (Seeded after the push: the helper
+      // resolves its token through the shared `students` array.)
+      if (label === 'a') {
+        await subtaskPost(0, record.targetId, { title: 'A subtask' }).expect(201);
+      }
+    }
+  }, 120_000);
+
+  afterAll(async () => {
+    if (!app) return;
+    await app.prisma.user.deleteMany({ where: { id: { in: students.map((s) => s.id) } } });
+    await app.app.close();
+  });
+
+  function subtaskGet(index: number, assignmentId: string) {
+    return agent
+      .get(`/assignments/${assignmentId}/subtasks`)
+      .set('Authorization', `Bearer ${students[index].token}`);
+  }
+  function subtaskPost(index: number, assignmentId: string, body: Record<string, unknown>) {
+    return agent
+      .post(`/assignments/${assignmentId}/subtasks`)
+      .set('Authorization', `Bearer ${students[index].token}`)
+      .send(body);
+  }
+  function subtaskPatch(
+    index: number,
+    assignmentId: string,
+    subtaskId: string,
+    body: Record<string, unknown>
+  ) {
+    return agent
+      .patch(`/assignments/${assignmentId}/subtasks/${subtaskId}`)
+      .set('Authorization', `Bearer ${students[index].token}`)
+      .send(body);
+  }
+  function subtaskDelete(index: number, assignmentId: string, subtaskId: string) {
+    return agent
+      .delete(`/assignments/${assignmentId}/subtasks/${subtaskId}`)
+      .set('Authorization', `Bearer ${students[index].token}`);
+  }
+
+  it('creates a clean 6-key projection and lists the appended order (AC-E03-03)', async () => {
+    const created = await subtaskPost(0, students[0].otherId, { title: '  Own subtask  ' }).expect(
+      201
+    );
+    expect(Object.keys(created.body).sort()).toEqual(SUBTASK_KEYS);
+    expect(created.body).toMatchObject({ title: 'Own subtask', status: 'PENDING', orderIndex: 0 });
+    expect(Number.isNaN(Date.parse(created.body.createdAt))).toBe(false);
+    // D120-3: ownership and parentage are never exposed.
+    expect(created.body).not.toHaveProperty('userId');
+    expect(created.body).not.toHaveProperty('assignmentId');
+    const explicit = await subtaskPost(0, students[0].otherId, {
+      title: 'Explicit slot',
+      orderIndex: 5,
+    }).expect(201);
+    expect(explicit.body).toMatchObject({ orderIndex: 5 });
+    const list = await subtaskGet(0, students[0].otherId).expect(200);
+    expect(list.body.map((s: { title: string }) => s.title)).toEqual([
+      'Own subtask',
+      'Explicit slot',
+    ]);
+  });
+
+  it('PATCH toggles status and reorders; DELETE removes only the subtask (204, no body)', async () => {
+    const created = await subtaskPost(0, students[0].otherId, { title: 'Patchable' }).expect(201);
+    const completed = await subtaskPatch(0, students[0].otherId, created.body.id, {
+      status: 'COMPLETED',
+    }).expect(200);
+    expect(completed.body).toMatchObject({ status: 'COMPLETED', title: 'Patchable' });
+    expect(completed.body).not.toHaveProperty('userId');
+    expect(
+      await app.prisma.task.findFirst({ where: { id: created.body.id, userId: students[0].id } })
+    ).toMatchObject({ status: 'COMPLETED', assignmentId: students[0].otherId });
+    await subtaskPatch(0, students[0].otherId, created.body.id, { orderIndex: 9 }).expect(200);
+    expect(
+      await app.prisma.task.findFirst({ where: { id: created.body.id, userId: students[0].id } })
+    ).toMatchObject({ orderIndex: 9, status: 'COMPLETED' });
+
+    const response = await subtaskDelete(0, students[0].otherId, created.body.id).expect(204);
+    expect(response.text).toBe('');
+    expect(await app.prisma.task.findFirst({ where: { id: created.body.id } })).toBeNull();
+    expect(
+      await app.prisma.assignment.findFirst({
+        where: ownedWhere(students[0].id, students[0].otherId),
+      })
+    ).not.toBeNull();
+  });
+
+  it.each<[string, unknown]>([
+    ['title', undefined],
+    ['title', null],
+    ['title', 42],
+    ['title', '  '],
+    ['title', 'x'.repeat(201)],
+    ['orderIndex', -1],
+    ['orderIndex', 2.5],
+    ['orderIndex', '2'],
+    ['status', 'COMPLETED'],
+    ['status', 'ARCHIVED'],
+    ['priority', 'HIGH'],
+    ['description', 'notes'],
+    ['dueDate', '2026-11-01T10:00:00Z'],
+    ['estimatedMinutes', 30],
+    ['actualMinutes', 30],
+    ['userId', 'other'],
+    ['assignmentId', 'elsewhere'],
+  ])('POST invalid/unknown %s=%p → field-level 400 without any write', async (field, value) => {
+    const target = students[0].targetId;
+    const before = await app.prisma.task.findMany({ where: { userId: students[0].id } });
+    const response = await subtaskPost(0, target, { title: 'Check', [field]: value }).expect(400);
+    expect(response.body.errors).toHaveProperty(field);
+    expect(Array.isArray(response.body.message)).toBe(true);
+    expect(await app.prisma.task.findMany({ where: { userId: students[0].id } })).toEqual(before);
+  });
+
+  it.each<[string, unknown]>([
+    ['title', '  '],
+    ['title', 'x'.repeat(201)],
+    ['orderIndex', -1],
+    ['orderIndex', 2.5],
+    ['orderIndex', '2'],
+    ['status', 'ARCHIVED'],
+    ['status', 'IN_PROGRESS'],
+    ['priority', 'HIGH'],
+    ['description', 'notes'],
+    ['userId', 'other'],
+    ['assignmentId', 'elsewhere'],
+  ])(
+    'PATCH invalid/unknown %s=%p → field-level 400, target row unchanged',
+    async (field, value) => {
+      const created = await subtaskPost(0, students[0].otherId, {
+        title: 'Valid',
+        orderIndex: 2,
+      }).expect(201);
+      const before = await app.prisma.task.findFirst({
+        where: { id: created.body.id, userId: students[0].id },
+      });
+      const response = await subtaskPatch(0, students[0].otherId, created.body.id, {
+        [field]: value,
+      }).expect(400);
+      expect(response.body.errors).toHaveProperty(field);
+      expect(
+        await app.prisma.task.findFirst({ where: { id: created.body.id, userId: students[0].id } })
+      ).toEqual(before);
+    }
+  );
+
+  it('empty PATCH body → 400 at-least-one', async () => {
+    const created = await subtaskPost(0, students[0].otherId, { title: 'Empty test' }).expect(201);
+    const response = await subtaskPatch(0, students[0].otherId, created.body.id, {}).expect(400);
+    expect(response.body.message).toBe('At least one field must be provided');
+  });
+
+  it('foreign/missing/malformed assignment id → uniform 404 on every route, rows unchanged', async () => {
+    const aTarget = students[0].targetId;
+    const aSubtask = await app.prisma.task.findFirst({ where: { userId: students[0].id } });
+    const before = await app.prisma.task.findMany({
+      where: { userId: { in: [students[0].id, students[1].id] } },
+      orderBy: { id: 'asc' },
+    });
+    for (const assignmentId of [aTarget, uuid(), 'not-an-id']) {
+      // (An empty path segment is a routing artifact — the Express router
+      // answers "Cannot GET" before the app's uniform 404; the empty-id
+      // ownership case is covered in assignments.service.spec.ts.)
+      const listed = await subtaskGet(1, assignmentId).expect(404);
+      expect(listed.body).toMatchObject({
+        statusCode: 404,
+        message: 'Resource not found',
+        error: 'Not Found',
+      });
+      await subtaskPost(1, assignmentId, { title: 'Blocked' }).expect(404);
+      await subtaskPatch(1, assignmentId, aSubtask!.id, { title: 'Hijack' }).expect(404);
+      await subtaskDelete(1, assignmentId, aSubtask!.id).expect(404);
+    }
+    expect(
+      await app.prisma.task.findMany({
+        where: { userId: { in: [students[0].id, students[1].id] } },
+        orderBy: { id: 'asc' },
+      })
+    ).toEqual(before);
+    // The legitimate target keeps its subtask.
+    const surviving = await subtaskGet(0, aTarget).expect(200);
+    expect(surviving.body).toHaveLength(1);
+  });
+
+  it("a foreign subtask id via the attacker's OWN assignment → uniform 404, row unchanged (D120-2 scope)", async () => {
+    const aTarget = students[0].targetId;
+    const aSubtasks = await subtaskGet(0, aTarget).expect(200);
+    const before = await app.prisma.task.findFirst({ where: { id: aSubtasks.body[0].id } });
+    const bOwn = students[1].otherId;
+    const patched = await subtaskPatch(1, bOwn, aSubtasks.body[0].id, {
+      title: 'Hijack',
+      status: 'COMPLETED', // a body value never bypasses ownership
+    }).expect(404);
+    expect(patched.body).toMatchObject({ message: 'Resource not found' });
+    const deleted = await subtaskDelete(1, bOwn, aSubtasks.body[0].id).expect(404);
+    expect(deleted.body.message).toBe('Resource not found');
+    expect(await app.prisma.task.findFirst({ where: { id: aSubtasks.body[0].id } })).toEqual(
+      before
+    );
+    // Student B's own assignment still holds zero subtasks.
+    const bListed = await subtaskGet(1, bOwn).expect(200);
+    expect(bListed.body).toEqual([]);
+  });
+
+  it("a student's own subtask under a different own assignment → uniform 404 (the scope triple)", async () => {
+    const created = await subtaskPost(0, students[0].targetId, { title: 'Unmovable' }).expect(201);
+    const before = await app.prisma.task.findFirst({
+      where: { id: created.body.id, userId: students[0].id },
+    });
+    // Same student, same subtask, wrong assignment id in the path.
+    await subtaskPatch(0, students[0].otherId, created.body.id, { title: 'Moved hoped' }).expect(
+      404
+    );
+    await subtaskDelete(0, students[0].otherId, created.body.id).expect(404);
+    expect(
+      await app.prisma.task.findFirst({ where: { id: created.body.id, userId: students[0].id } })
+    ).toEqual(before);
+    const listed = await subtaskGet(0, students[0].targetId).expect(200);
+    expect(listed.body).toHaveLength(2);
+  });
+
+  it('unauthenticated subtask routes → 401 before reads or writes', async () => {
+    const target = students[0].targetId;
+    const before = await app.prisma.task.count({ where: { userId: students[0].id } });
+    await agent.get(`/assignments/${target}/subtasks`).expect(401);
+    await agent.post(`/assignments/${target}/subtasks`).send({ title: 'No auth' }).expect(401);
+    await agent
+      .patch(`/assignments/${target}/subtasks/whatever`)
+      .send({ title: 'No auth' })
+      .expect(401);
+    await agent.delete(`/assignments/${target}/subtasks/whatever`).expect(401);
+    // Nothing was created by the anonymous attempts.
+    expect(await app.prisma.task.count({ where: { userId: students[0].id } })).toBe(before);
   });
 });

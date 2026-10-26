@@ -21,6 +21,12 @@ const ASSIGNMENT_KEYS = [
   'updatedAt',
 ].sort();
 
+/**
+ * The course-detail projection (SP-112A D112-3, extended by SP-120I D120-5):
+ * the direct assignment shape plus the ordered `subtasks` list.
+ */
+const PROJECTED_ASSIGNMENT_KEYS = Array.from(new Set([...ASSIGNMENT_KEYS, 'subtasks'])).sort();
+
 describeIntegration('quick assignment creation end-to-end (SP-113C, real database)', () => {
   interface Student {
     id: string;
@@ -140,7 +146,7 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
       type: 'EXAM',
     });
     const refetched = await detail(studentA, courseA).expect(HttpStatus.OK);
-    expect(refetched.body.assignments).toContainEqual(patched.body);
+    expect(refetched.body.assignments).toContainEqual({ ...patched.body, subtasks: [] }); // D120-5
   });
 
   it('creates without courseId or dueDate, with database defaults, but does not attach to a course', async () => {
@@ -189,7 +195,7 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
       omitted.body.id,
     ]);
     for (const row of response.body.assignments) {
-      expect(Object.keys(row).sort()).toEqual(ASSIGNMENT_KEYS);
+      expect(Object.keys(row).sort()).toEqual(PROJECTED_ASSIGNMENT_KEYS);
       expect(row.status).toBe('PENDING');
     }
   });
@@ -249,7 +255,7 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
       HttpStatus.CREATED
     );
     const projected = (await detail(studentB, courseB).expect(HttpStatus.OK)).body.assignments;
-    expect(projected).toEqual([own.body]);
+    expect(projected).toEqual([{ ...own.body, subtasks: [] }]); // D120-5
     expect(JSON.stringify(projected)).not.toContain('Problem set');
     expect(
       await app.prisma.assignment.findMany({
@@ -314,7 +320,7 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
     });
 
     const refetched = await detail(studentA, courseA).expect(HttpStatus.OK);
-    expect(refetched.body.assignments).toContainEqual(response.body);
+    expect(refetched.body.assignments).toContainEqual({ ...response.body, subtasks: [] }); // D120-5
   });
 
   it('DELETEs assignment (204), updates projection, and orphans child task with assignmentId null (AC 2, D114-4)', async () => {
@@ -392,7 +398,7 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
     );
 
     const refetchedA = await detail(studentA, courseA).expect(HttpStatus.OK);
-    expect(refetchedA.body.assignments).toContainEqual(created.body);
+    expect(refetchedA.body.assignments).toContainEqual({ ...created.body, subtasks: [] }); // D120-5
   });
 
   it.each([

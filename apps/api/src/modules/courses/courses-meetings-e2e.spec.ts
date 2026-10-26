@@ -77,7 +77,8 @@ const COURSE_DETAIL_KEYS = [
 /**
  * The exact read-only `Assignment` projection keys (SP-112A, D112-3): the
  * frontend `Assignment` type minus the nested `course` — `userId`/`courseId`
- * never exposed.
+ * never exposed.  SP-120I (D120-5): the projection gains the ordered
+ * `subtasks` array (12 keys).
  */
 const ASSIGNMENT_KEYS = [
   'actualHours',
@@ -88,6 +89,7 @@ const ASSIGNMENT_KEYS = [
   'id',
   'priority',
   'status',
+  'subtasks', // SP-120I (D120-5): the ordered 6-key subtask lists.
   'title',
   'type', // SP-115G (D115-4): the 11-key projection gains `type`.
   'updatedAt',
@@ -560,6 +562,7 @@ describeIntegration('class meetings + course detail end-to-end (real database, S
         status: 'PENDING', // the schema default
         priority: 'MEDIUM', // the schema default
         type: null, // the untyped seed stays nullable, no backfilled default (D115-4)
+        subtasks: [], // SP-120I (D120-5): no subtasks seeded → an empty list.
       });
       expect(projected).not.toHaveProperty('userId');
       expect(projected).not.toHaveProperty('courseId');

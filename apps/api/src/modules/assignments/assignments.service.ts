@@ -1,10 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { validateSync } from 'class-validator';
-import { Assignment, Prisma } from '../../generated/prisma/client';
-import { ownedWhere, RESOURCE_NOT_FOUND } from '../../common/ownership/ownership';
+import { Assignment, Prisma, TaskStatus } from '../../generated/prisma/client';
+import { ownedWhere, RESOURCE_NOT_FOUND, assertAffected } from '../../common/ownership/ownership';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { UpdateAssignmentDto } from './dto/update-assignment.dto';
+import { CreateSubtaskDto } from './dto/create-subtask.dto';
+import { UpdateSubtaskDto } from './dto/update-subtask.dto';
 
 function toAssignmentResponse(row: Assignment) {
   return {
@@ -17,6 +19,30 @@ function toAssignmentResponse(row: Assignment) {
     status: row.status,
     priority: row.priority,
     type: row.type, // SP-115G (D115-4): 11-key projection, `type` after `priority`.
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+/**
+ * The 6-key subtask projection (SP-120I, D120-3): the only fields the MVP
+ * checklist needs. `userId`/`assignmentId` are never exposed and the unused
+ * Task fields (`description`, `dueDate`, `estimatedMinutes`, `actualMinutes`,
+ * `priority`) are dropped — D120-3/D120-4 keep the lifecycle fields locked.
+ */
+function toSubtaskResponse(row: {
+  id: string;
+  title: string;
+  status: string;
+  orderIndex: number;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: row.id,
+    title: row.title,
+    status: row.status,
+    orderIndex: row.orderIndex,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -203,6 +229,217 @@ export class AssignmentsService {
       throw new NotFoundException(RESOURCE_NOT_FOUND);
     }
     await this.prisma.assignment.delete({ where: ownedWhere(userId, id) });
+  }
+
+  /**
+   * Ownership gate for the nested subtask routes (SP-120I, D120-2): every
+   * subtask read/write first verifies the assignment belongs to the
+   * requesting student. A missing, foreign, or malformed assignment id
+   * throws the uniform 404 `Resource not found` **before any subtask
+   * query runs** — no existence oracle.
+   */
+  private async assertAssignmentOwner(userId: string, id: string): Promise<void> {
+    const assignment = await this.prisma.assignment.findFirst({
+      where: ownedWhere(userId, id),
+      select: { id: true },
+    });
+    if (!assignment) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+  }
+
+  /**
+   * List the subtasks of one of the student's assignments (SP-120I, D120-2/3).
+   * Ordered `orderIndex` asc, then `createdAt` asc (the D120-7 order
+   * semantics: append-on-create, no automatic shifting). The response is
+   * the 6-key projection. Orphaned tasks (D114-4, `assignmentId: null`)
+   * are not `assignmentId = :id`, so they are never listed here (D120-6).
+   */
+  async listSubtasks(userId: string, assignmentId: string) {
+    await this.assertAssignmentOwner(userId, assignmentId);
+    const rows = await this.prisma.task.findMany({
+      where: { userId, assignmentId },
+      orderBy: [{ orderIndex: 'asc' }, { createdAt: 'asc' }],
+    });
+    return rows.map(toSubtaskResponse);
+  }
+
+  /**
+   * Create a subtask on one of the student's assignments (SP-120I).
+   *
+   * - Validation: the CreateSubtaskDto rules rerun here without coercion,
+   *   backend authoritative (the create pattern) — unknown fields are
+   *   rejected before any query or write.
+   * - Order (D120-7): omitted/null `orderIndex` appends at the end —
+   *   `max(orderIndex) + 1` over the assignment's subtasks, or 0 for the
+   *   first. An explicit `orderIndex` is stored as given (no shifting,
+   *   gaps allowed, ≥ 0).
+   * - Status: never taken from the client — the schema default `PENDING`
+   *   applies. Completion happens only through `PATCH` (D120-4).
+   * - The write is scoped `{ userId, assignmentId }`; the response is the
+   *   6-key projection.
+   */
+  async createSubtask(userId: string, assignmentId: string, dto: CreateSubtaskDto) {
+    this.assertSubtaskDto(dto);
+    await this.assertAssignmentOwner(userId, assignmentId);
+
+    let orderIndex: number;
+    if (dto.orderIndex != null) {
+      orderIndex = dto.orderIndex;
+    } else {
+      // Append at the end (D120-7). `has()`-style normalization: the DTO
+      // accepts an explicit null as omitted (D113 create pattern).
+      const aggregate = await this.prisma.task.aggregate({
+        where: { userId, assignmentId },
+        _max: { orderIndex: true },
+      });
+      orderIndex = (aggregate._max.orderIndex ?? -1) + 1;
+    }
+
+    const task = await this.prisma.task.create({
+      data: {
+        userId,
+        assignmentId,
+        title: dto.title.trim(),
+        // status/pr deliberately untouched: schema defaults (PENDING/MEDIUM).
+        orderIndex,
+      },
+    });
+    return toSubtaskResponse(task);
+  }
+
+  /**
+   * Partial-merge update of one subtask (SP-120I, D120-4/7) — the
+   * SP-114D pattern.
+   *
+   * - Ownership: the assignment gate first (uniform 404 before any
+   *   subtask query), then the subtask read/write is scoped
+   *   `{ id, userId, assignmentId }` — a subtask belonging to another
+   *   student or another assignment matches nothing → the same uniform 404.
+   * - At least one field must be provided (empty body → 400); explicit
+   *   nulls are treated as omitted (the stored value is kept).
+   * - Validation runs on the **merged** (post-patch) values: a patch of
+   *   one field is only legal against the stored row (a whitespace-only
+   *   title patch 400s even though the stored title was fine).
+   * - `status` accepts only `PENDING` | `COMPLETED` (D120-4). A stored row
+   *   outside that pair could fail the merged re-check — assignment-bound
+   *   subtasks are always created `PENDING` here, so this stays a
+   *   theoretical case (orphans are not surfaced, D120-6).
+   * - Response: the updated 6-key projection.
+   */
+  async updateSubtask(
+    userId: string,
+    assignmentId: string,
+    subtaskId: string,
+    dto: UpdateSubtaskDto
+  ) {
+    this.assertSubtaskPatchDto(dto);
+    await this.assertAssignmentOwner(userId, assignmentId);
+
+    // An explicit null is treated as omitted — normalize before merging.
+    const has = (value: unknown): boolean => value !== undefined && value !== null;
+    // At least one field (contract: "partial merge; at least one field") —
+    // checked before the subtask read so an empty body never queries.
+    if (!has(dto.title) && !has(dto.status) && !has(dto.orderIndex)) {
+      throw new BadRequestException('At least one field must be provided');
+    }
+
+    const subtask = await this.prisma.task.findFirst({
+      where: { id: subtaskId, userId, assignmentId },
+    });
+    if (!subtask) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+
+    const merged = Object.assign(new UpdateSubtaskDto(), {
+      title: has(dto.title) ? dto.title!.trim() : subtask.title,
+      status: has(dto.status) ? dto.status! : subtask.status,
+      orderIndex: has(dto.orderIndex) ? dto.orderIndex! : subtask.orderIndex,
+    });
+    this.assertSubtaskPatchDto(merged);
+
+    // Only the provided fields are written (partial merge).
+    const data: { title?: string; status?: TaskStatus; orderIndex?: number } = {};
+    if (has(dto.title)) {
+      data.title = merged.title!;
+    }
+    if (has(dto.status)) {
+      data.status = merged.status!;
+    }
+    if (has(dto.orderIndex)) {
+      data.orderIndex = merged.orderIndex!;
+    }
+
+    try {
+      const updated = await this.prisma.task.update({
+        where: { id: subtaskId, userId, assignmentId },
+        data,
+      });
+      return toSubtaskResponse(updated);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        // The target vanished (or was never this student's, on this
+        // assignment) between the read and the write — the same uniform 404.
+        throw new NotFoundException(RESOURCE_NOT_FOUND);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Delete one subtask (SP-120I). The assignment gate first (uniform 404
+   * before any subtask query), then a scoped `deleteMany` — the
+   * `where` requires all of `{ id, userId, assignmentId }`, so a foreign
+   * subtask id or a subtask on a different assignment affects no rows.
+   * A count of 0 is the uniform 404 (`assertAffected`) and the assignment
+   * itself is untouched.
+   */
+  async deleteSubtask(userId: string, assignmentId: string, subtaskId: string): Promise<void> {
+    await this.assertAssignmentOwner(userId, assignmentId);
+    const affected = await this.prisma.task.deleteMany({
+      where: { id: subtaskId, userId, assignmentId },
+    });
+    assertAffected(userId, affected.count);
+  }
+
+  /**
+   * Rerun the complete create-subtask DTO rules (whitelist +
+   * `forbidNonWhitelisted`) and throw the field-level 400 on any failure —
+   * one rule source, the create pattern.
+   */
+  private assertSubtaskDto(dto: CreateSubtaskDto): void {
+    const failures = validateSync(Object.assign(new CreateSubtaskDto(), dto), {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+    this.throwSubtaskFieldErrors(failures);
+  }
+
+  /**
+   * Rerun the complete update-subtask DTO rules (whitelist +
+   * `forbidNonWhitelisted`) on the requested or merged body and throw the
+   * field-level 400 on any failure (the SP-114D pattern).
+   */
+  private assertSubtaskPatchDto(dto: UpdateSubtaskDto): void {
+    const failures = validateSync(Object.assign(new UpdateSubtaskDto(), dto), {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+    this.throwSubtaskFieldErrors(failures);
+  }
+
+  private throwSubtaskFieldErrors(failures: { property: string; constraints?: object }[]): void {
+    if (failures.length) {
+      const errors = Object.fromEntries(
+        failures.map((failure) => [failure.property, Object.values(failure.constraints ?? {})])
+      );
+      throw new BadRequestException({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: Object.values(errors).flat(),
+        errors,
+      });
+    }
   }
 
   /**

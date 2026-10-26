@@ -95,13 +95,24 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
   ].sort();
 
   /**
-   * The SP-112A detail include (D112-3): the semester projection plus the
-   * two nested collections, each with its contract ordering.
+   * The SP-112A detail include (D112-3) with the SP-120I subtask join
+   * (D120-5): the semester projection plus the two nested collections,
+   * each with its contract ordering; every assignment also carries its
+   * owner-scoped, orderIndex-ordered `tasks`.
    */
   const DETAIL_PROJECTION = {
     semester: { select: { id: true, name: true } },
     meetings: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] },
-    assignments: { where: { userId: 'user-1' }, orderBy: [{ dueDate: 'asc' }, { title: 'asc' }] },
+    assignments: {
+      where: { userId: 'user-1' },
+      orderBy: [{ dueDate: 'asc' }, { title: 'asc' }],
+      include: {
+        tasks: {
+          where: { userId: 'user-1' },
+          orderBy: [{ orderIndex: 'asc' }, { createdAt: 'asc' }],
+        },
+      },
+    },
   };
 
   /**
@@ -577,6 +588,28 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
             type: 'EXAM', // SP-115G (D115-4): the 11-key projection includes type.
             createdAt: new Date('2026-10-18T12:00:00.000Z'),
             updatedAt: new Date('2026-10-18T12:00:00.000Z'),
+            tasks: [
+              {
+                id: 'task-2',
+                userId: 'user-1',
+                assignmentId: 'assignment-1',
+                title: 'Chapter 4 review',
+                status: 'COMPLETED',
+                orderIndex: 1,
+                createdAt: new Date('2026-10-20T09:00:00.000Z'),
+                updatedAt: new Date('2026-10-21T09:00:00.000Z'),
+              },
+              {
+                id: 'task-1',
+                userId: 'user-1',
+                assignmentId: 'assignment-1',
+                title: 'Problem set draft',
+                status: 'PENDING',
+                orderIndex: 0,
+                createdAt: new Date('2026-10-19T09:00:00.000Z'),
+                updatedAt: new Date('2026-10-19T09:00:00.000Z'),
+              },
+            ],
           },
         ],
       });
@@ -605,7 +638,9 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
       ]);
       // The read-only assignment projection: `dueDate` ISO-serialized, and
       // `userId`/`courseId`/the nested course are never exposed.  SP-115G
-      // (D115-4): `type` sits immediately after `priority`.
+      // (D115-4): `type` sits immediately after `priority`.  SP-120I
+      // (D120-5): the joined tasks land as the ordered 6-key `subtasks`
+      // array — the include's ordering is the contract (no re-sort).
       expect(result.assignments).toEqual([
         {
           id: 'assignment-1',
@@ -619,6 +654,24 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
           type: 'EXAM',
           createdAt: '2026-10-18T12:00:00.000Z',
           updatedAt: '2026-10-18T12:00:00.000Z',
+          subtasks: [
+            {
+              id: 'task-2',
+              title: 'Chapter 4 review',
+              status: 'COMPLETED',
+              orderIndex: 1,
+              createdAt: '2026-10-20T09:00:00.000Z',
+              updatedAt: '2026-10-21T09:00:00.000Z',
+            },
+            {
+              id: 'task-1',
+              title: 'Problem set draft',
+              status: 'PENDING',
+              orderIndex: 0,
+              createdAt: '2026-10-19T09:00:00.000Z',
+              updatedAt: '2026-10-19T09:00:00.000Z',
+            },
+          ],
         },
       ]);
       for (const meeting of result.meetings) {
@@ -628,6 +681,13 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
       for (const assignment of result.assignments) {
         expect(assignment).not.toHaveProperty('userId');
         expect(assignment).not.toHaveProperty('courseId');
+      }
+      // SP-120I (D120-3): the 6-key subtask projection never leaks ownership
+      // (`userId`/`assignmentId`) or the locked Task fields.
+      for (const subtask of result.assignments[0].subtasks) {
+        expect(Object.keys(subtask).sort()).toEqual(
+          ['createdAt', 'id', 'orderIndex', 'status', 'title', 'updatedAt'].sort()
+        );
       }
     });
 
@@ -650,13 +710,15 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
             type: null, // SP-115G: an untyped row projects `type: null` (D115-4).
             createdAt: new Date(),
             updatedAt: new Date(),
+            tasks: [], // SP-120I: an assignment with no subtasks projects [].
           },
         ],
       });
       const result = await service.get('user-1', 'course-1');
       expect(result.assignments[0].dueDate).toBeNull();
       expect(result.assignments[0].type).toBeNull();
-      expect(Object.keys(result.assignments[0])).toHaveLength(11);
+      expect(Object.keys(result.assignments[0])).toHaveLength(12); // 11 + subtasks (D120-5)
+      expect(result.assignments[0].subtasks).toEqual([]);
     });
 
     it('a missing id or another student id → uniform 404 (no existence oracle)', async () => {

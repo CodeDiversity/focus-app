@@ -14,9 +14,9 @@
 
 **Parent artifacts:** `./artifacts/SP-120/` (parent index written by J; review and walkthrough by the reviewer)
 
-**Active substory:** None (planning complete; implementation not started).
+**Active substory:** None (SP-120I implemented; awaiting the combined parent review after J).
 
-**Next substory:** **SP-120I** — implement (backend first; J waits on I's implementation and on a `ui-refiner` pass).
+**Next substory:** **SP-120J** — run `ui-refiner` on SP-120J, then implement it (I's contract is live: `./artifacts/SP-120I/implementation.md`).
 
 **Implementation owner:** `implementer`, sequential across layers. Backend and frontend are scope labels, not concurrent writers.
 
@@ -24,8 +24,8 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [I](./SP-120I-subtask-api.md) | Ready | SP-113/SP-114/SP-115 reviewed (satisfied 2026-10-25) | Implement | — |
-| [J](./SP-120J-subtask-ui.md) | Needs refinement | I implemented; UI/UX gaps must be settled by `ui-refiner` before code | Run `ui-refiner` on SP-120J, then implement | — |
+| [I](./SP-120I-subtask-api.md) | Implemented — awaiting parent review | SP-113/SP-114/SP-115 reviewed (satisfied 2026-10-25) | None (blocked on the combined parent review after J) | [implementation record](./artifacts/SP-120I/implementation.md) · [checkpoint](./artifacts/SP-120I/checkpoint.md) |
+| [J](./SP-120J-subtask-ui.md) | Needs refinement | I **implemented** (2026-10-25); UI/UX gaps must be settled by `ui-refiner` before code | Run `ui-refiner` on SP-120J, then implement | — |
 
 Sequence: I → J, one writer. J owns the parent index and the DoD-10 browser note. There is no third integration story.
 
