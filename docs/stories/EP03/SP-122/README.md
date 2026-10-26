@@ -3,17 +3,17 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-122](./SP-122-assignment-search-sorting-and-filters.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Planned 2026-10-26 — covers EP03 proposed story **6 (implement assignment search, sorting, and filters)**. **Plan Ready** (gate below). Implementation not blocked (SP-113/SP-114/SP-115/SP-120/SP-121 reviewed). No Jira sync authorized; keys are `Pending creation`.
+**Status:** Reviewed 2026-10-26 — SP-122 (A/B/C) meets the DoD and AC-E03-07; F122C-1 closed (pass 2); DoD-10 under D122C-1 exception; DoD-11 walkthrough saved. No Jira sync authorized; keys are `Pending creation`.
 **Jira key:** Pending creation (no sync authorized)
 
 ## Autopilot
 
 - **Scope and entry:** SP-122 parent review unit (children SP-122A/B/C). Entry hint: implement SP-122A. No explicit narrower limit; continue through final parent review.
 - **Coordinator:** workspace `/Users/michael/Documents/GitHub/focus-app`, branch `main`, baseline commit `e0a1722` (SP-122 plan). Retain this baseline until the parent implementation index owns the combined scope.
-- **Stage:** review (all children implemented; combined parent review next)
-- **Active dispatch:** None (SP-122C implemented; parent index written).
-- **Last result / retry state:** Planner correction `440ff2a` revised D122-5/contract to enum-ordinal (resolving F122C-1 in plan). Reviewer closure still pending. DoD-10 manual pass remains outstanding (D122C-1).
-- **Resume:** Request a fresh combined parent review against corrected files. Current next action: **SP-122 parent review (re-pass)**.
+- **Stage:** complete (parent review passed 2026-10-26; SP-122A/B/C Reviewed).
+- **Active dispatch:** None (SP-122 parent review passed; walkthrough saved).
+- **Last result / retry state:** Planner correction `440ff2a` revised D122-5/contract to enum-ordinal (resolving F122C-1 in plan); reviewer closed F122C-1 in pass 2. DoD-10 manual browser pass remains outstanding under D122C-1 exception (user). DoD-11 walkthrough saved at `./artifacts/SP-122/walkthrough.md`.
+- **Resume:** None — SP-122 complete. Next actionable work is outside this parent (story 7 / EP05, or other queued parents).
 
 ## Execution queue
 
@@ -23,9 +23,9 @@
 
 **Parent artifacts:** `./artifacts/SP-122/` (parent index written by C; review and walkthrough by the reviewer)
 
-**Active substory:** None (SP-122A, SP-122B and SP-122C implemented; awaiting combined parent review).
+**Active substory:** None (SP-122A, SP-122B and SP-122C reviewed; parent review passed 2026-10-26).
 
-**Next substory:** **None** — all children implemented; combined SP-122 parent review next.
+**Next substory:** **None** — all children reviewed; SP-122 complete (DoD-10 under D122C-1 exception; manual browser pass outstanding for user).
 
 **Implementation owner:** `implementer`, sequential across layers. Backend and frontend are scope labels, not concurrent writers.
 
@@ -33,9 +33,9 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-122A-assignment-list-api.md) | Implemented — awaiting parent review | SP-113A/SP-114D/SP-115G reviewed (satisfied 2026-10-24/25); SP-121 reviewed (satisfied 2026-10-26) | Parent review after B/C | checkpoint: `./artifacts/SP-122A/checkpoint.md`; implementation: `./artifacts/SP-122A/implementation.md` |
-| [B](./SP-122B-assignment-list-ui.md) | Implemented — awaiting parent review | A implemented (contract fixed in this README); UI/UX settled 2026-10-26 (ui-refiner; D122B-1…D122B-10) | Parent review after C | checkpoint: `./artifacts/SP-122B/checkpoint.md`; implementation: `./artifacts/SP-122B/implementation.md` |
-| [C](./SP-122C-assignment-list-integration.md) | Implemented — awaiting parent review | A and B implemented | Parent review after C | checkpoint: `./artifacts/SP-122C/checkpoint.md`; implementation: `./artifacts/SP-122C/implementation.md`; parent index: `./artifacts/SP-122/implementation.md` |
+| [A](./SP-122A-assignment-list-api.md) | Reviewed | SP-113A/SP-114D/SP-115G reviewed (satisfied 2026-10-24/25); SP-121 reviewed (satisfied 2026-10-26) | None — parent review passed 2026-10-26 | checkpoint: `./artifacts/SP-122A/checkpoint.md`; implementation: `./artifacts/SP-122A/implementation.md`; review: `./artifacts/SP-122/review.md` (pass 2); walkthrough: `./artifacts/SP-122/walkthrough.md` |
+| [B](./SP-122B-assignment-list-ui.md) | Reviewed | A implemented (contract fixed in this README); UI/UX settled 2026-10-26 (ui-refiner; D122B-1…D122B-10) | None — parent review passed 2026-10-26 | checkpoint: `./artifacts/SP-122B/checkpoint.md`; implementation: `./artifacts/SP-122B/implementation.md`; review: `./artifacts/SP-122/review.md` (pass 2); walkthrough: `./artifacts/SP-122/walkthrough.md` |
+| [C](./SP-122C-assignment-list-integration.md) | Reviewed | A and B implemented | None — parent review passed 2026-10-26 | checkpoint: `./artifacts/SP-122C/checkpoint.md`; implementation: `./artifacts/SP-122C/implementation.md`; parent index: `./artifacts/SP-122/implementation.md`; review: `./artifacts/SP-122/review.md` (pass 2); walkthrough: `./artifacts/SP-122/walkthrough.md` |
 
 Sequence: A → B → C, one writer, in child-letter order. B owns the assignments list page and the entity API function. C is the named integration owner (e2e + DoD-10 browser note + parent index).
 
@@ -202,7 +202,7 @@ with stable IDs and are never rewritten.)
 
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
-| F122C-1 | 2026-10-26 | Should-fix | `docs/stories/EP03/SP-122/README.md` D122-5 and Shared API Contract sort line; `apps/api/src/modules/assignments/assignments.service.ts` `list()` `orderBy` (implementation, unchanged); `assignments-list-e2e.spec.ts` sort expectations | Reviewer finding F122C-1: D122-5 documented "stored enum string" while the implementation sorts Postgres enum columns by declaration ordinal (LOW→MEDIUM→HIGH→URGENT / PENDING→IN_PROGRESS→COMPLETED→SUBMITTED→GRADED). E2e expectations were adjusted to ordinal and pass. Contract, implementation, and tests disagreed on what "priority/status asc" means. | Revised D122-5 and the Shared API Contract sort line to state priority/status sort by enum declaration order (Postgres ordinal), not lexicographic text order and not a severity rank; updated SP-122A D122-5/AC7/contract notes and SP-122C contract notes to match. Docs only — no application code changed. E2e test comments should reference revised D122-5 rather than F122C-1. | Cross-file comparison: README D122-5 ↔ Shared API Contract sort line ↔ SP-122A D122-5/AC7/contract notes ↔ SP-122C contract notes all state ordinal order with identical enum sequences; implementation `orderBy: [{ priority: order }]` / `[{ status: order }]` on native enum columns yields the documented ordinal order; e2e expectations (ordinal) remain consistent. | Fixed in plan (planner assessment; reviewer closure pending) |
+| F122C-1 | 2026-10-26 | Should-fix | `docs/stories/EP03/SP-122/README.md` D122-5 and Shared API Contract sort line; `apps/api/src/modules/assignments/assignments.service.ts` `list()` `orderBy` (implementation, unchanged); `assignments-list-e2e.spec.ts` sort expectations | Reviewer finding F122C-1: D122-5 documented "stored enum string" while the implementation sorts Postgres enum columns by declaration ordinal (LOW→MEDIUM→HIGH→URGENT / PENDING→IN_PROGRESS→COMPLETED→SUBMITTED→GRADED). E2e expectations were adjusted to ordinal and pass. Contract, implementation, and tests disagreed on what "priority/status asc" means. | Revised D122-5 and the Shared API Contract sort line to state priority/status sort by enum declaration order (Postgres ordinal), not lexicographic text order and not a severity rank; updated SP-122A D122-5/AC7/contract notes and SP-122C contract notes to match. Docs only — no application code changed. E2e test comments should reference revised D122-5 rather than F122C-1. | Cross-file comparison: README D122-5 ↔ Shared API Contract sort line ↔ SP-122A D122-5/AC7/contract notes ↔ SP-122C contract notes all state ordinal order with identical enum sequences; implementation `orderBy: [{ priority: order }]` / `[{ status: order }]` on native enum columns yields the documented ordinal order; e2e expectations (ordinal) remain consistent. | Closed in review pass 2 (reviewer): docs consistent with ordinal implementation; no code change (F122C-1). See `./artifacts/SP-122/review.md` pass 2. |
 
 ## Quality gate (2026-10-26)
 

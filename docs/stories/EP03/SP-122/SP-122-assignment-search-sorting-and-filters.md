@@ -4,7 +4,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Covers epic proposed story:** 6 (implement assignment search, sorting, and filters)
-**Status:** Planned 2026-10-26 (Plan Ready — [breakdown](./README.md)). Implementation not started.
+**Status:** Reviewed 2026-10-26 — SP-122 (A/B/C) implemented and reviewed; meets DoD and AC-E03-07 (see [breakdown](./README.md) and `./artifacts/SP-122/review.md` pass 2).
 **Jira key:** Pending creation (parent coordination record — no Jira issue; the children carry the tracker keys)
 
 ## Purpose

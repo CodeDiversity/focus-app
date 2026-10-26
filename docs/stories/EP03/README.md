@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1 (functional academic tracker)
 **Epic dependency:** EP02 (Semester & Course Management) — **complete 2026-10-23** (implemented + reviewed; queue at [docs/stories/EP02](../EP02/README.md#execution-queue)). EP03 implementation is **not blocked**.
-**Status:** Stories 1–3 are reviewed (SP-113 and SP-114, 2026-10-24; SP-115, 2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md) · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Story 4 → [SP-120](./SP-120/README.md) — **Reviewed 2026-10-26**. Story 5 → [SP-121](./SP-121/README.md) — **Reviewed 2026-10-26**. Story 6 → [SP-122](./SP-122/README.md) — **Plan Ready 2026-10-26** (A `Ready`, B `Needs refinement`, C `Queued`). Story 7 is not yet broken down. User direction (2026-10-26): SP-121 children lettered from A (D121-6); SP-122 children lettered from A (D122-8).
+**Status:** Stories 1–3 are reviewed (SP-113 and SP-114, 2026-10-24; SP-115, 2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md) · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Story 4 → [SP-120](./SP-120/README.md) — **Reviewed 2026-10-26**. Story 5 → [SP-121](./SP-121/README.md) — **Reviewed 2026-10-26**. Story 6 → [SP-122](./SP-122/README.md) — **Reviewed 2026-10-26** ([review](./SP-122/artifacts/SP-122/review.md) · [walkthrough](./SP-122/artifacts/SP-122/walkthrough.md)). Children A/B/C `Reviewed`. Story 7 is not yet broken down. User direction (2026-10-26): SP-121 children lettered from A (D121-6); SP-122 children lettered from A (D122-8).
 
 ## Code baseline (2026-10-24)
 
@@ -26,7 +26,7 @@ The 2026-10-24 bullets above are the SP-113 planning baseline. They are not the 
 | [SP-115](./SP-115/README.md) | 3. Add assignment types, deadlines, and priority | [2 children](./SP-115/README.md) (G backend, H frontend) — **Reviewed 2026-10-25**. Deadlines and priority shipped in SP-113; this parent owned the `type` column. | Pending creation |
 | [SP-120](./SP-120/README.md) | 4. Implement assignment subtasks | [2 children](./SP-120/README.md) (I backend, J frontend) — **Reviewed 2026-10-26**. Uses the existing `Task` model as subtasks (D120-1 — no migration). | Pending creation |
 | [SP-121](./SP-121/README.md) | 5. Implement completion and status tracking | [2 children](./SP-121/README.md) (A backend, B frontend) — **Reviewed 2026-10-26** ([review](./SP-121/artifacts/SP-121/review.md) · [walkthrough](./SP-121/artifacts/SP-121/walkthrough.md)). Children A/B `Reviewed`. | Pending creation |
-| [SP-122](./SP-122/README.md) | 6. Implement assignment search, sorting, and filters | [3 children](./SP-122/README.md) (A backend, B frontend, C integration) — **Plan Ready 2026-10-26**. B is `Needs refinement` for UI/UX (ui-refiner handoff). | Pending creation |
+| [SP-122](./SP-122/README.md) | 6. Implement assignment search, sorting, and filters | [3 children](./SP-122/README.md) (A backend, B frontend, C integration) — **Reviewed 2026-10-26** ([review](./SP-122/artifacts/SP-122/review.md) · [walkthrough](./SP-122/artifacts/SP-122/walkthrough.md)). Children A/B/C `Reviewed`. | Pending creation |
 | — | 7. Implement overdue and completed assignment views | Not yet broken down (planned later) | — |
 
 Story 6 is now SP-122 (broken down 2026-10-26). Story 7 is anticipated as
@@ -72,13 +72,12 @@ SP-121 is **Reviewed** (2026-10-26 — [review](./SP-121/artifacts/SP-121/review
 substory is None with reason: the review unit is complete. Children A/B are
 `Reviewed`.
 
-SP-122 is **Plan Ready** (2026-10-26 — [breakdown](./SP-122/README.md)).
-Its queue's next substory is **SP-122A** (`Ready` — implement); B is
-`Needs refinement` (ui-refiner handoff) and C is `Queued`. A is not blocked
-(SP-113/SP-114/SP-115/SP-120/SP-121 reviewed). Full gate table:
-[SP-122 README](./SP-122/README.md#quality-gate-2026-10-26). Correction log:
-empty at planning time. No Jira sync was authorized; all SP-122 keys are
-`Pending creation`.
+SP-122 is **Reviewed** (2026-10-26 — [review](./SP-122/artifacts/SP-122/review.md)
+· [walkthrough](./SP-122/artifacts/SP-122/walkthrough.md)). Its queue's next
+substory is None with reason: the review unit is complete. Children A/B/C are
+`Reviewed`. F122C-1 closed in plan (440ff2a); D122C-1 is an authorized
+DoD-10 exception (manual browser pass outstanding for the user). No Jira sync
+was authorized; all SP-122 keys are `Pending creation`.
 
 ## Quality gate — SP-122 plan (2026-10-26)
 
