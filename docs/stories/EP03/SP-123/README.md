@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-123](./SP-123-overdue-and-completed-assignment-views.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Planned 2026-10-26 — breakdown only. Children A and B are `Needs refinement` for UI/UX. No implementation, tests, or review yet.
+**Status:** Planned 2026-10-26 — breakdown + UI/UX refinement complete (2026-10-26). Children A and B are `Ready`. No implementation, tests, or review yet.
 **Jira key:** Pending creation (no sync authorized)
 
 ## Execution queue
@@ -14,9 +14,9 @@
 
 **Parent artifacts:** `./artifacts/SP-123/` (parent index written by B; review and walkthrough by the reviewer)
 
-**Active substory:** None (planning only).
+**Active substory:** None.
 
-**Next substory:** **SP-123A — refine** (UI/UX gaps; `ui-refiner` pass required before it is Ready). SP-123B follows A.
+**Next substory:** **SP-123A — implement** (Ready: UI/UX settled 2026-10-26; SP-121B reviewed). SP-123B follows A.
 
 **Implementation owner:** `implementer`, sequential across the single frontend writer. The two children are both frontend scope labels, not concurrent writers.
 
@@ -24,8 +24,8 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-123A-overdue-identification.md) | Needs refinement | SP-121B reviewed (finished/unfinished predicate exists, satisfied 2026-10-26). No backend dependency. | Refine UI/UX via `ui-refiner` on SP-123A, then implement | (none yet) |
-| [B](./SP-123B-completed-assignment-views.md) | Needs refinement | SP-121B reviewed (satisfied 2026-10-26). No hard dependency on A, but A should land first to keep the model file coherent. | Refine UI/UX via `ui-refiner` on SP-123B after A is refined/implemented | (none yet) |
+| [A](./SP-123A-overdue-identification.md) | Ready | SP-121B reviewed (finished/unfinished predicate exists, satisfied 2026-10-26). No backend dependency. | Implement SP-123A | (none yet) |
+| [B](./SP-123B-completed-assignment-views.md) | Ready (after A) | SP-121B reviewed (satisfied 2026-10-26). No hard dependency on A, but A should land first to keep the model file coherent. | Implement SP-123B after A | (none yet) |
 
 Sequence: A → B, one writer, in child-letter order. B owns the parent index and the DoD-10 browser note.
 
