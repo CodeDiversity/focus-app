@@ -3,8 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1 (functional academic tracker)
 **Epic dependency:** EP02 (Semester & Course Management) — **complete 2026-10-23** (implemented + reviewed; queue at [docs/stories/EP02](../EP02/README.md#execution-queue)). EP03 implementation is **not blocked**.
-**Status:** Stories 1–3 are reviewed (SP-113 and SP-114, 2026-10-24; SP-115, 2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md) · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Story 4 → [SP-120](./SP-120/README.md) — **Reviewed 2026-10-26**. Story 5 → [SP-121](./SP-121/README.md) — **Reviewed 2026-10-26**. Story 6 → [SP-122](./SP-122/README.md) — **Reviewed 2026-10-26** ([review](./SP-122/artifacts/SP-122/review.md) · [walkthrough](./SP-122/artifacts/SP-122/walkthrough.md)). Children A/B/C `Reviewed`. Story 7 → [SP-123](./SP-123/README.md) — **Reviewed 2026-10-26** ([review](./SP-123/artifacts/SP-123/review.md) · [walkthrough](./SP-123/artifacts/SP-123/walkthrough.md)). Children A/B `Reviewed`. DoD-10 under D123B-DoD10 exception (manual browser pass outstanding for user). User direction (2026-10-26): SP-121 children lettered from A (D121-6); SP-122 children lettered from A (D122-8); SP-123 children lettered from A (D123-7).
-
+**Status:** Stories 1–3 are reviewed (SP-113 and SP-114, 2026-10-24; SP-115, 2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md) · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Story 4 → [SP-120](./SP-120/README.md) — **Reviewed 2026-10-26**. Story 5 → [SP-121](./SP-121/README.md) — **Reviewed 2026-10-26**. Story 6 → [SP-122](./SP-122/README.md) — **Reviewed 2026-10-26** ([review](./SP-122/artifacts/SP-122/review.md) · [walkthrough](./SP-122/artifacts/SP-122/walkthrough.md)). Children A/B/C `Reviewed`. Story 7 → [SP-123](./SP-123/README.md) — **Reviewed 2026-10-26** ([review](./SP-123/artifacts/SP-123/review.md) · [walkthrough](./SP-123/artifacts/SP-123/walkthrough.md)). Children A/B `Reviewed`. DoD-10 under D123B-DoD10 exception (manual browser pass outstanding for user). Story 8 → [SP-124](./SP-124/README.md) — **Planned 2026-10-26 (Draft)**; children A/B/C `Needs refinement` for UI/UX (ui-refiner handoff). No implementation evidence. User direction (2026-10-26): SP-121 children lettered from A (D121-6); SP-122 children lettered from A (D122-8); SP-123 children lettered from A (D123-7); SP-124 children lettered from A (D124-7).
 ## Code baseline (2026-10-24)
 
 - `Assignment` model **exists** in `apps/api/prisma/schema.prisma` (id, `userId` cascade, `courseId?` nullable, title, description?, **`dueDate DateTime` required**, estimatedHours?, actualHours?, `status` @default(PENDING), `priority` @default(MEDIUM), timestamps, `tasks Task[]`, `@@map("assignments")`) — created with the EP01-era schema, but **no assignments API module exists** (verified: `apps/api/src/modules/` = auth, courses, email, onboarding, prisma, semesters, users).
@@ -28,6 +27,7 @@ The 2026-10-24 bullets above are the SP-113 planning baseline. They are not the 
 | [SP-121](./SP-121/README.md) | 5. Implement completion and status tracking | [2 children](./SP-121/README.md) (A backend, B frontend) — **Reviewed 2026-10-26** ([review](./SP-121/artifacts/SP-121/review.md) · [walkthrough](./SP-121/artifacts/SP-121/walkthrough.md)). Children A/B `Reviewed`. | Pending creation |
 | [SP-122](./SP-122/README.md) | 6. Implement assignment search, sorting, and filters | [3 children](./SP-122/README.md) (A backend, B frontend, C integration) — **Reviewed 2026-10-26** ([review](./SP-122/artifacts/SP-122/review.md) · [walkthrough](./SP-122/artifacts/SP-122/walkthrough.md)). Children A/B/C `Reviewed`. | Pending creation |
 | [SP-123](./SP-123/README.md) | 7. Implement overdue and completed assignment views | [2 children](./SP-123/README.md) (A overdue identification, B completed views) — **Reviewed 2026-10-26** ([review](./SP-123/artifacts/SP-123/review.md) · [walkthrough](./SP-123/artifacts/SP-123/walkthrough.md)). Children A/B `Reviewed`. | Pending creation |
+| [SP-124](./SP-124/README.md) | 8. Assignment list cohesion (in-place edit/delete/status/subtasks/create on `/assignments`) | [3 children](./SP-124/README.md) (A row actions, B subtasks, C create) — **Planned 2026-10-26 (Draft)**; children `Needs refinement` for UI/UX (ui-refiner handoff). No implementation evidence. | Pending creation |
 
 Story 6 is now SP-122 (broken down and reviewed 2026-10-26). Story 7 is now
 SP-123 (broken down 2026-10-26; children A/B `Needs refinement`). (SP-116…SP-119
@@ -86,6 +86,12 @@ SP-123 is **Reviewed** (2026-10-26 — [review](./SP-123/artifacts/SP-123/review
 exception (user). No Jira sync was authorized; all SP-123 keys are `Pending
 creation`.
 
+SP-124 is **Planned (Draft, 2026-10-26)** — [breakdown](./SP-124/README.md).
+Children A/B/C are `Needs refinement` for UI/UX (ui-refiner handoff); none is
+ready to code until ui-refinement settles D124-7. No implementation evidence.
+No Jira sync authorized; all SP-124 keys are `Pending creation`. This unit adds
+no new epic AC; it adds a second editing surface for behavior already owned by
+SP-113/SP-114/SP-120/SP-121.
 ## Quality gate — SP-123 plan (2026-10-26)
 
 **Plan Ready** — D123-1…7 are planner-recorded and grounded in D121-4/D121-5/
