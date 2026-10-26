@@ -33,6 +33,6 @@ Implemented `GET /assignments` backend list endpoint with filters, search, sort,
 None.
 
 ## Commit
-Scoped commit pending (will record hash after commit).
+`b88b1dbacd67b9279d89022075efa2214fdfcdc3` — feat(api): SP-122A GET /assignments with filters, search, sort.
 EOF
 echo done
