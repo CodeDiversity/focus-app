@@ -16,7 +16,7 @@
 
 **Active substory:** None.
 
-**Next substory:** **SP-123B — implement** (Ready: A implemented 2026-10-26; UI/UX settled).
+**Next substory:** None — final combined SP-123 review next (artifacts `./artifacts/SP-123/review.md` and `walkthrough.md`).
 
 **Implementation owner:** `implementer`, sequential across the single frontend writer. The two children are both frontend scope labels, not concurrent writers.
 
@@ -25,7 +25,7 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [A](./SP-123A-overdue-identification.md) | Implemented — awaiting parent review | SP-121B reviewed (satisfied 2026-10-26). No backend dependency. | (none — A complete) | `./artifacts/SP-123A/implementation.md` |
-| [B](./SP-123B-completed-assignment-views.md) | Ready (after A) | SP-121B reviewed (satisfied 2026-10-26). No hard dependency on A, but A should land first to keep the model file coherent. | Implement SP-123B after A | (none yet) |
+| [B](./SP-123B-completed-assignment-views.md) | Implemented — awaiting parent review | A implemented (satisfied 2026-10-26). | (none — B complete) | `./artifacts/SP-123B/implementation.md` |
 
 Sequence: A → B, one writer, in child-letter order. B owns the parent index and the DoD-10 browser note.
 

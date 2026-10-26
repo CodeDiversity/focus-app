@@ -9,7 +9,11 @@ import { DeleteAssignmentDialog } from './DeleteAssignmentDialog';
 import { SubtaskChecklist, type SubtaskChangeAction } from './SubtaskChecklist';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 import { updateAssignment } from '@/entities/assignment/api/assignmentApi';
-import { isUnfinishedAssignment, isOverdueAssignment } from '@/entities/assignment/model/status';
+import {
+  isUnfinishedAssignment,
+  isFinishedAssignment,
+  isOverdueAssignment,
+} from '@/entities/assignment/model/status';
 import type {
   AssignmentPriority,
   AssignmentStatus,
@@ -140,6 +144,12 @@ export function AssignmentsSection({
   const [busyIds, setBusyIds] = useState<Set<string>>(() => new Set());
   const [statusBusyIds, setStatusBusyIds] = useState<Set<string>>(() => new Set());
   const [pendingStatus, setPendingStatus] = useState<Record<string, AssignmentStatus>>({});
+  const [showCompleted, setShowCompleted] = useState(false);
+  // Reset the revealed state whenever the assignments prop changes identity
+  // (D123-5 / D123B-6).
+  useEffect(() => {
+    setShowCompleted(false);
+  }, [assignments]);
   const sectionRef = useRef<HTMLElement>(null);
   // Set when delete succeeds, cleared once the deleted row is actually gone.
   const [focusAfterDelete, setFocusAfterDelete] = useState<{
@@ -318,6 +328,119 @@ export function AssignmentsSection({
     setDeleting(assignment);
   };
 
+  const unfinished = assignments.filter(isUnfinishedAssignment);
+  const finished = assignments.filter(isFinishedAssignment);
+
+  const renderAssignmentRow = (assignment: CourseAssignment) => (
+    <li key={assignment.id} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <p className="font-medium text-secondary-900">{assignment.title}</p>
+          <p
+            className={clsx(
+              'mt-1 text-sm',
+              assignment.dueDate === null ? 'text-secondary-500' : 'text-secondary-600'
+            )}
+          >
+            {assignment.dueDate === null ? (
+              'No due date'
+            ) : (
+              <>
+                {`Due ${formatDate(new Date(assignment.dueDate), timeZone)}`}
+                {isOverdueAssignment(assignment) && (
+                  <span
+                    className={clsx(
+                      'ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+                      OVERDUE_STYLE
+                    )}
+                  >
+                    {OVERDUE_LABEL}
+                  </span>
+                )}
+              </>
+            )}
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="mt-2"
+            id={`subtasks-toggle-${assignment.id}`}
+            aria-expanded={expandedIds.has(assignment.id)}
+            aria-controls={`subtasks-${assignment.id}`}
+            aria-label={`Subtasks for ${assignment.title}: ${subtaskSummary(assignment.subtasks)}`}
+            disabled={busyIds.has(assignment.id)}
+            leftIcon={
+              <ChevronDown
+                aria-hidden
+                size={16}
+                className={clsx(
+                  'transition-transform',
+                  expandedIds.has(assignment.id) && 'rotate-180'
+                )}
+              />
+            }
+            onClick={() => toggleExpanded(assignment.id)}
+          >
+            {subtaskSummary(assignment.subtasks)}
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Select
+            aria-label={`Status for ${assignment.title}`}
+            data-assignment-focus={`status:${assignment.id}`}
+            disabled={statusBusyIds.has(assignment.id)}
+            value={pendingStatus[assignment.id] ?? assignment.status}
+            onChange={(event) =>
+              handleStatusChange(assignment, event.target.value as AssignmentStatus)
+            }
+            className="w-auto"
+          >
+            {(
+              ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'SUBMITTED', 'GRADED'] as AssignmentStatus[]
+            ).map((value) => (
+              <option key={value} value={value}>
+                {STATUS_LABELS[value]}
+              </option>
+            ))}
+          </Select>
+          <Badge className={PRIORITY_STYLES[assignment.priority]}>
+            {PRIORITY_LABELS[assignment.priority]}
+          </Badge>
+          {assignment.type && <Badge className={TYPE_STYLE}>{TYPE_LABELS[assignment.type]}</Badge>}
+          <Button
+            size="sm"
+            variant="outline"
+            data-assignment-focus={`edit:${assignment.id}`}
+            aria-label={`Edit ${assignment.title}`}
+            onClick={() => openEdit(assignment)}
+          >
+            Edit
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            aria-label={`Delete ${assignment.title}`}
+            onClick={() => openDelete(assignment)}
+          >
+            Delete
+          </Button>
+        </div>
+      </div>
+      {expandedIds.has(assignment.id) && (
+        <SubtaskChecklist
+          assignmentId={assignment.id}
+          assignmentTitle={assignment.title}
+          subtasks={assignment.subtasks}
+          onChanged={onSubtaskChanged}
+          onRefresh={onSubtaskRefresh}
+          onBusyChange={(busy) => setAssignmentBusy(assignment.id, busy)}
+          onPendingAnnouncement={onSubtaskPending}
+        />
+      )}
+    </li>
+  );
+
   return (
     <section ref={sectionRef} className="card p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -334,130 +457,59 @@ export function AssignmentsSection({
             Add your first assignment
           </Button>
         </div>
-      ) : assignments.filter(isUnfinishedAssignment).length === 0 ? (
-        <div className="py-8 text-center">
-          <p className="text-sm text-secondary-500">All assignments are complete.</p>
-        </div>
       ) : (
-        <ul className="divide-y divide-secondary-100">
-          {assignments.filter(isUnfinishedAssignment).map((assignment) => (
-            <li key={assignment.id} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <p className="font-medium text-secondary-900">{assignment.title}</p>
-                  <p
-                    className={clsx(
-                      'mt-1 text-sm',
-                      assignment.dueDate === null ? 'text-secondary-500' : 'text-secondary-600'
-                    )}
-                  >
-                    {assignment.dueDate === null ? (
-                      'No due date'
-                    ) : (
-                      <>
-                        {`Due ${formatDate(new Date(assignment.dueDate), timeZone)}`}
-                        {isOverdueAssignment(assignment) && (
-                          <span
-                            className={clsx(
-                              'ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                              OVERDUE_STYLE
-                            )}
-                          >
-                            {OVERDUE_LABEL}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </p>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="mt-2"
-                    id={`subtasks-toggle-${assignment.id}`}
-                    aria-expanded={expandedIds.has(assignment.id)}
-                    aria-controls={`subtasks-${assignment.id}`}
-                    aria-label={`Subtasks for ${assignment.title}: ${subtaskSummary(assignment.subtasks)}`}
-                    disabled={busyIds.has(assignment.id)}
-                    leftIcon={
-                      <ChevronDown
-                        aria-hidden
-                        size={16}
-                        className={clsx(
-                          'transition-transform',
-                          expandedIds.has(assignment.id) && 'rotate-180'
-                        )}
-                      />
-                    }
-                    onClick={() => toggleExpanded(assignment.id)}
-                  >
-                    {subtaskSummary(assignment.subtasks)}
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Select
-                    aria-label={`Status for ${assignment.title}`}
-                    data-assignment-focus={`status:${assignment.id}`}
-                    disabled={statusBusyIds.has(assignment.id)}
-                    value={pendingStatus[assignment.id] ?? assignment.status}
-                    onChange={(event) =>
-                      handleStatusChange(assignment, event.target.value as AssignmentStatus)
-                    }
-                    className="w-auto"
-                  >
-                    {(
-                      [
-                        'PENDING',
-                        'IN_PROGRESS',
-                        'COMPLETED',
-                        'SUBMITTED',
-                        'GRADED',
-                      ] as AssignmentStatus[]
-                    ).map((value) => (
-                      <option key={value} value={value}>
-                        {STATUS_LABELS[value]}
-                      </option>
-                    ))}
-                  </Select>
-                  <Badge className={PRIORITY_STYLES[assignment.priority]}>
-                    {PRIORITY_LABELS[assignment.priority]}
-                  </Badge>
-                  {assignment.type && (
-                    <Badge className={TYPE_STYLE}>{TYPE_LABELS[assignment.type]}</Badge>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    data-assignment-focus={`edit:${assignment.id}`}
-                    aria-label={`Edit ${assignment.title}`}
-                    onClick={() => openEdit(assignment)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    aria-label={`Delete ${assignment.title}`}
-                    onClick={() => openDelete(assignment)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </div>
-              {expandedIds.has(assignment.id) && (
-                <SubtaskChecklist
-                  assignmentId={assignment.id}
-                  assignmentTitle={assignment.title}
-                  subtasks={assignment.subtasks}
-                  onChanged={onSubtaskChanged}
-                  onRefresh={onSubtaskRefresh}
-                  onBusyChange={(busy) => setAssignmentBusy(assignment.id, busy)}
-                  onPendingAnnouncement={onSubtaskPending}
-                />
+        <>
+          {unfinished.length > 0 && (
+            <ul className="divide-y divide-secondary-100">
+              {unfinished.map((assignment) => renderAssignmentRow(assignment))}
+            </ul>
+          )}
+          {unfinished.length === 0 && (
+            <div className="py-8 text-center">
+              <p className="text-sm text-secondary-500">All assignments are complete.</p>
+            </div>
+          )}
+          {finished.length > 0 && (
+            <div
+              className={clsx(
+                'mt-4',
+                unfinished.length > 0 && 'border-t border-secondary-100 pt-3'
               )}
-            </li>
-          ))}
-        </ul>
+            >
+              <Button
+                id="completed-assignments-toggle"
+                variant="ghost"
+                size="sm"
+                aria-expanded={showCompleted}
+                aria-controls="completed-assignments"
+                leftIcon={
+                  <ChevronDown
+                    aria-hidden
+                    size={16}
+                    className={clsx('transition-transform', showCompleted && 'rotate-180')}
+                  />
+                }
+                onClick={() => setShowCompleted((value) => !value)}
+              >
+                {showCompleted
+                  ? `Hide completed (${finished.length})`
+                  : `Show completed (${finished.length})`}
+              </Button>
+              {showCompleted && (
+                <div
+                  id="completed-assignments"
+                  role="region"
+                  aria-labelledby="completed-assignments-toggle"
+                  className="mt-3"
+                >
+                  <ul className="divide-y divide-secondary-100">
+                    {finished.map((assignment) => renderAssignmentRow(assignment))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
       {formOpen && (
         <AssignmentForm
