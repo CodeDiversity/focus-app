@@ -45,10 +45,10 @@ The workflow must make adding an assignment quick and allow students to break co
 5. Implement completion and status tracking.
 6. Implement assignment search, sorting, and filters.
 7. Implement overdue and completed assignment views.
-8. (Added 2026-10-26) Assignment list cohesion — in-place edit, delete,
-   status, subtasks, and create on the cross-course `/assignments` list
-   (SP-124). This is a UX cohesion follow-up, not a new acceptance criterion;
-   it adds a second editing surface for behavior already owned by stories 1–5.
+8. (Added 2026-10-26) Assignment list cohesion — the cross-course
+   `/assignments` list hosts the same edit, delete, status, subtask, and
+   create interaction as the course page (SP-124). One shared owner; not a
+   second implementation. Not a new acceptance criterion.
 ## Technical Notes
 
 Create `Assignment` and `Subtask` Prisma models. Assignment state should be independent of study-session progress. Validate duration estimates and deadline values.
