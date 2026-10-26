@@ -1,7 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { AssignmentsSection as Section } from './AssignmentsSection';
-import { createSubtask, deleteAssignment } from '@/entities/assignment/api/assignmentApi';
+import {
+  createSubtask,
+  deleteAssignment,
+  updateAssignment,
+} from '@/entities/assignment/api/assignmentApi';
+import toast from 'react-hot-toast';
 import type { Subtask } from '@/shared/types/academic';
 
 vi.mock('@/entities/assignment/api/assignmentApi', () => ({
@@ -13,6 +18,7 @@ vi.mock('@/entities/assignment/api/assignmentApi', () => ({
   updateSubtask: vi.fn(),
   deleteSubtask: vi.fn(),
 }));
+vi.mock('react-hot-toast', () => ({ default: { error: vi.fn() } }));
 import { Providers } from '@/test/providers';
 import { setupUser } from '@/test/user';
 import type { CourseAssignment } from '@/shared/types/academic';
@@ -516,5 +522,103 @@ describe('AssignmentsSection subtask disclosure (SP-120J AC 1, AC 8)', () => {
     await user.click(screen.getByRole('button', { name: 'Add subtask to Problem Set 4' }));
     await waitFor(() => expect(toggle).toBeDisabled());
     expect(screen.getByRole('region')).toHaveAttribute('aria-busy', 'true');
+  });
+});
+
+describe('AssignmentsSection status control (SP-121B, D121-2/4)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders a Select with accessible name and all five options in lifecycle order', () => {
+    render(<AssignmentsSection assignments={[problemSet]} />);
+    const select = screen.getByRole('combobox', { name: 'Status for Problem Set 4' });
+    expect(select).toBeInTheDocument();
+    const options = within(select as HTMLElement).getAllByRole('option');
+    expect(options.map((o) => o.textContent)).toEqual([
+      'Pending',
+      'In progress',
+      'Completed',
+      'Submitted',
+      'Graded',
+    ]);
+    expect(select).toHaveValue(problemSet.status);
+  });
+
+  it('PATCHes exactly { status } on change and disables the Select in flight', async () => {
+    const user = setupUser();
+    let resolvePatch!: (value: CourseAssignment) => void;
+    vi.mocked(updateAssignment).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolvePatch = resolve;
+        })
+    );
+    render(<AssignmentsSection assignments={[problemSet]} />);
+
+    const select = screen.getByRole('combobox', { name: 'Status for Problem Set 4' });
+    await user.selectOptions(select, 'COMPLETED');
+    expect(vi.mocked(updateAssignment)).toHaveBeenCalledWith(problemSet.id, {
+      status: 'COMPLETED',
+    });
+    expect(select).toBeDisabled();
+
+    resolvePatch({ ...problemSet, status: 'COMPLETED' });
+    await waitFor(() => expect(select).not.toBeDisabled());
+  });
+
+  it('removes a finished assignment from the rendered list and sends no DELETE', async () => {
+    const user = setupUser();
+    vi.mocked(updateAssignment).mockResolvedValue({ ...problemSet, status: 'COMPLETED' });
+    const view = render(<AssignmentsSection assignments={[problemSet, essay]} />);
+    const select = screen.getByRole('combobox', { name: 'Status for Problem Set 4' });
+    await user.selectOptions(select, 'COMPLETED');
+    await waitFor(() => expect(vi.mocked(updateAssignment)).toHaveBeenCalled());
+    view.rerender(<AssignmentsSection assignments={[essay]} />);
+    expect(screen.queryByText('Problem Set 4')).not.toBeInTheDocument();
+    expect(vi.mocked(deleteAssignment)).not.toHaveBeenCalled();
+  });
+
+  it('toasts the settled message and keeps the row on a failed PATCH', async () => {
+    const user = setupUser();
+    vi.mocked(updateAssignment).mockRejectedValue(new Error('boom'));
+    render(<AssignmentsSection assignments={[problemSet]} />);
+    const select = screen.getByRole('combobox', { name: 'Status for Problem Set 4' });
+    await user.selectOptions(select, 'COMPLETED');
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith('We could not update the status. Try again.')
+    );
+    expect(screen.getByText('Problem Set 4')).toBeInTheDocument();
+  });
+
+  it('renders both empty states', () => {
+    const { rerender } = render(<AssignmentsSection assignments={[]} />);
+    expect(screen.getByText('No assignments yet.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add your first assignment' })).toBeInTheDocument();
+
+    const finishedOnly = [{ ...problemSet, status: 'COMPLETED' as const }];
+    rerender(<AssignmentsSection assignments={finishedOnly} />);
+    expect(screen.getByText('All assignments are complete.')).toBeInTheDocument();
+    expect(screen.queryByText('No assignments yet.')).not.toBeInTheDocument();
+  });
+
+  it('renders unfinished rows in given order', () => {
+    render(<AssignmentsSection assignments={[essay, problemSet]} />);
+    const items = screen.getAllByRole('listitem');
+    expect(items).toHaveLength(2);
+    expect(items[0]).toHaveTextContent('Research Essay');
+    expect(items[1]).toHaveTextContent('Problem Set 4');
+  });
+
+  it('moves focus to the next unfinished row Select when a row finishes', async () => {
+    const user = setupUser();
+    vi.mocked(updateAssignment).mockResolvedValue({ ...problemSet, status: 'COMPLETED' });
+    const view = render(<AssignmentsSection assignments={[problemSet, essay]} />);
+    const select = screen.getByRole('combobox', { name: 'Status for Problem Set 4' });
+    await user.selectOptions(select, 'COMPLETED');
+    view.rerender(<AssignmentsSection assignments={[essay]} />);
+    await waitFor(() =>
+      expect(screen.getByRole('combobox', { name: 'Status for Research Essay' })).toHaveFocus()
+    );
   });
 });

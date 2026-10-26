@@ -121,6 +121,20 @@ describe('updateAssignment', () => {
     expect(bodies[0]).toEqual({ type: 'QUIZ' });
     expect(bodies[1]).toEqual({ title: 'Same work' });
   });
+
+  it('sends status through on patch (SP-121B AC 2, D121-2/3)', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    const updatedAssignment = { ...assignment, status: 'COMPLETED' as const };
+    httpClient.defaults.adapter = async (config) => {
+      seen = config;
+      return { config, data: updatedAssignment, status: 200, statusText: 'OK', headers: {} };
+    };
+    const result = await updateAssignment('assignment-1', { status: 'COMPLETED' });
+    expect(result).toEqual(updatedAssignment);
+    expect(seen?.url).toBe('/assignments/assignment-1');
+    expect(seen?.method).toBe('patch');
+    expect(JSON.parse(seen!.data as string)).toEqual({ status: 'COMPLETED' });
+  });
 });
 
 describe('deleteAssignment', () => {

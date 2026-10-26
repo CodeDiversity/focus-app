@@ -36,7 +36,9 @@ Production:
 
 Tests:
 - `apps/web/src/entities/assignment/model/status.test.ts` (new).
-- `apps/web/src/features/courses/ui/AssignmentsSection.test.tsx` — adjusted existing assertions to the new unfinished view / Select tab order.
+- `apps/web/src/entities/assignment/api/assignmentApi.test.ts` — added status-through assertion (IR-121-2).
+- `apps/web/src/features/courses/ui/AssignmentsSection.test.tsx` — adjusted existing assertions to the new unfinished view / Select tab order; added status-control coverage (render/options/aria-label, PATCH exactly `{ status }`, in-flight disable, finished removal + no DELETE, both empty states, failure toast, focus move) (IR-121-1).
+- `apps/web/src/pages/courses/ui/CourseDetailPage.test.tsx` — added status-wiring coverage (live-region sentence + background refetch) (IR-121-3).
 
 Docs:
 - `docs/stories/EP03/SP-121/README.md` (queue fields), `SP-121B-...md` (Status), this record, parent index.
@@ -52,17 +54,16 @@ Docs:
 
 ## DoD-10 browser note
 
-Manual browser pass not executed in this environment (no browser/running dev
-server). Steps to run by the reviewer/user:
-1. Open a course with a mix of pending/in-progress and one finished assignment.
-2. Confirm only unfinished rows render; finished row is absent.
-3. On a row, change the status Select through all five values; confirm the row
-   disappears exactly on COMPLETED/SUBMITTED/GRADED and persists on refetch.
-4. Confirm the all-finished empty state (`All assignments are complete.`) when
-   every assignment is finished.
-5. Tab through the Select; confirm visible focus ring and accessible name
-   `Status for <title>`.
-6. Check the row at a phone width (no horizontal scroll).
+Manual browser pass **executed and passed** (user-provided evidence,
+2026-10-26). All six steps confirmed:
+1. Course with a mix of pending/in-progress and one finished assignment opened.
+2. Only unfinished rows render; finished row absent.
+3. Status Select exercised through all five values; row disappears exactly on
+   COMPLETED/SUBMITTED/GRADED and persists on refetch.
+4. All-finished empty state (`All assignments are complete.`) confirmed.
+5. Tab through the Select; visible focus ring and accessible name
+   `Status for <title>` confirmed.
+6. Row checked at phone width; no horizontal scroll.
 
 ## Findings/deviations
 
@@ -71,7 +72,22 @@ server). Steps to run by the reviewer/user:
   read-only status badge and the new unfinished filtering; no correctness
   weakening — they now assert the priority palette and unfinished view. Owner:
   implementer. Closure: full web suite green (600/600).
-- No blockers, no contract deviations.
+- **IR-121-1** (should-fix; closed 2026-10-26): added the status-control
+  component tests listed in the story (render/options/aria-label, PATCH exactly
+  `{ status }`, in-flight disable, finished removal + no DELETE, both empty
+  states, failure toast, focus move). Owner: implementer.
+- **IR-121-2** (should-fix; closed 2026-10-26): added the
+  `assignmentApi.test.ts` status-through exact-body assertion.
+  Owner: implementer.
+- **IR-121-3** (should-fix; closed 2026-10-26): added the
+  `CourseDetailPage` status-wiring test (live-region sentence + background
+  refetch). Owner: implementer.
+- **IR-121-4** (CANNOT VERIFY → closed 2026-10-26): DoD-10 browser pass
+  executed and passed (user-provided evidence; all six steps confirmed).
+  Owner: reviewer/user.
+- No blockers, no contract deviations. Tests added but not independently
+  executed in this session (no shell available); recorded test runs from the
+  prior pass stand. Re-run required before re-review.
 
 ## Commit scope
 

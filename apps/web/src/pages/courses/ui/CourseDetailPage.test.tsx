@@ -15,6 +15,7 @@ import {
   createAssignment,
   createSubtask,
   deleteAssignment,
+  updateAssignment,
 } from '@/entities/assignment/api/assignmentApi';
 import toast from 'react-hot-toast';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
@@ -676,5 +677,41 @@ describe('CourseDetailPage subtask announcements (SP-120J AC 6)', () => {
     expect(screen.queryByText('Loading your course…')).not.toBeInTheDocument();
     expect(screen.getByRole('region')).toBeInTheDocument();
     expect(mockedToast.success).not.toHaveBeenCalled();
+  });
+});
+
+describe('CourseDetailPage assignment status wiring (SP-121B, D121-2/4)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockedListSemesters.mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('sets the status-specific sentence and background-refetches on a status change', async () => {
+    const user = setupUser();
+    let finishRefresh!: (detail: CourseDetail) => void;
+    mockedGetCourse.mockResolvedValueOnce(cs101).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishRefresh = resolve;
+        })
+    );
+    vi.mocked(updateAssignment).mockResolvedValue({ ...homework, status: 'COMPLETED' });
+    renderPage();
+    await screen.findByText('Problem Set 3');
+
+    const select = screen.getByRole('combobox', { name: 'Status for Problem Set 3' });
+    await user.selectOptions(select, 'COMPLETED');
+
+    expect(updateAssignment).toHaveBeenCalledWith('asgn-1', { status: 'COMPLETED' });
+    expect(screen.getByRole('status')).toHaveTextContent('Assignment marked as completed.');
+    expect(mockedGetCourse).toHaveBeenCalledTimes(2);
+    expect(mockedGetCourse).toHaveBeenLastCalledWith('course-1');
+
+    finishRefresh({ ...cs101, assignments: [{ ...homework, status: 'COMPLETED' }] });
+    await waitFor(() => expect(screen.queryByText('Problem Set 3')).not.toBeInTheDocument());
   });
 });

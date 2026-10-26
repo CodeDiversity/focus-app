@@ -26,6 +26,8 @@ projection); B consumes it (status Select, unfinished-only view, client filter).
 
 ## Findings
 
-See each child's implementation record. No open findings. DoD-10 browser pass
-for B is recorded as not executed (see B record) — to be completed by the
-reviewer/user.
+See each child's implementation record. IR-121-1, IR-121-2, IR-121-3
+(should-fix: missing frontend automated tests) and IR-121-4 (DoD-10 browser
+pass) were closed on 2026-10-26 (see `artifacts/SP-121B/implementation.md`).
+IR-121-5 (polish) optional and not blocking. All mandatory gates now have
+evidence.
