@@ -11,7 +11,7 @@
 - [x] Add indicator on AssignmentsPage
 - [x] Run tests/typecheck/lint
 - [x] Write implementation.md
-- [ ] Commit
+- [x] Commit (`6bb825f`)
 
 ## Findings
 (none yet)
