@@ -1,5 +1,6 @@
 import api from '@/shared/api/httpClient';
 import type {
+  AssignmentListItem,
   AssignmentPriority,
   AssignmentStatus,
   AssignmentType,
@@ -105,4 +106,39 @@ export async function updateSubtask(
 /** 204 on success; 404 when the assignment or subtask is missing or foreign. */
 export async function deleteSubtask(assignmentId: string, subtaskId: string): Promise<void> {
   await api.delete(`/assignments/${assignmentId}/subtasks/${subtaskId}`);
+}
+
+/** `GET /assignments` query (SP-122A contract). All fields optional and AND-combined. */
+export interface ListAssignmentsParams {
+  courseId?: string;
+  status?: AssignmentStatus;
+  priority?: AssignmentPriority;
+  type?: AssignmentType;
+  dueFrom?: string;
+  dueTo?: string;
+  q?: string;
+  sort?: 'dueDate' | 'title' | 'priority' | 'status' | 'createdAt' | 'updatedAt';
+  order?: 'asc' | 'desc';
+}
+
+/**
+ * Lists the authenticated student's assignments across courses (SP-122A
+ * contract). Unset/empty params are omitted so the backend defaults apply
+ * and the whitelist is not tripped.
+ */
+export async function listAssignments(
+  params: ListAssignmentsParams = {}
+): Promise<AssignmentListItem[]> {
+  const query: Record<string, string> = {};
+  if (params.courseId) query.courseId = params.courseId;
+  if (params.status) query.status = params.status;
+  if (params.priority) query.priority = params.priority;
+  if (params.type) query.type = params.type;
+  if (params.dueFrom) query.dueFrom = params.dueFrom;
+  if (params.dueTo) query.dueTo = params.dueTo;
+  if (params.q && params.q.trim()) query.q = params.q.trim();
+  if (params.sort) query.sort = params.sort;
+  if (params.order) query.order = params.order;
+  const response = await api.get<AssignmentListItem[]>('/assignments', { params: query });
+  return response.data;
 }

@@ -225,3 +225,89 @@ describe('deleteSubtask', () => {
     expect(seen?.method).toBe('delete');
   });
 });
+
+import { listAssignments } from './assignmentApi';
+
+const assignmentItem = {
+  id: 'assignment-1',
+  title: 'Problem Set 4',
+  description: null,
+  dueDate: null,
+  estimatedHours: null,
+  actualHours: null,
+  status: 'PENDING',
+  priority: 'MEDIUM',
+  type: null,
+  createdAt: '2026-10-24T12:00:00.000Z',
+  updatedAt: '2026-10-24T12:00:00.000Z',
+  course: { id: 'course-1', name: 'Calculus', code: 'MATH101', color: '#10b981' },
+  subtasks: [],
+};
+
+describe('listAssignments', () => {
+  it('GETs /assignments with no params when none provided', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seen = config;
+      return { config, data: [assignmentItem], status: 200, statusText: 'OK', headers: {} };
+    };
+    await expect(listAssignments()).resolves.toEqual([assignmentItem]);
+    expect(seen?.url).toBe('/assignments');
+    expect(seen?.method).toBe('get');
+    expect(seen?.params).toEqual({});
+  });
+
+  it('omits unset params and serializes scalars', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seen = config;
+      return { config, data: [], status: 200, statusText: 'OK', headers: {} };
+    };
+    await listAssignments({
+      courseId: 'course-1',
+      status: 'PENDING',
+      priority: 'HIGH',
+      type: 'QUIZ',
+      dueFrom: '2026-10-01T00:00:00',
+      dueTo: '2026-10-31T23:59:59',
+      q: 'problem',
+      sort: 'title',
+      order: 'desc',
+    });
+    expect(seen?.params).toEqual({
+      courseId: 'course-1',
+      status: 'PENDING',
+      priority: 'HIGH',
+      type: 'QUIZ',
+      dueFrom: '2026-10-01T00:00:00',
+      dueTo: '2026-10-31T23:59:59',
+      q: 'problem',
+      sort: 'title',
+      order: 'desc',
+    });
+  });
+
+  it('omits empty/whitespace q', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seen = config;
+      return { config, data: [], status: 200, statusText: 'OK', headers: {} };
+    };
+    await listAssignments({ q: '   ' });
+    expect(seen?.params).toEqual({});
+  });
+
+  it('returns the typed projection including null course', async () => {
+    const nullCourseItem = { ...assignmentItem, course: null };
+    httpClient.defaults.adapter = async (config) => ({
+      config,
+      data: [nullCourseItem],
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    });
+    const result = await listAssignments();
+    expect(result[0].course).toBeNull();
+    expect(Object.keys(result[0])).toContain('subtasks');
+  });
+});

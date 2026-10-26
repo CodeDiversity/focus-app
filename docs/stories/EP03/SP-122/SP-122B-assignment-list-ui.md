@@ -6,7 +6,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** Ready (UI/UX settled 2026-10-26; SP-122A implemented)
+**Status:** Implemented — awaiting parent review (2026-10-26)
 **Dependencies:** SP-122A implemented (contract fixed in the [SP-122 README](./README.md)). UI/UX settled by ui-refiner (this refinement).
 **Jira key:** Pending creation
 **Refined:** 2026-10-26 (ui-refiner)

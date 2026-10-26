@@ -64,7 +64,7 @@ export const STATUS_STYLES: Record<AssignmentStatus, string> = {
 };
 
 /** The priority pill palette (D112B-4) — the same text-plus-color pairing. */
-const PRIORITY_STYLES: Record<AssignmentPriority, string> = {
+export const PRIORITY_STYLES: Record<AssignmentPriority, string> = {
   LOW: 'bg-slate-100 text-slate-700',
   MEDIUM: 'bg-amber-100 text-amber-800',
   HIGH: 'bg-orange-100 text-orange-700',
@@ -81,7 +81,7 @@ export const STATUS_LABELS: Record<AssignmentStatus, string> = {
 };
 
 /** The priority labels (title-cased). */
-const PRIORITY_LABELS: Record<AssignmentPriority, string> = {
+export const PRIORITY_LABELS: Record<AssignmentPriority, string> = {
   LOW: 'Low',
   MEDIUM: 'Medium',
   HIGH: 'High',
@@ -95,9 +95,9 @@ const PRIORITY_LABELS: Record<AssignmentPriority, string> = {
  * always rendered (D112B-4). A null type renders no badge: absence of a
  * category is not a category (SP-115, refined 2026-10-25).
  */
-const TYPE_STYLE = 'bg-slate-100 text-slate-700';
+export const TYPE_STYLE = 'bg-slate-100 text-slate-700';
 
-const TYPE_LABELS: Record<AssignmentType, string> = {
+export const TYPE_LABELS: Record<AssignmentType, string> = {
   HOMEWORK: 'Homework',
   PAPER: 'Paper',
   PROJECT: 'Project',

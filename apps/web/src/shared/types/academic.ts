@@ -120,3 +120,31 @@ export interface StudySession {
   createdAt: string;
   updatedAt: string;
 }
+
+/**
+ * The cross-course assignment list projection (SP-122A, D122-6): the 11
+ * assignment keys (`type` after `priority`) plus `course: { id, name, code,
+ * color } | null` and `subtasks: Subtask[]`. Returned by `GET /assignments`.
+ */
+export interface AssignmentListItemCourse {
+  id: string;
+  name: string;
+  code: string;
+  color: string;
+}
+
+export interface AssignmentListItem {
+  id: string;
+  title: string;
+  description: string | null;
+  dueDate: string | null;
+  estimatedHours: number | null;
+  actualHours: number | null;
+  status: AssignmentStatus;
+  priority: AssignmentPriority;
+  type: AssignmentType | null;
+  createdAt: string;
+  updatedAt: string;
+  course: AssignmentListItemCourse | null;
+  subtasks: Subtask[];
+}
