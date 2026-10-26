@@ -62,7 +62,9 @@ Overdue/completed views (story 7).
    treated as absent. Over-long `q` (> 200) → 400.
 7. **Sort.** `?sort`/`?order` select the ordering. Unknown values → 400. The
    default is `dueDate asc` (nulls last), then `title asc`, then `id asc`.
-   Every supported sort is stable and deterministic.
+   Priority/status sort by enum declaration order (Postgres ordinal), not
+   lexicographic text order (D122-5). Every supported sort is stable and
+   deterministic.
 8. **Ownership.** The response contains only rows whose `userId` is the
    principal. No query parameter can override or widen the scope
    (`userId` is not a query field → 400 unknown param).
@@ -123,7 +125,10 @@ Overdue/completed views (story 7).
 
 ### Contract notes
 
-Follow the [SP-122 README](./README.md) contract exactly. The query DTO
+Follow the [SP-122 README](./README.md) contract exactly. Priority/status sort
+use the enum's declaration order (Postgres ordinal) via the native `ORDER BY`
+on the Prisma enum column — do not cast to text or introduce a severity rank
+(D122-5, resolves F122C-1 via the wording path). The query DTO
 must be a class (not an interface) so the global `FieldValidationPipe`
 applies whitelist + `forbidNonWhitelisted` + transform. `dueFrom`/`dueTo`
 use the same `@IsISO8601({ strict: true, strictSeparator: true })` +
@@ -141,7 +146,7 @@ filter.
 | D122-2 | All filter params optional and AND-combined; unknown params → 400. | AC-E03-07 + whitelist convention. |
 | D122-3 | Inclusive date bounds; null `dueDate` excluded when a bound is present. | Nullable dueDate (D113-1). |
 | D122-4 | Case-insensitive substring on title + description. | Cheap and useful. |
-| D122-5 | Single sort key + documented tie-break; enum-string ordering for priority/status. | Keeps the contract simple. |
+| D122-5 | Single sort key + documented tie-break; priority/status sort by enum declaration order (Postgres ordinal): AssignmentPriority LOW → MEDIUM → HIGH → URGENT; AssignmentStatus PENDING → IN_PROGRESS → COMPLETED → SUBMITTED → GRADED (not lexicographic text order, not a severity rank). | Keeps the contract simple; revised 2026-10-26 to resolve F122C-1 (wording path). |
 | D122-6 | Item projection adds `course` and `subtasks`. | Reuses existing projections. |
 | D122-7 | No pagination. | Deferred to EP05. |
 

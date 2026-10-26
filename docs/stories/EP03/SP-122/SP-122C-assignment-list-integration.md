@@ -94,6 +94,13 @@ overdue/completed views, and dedicated detail pages (story 7 / EP05).
 Verify against the [SP-122 README](./README.md) contract and D122-1…7. Any
 deviation found is a finding against A or B, not a silent change here.
 
+**F122C-1 status (2026-10-26):** Resolved via the wording path in the plan —
+D122-5 and the shared API contract now state that `priority`/`status` sort by
+the enum's declaration order (Postgres ordinal), matching the implementation
+and the e2e expectations. No product/code change; e2e test comments should
+reference the revised D122-5 rather than F122C-1. Reviewer closure remains
+pending.
+
 ## Definition of Done
 
 - The ten acceptance criteria pass.
