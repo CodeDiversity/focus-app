@@ -12,8 +12,8 @@
 - **Coordinator:** workspace `/Users/michael/Documents/GitHub/focus-app`, branch `main`, baseline commit `e0a1722` (SP-122 plan). Retain this baseline until the parent implementation index owns the combined scope.
 - **Stage:** review (all children implemented; combined parent review next)
 - **Active dispatch:** None (SP-122C implemented; parent index written).
-- **Last result / retry state:** SP-122C implemented — e2e spec (23 tests pass with DB) + parent index + DoD-10 note (D122C-1 exception). Artifacts `./artifacts/SP-122C/`, `./artifacts/SP-122/`. Next: combined parent review.
-- **Resume:** Request one combined independent SP-122 review. Current next action: **SP-122 parent review**.
+- **Last result / retry state:** Planner correction `440ff2a` revised D122-5/contract to enum-ordinal (resolving F122C-1 in plan). Reviewer closure still pending. DoD-10 manual pass remains outstanding (D122C-1).
+- **Resume:** Request a fresh combined parent review against corrected files. Current next action: **SP-122 parent review (re-pass)**.
 
 ## Execution queue
 
