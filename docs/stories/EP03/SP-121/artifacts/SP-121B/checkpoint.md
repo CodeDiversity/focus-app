@@ -12,7 +12,7 @@
 - [x] Update CourseDetailPage wiring
 - [x] Run tests/typecheck/lint (600/600 passed)
 - [x] Write implementation.md + parent index
-- [ ] Commit
+- [x] Commit (`8a4c1de`)
 
 ## Findings
 (none yet)
