@@ -9,8 +9,8 @@
 
 | Child | Status | Record | Checkpoint |
 |---|---|---|---|
-| SP-123A | Implemented — awaiting parent review | `../SP-123A/artifacts/SP-123A/implementation.md` | `../SP-123A/artifacts/SP-123A/checkpoint.md` |
-| SP-123B | Implemented — awaiting parent review | `../SP-123B/artifacts/SP-123B/implementation.md` | `../SP-123B/artifacts/SP-123B/checkpoint.md` |
+| SP-123A | Implemented — awaiting parent review | `../SP-123A/implementation.md` | `../SP-123A/checkpoint.md` |
+| SP-123B | Implemented — awaiting parent review | `../SP-123B/implementation.md` | `../SP-123B/checkpoint.md` |
 
 ## Combined scope
 
@@ -22,9 +22,10 @@
 
 ## Verification (latest)
 
-- `pnpm --filter @studypilot/web typecheck` — exit 0
-- `pnpm --filter @studypilot/web lint` — exit 0
-- `pnpm --filter @studypilot/web test` — 49 files, 630/630 passed
+- `pnpm --filter @studypilot/web typecheck` — exit 0 (last run at `97c5746`)
+- `pnpm --filter @studypilot/web lint` — exit 0 (last run at `97c5746`)
+- `pnpm --filter @studypilot/web test` — 49 files, 630/630 passed (last run at `97c5746`)
+- Correction session (IR-001/002/003): component tests added; typecheck/lint/test not re-run in this session because no shell was available. Code changes are test-only plus doc links.
 
 ## DoD-10
 
@@ -34,7 +35,10 @@ remains not performed.
 
 ## Findings/deviations
 
-Findings/deviations: None.
+Findings/deviations: IR-001 residual coverage closed (finished past-due + neutral
+color assertions added on the list page); IR-002 closed; IR-003 corrected (counts
+restated as 62 = 8 + 38 + 16). Execution of the new tests remains CANNOT VERIFY
+(no shell in this session). IR-004 (optional) not addressed.
 
 ## Commit scope
 

@@ -4,7 +4,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Covers epic proposed story:** 7 (implement overdue and completed assignment views)
-**Status:** Planned 2026-10-26 — breakdown only; no implementation or tests yet.
+**Status:** Reviewed 2026-10-26 (pass 4) — SP-123 (A/B) implemented and reviewed; meets DoD and AC-E03-05 (view half) / AC-E03-06 (see [breakdown](./README.md) and `./artifacts/SP-123/review.md` pass 4). DoD-10 under D123B-DoD10 exception (manual browser pass outstanding for user); DoD-11 walkthrough saved at `./artifacts/SP-123/walkthrough.md`.
 **Jira key:** Pending creation (parent coordination record — no Jira issue; the children carry the tracker keys)
 
 ## Purpose

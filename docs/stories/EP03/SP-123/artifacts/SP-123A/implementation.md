@@ -34,6 +34,8 @@ Production:
 
 Tests:
 - `apps/web/src/entities/assignment/model/status.test.ts` — extended with `isOverdueAssignment` cases.
+- `apps/web/src/features/courses/ui/AssignmentsSection.test.tsx` — added overdue pill assertions (presence/absence/neutral due-date color) and show-completed disclosure coverage (default, reveal/hide without requests, counts, empty states, aria attributes, reset on prop identity change).
+- `apps/web/src/pages/assignments/ui/AssignmentsPage.test.tsx` — added overdue pill presence/absence assertions.
 
 Docs:
 - `docs/stories/EP03/SP-123/README.md` (execution fields), `SP-123A-...md` (Status), this record and checkpoint.
@@ -44,12 +46,14 @@ Docs:
 |---|---|---|
 | Typecheck | `pnpm --filter @studypilot/web typecheck` (repo root) | exit 0 |
 | Lint | `pnpm --filter @studypilot/web lint` (repo root) | exit 0 |
-| Tests (focused) | `pnpm --filter @studypilot/web test -- src/entities/assignment/model/status.test.ts src/features/courses/ui/AssignmentsSection.test.tsx src/pages/assignments/ui/AssignmentsPage.test.tsx` | 3 files, 51 tests passed |
+| Tests (focused) | `pnpm --filter @studypilot/web test -- src/entities/assignment/model/status.test.ts src/features/courses/ui/AssignmentsSection.test.tsx src/pages/assignments/ui/AssignmentsPage.test.tsx` | 3 files, 62 tests (8 + 38 + 16) — added in correction sessions; not re-run (no shell) |
 | Tests (full) | `pnpm --filter @studypilot/web test` (repo root) | 49 files, 630/630 passed |
 
 ## Findings/deviations
 
-Findings/deviations: None. (No blockers or contract deviations.)
+Findings/deviations: IR-001 closed by adding the required component tests for the
+overdue pill and show-completed disclosure; IR-003 corrected. IR-004 (optional
+shared pill primitive) not addressed. No other deviations.
 
 ## Commit scope
 

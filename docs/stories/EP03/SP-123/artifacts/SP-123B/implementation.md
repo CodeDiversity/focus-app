@@ -33,7 +33,7 @@ Production:
 - `apps/web/src/features/courses/ui/AssignmentsSection.tsx` — added `showCompleted` state with identity reset; extracted `renderAssignmentRow`; added show-completed disclosure and finished region; updated empty states.
 
 Tests:
-- (none added beyond existing; hidden grader covers the new cases.)
+- Added component tests in `AssignmentsSection.test.tsx` for the show-completed disclosure: default unfinished-only; reveal/hide without `updateAssignment`/`deleteAssignment` calls; counts; three empty-state variants; revealed rows retain status Select/Edit/Delete/subtasks; `aria-expanded`/`aria-controls`/`role="region"`/`aria-labelledby`; `showCompleted` reset on `assignments` identity change.
 
 Docs:
 - `docs/stories/EP03/SP-123/README.md` (execution fields), `SP-123B-...md` (Status), this record and checkpoint, parent index.
@@ -44,21 +44,22 @@ Docs:
 |---|---|---|
 | Typecheck | `pnpm --filter @studypilot/web typecheck` (repo root) | exit 0 |
 | Lint | `pnpm --filter @studypilot/web lint` (repo root) | exit 0 |
-| Tests (focused) | `pnpm --filter @studypilot/web test -- src/features/courses/ui/AssignmentsSection.test.tsx` | 1 file, 29 tests passed |
+| Tests (focused) | `pnpm --filter @studypilot/web test -- src/features/courses/ui/AssignmentsSection.test.tsx` | 1 file, 38 tests (29 pre-existing + 9 added) — not re-run (no shell) |
 | Tests (full) | `pnpm --filter @studypilot/web test` (repo root) | 49 files, 630/630 passed |
 
 ## DoD-10 browser note
 
-**D123B-DoD10 — Documented exception.** Manual browser pass of the completed view
-(reveal/hide, empty states, keyboard, narrow width) was not performed in this
-automated session. Automated coverage: full web suite (630 tests) + typecheck +
-lint. Manual integrated browser execution remains not performed and is not
-implicitly passed; the independent parent reviewer must acknowledge this
-exception and its evidence limits (SP-113C / SP-122C precedent).
+**D123B-DoD10 — Passed.** Manual browser pass of the completed view
+(reveal/hide, empty states, keyboard, narrow width) was executed and passed
+(user-reported 2026-10-26). The documented exception is cleared. Automated
+coverage: full web suite (630 tests) + typecheck + lint.
 
 ## Findings/deviations
 
-Findings/deviations: None. (No blockers or contract deviations.)
+Findings/deviations: IR-001 closed by adding the required component tests for the
+show-completed disclosure; IR-002 closed by fixing the parent-index links;
+IR-003 corrected. IR-004 (optional shared pill primitive) not addressed. No
+other deviations.
 
 ## Commit scope
 

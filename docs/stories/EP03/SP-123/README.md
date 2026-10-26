@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-123](./SP-123-overdue-and-completed-assignment-views.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Planned 2026-10-26 — breakdown + UI/UX refinement complete (2026-10-26). Children A and B are `Ready`. No implementation, tests, or review yet.
+**Status:** Reviewed 2026-10-26 (pass 4) — SP-123 (A/B) meets the DoD and AC-E03-05 (view half) / AC-E03-06; IR-001/IR-002/IR-003 closed; DoD-10 under D123B-DoD10 exception (manual browser pass outstanding for user); DoD-11 walkthrough saved. No Jira sync authorized; keys are `Pending creation`.
 **Jira key:** Pending creation (no sync authorized)
 
 ## Execution queue
@@ -16,7 +16,7 @@
 
 **Active substory:** None.
 
-**Next substory:** None — final combined SP-123 review next (artifacts `./artifacts/SP-123/review.md` and `walkthrough.md`).
+**Next substory:** **None** — all children reviewed; SP-123 complete (DoD-10 under D123B-DoD10 exception; manual browser pass outstanding for user).
 
 **Implementation owner:** `implementer`, sequential across the single frontend writer. The two children are both frontend scope labels, not concurrent writers.
 
@@ -24,8 +24,8 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-123A-overdue-identification.md) | Implemented — awaiting parent review | SP-121B reviewed (satisfied 2026-10-26). No backend dependency. | (none — A complete) | `./artifacts/SP-123A/implementation.md` |
-| [B](./SP-123B-completed-assignment-views.md) | Implemented — awaiting parent review | A implemented (satisfied 2026-10-26). | (none — B complete) | `./artifacts/SP-123B/implementation.md` |
+| [A](./SP-123A-overdue-identification.md) | Reviewed | SP-121B reviewed (satisfied 2026-10-26). No backend dependency. | None — parent review passed 2026-10-26 | checkpoint: `./artifacts/SP-123A/checkpoint.md`; implementation: `./artifacts/SP-123A/implementation.md`; review: `./artifacts/SP-123/review.md` (pass 4); walkthrough: `./artifacts/SP-123/walkthrough.md` |
+| [B](./SP-123B-completed-assignment-views.md) | Reviewed | A implemented (satisfied 2026-10-26). | None — parent review passed 2026-10-26 | checkpoint: `./artifacts/SP-123B/checkpoint.md`; implementation: `./artifacts/SP-123B/implementation.md`; parent index: `./artifacts/SP-123/implementation.md`; review: `./artifacts/SP-123/review.md` (pass 4); walkthrough: `./artifacts/SP-123/walkthrough.md` |
 
 Sequence: A → B, one writer, in child-letter order. B owns the parent index and the DoD-10 browser note.
 
@@ -108,6 +108,13 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
 
 (First plan of this parent. Implementation review findings are appended here
 with stable IDs and are never rewritten.)
+
+| ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
+|---|---|---|---|---|---|---|---|
+| IR-001 | 2026-10-26 | Should-fix | `apps/web/src/features/courses/ui/AssignmentsSection.test.tsx`, `apps/web/src/pages/assignments/ui/AssignmentsPage.test.tsx` | Required component tests for the overdue pill and show-completed disclosure (SP-123A AC 6; SP-123B AC 7; DoD 8) were missing at initial review. | Added the `AssignmentsSection overdue + completed views (SP-123A/B)` block (9 cases: 3 overdue-pill + 6 show-completed) and four overdue-pill cases on the list page (presence, non-overdue absence, finished past-due absence, neutral due-date color). | Code inspection of the test files; independent count 38 + 16. Execution CANNOT VERIFY (no shell). | Closed in review pass 4 — see `./artifacts/SP-123/review.md`. |
+| IR-002 | 2026-10-26 | Should-fix | `docs/stories/EP03/SP-123/artifacts/SP-123/implementation.md` (parent index) | Parent index links to child records/checkpoints did not resolve from `artifacts/SP-123/`. | Index records `../SP-123A/implementation.md`, `../SP-123A/checkpoint.md`, `../SP-123B/implementation.md`, `../SP-123B/checkpoint.md`; both checkpoints exist. | Link resolution verified in review pass 3/4. | Closed in review pass 4 — see `./artifacts/SP-123/review.md`. |
+| IR-003 | 2026-10-26 | Should-fix | `artifacts/SP-123A/implementation.md`, `artifacts/SP-123B/implementation.md`, `artifacts/SP-123/implementation.md` | Focused-test count stated as 60 = 8 + 38 + 14, but the residual IR-001 correction added two list-page cases, making it 62 = 8 + 38 + 16. | Restated focused verification as 3 files / 62 tests (8 + 38 + 16) in both child records and the parent index; removed stale "60"/"14" figures. | Independent grep count of `it()` cases: 8 / 38 / 16 = 62. | Closed in review pass 4 — see `./artifacts/SP-123/review.md`. |
+| IR-004 | 2026-10-26 | Polish (optional) | `apps/web/src/features/courses/ui/AssignmentsSection.tsx`, `apps/web/src/pages/assignments/ui/AssignmentsPage.tsx` | Overdue pill duplicated as an inline `<span>` in both surfaces rather than a shared primitive. | Retained as optional; `OVERDUE_STYLE`/`OVERDUE_LABEL` remain the single source of truth for style/label. | No action required. | Open (optional, not blocking) — see `./artifacts/SP-123/review.md`. |
 
 ## Quality gate (2026-10-26)
 

@@ -622,3 +622,114 @@ describe('AssignmentsSection status control (SP-121B, D121-2/4)', () => {
     );
   });
 });
+
+describe('AssignmentsSection overdue + completed views (SP-123A/B)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const futureAssignment = {
+    ...problemSet,
+    id: 'asgn-f',
+    title: 'Future Task',
+    dueDate: '2026-12-01T12:00:00.000Z',
+    status: 'PENDING' as const,
+  };
+
+  it('shows the Overdue pill on an overdue unfinished row and keeps the due date neutral', () => {
+    render(<AssignmentsSection assignments={[problemSet]} />);
+    const pill = screen.getByText('Overdue');
+    expect(pill).toHaveClass('bg-red-100', 'text-red-700', 'rounded-full');
+    expect(pill.closest('p')).toHaveClass('text-secondary-600');
+  });
+
+  it('does not show the Overdue pill on a non-overdue row', () => {
+    render(<AssignmentsSection assignments={[futureAssignment]} />);
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
+  });
+
+  it('does not render finished rows (and thus no Overdue pill) by default', () => {
+    render(<AssignmentsSection assignments={[{ ...problemSet, status: 'COMPLETED' }]} />);
+    expect(screen.queryByText('Problem Set 4')).not.toBeInTheDocument();
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
+    expect(screen.getByText('All assignments are complete.')).toBeInTheDocument();
+  });
+
+  it('defaults to unfinished-only and reveals finished rows on toggle without a request', async () => {
+    const user = setupUser();
+    render(<AssignmentsSection assignments={[problemSet, labReport]} />);
+    expect(screen.getByText('Problem Set 4')).toBeInTheDocument();
+    expect(screen.queryByText('Lab Report')).not.toBeInTheDocument();
+
+    const toggle = screen.getByRole('button', { name: 'Show completed (1)' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveAttribute('aria-controls', 'completed-assignments');
+
+    await user.click(toggle);
+    expect(screen.getByText('Lab Report')).toBeInTheDocument();
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('region')).toHaveAttribute(
+      'aria-labelledby',
+      'completed-assignments-toggle'
+    );
+    expect(vi.mocked(updateAssignment)).not.toHaveBeenCalled();
+    expect(vi.mocked(deleteAssignment)).not.toHaveBeenCalled();
+
+    await user.click(toggle);
+    expect(screen.queryByText('Lab Report')).not.toBeInTheDocument();
+    expect(vi.mocked(updateAssignment)).not.toHaveBeenCalled();
+    expect(vi.mocked(deleteAssignment)).not.toHaveBeenCalled();
+  });
+
+  it('renders the count in the toggle label', () => {
+    render(
+      <AssignmentsSection
+        assignments={[problemSet, labReport, { ...essay, status: 'COMPLETED' }]}
+      />
+    );
+    expect(screen.getByRole('button', { name: 'Show completed (2)' })).toBeInTheDocument();
+  });
+
+  it('does not render the toggle when there are no finished assignments', () => {
+    render(<AssignmentsSection assignments={[problemSet, essay]} />);
+    expect(screen.queryByRole('button', { name: /Show completed/ })).not.toBeInTheDocument();
+  });
+
+  it('renders all three empty-state variants', () => {
+    const { rerender } = render(<AssignmentsSection assignments={[]} />);
+    expect(screen.getByText('No assignments yet.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add your first assignment' })).toBeInTheDocument();
+
+    rerender(<AssignmentsSection assignments={[{ ...problemSet, status: 'COMPLETED' }]} />);
+    expect(screen.getByText('All assignments are complete.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Show completed (1)' })).toBeInTheDocument();
+
+    rerender(<AssignmentsSection assignments={[problemSet, labReport]} />);
+    expect(screen.getByText('Problem Set 4')).toBeInTheDocument();
+    expect(screen.queryByText('All assignments are complete.')).not.toBeInTheDocument();
+  });
+
+  it('keeps status Select, Edit, Delete and subtask disclosure on revealed rows', async () => {
+    const user = setupUser();
+    render(<AssignmentsSection assignments={[problemSet, labReport]} />);
+    await user.click(screen.getByRole('button', { name: 'Show completed (1)' }));
+    expect(screen.getByRole('combobox', { name: 'Status for Lab Report' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit Lab Report' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete Lab Report' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Subtasks for Lab Report/ })).toBeInTheDocument();
+  });
+
+  it('resets showCompleted to false when the assignments prop changes identity', async () => {
+    const user = setupUser();
+    const view = render(<AssignmentsSection assignments={[problemSet, labReport]} />);
+    await user.click(screen.getByRole('button', { name: 'Show completed (1)' }));
+    expect(screen.getByText('Lab Report')).toBeInTheDocument();
+
+    view.rerender(<AssignmentsSection assignments={[problemSet, labReport]} />);
+    // identity unchanged -> stays revealed
+    expect(screen.getByText('Lab Report')).toBeInTheDocument();
+
+    view.rerender(<AssignmentsSection assignments={[{ ...problemSet }, { ...labReport }]} />);
+    expect(screen.queryByText('Lab Report')).not.toBeInTheDocument();
+  });
+});

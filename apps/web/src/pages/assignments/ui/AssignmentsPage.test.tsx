@@ -241,4 +241,36 @@ describe('AssignmentsPage', () => {
     await screen.findByText('Problem Set 4');
     expect(screen.getByText('No course')).toBeInTheDocument();
   });
+
+  it('shows the Overdue pill on an overdue row', async () => {
+    renderPage();
+    await screen.findByText('Problem Set 4');
+    const pill = screen.getByText('Overdue');
+    expect(pill).toHaveClass('bg-red-100', 'text-red-700', 'rounded-full');
+  });
+
+  it('does not show the Overdue pill on a non-overdue row', async () => {
+    mockedListAssignments.mockResolvedValue([
+      { ...item, dueDate: '2026-12-01T07:00:00.000Z' },
+    ] as never);
+    renderPage();
+    await screen.findByText('Problem Set 4');
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
+  });
+
+  it('does not show the Overdue pill on a finished past-due row', async () => {
+    mockedListAssignments.mockResolvedValue([
+      { ...item, status: 'COMPLETED', dueDate: '2026-10-12T07:00:00.000Z' },
+    ] as never);
+    renderPage();
+    await screen.findByText('Problem Set 4');
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
+  });
+
+  it('keeps the due-date line neutral on an overdue row', async () => {
+    renderPage();
+    await screen.findByText('Problem Set 4');
+    const pill = screen.getByText('Overdue');
+    expect(pill.closest('p')).toHaveClass('text-secondary-600');
+  });
 });
