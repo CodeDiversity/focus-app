@@ -36,6 +36,6 @@ Implemented the frontend `/assignments` list page consuming `GET /assignments`, 
 None.
 
 ## Commit
-`86015ed` — feat(web): SP-122B assignments list page with search, filters, sort.
+`d174526` — feat(web): SP-122B assignments list page with search, filters, sort.
 EOF
 echo done
