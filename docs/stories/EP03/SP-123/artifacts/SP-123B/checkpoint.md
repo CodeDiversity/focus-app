@@ -9,7 +9,7 @@
 - [x] Refactor AssignmentsSection: row helper + showCompleted affordance + finished region + empty states
 - [x] Run tests/typecheck/lint
 - [x] Write implementation.md + parent index
-- [ ] Commit
+- [x] Commit (`97c5746`)
 
 ## Findings
 (none yet)
