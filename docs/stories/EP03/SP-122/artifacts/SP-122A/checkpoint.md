@@ -19,4 +19,4 @@ None yet.
 - [x] Unit tests
 - [x] Data-scoping (DB available; existing spec 74 passed)
 - [x] Typecheck
-- [ ] Commit
+- [x] Commit (`b88b1db` + `cf25b00`)
