@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1 (functional academic tracker)
 **Epic dependency:** EP02 (Semester & Course Management) — **complete 2026-10-23** (implemented + reviewed; queue at [docs/stories/EP02](../EP02/README.md#execution-queue)). EP03 implementation is **not blocked**.
-**Status:** Stories 1–3 are reviewed (SP-113 and SP-114, 2026-10-24; SP-115, 2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md) · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Story 4 → [SP-120](./SP-120/README.md) — **Reviewed 2026-10-26**. Story 5 → [SP-121](./SP-121/README.md) — **Reviewed 2026-10-26**. Story 6 → [SP-122](./SP-122/README.md) — **Reviewed 2026-10-26** ([review](./SP-122/artifacts/SP-122/review.md) · [walkthrough](./SP-122/artifacts/SP-122/walkthrough.md)). Children A/B/C `Reviewed`. Story 7 is not yet broken down. User direction (2026-10-26): SP-121 children lettered from A (D121-6); SP-122 children lettered from A (D122-8).
+**Status:** Stories 1–3 are reviewed (SP-113 and SP-114, 2026-10-24; SP-115, 2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md) · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Story 4 → [SP-120](./SP-120/README.md) — **Reviewed 2026-10-26**. Story 5 → [SP-121](./SP-121/README.md) — **Reviewed 2026-10-26**. Story 6 → [SP-122](./SP-122/README.md) — **Reviewed 2026-10-26** ([review](./SP-122/artifacts/SP-122/review.md) · [walkthrough](./SP-122/artifacts/SP-122/walkthrough.md)). Children A/B/C `Reviewed`. Story 7 → [SP-123](./SP-123/README.md) — **planned 2026-10-26** (breakdown only; children A/B `Needs refinement` for UI/UX). User direction (2026-10-26): SP-121 children lettered from A (D121-6); SP-122 children lettered from A (D122-8); SP-123 children lettered from A (D123-7).
 
 ## Code baseline (2026-10-24)
 
@@ -27,10 +27,11 @@ The 2026-10-24 bullets above are the SP-113 planning baseline. They are not the 
 | [SP-120](./SP-120/README.md) | 4. Implement assignment subtasks | [2 children](./SP-120/README.md) (I backend, J frontend) — **Reviewed 2026-10-26**. Uses the existing `Task` model as subtasks (D120-1 — no migration). | Pending creation |
 | [SP-121](./SP-121/README.md) | 5. Implement completion and status tracking | [2 children](./SP-121/README.md) (A backend, B frontend) — **Reviewed 2026-10-26** ([review](./SP-121/artifacts/SP-121/review.md) · [walkthrough](./SP-121/artifacts/SP-121/walkthrough.md)). Children A/B `Reviewed`. | Pending creation |
 | [SP-122](./SP-122/README.md) | 6. Implement assignment search, sorting, and filters | [3 children](./SP-122/README.md) (A backend, B frontend, C integration) — **Reviewed 2026-10-26** ([review](./SP-122/artifacts/SP-122/review.md) · [walkthrough](./SP-122/artifacts/SP-122/walkthrough.md)). Children A/B/C `Reviewed`. | Pending creation |
-| — | 7. Implement overdue and completed assignment views | Not yet broken down (planned later) | — |
+| [SP-123](./SP-123/README.md) | 7. Implement overdue and completed assignment views | [2 children](./SP-123/README.md) (A overdue identification, B completed views) — **planned 2026-10-26**; A/B `Needs refinement` for UI/UX | Pending creation |
 
-Story 6 is now SP-122 (broken down 2026-10-26). Story 7 is anticipated as
-SP-123 until it is broken down. (SP-116…SP-119 were consumed by EP09's E2E
+Story 6 is now SP-122 (broken down and reviewed 2026-10-26). Story 7 is now
+SP-123 (broken down 2026-10-26; children A/B `Needs refinement`). (SP-116…SP-119
+were consumed by EP09's E2E
 automation: SP-116/117/118 implemented, SP-119 the dedicated-test-database
 infra story.)
 IDs may shift if a proposed story splits.
@@ -43,8 +44,8 @@ IDs may shift if a proposed story splits.
 | Optional fields include due date, estimated duration, type, and priority. | AC-E03-02 | **SP-113** (due date, estimated duration, priority) + **SP-115** (the `type` column — G API, H UI). |
 | Assignments can contain ordered, independently completable subtasks. | AC-E03-03 | **SP-120** I (API) / J (UI). |
 | Students can update assignment status. | AC-E03-04 | **SP-121** A (API) / B (UI). |
-| Completing an assignment removes it from unfinished-work views without deleting it. | AC-E03-05 | **SP-121** A (transition is a PATCH — no delete) + B (unfinished-only default view) + story 7 (TBD — completed/overdue views). |
-| Overdue work is identified from the deadline and completion status. | AC-E03-06 | Story 7 (TBD). |
+| Completing an assignment removes it from unfinished-work views without deleting it. | AC-E03-05 | **SP-121** A (transition is a PATCH — no delete) + B (unfinished-only default view) + **SP-123B** (completed view that makes finished work visible again). |
+| Overdue work is identified from the deadline and completion status. | AC-E03-06 | **SP-123A** (shared overdue predicate + indicator on course detail and the list page). |
 | Assignment lists support course, date, and status filtering. | AC-E03-07 | **SP-122** A (endpoint + filters + sort) / B (list page + controls) / C (cross-layer proof). |
 
 The epic defines no test requirements. Story-level test obligations are owned
@@ -78,6 +79,18 @@ substory is None with reason: the review unit is complete. Children A/B/C are
 `Reviewed`. F122C-1 closed in plan (440ff2a); D122C-1 is an authorized
 DoD-10 exception (manual browser pass outstanding for the user). No Jira sync
 was authorized; all SP-122 keys are `Pending creation`.
+
+SP-123 is **Planned** (2026-10-26 — [breakdown](./SP-123/README.md)). Children
+A (overdue identification) and B (completed views) are `Needs refinement` for
+UI/UX; neither is ready to code until `ui-refiner` settles their gaps. No Jira
+sync was authorized; all SP-123 keys are `Pending creation`.
+
+## Quality gate — SP-123 plan (2026-10-26)
+
+**Plan Ready** — D123-1…7 are planner-recorded and grounded in D121-4/D121-5/
+D121-7 and D113-5. D123-7 leaves indicator placement/copy and the completed
+affordance choice to `ui-refiner` (A and B are `Needs refinement`). No API or
+schema change. Full gate table: [SP-123 README](./SP-123/README.md#quality-gate-2026-10-26). No Jira sync was authorized; all SP-123 keys are `Pending creation`.
 
 ## Quality gate — SP-122 plan (2026-10-26)
 
