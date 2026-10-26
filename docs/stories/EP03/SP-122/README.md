@@ -3,16 +3,16 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-122](./SP-122-assignment-search-sorting-and-filters.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Reviewed 2026-10-26 — SP-122 (A/B/C) meets the DoD and AC-E03-07; F122C-1 closed (pass 2); DoD-10 under D122C-1 exception; DoD-11 walkthrough saved. No Jira sync authorized; keys are `Pending creation`.
+**Status:** Reviewed 2026-10-26 (pass 3) — SP-122 (A/B/C) meets the DoD and AC-E03-07; F122C-1 closed (pass 2); DoD-10 under D122C-1 exception; DoD-11 walkthrough saved/refreshed. Post-review UI polish commit `faddc5d` (filter bar layout) re-assessed in pass 3: no new findings. No Jira sync authorized; keys are `Pending creation`.
 **Jira key:** Pending creation (no sync authorized)
 
 ## Autopilot
 
 - **Scope and entry:** SP-122 parent review unit (children SP-122A/B/C). Entry hint: implement SP-122A. No explicit narrower limit; continue through final parent review.
 - **Coordinator:** workspace `/Users/michael/Documents/GitHub/focus-app`, branch `main`, baseline commit `e0a1722` (SP-122 plan). Retain this baseline until the parent implementation index owns the combined scope.
-- **Stage:** complete (parent review passed 2026-10-26; SP-122A/B/C Reviewed).
-- **Active dispatch:** None (SP-122 parent review passed; walkthrough saved).
-- **Last result / retry state:** Planner correction `440ff2a` revised D122-5/contract to enum-ordinal (resolving F122C-1 in plan); reviewer closed F122C-1 in pass 2. DoD-10 manual browser pass remains outstanding under D122C-1 exception (user). DoD-11 walkthrough saved at `./artifacts/SP-122/walkthrough.md`.
+- **Stage:** complete (parent review passed 2026-10-26 pass 3; SP-122A/B/C Reviewed).
+- **Active dispatch:** None (SP-122 parent review passed pass 3; walkthrough saved/refreshed).
+- **Last result / retry state:** Planner correction `440ff2a` revised D122-5/contract to enum-ordinal (resolving F122C-1 in plan); reviewer closed F122C-1 in pass 2. Post-review UI polish commit `faddc5d` re-assessed in pass 3: no new findings. DoD-10 manual browser pass remains outstanding under D122C-1 exception (user). DoD-11 walkthrough saved/refreshed at `./artifacts/SP-122/walkthrough.md`.
 - **Resume:** None — SP-122 complete. Next actionable work is outside this parent (story 7 / EP05, or other queued parents).
 
 ## Execution queue
@@ -33,9 +33,9 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-122A-assignment-list-api.md) | Reviewed | SP-113A/SP-114D/SP-115G reviewed (satisfied 2026-10-24/25); SP-121 reviewed (satisfied 2026-10-26) | None — parent review passed 2026-10-26 | checkpoint: `./artifacts/SP-122A/checkpoint.md`; implementation: `./artifacts/SP-122A/implementation.md`; review: `./artifacts/SP-122/review.md` (pass 2); walkthrough: `./artifacts/SP-122/walkthrough.md` |
-| [B](./SP-122B-assignment-list-ui.md) | Reviewed | A implemented (contract fixed in this README); UI/UX settled 2026-10-26 (ui-refiner; D122B-1…D122B-10) | None — parent review passed 2026-10-26 | checkpoint: `./artifacts/SP-122B/checkpoint.md`; implementation: `./artifacts/SP-122B/implementation.md`; review: `./artifacts/SP-122/review.md` (pass 2); walkthrough: `./artifacts/SP-122/walkthrough.md` |
-| [C](./SP-122C-assignment-list-integration.md) | Reviewed | A and B implemented | None — parent review passed 2026-10-26 | checkpoint: `./artifacts/SP-122C/checkpoint.md`; implementation: `./artifacts/SP-122C/implementation.md`; parent index: `./artifacts/SP-122/implementation.md`; review: `./artifacts/SP-122/review.md` (pass 2); walkthrough: `./artifacts/SP-122/walkthrough.md` |
+| [A](./SP-122A-assignment-list-api.md) | Reviewed | SP-113A/SP-114D/SP-115G reviewed (satisfied 2026-10-24/25); SP-121 reviewed (satisfied 2026-10-26) | None — parent review passed 2026-10-26 | checkpoint: `./artifacts/SP-122A/checkpoint.md`; implementation: `./artifacts/SP-122A/implementation.md`; review: `./artifacts/SP-122/review.md` (pass 3); walkthrough: `./artifacts/SP-122/walkthrough.md` |
+| [B](./SP-122B-assignment-list-ui.md) | Reviewed | A implemented (contract fixed in this README); UI/UX settled 2026-10-26 (ui-refiner; D122B-1…D122B-10) | None — parent review passed 2026-10-26 | checkpoint: `./artifacts/SP-122B/checkpoint.md`; implementation: `./artifacts/SP-122B/implementation.md`; review: `./artifacts/SP-122/review.md` (pass 3); walkthrough: `./artifacts/SP-122/walkthrough.md` |
+| [C](./SP-122C-assignment-list-integration.md) | Reviewed | A and B implemented | None — parent review passed 2026-10-26 | checkpoint: `./artifacts/SP-122C/checkpoint.md`; implementation: `./artifacts/SP-122C/implementation.md`; parent index: `./artifacts/SP-122/implementation.md`; review: `./artifacts/SP-122/review.md` (pass 3); walkthrough: `./artifacts/SP-122/walkthrough.md` |
 
 Sequence: A → B → C, one writer, in child-letter order. B owns the assignments list page and the entity API function. C is the named integration owner (e2e + DoD-10 browser note + parent index).
 
@@ -203,6 +203,7 @@ with stable IDs and are never rewritten.)
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
 | F122C-1 | 2026-10-26 | Should-fix | `docs/stories/EP03/SP-122/README.md` D122-5 and Shared API Contract sort line; `apps/api/src/modules/assignments/assignments.service.ts` `list()` `orderBy` (implementation, unchanged); `assignments-list-e2e.spec.ts` sort expectations | Reviewer finding F122C-1: D122-5 documented "stored enum string" while the implementation sorts Postgres enum columns by declaration ordinal (LOW→MEDIUM→HIGH→URGENT / PENDING→IN_PROGRESS→COMPLETED→SUBMITTED→GRADED). E2e expectations were adjusted to ordinal and pass. Contract, implementation, and tests disagreed on what "priority/status asc" means. | Revised D122-5 and the Shared API Contract sort line to state priority/status sort by enum declaration order (Postgres ordinal), not lexicographic text order and not a severity rank; updated SP-122A D122-5/AC7/contract notes and SP-122C contract notes to match. Docs only — no application code changed. E2e test comments should reference revised D122-5 rather than F122C-1. | Cross-file comparison: README D122-5 ↔ Shared API Contract sort line ↔ SP-122A D122-5/AC7/contract notes ↔ SP-122C contract notes all state ordinal order with identical enum sequences; implementation `orderBy: [{ priority: order }]` / `[{ status: order }]` on native enum columns yields the documented ordinal order; e2e expectations (ordinal) remain consistent. | Closed in review pass 2 (reviewer): docs consistent with ordinal implementation; no code change (F122C-1). See `./artifacts/SP-122/review.md` pass 2. |
+| F122C-3 | 2026-10-26 | Polish (optional) | `apps/web/src/pages/assignments/ui/AssignmentsPage.tsx` filter bar (post-review commit `faddc5d`) | Post-review UI polish commit `faddc5d` re-laid-out the filter bar (`space-y-3` vertical rhythm; responsive grid `grid-cols-2 sm:grid-cols-3 lg:grid-cols-4`; `w-full` controls; 44 px touch target retained on the order toggle). Re-assessed in review pass 3: CSS-only, no logic/API/test change; supports DoD 6/7 by inspection; live mobile/a11y still not executed under D122C-1. | Polish retained; no action required. Recorded as a correction-log note per the passing-review docs sync. | Review pass 3 (`./artifacts/SP-122/review.md`): code inspection of the filter bar; no test rerun (CSS-only; component tests assert behavior, not class names). | Closed — no finding (polish retained); see pass-3 report. |
 
 ## Quality gate (2026-10-26)
 

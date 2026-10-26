@@ -3,8 +3,8 @@
 **Parent:** [SP-122](../../SP-122-assignment-search-sorting-and-filters.md) (coordination) / [SP-122 README](../../README.md)
 **Epic:** EP03 — Assignment & Task Management (Jira STUDY-16)
 **Review unit:** combined SP-122 (children SP-122A, SP-122B, SP-122C)
-**Final review:** [`review.md`](./review.md) (pass 2, 2026-10-26, verdict PASS)
-**Reviewed state:** working tree on `main`; parent baseline `e0a1722`; planner correction `440ff2a` (docs only).
+**Final review:** [`review.md`](./review.md) (pass 3, 2026-10-26, verdict PASS)
+**Reviewed state:** working tree on `main`; parent baseline `e0a1722`; planner correction `440ff2a` (docs only); post-review UI polish commit `faddc5d` (filter bar layout, CSS only).
 
 This walkthrough explains the finished feature, the evidence for correctness after the review rounds, and manual test steps with expected results. It is the reviewer-owned DoD item 11 deliverable for this parent.
 
@@ -12,7 +12,7 @@ This walkthrough explains the finished feature, the evidence for correctness aft
 
 A student can now open a single list of **all their assignments across courses** at `/assignments` and narrow it by course, date range, status (plus priority and type), and free text, and order it by due date, title, priority, status, or creation/update time. Each row carries its course context (color chip, code, name) and subtask progress, and links to the course detail page. Filtering by another student's course is impossible (uniform 404), and no query parameter can bypass ownership.
 
-Scope of this review unit (in scope): SP-122A (backend `GET /assignments`), SP-122B (frontend `/assignments` page + `listAssignments`), SP-122C (integration e2e + parent index). Out of scope (intentionally): story 7 overdue/completed views, pagination (D122-7), a dedicated assignment detail page (D122-1), and any change to POST/PATCH/DELETE/subtask routes or the course-detail projection.
+Scope of this review unit (in scope): SP-122A (backend `GET /assignments`), SP-122B (frontend `/assignments` page + `listAssignments`), SP-122C (integration e2e + parent index). The post-review polish commit `faddc5d` (CSS only) refined the filter bar layout (`space-y-3` vertical rhythm; responsive grid `grid-cols-2 sm:grid-cols-3 lg:grid-cols-4`; `w-full` controls; 44 px touch target on the order toggle); it introduces no behavior, API, or test changes. Out of scope (intentionally): story 7 overdue/completed views, pagination (D122-7), a dedicated assignment detail page (D122-1), and any change to POST/PATCH/DELETE/subtask routes or the course-detail projection.
 
 ## 2. How the code works
 
