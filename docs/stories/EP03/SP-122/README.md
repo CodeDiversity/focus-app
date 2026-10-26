@@ -10,10 +10,10 @@
 
 - **Scope and entry:** SP-122 parent review unit (children SP-122A/B/C). Entry hint: implement SP-122A. No explicit narrower limit; continue through final parent review.
 - **Coordinator:** workspace `/Users/michael/Documents/GitHub/focus-app`, branch `main`, baseline commit `e0a1722` (SP-122 plan). Retain this baseline until the parent implementation index owns the combined scope.
-- **Stage:** implement
-- **Active dispatch:** None (SP-122B implemented; next: implement SP-122C).
-- **Last result / retry state:** SP-122B implemented — frontend `/assignments` page + listAssignments + tests. Artifacts `./artifacts/SP-122B/`. Next: SP-122C.
-- **Resume:** Dispatch a fresh implementer for SP-122C (integration + parent index). Current next action: **SP-122C — implement**.
+- **Stage:** review (all children implemented; combined parent review next)
+- **Active dispatch:** None (SP-122C implemented; parent index written).
+- **Last result / retry state:** SP-122C implemented — e2e spec (23 tests pass with DB) + parent index + DoD-10 note (D122C-1 exception). Artifacts `./artifacts/SP-122C/`, `./artifacts/SP-122/`. Next: combined parent review.
+- **Resume:** Request one combined independent SP-122 review. Current next action: **SP-122 parent review**.
 
 ## Execution queue
 
@@ -23,9 +23,9 @@
 
 **Parent artifacts:** `./artifacts/SP-122/` (parent index written by C; review and walkthrough by the reviewer)
 
-**Active substory:** None (SP-122A and SP-122B implemented; SP-122C queued).
+**Active substory:** None (SP-122A, SP-122B and SP-122C implemented; awaiting combined parent review).
 
-**Next substory:** **SP-122C** — implement (`Queued`). A and B implemented; C waits on A and B.
+**Next substory:** **None** — all children implemented; combined SP-122 parent review next.
 
 **Implementation owner:** `implementer`, sequential across layers. Backend and frontend are scope labels, not concurrent writers.
 
@@ -35,7 +35,7 @@
 |---|---|---|---|---|
 | [A](./SP-122A-assignment-list-api.md) | Implemented — awaiting parent review | SP-113A/SP-114D/SP-115G reviewed (satisfied 2026-10-24/25); SP-121 reviewed (satisfied 2026-10-26) | Parent review after B/C | checkpoint: `./artifacts/SP-122A/checkpoint.md`; implementation: `./artifacts/SP-122A/implementation.md` |
 | [B](./SP-122B-assignment-list-ui.md) | Implemented — awaiting parent review | A implemented (contract fixed in this README); UI/UX settled 2026-10-26 (ui-refiner; D122B-1…D122B-10) | Parent review after C | checkpoint: `./artifacts/SP-122B/checkpoint.md`; implementation: `./artifacts/SP-122B/implementation.md` |
-| [C](./SP-122C-assignment-list-integration.md) | Queued | A and B implemented | Implement after B | — |
+| [C](./SP-122C-assignment-list-integration.md) | Implemented — awaiting parent review | A and B implemented | Parent review after C | checkpoint: `./artifacts/SP-122C/checkpoint.md`; implementation: `./artifacts/SP-122C/implementation.md`; parent index: `./artifacts/SP-122/implementation.md` |
 
 Sequence: A → B → C, one writer, in child-letter order. B owns the assignments list page and the entity API function. C is the named integration owner (e2e + DoD-10 browser note + parent index).
 

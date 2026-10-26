@@ -6,7 +6,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Layer:** Integration
-**Status:** Queued (planning complete 2026-10-26)
+**Status:** Implemented — awaiting parent review (2026-10-26)
 **Dependencies:** SP-122A and SP-122B implemented. No open blocker once both are done.
 **Jira key:** Pending creation
 
