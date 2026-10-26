@@ -6,6 +6,15 @@
 **Status:** Planned 2026-10-26 — covers EP03 proposed story **6 (implement assignment search, sorting, and filters)**. **Plan Ready** (gate below). Implementation not blocked (SP-113/SP-114/SP-115/SP-120/SP-121 reviewed). No Jira sync authorized; keys are `Pending creation`.
 **Jira key:** Pending creation (no sync authorized)
 
+## Autopilot
+
+- **Scope and entry:** SP-122 parent review unit (children SP-122A/B/C). Entry hint: implement SP-122A. No explicit narrower limit; continue through final parent review.
+- **Coordinator:** workspace `/Users/michael/Documents/GitHub/focus-app`, branch `main`, baseline commit `e0a1722` (SP-122 plan). Retain this baseline until the parent implementation index owns the combined scope.
+- **Stage:** implement
+- **Active dispatch:** None (about to dispatch SP-122A).
+- **Last result / retry state:** Plan Ready 2026-10-26 (gate table in this README). No implementation yet. No correction cycles.
+- **Resume:** Dispatch a fresh implementer for SP-122A (backend `GET /assignments`). Then ui-refine SP-122B, implement B, implement C, then one combined parent review. Current next action: **SP-122A — implement**.
+
 ## Execution queue
 
 **Delivery home:** `docs/stories/EP03/SP-122/`
