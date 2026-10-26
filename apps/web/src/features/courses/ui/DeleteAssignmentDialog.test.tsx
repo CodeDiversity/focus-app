@@ -25,6 +25,7 @@ const assignment: CourseAssignment = {
   status: 'PENDING',
   priority: 'MEDIUM',
   type: null,
+  subtasks: [],
   ...timestamps,
 };
 

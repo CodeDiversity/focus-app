@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-120](./SP-120-assignment-subtasks.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Plan Ready 2026-10-25 — children broken down; implementation not started. J is `Needs refinement` for UI/UX.
+**Status:** Implemented — awaiting parent review (2026-10-25). I and J are implemented. Combined review has not happened.
 **Jira key:** Pending creation (no sync authorized)
 
 ## Execution queue
@@ -14,9 +14,9 @@
 
 **Parent artifacts:** `./artifacts/SP-120/` (parent index written by J; review and walkthrough by the reviewer)
 
-**Active substory:** None (SP-120I implemented; awaiting the combined parent review after J).
+**Active substory:** None (SP-120I and SP-120J implemented; awaiting the combined parent review).
 
-**Next substory:** **SP-120J** — run `ui-refiner` on SP-120J, then implement it (I's contract is live: `./artifacts/SP-120I/implementation.md`).
+**Next substory:** None — final parent review next. Index: [./artifacts/SP-120/implementation.md](./artifacts/SP-120/implementation.md). Open item J-4 is the unexecuted DoD-10 browser pass, recorded in J's implementation record.
 
 **Implementation owner:** `implementer`, sequential across layers. Backend and frontend are scope labels, not concurrent writers.
 
@@ -24,8 +24,8 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [I](./SP-120I-subtask-api.md) | Implemented — awaiting parent review | SP-113/SP-114/SP-115 reviewed (satisfied 2026-10-25) | None (blocked on the combined parent review after J) | [implementation record](./artifacts/SP-120I/implementation.md) · [checkpoint](./artifacts/SP-120I/checkpoint.md) |
-| [J](./SP-120J-subtask-ui.md) | Needs refinement | I **implemented** (2026-10-25); UI/UX gaps must be settled by `ui-refiner` before code | Run `ui-refiner` on SP-120J, then implement | — |
+| [I](./SP-120I-subtask-api.md) | Implemented — awaiting parent review | SP-113/SP-114/SP-115 reviewed (satisfied 2026-10-25) | None (blocked on the combined parent review) | [implementation record](./artifacts/SP-120I/implementation.md) · [checkpoint](./artifacts/SP-120I/checkpoint.md) |
+| [J](./SP-120J-subtask-ui.md) | Implemented — awaiting parent review | I **implemented** (2026-10-25). UI/UX settled in the story file 2026-10-25. DoD-10 browser pass not executed here (J-4, recorded) | None (blocked on the combined parent review) | [implementation record](./artifacts/SP-120J/implementation.md) · [checkpoint](./artifacts/SP-120J/checkpoint.md) |
 
 Sequence: I → J, one writer. J owns the parent index and the DoD-10 browser note. There is no third integration story.
 

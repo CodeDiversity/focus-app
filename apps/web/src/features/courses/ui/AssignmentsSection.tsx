@@ -1,26 +1,47 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
+import { ChevronDown } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { AssignmentForm } from './AssignmentForm';
 import { DeleteAssignmentDialog } from './DeleteAssignmentDialog';
+import { SubtaskChecklist, type SubtaskChangeAction } from './SubtaskChecklist';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 import type {
   AssignmentPriority,
   AssignmentStatus,
   AssignmentType,
   CourseAssignment,
+  Subtask,
 } from '@/shared/types/academic';
+
+export type { SubtaskChangeAction };
 
 export interface AssignmentsSectionProps {
   courseId: string;
   onAssignmentChanged: (action: 'added' | 'updated' | 'deleted') => void;
   onAssignmentFormOpen?: () => void;
+  /** Subtask success. The page announces and background-refetches. Not assignment copy. */
+  onSubtaskChanged: (action: SubtaskChangeAction) => void;
+  /** Partial reorder: refetch only, no success sentence. */
+  onSubtaskRefresh: () => void;
+  /** Clears the page live region before a subtask request so a repeat sentence announces. */
+  onSubtaskPending?: () => void;
   /**
    * The course's assignments in the API order (`dueDate` asc nulls-last, then
    * title — from the `getCourse` projection, D112B-13). Rendered as-is — no
-   * client re-sort.
+   * client re-sort. Each row's `subtasks` are likewise rendered as given.
    */
   assignments: CourseAssignment[];
+}
+
+/** Collapsed disclosure copy (SP-120J). `done` counts `COMPLETED` only. */
+export function subtaskSummary(subtasks: Subtask[]): string {
+  const count = subtasks.length;
+  if (count === 0) return 'No subtasks';
+  const noun = count === 1 ? '1 subtask' : `${count} subtasks`;
+  const done = subtasks.filter((item) => item.status === 'COMPLETED').length;
+  if (done === 0) return noun;
+  return `${noun}, ${done} complete`;
 }
 
 /**
@@ -98,10 +119,15 @@ export function AssignmentsSection({
   courseId,
   onAssignmentChanged,
   onAssignmentFormOpen,
+  onSubtaskChanged,
+  onSubtaskRefresh,
+  onSubtaskPending,
 }: AssignmentsSectionProps) {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CourseAssignment | null>(null);
   const [deleting, setDeleting] = useState<CourseAssignment | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
+  const [busyIds, setBusyIds] = useState<Set<string>>(() => new Set());
   const sectionRef = useRef<HTMLElement>(null);
   // Set when delete succeeds, cleared once the deleted row is actually gone.
   const [focusAfterDelete, setFocusAfterDelete] = useState<{
@@ -125,6 +151,38 @@ export function AssignmentsSection({
     // the empty-state button exists.
     if (neighbor) focusControl(`[data-assignment-focus="edit:${CSS.escape(neighbor.id)}"]`);
     else focusControl('[data-assignment-focus="add"]');
+  };
+
+  useEffect(() => {
+    setExpandedIds((current) => {
+      let dropped = false;
+      const next = new Set<string>();
+      for (const id of current) {
+        if (assignments.some((item) => item.id === id)) next.add(id);
+        else dropped = true;
+      }
+      return dropped ? next : current;
+    });
+  }, [assignments]);
+
+  const toggleExpanded = (assignmentId: string) => {
+    if (busyIds.has(assignmentId)) return;
+    setExpandedIds((current) => {
+      const next = new Set(current);
+      if (next.has(assignmentId)) next.delete(assignmentId);
+      else next.add(assignmentId);
+      return next;
+    });
+  };
+
+  const setAssignmentBusy = (assignmentId: string, busy: boolean) => {
+    setBusyIds((current) => {
+      if (busy === current.has(assignmentId)) return current;
+      const next = new Set(current);
+      if (busy) next.add(assignmentId);
+      else next.delete(assignmentId);
+      return next;
+    });
   };
 
   useLayoutEffect(() => {
@@ -185,51 +243,85 @@ export function AssignmentsSection({
       ) : (
         <ul className="divide-y divide-secondary-100">
           {assignments.map((assignment) => (
-            <li
-              key={assignment.id}
-              className="flex flex-col gap-3 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="min-w-0">
-                <p className="font-medium text-secondary-900">{assignment.title}</p>
-                <p
-                  className={clsx(
-                    'mt-1 text-sm',
-                    assignment.dueDate === null ? 'text-secondary-500' : 'text-secondary-600'
+            <li key={assignment.id} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="font-medium text-secondary-900">{assignment.title}</p>
+                  <p
+                    className={clsx(
+                      'mt-1 text-sm',
+                      assignment.dueDate === null ? 'text-secondary-500' : 'text-secondary-600'
+                    )}
+                  >
+                    {assignment.dueDate === null
+                      ? 'No due date'
+                      : `Due ${formatDate(new Date(assignment.dueDate), timeZone)}`}
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="mt-2"
+                    id={`subtasks-toggle-${assignment.id}`}
+                    aria-expanded={expandedIds.has(assignment.id)}
+                    aria-controls={`subtasks-${assignment.id}`}
+                    aria-label={`Subtasks for ${assignment.title}: ${subtaskSummary(assignment.subtasks)}`}
+                    disabled={busyIds.has(assignment.id)}
+                    leftIcon={
+                      <ChevronDown
+                        aria-hidden
+                        size={16}
+                        className={clsx(
+                          'transition-transform',
+                          expandedIds.has(assignment.id) && 'rotate-180'
+                        )}
+                      />
+                    }
+                    onClick={() => toggleExpanded(assignment.id)}
+                  >
+                    {subtaskSummary(assignment.subtasks)}
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge className={STATUS_STYLES[assignment.status]}>
+                    {STATUS_LABELS[assignment.status]}
+                  </Badge>
+                  <Badge className={PRIORITY_STYLES[assignment.priority]}>
+                    {PRIORITY_LABELS[assignment.priority]}
+                  </Badge>
+                  {assignment.type && (
+                    <Badge className={TYPE_STYLE}>{TYPE_LABELS[assignment.type]}</Badge>
                   )}
-                >
-                  {assignment.dueDate === null
-                    ? 'No due date'
-                    : `Due ${formatDate(new Date(assignment.dueDate), timeZone)}`}
-                </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    data-assignment-focus={`edit:${assignment.id}`}
+                    aria-label={`Edit ${assignment.title}`}
+                    onClick={() => openEdit(assignment)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    aria-label={`Delete ${assignment.title}`}
+                    onClick={() => openDelete(assignment)}
+                  >
+                    Delete
+                  </Button>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Badge className={STATUS_STYLES[assignment.status]}>
-                  {STATUS_LABELS[assignment.status]}
-                </Badge>
-                <Badge className={PRIORITY_STYLES[assignment.priority]}>
-                  {PRIORITY_LABELS[assignment.priority]}
-                </Badge>
-                {assignment.type && (
-                  <Badge className={TYPE_STYLE}>{TYPE_LABELS[assignment.type]}</Badge>
-                )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  data-assignment-focus={`edit:${assignment.id}`}
-                  aria-label={`Edit ${assignment.title}`}
-                  onClick={() => openEdit(assignment)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  aria-label={`Delete ${assignment.title}`}
-                  onClick={() => openDelete(assignment)}
-                >
-                  Delete
-                </Button>
-              </div>
+              {expandedIds.has(assignment.id) && (
+                <SubtaskChecklist
+                  assignmentId={assignment.id}
+                  assignmentTitle={assignment.title}
+                  subtasks={assignment.subtasks}
+                  onChanged={onSubtaskChanged}
+                  onRefresh={onSubtaskRefresh}
+                  onBusyChange={(busy) => setAssignmentBusy(assignment.id, busy)}
+                  onPendingAnnouncement={onSubtaskPending}
+                />
+              )}
             </li>
           ))}
         </ul>

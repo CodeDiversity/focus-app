@@ -1,7 +1,15 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { InternalAxiosRequestConfig } from 'axios';
 import httpClient from '@/shared/api/httpClient';
-import { createAssignment, deleteAssignment, updateAssignment } from './assignmentApi';
+import {
+  createAssignment,
+  createSubtask,
+  deleteAssignment,
+  deleteSubtask,
+  listSubtasks,
+  updateAssignment,
+  updateSubtask,
+} from './assignmentApi';
 
 const originalAdapter = httpClient.defaults.adapter;
 const assignment = {
@@ -124,6 +132,82 @@ describe('deleteAssignment', () => {
     };
     await expect(deleteAssignment('assignment-1')).resolves.toBeUndefined();
     expect(seen?.url).toBe('/assignments/assignment-1');
+    expect(seen?.method).toBe('delete');
+  });
+});
+
+const subtask = {
+  id: 'subtask-1',
+  title: 'Read chapter 1',
+  status: 'PENDING',
+  orderIndex: 0,
+  createdAt: '2026-10-25T12:00:00.000Z',
+  updatedAt: '2026-10-25T12:00:00.000Z',
+};
+
+describe('listSubtasks', () => {
+  it('GETs /assignments/:id/subtasks and returns the ordered list', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seen = config;
+      return { config, data: [subtask], status: 200, statusText: 'OK', headers: {} };
+    };
+    await expect(listSubtasks('assignment-1')).resolves.toEqual([subtask]);
+    expect(seen?.url).toBe('/assignments/assignment-1/subtasks');
+    expect(seen?.method).toBe('get');
+    expect(Object.keys(subtask)).toEqual([
+      'id',
+      'title',
+      'status',
+      'orderIndex',
+      'createdAt',
+      'updatedAt',
+    ]);
+  });
+});
+
+describe('createSubtask', () => {
+  it('POSTs only the title to the nested path and returns the 6-key subtask', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seen = config;
+      return { config, data: subtask, status: 201, statusText: 'Created', headers: {} };
+    };
+    await expect(createSubtask('assignment-1', { title: 'Read chapter 1' })).resolves.toEqual(
+      subtask
+    );
+    expect(seen?.url).toBe('/assignments/assignment-1/subtasks');
+    expect(seen?.method).toBe('post');
+    expect(JSON.parse(seen!.data as string)).toEqual({ title: 'Read chapter 1' });
+  });
+});
+
+describe('updateSubtask', () => {
+  it('PATCHes the exact partial body to the nested subtask path', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    const updated = { ...subtask, status: 'COMPLETED' };
+    httpClient.defaults.adapter = async (config) => {
+      seen = config;
+      return { config, data: updated, status: 200, statusText: 'OK', headers: {} };
+    };
+    await expect(
+      updateSubtask('assignment-1', 'subtask-1', { status: 'COMPLETED' })
+    ).resolves.toEqual(updated);
+    expect(seen?.url).toBe('/assignments/assignment-1/subtasks/subtask-1');
+    expect(seen?.method).toBe('patch');
+    expect(JSON.parse(seen!.data as string)).toEqual({ status: 'COMPLETED' });
+  });
+});
+
+describe('deleteSubtask', () => {
+  it('DELETEs the nested subtask path and resolves void', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seen = config;
+      return { config, data: undefined, status: 204, statusText: 'No Content', headers: {} };
+    };
+    await expect(deleteSubtask('assignment-1', 'subtask-1')).resolves.toBeUndefined();
+    expect(seen?.url).toBe('/assignments/assignment-1/subtasks/subtask-1');
     expect(seen?.method).toBe('delete');
   });
 });

@@ -1,12 +1,17 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import { AssignmentsSection as Section } from './AssignmentsSection';
-import { deleteAssignment } from '@/entities/assignment/api/assignmentApi';
+import { createSubtask, deleteAssignment } from '@/entities/assignment/api/assignmentApi';
+import type { Subtask } from '@/shared/types/academic';
 
 vi.mock('@/entities/assignment/api/assignmentApi', () => ({
   createAssignment: vi.fn(),
   updateAssignment: vi.fn(),
   deleteAssignment: vi.fn(),
+  listSubtasks: vi.fn(),
+  createSubtask: vi.fn(),
+  updateSubtask: vi.fn(),
+  deleteSubtask: vi.fn(),
 }));
 import { Providers } from '@/test/providers';
 import { setupUser } from '@/test/user';
@@ -31,6 +36,7 @@ const problemSet: CourseAssignment = {
   status: 'PENDING',
   priority: 'MEDIUM',
   type: 'HOMEWORK',
+  subtasks: [],
   ...timestamps,
 };
 const essay: CourseAssignment = {
@@ -43,6 +49,7 @@ const essay: CourseAssignment = {
   status: 'IN_PROGRESS',
   priority: 'HIGH',
   type: null,
+  subtasks: [],
   ...timestamps,
 };
 const labReport: CourseAssignment = {
@@ -55,6 +62,7 @@ const labReport: CourseAssignment = {
   status: 'GRADED',
   priority: 'LOW',
   type: null,
+  subtasks: [],
   ...timestamps,
 };
 
@@ -66,10 +74,14 @@ const AssignmentsSection = ({
   assignments,
   onAssignmentChanged = vi.fn(),
   onAssignmentFormOpen = vi.fn(),
+  onSubtaskChanged = vi.fn(),
+  onSubtaskRefresh = vi.fn(),
 }: {
   assignments: CourseAssignment[];
   onAssignmentChanged?: (action: 'added' | 'updated' | 'deleted') => void;
   onAssignmentFormOpen?: () => void;
+  onSubtaskChanged?: (action: 'added' | 'completed' | 'reopened' | 'moved' | 'deleted') => void;
+  onSubtaskRefresh?: () => void;
 }) => (
   <Providers initialEntries={['/courses/course-1']}>
     <Section
@@ -77,6 +89,8 @@ const AssignmentsSection = ({
       assignments={assignments}
       onAssignmentChanged={onAssignmentChanged}
       onAssignmentFormOpen={onAssignmentFormOpen}
+      onSubtaskChanged={onSubtaskChanged}
+      onSubtaskRefresh={onSubtaskRefresh}
     />
   </Providers>
 );
@@ -338,5 +352,180 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     expect(screen.queryByText('Problem Set 4')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Add your first assignment' })).toHaveFocus();
     expect(document.body).not.toHaveFocus();
+  });
+});
+
+const subtask = (
+  id: string,
+  title: string,
+  status: Subtask['status'],
+  orderIndex: number
+): Subtask => ({
+  id,
+  title,
+  status,
+  orderIndex,
+  createdAt: timestamps.createdAt,
+  updatedAt: timestamps.updatedAt,
+});
+
+describe('AssignmentsSection subtask disclosure (SP-120J AC 1, AC 8)', () => {
+  it('shows the collapsed summary and keeps Edit/Delete in the badge cluster', () => {
+    render(
+      <AssignmentsSection
+        assignments={[
+          { ...problemSet, subtasks: [] },
+          { ...essay, subtasks: [subtask('e1', 'Draft', 'PENDING', 0)] },
+          {
+            ...labReport,
+            subtasks: [subtask('l1', 'One', 'PENDING', 0), subtask('l2', 'Two', 'PENDING', 1)],
+          },
+          {
+            ...problemSet,
+            id: 'asgn-4',
+            title: 'Quiz',
+            subtasks: [
+              subtask('q1', 'A', 'COMPLETED', 0),
+              subtask('q2', 'B', 'PENDING', 1),
+              subtask('q3', 'C', 'PENDING', 2),
+            ],
+          },
+          {
+            ...problemSet,
+            id: 'asgn-5',
+            title: 'Done once',
+            subtasks: [subtask('d1', 'Only', 'COMPLETED', 0)],
+          },
+        ]}
+      />
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Subtasks for Problem Set 4: No subtasks' })
+    ).toHaveAttribute('aria-expanded', 'false');
+    expect(
+      screen.getByRole('button', { name: 'Subtasks for Research Essay: 1 subtask' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Subtasks for Lab Report: 2 subtasks' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Subtasks for Quiz: 3 subtasks, 1 complete' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Subtasks for Done once: 1 subtask, 1 complete' })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
+
+    const item = screen.getAllByRole('listitem')[0]!;
+    const badge = within(item).getByText('Homework');
+    const edit = within(item).getByRole('button', { name: 'Edit Problem Set 4' });
+    const del = within(item).getByRole('button', { name: 'Delete Problem Set 4' });
+    const disclosure = within(item).getByRole('button', {
+      name: 'Subtasks for Problem Set 4: No subtasks',
+    });
+    expect(badge.parentElement).toBe(edit.parentElement);
+    expect(del.parentElement).toBe(badge.parentElement);
+    expect(del.parentElement).toHaveClass('flex', 'flex-wrap', 'gap-2');
+    expect(disclosure.parentElement).not.toBe(badge.parentElement);
+  });
+
+  it('expands and collapses the checklist without hiding Edit or Delete', async () => {
+    const user = setupUser();
+    render(
+      <AssignmentsSection
+        assignments={[{ ...problemSet, subtasks: [subtask('s1', 'Read chapter', 'PENDING', 0)] }]}
+      />
+    );
+    const open = screen.getByRole('button', { name: 'Subtasks for Problem Set 4: 1 subtask' });
+    expect(open).toHaveAttribute('aria-expanded', 'false');
+    await user.click(open);
+    expect(open).toHaveAttribute('aria-expanded', 'true');
+    expect(open).toHaveAttribute('aria-controls', 'subtasks-asgn-1');
+    expect(
+      screen.getByRole('region', { name: 'Subtasks for Problem Set 4: 1 subtask' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Read chapter' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit Problem Set 4' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete Problem Set 4' })).toBeInTheDocument();
+    expect(open).toHaveFocus();
+
+    await user.click(open);
+    expect(open).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
+  });
+
+  it('keeps several rows open across a background refetch and drops removed ids', async () => {
+    const user = setupUser();
+    const withSubs = [
+      { ...problemSet, subtasks: [subtask('s1', 'Read chapter', 'PENDING', 0)] },
+      { ...essay, subtasks: [subtask('s2', 'Draft', 'PENDING', 0)] },
+    ];
+    const view = render(<AssignmentsSection assignments={withSubs} />);
+    await user.click(screen.getByRole('button', { name: 'Subtasks for Problem Set 4: 1 subtask' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Subtasks for Research Essay: 1 subtask' })
+    );
+    expect(screen.getAllByRole('region')).toHaveLength(2);
+
+    view.rerender(<AssignmentsSection assignments={withSubs} />);
+    expect(screen.getAllByRole('region')).toHaveLength(2);
+
+    view.rerender(<AssignmentsSection assignments={[withSubs[1]!]} />);
+    expect(
+      screen.queryByRole('button', { name: 'Subtasks for Problem Set 4: 1 subtask' })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('region', { name: 'Subtasks for Research Essay: 1 subtask' })
+    ).toBeInTheDocument();
+  });
+
+  it('follows visual tab order and locks the disclosure while that checklist is in flight', async () => {
+    const user = setupUser();
+    vi.mocked(createSubtask).mockImplementation(() => new Promise(() => undefined));
+    render(
+      <AssignmentsSection
+        assignments={[
+          {
+            ...problemSet,
+            subtasks: [
+              subtask('s1', 'Read chapter', 'PENDING', 0),
+              subtask('s2', 'Outline notes', 'COMPLETED', 1),
+            ],
+          },
+        ]}
+      />
+    );
+    const toggle = screen.getByRole('button', {
+      name: 'Subtasks for Problem Set 4: 2 subtasks, 1 complete',
+    });
+    toggle.focus();
+    await user.click(toggle);
+    expect(toggle).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Edit Problem Set 4' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Delete Problem Set 4' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('checkbox', { name: 'Read chapter' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Move Read chapter down' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Delete Read chapter' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('checkbox', { name: 'Outline notes' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Move Outline notes up' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Delete Outline notes' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByLabelText('Subtask title')).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Add subtask to Problem Set 4' })).toHaveFocus();
+
+    await user.type(screen.getByLabelText('Subtask title'), 'Next');
+    await user.click(screen.getByRole('button', { name: 'Add subtask to Problem Set 4' }));
+    await waitFor(() => expect(toggle).toBeDisabled());
+    expect(screen.getByRole('region')).toHaveAttribute('aria-busy', 'true');
   });
 });

@@ -7,7 +7,10 @@ import { getErrorMessage, extractApiError } from '@/shared/lib/errors';
 import { getCourse, type CourseDetail } from '@/entities/course/api/courseApi';
 import { listSemesters, type SemesterWithCount } from '@/entities/semester/api/semesterApi';
 import { MeetingsSection } from '@/features/courses/ui/MeetingsSection';
-import { AssignmentsSection } from '@/features/courses/ui/AssignmentsSection';
+import {
+  AssignmentsSection,
+  type SubtaskChangeAction,
+} from '@/features/courses/ui/AssignmentsSection';
 import { CourseForm } from '@/features/courses/ui/CourseForm';
 import { ArchiveCourseDialog } from '@/features/courses/ui/ArchiveCourseDialog';
 
@@ -163,6 +166,21 @@ export function CourseDetailPage() {
         : action === 'updated'
           ? 'Assignment updated.'
           : 'Assignment deleted.'
+    );
+    void load({ background: true });
+  };
+
+  const handleSubtaskChanged = (action: SubtaskChangeAction) => {
+    setStatusMessage(
+      action === 'added'
+        ? 'Subtask added.'
+        : action === 'completed'
+          ? 'Subtask completed.'
+          : action === 'reopened'
+            ? 'Subtask marked incomplete.'
+            : action === 'moved'
+              ? 'Subtask moved.'
+              : 'Subtask deleted.'
     );
     void load({ background: true });
   };
@@ -324,6 +342,10 @@ export function CourseDetailPage() {
               courseId={id}
               assignments={course.assignments}
               onAssignmentChanged={handleAssignmentChanged}
+              onSubtaskChanged={handleSubtaskChanged}
+              onSubtaskRefresh={() => void load({ background: true })}
+              // Clear before the request so a repeated subtask sentence announces.
+              onSubtaskPending={() => setStatusMessage('')}
               // Clear on Add, Edit, or Delete open — a separate interaction from
               // submit — so repeated successes update the live region even with
               // identical copy (including consecutive "Assignment deleted.").

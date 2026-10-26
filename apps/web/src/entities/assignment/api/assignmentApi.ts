@@ -1,5 +1,10 @@
 import api from '@/shared/api/httpClient';
-import type { AssignmentPriority, AssignmentType, CourseAssignment } from '@/shared/types/academic';
+import type {
+  AssignmentPriority,
+  AssignmentType,
+  CourseAssignment,
+  Subtask,
+} from '@/shared/types/academic';
 
 /** SP-113 create contract. Unset optional fields use the backend defaults (D115-2: omitted type stores null). */
 export interface CreateAssignmentRequest {
@@ -51,4 +56,51 @@ export async function updateAssignment(
 /** 204 on success; 404 when the assignment is missing or foreign. */
 export async function deleteAssignment(assignmentId: string): Promise<void> {
   await api.delete(`/assignments/${assignmentId}`);
+}
+
+/** 200: ordered 6-key subtasks; 404: uniform assignment miss. The checklist does not call this — it reads the course projection (D120-5). */
+export async function listSubtasks(assignmentId: string): Promise<Subtask[]> {
+  const response = await api.get<Subtask[]>(`/assignments/${assignmentId}/subtasks`);
+  return response.data;
+}
+
+/** Create body is title only (D120-3). Omitted `orderIndex` appends (D120-7). Status is never sent. */
+export interface CreateSubtaskRequest {
+  title: string;
+}
+
+/** 201: 6-key subtask; 400: field errors; 404: uniform assignment miss. */
+export async function createSubtask(
+  assignmentId: string,
+  data: CreateSubtaskRequest
+): Promise<Subtask> {
+  const response = await api.post<Subtask>(`/assignments/${assignmentId}/subtasks`, {
+    title: data.title,
+  });
+  return response.data;
+}
+
+/** Partial merge. Callers send only the fields they change. */
+export interface UpdateSubtaskRequest {
+  title?: string;
+  status?: 'PENDING' | 'COMPLETED';
+  orderIndex?: number;
+}
+
+/** 200: updated 6-key subtask; 400: field errors; 404: uniform miss. */
+export async function updateSubtask(
+  assignmentId: string,
+  subtaskId: string,
+  data: UpdateSubtaskRequest
+): Promise<Subtask> {
+  const response = await api.patch<Subtask>(
+    `/assignments/${assignmentId}/subtasks/${subtaskId}`,
+    data
+  );
+  return response.data;
+}
+
+/** 204 on success; 404 when the assignment or subtask is missing or foreign. */
+export async function deleteSubtask(assignmentId: string, subtaskId: string): Promise<void> {
+  await api.delete(`/assignments/${assignmentId}/subtasks/${subtaskId}`);
 }

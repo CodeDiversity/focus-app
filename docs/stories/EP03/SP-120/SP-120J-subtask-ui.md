@@ -7,7 +7,7 @@
 **Milestone:** M1
 **Layer:** Frontend
 **Refined:** 2026-10-25 (ui-refiner — UI/UX gaps settled in `Decisions` below)
-**Status:** Refined — UI/UX settled; ready to implement. Queue reconciliation is the coordinator's (this pass does not edit the README).
+**Status:** Implementation complete — awaiting parent review. Checkpoint: [./artifacts/SP-120J/checkpoint.md](./artifacts/SP-120J/checkpoint.md). Record: [./artifacts/SP-120J/implementation.md](./artifacts/SP-120J/implementation.md).
 **Dependencies:** SP-120I implemented (2026-10-25 — [implementation record](./artifacts/SP-120I/implementation.md)) — met. No remaining pre-code UI gate.
 **Jira key:** Pending creation
 

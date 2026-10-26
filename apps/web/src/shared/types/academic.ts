@@ -66,12 +66,28 @@ export interface Assignment {
 }
 
 /**
- * The read-only assignment projection on the course detail route (SP-112,
- * D112-3/D112-6): the `Assignment` type minus the nested `course` — the
- * backend's 10-key `toAssignmentResponse` shape (`dueDate` ISO or null;
- * `userId`/`courseId` never exposed). Also the SP-113 creation response.
+ * The assignment projection on the course detail route (SP-112, D112-3/D112-6,
+ * plus SP-120 D120-5): `Assignment` minus nested `course`, plus ordered
+ * `subtasks`. Direct POST/PATCH `/assignments` responses stay the 11-key
+ * shape (no `subtasks` key); only `GET /courses/:id` adds it.
  */
-export type CourseAssignment = Omit<Assignment, 'course'>;
+export type CourseAssignment = Omit<Assignment, 'course'> & {
+  /** Ordered checklist (D120-5): `orderIndex` asc, then `createdAt` asc. */
+  subtasks: Subtask[];
+};
+
+/**
+ * The 6-key subtask projection (SP-120, D120-3). `userId` and `assignmentId`
+ * are never exposed. `status` is only `PENDING` | `COMPLETED` (D120-4).
+ */
+export interface Subtask {
+  id: string;
+  title: string;
+  status: 'PENDING' | 'COMPLETED';
+  orderIndex: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 // Task Types
 export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'ARCHIVED';

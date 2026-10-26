@@ -338,6 +338,7 @@ describe('AssignmentForm', () => {
       status: 'PENDING',
       priority: 'HIGH',
       type: 'HOMEWORK',
+      subtasks: [],
       createdAt: '2026-10-18T12:00:00.000Z',
       updatedAt: '2026-10-18T12:00:00.000Z',
     };

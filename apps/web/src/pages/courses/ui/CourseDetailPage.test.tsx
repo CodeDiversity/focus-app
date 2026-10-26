@@ -11,7 +11,11 @@ import {
   type CourseDetail,
 } from '@/entities/course/api/courseApi';
 import { listSemesters } from '@/entities/semester/api/semesterApi';
-import { createAssignment, deleteAssignment } from '@/entities/assignment/api/assignmentApi';
+import {
+  createAssignment,
+  createSubtask,
+  deleteAssignment,
+} from '@/entities/assignment/api/assignmentApi';
 import toast from 'react-hot-toast';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 import type { ClassMeeting, CourseAssignment } from '@/shared/types/academic';
@@ -35,6 +39,10 @@ vi.mock('@/entities/assignment/api/assignmentApi', () => ({
   createAssignment: vi.fn(),
   updateAssignment: vi.fn(),
   deleteAssignment: vi.fn(),
+  listSubtasks: vi.fn(),
+  createSubtask: vi.fn(),
+  updateSubtask: vi.fn(),
+  deleteSubtask: vi.fn(),
 }));
 
 vi.mock('react-hot-toast', () => ({
@@ -67,6 +75,7 @@ const homework: CourseAssignment = {
   status: 'IN_PROGRESS',
   priority: 'HIGH',
   type: null,
+  subtasks: [],
   ...timestamps,
 };
 
@@ -632,5 +641,40 @@ describe('CourseDetailPage meeting mutations (AC 3/5, D112B-10)', () => {
     );
     // …including the meetings list.
     expect(screen.getByText('Mon 09:00–10:30')).toBeInTheDocument();
+  });
+});
+
+describe('CourseDetailPage subtask announcements (SP-120J AC 6)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockedListSemesters.mockResolvedValue([]);
+    mockedGetCourse.mockResolvedValue(cs101);
+  });
+
+  it('announces a subtask add and background-refetches without assignment copy', async () => {
+    const user = setupUser();
+    vi.mocked(createSubtask).mockResolvedValue({
+      id: 'sub-1',
+      title: 'Read chapter 1',
+      status: 'PENDING',
+      orderIndex: 0,
+      ...timestamps,
+    });
+    renderPage();
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Subtasks for Problem Set 3: No subtasks' })
+    );
+    await user.type(screen.getByLabelText('Subtask title'), 'Read chapter 1');
+    await user.click(screen.getByRole('button', { name: 'Add subtask to Problem Set 3' }));
+
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(/^Subtask added\.$/));
+    expect(screen.getByRole('status')).not.toHaveTextContent('Assignment added.');
+    expect(createSubtask).toHaveBeenCalledWith('asgn-1', { title: 'Read chapter 1' });
+    expect(mockedGetCourse).toHaveBeenCalledTimes(2);
+    expect(mockedGetCourse).toHaveBeenLastCalledWith('course-1');
+    expect(screen.queryByText('Loading your course…')).not.toBeInTheDocument();
+    expect(screen.getByRole('region')).toBeInTheDocument();
+    expect(mockedToast.success).not.toHaveBeenCalled();
   });
 });

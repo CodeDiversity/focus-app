@@ -286,7 +286,7 @@ describe('courseApi.listCourses', () => {
  * The 200 body `GET /courses/:id` returns (SP-112A, D112-3): the 12-key
  * `CourseWithSemester` plus the two nested projections — `meetings` (the
  * canonical 6-key `ClassMeeting` shape) and the read-only 10-key
- * `CourseAssignment` projection (`dueDate` ISO; no `courseId`).
+ * `CourseAssignment` projection (`dueDate` ISO; no `courseId`; `subtasks` from D120-5).
  */
 const detailCourse: CourseDetail = {
   ...createdCourse,
@@ -311,6 +311,7 @@ const detailCourse: CourseDetail = {
       status: 'PENDING',
       priority: 'MEDIUM',
       type: null,
+      subtasks: [],
       createdAt: createdCourse.createdAt,
       updatedAt: createdCourse.updatedAt,
     },
