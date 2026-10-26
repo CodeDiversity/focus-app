@@ -224,8 +224,8 @@ export function AssignmentsPage() {
 
       <div className="card p-6">
         {/* Filter bar */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end mb-6">
-          <div className="relative w-full sm:flex-1">
+        <div className="space-y-3 mb-6">
+          <div className="relative w-full">
             <Input
               aria-label="Search assignments"
               placeholder="Search assignments by title or description"
@@ -254,106 +254,108 @@ export function AssignmentsPage() {
             )}
           </div>
 
-          <Select
-            aria-label="Course"
-            value={courseId}
-            onChange={(e) => setCourseId(e.target.value)}
-            className="w-full sm:w-auto sm:min-w-[9rem]"
-          >
-            <option value="">All courses</option>
-            {courses.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.code} {c.name}
-              </option>
-            ))}
-          </Select>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 items-end">
+            <Select
+              aria-label="Course"
+              value={courseId}
+              onChange={(e) => setCourseId(e.target.value)}
+              className="w-full"
+            >
+              <option value="">All courses</option>
+              {courses.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.code} {c.name}
+                </option>
+              ))}
+            </Select>
 
-          <Input
-            aria-label="Due from"
-            type="date"
-            value={dueFrom}
-            onChange={(e) => setDueFrom(e.target.value)}
-            className="w-full sm:w-auto sm:min-w-[9rem]"
-          />
-          <Input
-            aria-label="Due to"
-            type="date"
-            value={dueTo}
-            onChange={(e) => setDueTo(e.target.value)}
-            className="w-full sm:w-auto sm:min-w-[9rem]"
-          />
+            <Input
+              aria-label="Due from"
+              type="date"
+              value={dueFrom}
+              onChange={(e) => setDueFrom(e.target.value)}
+              className="w-full"
+            />
+            <Input
+              aria-label="Due to"
+              type="date"
+              value={dueTo}
+              onChange={(e) => setDueTo(e.target.value)}
+              className="w-full"
+            />
 
-          <Select
-            aria-label="Status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="w-full sm:w-auto sm:min-w-[9rem]"
-          >
-            <option value="">All statuses</option>
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {STATUS_LABELS[s]}
-              </option>
-            ))}
-          </Select>
+            <Select
+              aria-label="Status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="w-full"
+            >
+              <option value="">All statuses</option>
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {STATUS_LABELS[s]}
+                </option>
+              ))}
+            </Select>
 
-          <Select
-            aria-label="Priority"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-            className="w-full sm:w-auto sm:min-w-[9rem]"
-          >
-            <option value="">All priorities</option>
-            {PRIORITY_OPTIONS.map((p) => (
-              <option key={p} value={p}>
-                {PRIORITY_LABELS[p]}
-              </option>
-            ))}
-          </Select>
+            <Select
+              aria-label="Priority"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              className="w-full"
+            >
+              <option value="">All priorities</option>
+              {PRIORITY_OPTIONS.map((p) => (
+                <option key={p} value={p}>
+                  {PRIORITY_LABELS[p]}
+                </option>
+              ))}
+            </Select>
 
-          <Select
-            aria-label="Type"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="w-full sm:w-auto sm:min-w-[9rem]"
-          >
-            <option value="">All types</option>
-            {TYPE_OPTIONS.map((t) => (
-              <option key={t} value={t}>
-                {TYPE_LABELS[t]}
-              </option>
-            ))}
-          </Select>
+            <Select
+              aria-label="Type"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="w-full"
+            >
+              <option value="">All types</option>
+              {TYPE_OPTIONS.map((t) => (
+                <option key={t} value={t}>
+                  {TYPE_LABELS[t]}
+                </option>
+              ))}
+            </Select>
 
-          <Select
-            aria-label="Sort by"
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="w-full sm:w-auto sm:min-w-[9rem]"
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </Select>
+            <Select
+              aria-label="Sort by"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="w-full"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </Select>
 
-          <button
-            type="button"
-            aria-label={order === 'asc' ? 'Sort ascending' : 'Sort descending'}
-            onClick={toggleOrder}
-            className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg border border-secondary-300 bg-white px-3 py-2 text-secondary-700 hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            {order === 'asc' ? (
-              <ArrowUp size={16} aria-hidden />
-            ) : (
-              <ArrowDown size={16} aria-hidden />
+            <button
+              type="button"
+              aria-label={order === 'asc' ? 'Sort ascending' : 'Sort descending'}
+              onClick={toggleOrder}
+              className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg border border-secondary-300 bg-white px-3 py-2 text-secondary-700 hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              {order === 'asc' ? (
+                <ArrowUp size={16} aria-hidden />
+              ) : (
+                <ArrowDown size={16} aria-hidden />
+              )}
+            </button>
+
+            {isFetching && (
+              <Loader2 className="animate-spin text-primary-600" size={20} aria-hidden />
             )}
-          </button>
-
-          {isFetching && (
-            <Loader2 className="animate-spin text-primary-600" size={20} aria-hidden />
-          )}
+          </div>
         </div>
 
         {isEmpty ? (
