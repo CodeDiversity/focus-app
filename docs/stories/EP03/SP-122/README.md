@@ -10,10 +10,10 @@
 
 - **Scope and entry:** SP-122 parent review unit (children SP-122A/B/C). Entry hint: implement SP-122A. No explicit narrower limit; continue through final parent review.
 - **Coordinator:** workspace `/Users/michael/Documents/GitHub/focus-app`, branch `main`, baseline commit `e0a1722` (SP-122 plan). Retain this baseline until the parent implementation index owns the combined scope.
-- **Stage:** implement
-- **Active dispatch:** None (about to dispatch SP-122A).
-- **Last result / retry state:** Plan Ready 2026-10-26 (gate table in this README). No implementation yet. No correction cycles.
-- **Resume:** Dispatch a fresh implementer for SP-122A (backend `GET /assignments`). Then ui-refine SP-122B, implement B, implement C, then one combined parent review. Current next action: **SP-122A — implement**.
+- **Stage:** refine
+- **Active dispatch:** None (SP-122A returned; next: ui-refine SP-122B).
+- **Last result / retry state:** SP-122A implemented — commits `b88b1db`, `cf25b00`, `ac8e10f`. Typecheck pass; unit 246 passed; data-scoping 74 passed; temp integration 9 passed (removed). No e2e claimed. No correction cycles.
+- **Resume:** Dispatch ui-refiner for SP-122B (UI/UX gaps). Then implement B, implement C, then combined parent review. Current next action: **SP-122B — ui-refine**.
 
 ## Execution queue
 
