@@ -65,7 +65,11 @@ Its queue's next substory is None — the final parent review is next. The
 combined review returned **changes required** (2026-10-25 — [report](./SP-120/artifacts/SP-120/review.md),
 uncommitted): IR-120-1 (the DoD-10 browser pass was not executed) and
 IR-120-2 (the automated gates were not independently run); no code defect
-was found, and no implementer code change is assigned. SP-121 does not
+was found, and no implementer code change is assigned. On 2026-10-26 the
+user reported the browser walkthrough **passed** (IR-120-1 attestation in
+the [SP-120 correction log](./SP-120/README.md#plan-correction-log); not
+reviewer-verified; environment and per-step results were not provided).
+IR-120-2 remains open, so SP-120 is not `Reviewed`. SP-121 does not
 depend on SP-120.
 
 SP-121 is **Plan Ready** (2026-10-26 — [breakdown](./SP-121/README.md)). Its
