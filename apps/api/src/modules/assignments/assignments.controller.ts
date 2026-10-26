@@ -8,12 +8,14 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../common/types';
 import { AssignmentsService } from './assignments.service';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { UpdateAssignmentDto } from './dto/update-assignment.dto';
+import { ListAssignmentsQueryDto } from './dto/list-assignments-query.dto';
 import { CreateSubtaskDto } from './dto/create-subtask.dto';
 import { UpdateSubtaskDto } from './dto/update-subtask.dto';
 
@@ -37,6 +39,17 @@ export class AssignmentsController {
   @Post()
   create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateAssignmentDto) {
     return this.assignments.create(user.id, dto);
+  }
+
+  /**
+   * GET /assignments — cross-course list with filters, search, and sort
+   * (SP-122A, D122-1…7). The query DTO is the `@Query()` metatype so the
+   * global `FieldValidationPipe` applies whitelist + `forbidNonWhitelisted` +
+   * transform → unknown params 400.
+   */
+  @Get()
+  list(@CurrentUser() user: AuthenticatedUser, @Query() query: ListAssignmentsQueryDto) {
+    return this.assignments.list(user.id, query);
   }
 
   /**

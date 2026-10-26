@@ -1148,3 +1148,129 @@ describe('UpdateSubtaskDto with production FieldValidationPipe', () => {
     await expect(validate({})).resolves.toBeInstanceOf(UpdateSubtaskDto);
   });
 });
+
+describe('AssignmentsService list (SP-122A)', () => {
+  const now = new Date('2026-10-24T12:00:00Z');
+  const row = {
+    id: 'a1',
+    userId: 'student',
+    courseId: 'c1',
+    title: 'Essay',
+    description: 'desc',
+    dueDate: new Date('2026-11-01T10:00:00.000Z'),
+    estimatedHours: 2,
+    actualHours: null,
+    status: 'PENDING',
+    priority: 'HIGH',
+    type: 'HOMEWORK',
+    createdAt: now,
+    updatedAt: now,
+    course: { id: 'c1', name: 'Course', code: 'CS', color: '#fff' },
+    tasks: [
+      {
+        id: 't1',
+        title: 'Sub',
+        status: 'PENDING',
+        orderIndex: 0,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ],
+  };
+  let service: AssignmentsService;
+  let prisma: {
+    course: { findFirst: jest.Mock };
+    assignment: { findMany: jest.Mock };
+  };
+
+  beforeEach(() => {
+    prisma = {
+      course: { findFirst: jest.fn().mockResolvedValue({ id: 'c1' }) },
+      assignment: { findMany: jest.fn().mockResolvedValue([row]) },
+    };
+    service = new AssignmentsService(prisma as unknown as PrismaService);
+  });
+
+  it('returns the list projection with course and subtasks', async () => {
+    const result = await service.list('student', {} as never);
+    expect(result).toEqual([
+      {
+        id: 'a1',
+        title: 'Essay',
+        description: 'desc',
+        dueDate: '2026-11-01T10:00:00.000Z',
+        estimatedHours: 2,
+        actualHours: null,
+        status: 'PENDING',
+        priority: 'HIGH',
+        type: 'HOMEWORK',
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+        course: { id: 'c1', name: 'Course', code: 'CS', color: '#fff' },
+        subtasks: [
+          {
+            id: 't1',
+            title: 'Sub',
+            status: 'PENDING',
+            orderIndex: 0,
+            createdAt: now.toISOString(),
+            updatedAt: now.toISOString(),
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('course filter gates ownership before listing', async () => {
+    prisma.course.findFirst.mockResolvedValue(null);
+    await expect(service.list('student', { courseId: 'foreign' } as never)).rejects.toEqual(
+      new NotFoundException('Resource not found')
+    );
+    expect(prisma.assignment.findMany).not.toHaveBeenCalled();
+  });
+
+  it('passes filters and default orderBy', async () => {
+    await service.list('student', {
+      status: 'PENDING',
+      priority: 'HIGH',
+      type: 'HOMEWORK',
+      dueFrom: '2026-10-01T00:00:00.000Z',
+      dueTo: '2026-12-01T00:00:00.000Z',
+      q: '  Es  ',
+    } as never);
+    expect(prisma.assignment.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          userId: 'student',
+          status: 'PENDING',
+          priority: 'HIGH',
+          type: 'HOMEWORK',
+          dueDate: {
+            gte: new Date('2026-10-01T00:00:00.000Z'),
+            lte: new Date('2026-12-01T00:00:00.000Z'),
+          },
+          OR: [
+            { title: { contains: 'Es', mode: 'insensitive' } },
+            { description: { contains: 'Es', mode: 'insensitive' } },
+          ],
+        }),
+        orderBy: [{ dueDate: 'asc' }, { title: 'asc' }, { id: 'asc' }],
+      })
+    );
+  });
+
+  it('empty q is a no-op', async () => {
+    await service.list('student', { q: '   ' } as never);
+    const call = prisma.assignment.findMany.mock.calls[0][0];
+    expect(call.where).not.toHaveProperty('OR');
+  });
+
+  it('sort/order variants build orderBy', async () => {
+    await service.list('student', { sort: 'title', order: 'desc' } as never);
+    expect(prisma.assignment.findMany).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        orderBy: [{ title: 'desc' }, { title: 'asc' }, { id: 'asc' }],
+      })
+    );
+  });
+});

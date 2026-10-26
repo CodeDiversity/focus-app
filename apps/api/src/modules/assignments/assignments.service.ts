@@ -7,6 +7,7 @@ import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 import { CreateSubtaskDto } from './dto/create-subtask.dto';
 import { UpdateSubtaskDto } from './dto/update-subtask.dto';
+import { ListAssignmentsQueryDto } from './dto/list-assignments-query.dto';
 
 function toAssignmentResponse(row: Assignment) {
   return {
@@ -240,6 +241,173 @@ export class AssignmentsService {
       throw new NotFoundException(RESOURCE_NOT_FOUND);
     }
     await this.prisma.assignment.delete({ where: ownedWhere(userId, id) });
+  }
+
+  /**
+   * Cross-course list (SP-122A, D122-1…7): returns the authenticated
+   * student's assignments across courses, filtered by `courseId`, `status`,
+   * `priority`, `type`, `dueFrom`/`dueTo`, and `q`, and ordered by
+   * `sort`/`order`. Each row carries its course context and its subtasks.
+   *
+   * - `courseId`, when present, must be the student's own course — a
+   *   missing/foreign/malformed id throws the uniform 404 before any
+   *   assignment query runs (no existence oracle).
+   * - `dueFrom`/`dueTo` are inclusive bounds on `dueDate`; rows with a null
+   *   `dueDate` are excluded whenever either bound is present.
+   * - `q` is trimmed; empty/whitespace-only `q` is treated as absent.
+   * - Default ordering: `dueDate asc` (nulls last), then `title asc`,
+   *   then `id asc`. Ties are broken by `title asc`, then `id asc`.
+   */
+  async list(userId: string, query: ListAssignmentsQueryDto) {
+    // Defense in depth for non-HTTP callers: rerun the complete DTO rules
+    // (whitelist + forbidNonWhitelisted) before any query.
+    const failures = validateSync(Object.assign(new ListAssignmentsQueryDto(), query), {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+    if (failures.length) {
+      const errors = Object.fromEntries(
+        failures.map((failure) => [failure.property, Object.values(failure.constraints ?? {})])
+      );
+      throw new BadRequestException({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: Object.values(errors).flat(),
+        errors,
+      });
+    }
+
+    // courseId ownership gate: runs before any assignment query.
+    const courseId = query.courseId ?? null;
+    if (courseId) {
+      const course = await this.prisma.course.findFirst({
+        where: ownedWhere(userId, courseId),
+        select: { id: true },
+      });
+      if (!course) throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+
+    // Trimmed search text; empty/whitespace-only becomes absent.
+    const q = typeof query.q === 'string' ? query.q.trim() : '';
+    const hasQ = q.length > 0;
+
+    const dueFrom = query.dueFrom ? new Date(query.dueFrom) : null;
+    const dueTo = query.dueTo ? new Date(query.dueTo) : null;
+
+    const where: Record<string, unknown> = { userId };
+    if (courseId) where.courseId = courseId;
+    if (query.status) where.status = query.status;
+    if (query.priority) where.priority = query.priority;
+    if (query.type) where.type = query.type;
+    if (dueFrom || dueTo) {
+      where.dueDate = {
+        ...(dueFrom ? { gte: dueFrom } : {}),
+        ...(dueTo ? { lte: dueTo } : {}),
+      };
+    }
+    if (hasQ) {
+      where.OR = [
+        { title: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+
+    const sort = query.sort ?? 'dueDate';
+    const order = query.order ?? 'asc';
+
+    // Build the orderBy list: the requested sort, then the documented
+    // tie-break (`title asc`, then `id asc`). `dueDate asc` keeps nulls last
+    // via PostgreSQL's default for ascending order.
+    const orderBy: Record<string, unknown>[] = [];
+    if (sort === 'dueDate') {
+      orderBy.push({ dueDate: order });
+    } else {
+      orderBy.push({ [sort]: order });
+    }
+    orderBy.push({ title: 'asc' });
+    orderBy.push({ id: 'asc' });
+
+    const rows = await this.prisma.assignment.findMany({
+      where,
+      include: {
+        course: { select: { id: true, name: true, code: true, color: true } },
+        tasks: {
+          where: { userId },
+          orderBy: [{ orderIndex: 'asc' }, { createdAt: 'asc' }],
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            orderIndex: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+      orderBy,
+    });
+
+    return rows.map(
+      (row: {
+        id: string;
+        title: string;
+        description: string | null;
+        dueDate: Date | null;
+        estimatedHours: number | null;
+        actualHours: number | null;
+        status: string;
+        priority: string;
+        type: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        course: { id: string; name: string; code: string; color: string } | null;
+        tasks: {
+          id: string;
+          title: string;
+          status: string;
+          orderIndex: number;
+          createdAt: Date;
+          updatedAt: Date;
+        }[];
+      }) => ({
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        dueDate: row.dueDate?.toISOString() ?? null,
+        estimatedHours: row.estimatedHours,
+        actualHours: row.actualHours,
+        status: row.status,
+        priority: row.priority,
+        type: row.type,
+        createdAt: row.createdAt.toISOString(),
+        updatedAt: row.updatedAt.toISOString(),
+        course: row.course
+          ? {
+              id: row.course.id,
+              name: row.course.name,
+              code: row.course.code,
+              color: row.course.color,
+            }
+          : null,
+        subtasks: row.tasks.map(
+          (task: {
+            id: string;
+            title: string;
+            status: string;
+            orderIndex: number;
+            createdAt: Date;
+            updatedAt: Date;
+          }) => ({
+            id: task.id,
+            title: task.title,
+            status: task.status,
+            orderIndex: task.orderIndex,
+            createdAt: task.createdAt.toISOString(),
+            updatedAt: task.updatedAt.toISOString(),
+          })
+        ),
+      })
+    );
   }
 
   /**

@@ -23,9 +23,9 @@
 
 **Parent artifacts:** `./artifacts/SP-122/` (parent index written by C; review and walkthrough by the reviewer)
 
-**Active substory:** None (planning complete; not yet implemented).
+**Active substory:** None (SP-122A implemented).
 
-**Next substory:** **SP-122A** — implement (`Ready`). A can start now: SP-113/SP-114/SP-115 are reviewed and the assignments API exists. B waits on A's contract and on ui-refiner. C waits on A and B.
+**Next substory:** **SP-122B** — refine (`Needs refinement`). A implemented; B waits on ui-refiner. C waits on A and B.
 
 **Implementation owner:** `implementer`, sequential across layers. Backend and frontend are scope labels, not concurrent writers.
 
@@ -33,7 +33,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-122A-assignment-list-api.md) | Ready | SP-113A/SP-114D/SP-115G reviewed (satisfied 2026-10-24/25); SP-121 reviewed (satisfied 2026-10-26) | Implement SP-122A | — |
+| [A](./SP-122A-assignment-list-api.md) | Implemented — awaiting parent review | SP-113A/SP-114D/SP-115G reviewed (satisfied 2026-10-24/25); SP-121 reviewed (satisfied 2026-10-26) | Parent review after B/C | checkpoint: `./artifacts/SP-122A/checkpoint.md`; implementation: `./artifacts/SP-122A/implementation.md` |
 | [B](./SP-122B-assignment-list-ui.md) | Needs refinement | A implemented (contract fixed in this README); UI/UX gaps unsettled (ui-refiner handoff) | Refine UI, then implement after A | — |
 | [C](./SP-122C-assignment-list-integration.md) | Queued | A and B implemented | Implement after B | — |
 
