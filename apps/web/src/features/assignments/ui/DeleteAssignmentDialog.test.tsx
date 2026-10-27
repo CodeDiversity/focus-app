@@ -193,7 +193,9 @@ describe('DeleteAssignmentDialog (AC 6, AC 7)', () => {
     await validUser.click(deleteButton());
 
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('Resource not found');
+    expect(alert).toHaveTextContent(
+      'Resource not found — this course or assignment may no longer exist.'
+    );
     expect(deleteButton()).toBeEnabled();
     expect(cancelButton()).toBeEnabled();
     expect(onDeleted).not.toHaveBeenCalled();

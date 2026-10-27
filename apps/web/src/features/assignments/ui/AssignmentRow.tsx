@@ -96,7 +96,7 @@ export function AssignmentRow({
             <button
               type="button"
               onClick={onTitleActivate}
-              className="text-left font-medium text-secondary-900 hover:underline focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="rounded text-left font-medium text-secondary-900 hover:underline focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               {assignment.title}
             </button>
@@ -150,7 +150,7 @@ export function AssignmentRow({
             {subtaskSummary(assignment.subtasks)}
           </Button>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Select
             aria-label={`Status for ${assignment.title}`}
             data-assignment-focus={`status:${assignment.id}`}

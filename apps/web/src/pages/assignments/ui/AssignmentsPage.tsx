@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { clsx } from 'clsx';
 import toast from 'react-hot-toast';
 import { Loader2, ArrowUp, ArrowDown, X } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
@@ -18,19 +17,15 @@ import type {
   AssignmentPriority,
   AssignmentType,
 } from '@/shared/types/academic';
+import { useAssignmentActions } from '@/features/assignments/model/useAssignmentActions';
+import type { SubtaskChangeAction } from '@/features/assignments/model/types';
+import { AssignmentDialogs } from '@/features/assignments/ui/AssignmentDialogs';
+import { AssignmentRow } from '@/features/assignments/ui/AssignmentRow';
 import {
-  STATUS_STYLES,
   STATUS_LABELS,
-  PRIORITY_STYLES,
   PRIORITY_LABELS,
-  TYPE_STYLE,
   TYPE_LABELS,
-  OVERDUE_STYLE,
-  OVERDUE_LABEL,
-  subtaskSummary,
 } from '@/features/assignments/ui/assignmentPresentation';
-import { isOverdueAssignment } from '@/entities/assignment/model/status';
-import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 
 const STATUS_OPTIONS: AssignmentStatus[] = [
   'PENDING',
@@ -49,6 +44,64 @@ const SORT_OPTIONS: { value: ListAssignmentsParams['sort']; label: string }[] = 
   { value: 'createdAt', label: 'Created' },
   { value: 'updatedAt', label: 'Updated' },
 ];
+
+type FormAction = 'added' | 'updated' | 'deleted';
+
+/** Page live-region copy, matching the course host's sentences (SP-124B host parity). */
+const ACTION_SENTENCES: Record<FormAction, string> = {
+  added: 'Assignment added.',
+  updated: 'Assignment updated.',
+  deleted: 'Assignment deleted.',
+};
+
+const STATUS_SENTENCES: Record<AssignmentStatus, string> = {
+  PENDING: 'Assignment set to pending.',
+  IN_PROGRESS: 'Assignment marked as in progress.',
+  COMPLETED: 'Assignment marked as completed.',
+  SUBMITTED: 'Assignment marked as submitted.',
+  GRADED: 'Assignment marked as graded.',
+};
+
+const SUBTASK_SENTENCES: Record<SubtaskChangeAction, string> = {
+  added: 'Subtask added.',
+  completed: 'Subtask completed.',
+  reopened: 'Subtask marked incomplete.',
+  moved: 'Subtask moved.',
+  deleted: 'Subtask deleted.',
+};
+
+/**
+ * The list host's course meta slot (SP-124B AC 3 / UI-124B-2). The shared row
+ * owns the due line; only this list-specific course affordance is passed in.
+ * A null course is static text — no link, because there is nowhere to go.
+ */
+function CourseMeta({ course }: { course: AssignmentListItem['course'] }) {
+  if (!course) {
+    return (
+      <div className="mt-1">
+        <span className="text-xs text-secondary-500">No course</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-1 min-w-0">
+      <Link
+        to={`/courses/${course.id}`}
+        aria-label={`View course: ${course.name}`}
+        className="group inline-flex max-w-full items-center gap-1.5 rounded text-xs text-secondary-600 hover:text-secondary-900 hover:underline focus:outline-none focus:ring-2 focus:ring-primary-500"
+      >
+        <span
+          className="h-2.5 w-2.5 shrink-0 rounded-full"
+          style={{ backgroundColor: course.color }}
+          aria-hidden="true"
+        />
+        <span className="font-mono text-xs font-medium">{course.code}</span>
+        <span className="min-w-0 truncate group-hover:underline">{course.name}</span>
+      </Link>
+    </div>
+  );
+}
 
 export function AssignmentsPage() {
   const [assignments, setAssignments] = useState<AssignmentListItem[]>([]);
@@ -71,8 +124,6 @@ export function AssignmentsPage() {
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
 
   const [statusMessage, setStatusMessage] = useState('');
-
-  const timeZone = getBrowserTimeZone();
 
   // Debounce search 300 ms.
   useEffect(() => {
@@ -111,7 +162,7 @@ export function AssignmentsPage() {
     order !== 'asc';
 
   const runFetch = useCallback(
-    async (params: ListAssignmentsParams, initial: boolean) => {
+    async (params: ListAssignmentsParams, initial: boolean, prefix?: string) => {
       if (initial) {
         setIsLoading(true);
         setInitialError(null);
@@ -132,19 +183,20 @@ export function AssignmentsPage() {
           sort !== 'dueDate' ||
           order !== 'asc'
         );
-        if (data.length === 0) {
-          setStatusMessage(
-            active ? 'No assignments match these filters.' : 'Showing 0 assignments.'
-          );
-        } else {
-          setStatusMessage(`Showing ${data.length} assignment${data.length === 1 ? '' : 's'}.`);
-        }
+        const count =
+          data.length === 0
+            ? active
+              ? 'No assignments match these filters.'
+              : 'Showing 0 assignments.'
+            : `Showing ${data.length} assignment${data.length === 1 ? '' : 's'}.`;
+        setStatusMessage(prefix ? `${prefix} ${count}` : count);
       } catch (err) {
-        const msg = getErrorMessage(err) || 'We could not load your assignments. Try again.';
         if (initial) {
-          setInitialError(msg);
+          setInitialError(getErrorMessage(err) || 'We could not load your assignments. Try again.');
         } else {
-          toast.error(msg);
+          // A background refetch never clears the list; it only says the reload
+          // failed with actionable copy (SP-124B AC 4).
+          toast.error('We could not load your assignments. Try again.');
           const apiErr = extractApiError(err);
           if (courseId && apiErr?.statusCode === 404) {
             setCourseId('');
@@ -188,6 +240,24 @@ export function AssignmentsPage() {
 
   const toggleOrder = () => setOrder((o) => (o === 'asc' ? 'desc' : 'asc'));
 
+  /** Re-read the list with the parameters currently in the filter bar. */
+  const refetchCurrent = (prefix?: string) => {
+    void runFetch(buildParams(), false, prefix);
+  };
+
+  // One owner for status, edit/delete dialogs, subtasks, and focus (D124-10).
+  // The page only supplies rows, copy, and its own refetch (D124-4).
+  const actions = useAssignmentActions({
+    items: assignments,
+    onChanged: (action: FormAction) => refetchCurrent(ACTION_SENTENCES[action]),
+    onStatusChanged: (next: AssignmentStatus) => refetchCurrent(STATUS_SENTENCES[next]),
+    onSubtaskChanged: (action: SubtaskChangeAction) => refetchCurrent(SUBTASK_SENTENCES[action]),
+    onSubtaskRefresh: () => refetchCurrent(),
+    // Clear before a request so a repeated sentence announces again.
+    onPending: () => setStatusMessage(''),
+    onFormOpen: () => setStatusMessage(''),
+  });
+
   if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -217,8 +287,14 @@ export function AssignmentsPage() {
   const isEmpty = assignments.length === 0;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-bold text-secondary-900 mb-6">Assignments</h1>
+    <section
+      ref={actions.sectionRef}
+      aria-labelledby="assignments-heading"
+      className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+    >
+      <h1 id="assignments-heading" className="text-3xl font-bold text-secondary-900 mb-6">
+        Assignments
+      </h1>
 
       {/* Always-present live region (DoD 6). */}
       <div role="status" className="mb-4 min-h-5 text-sm text-secondary-600">
@@ -383,96 +459,30 @@ export function AssignmentsPage() {
             )}
           </div>
         ) : (
-          <ul className="divide-y divide-secondary-100" aria-busy={isFetching}>
-            {assignments.map((a) => {
-              const course = a.course;
-              return (
-                <li
-                  key={a.id}
-                  className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="min-w-0">
-                    <p className="font-medium text-secondary-900 truncate" title={a.title}>
-                      {course ? (
-                        <Link to={`/courses/${course.id}`} className="hover:underline">
-                          {a.title}
-                        </Link>
-                      ) : (
-                        a.title
-                      )}
-                    </p>
-                    <p
-                      className={clsx(
-                        'mt-1 text-sm',
-                        a.dueDate === null ? 'text-secondary-500' : 'text-secondary-600'
-                      )}
-                    >
-                      {a.dueDate === null ? (
-                        'No due date'
-                      ) : (
-                        <>
-                          {`Due ${formatDate(new Date(a.dueDate), timeZone)}`}
-                          {isOverdueAssignment(a) && (
-                            <span
-                              className={clsx(
-                                'ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                                OVERDUE_STYLE
-                              )}
-                            >
-                              {OVERDUE_LABEL}
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </p>
-                    <div className="mt-1 flex items-center gap-2 text-sm text-secondary-600">
-                      {course ? (
-                        <>
-                          <span
-                            className="inline-block h-3 w-3 rounded-full"
-                            style={{ backgroundColor: course.color }}
-                            aria-hidden
-                          />
-                          <span className="font-mono text-xs">{course.code}</span>
-                          <span className="truncate">{course.name}</span>
-                        </>
-                      ) : (
-                        <span className="text-secondary-500">No course</span>
-                      )}
-                    </div>
-                    <p className="mt-1 text-xs text-secondary-500">{subtaskSummary(a.subtasks)}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2 items-center">
-                    <span
-                      className={clsx(
-                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                        STATUS_STYLES[a.status]
-                      )}
-                    >
-                      {STATUS_LABELS[a.status]}
-                    </span>
-                    <span
-                      className={clsx(
-                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                        PRIORITY_STYLES[a.priority]
-                      )}
-                    >
-                      {PRIORITY_LABELS[a.priority]}
-                    </span>
-                    {a.type && (
-                      <span
-                        className={clsx(
-                          'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                          TYPE_STYLE
-                        )}
-                      >
-                        {TYPE_LABELS[a.type]}
-                      </span>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
+          <ul
+            className="divide-y divide-secondary-100 max-sm:[&_button]:min-h-[44px] max-sm:[&_select]:min-h-[44px]"
+            aria-busy={isFetching}
+          >
+            {assignments.map((a) => (
+              <AssignmentRow
+                key={a.id}
+                assignment={a}
+                statusValue={actions.pendingStatus[a.id] ?? a.status}
+                statusDisabled={actions.statusBusyIds.has(a.id)}
+                expanded={actions.expandedIds.has(a.id)}
+                busy={actions.busyIds.has(a.id)}
+                onStatusChange={(next) => void actions.handleStatusChange(a, next)}
+                onToggleExpanded={() => actions.toggleExpanded(a.id)}
+                onOpenEdit={() => actions.openEdit(a)}
+                onOpenDelete={() => actions.openDelete(a)}
+                onSubtaskChanged={actions.onSubtaskChanged}
+                onSubtaskRefresh={actions.onSubtaskRefresh}
+                onSubtaskPending={actions.onPending}
+                onSubtaskBusyChange={(busy) => actions.setAssignmentBusy(a.id, busy)}
+                onTitleActivate={() => actions.openEdit(a)}
+                meta={<CourseMeta course={a.course} />}
+              />
+            ))}
           </ul>
         )}
 
@@ -484,6 +494,13 @@ export function AssignmentsPage() {
           </div>
         )}
       </div>
-    </div>
+
+      {/*
+       * One dialog mount for the list (D124-10 / AC 5). Creation is not
+       * reachable on this host until SP-124C adds the entry points and the
+       * course selector, so the fixed-course argument is unused here.
+       */}
+      <AssignmentDialogs actions={actions} courseId="" />
+    </section>
   );
 }

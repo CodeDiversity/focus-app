@@ -65,10 +65,14 @@ export function DeleteAssignmentDialog({
       onDeleted();
     } catch (err: unknown) {
       const apiError = extractApiError(err);
+      // The uniform 404 copy matches the edit form (SP-124B AC 6): the record
+      // is missing or belongs to another student, and the API never says which.
       setError(
-        apiError
-          ? apiErrorMessage(apiError)
-          : getErrorMessage(err) || 'We could not delete the assignment. Try again.'
+        apiError?.statusCode === 404
+          ? 'Resource not found — this course or assignment may no longer exist.'
+          : apiError
+            ? apiErrorMessage(apiError)
+            : getErrorMessage(err) || 'We could not delete the assignment. Try again.'
       );
       // Retry is the re-clicked Delete (the button re-enables).
       setIsDeleting(false);

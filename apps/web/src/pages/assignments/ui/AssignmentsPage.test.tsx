@@ -1,12 +1,26 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useLocation } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { Providers } from '@/test/providers';
+import { setupUser } from '@/test/user';
 import { AssignmentsPage } from './AssignmentsPage';
-import { listAssignments } from '@/entities/assignment/api/assignmentApi';
+import {
+  deleteAssignment,
+  listAssignments,
+  updateAssignment,
+} from '@/entities/assignment/api/assignmentApi';
 import { listCourses } from '@/entities/course/api/courseApi';
 
 vi.mock('@/entities/assignment/api/assignmentApi', () => ({
+  createAssignment: vi.fn(),
+  updateAssignment: vi.fn(),
+  deleteAssignment: vi.fn(),
+  listSubtasks: vi.fn(),
+  createSubtask: vi.fn(),
+  updateSubtask: vi.fn(),
+  deleteSubtask: vi.fn(),
   listAssignments: vi.fn(),
 }));
 
@@ -20,6 +34,14 @@ vi.mock('react-hot-toast', () => ({
 
 const mockedListAssignments = vi.mocked(listAssignments);
 const mockedListCourses = vi.mocked(listCourses);
+const mockedUpdateAssignment = vi.mocked(updateAssignment);
+const mockedDeleteAssignment = vi.mocked(deleteAssignment);
+
+/** Records the current route so tests can prove whether a control navigated. */
+function LocationProbe() {
+  const location = useLocation();
+  return <div data-testid="location">{location.pathname}</div>;
+}
 
 const timestamps = { createdAt: '2026-10-24T12:00:00.000Z', updatedAt: '2026-10-24T12:00:00.000Z' };
 
@@ -58,20 +80,23 @@ const renderPage = () =>
   render(
     <Providers initialEntries={['/assignments']}>
       <AssignmentsPage />
+      <LocationProbe />
     </Providers>
   );
 
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockedListCourses.mockResolvedValue([course] as never);
+  mockedListAssignments.mockResolvedValue([item] as never);
+  mockedUpdateAssignment.mockResolvedValue({ ...item } as never);
+  mockedDeleteAssignment.mockResolvedValue(undefined as never);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe('AssignmentsPage', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockedListCourses.mockResolvedValue([course] as never);
-    mockedListAssignments.mockResolvedValue([item] as never);
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it('renders loading then rows from mocked listAssignments', async () => {
     mockedListAssignments.mockImplementation(
       () => new Promise((resolve) => setTimeout(() => resolve([item] as never), 50))
@@ -272,5 +297,189 @@ describe('AssignmentsPage', () => {
     await screen.findByText('Problem Set 4');
     const pill = screen.getByText('Overdue');
     expect(pill.closest('p')).toHaveClass('text-secondary-600');
+  });
+});
+
+describe('AssignmentsPage shared interaction (SP-124B AC 8)', () => {
+  it('opens the edit form from the title button without navigating', async () => {
+    const user = setupUser();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    const titleButton = screen.getByRole('button', { name: 'Problem Set 4' });
+    expect(titleButton).toHaveClass('text-left', 'font-medium', 'hover:underline');
+
+    await user.click(titleButton);
+
+    expect(screen.getByRole('dialog', { name: 'Edit assignment' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Title')).toHaveValue('Problem Set 4');
+    expect(screen.getByTestId('location')).toHaveTextContent('/assignments');
+  });
+
+  it('opens the edit form from the Edit button', async () => {
+    const user = setupUser();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.click(screen.getByRole('button', { name: 'Edit Problem Set 4' }));
+
+    expect(screen.getByRole('dialog', { name: 'Edit assignment' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Title')).toHaveValue('Problem Set 4');
+  });
+
+  it('links the course meta slot to the course page', async () => {
+    const user = setupUser();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    const link = screen.getByRole('link', { name: 'View course: Calculus I' });
+    expect(link).toHaveAttribute('href', '/courses/course-1');
+    expect(link).toHaveClass('focus:ring-2', 'focus:ring-primary-500');
+    expect(within(link).getByText('MATH101')).toHaveClass('font-mono');
+
+    await user.click(link);
+
+    expect(screen.getByTestId('location')).toHaveTextContent('/courses/course-1');
+  });
+
+  it('renders static No course text without a course link when the course is null', async () => {
+    mockedListAssignments.mockResolvedValue([{ ...item, course: null }] as never);
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    expect(screen.getByText('No course')).toHaveClass('text-xs', 'text-secondary-500');
+    expect(screen.queryByRole('link', { name: /view course/i })).not.toBeInTheDocument();
+  });
+
+  it('PATCHes the status and refetches with the active filters', async () => {
+    const user = setupUser();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.selectOptions(screen.getByLabelText('Course'), 'course-1');
+    await waitFor(() => {
+      const last = mockedListAssignments.mock.calls.at(-1)?.[0];
+      expect(last).toMatchObject({ courseId: 'course-1' });
+    });
+    const callsBefore = mockedListAssignments.mock.calls.length;
+
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Status for Problem Set 4' }),
+      'COMPLETED'
+    );
+
+    expect(mockedUpdateAssignment).toHaveBeenCalledWith('a-1', { status: 'COMPLETED' });
+    await waitFor(() =>
+      expect(mockedListAssignments.mock.calls.length).toBeGreaterThan(callsBefore)
+    );
+    expect(mockedListAssignments.mock.calls.at(-1)?.[0]).toMatchObject({ courseId: 'course-1' });
+  });
+
+  it('deletes through the shared dialog and removes the row after refetch', async () => {
+    const user = setupUser();
+    mockedListAssignments.mockResolvedValueOnce([item] as never).mockResolvedValue([] as never);
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.click(screen.getByRole('button', { name: 'Delete Problem Set 4' }));
+    const dialog = screen.getByRole('dialog', { name: 'Delete Problem Set 4?' });
+    await user.click(within(dialog).getByRole('button', { name: 'Delete Problem Set 4' }));
+
+    expect(mockedDeleteAssignment).toHaveBeenCalledWith('a-1');
+    await waitFor(() => expect(screen.queryByText('Problem Set 4')).not.toBeInTheDocument());
+    expect(await screen.findByText('No assignments yet.')).toBeInTheDocument();
+    expect(mockedListAssignments.mock.calls.at(-1)?.[0]).toEqual({});
+  });
+
+  it('opens the shared subtask checklist from the row disclosure', async () => {
+    const user = setupUser();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.click(
+      screen.getByRole('button', { name: 'Subtasks for Problem Set 4: 1 subtask, 1 complete' })
+    );
+
+    expect(
+      screen.getByRole('region', { name: 'Subtasks for Problem Set 4: 1 subtask, 1 complete' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Read' })).toBeChecked();
+  });
+
+  it('keeps the list visible and marks it busy during a background refetch', async () => {
+    const user = setupUser();
+    let resolveRefetch!: (value: unknown) => void;
+    mockedListAssignments.mockResolvedValueOnce([item] as never).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRefetch = resolve;
+        }) as never
+    );
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Status for Problem Set 4' }),
+      'COMPLETED'
+    );
+
+    await waitFor(() => expect(mockedListAssignments).toHaveBeenCalledTimes(2));
+    expect(screen.getByRole('list')).toHaveAttribute('aria-busy', 'true');
+    expect(document.querySelectorAll('.animate-spin').length).toBeGreaterThan(0);
+    expect(screen.getByText('Problem Set 4')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit Problem Set 4' })).toBeEnabled();
+
+    resolveRefetch([item]);
+    await waitFor(() => expect(screen.getByRole('list')).toHaveAttribute('aria-busy', 'false'));
+  });
+
+  it('toasts an actionable error and keeps the list when the refetch fails', async () => {
+    const user = setupUser();
+    mockedListAssignments
+      .mockResolvedValueOnce([item] as never)
+      .mockRejectedValueOnce(new Error('boom'));
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Status for Problem Set 4' }),
+      'COMPLETED'
+    );
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith('We could not load your assignments. Try again.')
+    );
+    expect(screen.getByText('Problem Set 4')).toBeInTheDocument();
+    expect(screen.getByRole('list')).toHaveAttribute('aria-busy', 'false');
+  });
+
+  it('follows the visual tab order and closes the edit dialog with Escape', async () => {
+    const user = setupUser();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    screen.getByRole('button', { name: 'Problem Set 4' }).focus();
+    await user.tab();
+    expect(screen.getByRole('link', { name: 'View course: Calculus I' })).toHaveFocus();
+    await user.tab();
+    expect(
+      screen.getByRole('button', { name: 'Subtasks for Problem Set 4: 1 subtask, 1 complete' })
+    ).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('combobox', { name: 'Status for Problem Set 4' })).toHaveFocus();
+    await user.tab();
+    const edit = screen.getByRole('button', { name: 'Edit Problem Set 4' });
+    expect(edit).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Delete Problem Set 4' })).toHaveFocus();
+
+    edit.focus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('dialog', { name: 'Edit assignment' })).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(edit).toHaveFocus();
   });
 });
