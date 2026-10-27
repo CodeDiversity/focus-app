@@ -843,6 +843,32 @@ describe('AssignmentsPage presentation (SP-125)', () => {
     expect(screen.getByText('1 of 1 complete')).toBeInTheDocument();
   });
 
+  it('keeps the toolbar proportions on explicit wrappers (R-125-006)', async () => {
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    // Search expands with a 280px floor; the width lives on the wrapper
+    // (R-125-006), because the shared inputs own an inner hard `w-full`.
+    const search = screen.getByLabelText('Search assignments');
+    expect(search.closest('div.relative')!.parentElement!.parentElement).toHaveClass(
+      'sm:flex-1',
+      'sm:min-w-[280px]'
+    );
+
+    // Course and Status keep fixed widths that do not stretch or collapse.
+    expect(
+      screen.getByRole('combobox', { name: 'Course' }).closest('div.w-full')!.parentElement
+    ).toHaveClass('sm:w-[170px]', 'sm:shrink-0');
+    expect(
+      screen.getByRole('combobox', { name: 'Status' }).closest('div.w-full')!.parentElement
+    ).toHaveClass('sm:w-[150px]', 'sm:shrink-0');
+
+    // Controls match heights; the count sits below the toolbar, above the list.
+    expect(search).toHaveClass('h-[42px]');
+    expect(screen.getByRole('combobox', { name: 'Course' })).toHaveClass('h-[42px]');
+    expect(screen.getByRole('status').previousElementSibling).toHaveClass('mb-5');
+  });
+
   it('widens the create dialog and aligns the action footer (D125-10)', async () => {
     const user = setupUser();
     renderPage();

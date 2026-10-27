@@ -340,69 +340,57 @@ export function AssignmentsPage() {
         </Button>
       </div>
 
-      {/* Always-present live region (DoD 6); doubles as the visible result
-          summary bar and hosts the background-refetch spinner (SP-125). */}
-      <div
-        role="status"
-        className="mb-4 flex min-h-5 items-center gap-2 text-sm text-secondary-600"
-      >
-        {isFetching && <Loader2 className="animate-spin text-primary-600" size={16} aria-hidden />}
-        {statusMessage}
-      </div>
-
       <div className="card p-6">
         {/*
-         * Two-tier filter bar (SP-125 / D125-7): Search, Course, and Status
-         * stay up front; date range, priority, type, and the sort pair tuck
-         * into a collapsible secondary panel. Toggle copy carries the active
+         * Filter toolbar (SP-125 / D125-7, R-125-006): a plain row inside the
+         * card — no nested toolbar shell. Width lives on explicit wrappers
+         * because `Input`/`Select` put their own hard `w-full` on an inner
+         * wrapper; sizing the wrappers directly is what stops the search from
+         * collapsing and the dropdown chevrons from separating from their
+         * labels. Date range, priority, type, and the sort pair stay in the
+         * collapsible panel below; the toggle's badge shows the active
          * secondary count so a collapsed panel is never silently filtering.
          */}
-        {/*
-         * Connected toolbar (SP-125 / D125-7, restyled R-125-005): one bordered
-         * strip instead of stacked blocks. Search expands; Course and Status
-         * sit inline at compact widths; the advanced toggle carries its active
-         * count. Date range, priority, type, and the sort pair stay in the
-         * collapsible panel below so a collapsed panel is never silently
-         * filtering (the toggle's badge shows the active secondary count).
-         */}
-        <div className="mb-6 space-y-2">
-          <div className="flex flex-col gap-2 rounded-xl border border-secondary-200 bg-secondary-50/40 p-2 sm:flex-row sm:items-center">
-            <div className="relative w-full sm:flex-1">
-              {/* The magnifier labels the field visually (R-125-002). */}
-              <Input
-                aria-label="Search assignments"
-                placeholder="Search assignments..."
-                maxLength={200}
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    setQ(searchInput.trim());
-                  }
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="relative w-full sm:min-w-[280px] sm:flex-1">
+            {/* The magnifier labels the field visually (R-125-002). */}
+            <Input
+              aria-label="Search assignments"
+              placeholder="Search assignments..."
+              maxLength={200}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setQ(searchInput.trim());
+                }
+              }}
+              leftIcon={<Search size={16} aria-hidden />}
+              className="h-[42px] pr-10 max-sm:min-h-[44px]"
+            />
+            {searchInput && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => {
+                  setSearchInput('');
+                  setQ('');
                 }}
-                leftIcon={<Search size={16} aria-hidden />}
-                className="h-10 pr-10 max-sm:min-h-[44px]"
-              />
-              {searchInput && (
-                <button
-                  type="button"
-                  aria-label="Clear search"
-                  onClick={() => {
-                    setSearchInput('');
-                    setQ('');
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600 focus:outline-none"
-                >
-                  <X size={16} aria-hidden />
-                </button>
-              )}
-            </div>
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600 focus:outline-none"
+              >
+                <X size={16} aria-hidden />
+              </button>
+            )}
+          </div>
 
+          {/* Compact, non-stretching dropdowns; height/radius/border match the
+              search input. Label and chevron are inside one control. */}
+          <div className="w-full sm:w-[170px] sm:shrink-0">
             <Select
               aria-label="Course"
               value={courseId}
               onChange={(e) => setCourseId(e.target.value)}
-              className="h-10 w-full sm:w-40 max-sm:min-h-[44px]"
+              className="h-[42px] w-full pr-8 max-sm:min-h-[44px]"
             >
               <option value="">All courses</option>
               {courses.map((c) => (
@@ -411,12 +399,14 @@ export function AssignmentsPage() {
                 </option>
               ))}
             </Select>
+          </div>
 
+          <div className="w-full sm:w-[150px] sm:shrink-0">
             <Select
               aria-label="Status"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="h-10 w-full sm:w-40 max-sm:min-h-[44px]"
+              className="h-[42px] w-full pr-8 max-sm:min-h-[44px]"
             >
               <option value="">All statuses</option>
               {STATUS_OPTIONS.map((s) => (
@@ -425,150 +415,162 @@ export function AssignmentsPage() {
                 </option>
               ))}
             </Select>
-
-            <Button
-              type="button"
-              variant="secondary"
-              className="h-10 sm:ml-auto max-sm:min-h-[44px]"
-              aria-label={
-                showFilters
-                  ? 'Hide filters'
-                  : secondaryActiveCount > 0
-                    ? `Filters (${secondaryActiveCount})`
-                    : 'Filters'
-              }
-              aria-expanded={showFilters}
-              aria-controls="advanced-filters-panel"
-              leftIcon={<SlidersHorizontal size={16} aria-hidden />}
-              onClick={() => setShowFilters((value) => !value)}
-            >
-              <span>{showFilters ? 'Hide filters' : 'Filters'}</span>
-              {secondaryActiveCount > 0 && (
-                <span className="ml-1 rounded-full bg-primary-600 px-1.5 py-px text-[10px] font-semibold leading-none text-white">
-                  {secondaryActiveCount}
-                </span>
-              )}
-            </Button>
           </div>
 
-          {showFilters && (
-            <div
-              id="advanced-filters-panel"
-              className="grid grid-cols-1 items-start gap-2 rounded-lg border border-secondary-100 bg-secondary-50/60 p-3 sm:grid-cols-2 lg:grid-cols-5"
-            >
-              {/*
-               * Inline labels sit left of their control (R-125-004): each
-               * filter reads as one unit, and the order arrow is attached to
-               * the sort select instead of floating at a cell edge.
-               */}
-              <div className="flex items-center gap-2">
-                <label
-                  htmlFor="filter-due-from"
-                  className="shrink-0 text-xs font-medium text-secondary-600"
-                >
-                  Due from
-                </label>
-                <Input
-                  id="filter-due-from"
-                  type="date"
-                  value={dueFrom}
-                  onChange={(e) => setDueFrom(e.target.value)}
-                  className="max-sm:min-h-[44px]"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label
-                  htmlFor="filter-due-to"
-                  className="shrink-0 text-xs font-medium text-secondary-600"
-                >
-                  Due to
-                </label>
-                <Input
-                  id="filter-due-to"
-                  type="date"
-                  value={dueTo}
-                  onChange={(e) => setDueTo(e.target.value)}
-                  className="max-sm:min-h-[44px]"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label
-                  htmlFor="filter-priority"
-                  className="shrink-0 text-xs font-medium text-secondary-600"
-                >
-                  Priority
-                </label>
-                <Select
-                  id="filter-priority"
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="w-full max-sm:min-h-[44px]"
-                >
-                  <option value="">All priorities</option>
-                  {PRIORITY_OPTIONS.map((p) => (
-                    <option key={p} value={p}>
-                      {PRIORITY_LABELS[p]}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="flex items-center gap-2">
-                <label
-                  htmlFor="filter-type"
-                  className="shrink-0 text-xs font-medium text-secondary-600"
-                >
-                  Type
-                </label>
-                <Select
-                  id="filter-type"
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="w-full max-sm:min-h-[44px]"
-                >
-                  <option value="">All types</option>
-                  {TYPE_OPTIONS.map((t) => (
-                    <option key={t} value={t}>
-                      {TYPE_LABELS[t]}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="flex items-center gap-2">
-                <label
-                  htmlFor="filter-sort"
-                  className="shrink-0 text-xs font-medium text-secondary-600"
-                >
-                  Sort by
-                </label>
-                <Select
-                  id="filter-sort"
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value)}
-                  className="w-full max-sm:min-h-[44px]"
-                >
-                  {SORT_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </Select>
-                <button
-                  type="button"
-                  aria-label={order === 'asc' ? 'Sort ascending' : 'Sort descending'}
-                  title="Toggle sort order"
-                  onClick={toggleOrder}
-                  className="inline-flex min-h-[44px] w-11 shrink-0 items-center justify-center rounded-lg border border-secondary-300 bg-white text-secondary-700 hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                >
-                  {order === 'asc' ? (
-                    <ArrowUp size={16} aria-hidden />
-                  ) : (
-                    <ArrowDown size={16} aria-hidden />
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
+          <Button
+            type="button"
+            variant="secondary"
+            className="h-[42px] shrink-0 sm:ml-auto max-sm:min-h-[44px]"
+            aria-label={
+              showFilters
+                ? 'Hide filters'
+                : secondaryActiveCount > 0
+                  ? `Filters (${secondaryActiveCount})`
+                  : 'Filters'
+            }
+            aria-expanded={showFilters}
+            aria-controls="advanced-filters-panel"
+            leftIcon={<SlidersHorizontal size={16} aria-hidden />}
+            onClick={() => setShowFilters((value) => !value)}
+          >
+            <span>{showFilters ? 'Hide filters' : 'Filters'}</span>
+            {secondaryActiveCount > 0 && (
+              <span className="ml-1 rounded-full bg-primary-600 px-1.5 py-px text-[10px] font-semibold leading-none text-white">
+                {secondaryActiveCount}
+              </span>
+            )}
+          </Button>
         </div>
+
+        {/* Always-present live region (DoD 6); the visible result count sits
+            between the toolbar and the list and hosts the refetch spinner. */}
+        <div
+          role="status"
+          className="mb-4 flex min-h-5 items-center gap-2 text-sm text-secondary-600"
+        >
+          {isFetching && (
+            <Loader2 className="animate-spin text-primary-600" size={16} aria-hidden />
+          )}
+          {statusMessage}
+        </div>
+
+        {showFilters && (
+          <div
+            id="advanced-filters-panel"
+            className="grid grid-cols-1 items-start gap-2 rounded-lg border border-secondary-100 bg-secondary-50/60 p-3 sm:grid-cols-2 lg:grid-cols-5"
+          >
+            {/*
+             * Inline labels sit left of their control (R-125-004): each
+             * filter reads as one unit, and the order arrow is attached to
+             * the sort select instead of floating at a cell edge.
+             */}
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="filter-due-from"
+                className="shrink-0 text-xs font-medium text-secondary-600"
+              >
+                Due from
+              </label>
+              <Input
+                id="filter-due-from"
+                type="date"
+                value={dueFrom}
+                onChange={(e) => setDueFrom(e.target.value)}
+                className="max-sm:min-h-[44px]"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="filter-due-to"
+                className="shrink-0 text-xs font-medium text-secondary-600"
+              >
+                Due to
+              </label>
+              <Input
+                id="filter-due-to"
+                type="date"
+                value={dueTo}
+                onChange={(e) => setDueTo(e.target.value)}
+                className="max-sm:min-h-[44px]"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="filter-priority"
+                className="shrink-0 text-xs font-medium text-secondary-600"
+              >
+                Priority
+              </label>
+              <Select
+                id="filter-priority"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="w-full max-sm:min-h-[44px]"
+              >
+                <option value="">All priorities</option>
+                {PRIORITY_OPTIONS.map((p) => (
+                  <option key={p} value={p}>
+                    {PRIORITY_LABELS[p]}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="filter-type"
+                className="shrink-0 text-xs font-medium text-secondary-600"
+              >
+                Type
+              </label>
+              <Select
+                id="filter-type"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="w-full max-sm:min-h-[44px]"
+              >
+                <option value="">All types</option>
+                {TYPE_OPTIONS.map((t) => (
+                  <option key={t} value={t}>
+                    {TYPE_LABELS[t]}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="filter-sort"
+                className="shrink-0 text-xs font-medium text-secondary-600"
+              >
+                Sort by
+              </label>
+              <Select
+                id="filter-sort"
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="w-full max-sm:min-h-[44px]"
+              >
+                {SORT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </Select>
+              <button
+                type="button"
+                aria-label={order === 'asc' ? 'Sort ascending' : 'Sort descending'}
+                title="Toggle sort order"
+                onClick={toggleOrder}
+                className="inline-flex min-h-[44px] w-11 shrink-0 items-center justify-center rounded-lg border border-secondary-300 bg-white text-secondary-700 hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                {order === 'asc' ? (
+                  <ArrowUp size={16} aria-hidden />
+                ) : (
+                  <ArrowDown size={16} aria-hidden />
+                )}
+              </button>
+            </div>
+          </div>
+        )}
 
         {isEmpty ? (
           <div className="py-8 text-center">
