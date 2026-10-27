@@ -357,47 +357,52 @@ export function AssignmentsPage() {
          * into a collapsible secondary panel. Toggle copy carries the active
          * secondary count so a collapsed panel is never silently filtering.
          */}
-        <div className="mb-6 space-y-3">
-          {/* Search gets its own full-width row; the other primary controls
-              line up beneath it (R-125-003). */}
-          <div className="relative w-full">
-            {/* The magnifier labels the field visually — the placeholder
-                alone did not read as search (R-125-002). */}
-            <Input
-              aria-label="Search assignments"
-              placeholder="Search title or description"
-              maxLength={200}
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  setQ(searchInput.trim());
-                }
-              }}
-              leftIcon={<Search size={16} aria-hidden />}
-              className="pr-10"
-            />
-            {searchInput && (
-              <button
-                type="button"
-                aria-label="Clear search"
-                onClick={() => {
-                  setSearchInput('');
-                  setQ('');
+        {/*
+         * Connected toolbar (SP-125 / D125-7, restyled R-125-005): one bordered
+         * strip instead of stacked blocks. Search expands; Course and Status
+         * sit inline at compact widths; the advanced toggle carries its active
+         * count. Date range, priority, type, and the sort pair stay in the
+         * collapsible panel below so a collapsed panel is never silently
+         * filtering (the toggle's badge shows the active secondary count).
+         */}
+        <div className="mb-6 space-y-2">
+          <div className="flex flex-col gap-2 rounded-xl border border-secondary-200 bg-secondary-50/40 p-2 sm:flex-row sm:items-center">
+            <div className="relative w-full sm:flex-1">
+              {/* The magnifier labels the field visually (R-125-002). */}
+              <Input
+                aria-label="Search assignments"
+                placeholder="Search assignments..."
+                maxLength={200}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setQ(searchInput.trim());
+                  }
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600 focus:outline-none"
-              >
-                <X size={16} aria-hidden />
-              </button>
-            )}
-          </div>
+                leftIcon={<Search size={16} aria-hidden />}
+                className="h-10 pr-10 max-sm:min-h-[44px]"
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => {
+                    setSearchInput('');
+                    setQ('');
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600 focus:outline-none"
+                >
+                  <X size={16} aria-hidden />
+                </button>
+              )}
+            </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Select
               aria-label="Course"
               value={courseId}
               onChange={(e) => setCourseId(e.target.value)}
-              className="w-full sm:w-44"
+              className="h-10 w-full sm:w-40 max-sm:min-h-[44px]"
             >
               <option value="">All courses</option>
               {courses.map((c) => (
@@ -411,7 +416,7 @@ export function AssignmentsPage() {
               aria-label="Status"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full sm:w-44"
+              className="h-10 w-full sm:w-40 max-sm:min-h-[44px]"
             >
               <option value="">All statuses</option>
               {STATUS_OPTIONS.map((s) => (
@@ -424,17 +429,25 @@ export function AssignmentsPage() {
             <Button
               type="button"
               variant="secondary"
-              className="sm:ml-auto max-sm:min-h-[44px]"
+              className="h-10 sm:ml-auto max-sm:min-h-[44px]"
+              aria-label={
+                showFilters
+                  ? 'Hide filters'
+                  : secondaryActiveCount > 0
+                    ? `Filters (${secondaryActiveCount})`
+                    : 'Filters'
+              }
               aria-expanded={showFilters}
               aria-controls="advanced-filters-panel"
               leftIcon={<SlidersHorizontal size={16} aria-hidden />}
               onClick={() => setShowFilters((value) => !value)}
             >
-              {showFilters
-                ? 'Hide filters'
-                : secondaryActiveCount > 0
-                  ? `Filters (${secondaryActiveCount})`
-                  : 'Filters'}
+              <span>{showFilters ? 'Hide filters' : 'Filters'}</span>
+              {secondaryActiveCount > 0 && (
+                <span className="ml-1 rounded-full bg-primary-600 px-1.5 py-px text-[10px] font-semibold leading-none text-white">
+                  {secondaryActiveCount}
+                </span>
+              )}
             </Button>
           </div>
 
