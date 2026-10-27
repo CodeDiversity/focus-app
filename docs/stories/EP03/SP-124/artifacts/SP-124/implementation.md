@@ -11,11 +11,11 @@
 
 | Child | Outcome | Implementation record | Code commit |
 |---|---|---|---|
-| [SP-124A](../../SP-124A-shared-assignment-interaction.md) | One interaction home (`features/assignments/`): shared hook, row, dialogs, form, checklist; the course page keeps its behavior. | [SP-124A/implementation.md](../SP-124A/implementation.md) | `2285f17` (queue wording corrected in `ac9fa34`) |
-| [SP-124B](../../SP-124B-list-adopts-shared-interaction.md) | `/assignments` hosts the same owner: title opens edit, course meta link, inline status/subtasks, refetch with current params. | [SP-124B/implementation.md](../SP-124B/implementation.md) | `7380146` |
-| [SP-124C](../../SP-124C-shared-create.md) | Create from `/assignments` through the shared modal form with an optional Course select (prefilled from the active filter, "No course" omits the field); list header Add, dual empty-state CTAs; this index and the DoD-10 note. | [SP-124C/implementation.md](../SP-124C/implementation.md) | the commit containing this record |
+| [SP-124A](../../SP-124A-shared-assignment-interaction.md) | One interaction home (`features/assignments/`): shared hook, row, dialogs, form, checklist; the course page keeps its behavior. | [SP-124A/implementation.md](../SP-124A/implementation.md) | `2285f17` (queue wording corrected in `ac9fa34`); shared-owner corrections in `7f27a8a` |
+| [SP-124B](../../SP-124B-list-adopts-shared-interaction.md) | `/assignments` hosts the same owner: title opens edit, course meta link, inline status/subtasks, refetch with current params. | [SP-124B/implementation.md](../SP-124B/implementation.md) | `7380146`; refetch-freshness corrections in `7f27a8a` |
+| [SP-124C](../../SP-124C-shared-create.md) | Create from `/assignments` through the shared modal form with an optional Course select (prefilled from the active filter, "No course" omits the field); list header Add, dual empty-state CTAs; this index and the DoD-10 note. | [SP-124C/implementation.md](../SP-124C/implementation.md) | `7f27a8a` (create/focus/e2e corrections; record finalized in the docs follow-up) |
 
-Baseline before this unit: `b7b3557` (plan) → `2285f17` (A) → `7380146` (B) → C's commit. Post-review corrections are in the commit containing this record (see [Post-review corrections](#post-review-corrections-r-124-001006)).
+Baseline before this unit: `b7b3557` (plan) → `2285f17` (A) → `7380146` (B) → C's original commit. Post-review corrections, tests and e2e spec: `7f27a8a` (see [Post-review corrections](#post-review-corrections-r-124-001006)).
 
 ## Integration summary
 
@@ -89,10 +89,10 @@ or touched.
 | Field | Value |
 |---|---|
 | Date | 2026-10-26 |
-| Tested Git state | Working tree carrying the correction commit plus its uncommitted files (this record); code paths are the same as the committed files |
+| Tested Git state | Committed correction state `7f27a8a` (re-run after the pre-commit formatter; 4/4 passed on 7.0 s) |
 | Environment | Playwright Chromium (installed `chromium-1248`), test API `:4100`, test Vite `:3100` proxying `/api` to it, throwaway Postgres database `studypilot_e2e_test` at `localhost:5432` created and dropped by global setup/teardown |
 | Command | `cd apps/web && pnpm exec playwright test e2e/assignments-list.spec.ts --reporter=list` |
-| Result | Exit 0 — 4 passed (7.1 s), serial mode |
+| Result | Exit 0 — 4 passed (7.0 s committed-state re-run; 7.1 s first run), serial mode |
 | Provenance | Env is loaded programmatically by the spec; no `.env`/secret file was read, printed or committed; no developer database was modified |
 
 **Executed workflows and actual outcomes**
@@ -111,6 +111,8 @@ screenshots/trace if they need visual ratification; no waiver is claimed.
 ## Verification (post-review corrections)
 
 Run from the repository root unless noted; workspace filter runs in `apps/web`.
+Correction commit: `7f27a8a` (code, tests, e2e spec, records; final record
+edits in the immediately following docs commit).
 
 | Command | Exit | Result |
 |---|---|---|

@@ -4,7 +4,7 @@
 **Status:** Implemented and post-review corrected — awaiting parent re-review
 **Date:** 2026-10-26
 **Checkpoint:** [checkpoint.md](./checkpoint.md)
-**Review unit:** SP-124 combined parent review (index written by C). Post-review corrections R-124-001 cover this host's mutate-then-refetch path.
+**Review unit:** SP-124 combined parent review (index written by C). Post-review corrections R-124-001 (`7f27a8a`) cover this host's mutate-then-refetch path.
 
 ## Outcome
 

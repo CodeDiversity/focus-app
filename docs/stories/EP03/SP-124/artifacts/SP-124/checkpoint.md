@@ -5,6 +5,7 @@
 **Review under correction:** [review.md](./review.md) (pass 1, Changes Required)
 **Status:** Complete — all six findings corrected and verified; awaiting combined parent re-review
 **Started / finished:** 2026-10-26
+**Correction commit:** `7f27a8a` (records finalized in the immediately following docs commit)
 **Writer:** implementer (single frontend owner)
 
 ## Progress

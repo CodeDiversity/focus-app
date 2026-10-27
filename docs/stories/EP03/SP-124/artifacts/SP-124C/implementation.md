@@ -4,7 +4,7 @@
 **Status:** Implemented and post-review corrected — awaiting parent re-review
 **Date:** 2026-10-26
 **Checkpoint:** [checkpoint.md](./checkpoint.md)
-**Review unit:** SP-124 combined parent review (parent index: [../SP-124/implementation.md](../SP-124/implementation.md)). Post-review corrections R-124-002/003/005/006 land here.
+**Review unit:** SP-124 combined parent review (parent index: [../SP-124/implementation.md](../SP-124/implementation.md)). Post-review corrections R-124-002/003/005/006 land here (`7f27a8a`).
 
 ## Outcome
 

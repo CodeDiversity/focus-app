@@ -3,7 +3,7 @@
 **Story:** [SP-124A](../../SP-124A-shared-assignment-interaction.md)
 **Status:** Implemented and post-review corrected — awaiting parent re-review
 **Date:** 2026-10-26
-**Commit:** `2285f170825654709fc066e0af1b858b0e4544dc` (implementation and this record; the follow-up commit only corrects queue wording). Post-review corrections R-124-001/R-124-004 are in the commit containing the parent correction record.
+**Commit:** `2285f170825654709fc066e0af1b858b0e4544dc` (implementation and this record; the follow-up commit only corrects queue wording). Post-review corrections R-124-001/R-124-004 are in `7f27a8a`.
 
 ## Outcome
 
@@ -90,8 +90,7 @@ run covering both hosts). Details: [SP-124 implementation](../SP-124/implementat
 
 ## Post-review correction (R-124-001, R-124-004)
 
-Review pass 1 found two shared-owner gaps. Both are closed in the commit
-containing the parent correction record:
+Review pass 1 found two shared-owner gaps. Both are closed in `7f27a8a`:
 
 - **R-124-001 — latest-callback completion.** `useAssignmentActions` keeps a
   `latest` ref of `items` and every host callback; async status completion reads
