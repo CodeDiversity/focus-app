@@ -3,7 +3,7 @@
 **Epic:** [EP02: Semester & Course Management](../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1 (functional academic tracker)
 **Epic dependency:** EP01 (Authentication & Onboarding) — complete in code (see baseline)
-**Status:** **EP02 complete 2026-10-23** — all six proposed stories broken down, implemented, and reviewed. Story 1 → [SP-110](./SP-110/README.md) (implemented + reviewed PASS 2026-10-21). Stories 2–4 → [SP-111](./SP-111/README.md) (implemented + final combined parent review PASS 2026-10-22). Stories 5–6 → [SP-112](./SP-112/README.md) (planned 2026-10-21; implemented + final combined parent review PASS 2026-10-23, DoD 10 ratified). Sequencing: SP-110 → SP-111 → SP-112.
+**Status:** **EP02 complete 2026-10-23** — all six proposed stories broken down, implemented, and reviewed. Story 1 → [SP-110](./SP-110/README.md) (implemented + reviewed PASS 2026-10-21). Stories 2–4 → [SP-111](./SP-111/README.md) (implemented + final combined parent review PASS 2026-10-22). Stories 5–6 → [SP-112](./SP-112/README.md) (planned 2026-10-21; implemented + final combined parent review PASS 2026-10-23, DoD 10 ratified). Sequencing: SP-110 → SP-111 → SP-112. Story 7 → [SP-126](./SP-126/README.md) — **Needs refinement 2026-10-27** (ui-refiner handoff; presentation pass over the `/courses` page, user request to match the redesigned Assignments page).
 
 ## Code baseline (2026-10-20)
 
@@ -24,8 +24,11 @@ EP01 is complete in code (SP-101…SP-109 all implemented; SP-107 awaits its com
 | [SP-110](./SP-110/README.md) | 1. Create and manage semesters | [3 children](./SP-110/README.md) (A backend, B frontend, C integration) — implemented + reviewed PASS 2026-10-21 | Pending creation |
 | [SP-111](./SP-111/README.md) | 2. Create a course · 3. Edit course information · 4. Archive and restore courses | [3 children](./SP-111/README.md) (A backend, B frontend, C integration) — implemented + reviewed PASS 2026-10-22 | Pending creation |
 | [SP-112](./SP-112/README.md) | 5. Manage recurring class meetings · 6. Course list and detail views | [3 children](./SP-112/README.md) (A backend, B frontend, C integration) — implemented + reviewed PASS 2026-10-23 (DoD 10 ratified) | Pending creation |
+| [SP-126](./SP-126/README.md) | 7. Course page experience (post-completion user request 2026-10-27) | [1 frontend story](./SP-126/README.md) — **Needs refinement** (ui-refiner handoff, D126-5). Presentation pass; no new epic AC. | Pending creation |
 
 All six proposed stories are now broken down — none deferred or dropped.
+Story 7 (SP-126) is a new post-completion request on the `/courses` surface,
+added after the epic closed.
 Sequencing intent: semesters first (SP-110, complete) — courses attach to
 semesters and consume the semester list/activation behavior; course management
 (SP-111) before meetings + course detail (SP-112), because meetings attach to
@@ -57,6 +60,23 @@ queue at [SP-112/README.md](./SP-112/README.md#execution-queue)).
 reviewed. **Next action: None** — no EP02 work remains; the next milestone
 epic is [EP03](../../epics/EP03-assignment-and-task-management.md)
 (Assignment & Task Management), whose EP02 dependency is now satisfied.
+
+SP-126 (story 7, post-completion user request 2026-10-27) is **Needs
+refinement** — the ui-refiner pass (D126-5) precedes implementation. Queue at
+[SP-126/README.md](./SP-126/README.md#execution-queue). It has no
+implementation dependency (SP-125 reviewed `9dce1c4` supplies the design
+reference in code) and no backend work (D126-1).
+
+## Quality gate — SP-126 plan (2026-10-27)
+
+**Draft** — the story is `Needs refinement` on D126-5 (ui-refiner pass
+precedes implementation); the two material product decisions are user-confirmed
+2026-10-27 (D126-1 skip the pending-assignment count; D126-2 menu = Edit +
+Archive/Restore, no hard delete). D126-3 (client-side search/semester filter)
+and D126-4 (Assignments-consistent shell/toolbar) are planner-recorded and
+grounded. No implementation blocker. Full gate table:
+[SP-126 README](./SP-126/README.md#quality-gate-2026-10-27). No Jira sync was
+authorized; the SP-126 key is `Pending creation`.
 
 ## Quality gate — SP-110 plan (2026-10-20)
 
