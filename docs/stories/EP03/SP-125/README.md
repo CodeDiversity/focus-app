@@ -15,15 +15,15 @@
 
 **Active substory:** None.
 
-**Next substory:** None with reason — implementation complete (`b3e92db`, [record](./artifacts/SP-125/implementation.md)); parent review of this unit is the next action, owned by the reviewer.
+**Next substory:** None with reason — RV-125-001 and RV-125-002 are implemented; parent re-review is next and is owned by the reviewer.
 
 **Implementation owner:** `implementer`, one frontend writer. No backend writer.
 
-**Final review:** One review of SP-125 after implementation, including the saved walkthrough. DoD-10 browser/e2e evidence is open (F-125-03) and belongs to the review unit.
+**Final review:** Pass 1 returned Changes Required ([review](./artifacts/SP-125/review.md)). Implementer corrections for RV-125-001 and RV-125-002 are recorded in [implementation.md](./artifacts/SP-125/implementation.md). Re-review is next. Walkthrough is reviewer-owned and not yet written.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [SP-125](./SP-125-assignment-experience.md) | Implemented — awaiting parent review | SP-124 reviewed (`63f9615`) — satisfied. Presentation decisions settled and implemented. | Parent review (reviewer); DoD-10 browser/e2e pass outstanding (F-125-03) | [checkpoint](./artifacts/SP-125/checkpoint.md), [implementation](./artifacts/SP-125/implementation.md) |
+| [SP-125](./SP-125-assignment-experience.md) | Implemented — awaiting parent review | SP-124 reviewed (`63f9615`) — satisfied. Pass 1: RV-125-001 and RV-125-002 fixed in the correction commit; RV-125-003 (planner) and RV-125-004 (passing sync) remain outside this fix. | Parent re-review | [checkpoint](./artifacts/SP-125/checkpoint.md), [implementation](./artifacts/SP-125/implementation.md), [review](./artifacts/SP-125/review.md) |
 
 This unit adds no new epic acceptance criterion. It is a presentation pass over behavior SP-113 through SP-124 already own.
 

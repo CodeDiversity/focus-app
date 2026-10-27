@@ -187,4 +187,41 @@ test.describe('mobile create surface', () => {
     );
     expect(noHorizontalOverflow).toBe(true);
   });
+
+  test('keeps course-host row controls at 44 px', async ({ page, request }) => {
+    const { email, accessToken } = await createAuthenticatedUserViaApi(request);
+    const semester = await createSemesterViaApi(request, accessToken, {
+      name: `E2E Semester ${uniqueSuffix()}`,
+      startDate: '2026-01-05',
+      endDate: '2026-05-15',
+    });
+    const course = await createCourseViaApi(request, accessToken, {
+      code: `E2E-${crypto.randomUUID().slice(0, 8)}`,
+      name: `E2E Course ${uniqueSuffix()}`,
+      semesterId: semester.id,
+    });
+    await loginViaUi(page, email);
+    await page.goto(`/courses/${course.id}`);
+
+    await page.getByRole('button', { name: 'Add assignment' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Add an assignment' });
+    const title = `E2E Mobile Row ${uniqueSuffix()}`;
+    await dialog.getByLabel('Title').fill(title);
+    await dialog.getByRole('button', { name: 'Create assignment' }).click();
+    await expect(page.getByText('Assignment added.')).toBeVisible();
+
+    const row = page.locator('li').filter({ hasText: title });
+    const statusBox = await row
+      .getByRole('combobox', { name: `Status for ${title}` })
+      .boundingBox();
+    const actionsBox = await row
+      .getByRole('button', { name: `Actions for ${title}` })
+      .boundingBox();
+    const disclosureBox = await row
+      .getByRole('button', { name: `Subtasks for ${title}: No subtasks` })
+      .boundingBox();
+    expect(statusBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+    expect(actionsBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+    expect(disclosureBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+  });
 });

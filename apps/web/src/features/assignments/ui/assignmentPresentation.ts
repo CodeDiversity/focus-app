@@ -71,7 +71,8 @@ export const DUE_SOON_LABEL = 'Due soon';
 
 /**
  * Compact progress label for the row disclosure (SP-125 / R-125-007):
- * "2/4 subtasks" style. Zero-subtask rows render no disclosure at all.
+ * "2/4 subtasks" style. Empty rows still render the disclosure (RV-125-001);
+ * that control uses `subtaskSummary` ("No subtasks") instead of this label.
  */
 export function subtaskProgress(subtasks: Subtask[]): string {
   const count = subtasks.length;

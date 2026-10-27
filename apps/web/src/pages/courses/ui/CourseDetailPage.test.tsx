@@ -664,25 +664,8 @@ describe('CourseDetailPage subtask announcements (SP-120J AC 6)', () => {
 
   it('announces a subtask add and background-refetches without assignment copy', async () => {
     const user = setupUser();
-    // Zero-subtask rows render no disclosure (R-125-007), so the row starts
-    // with one existing subtask; the add flow is the same.
-    mockedGetCourse.mockResolvedValue({
-      ...cs101,
-      assignments: [
-        {
-          ...homework,
-          subtasks: [
-            {
-              id: 'sub-0',
-              title: 'Existing step',
-              status: 'PENDING',
-              orderIndex: 0,
-              ...timestamps,
-            },
-          ],
-        },
-      ],
-    });
+    // The stored course row has no subtasks; the disclosure must still open
+    // the add field (RV-125-001).
     vi.mocked(createSubtask).mockResolvedValue({
       id: 'sub-1',
       title: 'Read chapter 1',
@@ -693,8 +676,9 @@ describe('CourseDetailPage subtask announcements (SP-120J AC 6)', () => {
     renderPage();
 
     await user.click(
-      await screen.findByRole('button', { name: 'Subtasks for Problem Set 3: 1 subtask' })
+      await screen.findByRole('button', { name: 'Subtasks for Problem Set 3: No subtasks' })
     );
+    expect(screen.getByText('No subtasks yet.')).toBeInTheDocument();
     await user.type(screen.getByLabelText('Subtask title'), 'Read chapter 1');
     await user.click(screen.getByRole('button', { name: 'Add subtask to Problem Set 3' }));
 

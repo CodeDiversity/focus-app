@@ -422,11 +422,14 @@ describe('AssignmentsSection subtask disclosure (SP-120J AC 1, AC 8)', () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole('region')).not.toBeInTheDocument();
 
-    // Zero-subtask rows render no disclosure at all (R-125-007).
+    // Zero-subtask rows still offer the disclosure so the first subtask can be
+    // added (RV-125-001). The accessible name uses subtaskSummary.
     const firstItem = screen.getAllByRole('listitem')[0]!;
     expect(
-      within(firstItem).queryByRole('button', { name: /Subtasks for Problem Set 4/ })
-    ).not.toBeInTheDocument();
+      within(firstItem).getByRole('button', {
+        name: 'Subtasks for Problem Set 4: No subtasks',
+      })
+    ).toBeInTheDocument();
     // The type icon tile is decorative (aria-hidden).
     expect(within(firstItem).getByText('Homework')).toBeInTheDocument();
     // Every row carries the compact status select and the overflow trigger.
@@ -728,16 +731,43 @@ describe('AssignmentsSection overdue + completed views (SP-123A/B)', () => {
     expect(screen.queryByText('All assignments are complete.')).not.toBeInTheDocument();
   });
 
-  it('keeps status Select and overflow actions on revealed rows (no disclosure without subtasks)', async () => {
+  it('keeps status Select, overflow actions, and the empty-subtask disclosure on revealed rows', async () => {
     const user = setupUser();
     render(<AssignmentsSection assignments={[problemSet, labReport]} />);
     await user.click(screen.getByRole('button', { name: 'Show completed (1)' }));
     expect(screen.getByRole('combobox', { name: 'Status for Lab Report' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Actions for Lab Report' })).toBeInTheDocument();
-    // Lab Report carries zero subtasks, so no disclosure renders (R-125-007).
+    // Finished rows with no subtasks still expose the add path (RV-125-001).
     expect(
-      screen.queryByRole('button', { name: /Subtasks for Lab Report/ })
-    ).not.toBeInTheDocument();
+      screen.getByRole('button', { name: 'Subtasks for Lab Report: No subtasks' })
+    ).toBeInTheDocument();
+  });
+
+  it('opens the add-subtask field from a zero-subtask row (RV-125-001)', async () => {
+    const user = setupUser();
+    render(<AssignmentsSection assignments={[problemSet]} />);
+
+    await user.click(
+      screen.getByRole('button', { name: 'Subtasks for Problem Set 4: No subtasks' })
+    );
+
+    expect(screen.getByText('No subtasks yet.')).toBeInTheDocument();
+    expect(screen.getByLabelText('Subtask title')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Add subtask to Problem Set 4' })
+    ).toBeInTheDocument();
+  });
+
+  it('gives course-host row controls a 44px mobile floor (RV-125-002)', async () => {
+    const user = setupUser();
+    render(<AssignmentsSection assignments={[problemSet, labReport]} />);
+    await user.click(screen.getByRole('button', { name: 'Show completed (1)' }));
+
+    const lists = screen.getAllByRole('list');
+    expect(lists).toHaveLength(2);
+    for (const list of lists) {
+      expect(list).toHaveClass('max-sm:[&_button]:min-h-[44px]', 'max-sm:[&_select]:min-h-[44px]');
+    }
   });
 
   it('resets showCompleted to false when the assignments prop changes identity', async () => {

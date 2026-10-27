@@ -106,7 +106,9 @@ export function AssignmentsSection({
       ) : (
         <>
           {unfinished.length > 0 && (
-            <ul className="divide-y divide-secondary-100">{unfinished.map(renderRow)}</ul>
+            <ul className="divide-y divide-secondary-100 max-sm:[&_button]:min-h-[44px] max-sm:[&_select]:min-h-[44px]">
+              {unfinished.map(renderRow)}
+            </ul>
           )}
           {unfinished.length === 0 && (
             <div className="py-8 text-center">
@@ -146,7 +148,9 @@ export function AssignmentsSection({
                   aria-labelledby="completed-assignments-toggle"
                   className="mt-3"
                 >
-                  <ul className="divide-y divide-secondary-100">{finished.map(renderRow)}</ul>
+                  <ul className="divide-y divide-secondary-100 max-sm:[&_button]:min-h-[44px] max-sm:[&_select]:min-h-[44px]">
+                    {finished.map(renderRow)}
+                  </ul>
                 </div>
               )}
             </div>

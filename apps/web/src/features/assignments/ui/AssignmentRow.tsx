@@ -142,8 +142,9 @@ export interface AssignmentRowProps {
  *
  * The edit focus hook lives on the title because the title is the row's
  * stable control; the shared hook re-focuses the *neighbor's* title after a
- * delete, so it must exist whether or not any menu is open. Zero-subtask rows
- * render no disclosure at all (R-125-007).
+ * delete, so it must exist whether or not any menu is open. The subtask
+ * disclosure is always rendered (RV-125-001): a zero-subtask row must still
+ * open the checklist, which owns the only add-subtask field.
  */
 export function AssignmentRow({
   assignment,
@@ -247,29 +248,29 @@ export function AssignmentRow({
             )}
           </p>
 
-          {hasSubtasks && (
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="relative z-10 mt-1 -ml-1"
-              id={`subtasks-toggle-${assignment.id}`}
-              aria-expanded={expanded}
-              aria-controls={`subtasks-${assignment.id}`}
-              aria-label={`Subtasks for ${assignment.title}: ${subtaskSummary(assignment.subtasks)}`}
-              disabled={busy}
-              leftIcon={
-                <ChevronDown
-                  aria-hidden
-                  size={16}
-                  className={clsx('transition-transform', expanded && 'rotate-180')}
-                />
-              }
-              onClick={onToggleExpanded}
-            >
-              {subtaskProgress(assignment.subtasks)}
-            </Button>
-          )}
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="relative z-10 mt-1 -ml-1"
+            id={`subtasks-toggle-${assignment.id}`}
+            aria-expanded={expanded}
+            aria-controls={`subtasks-${assignment.id}`}
+            aria-label={`Subtasks for ${assignment.title}: ${subtaskSummary(assignment.subtasks)}`}
+            disabled={busy}
+            leftIcon={
+              <ChevronDown
+                aria-hidden
+                size={16}
+                className={clsx('transition-transform', expanded && 'rotate-180')}
+              />
+            }
+            onClick={onToggleExpanded}
+          >
+            {hasSubtasks
+              ? subtaskProgress(assignment.subtasks)
+              : subtaskSummary(assignment.subtasks)}
+          </Button>
         </div>
 
         {/* Right: govern the row — compact status select + overflow menu. */}
@@ -290,7 +291,7 @@ export function AssignmentRow({
         </div>
       </div>
 
-      {expanded && hasSubtasks && (
+      {expanded && (
         <SubtaskChecklist
           assignmentId={assignment.id}
           assignmentTitle={assignment.title}
