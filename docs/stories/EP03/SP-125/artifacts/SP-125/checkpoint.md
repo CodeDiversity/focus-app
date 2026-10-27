@@ -21,7 +21,8 @@ Role / scope: implementer; frontend presentation pass only. No API/schema/route 
 - [x] S7: verification (161 passed, typecheck exit 0, lint clean after prettier fix)
 - [x] S8: `implementation.md` written; README queue + story statuses updated; code committed as `b3e92db`, docs closeout commit follows
 - [x] S9 (post-refine, user direction): Edit becomes an icon-only pencil (`SquarePen`) at the end of the action cluster, after Delete; aria-label and `data-assignment-focus="edit:${id}"` unchanged; tab-order tests updated in both hosts
-- Current step: done — awaiting parent review.
+- [x] S10 (R-125-007, user brief "Linear/Todoist card redesign"): entity `isDueSoonAssignment`; `TYPE_ICONS`/`DUE_SOON` palette/`subtaskProgress` in presentation; new `RowActionsMenu` (aria menu, Escape/outside close, arrow cycling, trigger focus-return); `AssignmentRow` rebuilt as a card (type icon tile, semibold title with overdue/due-soon badge, course chip line, neutral meta line, subtask-progress disclosure only when subtasks exist, status select + overflow menu on the right, title carries the `edit:${id}` hook so neighbor-delete focus lands on it); page toolbar moved outside a dedicated results card with the count as its section header; section host passes `onTitleActivate`; tests updated across section, page, and course-detail hosts — full web suite 687/687
+- Current step: closeout for R-125-007 (commit + records).
 
 ## Decisions and dependencies
 - Secondary panel default-collapsed; count covered non-default sort/order too. While collapsed, secondary controls are unmounted — three existing tests were updated to toggle first (presentation-owned; behavior untouched).
