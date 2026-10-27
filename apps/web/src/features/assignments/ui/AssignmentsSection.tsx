@@ -79,6 +79,7 @@ export function AssignmentsSection({
       onToggleExpanded={() => actions.toggleExpanded(assignment.id)}
       onOpenEdit={() => actions.openEdit(assignment)}
       onOpenDelete={() => actions.openDelete(assignment)}
+      onTitleActivate={() => actions.openEdit(assignment)}
       onSubtaskChanged={actions.onSubtaskChanged}
       onSubtaskRefresh={actions.onSubtaskRefresh}
       onSubtaskPending={actions.onPending}

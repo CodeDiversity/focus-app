@@ -108,7 +108,8 @@ describe('AssignmentsPage', () => {
     expect(await screen.findByText('Problem Set 4')).toBeInTheDocument();
     expect(screen.getByText('MATH101')).toBeInTheDocument();
     expect(screen.getByText('Calculus I')).toBeInTheDocument();
-    expect(screen.getByText(/1 subtask, 1 complete/i)).toBeInTheDocument();
+    // Visible progress counter on the disclosure (R-125-007).
+    expect(screen.getByText('1/1 subtasks')).toBeInTheDocument();
   });
 
   it('search input triggers a re-query with q (debounced)', async () => {
@@ -255,7 +256,7 @@ describe('AssignmentsPage', () => {
     await screen.findByText('Problem Set 4');
     expect(screen.getByText('MATH101')).toBeInTheDocument();
     expect(screen.getByText('Calculus I')).toBeInTheDocument();
-    expect(screen.getByText(/1 subtask, 1 complete/i)).toBeInTheDocument();
+    expect(screen.getByText('1/1 subtasks')).toBeInTheDocument();
   });
 
   it('clear filters resets all controls and re-queries with no params', async () => {
@@ -304,11 +305,13 @@ describe('AssignmentsPage', () => {
     expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
   });
 
-  it('keeps the due-date line neutral on an overdue row', async () => {
+  it('keeps the meta line neutral and the overdue badge beside the title', async () => {
     renderPage();
     await screen.findByText('Problem Set 4');
     const pill = screen.getByText('Overdue');
-    expect(pill.closest('p')).toHaveClass('text-secondary-600');
+    // Badge moved next to the title (R-125-007); the meta line stays neutral.
+    expect(pill.closest('p')).toBeNull();
+    expect(screen.getByText('Quiz').closest('p')).toHaveClass('text-secondary-600');
   });
 });
 
@@ -319,7 +322,7 @@ describe('AssignmentsPage shared interaction (SP-124B AC 8)', () => {
     await screen.findByText('Problem Set 4');
 
     const titleButton = screen.getByRole('button', { name: 'Problem Set 4' });
-    expect(titleButton).toHaveClass('text-left', 'font-medium', 'hover:underline');
+    expect(titleButton).toHaveClass('text-left', 'font-semibold', 'hover:underline');
 
     await user.click(titleButton);
 
@@ -328,16 +331,41 @@ describe('AssignmentsPage shared interaction (SP-124B AC 8)', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('/assignments');
   });
 
-  it('opens the edit form from the Edit button', async () => {
+  it('opens the edit form from the overflow menu', async () => {
     const user = setupUser();
     renderPage();
     await screen.findByText('Problem Set 4');
 
-    await user.click(screen.getByRole('button', { name: 'Edit Problem Set 4' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for Problem Set 4' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit Problem Set 4' }));
 
     expect(screen.getByRole('dialog', { name: 'Edit assignment' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save changes' })).toBeInTheDocument();
     expect(screen.getByLabelText('Title')).toHaveValue('Problem Set 4');
+  });
+
+  it('opens the overflow menu with the keyboard, cycles with arrows, and closes on Escape', async () => {
+    const user = setupUser();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    const trigger = screen.getByRole('button', { name: 'Actions for Problem Set 4' });
+    await user.click(trigger);
+
+    const menu = screen.getByRole('menu');
+    const editItem = screen.getByRole('menuitem', { name: 'Edit Problem Set 4' });
+    const deleteItem = screen.getByRole('menuitem', { name: 'Delete Problem Set 4' });
+    expect(editItem).toHaveFocus();
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
+    expect(trigger).toHaveAttribute('aria-controls', menu.id);
+
+    await user.keyboard('{ArrowDown}');
+    expect(deleteItem).toHaveFocus();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
   });
 
   it('links the course meta slot to the course page', async () => {
@@ -388,13 +416,14 @@ describe('AssignmentsPage shared interaction (SP-124B AC 8)', () => {
     expect(mockedListAssignments.mock.calls.at(-1)?.[0]).toMatchObject({ courseId: 'course-1' });
   });
 
-  it('deletes through the shared dialog and removes the row after refetch', async () => {
+  it('deletes through the overflow menu and the shared dialog, then removes the row', async () => {
     const user = setupUser();
     mockedListAssignments.mockResolvedValueOnce([item] as never).mockResolvedValue([] as never);
     renderPage();
     await screen.findByText('Problem Set 4');
 
-    await user.click(screen.getByRole('button', { name: 'Delete Problem Set 4' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for Problem Set 4' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Delete Problem Set 4' }));
     const dialog = screen.getByRole('dialog', { name: 'Delete Problem Set 4?' });
     await user.click(within(dialog).getByRole('button', { name: 'Delete Problem Set 4' }));
 
@@ -440,7 +469,7 @@ describe('AssignmentsPage shared interaction (SP-124B AC 8)', () => {
     expect(screen.getByRole('list')).toHaveAttribute('aria-busy', 'true');
     expect(document.querySelectorAll('.animate-spin').length).toBeGreaterThan(0);
     expect(screen.getByText('Problem Set 4')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit Problem Set 4' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Actions for Problem Set 4' })).toBeEnabled();
 
     resolveRefetch([item]);
     await waitFor(() => expect(screen.getByRole('list')).toHaveAttribute('aria-busy', 'false'));
@@ -481,19 +510,18 @@ describe('AssignmentsPage shared interaction (SP-124B AC 8)', () => {
     await user.tab();
     expect(screen.getByRole('combobox', { name: 'Status for Problem Set 4' })).toHaveFocus();
     await user.tab();
-    const del = screen.getByRole('button', { name: 'Delete Problem Set 4' });
-    expect(del).toHaveFocus();
-    await user.tab();
-    const edit = screen.getByRole('button', { name: 'Edit Problem Set 4' });
-    expect(edit).toHaveFocus();
+    const actions = screen.getByRole('button', { name: 'Actions for Problem Set 4' });
+    expect(actions).toHaveFocus();
 
-    edit.focus();
+    // Row-content activation: Enter on the title opens the edit dialog, and
+    // Escape returns to the control that opened it (R-125-007).
+    screen.getByRole('button', { name: 'Problem Set 4' }).focus();
     await user.keyboard('{Enter}');
     expect(screen.getByRole('dialog', { name: 'Edit assignment' })).toBeInTheDocument();
 
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(edit).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Problem Set 4' })).toHaveFocus();
   });
 });
 
@@ -863,10 +891,14 @@ describe('AssignmentsPage presentation (SP-125)', () => {
       screen.getByRole('combobox', { name: 'Status' }).closest('div.w-full')!.parentElement
     ).toHaveClass('sm:w-[150px]', 'sm:shrink-0');
 
-    // Controls match heights; the count sits below the toolbar, above the list.
+    // Controls match heights; the count header sits in the results card.
     expect(search).toHaveClass('h-[42px]');
     expect(screen.getByRole('combobox', { name: 'Course' })).toHaveClass('h-[42px]');
-    expect(screen.getByRole('status').previousElementSibling).toHaveClass('mb-5');
+    const resultsCard = screen.getByRole('status').closest('.card');
+    const list = screen.getByRole('list');
+    expect(resultsCard).toBeInstanceOf(HTMLElement);
+    expect(resultsCard!.contains(list)).toBe(true);
+    expect(screen.getByText(/Showing 1 assignment\./)).toBeInTheDocument();
   });
 
   it('widens the create dialog and aligns the action footer (D125-10)', async () => {

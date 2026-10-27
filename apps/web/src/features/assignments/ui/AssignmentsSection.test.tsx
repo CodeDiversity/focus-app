@@ -102,7 +102,7 @@ const AssignmentsSection = ({
 );
 
 describe('AssignmentsSection (AC 4, D112-6)', () => {
-  it('renders the read-only projection in API order: title, due date, status + priority badges', () => {
+  it('renders the read-only projection in API order: title, due line, compact metadata', () => {
     render(<AssignmentsSection assignments={all} />);
 
     const items = screen.getAllByRole('listitem');
@@ -111,28 +111,32 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     expect(items[0]).toHaveTextContent('Problem Set 4');
     expect(items[1]).toHaveTextContent('Research Essay');
 
-    // The due line is the medium date in the browser time zone (D112B-16).
+    // The due part is the medium date in the browser time zone (D112B-16).
     expect(items[0]).toHaveTextContent(dueLabel(problemSet.dueDate));
     expect(items[1]).toHaveTextContent(dueLabel(essay.dueDate));
 
-    // The priority labels are present.
+    // Priority and type are neutral meta text now (R-125-007), not badges.
     expect(screen.getByText('Medium')).toBeInTheDocument();
     expect(screen.getByText('High')).toBeInTheDocument();
+    expect(screen.getByText('Medium')).not.toHaveClass('bg-amber-100');
   });
 
-  it('pairs each badge with its palette (text + color, D112B-4)', () => {
+  it('keeps priority text neutral instead of colored badges (SP-115H AC 2, R-125-007)', () => {
     render(<AssignmentsSection assignments={[problemSet, essay]} />);
 
-    // Priority palettes (D112B-4): MEDIUM amber / HIGH orange.
-    expect(screen.getByText('Medium')).toHaveClass('bg-amber-100', 'text-amber-800');
-    expect(screen.getByText('High')).toHaveClass('bg-orange-100', 'text-orange-700');
+    // The old pill palettes no longer decorate priority or type; the meta
+    // line is plain text so dozens of rows stay easy to scan.
+    expect(screen.getByText('Medium')).toBeInTheDocument();
+    expect(screen.getByText('High')).not.toHaveClass('bg-orange-100');
+    expect(screen.getByText('Homework')).not.toHaveClass('bg-slate-100');
   });
 
-  it('marks a stored type with the neutral type pill after the priority badge (SP-115H AC 2)', () => {
+  it('shows the stored type as meta text and keeps null types unlabeled (SP-115H AC 2)', () => {
     render(<AssignmentsSection assignments={[problemSet]} />);
 
-    const badge = screen.getByText('Homework');
-    expect(badge).toHaveClass('bg-slate-100', 'text-slate-700');
+    const typeLabel = screen.getByText('Homework');
+    // Plain text in the meta line (R-125-007) — not the old neutral pill.
+    expect(typeLabel).not.toHaveClass('bg-slate-100');
   });
 
   it('shows no type category for a null-type row (SP-115H AC 2)', () => {
@@ -143,21 +147,18 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     }
   });
 
-  it('renders the type badge inside the same wrap cluster as Edit and Delete (SP-115H AC 4)', () => {
+  it('keeps priority and type in one meta line under the course/title block (SP-115H AC 4)', () => {
     render(<AssignmentsSection assignments={[problemSet]} />);
 
     const item = screen.getAllByRole('listitem')[0]!;
-    const badge = within(item).getByText('Homework');
-    const edit = within(item).getByRole('button', { name: 'Edit Problem Set 4' });
-    const del = within(item).getByRole('button', { name: 'Delete Problem Set 4' });
-    // One flex-wrap cluster wraps all three at narrow widths; the badge
-    // displaces neither control.
-    expect(badge.parentElement).toBe(edit.parentElement);
-    expect(del.parentElement).toBe(badge.parentElement);
-    expect(del.parentElement).toHaveClass('flex', 'flex-wrap', 'gap-2');
+    const meta = within(item).getByText('Homework').closest('p')!;
+    // One meta paragraph carries the due date, priority, and type.
+    expect(meta).toHaveTextContent(dueLabel(problemSet.dueDate));
+    expect(meta).toHaveTextContent('Medium');
+    expect(within(meta).getByText('Homework')).toBeInTheDocument();
   });
 
-  it('renders the remaining priority palette entries', () => {
+  it('renders the remaining priority text entries', () => {
     render(
       <AssignmentsSection
         assignments={[
@@ -167,32 +168,37 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
       />
     );
 
-    expect(screen.getByText('Urgent')).toHaveClass('bg-red-100', 'text-red-700');
-    expect(screen.getByText('Low')).toHaveClass('bg-slate-100', 'text-slate-700');
+    // Text stays neutral for every priority (R-125-007); urgency is carried
+    // by the due-soon/overdue badge next to the title instead.
+    expect(screen.getByText('Urgent')).toBeInTheDocument();
+    expect(screen.getByText('Low')).toBeInTheDocument();
+    expect(screen.getByText('Urgent')).not.toHaveClass('bg-red-100');
   });
 
-  it('renders Edit and Delete buttons for each assignment row with accessible labels', () => {
+  it('renders an overflow actions menu for each assignment row', () => {
     render(<AssignmentsSection assignments={all} />);
 
     const items = screen.getAllByRole('listitem');
     const visible = [problemSet, essay];
-    visible.forEach((assignment, idx) => {
-      const item = items[idx];
+    visible.forEach((assignment) => {
       expect(
-        within(item).getByRole('button', { name: `Edit ${assignment.title}` })
+        screen.getByRole('button', { name: `Actions for ${assignment.title}` })
       ).toBeInTheDocument();
+      // No always-visible Edit/Delete text buttons anymore (R-125-007).
       expect(
-        within(item).getByRole('button', { name: `Delete ${assignment.title}` })
-      ).toBeInTheDocument();
+        screen.queryByRole('button', { name: `Edit ${assignment.title}` })
+      ).not.toBeInTheDocument();
     });
+    expect(items.length).toBe(visible.length);
   });
 
-  it('opens AssignmentForm in edit mode with pre-filled fields when Edit clicked', async () => {
+  it('opens AssignmentForm in edit mode with pre-filled fields from the overflow menu', async () => {
     const user = setupUser();
     const onFormOpen = vi.fn();
     render(<AssignmentsSection assignments={all} onAssignmentFormOpen={onFormOpen} />);
 
-    await user.click(screen.getByRole('button', { name: 'Edit Problem Set 4' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for Problem Set 4' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit Problem Set 4' }));
 
     expect(onFormOpen).toHaveBeenCalledOnce();
     expect(screen.getByRole('heading', { level: 2, name: 'Edit assignment' })).toBeInTheDocument();
@@ -200,12 +206,13 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     expect(screen.getByLabelText('Title')).toHaveValue('Problem Set 4');
   });
 
-  it('opens DeleteAssignmentDialog when Delete clicked and re-arms status', async () => {
+  it('opens DeleteAssignmentDialog from the overflow menu and re-arms status', async () => {
     const user = setupUser();
     const onFormOpen = vi.fn();
     render(<AssignmentsSection assignments={all} onAssignmentFormOpen={onFormOpen} />);
 
-    await user.click(screen.getByRole('button', { name: 'Delete Problem Set 4' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for Problem Set 4' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Delete Problem Set 4' }));
 
     expect(onFormOpen).toHaveBeenCalledOnce();
     expect(
@@ -214,32 +221,34 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
   });
 
-  it('returns focus to Edit trigger when AssignmentForm closes', async () => {
+  it('returns focus to the options trigger when AssignmentForm closes', async () => {
     const user = setupUser();
     render(<AssignmentsSection assignments={all} />);
 
-    const editBtn = screen.getByRole('button', { name: 'Edit Problem Set 4' });
-    await user.click(editBtn);
+    const trigger = screen.getByRole('button', { name: 'Actions for Problem Set 4' });
+    await user.click(trigger);
+    await user.click(screen.getByRole('menuitem', { name: 'Edit Problem Set 4' }));
 
     expect(screen.getByRole('dialog', { name: 'Edit assignment' })).toBeInTheDocument();
     await user.keyboard('{Escape}');
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(editBtn).toHaveFocus();
+    expect(trigger).toHaveFocus();
   });
 
-  it('returns focus to Delete trigger when DeleteAssignmentDialog closes', async () => {
+  it('returns focus to the options trigger when DeleteAssignmentDialog closes', async () => {
     const user = setupUser();
     render(<AssignmentsSection assignments={all} />);
 
-    const deleteBtn = screen.getByRole('button', { name: 'Delete Problem Set 4' });
-    await user.click(deleteBtn);
+    const trigger = screen.getByRole('button', { name: 'Actions for Problem Set 4' });
+    await user.click(trigger);
+    await user.click(screen.getByRole('menuitem', { name: 'Delete Problem Set 4' }));
 
     expect(screen.getByRole('dialog', { name: 'Delete Problem Set 4?' })).toBeInTheDocument();
     await user.keyboard('{Escape}');
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(deleteBtn).toHaveFocus();
+    expect(trigger).toHaveFocus();
   });
 
   it('transitions to empty state when all assignments are removed', () => {
@@ -276,7 +285,8 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
   it('renders null dates muted, retains API order and updates rows after refetch', () => {
     const undated = { ...problemSet, dueDate: null, id: 'asgn-u' };
     const { rerender } = render(<AssignmentsSection assignments={[undated, essay]} />);
-    expect(screen.getByText('No due date')).toHaveClass('text-secondary-500');
+    // The meta paragraph itself carries the muted tone for null due dates.
+    expect(screen.getByText('No due date').closest('p')).toHaveClass('text-secondary-500');
     expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Problem Set 4');
     expect(screen.getAllByRole('listitem')[1]).toHaveTextContent('Research Essay');
     rerender(<AssignmentsSection assignments={[undated, essay]} />);
@@ -287,7 +297,7 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     ).toEqual(['Problem Set 4', 'Research Essay']);
   });
 
-  it('focuses the next row Edit control after the deleted assignment leaves the list', async () => {
+  it('focuses the next row title after the deleted assignment leaves the list', async () => {
     const user = setupUser();
     const onAssignmentChanged = vi.fn();
     vi.mocked(deleteAssignment).mockResolvedValue(undefined);
@@ -298,35 +308,39 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
       />
     );
 
-    await user.click(screen.getByRole('button', { name: 'Delete Problem Set 4' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for Problem Set 4' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Delete Problem Set 4' }));
     const dialog = screen.getByRole('dialog', { name: 'Delete Problem Set 4?' });
     await user.click(within(dialog).getByRole('button', { name: 'Delete Problem Set 4' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(onAssignmentChanged).toHaveBeenCalledWith('deleted');
-    expect(screen.getByRole('button', { name: 'Edit Research Essay' })).toHaveFocus();
+    // The title is the row's stable edit trigger, so the hook's edit-focus
+    // contract lands on the neighbor title (R-125-007).
+    expect(screen.getByRole('button', { name: 'Research Essay' })).toHaveFocus();
 
     view.rerender(
       <AssignmentsSection assignments={[essay]} onAssignmentChanged={onAssignmentChanged} />
     );
     expect(screen.queryByText('Problem Set 4')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit Research Essay' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Research Essay' })).toHaveFocus();
     expect(document.body).not.toHaveFocus();
   });
 
-  it('focuses the previous row Edit control when the deleted assignment was last', async () => {
+  it('focuses the previous row title when the deleted assignment was last', async () => {
     const user = setupUser();
     vi.mocked(deleteAssignment).mockResolvedValue(undefined);
     const view = render(<AssignmentsSection assignments={[problemSet, essay]} />);
 
-    await user.click(screen.getByRole('button', { name: 'Delete Research Essay' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for Research Essay' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Delete Research Essay' }));
     const dialog = screen.getByRole('dialog', { name: 'Delete Research Essay?' });
     await user.click(within(dialog).getByRole('button', { name: 'Delete Research Essay' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'Edit Problem Set 4' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Problem Set 4' })).toHaveFocus();
 
     view.rerender(<AssignmentsSection assignments={[problemSet]} />);
     expect(screen.queryByText('Research Essay')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit Problem Set 4' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Problem Set 4' })).toHaveFocus();
   });
 
   it('focuses the empty-state add control after the final assignment leaves the list', async () => {
@@ -334,7 +348,8 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     vi.mocked(deleteAssignment).mockResolvedValue(undefined);
     const view = render(<AssignmentsSection assignments={[problemSet]} />);
 
-    await user.click(screen.getByRole('button', { name: 'Delete Problem Set 4' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for Problem Set 4' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Delete Problem Set 4' }));
     const dialog = screen.getByRole('dialog', { name: 'Delete Problem Set 4?' });
     await user.click(within(dialog).getByRole('button', { name: 'Delete Problem Set 4' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
@@ -362,7 +377,7 @@ const subtask = (
 });
 
 describe('AssignmentsSection subtask disclosure (SP-120J AC 1, AC 8)', () => {
-  it('shows the collapsed summary and keeps Edit/Delete in the badge cluster', () => {
+  it('shows progress disclosures only for rows with subtasks', () => {
     render(
       <AssignmentsSection
         assignments={[
@@ -394,9 +409,6 @@ describe('AssignmentsSection subtask disclosure (SP-120J AC 1, AC 8)', () => {
     );
 
     expect(
-      screen.getByRole('button', { name: 'Subtasks for Problem Set 4: No subtasks' })
-    ).toHaveAttribute('aria-expanded', 'false');
-    expect(
       screen.getByRole('button', { name: 'Subtasks for Research Essay: 1 subtask' })
     ).toBeInTheDocument();
     expect(
@@ -410,20 +422,23 @@ describe('AssignmentsSection subtask disclosure (SP-120J AC 1, AC 8)', () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole('region')).not.toBeInTheDocument();
 
-    const item = screen.getAllByRole('listitem')[0]!;
-    const badge = within(item).getByText('Homework');
-    const edit = within(item).getByRole('button', { name: 'Edit Problem Set 4' });
-    const del = within(item).getByRole('button', { name: 'Delete Problem Set 4' });
-    const disclosure = within(item).getByRole('button', {
-      name: 'Subtasks for Problem Set 4: No subtasks',
-    });
-    expect(badge.parentElement).toBe(edit.parentElement);
-    expect(del.parentElement).toBe(badge.parentElement);
-    expect(del.parentElement).toHaveClass('flex', 'flex-wrap', 'gap-2');
-    expect(disclosure.parentElement).not.toBe(badge.parentElement);
+    // Zero-subtask rows render no disclosure at all (R-125-007).
+    const firstItem = screen.getAllByRole('listitem')[0]!;
+    expect(
+      within(firstItem).queryByRole('button', { name: /Subtasks for Problem Set 4/ })
+    ).not.toBeInTheDocument();
+    // The type icon tile is decorative (aria-hidden).
+    expect(within(firstItem).getByText('Homework')).toBeInTheDocument();
+    // Every row carries the compact status select and the overflow trigger.
+    expect(
+      within(firstItem).getByRole('combobox', { name: 'Status for Problem Set 4' })
+    ).toBeInTheDocument();
+    expect(
+      within(firstItem).getByRole('button', { name: 'Actions for Problem Set 4' })
+    ).toBeInTheDocument();
   });
 
-  it('expands and collapses the checklist without hiding Edit or Delete', async () => {
+  it('expands and collapses the checklist with the overflow actions available', async () => {
     const user = setupUser();
     render(
       <AssignmentsSection
@@ -439,8 +454,9 @@ describe('AssignmentsSection subtask disclosure (SP-120J AC 1, AC 8)', () => {
       screen.getByRole('region', { name: 'Subtasks for Problem Set 4: 1 subtask' })
     ).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Read chapter' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit Problem Set 4' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Delete Problem Set 4' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Actions for Problem Set 4' })).toBeInTheDocument();
+    // The visible progress label is the 2/4-style counter (R-125-007).
+    expect(open).toHaveTextContent('0/1 subtasks');
     expect(open).toHaveFocus();
 
     await user.click(open);
@@ -498,9 +514,9 @@ describe('AssignmentsSection subtask disclosure (SP-120J AC 1, AC 8)', () => {
     await user.tab();
     expect(screen.getByRole('combobox', { name: 'Status for Problem Set 4' })).toHaveFocus();
     await user.tab();
-    expect(screen.getByRole('button', { name: 'Delete Problem Set 4' })).toHaveFocus();
-    await user.tab();
-    expect(screen.getByRole('button', { name: 'Edit Problem Set 4' })).toHaveFocus();
+    // R-125-007: no always-visible Edit/Delete text buttons; the row's last
+    // control is the overflow actions trigger.
+    expect(screen.getByRole('button', { name: 'Actions for Problem Set 4' })).toHaveFocus();
     await user.tab();
     expect(screen.getByRole('checkbox', { name: 'Read chapter' })).toHaveFocus();
     await user.tab();
@@ -636,11 +652,14 @@ describe('AssignmentsSection overdue + completed views (SP-123A/B)', () => {
     status: 'PENDING' as const,
   };
 
-  it('shows the Overdue pill on an overdue unfinished row and keeps the due date neutral', () => {
+  it('shows the Overdue badge beside the title on an overdue unfinished row', () => {
     render(<AssignmentsSection assignments={[problemSet]} />);
     const pill = screen.getByText('Overdue');
     expect(pill).toHaveClass('bg-red-100', 'text-red-700', 'rounded-full');
-    expect(pill.closest('p')).toHaveClass('text-secondary-600');
+    // The badge sits beside the title (R-125-007), not inside the meta line,
+    // which stays neutral.
+    expect(pill.closest('p')).toBeNull();
+    expect(screen.getByText('Homework').closest('p')).toHaveClass('text-secondary-600');
   });
 
   it('does not show the Overdue pill on a non-overdue row', () => {
@@ -709,14 +728,16 @@ describe('AssignmentsSection overdue + completed views (SP-123A/B)', () => {
     expect(screen.queryByText('All assignments are complete.')).not.toBeInTheDocument();
   });
 
-  it('keeps status Select, Edit, Delete and subtask disclosure on revealed rows', async () => {
+  it('keeps status Select and overflow actions on revealed rows (no disclosure without subtasks)', async () => {
     const user = setupUser();
     render(<AssignmentsSection assignments={[problemSet, labReport]} />);
     await user.click(screen.getByRole('button', { name: 'Show completed (1)' }));
     expect(screen.getByRole('combobox', { name: 'Status for Lab Report' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit Lab Report' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Delete Lab Report' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Subtasks for Lab Report/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Actions for Lab Report' })).toBeInTheDocument();
+    // Lab Report carries zero subtasks, so no disclosure renders (R-125-007).
+    expect(
+      screen.queryByRole('button', { name: /Subtasks for Lab Report/ })
+    ).not.toBeInTheDocument();
   });
 
   it('resets showCompleted to false when the assignments prop changes identity', async () => {

@@ -1,3 +1,11 @@
+import {
+  BookOpen,
+  ClipboardList,
+  FileText,
+  GraduationCap,
+  ListChecks,
+  type LucideIcon,
+} from 'lucide-react';
 import type {
   AssignmentPriority,
   AssignmentStatus,
@@ -56,6 +64,36 @@ export const TYPE_STYLE = 'bg-slate-100 text-slate-700';
 /** Overdue pill palette (SP-123A, D123A-3): red text-plus-color pill. */
 export const OVERDUE_STYLE = 'bg-red-100 text-red-700';
 export const OVERDUE_LABEL = 'Overdue';
+
+/** Due-soon badge palette (SP-125 / R-125-007): amber text-plus-color badge. */
+export const DUE_SOON_STYLE = 'bg-amber-100 text-amber-800';
+export const DUE_SOON_LABEL = 'Due soon';
+
+/**
+ * Compact progress label for the row disclosure (SP-125 / R-125-007):
+ * "2/4 subtasks" style. Zero-subtask rows render no disclosure at all.
+ */
+export function subtaskProgress(subtasks: Subtask[]): string {
+  const count = subtasks.length;
+  const done = subtasks.filter((item) => item.status === 'COMPLETED').length;
+  return `${done}/${count} subtasks`;
+}
+
+/**
+ * The row's type icon (SP-125 / R-125-007): one neutral lucide glyph per
+ * assignment type inside the small tile. Decorative — the meta line always
+ * spells the type out for screen readers.
+ */
+export const TYPE_ICONS: Record<AssignmentType, LucideIcon> = {
+  HOMEWORK: BookOpen,
+  PAPER: FileText,
+  PROJECT: ClipboardList,
+  QUIZ: ListChecks,
+  EXAM: GraduationCap,
+};
+
+/** The default glyph when the assignment carries no stored type. */
+export const DEFAULT_TYPE_ICON: LucideIcon = FileText;
 
 /**
  * The status **control** palette (SP-125, D125-8): the row's status selector

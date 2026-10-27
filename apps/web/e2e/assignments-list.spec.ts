@@ -69,7 +69,9 @@ test('creates from the empty list, keeps focus, and edits/deletes through the sh
     page.getByText('Assignment marked as completed. Showing 1 assignment.')
   ).toBeVisible();
 
-  await row.getByRole('button', { name: `Delete ${title}` }).click();
+  // The overflow menu opens Delete (R-125-007); no always-visible text button.
+  await row.getByRole('button', { name: `Actions for ${title}` }).click();
+  await row.getByRole('menuitem', { name: `Delete ${title}` }).click();
   const deleteDialog = page.getByRole('dialog', { name: `Delete ${title}?` });
   await deleteDialog.getByRole('button', { name: `Delete ${title}` }).click();
   await expect(page.getByText('No assignments yet.')).toBeVisible();

@@ -59,3 +59,32 @@ export const ASSIGNMENT_STATUSES: readonly AssignmentStatus[] = [
   'SUBMITTED',
   'GRADED',
 ] as const;
+
+/**
+ * SP-125 (R-125-007): the "due soon" presentation predicate. Unfinished
+ * assignments due within the next `withinDays` days (default 3, inclusive)
+ * earn the amber urgency badge. Overdue rows are excluded — they are red, not
+ * amber — and finished rows never sort as urgent. Pure presentation rule
+ * derived from the stored `dueDate`; no server semantics.
+ */
+export function isDueSoonAssignment(
+  value: { status: AssignmentStatus; dueDate: string | Date | null },
+  now?: Date | number | string,
+  withinDays = 3
+): boolean {
+  if (isFinishedAssignment(value)) return false;
+  if (value.dueDate === null) return false;
+  if (isOverdueAssignment(value, now)) return false;
+  const due =
+    value.dueDate instanceof Date ? value.dueDate.getTime() : new Date(value.dueDate).getTime();
+  if (Number.isNaN(due)) return false;
+  const nowMs =
+    now === undefined
+      ? Date.now()
+      : now instanceof Date
+        ? now.getTime()
+        : typeof now === 'number'
+          ? now
+          : new Date(now).getTime();
+  return due <= nowMs + withinDays * 24 * 60 * 60 * 1000;
+}

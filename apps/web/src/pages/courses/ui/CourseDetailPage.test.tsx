@@ -210,11 +210,12 @@ describe('CourseDetailPage page states (AC 1/5, DoD 5)', () => {
     vi.mocked(deleteAssignment).mockResolvedValue(undefined);
     renderPage();
 
-    await screen.findByRole('button', { name: 'Delete Problem Set 3' });
+    await screen.findByRole('button', { name: 'Actions for Problem Set 3' });
     const status = screen.getByRole('status');
 
     for (const title of ['Problem Set 3', 'Lab Report']) {
-      await user.click(screen.getByRole('button', { name: `Delete ${title}` }));
+      await user.click(screen.getByRole('button', { name: `Actions for ${title}` }));
+      await user.click(screen.getByRole('menuitem', { name: `Delete ${title}` }));
       // Opening Delete is a separate interaction that empties the region
       // before the identical success copy is set again.
       expect(screen.getByRole('status')).toBe(status);
@@ -254,9 +255,11 @@ describe('CourseDetailPage page states (AC 1/5, DoD 5)', () => {
     vi.mocked(deleteAssignment).mockResolvedValue(undefined);
     renderPage();
 
-    const trigger = await screen.findByRole('button', { name: 'Delete Problem Set 3' });
+    const trigger = await screen.findByRole('button', { name: 'Actions for Problem Set 3' });
     trigger.focus();
     await user.keyboard('{Enter}');
+    const menu = await screen.findByRole('menu', { name: 'Actions for Problem Set 3' });
+    await user.click(within(menu).getByRole('menuitem', { name: 'Delete Problem Set 3' }));
     const dialog = await screen.findByRole('dialog', { name: 'Delete Problem Set 3?' });
     await user.tab();
     expect(within(dialog).getByRole('button', { name: 'Delete Problem Set 3' })).toHaveFocus();
@@ -264,11 +267,12 @@ describe('CourseDetailPage page states (AC 1/5, DoD 5)', () => {
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(screen.getByText('Problem Set 3')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit Lab Report' })).toHaveFocus();
+    // The hook's edit-focus contract lands on the neighbor title (R-125-007).
+    expect(screen.getByRole('button', { name: 'Lab Report' })).toHaveFocus();
 
     finishRefresh({ ...cs101, assignments: [second] });
     await waitFor(() => expect(screen.queryByText('Problem Set 3')).not.toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'Edit Lab Report' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Lab Report' })).toHaveFocus();
     expect(document.body).not.toHaveFocus();
   });
 
@@ -284,9 +288,15 @@ describe('CourseDetailPage page states (AC 1/5, DoD 5)', () => {
     vi.mocked(deleteAssignment).mockResolvedValue(undefined);
     renderPage();
 
-    const trigger = await screen.findByRole('button', { name: 'Delete Problem Set 3' });
+    const trigger = await screen.findByRole('button', { name: 'Actions for Problem Set 3' });
     trigger.focus();
     await user.keyboard('{Enter}');
+    await user.click(
+      within(await screen.findByRole('menu', { name: 'Actions for Problem Set 3' })).getByRole(
+        'menuitem',
+        { name: 'Delete Problem Set 3' }
+      )
+    );
     await screen.findByRole('dialog', { name: 'Delete Problem Set 3?' });
     await user.tab();
     await user.keyboard('{Enter}');
@@ -654,6 +664,25 @@ describe('CourseDetailPage subtask announcements (SP-120J AC 6)', () => {
 
   it('announces a subtask add and background-refetches without assignment copy', async () => {
     const user = setupUser();
+    // Zero-subtask rows render no disclosure (R-125-007), so the row starts
+    // with one existing subtask; the add flow is the same.
+    mockedGetCourse.mockResolvedValue({
+      ...cs101,
+      assignments: [
+        {
+          ...homework,
+          subtasks: [
+            {
+              id: 'sub-0',
+              title: 'Existing step',
+              status: 'PENDING',
+              orderIndex: 0,
+              ...timestamps,
+            },
+          ],
+        },
+      ],
+    });
     vi.mocked(createSubtask).mockResolvedValue({
       id: 'sub-1',
       title: 'Read chapter 1',
@@ -664,7 +693,7 @@ describe('CourseDetailPage subtask announcements (SP-120J AC 6)', () => {
     renderPage();
 
     await user.click(
-      await screen.findByRole('button', { name: 'Subtasks for Problem Set 3: No subtasks' })
+      await screen.findByRole('button', { name: 'Subtasks for Problem Set 3: 1 subtask' })
     );
     await user.type(screen.getByLabelText('Subtask title'), 'Read chapter 1');
     await user.click(screen.getByRole('button', { name: 'Add subtask to Problem Set 3' }));
