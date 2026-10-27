@@ -98,7 +98,7 @@ Each child story must contain:
 6. **Technical notes:** inspected code paths and symbols where verified; proposals and unresolved assumptions clearly labeled; relevant API/data contracts referenced.
 7. **Definition of Done:** every applicable shared obligation, including integrated review and item 10 where applicable; distinguish future test obligations from test results.
 8. **Tracker reference:** unique Jira key when created; never use the same Story/Task key for multiple child files.
-9. **Sizing block:** outcome, time estimate, production/test files, minimal start context, verification commands, dependencies and exclusions, per the shared policy.
+9. **Sizing block:** outcome, request/token estimate, production/test files, minimal start context, verification commands, dependencies and exclusions, per the shared policy.
 
 The breakdown README must include:
 
