@@ -5,7 +5,7 @@
 **Parent epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** Implemented — awaiting parent re-review (RV-125-001 and RV-125-002 corrected; [implementation record](./artifacts/SP-125/implementation.md), [review](./artifacts/SP-125/review.md))
+**Status:** Reviewed 2026-10-27 (pass 2; [review](./artifacts/SP-125/review.md) · [walkthrough](./artifacts/SP-125/walkthrough.md)). Implementation `b3e92db`…`ed9ec4e`; review corrections `00be8ee`.
 **Dependencies:** SP-124 reviewed (`63f9615`). Visual decisions settled (D125-1…10).
 **Jira key:** Pending creation
 **Refined:** 2026-10-27 (ui-refiner)

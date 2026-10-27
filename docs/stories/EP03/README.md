@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1 (functional academic tracker)
 **Epic dependency:** EP02 (Semester & Course Management) — **complete 2026-10-23** (implemented + reviewed; queue at [docs/stories/EP02](../EP02/README.md#execution-queue)). EP03 implementation is **not blocked**.
-**Status:** Stories 1–3 are reviewed (SP-113 and SP-114, 2026-10-24; SP-115, 2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md) · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Story 4 → [SP-120](./SP-120/README.md) — **Reviewed 2026-10-26**. Story 5 → [SP-121](./SP-121/README.md) — **Reviewed 2026-10-26**. Story 6 → [SP-122](./SP-122/README.md) — **Reviewed 2026-10-26** ([review](./SP-122/artifacts/SP-122/review.md) · [walkthrough](./SP-122/artifacts/SP-122/walkthrough.md)). Children A/B/C `Reviewed`. Story 7 → [SP-123](./SP-123/README.md) — **Reviewed 2026-10-26** ([review](./SP-123/artifacts/SP-123/review.md) · [walkthrough](./SP-123/artifacts/SP-123/walkthrough.md)). Children A/B `Reviewed`. DoD-10 under D123B-DoD10 exception (manual browser pass outstanding for user). Story 8 → [SP-124](./SP-124/README.md) — **Reviewed 2026-10-26** (pass 2, committed in `63f9615`; [review](./SP-124/artifacts/SP-124/review.md) · [walkthrough](./SP-124/artifacts/SP-124/walkthrough.md)). Story 9 → [SP-125](./SP-125/README.md) — **Draft 2026-10-27**. Presentation only. `Needs refinement` (ui-refiner). Not a new acceptance criterion. User direction (2026-10-26): SP-121 children lettered from A (D121-6); SP-122 children lettered from A (D122-8); SP-123 children lettered from A (D123-7); SP-124 children lettered from A (D124-7).
+**Status:** Stories 1–3 are reviewed (SP-113 and SP-114, 2026-10-24; SP-115, 2026-10-25 — [review](./SP-115/artifacts/SP-115/review.md) · [walkthrough](./SP-115/artifacts/SP-115/walkthrough.md)). Story 4 → [SP-120](./SP-120/README.md) — **Reviewed 2026-10-26**. Story 5 → [SP-121](./SP-121/README.md) — **Reviewed 2026-10-26**. Story 6 → [SP-122](./SP-122/README.md) — **Reviewed 2026-10-26** ([review](./SP-122/artifacts/SP-122/review.md) · [walkthrough](./SP-122/artifacts/SP-122/walkthrough.md)). Children A/B/C `Reviewed`. Story 7 → [SP-123](./SP-123/README.md) — **Reviewed 2026-10-26** ([review](./SP-123/artifacts/SP-123/review.md) · [walkthrough](./SP-123/artifacts/SP-123/walkthrough.md)). Children A/B `Reviewed`. DoD-10 under D123B-DoD10 exception (manual browser pass outstanding for user). Story 8 → [SP-124](./SP-124/README.md) — **Reviewed 2026-10-26** (pass 2, committed in `63f9615`; [review](./SP-124/artifacts/SP-124/review.md) · [walkthrough](./SP-124/artifacts/SP-124/walkthrough.md)). Story 9 → [SP-125](./SP-125/README.md) — **Reviewed 2026-10-27** (pass 2; [review](./SP-125/artifacts/SP-125/review.md) · [walkthrough](./SP-125/artifacts/SP-125/walkthrough.md)). Presentation only. Not a new acceptance criterion. User direction (2026-10-26): SP-121 children lettered from A (D121-6); SP-122 children lettered from A (D122-8); SP-123 children lettered from A (D123-7); SP-124 children lettered from A (D124-7).
 ## Code baseline (2026-10-24)
 
 - `Assignment` model **exists** in `apps/api/prisma/schema.prisma` (id, `userId` cascade, `courseId?` nullable, title, description?, **`dueDate DateTime` required**, estimatedHours?, actualHours?, `status` @default(PENDING), `priority` @default(MEDIUM), timestamps, `tasks Task[]`, `@@map("assignments")`) — created with the EP01-era schema, but **no assignments API module exists** (verified: `apps/api/src/modules/` = auth, courses, email, onboarding, prisma, semesters, users).
@@ -28,11 +28,11 @@ The 2026-10-24 bullets above are the SP-113 planning baseline. They are not the 
 | [SP-122](./SP-122/README.md) | 6. Implement assignment search, sorting, and filters | [3 children](./SP-122/README.md) (A backend, B frontend, C integration) — **Reviewed 2026-10-26** ([review](./SP-122/artifacts/SP-122/review.md) · [walkthrough](./SP-122/artifacts/SP-122/walkthrough.md)). Children A/B/C `Reviewed`. | Pending creation |
 | [SP-123](./SP-123/README.md) | 7. Implement overdue and completed assignment views | [2 children](./SP-123/README.md) (A overdue identification, B completed views) — **Reviewed 2026-10-26** ([review](./SP-123/artifacts/SP-123/review.md) · [walkthrough](./SP-123/artifacts/SP-123/walkthrough.md)). Children A/B `Reviewed`. | Pending creation |
 | [SP-124](./SP-124/README.md) | 8. Assignment list cohesion (shared interaction; list hosts it) | [3 children](./SP-124/README.md) (A extract shared owner, B list adopts it, C shared create) — **Reviewed 2026-10-26** (pass 2 in `63f9615`). | Pending creation |
-| [SP-125](./SP-125/README.md) | 9. Assignment page and module experience | [1 frontend story](./SP-125/SP-125-assignment-experience.md) — **Draft 2026-10-27**. `Needs refinement` for UI/UX. No implementation evidence. | Pending creation |
+| [SP-125](./SP-125/README.md) | 9. Assignment page and module experience | [1 frontend story](./SP-125/SP-125-assignment-experience.md) — **Reviewed 2026-10-27** (pass 2). Presentation pass; no new epic AC. | Pending creation |
 
 Story 6 is SP-122 and story 7 is SP-123 (both reviewed 2026-10-26). Story 8
 is SP-124 (reviewed 2026-10-26, pass 2 in `63f9615`). Story 9 is
-SP-125 (draft, needs UI refinement). (SP-116…SP-119 were consumed by EP09's
+SP-125 (reviewed 2026-10-27, pass 2). (SP-116…SP-119 were consumed by EP09's
 E2E automation: SP-116/117/118 implemented, SP-119 the dedicated-test-database
 infra story.)
 IDs may shift if a proposed story splits.
@@ -95,17 +95,20 @@ SP-124 is **Reviewed** (pass 2, committed in `63f9615` —
 substory is None. Do not restart it. PC-125-02 withdrew the earlier
 "awaiting re-review" note.
 
-SP-125 is **Draft (2026-10-27)** — [breakdown](./SP-125/README.md). One
-frontend story, `Needs refinement`. Next action is `ui-refiner` on SP-125, not
-implementation. No API or schema change. No new epic AC. No Jira sync
-authorized; the SP-125 key is `Pending creation`.
+SP-125 is **Reviewed** (2026-10-27, pass 2 — [review](./SP-125/artifacts/SP-125/review.md) ·
+[walkthrough](./SP-125/artifacts/SP-125/walkthrough.md)). Its queue's next
+substory is None with reason: the review unit is complete. No API or schema
+change. No new epic AC. No Jira sync authorized; the SP-125 key is
+`Pending creation`.
 
 ## Quality gate — SP-125 plan (2026-10-27)
 
-**Draft** — D125-1…3 and D125-5…6 bound the presentation pass. D125-4 leaves
-layout, hierarchy, components, states, responsive behavior, and copy to
-`ui-refiner`. Not Plan Ready. SP-124 is not an execution blocker (PC-125-02).
-Full gate table:
+**Reviewed (pass 2, 2026-10-27).** The plan gate was passed after the
+ui-refinement (D125-7…10) and the implementation is independently reviewed —
+see the SP-125 breakdown. Historical gate summary: D125-1…3 and D125-5…6 bound
+the presentation pass; D125-4 left layout, hierarchy, components, states,
+responsive behavior, and copy to `ui-refiner`; SP-124 was not an execution
+blocker (PC-125-02). Full gate table:
 [SP-125 README](./SP-125/README.md#quality-gate-2026-10-27). No Jira sync was
 authorized; the SP-125 key is `Pending creation`.
 

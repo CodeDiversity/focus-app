@@ -76,4 +76,4 @@ Pass-1 review (`review.md`, not edited) returned Changes Required. This pass fix
 - Scoped eslint on the touched TSX files — exit 0 after the prettier line wrap.
 - E2E command above — exit 0, 5 passed. Throwaway database created and dropped. No `.env` read.
 
-Status: **Implemented — awaiting parent re-review.** RV-125-001 and RV-125-002 are fixed in this working tree; independent re-review has not happened.
+Status: **Reviewed 2026-10-27 (pass 2).** RV-125-001 and RV-125-002 were corrected in `00be8ee` and independently verified in the pass-2 review — see [review.md](./review.md) and [walkthrough.md](./walkthrough.md).

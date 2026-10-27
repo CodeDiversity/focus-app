@@ -2,7 +2,7 @@
 
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
-**Status:** Draft (2026-10-27). One frontend story. `Needs refinement` — visual decisions are not settled. Not implementation-ready.
+**Status:** Reviewed 2026-10-27 (pass 2). One frontend story. Implemented `b3e92db`…`ed9ec4e`; review corrections `00be8ee`. Pass 1 returned Changes Required (RV-125-001/002); both corrected and independently verified; pass 2 **passed** with two optional polish notes (RV-125-003, P-125-001). Unit complete.
 **Jira key:** Pending creation
 
 ## Execution queue
@@ -15,15 +15,15 @@
 
 **Active substory:** None.
 
-**Next substory:** None with reason — RV-125-001 and RV-125-002 are implemented; parent re-review is next and is owned by the reviewer.
+**Next substory:** None — SP-125 complete (pass-2 review PASSED). No further action in this unit; next work belongs to other stories/epics.
 
 **Implementation owner:** `implementer`, one frontend writer. No backend writer.
 
-**Final review:** Pass 1 returned Changes Required ([review](./artifacts/SP-125/review.md)). Implementer corrections for RV-125-001 and RV-125-002 are recorded in [implementation.md](./artifacts/SP-125/implementation.md). Re-review is next. Walkthrough is reviewer-owned and not yet written.
+**Final review:** Combined SP-125 review passed 2026-10-27 (pass 2). Report: [./artifacts/SP-125/review.md](./artifacts/SP-125/review.md); walkthrough: [./artifacts/SP-125/walkthrough.md](./artifacts/SP-125/walkthrough.md). Reviewed commits: `b3e92db`…`ed9ec4e` (implementation) + `00be8ee` (corrections); combined scope `3cde1ad..00be8ee`.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [SP-125](./SP-125-assignment-experience.md) | Implemented — awaiting parent review | SP-124 reviewed (`63f9615`) — satisfied. Pass 1: RV-125-001 and RV-125-002 fixed in the correction commit; RV-125-003 (planner) and RV-125-004 (passing sync) remain outside this fix. | Parent re-review | [checkpoint](./artifacts/SP-125/checkpoint.md), [implementation](./artifacts/SP-125/implementation.md), [review](./artifacts/SP-125/review.md) |
+| [SP-125](./SP-125-assignment-experience.md) | Reviewed | SP-124 reviewed (`63f9615`) — satisfied. Pass 1 findings RV-125-001/002 corrected in `00be8ee` and verified in pass 2; RV-125-003 (optional, planner) and P-125-001 (optional) remain as polish. | None — unit complete | [checkpoint](./artifacts/SP-125/checkpoint.md), [implementation](./artifacts/SP-125/implementation.md), [review](./artifacts/SP-125/review.md), [walkthrough](./artifacts/SP-125/walkthrough.md) |
 
 This unit adds no new epic acceptance criterion. It is a presentation pass over behavior SP-113 through SP-124 already own.
 
@@ -101,9 +101,20 @@ No new security claim. The presentation pass must not add a read or write.
 | PC-125-01 | 2026-10-27 | Low | `docs/stories/EP03/README.md` status line, stories table, and the story 6–7 note | The epic index still described SP-124 as Draft with no implementation evidence, and the following note still said SP-123 children needed refinement. Committed `docs/stories/EP03/SP-124/README.md` at `5ed6f5f` records A/B/C implemented and awaiting combined re-review. SP-123's folder README records the unit reviewed. | Epic index now matches those committed folder statuses and lists SP-125. Test-obligation links include SP-123, SP-124, and SP-125. This commit does not adopt or revert the uncommitted SP-124 working-tree files (including an untracked pass-2 `review.md`). | `git show HEAD:docs/stories/EP03/SP-124/README.md` status line versus the updated epic index row. Dirty SP-124 paths were not staged. | Fixed in plan |
 | PC-125-02 | 2026-10-27 | Low | SP-125 queue, quality gate, and epic index SP-124 row | After PC-125-01, `63f9615` committed the SP-124 pass-2 review and folder README. Those files record the unit complete. The SP-125 plan still said implementation was blocked on an open re-review. | Withdrew that blocker. SP-124 is cited as reviewed in `63f9615`. Remaining gate is D125-4 (ui-refiner), not SP-124. | `docs/stories/EP03/SP-124/README.md` status line and `artifacts/SP-124/review.md` verdict line, both in `63f9615`. | Fixed in plan |
 
+## Review correction log
+
+| ID | Date | Severity (pass 1) | Location | Original finding | Disposition / closure evidence | Status |
+|---|---|---|---|---|---|---|
+| RV-125-001 | 2026-10-27 | Blocker | `AssignmentRow.tsx` disclosure/checklist gates | Zero-subtask rows rendered no disclosure, so the only add-subtask field was unreachable (EP03 AC-E03-03; D125-3); e2e journey 3 failed at `spec:147`. | Corrected in `00be8ee`: the disclosure always renders and the checklist mounts when expanded; pins updated; new zero-subtask add test. Independently verified in pass 2: code inspection + scoped 274/274, full 689/689, e2e 5/5 at `00be8ee`. See [review.md](./artifacts/SP-125/review.md). | Closed in pass 2 |
+| RV-125-002 | 2026-10-27 | Should-fix | `AssignmentsSection.tsx` lists | Course-host row controls were below the 44px mobile target (AC-3); the implementation record's AC-3 PASS claim was inaccurate for that host. | Corrected in `00be8ee`: both section lists carry the list host's `max-sm` 44px bumper. Verified in pass 2: class assertion + e2e journey 5 real measurements ≥44px at 375×667. See [review.md](./artifacts/SP-125/review.md). | Closed in pass 2 |
+| RV-125-003 | 2026-10-27 | Should-fix → polish (reclassified in pass 2) | `SP-125-assignment-experience.md` settled decisions | Decision text describes the pre-card design; the superseding user direction is recorded only in `implementation.md`. | Not corrected. Pass-2 reclassification: no unmet AC/DoD/deliverable; the ACs are accurate and met; provenance is recorded. Optional planner cleanup. See [review.md](./artifacts/SP-125/review.md). | Open — optional (planner) |
+| RV-125-004 | 2026-10-27 | Should-fix | SP-125 README status line + quality gate; EP03 index SP-125 entries | Stale "Draft / Needs refinement / No implementation evidence" claims. | Closed by the passing docs sync of pass 2 (this commit): status lines refreshed in the SP-125 README and the EP03 index. | Closed in pass 2 |
+| P-125-001 | 2026-10-27 | Polish | `e2e/assignments-list.spec.ts` coverage | Residual browser scenarios (blank-title validation, 5xx save failure, dialog tab-order, ordered subtask move, desktop width) are covered by component tests only. | Optional hardening; not a gate. | Open — optional |
+| F-125-03 | 2026-10-27 | Gate (open in pass 1) | e2e spec execution | The spec had not been executed at implementation closeout. | Closed: the reviewer executed the full spec at `00be8ee` — 5/5 passed on the self-contained stack (DoD-10). | Closed in pass 2 |
+
 ## Quality gate (2026-10-27)
 
-**Draft.** Product boundaries are recorded. The visual spec is not, so the story is not Plan Ready and must not be coded.
+**Superseded — the unit is reviewed.** The ui-refiner recorded the visual decisions 2026-10-27 (D125-7…10) and the user directed the card redesign during implementation (R-125-007); the story was implemented and independently reviewed (pass 2, 2026-10-27). The table below is the historical plan-gate record.
 
 | # | Check | Result | Reference |
 |---|---|---|---|
@@ -118,4 +129,4 @@ No new security claim. The presentation pass must not add a read or write.
 | 9 | Correction log | Pass | PC-125-01 and PC-125-02. |
 | 10 | Jira identity | Not applicable | Sync was not authorized. Key remains `Pending creation`. |
 
-Not implementation-ready until ui-refiner records the visual decisions in the story file. SP-124 is not an execution blocker (PC-125-02).
+Historical note: the story became implementation-ready when the ui-refiner recorded the visual decisions (2026-10-27). SP-124 was not an execution blocker (PC-125-02). Outcome: implemented and reviewed — see the execution queue above.
