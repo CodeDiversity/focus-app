@@ -360,9 +360,11 @@ export function AssignmentsPage() {
         <div className="mb-6 space-y-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative w-full sm:flex-1">
+              {/* The magnifier labels the field visually — the placeholder
+                  alone did not read as search (R-125-002). */}
               <Input
                 aria-label="Search assignments"
-                placeholder="Search assignments by title or description"
+                placeholder="Search title or description"
                 maxLength={200}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
@@ -371,6 +373,7 @@ export function AssignmentsPage() {
                     setQ(searchInput.trim());
                   }
                 }}
+                leftIcon={<Search size={16} aria-hidden />}
                 className="pr-10"
               />
               {searchInput && (
