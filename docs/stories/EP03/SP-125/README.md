@@ -23,7 +23,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [SP-125](./SP-125-assignment-experience.md) | Needs refinement | Shared assignment modules exist in the tree (SP-124). Visual decisions unset (D125-4). Do not start coding while the committed SP-124 queue still awaits its combined re-review — same files. | ui-refiner on SP-125 | None |
+| [SP-125](./SP-125-assignment-experience.md) | Needs refinement | SP-124 reviewed (`63f9615`). Visual decisions unset (D125-4). | ui-refiner on SP-125 | None |
 
 This unit adds no new epic acceptance criterion. It is a presentation pass over behavior SP-113 through SP-124 already own.
 
@@ -99,6 +99,7 @@ No new security claim. The presentation pass must not add a read or write.
 | ID | Date | Severity | Location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
 | PC-125-01 | 2026-10-27 | Low | `docs/stories/EP03/README.md` status line, stories table, and the story 6–7 note | The epic index still described SP-124 as Draft with no implementation evidence, and the following note still said SP-123 children needed refinement. Committed `docs/stories/EP03/SP-124/README.md` at `5ed6f5f` records A/B/C implemented and awaiting combined re-review. SP-123's folder README records the unit reviewed. | Epic index now matches those committed folder statuses and lists SP-125. Test-obligation links include SP-123, SP-124, and SP-125. This commit does not adopt or revert the uncommitted SP-124 working-tree files (including an untracked pass-2 `review.md`). | `git show HEAD:docs/stories/EP03/SP-124/README.md` status line versus the updated epic index row. Dirty SP-124 paths were not staged. | Fixed in plan |
+| PC-125-02 | 2026-10-27 | Low | SP-125 queue, quality gate, and epic index SP-124 row | After PC-125-01, `63f9615` committed the SP-124 pass-2 review and folder README. Those files record the unit complete. The SP-125 plan still said implementation was blocked on an open re-review. | Withdrew that blocker. SP-124 is cited as reviewed in `63f9615`. Remaining gate is D125-4 (ui-refiner), not SP-124. | `docs/stories/EP03/SP-124/README.md` status line and `artifacts/SP-124/review.md` verdict line, both in `63f9615`. | Fixed in plan |
 
 ## Quality gate (2026-10-27)
 
@@ -112,9 +113,9 @@ No new security claim. The presentation pass must not add a read or write.
 | 4 | Contract consistency | Pass | No API change. UI contract is the existing shared owner plus D125-5 and D125-6. |
 | 5 | Code paths inspected | Pass | Baseline section. Unverified: pixel-level screenshots were not taken; gaps are from the component source. |
 | 6 | Feature risks | Pass | Counterexample table. No new security invariant. |
-| 7 | Dependencies | Pass | Code dependency on the shared modules is met. Implementation wait on the open SP-124 re-review is recorded in the queue. |
+| 7 | Dependencies | Pass | Shared modules exist. SP-124 review is committed in `63f9615` (PC-125-02). No upstream implementation dependency remains. |
 | 8 | Material decisions | Blocked | D125-4: layout, hierarchy, components, states, responsive behavior, and copy are for `ui-refiner`. D124-11 is not reopened. |
-| 9 | Correction log | Pass | PC-125-01. |
+| 9 | Correction log | Pass | PC-125-01 and PC-125-02. |
 | 10 | Jira identity | Not applicable | Sync was not authorized. Key remains `Pending creation`. |
 
-**Implementation blocked** until both of these are true: ui-refiner has recorded the visual decisions in the story file, and the committed SP-124 queue no longer awaits re-review of the same files.
+Not implementation-ready until ui-refiner records the visual decisions in the story file. SP-124 is not an execution blocker (PC-125-02).
