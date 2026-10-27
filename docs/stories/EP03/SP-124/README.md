@@ -26,7 +26,7 @@
 |---|---|---|---|---|
 | [A](./SP-124A-shared-assignment-interaction.md) | Implemented — awaiting parent review | SP-114, SP-120, SP-121, SP-123 reviewed — satisfied. No backend dependency. | Parent review after B and C | [checkpoint](./artifacts/SP-124A/checkpoint.md), [implementation](./artifacts/SP-124A/implementation.md) |
 | [B](./SP-124B-list-adopts-shared-interaction.md) | Needs refinement | A implemented. SP-122B reviewed — satisfied. | UI refinement, then implement | (none yet) |
-| [C](./SP-124C-shared-create.md) | Needs refinement | A implemented (form lives in the shared feature). B is not a code dependency. | UI refinement, then implement after B or independently | (none yet) |
+| [C](./SP-124C-shared-create.md) | Needs refinement | A implemented (form lives in the shared feature). B is not a code dependency. | UI refinement, then implement after B | (none yet) |
 
 Sequence: A → B → C, one writer. C owns the parent index and the DoD-10 browser note. C may start after A if B is still in UI refinement; do not start B or C before A, or the list page will grow a second copy of the row.
 

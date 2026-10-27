@@ -3,7 +3,7 @@
 **Story:** [SP-124A](../../SP-124A-shared-assignment-interaction.md)
 **Status:** Implemented — awaiting parent review
 **Date:** 2026-10-26
-**Commit:** the commit that adds this record (the hash is returned in the handoff; a commit cannot contain its own hash).
+**Commit:** `2285f170825654709fc066e0af1b858b0e4544dc` (implementation and this record; the follow-up commit only corrects queue wording).
 
 ## Outcome
 
