@@ -20,6 +20,7 @@ Role / scope: implementer; frontend presentation pass only. No API/schema/route 
 - [x] S6: tests updated (3 secondary-filter tests open the panel first); 5 presentation tests added (`AssignmentsPage.test.tsx` SP-125 describe); `AssignmentForm.test.tsx` width class updated — 161/161 green
 - [x] S7: verification (161 passed, typecheck exit 0, lint clean after prettier fix)
 - [x] S8: `implementation.md` written; README queue + story statuses updated; code committed as `b3e92db`, docs closeout commit follows
+- [x] S9 (post-refine, user direction): Edit becomes an icon-only pencil (`SquarePen`) at the end of the action cluster, after Delete; aria-label and `data-assignment-focus="edit:${id}"` unchanged; tab-order tests updated in both hosts
 - Current step: done — awaiting parent review.
 
 ## Decisions and dependencies
