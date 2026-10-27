@@ -584,3 +584,160 @@ describe('AssignmentsPage list creation (SP-124C AC 1–8)', () => {
     expect(add).toHaveFocus();
   });
 });
+
+describe('AssignmentsPage post-review corrections (R-124-001…005)', () => {
+  it('refetches with the current filters when a status PATCH resolves after a filter change', async () => {
+    const user = setupUser();
+    let resolvePatch!: (value: unknown) => void;
+    mockedUpdateAssignment.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolvePatch = resolve;
+        }) as never
+    );
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.selectOptions(screen.getByLabelText('Course'), 'course-1');
+    await waitFor(() =>
+      expect(mockedListAssignments.mock.calls.at(-1)?.[0]).toMatchObject({ courseId: 'course-1' })
+    );
+
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Status for Problem Set 4' }),
+      'COMPLETED'
+    );
+    await waitFor(() => expect(mockedUpdateAssignment).toHaveBeenCalledTimes(1));
+
+    // Move the live filter while the PATCH is still in flight.
+    await user.selectOptions(screen.getByLabelText('Course'), '');
+    await waitFor(() => expect(mockedListAssignments.mock.calls.at(-1)?.[0]).toEqual({}));
+
+    const callsBeforeResolve = mockedListAssignments.mock.calls.length;
+    resolvePatch({ ...item, status: 'COMPLETED' });
+    await waitFor(() =>
+      expect(mockedListAssignments.mock.calls.length).toBeGreaterThan(callsBeforeResolve)
+    );
+    expect(mockedListAssignments.mock.calls.at(-1)?.[0]).toEqual({});
+  });
+
+  it('ignores a stale list response that resolves after a newer filter request', async () => {
+    const user = setupUser();
+    let resolveCourseRequest!: (value: unknown) => void;
+    mockedListAssignments
+      .mockResolvedValueOnce([item] as never)
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveCourseRequest = resolve;
+          }) as never
+      )
+      .mockResolvedValueOnce([] as never);
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.selectOptions(screen.getByLabelText('Course'), 'course-1');
+    await waitFor(() => expect(mockedListAssignments).toHaveBeenCalledTimes(2));
+
+    await user.selectOptions(screen.getByLabelText('Course'), '');
+    expect(await screen.findByText('No assignments yet.')).toBeInTheDocument();
+
+    resolveCourseRequest([item]);
+    await waitFor(() => expect(mockedListAssignments).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(screen.queryByText('Problem Set 4')).not.toBeInTheDocument());
+  });
+
+  it('keeps focus on a stable control after creating the first assignment from the empty state', async () => {
+    const user = setupUser();
+    mockedListAssignments.mockResolvedValueOnce([] as never).mockResolvedValueOnce([item] as never);
+    mockedCreateAssignment.mockResolvedValue({ ...item, course: null } as never);
+    renderPage();
+    await screen.findByText('No assignments yet.');
+
+    const headerAdd = screen.getByRole('button', { name: 'Add assignment' });
+    await user.click(screen.getByRole('button', { name: 'Add your first assignment' }));
+    await user.type(screen.getByLabelText('Title'), 'First assignment');
+    await user.click(screen.getByRole('button', { name: 'Create assignment' }));
+
+    expect(await screen.findByText('Problem Set 4')).toBeInTheDocument();
+    await waitFor(() => expect(headerAdd).toHaveFocus());
+  });
+
+  it('returns focus to the header Add control after a header-create success', async () => {
+    const user = setupUser();
+    mockedCreateAssignment.mockResolvedValue({ ...item, course: null } as never);
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    const headerAdd = screen.getByRole('button', { name: 'Add assignment' });
+    await user.click(headerAdd);
+    await user.type(screen.getByLabelText('Title'), 'Another assignment');
+    await user.click(screen.getByRole('button', { name: 'Create assignment' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(headerAdd).toHaveFocus());
+  });
+
+  it('keeps the modal and entered values when a list-host create fails', async () => {
+    const user = setupUser();
+    mockedCreateAssignment.mockRejectedValueOnce(new Error('boom'));
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.click(screen.getByRole('button', { name: 'Add assignment' }));
+    await user.type(screen.getByLabelText('Title'), 'Doomed assignment');
+    const callsBefore = mockedListAssignments.mock.calls.length;
+    await user.click(screen.getByRole('button', { name: 'Create assignment' }));
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith('We could not save the assignment. Try again.')
+    );
+    expect(screen.getByRole('dialog', { name: 'Add an assignment' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Title')).toHaveValue('Doomed assignment');
+    expect(screen.getByRole('button', { name: 'Create assignment' })).toBeEnabled();
+    expect(mockedListAssignments.mock.calls.length).toBe(callsBefore);
+    expect(screen.getByRole('status')).not.toHaveTextContent('Assignment added.');
+  });
+
+  it('applies the mobile 44 px minimum to create entry points and form controls', async () => {
+    const user = setupUser();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    const headerAdd = screen.getByRole('button', { name: 'Add assignment' });
+    expect(headerAdd).toHaveClass('max-sm:min-h-[44px]');
+    await user.click(headerAdd);
+
+    const dialog = screen.getByRole('dialog', { name: 'Add an assignment' });
+    for (const control of [
+      within(dialog).getByLabelText('Title'),
+      within(dialog).getByLabelText('Course'),
+      within(dialog).getByLabelText('Due date'),
+      within(dialog).getByLabelText('Estimated duration (hours)'),
+      within(dialog).getByLabelText('Type'),
+      within(dialog).getByLabelText('Priority'),
+      within(dialog).getByLabelText('Description'),
+    ]) {
+      expect(control).toHaveClass('max-sm:min-h-[44px]');
+    }
+    expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveClass(
+      'max-sm:min-h-[44px]'
+    );
+    expect(within(dialog).getByRole('button', { name: 'Create assignment' })).toHaveClass(
+      'max-sm:min-h-[44px]'
+    );
+  });
+
+  it('applies the mobile 44 px minimum to the empty-state actions', async () => {
+    mockedListAssignments.mockResolvedValue([] as never);
+    renderPage();
+    await screen.findByText('No assignments yet.');
+
+    expect(screen.getByRole('button', { name: 'Add your first assignment' })).toHaveClass(
+      'max-sm:min-h-[44px]'
+    );
+    expect(screen.getByRole('button', { name: 'Browse courses' })).toHaveClass(
+      'max-sm:min-h-[44px]'
+    );
+  });
+});

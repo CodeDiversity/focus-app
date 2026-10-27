@@ -1,10 +1,10 @@
 # SP-124B implementation — list page adopts the shared interaction
 
 **Story:** [SP-124B](../../SP-124B-list-adopts-shared-interaction.md)
-**Status:** Implemented — awaiting parent review
+**Status:** Implemented and post-review corrected — awaiting parent re-review
 **Date:** 2026-10-26
 **Checkpoint:** [checkpoint.md](./checkpoint.md)
-**Review unit:** SP-124 combined parent review (index written by C).
+**Review unit:** SP-124 combined parent review (index written by C). Post-review corrections R-124-001 cover this host's mutate-then-refetch path.
 
 ## Outcome
 
@@ -25,11 +25,11 @@ added (D124-10), and there is no API/schema change (D124-1).
 | 1. Shared row integration | Met | The page renders `AssignmentRow` from `@/features/assignments`; it defines no status `Select`, delete handler, or `SubtaskChecklist` wiring. Imports `status/edit` cells come from the row. |
 | 2. Title opens the edit modal | Met | `onTitleActivate={() => actions.openEdit(a)}`; tests assert the `Edit assignment` dialog, prefilled title, and unchanged `/assignments` route. Title button carries the specified text-button classes incl. `rounded`. |
 | 3. Course affordance in the meta slot | Met | `CourseMeta` renders the `/courses/:id` link with color dot (aria-hidden), monospace code, and name; null renders static `No course` with no link. Tests cover both. |
-| 4. Refetch with current params | Met | `refetchCurrent()` calls `runFetch(buildParams(), false, …)`; the shape is asserted with an active course filter and after delete. Background refetch shows the filter-bar `Loader2`, sets `aria-busy` on the list, keeps rows interactive, and a failed refetch toasts `We could not load your assignments. Try again.` without clearing rows. |
+| 4. Refetch with current params | Met | `refetchCurrent()` calls `runFetch(buildParams(), false, …)`; the shape is asserted with an active course filter and after delete. The hook invokes the host callback through a `latest` ref, so a status PATCH that resolves after a filter change refetches with the *current* params (R-124-001). A monotonic `requestSeq` prevents an older GET from overwriting the newest rows/loading/status. Background refetch shows the filter-bar `Loader2`, sets `aria-busy` on the list, keeps rows interactive, and a failed refetch toasts `We could not load your assignments. Try again.` without clearing rows. |
 | 5. Single hook and dialog mount | Met | Exactly one `useAssignmentActions` call before the early returns and one `<AssignmentDialogs actions={actions} …/>` in the page tree. |
 | 6. Error handling | Met, with shared-copy notes | Edit 404 keeps the form's uniform sentence; delete 404 now maps to the same sentence in the shared dialog (D-124B-2). Status failures toast `We could not update the status. Try again.`; edit failures toast `We could not save the assignment. Try again.`. A generic delete failure keeps the dialog's inline sanitized alert (D-124B-4). |
-| 7. Keyboard and responsive accessibility | Met | Test walks title → course link → subtask toggle → status select → edit → delete and asserts Escape closes the edit dialog with focus restored. The shared row stacks below `sm` (`flex-col … sm:flex-row`) and the list applies `max-sm` 44 px minimum heights to row buttons/selects. |
-| 8. Automated tests | Met | 10 new cases in `AssignmentsPage.test.tsx` (26 total in the suite); the delete-dialog 404 test now asserts the uniform copy. Full web suite green. |
+| 7. Keyboard and responsive accessibility | Met | Test walks title → course link → subtask toggle → status select → edit → delete and asserts Escape closes the edit dialog with focus restored. The shared row stacks below `sm` (`flex-col … sm:flex-row`) and the list applies `max-sm` 44 px minimum heights to row buttons/selects; create entry points and form controls also meet 44 px (R-124-003) and the real browser run measures them at 375 px (R-124-006). |
+| 8. Automated tests | Met | 10 new cases in `AssignmentsPage.test.tsx` (26 total in the suite); the delete-dialog 404 test now asserts the uniform copy. Post-review adds deferred-PATCH/current-params and out-of-order-GET cases. Full web suite green. |
 
 ## Verification
 
@@ -37,10 +37,13 @@ Working directory `apps/web` (via the workspace filter):
 
 | Command | Result |
 |---|---|
-| `pnpm --filter @studypilot/web test -- src/features/assignments src/pages/assignments/ui/AssignmentsPage.test.tsx` | 131 passed (7 files) |
-| `pnpm --filter @studypilot/web test` | 655 passed (50 files) |
+| `pnpm --filter @studypilot/web test -- src/features/assignments src/pages/assignments/ui/AssignmentsPage.test.tsx` | 131 passed (7 files) at B's commit; 156 passed after the post-review corrections |
+| `pnpm --filter @studypilot/web test` | 655 passed (50 files) at B's commit; 680 passed after the post-review corrections |
 | `pnpm --filter @studypilot/web typecheck` | passed |
 | `pnpm --filter @studypilot/web lint` | passed (0 warnings) |
+
+Post-review integrated evidence (real browser/API/DB, both hosts) is recorded in
+the [parent index](../SP-124/implementation.md#dod-10-browser-note-executed).
 
 Tested state: current working tree on the child's implementation commit; no
 uncommitted code after closeout.
@@ -87,7 +90,19 @@ uncommitted code after closeout.
 - **Findings requiring product action:** none new beyond D-124B-3 (a follow-up
   owned by C within the same parent).
 
+## Post-review correction (R-124-001)
+
+- **Latest-callback refetch.** The page's `onStatusChanged`/`onChanged`/subtask
+  callbacks are read through the hook's `latest` ref at completion, so a PATCH
+  that starts under one filter and resolves after the filter bar changes refetches
+  with the *final* parameters. Regression test: deferred PATCH, switch course
+  filter while pending, assert the last GET params match the final controls.
+- **Stale-response guard.** `AssignmentsPage.runFetch` increments a monotonic
+  `requestSeq`; only the newest request may commit rows, status copy, loading or
+  error effects. Regression test: an earlier GET resolving after a newer one
+  cannot restore the superseded rows.
+- **Findings requiring product action:** none.
+
 ## Remaining work
 
-None for SP-124B. Next queue action: UI refinement of SP-124C, then implement it
-(parent index + DoD-10 browser note). The combined parent review follows C.
+None for SP-124B. The combined SP-124 parent re-review follows the correction commit.

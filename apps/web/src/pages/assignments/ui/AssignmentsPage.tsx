@@ -124,6 +124,8 @@ export function AssignmentsPage() {
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
 
   const [statusMessage, setStatusMessage] = useState('');
+  /** Only the newest list request may commit rows/loading/status (R-124-001). */
+  const requestSeq = useRef(0);
 
   // Debounce search 300 ms.
   useEffect(() => {
@@ -163,6 +165,8 @@ export function AssignmentsPage() {
 
   const runFetch = useCallback(
     async (params: ListAssignmentsParams, initial: boolean, prefix?: string) => {
+      const seq = ++requestSeq.current;
+      const isCurrent = () => seq === requestSeq.current;
       if (initial) {
         setIsLoading(true);
         setInitialError(null);
@@ -171,6 +175,9 @@ export function AssignmentsPage() {
       }
       try {
         const data = await listAssignments(params);
+        // A slower earlier request must not replace the newest result
+        // (e.g. a filter changed while a mutation refetch was in flight).
+        if (!isCurrent()) return;
         setAssignments(data);
         const active = Boolean(
           params.courseId ||
@@ -191,6 +198,7 @@ export function AssignmentsPage() {
             : `Showing ${data.length} assignment${data.length === 1 ? '' : 's'}.`;
         setStatusMessage(prefix ? `${prefix} ${count}` : count);
       } catch (err) {
+        if (!isCurrent()) return;
         if (initial) {
           setInitialError(getErrorMessage(err) || 'We could not load your assignments. Try again.');
         } else {
@@ -203,11 +211,13 @@ export function AssignmentsPage() {
           }
         }
       } finally {
-        if (initial) {
-          setIsLoading(false);
-          initialDoneRef.current = true;
-        } else {
-          setIsFetching(false);
+        if (isCurrent()) {
+          if (initial) {
+            setIsLoading(false);
+            initialDoneRef.current = true;
+          } else {
+            setIsFetching(false);
+          }
         }
       }
     },
@@ -297,7 +307,11 @@ export function AssignmentsPage() {
           Assignments
         </h1>
         {/* Stable focus target for the shared hook's last-row delete fallback. */}
-        <Button data-assignment-focus="add" onClick={actions.openForm}>
+        <Button
+          data-assignment-focus="add"
+          className="max-sm:min-h-[44px]"
+          onClick={actions.openForm}
+        >
           Add assignment
         </Button>
       </div>
@@ -459,11 +473,17 @@ export function AssignmentsPage() {
                   Create an assignment directly or browse your courses.
                 </p>
                 <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-                  <Button data-assignment-focus="empty-add" onClick={actions.openForm}>
+                  <Button
+                    data-assignment-focus="empty-add"
+                    className="max-sm:min-h-[44px]"
+                    onClick={actions.openForm}
+                  >
                     Add your first assignment
                   </Button>
                   <Link to="/courses">
-                    <Button variant="outline">Browse courses</Button>
+                    <Button variant="outline" className="max-sm:min-h-[44px]">
+                      Browse courses
+                    </Button>
                   </Link>
                 </div>
               </>

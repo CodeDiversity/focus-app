@@ -285,6 +285,7 @@ export function AssignmentForm({
               required
               error={errors.title?.message}
               disabled={isSubmitting}
+              className="max-sm:min-h-[44px]"
               {...register('title')}
             />
             {/* Cross-course create only (SP-124C): the course page keeps its fixed id. */}
@@ -294,6 +295,7 @@ export function AssignmentForm({
                 hint="Optional — choose a course or leave unassigned."
                 error={errors.courseId?.message}
                 disabled={isSubmitting}
+                className="max-sm:min-h-[44px]"
                 {...register('courseId')}
               >
                 <option value="">No course</option>
@@ -315,6 +317,7 @@ export function AssignmentForm({
                 }
                 error={errors.dueDate?.message}
                 disabled={isSubmitting}
+                className="max-sm:min-h-[44px]"
                 {...register('dueDate')}
               />
               <Input
@@ -324,6 +327,7 @@ export function AssignmentForm({
                 hint={isEdit ? 'Optional — leave blank to keep the current duration.' : 'Optional'}
                 error={errors.estimatedHours?.message}
                 disabled={isSubmitting}
+                className="max-sm:min-h-[44px]"
                 {...register('estimatedHours')}
               />
             </div>
@@ -343,6 +347,7 @@ export function AssignmentForm({
                 }
                 error={errors.type?.message}
                 disabled={isSubmitting}
+                className="max-sm:min-h-[44px]"
                 {...register('type')}
               >
                 {/* "No type" names the resulting unset state — it is never a
@@ -364,6 +369,7 @@ export function AssignmentForm({
                 }
                 error={errors.priority?.message}
                 disabled={isSubmitting}
+                className="max-sm:min-h-[44px]"
                 {...register('priority')}
               >
                 <option value="LOW">Low</option>
@@ -392,6 +398,7 @@ export function AssignmentForm({
                 placeholder="Optional notes or instructions"
                 className={clsx(
                   'w-full px-4 py-2 border rounded-lg bg-white text-secondary-900 placeholder-secondary-400',
+                  'max-sm:min-h-[44px]',
                   'focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors duration-200',
                   errors.description?.message
                     ? 'border-red-500 text-red-900 placeholder-red-700'
@@ -430,13 +437,20 @@ export function AssignmentForm({
             </div>
           )}
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+            <Button
+              type="button"
+              variant="outline"
+              className="max-sm:min-h-[44px]"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
             <Button
               type="submit"
               variant="primary"
               isLoading={isSubmitting}
+              className="max-sm:min-h-[44px]"
               aria-label={isEdit ? 'Save changes' : 'Create assignment'}
             >
               {isEdit ? 'Save changes' : 'Create assignment'}

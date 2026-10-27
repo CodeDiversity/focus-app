@@ -1,9 +1,9 @@
 # SP-124A checkpoint — shared assignment interaction
 
 **Story:** [SP-124A](../../SP-124A-shared-assignment-interaction.md)
-**Status:** Implemented — awaiting parent review
+**Status:** Implemented and post-review corrected — awaiting parent re-review
 **Started / finished:** 2026-10-26
-**Execution state:** [SP-124 README](../../README.md#execution-queue) — A `Implemented — awaiting parent review`; next is SP-124B UI refinement.
+**Execution state:** [SP-124 README](../../README.md#execution-queue) — A corrected for R-124-001/R-124-004; next is the combined parent re-review.
 
 ## Progress
 
@@ -32,7 +32,17 @@
   “hook returns dialog state; host renders `<AssignmentDialogs>`” — see
   [implementation.md](./implementation.md).
 
+## Post-review corrections
+
+- **R-124-001 (closed).** Latest host callbacks/items read through a `latest` ref
+  on async completion; stable subtask callback wrappers. Regression tests in the
+  hook and the list page (deferred PATCH + filter change; out-of-order GET).
+- **R-124-004 (closed).** Identity-based `expandedIds` reset implemented with a
+  `previousItems` ref; same-array retention and new-array reset tested.
+- **F-124C-1.** The moved course-section disclosure test contradicted D124-5; it
+  was rewritten to assert reset on a new array, not retention. Test-only fix.
+
 ## Next action
 
-None for A. Parent review is deferred until B and C are implemented. Next queue action:
-ui-refiner on [SP-124B](../../SP-124B-list-adopts-shared-interaction.md).
+None for A. The coordinator requests one combined SP-124 parent re-review
+(A+B+C, parent index, integrated evidence).

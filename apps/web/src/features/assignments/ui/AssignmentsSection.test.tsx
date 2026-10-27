@@ -448,7 +448,7 @@ describe('AssignmentsSection subtask disclosure (SP-120J AC 1, AC 8)', () => {
     expect(screen.queryByRole('region')).not.toBeInTheDocument();
   });
 
-  it('keeps several rows open across a background refetch and drops removed ids', async () => {
+  it('resets expanded rows on a new assignments identity and keeps them on the same identity', async () => {
     const user = setupUser();
     const withSubs = [
       { ...problemSet, subtasks: [subtask('s1', 'Read chapter', 'PENDING', 0)] },
@@ -461,15 +461,15 @@ describe('AssignmentsSection subtask disclosure (SP-120J AC 1, AC 8)', () => {
     );
     expect(screen.getAllByRole('region')).toHaveLength(2);
 
+    // Same array identity: no reset.
     view.rerender(<AssignmentsSection assignments={withSubs} />);
     expect(screen.getAllByRole('region')).toHaveLength(2);
 
-    view.rerender(<AssignmentsSection assignments={[withSubs[1]!]} />);
+    // A refetch supplies a new array: D124-5 resets every expansion.
+    view.rerender(<AssignmentsSection assignments={[...withSubs]} />);
+    expect(screen.queryAllByRole('region')).toHaveLength(0);
     expect(
-      screen.queryByRole('button', { name: 'Subtasks for Problem Set 4: 1 subtask' })
-    ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('region', { name: 'Subtasks for Research Essay: 1 subtask' })
+      screen.getByRole('button', { name: 'Subtasks for Research Essay: 1 subtask' })
     ).toBeInTheDocument();
   });
 

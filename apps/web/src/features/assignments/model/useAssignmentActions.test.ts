@@ -54,4 +54,64 @@ describe('useAssignmentActions', () => {
     expect(first.result.current.busyIds.has('asgn-1')).toBe(true);
     expect(second.result.current.busyIds.has('asgn-1')).toBe(false);
   });
+
+  it('resets expanded ids when the items array identity changes', () => {
+    const initial = [item];
+    const { result, rerender } = renderHook(
+      ({ items }: { items: AssignmentInteractionItem[] }) =>
+        useAssignmentActions({ ...options(), items }),
+      { initialProps: { items: initial } }
+    );
+
+    act(() => result.current.toggleExpanded('asgn-1'));
+    expect(result.current.expandedIds.has('asgn-1')).toBe(true);
+
+    // A new array with the same row id is an ordinary refetch (D124-5).
+    rerender({ items: [{ ...item }] });
+    expect(result.current.expandedIds.has('asgn-1')).toBe(false);
+  });
+
+  it('keeps expanded ids when the items identity is unchanged', () => {
+    const initial = [item];
+    const { result, rerender } = renderHook(
+      ({ items }: { items: AssignmentInteractionItem[] }) =>
+        useAssignmentActions({ ...options(), items }),
+      { initialProps: { items: initial } }
+    );
+
+    act(() => result.current.toggleExpanded('asgn-1'));
+    rerender({ items: initial });
+
+    expect(result.current.expandedIds.has('asgn-1')).toBe(true);
+  });
+
+  it('uses the latest onStatusChanged after the host re-renders (R-124-001)', async () => {
+    let resolvePatch!: (value: unknown) => void;
+    vi.mocked(updateAssignment).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolvePatch = resolve;
+        }) as never
+    );
+    const firstCallback = vi.fn();
+    const latestCallback = vi.fn();
+    const stableItems = [item];
+    const { result, rerender } = renderHook(
+      ({ onStatusChanged }: { onStatusChanged: (status: string) => void }) =>
+        useAssignmentActions({ ...options(), items: stableItems, onStatusChanged }),
+      { initialProps: { onStatusChanged: firstCallback } }
+    );
+
+    act(() => {
+      void result.current.handleStatusChange(item, 'COMPLETED');
+    });
+    rerender({ onStatusChanged: latestCallback });
+
+    await act(async () => {
+      resolvePatch({ ...item, status: 'COMPLETED' });
+    });
+
+    expect(latestCallback).toHaveBeenCalledWith('COMPLETED');
+    expect(firstCallback).not.toHaveBeenCalled();
+  });
 });

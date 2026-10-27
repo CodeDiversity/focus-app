@@ -1,9 +1,9 @@
 # SP-124B checkpoint — list page adopts the shared interaction
 
 **Story:** [SP-124B](../../SP-124B-list-adopts-shared-interaction.md)
-**Status:** Implemented — awaiting parent review
+**Status:** Implemented and post-review corrected — awaiting parent re-review
 **Started / finished:** 2026-10-26
-**Execution state:** [SP-124 README](../../README.md#execution-queue) — B `Implemented — awaiting parent review`; A and B await the combined parent review.
+**Execution state:** [SP-124 README](../../README.md#execution-queue) — B corrected for R-124-001; next is the combined parent re-review.
 **Review unit:** SP-124 combined parent review (`./artifacts/SP-124/implementation.md`, written by C).
 
 ## Progress
@@ -48,7 +48,13 @@
 - `pnpm --filter @studypilot/web lint` — passed (0 warnings)
 - Details and AC mapping: [implementation.md](./implementation.md)
 
+## Post-review correction
+
+- **R-124-001 (closed, shared owner + this host).** Latest host callbacks read
+  through the hook's `latest` ref; `requestSeq` freshness guard in `runFetch`.
+  Page tests cover deferred PATCH + filter change and an out-of-order GET.
+
 ## Next action
 
-None for B. C remains `Needs refinement` (ui-refiner), then implement. The
-combined parent review happens after C.
+None for B. The coordinator requests one combined SP-124 parent re-review
+(A+B+C, parent index, integrated evidence).

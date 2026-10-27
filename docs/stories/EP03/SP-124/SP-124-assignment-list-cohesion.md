@@ -4,7 +4,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Covers epic proposed story:** 8 (assignment list cohesion — not in the original 7 proposed stories; added 2026-10-26 by user direction, refined the same day for a single interaction owner)
-**Status:** Draft — refined 2026-10-26. A is Ready. B and C are `Needs refinement` for list-only UI/UX. No implementation evidence.
+**Status:** Implemented 2026-10-26 (A, B, C) and post-review corrected — awaiting the combined parent re-review. See [README execution queue](./README.md#execution-queue).
 **Jira key:** Pending creation (parent coordination record — no Jira issue; the children carry the tracker keys)
 
 ## Purpose
@@ -15,9 +15,9 @@ This unit makes the list a second host of the same assignment interaction the
 course page uses, so edit, delete, status, subtasks, and create are not
 implemented twice (D124-9, D124-10).
 
-- [SP-124A](./SP-124A-shared-assignment-interaction.md) — extract `features/assignments` (`useAssignmentActions` + `AssignmentRow`); course page behavior unchanged. Ready.
-- [SP-124B](./SP-124B-list-adopts-shared-interaction.md) — list page hosts that owner; title opens edit. Needs refinement.
-- [SP-124C](./SP-124C-shared-create.md) — same form, optional course select, list create entry. Needs refinement. Owns the parent index and DoD-10 note.
+- [SP-124A](./SP-124A-shared-assignment-interaction.md) — extract `features/assignments` (`useAssignmentActions` + `AssignmentRow`); course page behavior unchanged. Implemented.
+- [SP-124B](./SP-124B-list-adopts-shared-interaction.md) — list page hosts that owner; title opens edit. Implemented.
+- [SP-124C](./SP-124C-shared-create.md) — same form, optional course select, list create entry. Implemented; owns the parent index and DoD-10 evidence.
 
 ## Outcome
 

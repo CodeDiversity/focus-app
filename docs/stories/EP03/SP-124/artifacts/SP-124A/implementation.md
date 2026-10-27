@@ -1,9 +1,9 @@
 # SP-124A implementation — shared assignment interaction
 
 **Story:** [SP-124A](../../SP-124A-shared-assignment-interaction.md)
-**Status:** Implemented — awaiting parent review
+**Status:** Implemented and post-review corrected — awaiting parent re-review
 **Date:** 2026-10-26
-**Commit:** `2285f170825654709fc066e0af1b858b0e4544dc` (implementation and this record; the follow-up commit only corrects queue wording).
+**Commit:** `2285f170825654709fc066e0af1b858b0e4544dc` (implementation and this record; the follow-up commit only corrects queue wording). Post-review corrections R-124-001/R-124-004 are in the commit containing the parent correction record.
 
 ## Outcome
 
@@ -39,10 +39,10 @@ labels/summary from `assignmentPresentation`.
 | AC | Outcome | Evidence |
 |---|---|---|
 | 1. One home | Met | `features/courses/ui/` no longer contains the five assignment files; `CourseDetailPage.tsx` imports from `@/features/assignments/ui/AssignmentsSection`. |
-| 2. One owner | Met | `useAssignmentActions` owns status, dialogs, expand/busy, focus; `AssignmentsSection` calls it once and renders `<AssignmentDialogs>` once. `AssignmentRow` owns the row markup. |
+| 2. One owner | Met | `useAssignmentActions` owns status, dialogs, expand/busy, focus; `AssignmentsSection` calls it once and renders `<AssignmentDialogs>` once. `AssignmentRow` owns the row markup. Post-review: expanded-id identity reset (D124-5) implemented and tested (R-124-004). |
 | 3. Shared item | Met | `AssignmentInteractionItem` in `model/types.ts`; `AssignmentForm` and `DeleteAssignmentDialog` accept it. |
 | 4. Presentation | Met | `STATUS_*`, `PRIORITY_*`, `TYPE_*`, `OVERDUE_*`, `subtaskSummary` exported from `assignmentPresentation.ts`; `AssignmentsPage` imports from there. |
-| 5. No course-page regression | Met | All moved course-section tests pass (38), including delete/finish focus restoration, show-completed reset, keyboard tab order, and dialog traps. |
+| 5. No course-page regression | Met | All moved course-section tests pass (38), including delete/finish focus restoration, show-completed reset, keyboard tab order, and dialog traps. Post-review: the moved disclosure test now proves the D124-5 identity reset rather than contradicting it. |
 | 6. No list-page behavior change | Met | `AssignmentsPage.test.tsx` (16) passes; the page still renders no edit/delete/status/subtask controls. |
 | 7. Tests | Met | Moved suites + new hook test pass. Two hook instances do not share `busyIds`; a status change PATCHes `{ status }` only. |
 
@@ -52,10 +52,13 @@ Run from `apps/web/` via the workspace filter:
 
 | Command | Result |
 |---|---|
-| `pnpm --filter @studypilot/web test -- src/features/assignments src/pages/assignments/ui/AssignmentsPage.test.tsx` | 121 passed (7 files) |
-| `pnpm --filter @studypilot/web test` | 645 passed (50 files) |
+| `pnpm --filter @studypilot/web test -- src/features/assignments src/pages/assignments/ui/AssignmentsPage.test.tsx` | 121 passed (7 files) at A's commit; 156 passed after the post-review corrections |
+| `pnpm --filter @studypilot/web test` | 645 passed (50 files) at A's commit; 680 passed after the post-review corrections |
 | `pnpm --filter @studypilot/web typecheck` | passed |
 | `pnpm --filter @studypilot/web lint` | passed (0 warnings) |
+
+Post-review integrated evidence belongs to the parent index (real-stack Playwright
+run covering both hosts). Details: [SP-124 implementation](../SP-124/implementation.md).
 
 ## Changed paths
 
@@ -84,6 +87,26 @@ Run from `apps/web/` via the workspace filter:
   `model/types.ts` and is re-exported by `SubtaskChecklist.tsx`, so the hook does not
   import a UI module for a type. No consumer change.
 - **Findings/deviations requiring product action:** None.
+
+## Post-review correction (R-124-001, R-124-004)
+
+Review pass 1 found two shared-owner gaps. Both are closed in the commit
+containing the parent correction record:
+
+- **R-124-001 — latest-callback completion.** `useAssignmentActions` keeps a
+  `latest` ref of `items` and every host callback; async status completion reads
+  it for the refetch callback and the focus neighbor. The subtask callbacks
+  returned by the hook are stable `useCallback` wrappers over `latest.current`,
+  so a checklist handler that outlives its render still reaches the current host
+  callback.
+- **R-124-004 — identity reset.** A `previousItems` ref resets `expandedIds`
+  whenever `items` changes identity and retains them when identity is stable; it
+  skips the state update when nothing is expanded.
+- **Test supersession (F-124C-1).** The moved course-section test asserted that
+  expanded rows survive a *new* array, which contradicts D124-5. It now asserts
+  retention on the same array and reset on a new array. This is a test correction,
+  not a contract change; no planner revision was needed.
+
 
 ## Remaining work
 
