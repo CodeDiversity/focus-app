@@ -441,12 +441,17 @@ export function AssignmentsPage() {
           {showFilters && (
             <div
               id="advanced-filters-panel"
-              className="grid grid-cols-2 items-start gap-3 rounded-lg border border-secondary-100 bg-secondary-50/60 p-3 sm:grid-cols-3 lg:grid-cols-5"
+              className="grid grid-cols-1 items-start gap-2 rounded-lg border border-secondary-100 bg-secondary-50/60 p-3 sm:grid-cols-2 lg:grid-cols-5"
             >
-              <div>
+              {/*
+               * Inline labels sit left of their control (R-125-004): each
+               * filter reads as one unit, and the order arrow is attached to
+               * the sort select instead of floating at a cell edge.
+               */}
+              <div className="flex items-center gap-2">
                 <label
                   htmlFor="filter-due-from"
-                  className="mb-1 block text-xs font-medium text-secondary-600"
+                  className="shrink-0 text-xs font-medium text-secondary-600"
                 >
                   Due from
                 </label>
@@ -458,10 +463,10 @@ export function AssignmentsPage() {
                   className="max-sm:min-h-[44px]"
                 />
               </div>
-              <div>
+              <div className="flex items-center gap-2">
                 <label
                   htmlFor="filter-due-to"
-                  className="mb-1 block text-xs font-medium text-secondary-600"
+                  className="shrink-0 text-xs font-medium text-secondary-600"
                 >
                   Due to
                 </label>
@@ -473,10 +478,10 @@ export function AssignmentsPage() {
                   className="max-sm:min-h-[44px]"
                 />
               </div>
-              <div>
+              <div className="flex items-center gap-2">
                 <label
                   htmlFor="filter-priority"
-                  className="mb-1 block text-xs font-medium text-secondary-600"
+                  className="shrink-0 text-xs font-medium text-secondary-600"
                 >
                   Priority
                 </label>
@@ -494,10 +499,10 @@ export function AssignmentsPage() {
                   ))}
                 </Select>
               </div>
-              <div>
+              <div className="flex items-center gap-2">
                 <label
                   htmlFor="filter-type"
-                  className="mb-1 block text-xs font-medium text-secondary-600"
+                  className="shrink-0 text-xs font-medium text-secondary-600"
                 >
                   Type
                 </label>
@@ -515,39 +520,38 @@ export function AssignmentsPage() {
                   ))}
                 </Select>
               </div>
-              <div>
+              <div className="flex items-center gap-2">
                 <label
                   htmlFor="filter-sort"
-                  className="mb-1 block text-xs font-medium text-secondary-600"
+                  className="shrink-0 text-xs font-medium text-secondary-600"
                 >
                   Sort by
                 </label>
-                <div className="flex items-start gap-2">
-                  <Select
-                    id="filter-sort"
-                    value={sort}
-                    onChange={(e) => setSort(e.target.value)}
-                    className="w-full max-sm:min-h-[44px]"
-                  >
-                    {SORT_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </Select>
-                  <button
-                    type="button"
-                    aria-label={order === 'asc' ? 'Sort ascending' : 'Sort descending'}
-                    onClick={toggleOrder}
-                    className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg border border-secondary-300 bg-white px-3 py-2 text-secondary-700 hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    {order === 'asc' ? (
-                      <ArrowUp size={16} aria-hidden />
-                    ) : (
-                      <ArrowDown size={16} aria-hidden />
-                    )}
-                  </button>
-                </div>
+                <Select
+                  id="filter-sort"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="w-full max-sm:min-h-[44px]"
+                >
+                  {SORT_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </Select>
+                <button
+                  type="button"
+                  aria-label={order === 'asc' ? 'Sort ascending' : 'Sort descending'}
+                  title="Toggle sort order"
+                  onClick={toggleOrder}
+                  className="inline-flex min-h-[44px] w-11 shrink-0 items-center justify-center rounded-lg border border-secondary-300 bg-white text-secondary-700 hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                >
+                  {order === 'asc' ? (
+                    <ArrowUp size={16} aria-hidden />
+                  ) : (
+                    <ArrowDown size={16} aria-hidden />
+                  )}
+                </button>
               </div>
             </div>
           )}

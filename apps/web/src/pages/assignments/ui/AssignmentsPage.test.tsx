@@ -778,6 +778,11 @@ describe('AssignmentsPage presentation (SP-125)', () => {
     expect(screen.getByLabelText('Type')).toBeInTheDocument();
     expect(screen.getByLabelText('Sort by')).toBeInTheDocument();
 
+    // The order arrow sits in the same cell as the sort select it flips.
+    const sortLabel = screen.getByText('Sort by');
+    const orderButton = screen.getByLabelText('Sort ascending');
+    expect(orderButton.closest('div')).toBe(sortLabel.parentElement);
+
     // The toggle shows how many secondary controls are active.
     await user.selectOptions(screen.getByLabelText('Priority'), 'LOW');
     await user.selectOptions(screen.getByLabelText('Type'), 'PAPER');
