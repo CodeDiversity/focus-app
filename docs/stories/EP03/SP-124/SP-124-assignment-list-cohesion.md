@@ -4,7 +4,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Covers epic proposed story:** 8 (assignment list cohesion — not in the original 7 proposed stories; added 2026-10-26 by user direction, refined the same day for a single interaction owner)
-**Status:** Implemented 2026-10-26 (A, B, C) and post-review corrected — awaiting the combined parent re-review. See [README execution queue](./README.md#execution-queue).
+**Status:** Complete — reviewed and approved 2026-10-26 (pass 2). See [README execution queue](./README.md#execution-queue).
 **Jira key:** Pending creation (parent coordination record — no Jira issue; the children carry the tracker keys)
 
 ## Purpose

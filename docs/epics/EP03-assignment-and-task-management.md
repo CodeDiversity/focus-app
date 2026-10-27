@@ -49,6 +49,10 @@ The workflow must make adding an assignment quick and allow students to break co
    `/assignments` list hosts the same edit, delete, status, subtask, and
    create interaction as the course page (SP-124). One shared owner; not a
    second implementation. Not a new acceptance criterion.
+9. (Added 2026-10-27) Assignment page and module experience — presentation
+   only (SP-125). Clearer hierarchy and calmer controls on the list page and
+   the shared assignment modules. Not a new acceptance criterion. Visual
+   decisions are for ui-refiner, not this epic.
 ## Technical Notes
 
 Create `Assignment` and `Subtask` Prisma models. Assignment state should be independent of study-session progress. Validate duration estimates and deadline values.

@@ -1,7 +1,7 @@
 # SP-124B implementation — list page adopts the shared interaction
 
 **Story:** [SP-124B](../../SP-124B-list-adopts-shared-interaction.md)
-**Status:** Implemented and post-review corrected — awaiting parent re-review
+**Status:** Reviewed 2026-10-26 (SP-124 pass 2).
 **Date:** 2026-10-26
 **Checkpoint:** [checkpoint.md](./checkpoint.md)
 **Review unit:** SP-124 combined parent review (index written by C). Post-review corrections R-124-001 (`7f27a8a`) cover this host's mutate-then-refetch path.

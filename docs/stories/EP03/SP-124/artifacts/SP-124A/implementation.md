@@ -1,7 +1,7 @@
 # SP-124A implementation — shared assignment interaction
 
 **Story:** [SP-124A](../../SP-124A-shared-assignment-interaction.md)
-**Status:** Implemented and post-review corrected — awaiting parent re-review
+**Status:** Reviewed 2026-10-26 (SP-124 pass 2).
 **Date:** 2026-10-26
 **Commit:** `2285f170825654709fc066e0af1b858b0e4544dc` (implementation and this record; the follow-up commit only corrects queue wording). Post-review corrections R-124-001/R-124-004 are in `7f27a8a`.
 

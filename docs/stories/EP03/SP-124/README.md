@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-124](./SP-124-assignment-list-cohesion.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Refined 2026-10-26. A, B and C implemented 2026-10-26. Independent combined review pass 1 returned Changes Required (R-124-001…006); all six corrections are applied and awaiting the combined parent re-review.
+**Status:** Refined 2026-10-26. A, B and C implemented 2026-10-26. Independent combined review pass 1 returned Changes Required (R-124-001…006); all six corrections applied and verified; pass 2 (2026-10-26) **passed** with one polish note (P-124-001). Unit is complete.
 **Jira key:** Pending creation (parent coordination record — no Jira issue; children carry tracker keys)
 
 ## Execution queue
@@ -16,17 +16,17 @@
 
 **Active substory:** None.
 
-**Next substory:** None — all children implemented and post-review corrected. Next action: request one independent combined SP-124 parent **re-review** (A + B + C, parent index, executed DoD-10 evidence), retaining finding IDs R-124-001…006.
+**Next substory:** None — SP-124 complete (pass-2 review PASSED). No further action in this unit; next work belongs to other stories/epics.
 
 **Implementation owner:** `implementer`, one frontend writer. No backend writer.
 
-**Final review:** One combined SP-124 review after A, B, and C are implemented, including C's parent index and DoD-10 browser note. Review pass 1 (2026-10-26) returned Changes Required; the correction commit is awaiting re-review. Final artifacts: `./artifacts/SP-124/review.md` and `./artifacts/SP-124/walkthrough.md`.
+**Final review:** Combined SP-124 review passed 2026-10-26 (pass 2). Report: `./artifacts/SP-124/review.md`; walkthrough: `./artifacts/SP-124/walkthrough.md`. Reviewed commits: `7f27a8a` (corrections), `5ed6f5f` (docs provenance); sync commit follows.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-124A-shared-assignment-interaction.md) | Implemented — awaiting parent review | SP-114, SP-120, SP-121, SP-123 reviewed — satisfied. No backend dependency. | Combined parent re-review after corrections | [checkpoint](./artifacts/SP-124A/checkpoint.md), [implementation](./artifacts/SP-124A/implementation.md) |
-| [B](./SP-124B-list-adopts-shared-interaction.md) | Implemented — awaiting parent review | A implemented. SP-122B reviewed — satisfied. | Combined parent re-review after corrections | [checkpoint](./artifacts/SP-124B/checkpoint.md), [implementation](./artifacts/SP-124B/implementation.md) |
-| [C](./SP-124C-shared-create.md) | Implemented — awaiting parent review | A implemented. B is not a code dependency. | Combined parent re-review after corrections | [checkpoint](./artifacts/SP-124C/checkpoint.md), [implementation](./artifacts/SP-124C/implementation.md), [parent index](./artifacts/SP-124/implementation.md) |
+| [A](./SP-124A-shared-assignment-interaction.md) | Reviewed | SP-114, SP-120, SP-121, SP-123 reviewed — satisfied. No backend dependency. | None — unit complete | [checkpoint](./artifacts/SP-124A/checkpoint.md), [implementation](./artifacts/SP-124A/implementation.md) |
+| [B](./SP-124B-list-adopts-shared-interaction.md) | Reviewed | A implemented. SP-122B reviewed — satisfied. | None — unit complete | [checkpoint](./artifacts/SP-124B/checkpoint.md), [implementation](./artifacts/SP-124B/implementation.md) |
+| [C](./SP-124C-shared-create.md) | Reviewed | A implemented. B is not a code dependency. | None — unit complete | [checkpoint](./artifacts/SP-124C/checkpoint.md), [implementation](./artifacts/SP-124C/implementation.md), [parent index](./artifacts/SP-124/implementation.md) |
 
 Sequence: A → B → C, one writer. C owns the parent index and the DoD-10 browser note. C may start after A if B is still in UI refinement; do not start B or C before A, or the list page will grow a second copy of the row.
 
@@ -182,6 +182,18 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
 | PC-124-01 | 2026-10-26 | Should-fix | `docs/stories/EP03/SP-124/` as of `f3bf575` | Children A/B/C each reimplemented list-page edit, subtasks, and create on top of course-page components (`AssignmentsPage` would grow its own status/busy/expand/dialog state). D124-8 only widened prop types. Consequence: two mutation implementations to keep in sync. | Re-scoped A to extract `features/assignments` (`useAssignmentActions` + `AssignmentRow` + moved form/dialog/checklist). B is a second host, not a second implementation. C extends the same form. Withdrew D124-8; added D124-9 and D124-10. | Compared the new contract with `AssignmentsSection.tsx` (status, dialogs, checklist, badges) and `AssignmentsPage.tsx` (imports labels from the course section, no mutations). List page is specified to render `AssignmentRow`, not a copied action cluster. | Fixed in plan |
+
+## Review correction log (pass 1 → pass 2)
+
+| ID | Date | Severity | Original finding (pass 1) | Disposition | Closure evidence | Report |
+|---|---|---|---|---|---|---|
+| R-124-001 | 2026-10-26 | Should-fix | Mutation completion could refetch with obsolete filters and replace the current view (`useAssignmentActions.ts:108-153`; `AssignmentsPage.tsx:143-255`). | Closed in `7f27a8a` | `latest` ref for callbacks/items; monotonic `requestSeq` in `runFetch`; status focus neighbor from latest rows; stable subtask callback wrappers. Tests: deferred PATCH + filter change; out-of-order GET; latest `onStatusChanged`. | [review.md](./artifacts/SP-124/review.md) pass 2 |
+| R-124-002 | 2026-10-26 | Should-fix | Successful first creation removes the empty-state trigger without a stable focus fallback. | Closed in `7f27a8a` | `focusAfterCreate` + layout effect focuses `[data-assignment-focus="add"]` once rows land; empty trigger still restored while mounted. Tests: empty→populated focus, header-create success, cancel restoration. E2E journey 1. | [review.md](./artifacts/SP-124/review.md) pass 2 |
+| R-124-003 | 2026-10-26 | Should-fix | Required 44 px mobile form/action targets not implemented outside list rows. | Closed in `7f27a8a` | Scoped `max-sm:min-h-[44px]` on header Add, empty-state Add/Browse, all create form controls, Cancel/Create (9 + 3). E2E journey 4 measures ≥44 px at 375×667, no overflow. | [review.md](./artifacts/SP-124/review.md) pass 2 |
+| R-124-004 | 2026-10-26 | Should-fix | Expanded IDs pruned, not reset on item-array identity changes (D124-5). | Closed in `7f27a8a` | `previousItems` ref resets on new identity, retains on stable; skips update when empty. Hook tests + rewritten course-section disclosure test. | [review.md](./artifacts/SP-124/review.md) pass 2 |
+| R-124-005 | 2026-10-26 | Should-fix | Required list-host create-error test missing (C AC 10). | Closed in `7f27a8a` | `AssignmentsPage.test.tsx` list-host create-failure case: sanitized toast, dialog + values retained, submit released, no refetch/announcement. | [review.md](./artifacts/SP-124/review.md) pass 2 |
+| R-124-006 | 2026-10-26 | Should-fix | Required integrated browser/manual evidence unexecuted (DoD 10). | Closed in `7f27a8a` | Committed `apps/web/e2e/assignments-list.spec.ts`; 4/4 passed on Chromium + API `:4100` + throwaway Postgres (created/dropped); committed-state re-run 4/4, 7.0 s. | [review.md](./artifacts/SP-124/review.md) pass 2; [walkthrough.md](./artifacts/SP-124/walkthrough.md) |
+| P-124-001 | 2026-10-26 | Polish | E2E spec omits in-browser validation/error/keyboard/ordering/desktop scenarios. | Open (optional) | Covered by component tests; extending the spec is optional hardening, not a required gate. | [review.md](./artifacts/SP-124/review.md) pass 2 |
 
 ## Quality gate (2026-10-26, refined)
 

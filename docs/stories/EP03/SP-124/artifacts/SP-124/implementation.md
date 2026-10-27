@@ -2,7 +2,7 @@
 
 **Parent:** [SP-124](../../SP-124-assignment-list-cohesion.md)
 **Execution queue:** [SP-124 README](../../README.md#execution-queue)
-**Status:** All children implemented; post-review corrections R-124-001…006 applied — awaiting the combined parent re-review
+**Status:** Reviewed 2026-10-26 (pass 2) — meets DoD and acceptance criteria (polish note P-124-001 only).
 **Date:** 2026-10-26
 **Review unit:** SP-124 (SP-124A, SP-124B, SP-124C). The reviewer writes
 `./review.md` and `./walkthrough.md` beside this index.

@@ -1,7 +1,7 @@
 # SP-124A checkpoint — shared assignment interaction
 
 **Story:** [SP-124A](../../SP-124A-shared-assignment-interaction.md)
-**Status:** Implemented and post-review corrected — awaiting parent re-review
+**Status:** Reviewed 2026-10-26 (SP-124 pass 2).
 **Started / finished:** 2026-10-26
 **Execution state:** [SP-124 README](../../README.md#execution-queue) — A corrected for R-124-001/R-124-004; next is the combined parent re-review.
 

@@ -1,7 +1,7 @@
 # SP-124B checkpoint — list page adopts the shared interaction
 
 **Story:** [SP-124B](../../SP-124B-list-adopts-shared-interaction.md)
-**Status:** Implemented and post-review corrected — awaiting parent re-review
+**Status:** Reviewed 2026-10-26 (SP-124 pass 2).
 **Started / finished:** 2026-10-26
 **Execution state:** [SP-124 README](../../README.md#execution-queue) — B corrected for R-124-001; next is the combined parent re-review.
 **Review unit:** SP-124 combined parent review (`./artifacts/SP-124/implementation.md`, written by C).

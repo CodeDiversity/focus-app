@@ -1,7 +1,7 @@
 # SP-124C implementation — shared create on the list
 
 **Story:** [SP-124C](../../SP-124C-shared-create.md)
-**Status:** Implemented and post-review corrected — awaiting parent re-review
+**Status:** Reviewed 2026-10-26 (SP-124 pass 2).
 **Date:** 2026-10-26
 **Checkpoint:** [checkpoint.md](./checkpoint.md)
 **Review unit:** SP-124 combined parent review (parent index: [../SP-124/implementation.md](../SP-124/implementation.md)). Post-review corrections R-124-002/003/005/006 land here (`7f27a8a`).
