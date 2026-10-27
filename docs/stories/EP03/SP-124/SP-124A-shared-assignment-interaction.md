@@ -6,9 +6,10 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** Ready
+**Status:** Implemented — awaiting parent review
 **Dependencies:** SP-114, SP-120, SP-121, and SP-123 reviewed. No backend dependency. No ui-refiner pass — this child preserves the course-page visuals.
 **Jira key:** Pending creation
+**Artifacts:** [checkpoint](./artifacts/SP-124A/checkpoint.md) · [implementation](./artifacts/SP-124A/implementation.md)
 
 ## Summary
 

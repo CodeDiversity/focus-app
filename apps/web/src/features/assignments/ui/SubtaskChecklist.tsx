@@ -14,10 +14,11 @@ import {
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
 import type { Subtask } from '@/shared/types/academic';
+import type { SubtaskChangeAction } from '../model/types';
 import { DeleteSubtaskDialog } from './DeleteSubtaskDialog';
 
-/** Page live-region actions. Sentences live on the page, not here. */
-export type SubtaskChangeAction = 'added' | 'completed' | 'reopened' | 'moved' | 'deleted';
+/** Re-exported for consumers that still import it from the checklist. */
+export type { SubtaskChangeAction };
 
 export interface SubtaskChecklistProps {
   assignmentId: string;

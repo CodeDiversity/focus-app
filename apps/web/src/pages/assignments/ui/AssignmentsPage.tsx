@@ -28,7 +28,7 @@ import {
   OVERDUE_STYLE,
   OVERDUE_LABEL,
   subtaskSummary,
-} from '@/features/courses/ui/AssignmentsSection';
+} from '@/features/assignments/ui/assignmentPresentation';
 import { isOverdueAssignment } from '@/entities/assignment/model/status';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 

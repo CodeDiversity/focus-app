@@ -6,7 +6,8 @@ import * as z from 'zod';
 import { clsx } from 'clsx';
 import toast from 'react-hot-toast';
 import { createAssignment, updateAssignment } from '@/entities/assignment/api/assignmentApi';
-import type { AssignmentType, CourseAssignment } from '@/shared/types/academic';
+import type { AssignmentType } from '@/shared/types/academic';
+import type { AssignmentInteractionItem } from '../model/types';
 import { apiErrorMessage, extractApiError, getFieldError } from '@/shared/lib/errors';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
@@ -76,7 +77,7 @@ const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabi
 
 export interface AssignmentFormProps {
   courseId: string;
-  assignment?: CourseAssignment;
+  assignment?: AssignmentInteractionItem;
   onSuccess: () => void;
   onClose: () => void;
 }

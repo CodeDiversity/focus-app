@@ -11,7 +11,7 @@ import type { AssignmentStatus } from '@/shared/types/academic';
 import {
   AssignmentsSection,
   type SubtaskChangeAction,
-} from '@/features/courses/ui/AssignmentsSection';
+} from '@/features/assignments/ui/AssignmentsSection';
 import { CourseForm } from '@/features/courses/ui/CourseForm';
 import { ArchiveCourseDialog } from '@/features/courses/ui/ArchiveCourseDialog';
 

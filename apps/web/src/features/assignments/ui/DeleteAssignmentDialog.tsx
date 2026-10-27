@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/shared/ui/Button';
 import { apiErrorMessage, extractApiError, getErrorMessage } from '@/shared/lib/errors';
 import { deleteAssignment } from '@/entities/assignment/api/assignmentApi';
-import type { CourseAssignment } from '@/shared/types/academic';
+import type { AssignmentInteractionItem } from '../model/types';
 
 export interface DeleteAssignmentDialogProps {
   /** The assignment to delete (named in the title and aria-label). */
-  assignment: CourseAssignment;
+  assignment: AssignmentInteractionItem;
   /** Called after a successful delete (the section / page announces + refetches). */
   onDeleted: () => void;
   /** Close the dialog without a request. */

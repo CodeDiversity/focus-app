@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-124](./SP-124-assignment-list-cohesion.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Refined 2026-10-26 (Draft). Architecture is one shared assignment interaction; children A/B/C are sequenced extract → adopt → create. B and C are `Needs refinement` for list-only UI/UX. No implementation evidence.
+**Status:** Refined 2026-10-26. A implemented 2026-10-26 and awaiting the combined parent review. B and C are `Needs refinement` for list-only UI/UX.
 **Jira key:** Pending creation (parent coordination record — no Jira issue; children carry tracker keys)
 
 ## Execution queue
@@ -16,7 +16,7 @@
 
 **Active substory:** None.
 
-**Next substory:** [SP-124A](./SP-124A-shared-assignment-interaction.md) — implement the shared interaction extraction. A has no new UI decisions. B and C stay `Needs refinement` until `ui-refiner` settles their list-only gaps; they are not the next coding task.
+**Next substory:** [SP-124B](./SP-124B-list-adopts-shared-interaction.md) — UI refinement (`ui-refiner`), then implement the list host. B and C stay `Needs refinement` until `ui-refiner` settles their list-only gaps. A is implemented and awaits the combined parent review.
 
 **Implementation owner:** `implementer`, one frontend writer. No backend writer.
 
@@ -24,9 +24,9 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-124A-shared-assignment-interaction.md) | Ready | SP-114, SP-120, SP-121, SP-123 reviewed — satisfied. No backend dependency. | Implement | (none yet) |
-| [B](./SP-124B-list-adopts-shared-interaction.md) | Needs refinement | A implemented. SP-122B reviewed — satisfied. | UI refinement, then implement after A | (none yet) |
-| [C](./SP-124C-shared-create.md) | Needs refinement | A implemented (form lives in the shared feature). B is not a code dependency. | UI refinement, then implement after A | (none yet) |
+| [A](./SP-124A-shared-assignment-interaction.md) | Implemented — awaiting parent review | SP-114, SP-120, SP-121, SP-123 reviewed — satisfied. No backend dependency. | Parent review after B and C | [checkpoint](./artifacts/SP-124A/checkpoint.md), [implementation](./artifacts/SP-124A/implementation.md) |
+| [B](./SP-124B-list-adopts-shared-interaction.md) | Needs refinement | A implemented. SP-122B reviewed — satisfied. | UI refinement, then implement | (none yet) |
+| [C](./SP-124C-shared-create.md) | Needs refinement | A implemented (form lives in the shared feature). B is not a code dependency. | UI refinement, then implement after B or independently | (none yet) |
 
 Sequence: A → B → C, one writer. C owns the parent index and the DoD-10 browser note. C may start after A if B is still in UI refinement; do not start B or C before A, or the list page will grow a second copy of the row.
 

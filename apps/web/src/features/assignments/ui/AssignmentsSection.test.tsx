@@ -721,15 +721,16 @@ describe('AssignmentsSection overdue + completed views (SP-123A/B)', () => {
 
   it('resets showCompleted to false when the assignments prop changes identity', async () => {
     const user = setupUser();
-    const view = render(<AssignmentsSection assignments={[problemSet, labReport]} />);
+    const stable = [problemSet, labReport];
+    const view = render(<AssignmentsSection assignments={stable} />);
     await user.click(screen.getByRole('button', { name: 'Show completed (1)' }));
     expect(screen.getByText('Lab Report')).toBeInTheDocument();
 
-    view.rerender(<AssignmentsSection assignments={[problemSet, labReport]} />);
-    // identity unchanged -> stays revealed
+    view.rerender(<AssignmentsSection assignments={stable} />);
+    // Same array reference -> identity unchanged, so the view stays revealed.
     expect(screen.getByText('Lab Report')).toBeInTheDocument();
 
-    view.rerender(<AssignmentsSection assignments={[{ ...problemSet }, { ...labReport }]} />);
+    view.rerender(<AssignmentsSection assignments={[...stable]} />);
     expect(screen.queryByText('Lab Report')).not.toBeInTheDocument();
   });
 });
