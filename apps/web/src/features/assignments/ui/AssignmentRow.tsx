@@ -217,7 +217,7 @@ export function AssignmentRow({
           </Button>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             className="px-2 max-sm:min-w-[44px]"
             data-assignment-focus={`edit:${assignment.id}`}
             aria-label={`Edit ${assignment.title}`}
