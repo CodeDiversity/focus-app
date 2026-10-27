@@ -122,6 +122,7 @@ A host renders `AssignmentRow` for each visible item and `{dialogs}` once. Two h
 | D124-1 | No backend or schema change. Mutations stay on the existing assignment client. Each host refetches its own read. | SP-113/114/120/122. Reversible. |
 | D124-2 | Course page keeps edit/delete/status/subtasks/create. The list page adds the same actions through the shared owner. It does not replace the course page. | User direction 2026-10-26. |
 | D124-3 | On the list, the title opens edit. A separate course affordance still routes to `/courses/:id` when `course` is non-null. No course → no course link. | User direction 2026-10-26. Affordance shape is ui-refiner (D124-7). |
+| D124-11 | Edit and create stay the existing modal `AssignmentForm` on both pages. Not an inline row editor, and not a list-only inline panel. Status and subtasks stay inline. | User confirmation 2026-10-26, after rejecting an inline editor. The form is the current dialog (title, due date, estimate, type, priority, description). |
 | D124-4 | No optimistic list updates. The host refetch is the source of truth, matching `CourseDetailPage`'s background `getCourse`. | SP-121/SP-122. |
 | D124-5 | Expand/busy/pending-status state lives in `useAssignmentActions`, not in each page. Expanded ids reset when `items` changes identity. | SP-120J / SP-123B precedent, moved into the shared owner so it is not reimplemented. |
 | D124-6 | Create stays `AssignmentForm`. `courseId` is optional. When omitted, the form shows a course select (caller's course list) plus "No course" and omits `courseId` on POST. Edit mode never shows the select. | D113-1 (course optional at create). Selector placement is ui-refiner. |
@@ -193,7 +194,7 @@ Shared DoD ([docs/epics/README.md](../../../epics/README.md#definition-of-done))
 | 5. Code paths inspected | Pass | `AssignmentsSection.tsx`, `AssignmentsPage.tsx`, `AssignmentForm.tsx`, `DeleteAssignmentDialog.tsx`, `SubtaskChecklist.tsx`, `assignmentApi.ts`, `academic.ts`, `apps/web/.eslintrc.cjs`. Unverified: none material. |
 | 6. Feature-specific risks | Pass | Three counterexamples above. No migration. |
 | 7. Dependency mapping | Pass | A first. B and C depend on A's exports. C does not depend on B's list wiring. |
-| 8. Material decisions | Pass | D124-1…7, D124-9, D124-10 recorded. List-only copy/placement left to ui-refiner (D124-7). |
+| 8. Material decisions | Pass | D124-1…7, D124-9, D124-10, D124-11 recorded. List-only copy/placement left to ui-refiner (D124-7). Inline editing is rejected. |
 | 9. Correction log | Pass | PC-124-01 preserved with the original faulty claim. |
 | 10. Jira identity/sync | Not applicable | No sync authorized. Keys remain `Pending creation`. |
 

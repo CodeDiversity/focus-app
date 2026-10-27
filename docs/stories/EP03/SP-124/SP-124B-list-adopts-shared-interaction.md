@@ -38,7 +38,7 @@ A already did. API or schema changes.
 ## Acceptance criteria
 
 1. **Shared row.** Each list row is an `AssignmentRow`. Status, edit, delete, overdue pill, badges, and the subtask disclosure come from the shared owner. `AssignmentsPage` does not define its own status `Select`, delete handler, or `SubtaskChecklist` wiring.
-2. **Title edits.** Activating the title opens the shared edit form for that assignment. It does not navigate to `/courses/:id`.
+2. **Title edits.** Activating the title opens the shared `AssignmentForm` dialog for that assignment (D124-11). It does not navigate to `/courses/:id`, and it does not expand an inline editor in the row.
 3. **View course.** When the row has a course, a separate affordance navigates to `/courses/:id`. When `course` is null, that affordance is absent. Shape and placement are the ui-refiner decision (D124-7); the destination is not optional.
 4. **Refetch.** After edit, delete, status, or subtask change, the page refetches with the current filter/sort/search params and keeps those controls. A failed refetch toasts the sanitized message and keeps the last list.
 5. **One hook.** The page calls `useAssignmentActions` once and renders its `dialogs` once.
@@ -65,11 +65,11 @@ A already did. API or schema changes.
 
 ### Decisions
 
-D124-2, D124-3, D124-4, D124-5, D124-10.
+D124-2, D124-3, D124-4, D124-5, D124-10, D124-11.
 
 ### UI/UX gaps (for ui-refiner)
 
-1. Title control: button vs link-styled button, focus ring, hover. It must not look like the course navigation it replaces.
+1. Title control: button vs link-styled button, focus ring, hover. It must not look like the course navigation it replaces. It opens the existing dialog (D124-11); do not design an inline editor.
 2. "View course" affordance: code chip, text link, or icon link; placement beside the title; same tab. Destination is `/courses/:id`.
 3. How the course chip sits next to the shared badge cluster at widths under `sm` without dropping the status select below a 44 px target.
 4. Whether a background refetch uses the page's existing `isFetching` spinner (already present) or stays silent.
