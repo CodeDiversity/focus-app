@@ -70,7 +70,7 @@ Classify proposed changes into **Backend**, **Frontend**, **Integration**, and, 
 
 ### 4. Size and sequence stories
 
-- Target **1–3 hours** per substantive implementation outcome, including tests, docs, required checks and handoff, using the shared sizing policy. Record inspected files, start context and verification; an estimate alone does not pass the gate.
+- Target **1–3 requests/tokens** per substantive implementation outcome, including tests, docs, required checks and handoff, using the shared sizing policy. Record inspected files, start context and verification; an estimate alone does not pass the gate.
 - Before splitting, identify the concrete complexity/risk/context problem and each child's substantial independent work. Children below roughly 30 minutes of substantive work normally become checklist items, not stories; never pad estimates with agent overhead. Keep atomic security operations together. Preserve existing IDs/history; do not turn in-progress or completed work back into unimplemented children.
 - Each story should deliver one coherent, independently verifiable outcome and name the behavior it changes.
 - Prefer a vertical sequence that supports incremental integration: agree the contract, create required persistence/backend behavior, build frontend behavior, verify integration. Execute ready children sequentially through the single implementer; independent dependencies do not authorize parallel implementation writers.

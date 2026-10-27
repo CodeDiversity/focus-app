@@ -41,7 +41,7 @@ Validate the parent summary (if any), every child, the breakdown README, recorde
 
 The README must contain a table with `Pass`, `Blocked`, or `Not applicable`, a concrete file/section reference, and a reason for each non-applicable row:
 
-1. Child separation and sizing: each child's sizing block supports a substantive outcome (normally 1–3 hours), or a cohesive multi-window task with checkpoints. Require a concrete reason for each split and substantial independent work per child. Reject manufactured README-only, status-only, evidence-only or routine-verification children; attach those steps to their implementation owner. File counts, layer labels and separate testability alone do not mandate splits. Preserve atomic invariants; nominal session labels and padded estimates do not pass.
+1. Child separation and sizing: each child's sizing block supports a substantive outcome (normally 1–3 requests/tokens), or a cohesive multi-window task with checkpoints. Require a concrete reason for each split and substantial independent work per child. Reject manufactured README-only, status-only, evidence-only or routine-verification children; attach those steps to their implementation owner. File counts, layer labels and separate testability alone do not mandate splits. Preserve atomic invariants; nominal session labels and padded estimates do not pass.
 2. Original acceptance-criterion and test coverage.
 3. All applicable Definition of Done obligations, including item 10. Use evidence appropriate to each condition: business rules
    and explicit automated-test requirements need automated tests; documentation

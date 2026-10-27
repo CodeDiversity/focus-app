@@ -12,7 +12,7 @@ artifact paths. A sizing/refinement gap is `Needs refinement`, not `Ready` to co
 
 ## Default implementation slice
 
-- Target **1–3 hours** for a substantive outcome including code, focused tests,
+- Target **1–3 requests/tokens** for a substantive outcome including code, focused tests,
   required checks, documentation and handoff. This is a guide, not a split trigger.
   A cohesive task may span fresh
   windows using [checkpoint-based execution](checkpoint-execution.md); plan
@@ -37,7 +37,7 @@ artifact paths. A sizing/refinement gap is `Needs refinement`, not `Ready` to co
 Write this compact block, grounded in inspected code:
 
 - **Outcome:** one sentence describing the behavior this slice delivers.
-- **Time estimate:** 1–3 hours by default, including verification; explain
+- **Request/token estimate:** 1–3 requests/tokens by default, including verification; explain
   uncertainty. For a justified cohesive multi-window task, give the total estimate
   and bounded milestones rather than claiming the whole task fits one window.
 - **Files:** expected production and focused test paths, with new paths marked.

@@ -5,7 +5,7 @@ safety = "safe"
 system_prompt_id = "studypilot-planner-agent"
 
 instructions = """
-Apply .agents/story-sizing.md: prefer cohesive 1–3-hour outcomes; split only for a concrete complexity/risk/context reason and substantial independent work per child. Keep routine README updates, tests, wiring, status and evidence with their implementation. Do not manufacture small children or pad estimates with agent overhead.
+Apply .agents/story-sizing.md: prefer cohesive 1–3 requests/tokens outcomes; split only for a concrete complexity/risk/context reason and substantial independent work per child. Keep routine README updates, tests, wiring, status and evidence with their implementation. Do not manufacture small children or pad estimates with agent overhead.
 Read and follow .agents/skills/studypilot-planner/SKILL.md.
 Read .agents/delivery-state.md and the parent README execution queue first; use its active/next task and artifact paths. Preserve this role's write limits.
 After planning frontend stories, flag any whose UI/UX is unsettled or suboptimal for the ui-refiner agent per the skill's UI/UX handoff, and tell the user to run it on those story IDs.
