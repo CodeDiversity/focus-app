@@ -292,9 +292,15 @@ export function AssignmentsPage() {
       aria-labelledby="assignments-heading"
       className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
     >
-      <h1 id="assignments-heading" className="text-3xl font-bold text-secondary-900 mb-6">
-        Assignments
-      </h1>
+      <div className="mb-6 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 id="assignments-heading" className="text-3xl font-bold text-secondary-900">
+          Assignments
+        </h1>
+        {/* Stable focus target for the shared hook's last-row delete fallback. */}
+        <Button data-assignment-focus="add" onClick={actions.openForm}>
+          Add assignment
+        </Button>
+      </div>
 
       {/* Always-present live region (DoD 6). */}
       <div role="status" className="mb-4 min-h-5 text-sm text-secondary-600">
@@ -450,11 +456,16 @@ export function AssignmentsPage() {
               <>
                 <p className="text-sm text-secondary-700">No assignments yet.</p>
                 <p className="mt-1 text-sm text-secondary-500">
-                  Assignments you create on your courses will show up here.
+                  Create an assignment directly or browse your courses.
                 </p>
-                <Link to="/courses">
-                  <Button className="mt-4">Browse courses</Button>
-                </Link>
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                  <Button data-assignment-focus="empty-add" onClick={actions.openForm}>
+                    Add your first assignment
+                  </Button>
+                  <Link to="/courses">
+                    <Button variant="outline">Browse courses</Button>
+                  </Link>
+                </div>
               </>
             )}
           </div>
@@ -496,11 +507,15 @@ export function AssignmentsPage() {
       </div>
 
       {/*
-       * One dialog mount for the list (D124-10 / AC 5). Creation is not
-       * reachable on this host until SP-124C adds the entry points and the
-       * course selector, so the fixed-course argument is unused here.
+       * One dialog mount for the list (D124-10 / AC 5). No fixed course: create
+       * mode picks one from this host's course list, prefilled by the active
+       * filter (SP-124C).
        */}
-      <AssignmentDialogs actions={actions} courseId="" />
+      <AssignmentDialogs
+        actions={actions}
+        courses={courses}
+        initialCourseId={courseId || undefined}
+      />
     </section>
   );
 }

@@ -6,6 +6,7 @@ import * as z from 'zod';
 import { clsx } from 'clsx';
 import toast from 'react-hot-toast';
 import { createAssignment, updateAssignment } from '@/entities/assignment/api/assignmentApi';
+import type { CourseWithSemester } from '@/entities/course/api/courseApi';
 import type { AssignmentType } from '@/shared/types/academic';
 import type { AssignmentInteractionItem } from '../model/types';
 import { apiErrorMessage, extractApiError, getFieldError } from '@/shared/lib/errors';
@@ -35,6 +36,8 @@ function toLocalDateInputValue(value: string | null | undefined): string {
 }
 
 const schema = z.object({
+  /** Create-mode only on the cross-course list; `''` stores an unassigned assignment. */
+  courseId: z.string().optional(),
   title: z
     .string()
     .trim()
@@ -62,7 +65,15 @@ const schema = z.object({
   description: z.string().max(2000, 'Description must be 2000 characters or fewer').optional(),
 });
 type FormData = z.infer<typeof schema>;
-const FIELDS = ['title', 'dueDate', 'estimatedHours', 'priority', 'type', 'description'] as const;
+const FIELDS = [
+  'courseId',
+  'title',
+  'dueDate',
+  'estimatedHours',
+  'priority',
+  'type',
+  'description',
+] as const;
 /** The five stored type identifiers in the D115-1 register order (option order). */
 const ASSIGNMENT_TYPES: AssignmentType[] = ['HOMEWORK', 'PAPER', 'PROJECT', 'QUIZ', 'EXAM'];
 /** Title-cased select option copy; the `value`s stay the API wire format (D115-1). */
@@ -76,7 +87,12 @@ const ASSIGNMENT_TYPE_LABELS: Record<AssignmentType, string> = {
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export interface AssignmentFormProps {
-  courseId: string;
+  /** Fixed course for creation on the course page. Omitted on the cross-course list. */
+  courseId?: string;
+  /** The caller's courses; only used by the create-mode course select. */
+  courses?: CourseWithSemester[];
+  /** Pre-selected course for the create-mode select (e.g. the active list filter). */
+  initialCourseId?: string;
   assignment?: AssignmentInteractionItem;
   onSuccess: () => void;
   onClose: () => void;
@@ -85,9 +101,27 @@ export interface AssignmentFormProps {
 /**
  * Quick creation or editing in course context; backend validation remains authoritative.
  * Supports create and edit modes (D114E-1, D114E-2, D114E-6).
+ *
+ * On the cross-course list the host omits `courseId`, so create mode renders a
+ * course select plus "No course" (SP-124C, D124-6). Edit mode never shows it.
  */
-export function AssignmentForm({ courseId, assignment, onSuccess, onClose }: AssignmentFormProps) {
+export function AssignmentForm({
+  courseId,
+  courses = [],
+  initialCourseId,
+  assignment,
+  onSuccess,
+  onClose,
+}: AssignmentFormProps) {
   const isEdit = Boolean(assignment);
+  // Only the cross-course create form picks a course; a fixed host course stays hidden.
+  const showCourseSelect = !isEdit && !courseId;
+  // Prefill from the list's active course filter, but only when that course is
+  // actually offered — otherwise the select would have no matching option.
+  const defaultCourseId =
+    initialCourseId && courses.some((course) => course.id === initialCourseId)
+      ? initialCourseId
+      : '';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -96,10 +130,13 @@ export function AssignmentForm({ courseId, assignment, onSuccess, onClose }: Ass
     register,
     handleSubmit,
     setError,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
+      courseId: defaultCourseId,
       title: assignment?.title ?? '',
       dueDate: toLocalDateInputValue(assignment?.dueDate),
       estimatedHours: assignment?.estimatedHours != null ? String(assignment.estimatedHours) : '',
@@ -121,6 +158,15 @@ export function AssignmentForm({ courseId, assignment, onSuccess, onClose }: Ass
     // Disabled controls cannot retain keyboard focus reliably across browsers.
     if (isSubmitting) dialogRef.current?.focus();
   }, [isSubmitting]);
+
+  useEffect(() => {
+    // The list's course picker resolves after mount; apply its filter prefill
+    // once the option exists, and never override a course the student chose.
+    if (!showCourseSelect || !initialCourseId) return;
+    if (!courses.some((course) => course.id === initialCourseId)) return;
+    if (getValues('courseId')) return;
+    setValue('courseId', initialCourseId);
+  }, [courses, initialCourseId, showCourseSelect, setValue, getValues]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -171,9 +217,12 @@ export function AssignmentForm({ courseId, assignment, onSuccess, onClose }: Ass
           description: data.description ?? '',
         });
       } else {
+        // "No course" (`''`) omits the field so the API stores an unassigned
+        // assignment; a fixed host course wins when the select is hidden.
+        const selectedCourseId = data.courseId || courseId || '';
         await createAssignment({
           title: data.title,
-          courseId,
+          ...(selectedCourseId ? { courseId: selectedCourseId } : {}),
           priority: data.priority,
           ...(data.dueDate ? { dueDate: localDate(data.dueDate).toISOString() } : {}),
           ...(data.estimatedHours ? { estimatedHours: Number(data.estimatedHours) } : {}),
@@ -238,6 +287,23 @@ export function AssignmentForm({ courseId, assignment, onSuccess, onClose }: Ass
               disabled={isSubmitting}
               {...register('title')}
             />
+            {/* Cross-course create only (SP-124C): the course page keeps its fixed id. */}
+            {showCourseSelect && (
+              <Select
+                label="Course"
+                hint="Optional — choose a course or leave unassigned."
+                error={errors.courseId?.message}
+                disabled={isSubmitting}
+                {...register('courseId')}
+              >
+                <option value="">No course</option>
+                {courses.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.code} {course.name}
+                  </option>
+                ))}
+              </Select>
+            )}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Input
                 label="Due date"

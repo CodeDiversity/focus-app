@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { Providers } from '@/test/providers';
 import { setupUser } from '@/test/user';
 import { createAssignment, updateAssignment } from '@/entities/assignment/api/assignmentApi';
+import type { CourseWithSemester } from '@/entities/course/api/courseApi';
 import type { CourseAssignment } from '@/shared/types/academic';
 import { AssignmentForm, type AssignmentFormProps } from './AssignmentForm';
 
@@ -542,6 +543,150 @@ describe('AssignmentForm', () => {
       expect(title()).toHaveFocus();
       await user.keyboard('{Escape}');
       expect(onClose).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe('cross-course create course select (SP-124C AC 1–5)', () => {
+    const courses = [
+      { id: 'course-1', code: 'MATH101', name: 'Calculus I' },
+      { id: 'course-2', code: 'HIST201', name: 'Modern History' },
+    ] as unknown as CourseWithSemester[];
+    const sampleAssignment: CourseAssignment = {
+      id: 'assignment-1',
+      title: 'Problem Set 4',
+      description: null,
+      dueDate: null,
+      estimatedHours: null,
+      actualHours: null,
+      status: 'PENDING',
+      priority: 'HIGH',
+      type: 'HOMEWORK',
+      subtasks: [],
+      createdAt: '2026-10-18T12:00:00.000Z',
+      updatedAt: '2026-10-18T12:00:00.000Z',
+    };
+
+    it('renders the select below Title with No course first and the caller courses', () => {
+      renderForm({ courseId: undefined, courses });
+      const select = screen.getByLabelText('Course');
+      expect(select).toHaveValue('');
+      expect(
+        within(select)
+          .getAllByRole('option')
+          .map((option) => option.textContent)
+      ).toEqual(['No course', 'MATH101 Calculus I', 'HIST201 Modern History']);
+      expect(
+        screen.getByText('Optional — choose a course or leave unassigned.')
+      ).toBeInTheDocument();
+      // The field sits directly below Title, above the due-date grid.
+      expect(
+        title().compareDocumentPosition(select) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+      expect(
+        select.compareDocumentPosition(screen.getByLabelText('Due date')) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+    });
+
+    it('omits courseId from the create payload when "No course" is selected', async () => {
+      const user = setupUser();
+      const { onSuccess } = renderForm({ courseId: undefined, courses });
+      await user.type(title(), 'Unowned homework');
+      await user.click(submit());
+      await waitFor(() =>
+        expect(create).toHaveBeenCalledWith({ title: 'Unowned homework', priority: 'MEDIUM' })
+      );
+      expect(create.mock.calls[0]?.[0]).not.toHaveProperty('courseId');
+      expect(onSuccess).toHaveBeenCalledOnce();
+    });
+
+    it('sends the selected course id', async () => {
+      const user = setupUser();
+      renderForm({ courseId: undefined, courses });
+      await user.type(title(), 'Class homework');
+      await user.selectOptions(screen.getByLabelText('Course'), 'course-2');
+      await user.click(submit());
+      await waitFor(() =>
+        expect(create).toHaveBeenCalledWith({
+          title: 'Class homework',
+          courseId: 'course-2',
+          priority: 'MEDIUM',
+        })
+      );
+    });
+
+    it('prefills the active list filter when that course is offered', () => {
+      renderForm({ courseId: undefined, courses, initialCourseId: 'course-2' });
+      expect(screen.getByLabelText('Course')).toHaveValue('course-2');
+    });
+
+    it('falls back to "No course" when the initial id is not in the course list', () => {
+      renderForm({ courseId: undefined, courses, initialCourseId: 'course-9' });
+      expect(screen.getByLabelText('Course')).toHaveValue('');
+    });
+
+    it('applies the filter prefill when the course list resolves after opening', () => {
+      const props = {
+        courseId: undefined,
+        initialCourseId: 'course-1',
+        onSuccess: vi.fn(),
+        onClose: vi.fn(),
+      };
+      const { rerender } = render(
+        <Providers initialEntries={['/assignments']}>
+          <AssignmentForm courses={[]} {...props} />
+        </Providers>
+      );
+      expect(screen.getByLabelText('Course')).toHaveValue('');
+      rerender(
+        <Providers initialEntries={['/assignments']}>
+          <AssignmentForm courses={courses} {...props} />
+        </Providers>
+      );
+      expect(screen.getByLabelText('Course')).toHaveValue('course-1');
+    });
+
+    it('hides the select for a fixed course host and still sends that course', async () => {
+      const user = setupUser();
+      const { onSuccess } = renderForm({ courses });
+      expect(screen.queryByLabelText('Course')).not.toBeInTheDocument();
+      await user.type(title(), 'Course homework');
+      await user.click(submit());
+      await waitFor(() =>
+        expect(create).toHaveBeenCalledWith({
+          title: 'Course homework',
+          courseId: 'course-1',
+          priority: 'MEDIUM',
+        })
+      );
+      expect(onSuccess).toHaveBeenCalledOnce();
+    });
+
+    it('never renders the select in edit mode', () => {
+      renderForm({ courseId: undefined, courses, assignment: sampleAssignment });
+      expect(screen.queryByLabelText('Course')).not.toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Edit assignment' })).toBeInTheDocument();
+    });
+
+    it('tabs from Title through the course select before the date fields', async () => {
+      const user = setupUser();
+      renderForm({ courseId: undefined, courses });
+      expect(title()).toHaveFocus();
+      await user.tab();
+      expect(screen.getByLabelText('Course')).toHaveFocus();
+      await user.tab();
+      expect(screen.getByLabelText('Due date')).toHaveFocus();
+    });
+
+    it('maps a 400 courseId field error onto the select', async () => {
+      const user = setupUser();
+      create.mockRejectedValue(failure(400, { courseId: ['Choose one of your courses'] }));
+      renderForm({ courseId: undefined, courses });
+      await user.type(title(), 'Homework');
+      await user.click(submit());
+      expect(await screen.findByText('Choose one of your courses')).toBeInTheDocument();
+      expect(screen.getByLabelText('Course')).toHaveAttribute('aria-invalid', 'true');
+      expect(toast.error).not.toHaveBeenCalled();
     });
   });
 });

@@ -7,6 +7,7 @@ import { Providers } from '@/test/providers';
 import { setupUser } from '@/test/user';
 import { AssignmentsPage } from './AssignmentsPage';
 import {
+  createAssignment,
   deleteAssignment,
   listAssignments,
   updateAssignment,
@@ -34,6 +35,7 @@ vi.mock('react-hot-toast', () => ({
 
 const mockedListAssignments = vi.mocked(listAssignments);
 const mockedListCourses = vi.mocked(listCourses);
+const mockedCreateAssignment = vi.mocked(createAssignment);
 const mockedUpdateAssignment = vi.mocked(updateAssignment);
 const mockedDeleteAssignment = vi.mocked(deleteAssignment);
 
@@ -209,8 +211,13 @@ describe('AssignmentsPage', () => {
     renderPage();
     expect(await screen.findByText('No assignments yet.')).toBeInTheDocument();
     expect(
-      screen.getByText('Assignments you create on your courses will show up here.')
+      screen.getByText('Create an assignment directly or browse your courses.')
     ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add your first assignment' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Browse courses' })).toHaveAttribute(
+      'href',
+      '/courses'
+    );
   });
 
   it('empty state with filters shows clear filters', async () => {
@@ -481,5 +488,99 @@ describe('AssignmentsPage shared interaction (SP-124B AC 8)', () => {
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(edit).toHaveFocus();
+  });
+});
+
+describe('AssignmentsPage list creation (SP-124C AC 1–8)', () => {
+  it('opens the shared create form from the page header with the course options', async () => {
+    const user = setupUser();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    const add = screen.getByRole('button', { name: 'Add assignment' });
+    expect(add).toHaveAttribute('data-assignment-focus', 'add');
+    await user.click(add);
+
+    const dialog = screen.getByRole('dialog', { name: 'Add an assignment' });
+    const course = within(dialog).getByLabelText('Course');
+    expect(course).toHaveValue('');
+    expect(
+      within(course)
+        .getAllByRole('option')
+        .map((option) => option.textContent)
+    ).toEqual(['No course', 'MATH101 Calculus I']);
+    expect(within(dialog).getByRole('button', { name: 'Create assignment' })).toBeInTheDocument();
+    expect(screen.getByTestId('location')).toHaveTextContent('/assignments');
+  });
+
+  it('opens the shared create form from the unfiltered empty state', async () => {
+    const user = setupUser();
+    mockedListAssignments.mockResolvedValue([] as never);
+    renderPage();
+    await screen.findByText('No assignments yet.');
+
+    const emptyAdd = screen.getByRole('button', { name: 'Add your first assignment' });
+    expect(emptyAdd).toHaveAttribute('data-assignment-focus', 'empty-add');
+    await user.click(emptyAdd);
+
+    expect(screen.getByRole('dialog', { name: 'Add an assignment' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Title')).toHaveFocus();
+  });
+
+  it('prefills the form course with the active course filter', async () => {
+    const user = setupUser();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.selectOptions(screen.getByLabelText('Course'), 'course-1');
+    await waitFor(() =>
+      expect(mockedListAssignments.mock.calls.at(-1)?.[0]).toMatchObject({ courseId: 'course-1' })
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Add assignment' }));
+    const dialog = screen.getByRole('dialog', { name: 'Add an assignment' });
+    expect(within(dialog).getByLabelText('Course')).toHaveValue('course-1');
+  });
+
+  it('creates with no course, refetches with the current params and announces the result', async () => {
+    const user = setupUser();
+    mockedCreateAssignment.mockResolvedValue({ ...item, course: null } as never);
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.click(screen.getByRole('button', { name: 'Add assignment' }));
+    await user.type(screen.getByLabelText('Title'), 'Unowned homework');
+    const callsBefore = mockedListAssignments.mock.calls.length;
+
+    await user.click(screen.getByRole('button', { name: 'Create assignment' }));
+
+    await waitFor(() =>
+      expect(mockedCreateAssignment).toHaveBeenCalledWith({
+        title: 'Unowned homework',
+        priority: 'MEDIUM',
+      })
+    );
+    expect(mockedCreateAssignment.mock.calls[0]?.[0]).not.toHaveProperty('courseId');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(mockedListAssignments.mock.calls.length).toBeGreaterThan(callsBefore)
+    );
+    expect(mockedListAssignments.mock.calls.at(-1)?.[0]).toEqual({});
+    expect(await screen.findByText('Assignment added. Showing 1 assignment.')).toBeInTheDocument();
+  });
+
+  it('returns focus to the header Add button after cancelling', async () => {
+    const user = setupUser();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    const add = screen.getByRole('button', { name: 'Add assignment' });
+    await user.click(add);
+    expect(screen.getByRole('dialog', { name: 'Add an assignment' })).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(add).toHaveFocus();
   });
 });

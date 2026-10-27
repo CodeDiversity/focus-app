@@ -3,7 +3,7 @@
 **Epic:** [EP03: Assignment & Task Management](../../../epics/EP03-assignment-and-task-management.md) (Jira STUDY-16)
 **Parent:** [SP-124](./SP-124-assignment-list-cohesion.md) — coordination record (not an implementation ticket)
 **Milestone:** M1
-**Status:** Refined 2026-10-26. A and B implemented 2026-10-26 and awaiting the combined parent review. C is `Needs refinement` for list-only UI/UX.
+**Status:** Refined 2026-10-26. A, B and C implemented 2026-10-26 and awaiting the combined parent review.
 **Jira key:** Pending creation (parent coordination record — no Jira issue; children carry tracker keys)
 
 ## Execution queue
@@ -16,7 +16,7 @@
 
 **Active substory:** None.
 
-**Next substory:** [SP-124C](./SP-124C-shared-create.md) — UI refinement (`ui-refiner`), then implement the list create path, parent index, and DoD-10 browser note. A and B are implemented and await the combined parent review.
+**Next substory:** None — all children are implemented. Next action: request one independent combined SP-124 parent review (A + B + C, parent index, DoD-10 note).
 
 **Implementation owner:** `implementer`, one frontend writer. No backend writer.
 
@@ -26,7 +26,7 @@
 |---|---|---|---|---|
 | [A](./SP-124A-shared-assignment-interaction.md) | Implemented — awaiting parent review | SP-114, SP-120, SP-121, SP-123 reviewed — satisfied. No backend dependency. | Parent review after B and C | [checkpoint](./artifacts/SP-124A/checkpoint.md), [implementation](./artifacts/SP-124A/implementation.md) |
 | [B](./SP-124B-list-adopts-shared-interaction.md) | Implemented — awaiting parent review | A implemented. SP-122B reviewed — satisfied. | Parent review after C | [checkpoint](./artifacts/SP-124B/checkpoint.md), [implementation](./artifacts/SP-124B/implementation.md) |
-| [C](./SP-124C-shared-create.md) | Needs refinement | A implemented (form lives in the shared feature). B is not a code dependency. | UI refinement, then implement after B | (none yet) |
+| [C](./SP-124C-shared-create.md) | Implemented — awaiting parent review | A implemented. B is not a code dependency. | Combined parent review | [checkpoint](./artifacts/SP-124C/checkpoint.md), [implementation](./artifacts/SP-124C/implementation.md), [parent index](./artifacts/SP-124/implementation.md) |
 
 Sequence: A → B → C, one writer. C owns the parent index and the DoD-10 browser note. C may start after A if B is still in UI refinement; do not start B or C before A, or the list page will grow a second copy of the row.
 
