@@ -358,39 +358,41 @@ export function AssignmentsPage() {
          * secondary count so a collapsed panel is never silently filtering.
          */}
         <div className="mb-6 space-y-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative w-full sm:flex-1">
-              {/* The magnifier labels the field visually — the placeholder
-                  alone did not read as search (R-125-002). */}
-              <Input
-                aria-label="Search assignments"
-                placeholder="Search title or description"
-                maxLength={200}
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    setQ(searchInput.trim());
-                  }
+          {/* Search gets its own full-width row; the other primary controls
+              line up beneath it (R-125-003). */}
+          <div className="relative w-full">
+            {/* The magnifier labels the field visually — the placeholder
+                alone did not read as search (R-125-002). */}
+            <Input
+              aria-label="Search assignments"
+              placeholder="Search title or description"
+              maxLength={200}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setQ(searchInput.trim());
+                }
+              }}
+              leftIcon={<Search size={16} aria-hidden />}
+              className="pr-10"
+            />
+            {searchInput && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => {
+                  setSearchInput('');
+                  setQ('');
                 }}
-                leftIcon={<Search size={16} aria-hidden />}
-                className="pr-10"
-              />
-              {searchInput && (
-                <button
-                  type="button"
-                  aria-label="Clear search"
-                  onClick={() => {
-                    setSearchInput('');
-                    setQ('');
-                  }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600 focus:outline-none"
-                >
-                  <X size={16} aria-hidden />
-                </button>
-              )}
-            </div>
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600 focus:outline-none"
+              >
+                <X size={16} aria-hidden />
+              </button>
+            )}
+          </div>
 
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Select
               aria-label="Course"
               value={courseId}
