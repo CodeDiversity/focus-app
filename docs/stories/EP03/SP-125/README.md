@@ -11,19 +11,19 @@
 
 **Artifact root:** `./artifacts/` (stable story IDs)
 
-**Parent artifacts:** `./artifacts/SP-125/` (implementation index and final review, when this unit is implemented)
+**Parent artifacts:** `./artifacts/SP-125/` (implementation record now written; review and walkthrough to be added by the reviewer)
 
 **Active substory:** None.
 
-**Next substory:** [SP-125](./SP-125-assignment-experience.md) — run `ui-refiner` on this story. Do not implement yet.
+**Next substory:** None with reason — implementation complete (`b3e92db`, [record](./artifacts/SP-125/implementation.md)); parent review of this unit is the next action, owned by the reviewer.
 
 **Implementation owner:** `implementer`, one frontend writer. No backend writer.
 
-**Final review:** One review of SP-125 after implementation, including the saved walkthrough. No review gate before the UI decisions are recorded.
+**Final review:** One review of SP-125 after implementation, including the saved walkthrough. DoD-10 browser/e2e evidence is open (F-125-03) and belongs to the review unit.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [SP-125](./SP-125-assignment-experience.md) | Needs refinement | SP-124 reviewed (`63f9615`). Visual decisions unset (D125-4). | ui-refiner on SP-125 | None |
+| [SP-125](./SP-125-assignment-experience.md) | Implemented — awaiting parent review | SP-124 reviewed (`63f9615`) — satisfied. Presentation decisions settled and implemented. | Parent review (reviewer); DoD-10 browser/e2e pass outstanding (F-125-03) | [checkpoint](./artifacts/SP-125/checkpoint.md), [implementation](./artifacts/SP-125/implementation.md) |
 
 This unit adds no new epic acceptance criterion. It is a presentation pass over behavior SP-113 through SP-124 already own.
 
