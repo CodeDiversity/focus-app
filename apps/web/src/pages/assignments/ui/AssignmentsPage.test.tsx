@@ -481,10 +481,11 @@ describe('AssignmentsPage shared interaction (SP-124B AC 8)', () => {
     await user.tab();
     expect(screen.getByRole('combobox', { name: 'Status for Problem Set 4' })).toHaveFocus();
     await user.tab();
+    const del = screen.getByRole('button', { name: 'Delete Problem Set 4' });
+    expect(del).toHaveFocus();
+    await user.tab();
     const edit = screen.getByRole('button', { name: 'Edit Problem Set 4' });
     expect(edit).toHaveFocus();
-    await user.tab();
-    expect(screen.getByRole('button', { name: 'Delete Problem Set 4' })).toHaveFocus();
 
     edit.focus();
     await user.keyboard('{Enter}');

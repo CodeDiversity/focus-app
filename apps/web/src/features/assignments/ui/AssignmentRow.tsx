@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { clsx } from 'clsx';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, SquarePen } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 import { isOverdueAssignment } from '@/entities/assignment/model/status';
@@ -208,21 +208,22 @@ export function AssignmentRow({
           {assignment.type && <Badge className={TYPE_STYLE}>{TYPE_LABELS[assignment.type]}</Badge>}
           <Button
             size="sm"
-            variant="outline"
-            data-assignment-focus={`edit:${assignment.id}`}
-            aria-label={`Edit ${assignment.title}`}
-            onClick={onOpenEdit}
-          >
-            Edit
-          </Button>
-          <Button
-            size="sm"
             variant="ghost"
             className="hover:bg-red-50 hover:text-red-700"
             aria-label={`Delete ${assignment.title}`}
             onClick={onOpenDelete}
           >
             Delete
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="px-2 max-sm:min-w-[44px]"
+            data-assignment-focus={`edit:${assignment.id}`}
+            aria-label={`Edit ${assignment.title}`}
+            onClick={onOpenEdit}
+          >
+            <SquarePen size={16} aria-hidden />
           </Button>
         </div>
       </div>

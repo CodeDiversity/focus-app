@@ -498,9 +498,9 @@ describe('AssignmentsSection subtask disclosure (SP-120J AC 1, AC 8)', () => {
     await user.tab();
     expect(screen.getByRole('combobox', { name: 'Status for Problem Set 4' })).toHaveFocus();
     await user.tab();
-    expect(screen.getByRole('button', { name: 'Edit Problem Set 4' })).toHaveFocus();
-    await user.tab();
     expect(screen.getByRole('button', { name: 'Delete Problem Set 4' })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Edit Problem Set 4' })).toHaveFocus();
     await user.tab();
     expect(screen.getByRole('checkbox', { name: 'Read chapter' })).toHaveFocus();
     await user.tab();
