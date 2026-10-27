@@ -245,6 +245,8 @@ export function SubtaskChecklist({
     onChanged('deleted');
   };
 
+  const done = subtasks.filter((item) => item.status === 'COMPLETED').length;
+
   return (
     <div
       ref={panelRef}
@@ -252,8 +254,18 @@ export function SubtaskChecklist({
       role="region"
       aria-labelledby={`subtasks-toggle-${assignmentId}`}
       aria-busy={busy}
-      className="min-w-0"
+      // Framed subtask panel (SP-125 / D125-9): inset gray surface inside the
+      // row so the checklist reads as the row's own detail, not a sibling list.
+      className="min-w-0 mt-1 rounded-lg border border-secondary-200/80 bg-secondary-50/75 p-3 sm:p-4"
     >
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <span className="text-xs font-semibold uppercase tracking-wider text-secondary-500">
+          Subtasks
+        </span>
+        <span className="rounded-full bg-white px-2 py-0.5 text-xs text-secondary-600">
+          {done} of {subtasks.length} complete
+        </span>
+      </div>
       {subtasks.length === 0 ? (
         <p className="text-sm text-secondary-700">No subtasks yet.</p>
       ) : (

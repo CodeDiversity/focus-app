@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Loader2, ArrowUp, ArrowDown, X } from 'lucide-react';
+import {
+  Loader2,
+  ArrowUp,
+  ArrowDown,
+  X,
+  SlidersHorizontal,
+  ClipboardList,
+  Search,
+} from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { Select } from '@/shared/ui/Select';
 import { Input } from '@/shared/ui/Input';
@@ -122,6 +130,8 @@ export function AssignmentsPage() {
   const [dueTo, setDueTo] = useState('');
   const [sort, setSort] = useState('dueDate');
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+  /** Secondary filter panel visibility (SP-125 / D125-7). Collapsed by default. */
+  const [showFilters, setShowFilters] = useState(false);
 
   const [statusMessage, setStatusMessage] = useState('');
   /** Only the newest list request may commit rows/loading/status (R-124-001). */
@@ -162,6 +172,20 @@ export function AssignmentsPage() {
     ) ||
     sort !== 'dueDate' ||
     order !== 'asc';
+
+  /**
+   * Active secondary controls (SP-125 / D125-7): the count on the Filters
+   * toggle tells a collapsed panel's controls are doing something — including
+   * a non-default sort, since the sort pair lives in the secondary panel.
+   */
+  const secondaryActiveCount = [
+    Boolean(dueFrom),
+    Boolean(dueTo),
+    Boolean(priority),
+    Boolean(type),
+    sort !== 'dueDate',
+    order !== 'asc',
+  ].filter(Boolean).length;
 
   const runFetch = useCallback(
     async (params: ListAssignmentsParams, initial: boolean, prefix?: string) => {
@@ -284,9 +308,9 @@ export function AssignmentsPage() {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl font-bold text-secondary-900 mb-6">Assignments</h1>
-        <div role="alert" className="card p-6">
+        <div role="alert" className="card border border-red-200 bg-red-50/60 p-6">
           <p className="text-sm text-red-600">{initialError}</p>
-          <Button className="mt-4" onClick={handleRetry}>
+          <Button className="mt-4 max-sm:min-h-[44px]" onClick={handleRetry}>
             Try again
           </Button>
         </div>
@@ -316,49 +340,59 @@ export function AssignmentsPage() {
         </Button>
       </div>
 
-      {/* Always-present live region (DoD 6). */}
-      <div role="status" className="mb-4 min-h-5 text-sm text-secondary-600">
+      {/* Always-present live region (DoD 6); doubles as the visible result
+          summary bar and hosts the background-refetch spinner (SP-125). */}
+      <div
+        role="status"
+        className="mb-4 flex min-h-5 items-center gap-2 text-sm text-secondary-600"
+      >
+        {isFetching && <Loader2 className="animate-spin text-primary-600" size={16} aria-hidden />}
         {statusMessage}
       </div>
 
       <div className="card p-6">
-        {/* Filter bar */}
-        <div className="space-y-3 mb-6">
-          <div className="relative w-full">
-            <Input
-              aria-label="Search assignments"
-              placeholder="Search assignments by title or description"
-              maxLength={200}
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  setQ(searchInput.trim());
-                }
-              }}
-              className="pr-10"
-            />
-            {searchInput && (
-              <button
-                type="button"
-                aria-label="Clear search"
-                onClick={() => {
-                  setSearchInput('');
-                  setQ('');
+        {/*
+         * Two-tier filter bar (SP-125 / D125-7): Search, Course, and Status
+         * stay up front; date range, priority, type, and the sort pair tuck
+         * into a collapsible secondary panel. Toggle copy carries the active
+         * secondary count so a collapsed panel is never silently filtering.
+         */}
+        <div className="mb-6 space-y-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative w-full sm:flex-1">
+              <Input
+                aria-label="Search assignments"
+                placeholder="Search assignments by title or description"
+                maxLength={200}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setQ(searchInput.trim());
+                  }
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600 focus:outline-none"
-              >
-                <X size={16} aria-hidden />
-              </button>
-            )}
-          </div>
+                className="pr-10"
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => {
+                    setSearchInput('');
+                    setQ('');
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600 focus:outline-none"
+                >
+                  <X size={16} aria-hidden />
+                </button>
+              )}
+            </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 items-end">
             <Select
               aria-label="Course"
               value={courseId}
               onChange={(e) => setCourseId(e.target.value)}
-              className="w-full"
+              className="w-full sm:w-44"
             >
               <option value="">All courses</option>
               {courses.map((c) => (
@@ -368,26 +402,11 @@ export function AssignmentsPage() {
               ))}
             </Select>
 
-            <Input
-              aria-label="Due from"
-              type="date"
-              value={dueFrom}
-              onChange={(e) => setDueFrom(e.target.value)}
-              className="w-full"
-            />
-            <Input
-              aria-label="Due to"
-              type="date"
-              value={dueTo}
-              onChange={(e) => setDueTo(e.target.value)}
-              className="w-full"
-            />
-
             <Select
               aria-label="Status"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full"
+              className="w-full sm:w-44"
             >
               <option value="">All statuses</option>
               {STATUS_OPTIONS.map((s) => (
@@ -397,77 +416,154 @@ export function AssignmentsPage() {
               ))}
             </Select>
 
-            <Select
-              aria-label="Priority"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              className="w-full"
-            >
-              <option value="">All priorities</option>
-              {PRIORITY_OPTIONS.map((p) => (
-                <option key={p} value={p}>
-                  {PRIORITY_LABELS[p]}
-                </option>
-              ))}
-            </Select>
-
-            <Select
-              aria-label="Type"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="w-full"
-            >
-              <option value="">All types</option>
-              {TYPE_OPTIONS.map((t) => (
-                <option key={t} value={t}>
-                  {TYPE_LABELS[t]}
-                </option>
-              ))}
-            </Select>
-
-            <Select
-              aria-label="Sort by"
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="w-full"
-            >
-              {SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </Select>
-
-            <button
+            <Button
               type="button"
-              aria-label={order === 'asc' ? 'Sort ascending' : 'Sort descending'}
-              onClick={toggleOrder}
-              className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg border border-secondary-300 bg-white px-3 py-2 text-secondary-700 hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              variant="secondary"
+              className="sm:ml-auto max-sm:min-h-[44px]"
+              aria-expanded={showFilters}
+              aria-controls="advanced-filters-panel"
+              leftIcon={<SlidersHorizontal size={16} aria-hidden />}
+              onClick={() => setShowFilters((value) => !value)}
             >
-              {order === 'asc' ? (
-                <ArrowUp size={16} aria-hidden />
-              ) : (
-                <ArrowDown size={16} aria-hidden />
-              )}
-            </button>
-
-            {isFetching && (
-              <Loader2 className="animate-spin text-primary-600" size={20} aria-hidden />
-            )}
+              {showFilters
+                ? 'Hide filters'
+                : secondaryActiveCount > 0
+                  ? `Filters (${secondaryActiveCount})`
+                  : 'Filters'}
+            </Button>
           </div>
+
+          {showFilters && (
+            <div
+              id="advanced-filters-panel"
+              className="grid grid-cols-2 items-start gap-3 rounded-lg border border-secondary-100 bg-secondary-50/60 p-3 sm:grid-cols-3 lg:grid-cols-5"
+            >
+              <div>
+                <label
+                  htmlFor="filter-due-from"
+                  className="mb-1 block text-xs font-medium text-secondary-600"
+                >
+                  Due from
+                </label>
+                <Input
+                  id="filter-due-from"
+                  type="date"
+                  value={dueFrom}
+                  onChange={(e) => setDueFrom(e.target.value)}
+                  className="max-sm:min-h-[44px]"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="filter-due-to"
+                  className="mb-1 block text-xs font-medium text-secondary-600"
+                >
+                  Due to
+                </label>
+                <Input
+                  id="filter-due-to"
+                  type="date"
+                  value={dueTo}
+                  onChange={(e) => setDueTo(e.target.value)}
+                  className="max-sm:min-h-[44px]"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="filter-priority"
+                  className="mb-1 block text-xs font-medium text-secondary-600"
+                >
+                  Priority
+                </label>
+                <Select
+                  id="filter-priority"
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
+                  className="w-full max-sm:min-h-[44px]"
+                >
+                  <option value="">All priorities</option>
+                  {PRIORITY_OPTIONS.map((p) => (
+                    <option key={p} value={p}>
+                      {PRIORITY_LABELS[p]}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <label
+                  htmlFor="filter-type"
+                  className="mb-1 block text-xs font-medium text-secondary-600"
+                >
+                  Type
+                </label>
+                <Select
+                  id="filter-type"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  className="w-full max-sm:min-h-[44px]"
+                >
+                  <option value="">All types</option>
+                  {TYPE_OPTIONS.map((t) => (
+                    <option key={t} value={t}>
+                      {TYPE_LABELS[t]}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <label
+                  htmlFor="filter-sort"
+                  className="mb-1 block text-xs font-medium text-secondary-600"
+                >
+                  Sort by
+                </label>
+                <div className="flex items-start gap-2">
+                  <Select
+                    id="filter-sort"
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value)}
+                    className="w-full max-sm:min-h-[44px]"
+                  >
+                    {SORT_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </Select>
+                  <button
+                    type="button"
+                    aria-label={order === 'asc' ? 'Sort ascending' : 'Sort descending'}
+                    onClick={toggleOrder}
+                    className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-lg border border-secondary-300 bg-white px-3 py-2 text-secondary-700 hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    {order === 'asc' ? (
+                      <ArrowUp size={16} aria-hidden />
+                    ) : (
+                      <ArrowDown size={16} aria-hidden />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {isEmpty ? (
           <div className="py-8 text-center">
             {filtersActive ? (
               <>
+                <Search size={36} aria-hidden className="mx-auto mb-3 text-secondary-300" />
                 <p className="text-sm text-secondary-700">No assignments match these filters.</p>
-                <Button className="mt-4" onClick={clearFilters}>
+                <p className="mt-1 text-sm text-secondary-500">
+                  Try adjusting your search terms or clearing filters.
+                </p>
+                <Button className="mt-4 max-sm:min-h-[44px]" onClick={clearFilters}>
                   Clear filters
                 </Button>
               </>
             ) : (
               <>
+                <ClipboardList size={40} aria-hidden className="mx-auto mb-3 text-secondary-300" />
                 <p className="text-sm text-secondary-700">No assignments yet.</p>
                 <p className="mt-1 text-sm text-secondary-500">
                   Create an assignment directly or browse your courses.
@@ -518,7 +614,10 @@ export function AssignmentsPage() {
         )}
 
         {filtersActive && !isEmpty && (
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-secondary-100 pt-3">
+            <p className="text-xs text-secondary-500">
+              Change the search above, or reset every filter and sort.
+            </p>
             <Button variant="ghost" size="sm" onClick={clearFilters}>
               Clear filters
             </Button>

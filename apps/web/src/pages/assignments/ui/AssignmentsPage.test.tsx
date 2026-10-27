@@ -162,6 +162,9 @@ describe('AssignmentsPage', () => {
       expect(last).toMatchObject({ status: 'COMPLETED' });
     });
 
+    // Priority and Type live in the secondary panel (SP-125 / D125-7).
+    await user.click(screen.getByRole('button', { name: 'Filters' }));
+
     await user.selectOptions(screen.getByLabelText('Priority'), 'LOW');
     await waitFor(() => {
       const last = mockedListAssignments.mock.calls.slice(-1)[0]?.[0];
@@ -180,6 +183,7 @@ describe('AssignmentsPage', () => {
     renderPage();
     await screen.findByText('Problem Set 4');
 
+    await user.click(screen.getByRole('button', { name: 'Filters' }));
     await user.type(screen.getByLabelText('Due from'), '2026-10-01');
     await user.type(screen.getByLabelText('Due to'), '2026-10-31');
     await waitFor(() => {
@@ -193,6 +197,7 @@ describe('AssignmentsPage', () => {
     renderPage();
     await screen.findByText('Problem Set 4');
 
+    await user.click(screen.getByRole('button', { name: 'Filters' }));
     await user.selectOptions(screen.getByLabelText('Sort by'), 'title');
     await waitFor(() => {
       const last = mockedListAssignments.mock.calls.slice(-1)[0]?.[0];
@@ -739,5 +744,125 @@ describe('AssignmentsPage post-review corrections (R-124-001…005)', () => {
     expect(screen.getByRole('button', { name: 'Browse courses' })).toHaveClass(
       'max-sm:min-h-[44px]'
     );
+  });
+});
+
+describe('AssignmentsPage presentation (SP-125)', () => {
+  it('toggles the secondary filter panel with expanded state and active-filter count', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    const toggle = screen.getByRole('button', { name: 'Filters' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveAttribute('aria-controls', 'advanced-filters-panel');
+    expect(screen.queryByLabelText('Due from')).not.toBeInTheDocument();
+
+    await user.click(toggle);
+
+    const panel = screen.getByLabelText('Priority').closest('#advanced-filters-panel');
+    expect(screen.getByRole('button', { name: 'Hide filters' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+    expect(panel).toBeInstanceOf(HTMLElement);
+    expect(panel).toHaveClass('rounded-lg', 'border');
+
+    // Secondary filters carry visible labels next to their controls.
+    expect(screen.getByLabelText('Due from')).toBeInTheDocument();
+    expect(screen.getByText('Due from')).toBeInTheDocument();
+    expect(screen.getByLabelText('Due to')).toBeInTheDocument();
+    expect(screen.getByText('Due to')).toBeInTheDocument();
+    expect(screen.getByLabelText('Priority')).toBeInTheDocument();
+    expect(screen.getByLabelText('Type')).toBeInTheDocument();
+    expect(screen.getByLabelText('Sort by')).toBeInTheDocument();
+
+    // The toggle shows how many secondary controls are active.
+    await user.selectOptions(screen.getByLabelText('Priority'), 'LOW');
+    await user.selectOptions(screen.getByLabelText('Type'), 'PAPER');
+
+    await user.click(screen.getByRole('button', { name: 'Hide filters' }));
+    expect(await screen.findByRole('button', { name: 'Filters (2)' })).toBeInTheDocument();
+
+    // Clearing resets the count and the secondary controls.
+    await user.click(screen.getAllByRole('button', { name: /clear filters/i })[0]);
+    expect(screen.getByRole('button', { name: 'Filters' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Filters' }));
+    expect(screen.getByLabelText('Priority')).toHaveValue('');
+    expect(screen.getByLabelText('Due from')).toHaveValue('');
+  });
+
+  it('renders the row status selector with the text-plus-color palette (D125-8)', async () => {
+    const user = setupUser();
+    // Keep the first PATCH in flight so the row renders its pending status.
+    let resolvePatch!: (value: unknown) => void;
+    mockedUpdateAssignment.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolvePatch = resolve;
+        }) as never
+    );
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    const select = screen.getByRole('combobox', { name: 'Status for Problem Set 4' });
+    expect(select).toHaveClass('bg-slate-100', 'text-slate-700');
+
+    await user.selectOptions(select, 'COMPLETED');
+    expect(select).toHaveClass('bg-green-100', 'text-green-700');
+
+    resolvePatch({ ...item, status: 'COMPLETED' });
+    await screen.findByText('Assignment marked as completed. Showing 1 assignment.');
+    // The refetch (mock data still PENDING) returns the select to its slate
+    // pending palette — the pill always reflects the committed item status.
+    expect(select).toHaveClass('bg-slate-100', 'text-slate-700');
+    expect(select).toHaveValue('PENDING');
+  });
+
+  it('frames the expanded subtask checklist with a progress header (D125-9)', async () => {
+    const user = setupUser();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.click(
+      screen.getByRole('button', { name: 'Subtasks for Problem Set 4: 1 subtask, 1 complete' })
+    );
+
+    const region = screen.getByRole('region', {
+      name: 'Subtasks for Problem Set 4: 1 subtask, 1 complete',
+    });
+    expect(region).toHaveClass('rounded-lg', 'bg-secondary-50/75', 'p-3');
+    expect(screen.getByText('Subtasks')).toBeInTheDocument();
+    expect(screen.getByText('1 of 1 complete')).toBeInTheDocument();
+  });
+
+  it('widens the create dialog and aligns the action footer (D125-10)', async () => {
+    const user = setupUser();
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.click(screen.getByRole('button', { name: 'Add assignment' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Add an assignment' });
+    expect(dialog).toHaveClass('max-w-lg');
+    const cancel = within(dialog).getByRole('button', { name: 'Cancel' });
+    expect(cancel.closest('div')).toHaveClass('border-t', 'pt-4', 'sm:justify-end');
+  });
+
+  it('shows the adjusted-search subtext in the filtered empty state', async () => {
+    const user = userEvent.setup();
+    mockedListAssignments.mockResolvedValueOnce([item] as never).mockResolvedValue([] as never);
+    renderPage();
+    await screen.findByText('Problem Set 4');
+
+    await user.selectOptions(screen.getByLabelText('Status'), 'COMPLETED');
+    expect(
+      (await screen.findAllByText('No assignments match these filters.')).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByText('Try adjusting your search terms or clearing filters.')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /clear filters/i })).toBeInTheDocument();
   });
 });

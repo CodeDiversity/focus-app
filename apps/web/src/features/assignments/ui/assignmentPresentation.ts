@@ -57,6 +57,23 @@ export const TYPE_STYLE = 'bg-slate-100 text-slate-700';
 export const OVERDUE_STYLE = 'bg-red-100 text-red-700';
 export const OVERDUE_LABEL = 'Overdue';
 
+/**
+ * The status **control** palette (SP-125, D125-8): the row's status selector
+ * wears the same text-plus-color pairing as the status pills so the current
+ * status is readable at a glance while still being a real select. The dedicated
+ * control export (not `STATUS_STYLES`) exists because the select carries a
+ * border where the pill does not, and the control must always show enough
+ * contrast for its native styling (WCAG 2.2 AA — color reinforces the label,
+ * it never encodes it alone).
+ */
+export const STATUS_SELECT_STYLES: Record<AssignmentStatus, string> = {
+  PENDING: 'bg-slate-100 text-slate-700 border-slate-300',
+  IN_PROGRESS: 'bg-blue-100 text-blue-700 border-blue-300',
+  SUBMITTED: 'bg-violet-100 text-violet-700 border-violet-300',
+  COMPLETED: 'bg-green-100 text-green-700 border-green-300',
+  GRADED: 'bg-teal-100 text-teal-700 border-teal-300',
+};
+
 export const TYPE_LABELS: Record<AssignmentType, string> = {
   HOMEWORK: 'Homework',
   PAPER: 'Paper',

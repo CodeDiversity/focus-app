@@ -49,7 +49,7 @@ describe('AssignmentForm', () => {
     const user = setupUser();
     const { onSuccess } = renderForm();
     const dialog = screen.getByRole('dialog');
-    expect(dialog).toHaveClass('w-full', 'max-w-md', 'max-h-[90vh]', 'overflow-y-auto');
+    expect(dialog).toHaveClass('w-full', 'max-w-lg', 'max-h-[90vh]', 'overflow-y-auto');
     expect(duration().closest('.grid')).toHaveClass('grid-cols-1', 'sm:grid-cols-2');
     await user.keyboard('Keyboard homework');
     await user.tab();

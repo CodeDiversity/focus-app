@@ -272,7 +272,7 @@ export function AssignmentForm({
         aria-labelledby="assignment-form-title"
         aria-busy={isSubmitting}
         tabIndex={-1}
-        className="card relative max-h-[90vh] w-full max-w-md overflow-y-auto"
+        className="card relative max-h-[90vh] w-full max-w-lg overflow-y-auto"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
           <h2 id="assignment-form-title" className="text-lg font-semibold text-secondary-900">
@@ -436,10 +436,10 @@ export function AssignmentForm({
               </Link>
             </div>
           )}
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-3 border-t border-secondary-100 pt-4 sm:flex-row sm:justify-end">
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               className="max-sm:min-h-[44px]"
               onClick={onClose}
               disabled={isSubmitting}

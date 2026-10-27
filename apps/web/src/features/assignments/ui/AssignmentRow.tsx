@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import { clsx } from 'clsx';
 import { ChevronDown } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
-import { Select } from '@/shared/ui/Select';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
 import { isOverdueAssignment } from '@/entities/assignment/model/status';
 import type { AssignmentStatus } from '@/shared/types/academic';
@@ -14,6 +13,7 @@ import {
   PRIORITY_LABELS,
   PRIORITY_STYLES,
   STATUS_LABELS,
+  STATUS_SELECT_STYLES,
   TYPE_LABELS,
   TYPE_STYLE,
   subtaskSummary,
@@ -36,6 +36,51 @@ function Badge({ className, children }: { className: string; children: string })
       )}
     >
       {children}
+    </span>
+  );
+}
+
+/**
+ * The row's status control (SP-125 / D125-8). A real native `<select>` —
+ * unchanged keyboard behavior and focus hook — wearing the text-plus-color
+ * status palette so the current status reads at a glance, matching the
+ * priority/type pills. Keep the wrapper span for the chevron overlay and the
+ * `relative` anchor; the select itself carries the value classes.
+ */
+function StatusPillSelect({
+  assignment,
+  statusValue,
+  statusDisabled,
+  onStatusChange,
+}: Pick<AssignmentRowProps, 'assignment' | 'statusValue' | 'statusDisabled' | 'onStatusChange'>) {
+  const chevronClass = clsx(
+    'pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 opacity-60',
+    // The select's own value styles win over the chevron on hover states.
+    statusDisabled && 'opacity-0'
+  );
+
+  return (
+    <span className="relative inline-flex">
+      <select
+        aria-label={`Status for ${assignment.title}`}
+        data-assignment-focus={`status:${assignment.id}`}
+        disabled={statusDisabled}
+        value={statusValue}
+        onChange={(event) => onStatusChange(event.target.value as AssignmentStatus)}
+        className={clsx(
+          'cursor-pointer appearance-none rounded-full border py-1.5 pl-3 pr-7 text-xs font-semibold',
+          'transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500',
+          'disabled:cursor-not-allowed disabled:opacity-60',
+          STATUS_SELECT_STYLES[statusValue]
+        )}
+      >
+        {STATUS_OPTIONS.map((value) => (
+          <option key={value} value={value}>
+            {STATUS_LABELS[value]}
+          </option>
+        ))}
+      </select>
+      <ChevronDown aria-hidden size={14} className={chevronClass} />
     </span>
   );
 }
@@ -151,20 +196,12 @@ export function AssignmentRow({
           </Button>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Select
-            aria-label={`Status for ${assignment.title}`}
-            data-assignment-focus={`status:${assignment.id}`}
-            disabled={statusDisabled}
-            value={statusValue}
-            onChange={(event) => onStatusChange(event.target.value as AssignmentStatus)}
-            className="w-auto"
-          >
-            {STATUS_OPTIONS.map((value) => (
-              <option key={value} value={value}>
-                {STATUS_LABELS[value]}
-              </option>
-            ))}
-          </Select>
+          <StatusPillSelect
+            assignment={assignment}
+            statusValue={statusValue}
+            statusDisabled={statusDisabled}
+            onStatusChange={onStatusChange}
+          />
           <Badge className={PRIORITY_STYLES[assignment.priority]}>
             {PRIORITY_LABELS[assignment.priority]}
           </Badge>
@@ -181,6 +218,7 @@ export function AssignmentRow({
           <Button
             size="sm"
             variant="ghost"
+            className="hover:bg-red-50 hover:text-red-700"
             aria-label={`Delete ${assignment.title}`}
             onClick={onOpenDelete}
           >
