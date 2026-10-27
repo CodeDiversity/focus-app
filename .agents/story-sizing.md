@@ -40,6 +40,9 @@ Write this compact block, grounded in inspected code:
 - **Request/token estimate:** 1–3 requests/tokens by default, including verification; explain
   uncertainty. For a justified cohesive multi-window task, give the total estimate
   and bounded milestones rather than claiming the whole task fits one window.
+- **Model recommendation:** 1–5 based on task complexity and risk, where 1 means a
+  value model can carry out the task and 5 means a frontier model is recommended.
+  Include a brief rationale.
 - **Files:** expected production and focused test paths, with new paths marked.
 - **Start context:** this story, relevant epic/DoD requirements, exact shared
   contract sections, and the few code/test paths needed to begin. Dependencies

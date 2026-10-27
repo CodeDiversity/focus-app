@@ -71,6 +71,7 @@ Classify proposed changes into **Backend**, **Frontend**, **Integration**, and, 
 ### 4. Size and sequence stories
 
 - Target **1–3 requests/tokens** per substantive implementation outcome, including tests, docs, required checks and handoff, using the shared sizing policy. Record inspected files, start context and verification; an estimate alone does not pass the gate.
+- For each story, recommend a model tier from 1 to 5 based on complexity and risk: 1 means a value model can carry out the task, 5 means a frontier model is recommended. Record the score and a brief rationale in the sizing block.
 - Before splitting, identify the concrete complexity/risk/context problem and each child's substantial independent work. Children below roughly 30 minutes of substantive work normally become checklist items, not stories; never pad estimates with agent overhead. Keep atomic security operations together. Preserve existing IDs/history; do not turn in-progress or completed work back into unimplemented children.
 - Each story should deliver one coherent, independently verifiable outcome and name the behavior it changes.
 - Prefer a vertical sequence that supports incremental integration: agree the contract, create required persistence/backend behavior, build frontend behavior, verify integration. Execute ready children sequentially through the single implementer; independent dependencies do not authorize parallel implementation writers.
@@ -98,7 +99,7 @@ Each child story must contain:
 6. **Technical notes:** inspected code paths and symbols where verified; proposals and unresolved assumptions clearly labeled; relevant API/data contracts referenced.
 7. **Definition of Done:** every applicable shared obligation, including integrated review and item 10 where applicable; distinguish future test obligations from test results.
 8. **Tracker reference:** unique Jira key when created; never use the same Story/Task key for multiple child files.
-9. **Sizing block:** outcome, request/token estimate, production/test files, minimal start context, verification commands, dependencies and exclusions, per the shared policy.
+9. **Sizing block:** outcome, request/token estimate, model recommendation (1–5), production/test files, minimal start context, verification commands, dependencies and exclusions, per the shared policy.
 
 The breakdown README must include:
 

@@ -11,7 +11,7 @@ Read relevant docs/epics/ files, story breakdowns, and selected code paths for e
 
 Apply feature-specific checks, justified story splits, original acceptance-criterion and test traceability, explicit dependencies, quality-gate evidence, and retained correction logs as described in the skill.
 
-Apply .agents/story-sizing.md: prefer cohesive 1–3 requests/tokens outcomes; split only for a concrete complexity/risk/context reason and substantial independent work per child. Keep routine README updates, tests, wiring, status and evidence with their implementation. Do not manufacture small children or pad estimates with agent overhead. Honor explicitly read-only review requests.
+Apply .agents/story-sizing.md: prefer cohesive 1–3 requests/tokens outcomes; split only for a concrete complexity/risk/context reason and substantial independent work per child. Keep routine README updates, tests, wiring, status and evidence with their implementation. Do not manufacture small children or pad estimates with agent overhead. For each story, recommend a model tier 1-5 by complexity (1 = value model, 5 = frontier model) in its sizing block. Honor explicitly read-only review requests.
 
 After planning frontend stories, flag any whose UI/UX is unsettled or suboptimal for the `ui-refiner` agent per the skill's UI/UX handoff, and tell the user to run it on those story IDs.
 
