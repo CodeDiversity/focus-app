@@ -6,9 +6,10 @@
 **Parent:** [SP-127](./SP-127-calendar-read-model-and-week-view.md)
 **Milestone:** M2
 **Layer:** Frontend
-**Status:** Needs refinement — `ui-refiner` pass required before implementation (D404-9). Not ready to code.
+**Status:** Ready — ui-refiner pass complete (D404-9).
 **Dependencies:** SP-127A implemented (the read model it renders).
 **Jira key:** Pending creation
+**Refined:** 2026-10-28
 
 ## Summary
 
@@ -82,14 +83,28 @@ The `/calendar` page shows the student's week: recurring class meetings, assignm
 
 `apps/web/src/entities/calendar/api/calendarApi.ts` (+ `model/types.ts`, + test), `apps/web/src/features/calendar/ui/{WeekView,CalendarEventChip,CalendarEventDetails}.tsx` (+ tests), `apps/web/src/pages/calendar/ui/CalendarPage.tsx` (+ test), `apps/web/src/app/App.tsx`, `apps/web/src/widgets/header/ui/Header.tsx`, `apps/web/e2e/calendar.spec.ts`.
 
+### Decisions (ui-refiner, 2026-10-28)
+
+- **D127B-1 — Layout:** desktop week view uses seven day columns; each day is a vertical stack of event chips sorted by `startTime` ascending. No hour grid and no overlap columns — the server already sorts events, and a stacked list is simpler and ADHD-friendly. Week navigation (previous / next / today) sits in a toolbar above the grid.
+- **D127B-2 — Week start:** Monday. The week range sent to the API is Monday 00:00 through Sunday 23:59 in the payload's zone; "today" selects the week containing the current date.
+- **D127B-3 — Day-column header:** short weekday + date, e.g. "Mon 26" (weekday abbreviated, day number) on desktop; on narrow screens the weekday is the full three-letter name and the date stays. The current day's column header is bolded and gets a subtle `bg-primary-50` tint on the column.
+- **D127B-4 — Chip anatomy:** each chip shows the start time (`HH:mm`), the event title, and a type icon + text label (e.g. "Class", "Deadline", "Exam", "Study session", "Available", "Blocked"). The course color is a 3px left border only (secondary cue). A completed deadline chip shows an additional "Completed" text badge with a check icon. The chip's accessible name is "{type label}: {title}, {time}".
+- **D127B-5 — Type labels and icons (lucide-react):** CLASS → `GraduationCap` "Class"; ASSIGNMENT_DEADLINE → `ClipboardList` "Assignment"; EXAM_DEADLINE → `FileText` "Exam"; STUDY_SESSION → `Brain` "Study session" (focus variant adds " (focus)" to the label); AVAILABILITY → `CheckCircle2` "Available"; BLOCKED_TIME → `Ban` "Blocked". Icons are `aria-hidden`.
+- **D127B-6 — Details view:** modal dialog (copying `ArchiveCourseDialog`): `role="dialog"`, `aria-modal="true"`, Escape closes, focus trapped, focus returns to the opening chip. Fields: type label (with icon), title, date (formatted via `shared/lib/datetime`), time range (or "All day"/point time for deadlines), course name (colored dot + name) linking to `/courses/:id`, completed state for deadlines ("Completed" / "Not completed"), focus flag for study sessions. A "Close" button plus the course link button.
+- **D127B-7 — Loading state:** skeleton grid — seven day columns each with 2–3 pulsing placeholder chips (Tailwind `animate-pulse`), matching the real chip height, so layout does not shift. A visually-hidden "Loading calendar…" text.
+- **D127B-8 — Empty state:** when the payload has zero events, render an in-grid empty panel spanning all columns: `CalendarDays` icon, "No events this week", and a hint "Try another week, or add a course meeting or assignment." plus a "Manage availability" link to `/availability`.
+- **D127B-9 — Error state:** a `role="alert"` card with "We could not load your calendar. Try again." and a "Try again" `Button` (retry re-issues the same range). Mirrors the Assignments error card.
+- **D127B-10 — Live region:** an always-present `role="status"` region (empty at rest) announcing "{week label} · {n} event(s)" after each successful load, plus a spinner while fetching.
+- **D127B-11 — Time-zone label:** placed in the page header next to the week label as "{from} – {to} · {timeZone}" (e.g. "Oct 26 – Nov 1, 2026 · America/New_York"). The week label uses the payload's `from`/`to` dates formatted via `shared/lib/datetime` `formatDate`.
+- **D127B-12 — Header wording:** page title "Calendar"; subtitle "Your week at a glance."; primary actions in the header's upper right: "Today" (secondary), "Previous week" / "Next week" (ghost icon buttons with accessible names), and a "Manage availability" link button to `/availability`.
+- **D127B-13 — Navigation controls:** icon-only previous/next buttons use `ChevronLeft`/`ChevronRight` with `aria-label="Previous week"` / "Next week"; the "Today" button is a text button. All have visible focus rings (`focus:ring-2 focus:ring-primary-500`) and `min-h-[44px]` on mobile.
+- **D127B-14 — Responsive:** desktop shows the 7-column grid. At `< 768px` the grid becomes a horizontally scrollable row of day columns (each column min-width 140px, snap scrolling) so all seven days stay reachable without collapsing to the agenda (SP-129 owns the agenda). Chip text truncates with `truncate`; tap targets are `min-h-[44px]` on mobile.
+- **D127B-15 — Copy:** empty "No events this week"; loading "Loading your calendar…"; error "We could not load your calendar. Try again."; status "Showing {n} event(s) for {week label}." (singular/plural). Manage-availability link text "Manage availability".
+- **D127B-16 — Client date arithmetic:** the page computes the Monday of the selected week and the Sunday, formats both as `YYYY-MM-DD`, and sends them as `from`/`to`. No time-zone arithmetic beyond deriving the civil Monday from the selected date (the server owns zone conversion, D404-2). The selected date is held as a `Date` in local civil time.
+
 ### UI/UX gaps for the `ui-refiner` (D404-9 — required before implementation)
 
-- Week-view layout: a time grid (hours down the side, days across) vs. day columns with stacked events; the visible hour range and the density of overlapping chips.
-- The week start (Sunday vs. Monday) and the day-column header format.
-- Chip anatomy: what is shown at a glance (time + title only vs. course code), how a completed deadline is marked in text, and how the type label is rendered (icon + word vs. word only).
-- The details dialog's presentation and whether it is a modal dialog or a side panel.
-- The empty, loading, and error illustrations and copy; the exact wording of the header, the week label, and the "Manage availability" link.
-- The time-zone label's placement and phrasing.
+All gaps listed in the original story are now settled by decisions D127B-1…D127B-16 above.
 
 ## Definition of Done
 

@@ -3,7 +3,7 @@
 **Epic:** [EP04: Academic Calendar & Availability](../../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Parent:** [SP-127](./SP-127-calendar-read-model-and-week-view.md) — coordination record (not an implementation ticket)
 **Milestone:** M2
-**Status:** Draft — two children; SP-127A `Ready`, SP-127B `Needs refinement` (ui-refiner handoff, D404-9).
+**Status:** Draft — two children; SP-127A `Implemented — awaiting parent review`, SP-127B `Ready` (ui-refiner pass complete, D404-9).
 **Jira key:** Pending creation
 
 Covers the epic's proposed stories **1 (weekly academic calendar), 2 (course meetings), 3 (assignments and exam deadlines), and 4 (planned study sessions)**.
@@ -16,7 +16,7 @@ Covers the epic's proposed stories **1 (weekly academic calendar), 2 (course mee
 
 **Active substory:** None.
 
-**Next substory:** SP-127B — ui-refiner pass (D404-9), then implement.
+**Next substory:** SP-127B — implement (frontend): the week view.
 
 **Implementation owner:** `implementer`, sequential (A → B).
 
@@ -25,7 +25,7 @@ Covers the epic's proposed stories **1 (weekly academic calendar), 2 (course mee
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [A](./SP-127A-calendar-events-api.md) | Implemented — awaiting parent review | EP02 + EP03 complete (satisfied). No EP04 predecessor. | Parent review (after SP-127B) | ./artifacts/SP-127A/implementation.md |
-| [B](./SP-127B-calendar-week-view.md) | Needs refinement | SP-127A implemented. | `ui-refiner` pass (D404-9), then implement | — |
+| [B](./SP-127B-calendar-week-view.md) | Ready | SP-127A implemented. | Implement (frontend) | — |
 
 ## Why this is two children
 

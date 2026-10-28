@@ -3,7 +3,7 @@
 **Epic:** [EP04: Academic Calendar & Availability](../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Milestone:** M2 (Calendar and dashboard)
 **Epic dependency:** EP02 (Semester & Course Management) — complete 2026-10-23; EP03 (Assignment & Task Management) — complete (all nine parents reviewed, see [EP03 README](../EP03/README.md)). EP04 implementation is **not blocked**.
-**Status:** Draft — three parent stories broken down (SP-127, SP-128, SP-129) with five implementation children. Backend children are `Ready`; the three frontend children are `Needs refinement` (ui-refiner handoff, D404-9).
+**Status:** Draft — three parent stories broken down (SP-127, SP-128, SP-129) with five implementation children. Backend children are `Ready`; SP-127B is `Ready` (ui-refiner pass complete); SP-128B and SP-129A remain `Needs refinement` (ui-refiner handoff, D404-9).
 **Jira keys:** Pending creation (no sync authorized for this planning task).
 
 ## Execution queue
@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** SP-127B — ui-refiner pass (D404-9), then implement.
+**Next substory:** SP-127B — implement (frontend): the week view.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (backend → frontend → integration; the labels are scope, not concurrent roles).
 
@@ -23,7 +23,7 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [SP-127A](./SP-127/SP-127A-calendar-events-api.md) | Implemented — awaiting parent review | EP02 + EP03 complete (satisfied) — no upstream EP04 work. | Parent review (after SP-127B) | ./SP-127/artifacts/SP-127A/implementation.md |
-| [SP-127B](./SP-127/SP-127B-calendar-week-view.md) | Needs refinement | SP-127A implemented (the read model it renders). | `ui-refiner` pass (D404-9), then implement | — |
+| [SP-127B](./SP-127/SP-127B-calendar-week-view.md) | Ready | SP-127A implemented (the read model it renders). | Implement (frontend) | — |
 | [SP-128A](./SP-128/SP-128A-availability-slots-api.md) | Ready | EP02 + EP03 complete (satisfied) — no upstream EP04 work. | Implement (backend) | — |
 | [SP-128B](./SP-128/SP-128B-availability-settings-ui.md) | Needs refinement | SP-128A implemented (the API it manages). | `ui-refiner` pass (D404-9), then implement | — |
 | [SP-129A](./SP-129/SP-129A-mobile-agenda-view.md) | Needs refinement | SP-127B implemented (the event data + shared event components it reuses). | `ui-refiner` pass (D404-9), then implement | — |
