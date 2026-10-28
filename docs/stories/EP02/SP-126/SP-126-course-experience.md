@@ -5,7 +5,7 @@
 **Parent epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** Refined (ui-refiner pass complete 2026-10-28). Ready to code.
+**Status:** Implemented — awaiting parent review (commit 914a5d2, 2026-10-28).
 **Dependencies:** SP-125 reviewed (`9dce1c4`) — the design reference is in code; no implementation dependency.
 **Refined:** 2026-10-28
 **Jira key:** Pending creation

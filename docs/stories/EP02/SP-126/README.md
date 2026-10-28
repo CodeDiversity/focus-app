@@ -15,7 +15,7 @@
 
 **Active substory:** None.
 
-**Next substory:** SP-126 — implement: the refined Courses page (frontend, one writer).
+**Next substory:** None — implementation complete (914a5d2); final parent review is next.
 
 **Implementation owner:** `implementer`, one frontend writer. No backend writer.
 
@@ -23,7 +23,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [SP-126](./SP-126-course-experience.md) | Ready | SP-125 reviewed (`9dce1c4`) — the design reference is in code; no implementation dependency. | Implement (frontend, one writer) | — |
+| [SP-126](./SP-126-course-experience.md) | Implemented — awaiting parent review | SP-125 reviewed (`9dce1c4`) — the design reference is in code; no implementation dependency. | Final parent review (DoD 10/11) | commit 914a5d2 |
 
 This unit adds no new epic acceptance criterion. It is a presentation pass over
 behavior SP-111 and SP-112 already own.

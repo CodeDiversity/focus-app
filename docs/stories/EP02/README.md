@@ -24,7 +24,7 @@ EP01 is complete in code (SP-101…SP-109 all implemented; SP-107 awaits its com
 | [SP-110](./SP-110/README.md) | 1. Create and manage semesters | [3 children](./SP-110/README.md) (A backend, B frontend, C integration) — implemented + reviewed PASS 2026-10-21 | Pending creation |
 | [SP-111](./SP-111/README.md) | 2. Create a course · 3. Edit course information · 4. Archive and restore courses | [3 children](./SP-111/README.md) (A backend, B frontend, C integration) — implemented + reviewed PASS 2026-10-22 | Pending creation |
 | [SP-112](./SP-112/README.md) | 5. Manage recurring class meetings · 6. Course list and detail views | [3 children](./SP-112/README.md) (A backend, B frontend, C integration) — implemented + reviewed PASS 2026-10-23 (DoD 10 ratified) | Pending creation |
-| [SP-126](./SP-126/README.md) | 7. Course page experience (post-completion user request 2026-10-27) | [1 frontend story](./SP-126/README.md) — **Refined** (ui-refiner pass complete 2026-10-28; Ready to code). Presentation pass; no new epic AC. | Pending creation |
+| [SP-126](./SP-126/README.md) | 7. Course page experience (post-completion user request 2026-10-27) | [1 frontend story](./SP-126/README.md) — **Implemented** (commit 914a5d2, 2026-10-28; awaiting parent review). Presentation pass; no new epic AC. | Pending creation |
 
 All six proposed stories are now broken down — none deferred or dropped.
 Story 7 (SP-126) is a new post-completion request on the `/courses` surface,
