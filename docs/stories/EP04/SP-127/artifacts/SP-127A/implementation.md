@@ -29,7 +29,7 @@ Implemented `GET /calendar/events` read model in a new `calendar` module.
 ## Verification
 - `pnpm --filter api typecheck` — pass
 - `pnpm --filter api lint` — pass
-- `DATABASE_URL=... npx jest calendar` — 8 passed
+- `DATABASE_URL=... npx jest calendar` — 12 unit + 2 data-scoping tests passed (reviewer-executed at `dbf51a0`; the combined `pnpm --filter api test -- calendar` also runs the e2e spec, which skips without `DATABASE_URL`).
 
 ## Findings/deviations
-F1 (review) closed: added `calendar.service.spec.ts` (unit) and `calendar-data-scoping.spec.ts` (integration). Verification re-run pending (no shell in this session).
+F1 (review) closed: added `calendar.service.spec.ts` (12 unit tests) and `calendar-data-scoping.spec.ts` (2 tests). Verification counts updated at pass 2.

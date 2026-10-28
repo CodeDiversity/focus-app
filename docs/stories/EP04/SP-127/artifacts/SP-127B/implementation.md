@@ -41,5 +41,5 @@ time-zone label, keyboard accessibility, and responsive layout.
 F2 (review) closed: strengthened `e2e/calendar.spec.ts` with seeded meeting + assignment journey and details dialog.
 F3 (review) closed: TZ display uses UTC noon construction in `CalendarPage.tsx` and `CalendarEventDetails.tsx`.
 F6 (review) closed: e2e smoke test's duplicate "Manage availability" locator now uses `.first()`; the full `calendar.spec.ts` (3 tests) passes on the self-contained stack.
-F7 (review) open: SP-127A implementation record verification count is stale.
+F7 (review) closed: SP-127A implementation record verification count updated to 12 unit + 2 data-scoping tests.
 F4/F5 remain optional polish (not addressed).
