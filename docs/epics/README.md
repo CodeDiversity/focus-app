@@ -21,7 +21,7 @@
 | EP07 | Focus Sessions & Time Tracking | [EP07-focus-sessions-and-time-tracking.md](./EP07-focus-sessions-and-time-tracking.md) | EP03 | STUDY-13 |
 | EP08 | Catch-Up & Recovery | [EP08-catch-up-and-recovery.md](./EP08-catch-up-and-recovery.md) | EP06, EP07 | STUDY-17 |
 
-Epics synced to Jira (project STUDY, site adhdstudy.atlassian.net) on 2026-10-11, labeled `studypilot`, `mvp`. EP01 and EP02 have story breakdowns (see [docs/stories/EP01](../stories/EP01/README.md), [docs/stories/EP02](../stories/EP02/README.md)); EP02 covers all six proposed stories — SP-110 (story 1, complete 2026-10-21), SP-111 (stories 2–4, complete 2026-10-22) and SP-112 (stories 5–6, complete 2026-10-23); the epic is complete.
+Epics synced to Jira (project STUDY, site adhdstudy.atlassian.net) on 2026-10-11, labeled `studypilot`, `mvp`. EP01, EP02, EP03 and EP04 have story breakdowns (see [docs/stories/EP01](../stories/EP01/README.md), [docs/stories/EP02](../stories/EP02/README.md), [docs/stories/EP03](../stories/EP03/README.md), [docs/stories/EP04](../stories/EP04/README.md)); EP02 covers all six proposed stories — SP-110 (story 1, complete 2026-10-21), SP-111 (stories 2–4, complete 2026-10-22) and SP-112 (stories 5–6, complete 2026-10-23); the epic is complete. EP04 is broken down (planned 2026-10-28) as SP-127 (weekly academic calendar), SP-128 (study availability and unavailable blocks) and SP-129 (mobile agenda view).
 
 ## Definition of Done
 
