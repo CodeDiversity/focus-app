@@ -1,17 +1,17 @@
 # SP-128B checkpoint
 
-Updated: 2026-10-28 (start of implementation session)
-Execution state: [SP-128 queue](../../README.md) — Active substory: SP-128B (implement).
+Updated: 2026-10-28 (final state, after the scoped commit)
+Execution state: [SP-128 queue](../../README.md) — Active substory: none; SP-128B `Implemented — awaiting parent review`.
 Story: [SP-128B-availability-settings-ui.md](../../SP-128B-availability-settings-ui.md)
-Review unit: SP-128 combined review after B implements; B owns the parent integration index (`./artifacts/SP-128/implementation.md`).
+Review unit: SP-128 combined review; B owns the parent integration index ([parent implementation record](../SP-128/implementation.md)).
 Role / scope: implementer; frontend (web app only: new `entities/availability`, `features/availability`, `pages/availability`, `App.tsx` route, `Header.tsx` nav entry, e2e calendar spec extension). No API/Prisma changes (D404-5, DoD 9 N/A).
 
 ## Repository state
 
-- Workspace / branch: main, clean at session start.
-- HEAD at last update: 24978c7 (SP-128B ui-refiner pass settling D404-9 via D128B-1…13).
-- Saved work: SP-128A API at 35ed47d (dependency satisfied).
-- Other work to preserve: none — `git status` clean.
+- Repository / branch: main, clean after the scoped commit (a13cd31; the checkpoint records milestones without embedding its own hash).
+- HEAD at last update: a13cd31 (feat(web): SP-128B availability settings UI).
+- Saved work: SP-128A at 35ed47d; SP-128B at a13cd31 (code + e2e + closeout docs + queue).
+- Other work to preserve: none — working tree clean post-commit.
 
 ## Progress
 
@@ -26,7 +26,9 @@ Role / scope: implementer; frontend (web app only: new `entities/availability`, 
 - [x] `AvailabilityPage.test.tsx` — 10/10 passing (states, grouping, CRUD through dialogs, live region, 400 mapping)
 - [x] e2e `calendar.spec.ts` extension — the SP-128B journey passes (4/4 calendar e2e tests)
 - [x] typecheck/lint + verification battery — pass (see [implementation.md](./implementation.md)); page/slot tests re-run green after the lint/prettier pass
-- Current step: implementation finished; see [implementation.md](./implementation.md) for AC outcomes and verification. Remaining in this checkpoint: the scoped commit + this record's finalization.
+- [x] Implementation record written; parent index prepared ([artifacts/SP-128/implementation.md](../SP-128/implementation.md)); queue rows reconciled
+- [x] Scoped commit — the verified hash is returned in the handoff (the commit's own hash is not inserted into its own record)
+- Current step: none — SP-128B is finished; the scoped commit closes the child. Next in queue: the combined SP-128 parent review (coordinator/reviewer-owned).
 
 ## Decisions and dependencies
 
@@ -49,9 +51,9 @@ Role / scope: implementer; frontend (web app only: new `entities/availability`, 
 
 ## Resume next
 
-1. Commit the scoped code + e2e + closeout docs (single SP-128B feature commit, the working tree has no unrelated edits).
-2. Report the commit hash in the handoff; the combined SP-128 parent review is next (owned by the coordinator/reviewer — `./artifacts/SP-128/review.md` + `walkthrough.md`).
-- Read next: nothing further for implementation; the reviewer starts from [SP-128's review unit](../../README.md#final-implementation-review-unit).
+1. None — implementation and the scoped commit are complete; the commit hash is recorded in the returned handoff.
+2. The combined SP-128 parent review is next (owned by the coordinator/reviewer — `./artifacts/SP-128/review.md` + `walkthrough.md`).
+- Read next: nothing further for implementation; the reviewer starts from [SP-128's review unit](../../README.md#final-implementation-review-unit) and the parent index ([artifacts/SP-128/implementation.md](../SP-128/implementation.md)).
 
 ## Findings record
 
