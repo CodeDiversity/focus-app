@@ -2,7 +2,7 @@
 
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1
-**Status:** Draft — one frontend story, `Needs refinement` (ui-refiner handoff, D126-5). User request 2026-10-27: redesign the Courses page to match the recently redesigned Assignments page.
+**Status:** Refined — one frontend story, `Ready` (ui-refiner pass complete 2026-10-28). User request 2026-10-27: redesign the Courses page to match the recently redesigned Assignments page.
 **Jira key:** Pending creation
 
 ## Execution queue
@@ -15,7 +15,7 @@
 
 **Active substory:** None.
 
-**Next substory:** SP-126 — refine: run `ui-refiner` on SP-126 to record the visual decisions in the story file (D126-5), then implement.
+**Next substory:** SP-126 — implement: the refined Courses page (frontend, one writer).
 
 **Implementation owner:** `implementer`, one frontend writer. No backend writer.
 
@@ -23,7 +23,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [SP-126](./SP-126-course-experience.md) | Needs refinement | SP-125 reviewed (`9dce1c4`) — the design reference is in code; no implementation dependency. | `ui-refiner` pass (D126-5) | — |
+| [SP-126](./SP-126-course-experience.md) | Ready | SP-125 reviewed (`9dce1c4`) — the design reference is in code; no implementation dependency. | Implement (frontend, one writer) | — |
 
 This unit adds no new epic acceptance criterion. It is a presentation pass over
 behavior SP-111 and SP-112 already own.

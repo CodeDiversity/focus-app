@@ -5,8 +5,9 @@
 **Parent epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1
 **Layer:** Frontend
-**Status:** Needs refinement (ui-refiner handoff, D126-5). Not ready to code.
+**Status:** Refined (ui-refiner pass complete 2026-10-28). Ready to code.
 **Dependencies:** SP-125 reviewed (`9dce1c4`) — the design reference is in code; no implementation dependency.
+**Refined:** 2026-10-28
 **Jira key:** Pending creation
 
 ## Summary
@@ -40,21 +41,20 @@ The `/courses` page reads as a polished, production-quality student dashboard co
 
 ## Settled UI/UX decisions
 
-> **Pending — `ui-refiner` records these in this section before implementation (D126-5).**
-> The user request settles: header content/placement, toolbar composition and styling, the card
-> information set, the grid column counts, the state kinds, and the accessibility requirements.
-> The ui-refiner settles the residual details with the user:
->
-> - the card's internal layout and the course-color indicator treatment (dot vs. left bar vs. top accent);
-> - the three-dot menu placement on the card and its overflow behavior inside the grid;
-> - the card-click accessibility pattern (name link + stretched activation area, per the D112B-6 / `AssignmentRow` precedent, vs. other);
-> - the subtitle wording;
-> - the search mechanism (instant client-side filtering vs. debounce vs. Enter) and placeholder/aria-label copy;
-> - the filter-reset affordance (button placement/label, mirroring the Assignments "Clear filters");
-> - the "Show archived" switch placement in the new toolbar and the Archived indicator on cards;
-> - the empty-state icon/illustration (lucide) and the no-results copy;
-> - the hover/focus/elevation details and the consistent-card-height strategy;
-> - the exact Tailwind grid breakpoints for 1 / 2 / 2–3 columns.
+All residual UI/UX decisions for D126-5 are now settled (2026-10-28). The user request
+already settled the header content/placement, toolbar composition and styling, the card
+information set, the state kinds, and the accessibility requirements.
+
+- **Card color indicator:** a small 10–12px rounded color dot beside the course code, matching the existing course rows and the Assignments course chip. Color is never the only channel (the code/name/semester text also identifies the course).
+- **Three-dot menu placement:** trigger in the card's top-right corner, dropdown anchored to it and absolutely positioned within the card (mirroring `RowActionsMenu`: open focuses the first item, Escape closes and restores the trigger, arrow keys cycle, an action re-focuses the trigger before the callback). The trigger sits above the stretched click layer (higher z-index) so it never navigates.
+- **Card click pattern:** stretched link — the course name is a `Link` to `/courses/:id` (accessible name = course name); an invisible absolutely-positioned overlay covers the card body so the whole card is clickable, while the menu trigger and any other interactive control remain above it. Preserves D112B-6 (name is the accessible target) and keyboard operability.
+- **Subtitle wording:** "Manage your courses, semesters, and class meetings." (one line, `text-sm text-secondary-500` under the `h1`).
+- **Search mechanism:** instant client-side filtering on every keystroke (case-insensitive match on name or code), no debounce — the list is small and instant feedback is ADHD-friendly. Clear `X` inside the input plus Enter handling for completeness.
+- **Filter-reset affordance:** a `Clear filters` ghost button (`variant="ghost"`, `size="sm"`) in the results card footer, shown only when any filter is active, plus the magnifier + clear `X` inside the search input. Mirrors the Assignments page footer.
+- **Archived toggle + indicator:** the "Show archived" `role="switch"` sits in a small right-aligned row above the results card (preserving the existing client-side filter, D111B-1); archived cards keep a text "Archived" pill (`bg-secondary-100 text-secondary-600`) — not color-only.
+- **Empty / no-results states:** empty (no courses): `BookOpen` icon (`size={40}`, `text-secondary-300`), "No courses yet.", "Add your first course to start organizing your semester.", CTA "Add your first course". No matches: `Search` icon (`size={36}`), "No courses match these filters.", "Try adjusting your search or semester filter.", CTA "Clear filters".
+- **Hover / focus / height:** grid items stretch to equal row height (`items-stretch`); cards use `min-h` with content pinned to the top; hover raises shadow `shadow-sm → shadow-md` and darkens the border (`border-secondary-200 → border-secondary-300`); focus uses the base `:focus-visible` ring. Minimal motion (transition on shadow/border only).
+- **Grid breakpoints:** 1 column below `sm` (640px), 2 columns from `sm`, 3 columns from `lg` (1024px): `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4`. Inside the Assignments-consistent `max-w-5xl` container.
 
 ## Acceptance criteria
 
@@ -108,7 +108,17 @@ The `/courses` page reads as a polished, production-quality student dashboard co
 | D126-2 | The card's three-dot menu offers **Edit + Archive/Restore** — no hard delete (no `DELETE /courses/:id` in the MVP; archive-first design D111-2; archived courses remain accessible, AC-E02-05). A course-specific menu in `features/courses/ui/` mirroring the `RowActionsMenu` keyboard/focus model; no refactor of the reviewed assignments module. | User decision 2026-10-27. |
 | D126-3 | Search and semester filtering are **client-side** over the already-fetched list (the page already fetches `includeArchived: true`, D111B-1; a student's course list is small; the semester options come from the already-fetched `listSemesters()`). No new `q`/filter API parameters; the "Show archived" switch composes with them. | Planner-recorded (grounded in D111B-1 + the Assignments toolbar precedent; reversible). |
 | D126-4 | The page shell matches the redesigned Assignments page: `max-w-5xl` width, `py-12`, "My Courses" `h1` + a subtle subtitle, "Add Course" primary button upper-right; the search + semester toolbar sits outside the results area with the Assignments toolbar styling (magnifier search + clear, compact `Select`, `h-[42px]`, `max-sm:min-h-[44px]`). | User request 2026-10-27 (items 1–2). |
-| D126-5 | The card's internal layout, the color-indicator treatment, the menu placement, the grid breakpoints, the empty-state art, the filter-reset affordance, the archived-toggle placement, the hover/focus details, and the user-facing copy are **not** decided here. `ui-refiner` records them in the story file before implementation. | UI/UX handoff. |
+| D126-5 | Settled by the ui-refiner pass (2026-10-28): color indicator = small dot; menu = top-right trigger with RowActionsMenu keyboard model; card click = stretched link; subtitle = "Manage your courses, semesters, and class meetings."; search = instant client-side; reset = `Clear filters` ghost button in results card footer + clear X in input; archived toggle above the grid + text "Archived" pill; empty/no-match icons = BookOpen/Search with settled copy; hover/focus = subtle shadow/border lift + base focus ring with equal-height grid; grid = 1 (base) / 2 (sm) / 3 (lg). Full detail in the "Settled UI/UX decisions" section above. | ui-refiner pass 2026-10-28 (user-confirmed options). |
+| D126-8 | Card color indicator is a small 10–12px rounded dot beside the course code; color is never the sole channel. | ui-refiner 2026-10-28. |
+| D126-9 | Three-dot menu trigger sits top-right of the card, above the stretched click layer (higher z-index); dropdown anchors to it with the RowActionsMenu keyboard model. | ui-refiner 2026-10-28. |
+| D126-10 | Card primary content uses a stretched link: course name is a `Link` to `/courses/:id`; an invisible overlay covers the card body; menu trigger stays above it. | ui-refiner 2026-10-28. |
+| D126-11 | Page subtitle copy: "Manage your courses, semesters, and class meetings." (`text-sm text-secondary-500`). | ui-refiner 2026-10-28. |
+| D126-12 | Search filters instantly on every keystroke (case-insensitive match on name or code); clear `X` in input plus Enter handling. | ui-refiner 2026-10-28. |
+| D126-13 | Filter reset: `Clear filters` ghost button (`variant="ghost"`, `size="sm"`) in the results card footer, shown only when any filter is active, plus the magnifier + clear X in the search input. | ui-refiner 2026-10-28. |
+| D126-14 | "Show archived" `role="switch"` in a small right-aligned row above the results card; archived cards carry a text "Archived" pill (`bg-secondary-100 text-secondary-600`). | ui-refiner 2026-10-28. |
+| D126-15 | Empty state: `BookOpen` icon (size 40, text-secondary-300), "No courses yet.", "Add your first course to start organizing your semester.", CTA "Add your first course". No-match: `Search` icon (size 36), "No courses match these filters.", "Try adjusting your search or semester filter.", CTA "Clear filters". | ui-refiner 2026-10-28. |
+| D126-16 | Hover/focus/height: grid items stretch to equal row height; cards use `min-h` with content pinned top; hover raises shadow `shadow-sm → shadow-md` and border `border-secondary-200 → border-secondary-300`; focus uses the base `:focus-visible` ring; transitions on shadow/border only. | ui-refiner 2026-10-28. |
+| D126-17 | Grid breakpoints: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4` inside the `max-w-5xl` container. | ui-refiner 2026-10-28. |
 | D126-6 | Existing behavior stays: create/edit (`CourseForm` modal), archive/restore (`ArchiveCourseDialog` + the live-region sentences), show-archived switch, list re-read after every mutation, name→detail navigation (D112B-6). Visual polish inside the two dialogs is in scope; replacing either requires an explicit withdrawal. | SP-111/SP-112. This story does not re-take those acceptance criteria. |
 | D126-7 | The e2e spec `semesters-courses.spec.ts` (SP-118) keeps passing with at most pin updates: the accessible names (`Edit/Archive/Restore ${name}`), the live-region sentences, the empty-state CTA, and the dialog headings are preserved, or the spec is updated in the same change without weakening behavior assertions. | SP-118 + the SP-125 precedent (update incidental markup assertions; do not weaken behavior assertions). |
 
