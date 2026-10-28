@@ -6,7 +6,7 @@
 **Parent:** [SP-127](./SP-127-calendar-read-model-and-week-view.md)
 **Milestone:** M2
 **Layer:** Frontend
-**Status:** Ready — ui-refiner pass complete (D404-9).
+**Status:** Implemented — awaiting parent review.
 **Dependencies:** SP-127A implemented (the read model it renders).
 **Jira key:** Pending creation
 **Refined:** 2026-10-28

@@ -7,6 +7,7 @@ import { DashboardPage } from '@/pages/dashboard/ui/DashboardPage';
 import { SemestersPage } from '@/pages/semesters/ui/SemestersPage';
 import { CoursesPage } from '@/pages/courses/ui/CoursesPage';
 import { AssignmentsPage } from '@/pages/assignments/ui/AssignmentsPage';
+import { CalendarPage } from '@/pages/calendar/ui/CalendarPage';
 import { CourseDetailPage } from '@/pages/courses/ui/CourseDetailPage';
 import { ProfilePage } from '@/pages/profile/ui/ProfilePage';
 import { OnboardingPage } from '@/pages/onboarding/ui/OnboardingPage';
@@ -45,6 +46,8 @@ function App() {
           <Route path="/courses/:id" element={<CourseDetailPage />} />
           {/* SP-122B: assignments list page (search, filters, sort) */}
           <Route path="/assignments" element={<AssignmentsPage />} />
+          {/* SP-127B: weekly academic calendar */}
+          <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           {/* SP-107C: onboarding wizard (D107-3: inside ProtectedRoute,
               rendered within the standard Layout like all existing pages) */}
