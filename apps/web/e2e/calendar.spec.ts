@@ -17,7 +17,9 @@ test('renders the calendar page for an authenticated user', async ({ page, reque
 
   await expect(page.getByRole('heading', { name: 'Calendar' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Today' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Manage availability' })).toBeVisible();
+  // The page may render two "Manage availability" links (toolbar + empty
+  // state); strict mode requires a single locator, so assert the first only.
+  await expect(page.getByRole('link', { name: 'Manage availability' }).first()).toBeVisible();
 });
 
 test('navigates between weeks with previous/next', async ({ page, request }) => {

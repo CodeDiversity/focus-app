@@ -13,7 +13,7 @@
 - [x] Typecheck/lint/tests pass
 
 ## Findings/deviations
-None.
+F6 (pass-2 review) fixed: the e2e smoke test now targets the first "Manage availability" link (`.first()`); the full `calendar.spec.ts` (3 tests) passes on the self-contained stack.
 
 ## Next action
-Parent index + queue reconciliation, then commit.
+Re-review of `docs/stories/EP04/SP-127/artifacts/SP-127/review.md` (pass 3).
