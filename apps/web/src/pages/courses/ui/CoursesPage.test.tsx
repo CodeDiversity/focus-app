@@ -130,7 +130,7 @@ describe('CoursesPage list (AC 1, AC 2)', () => {
     expect(mockedListCourses).toHaveBeenCalledTimes(1);
     expect(mockedListCourses).toHaveBeenCalledWith({ includeArchived: true });
     // The "New course" action is present once the list is loaded.
-    expect(screen.getByRole('button', { name: /new course/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /add course/i })).toBeInTheDocument();
   });
 
   it('includes the archived row with an Archived badge after toggling the switch (AC 2, D111-3)', async () => {
@@ -154,7 +154,7 @@ describe('CoursesPage list (AC 1, AC 2)', () => {
     mockedListCourses.mockResolvedValue([]);
     renderPage();
 
-    expect(await screen.findByText('No courses yet')).toBeInTheDocument();
+    expect(await screen.findByText('No courses yet.')).toBeInTheDocument();
     await validUser.click(screen.getByRole('button', { name: /add your first course/i }));
     expect(await screen.findByRole('dialog')).toHaveTextContent('Add a course');
   });
@@ -206,7 +206,7 @@ describe('CoursesPage create (AC 3)', () => {
     renderPage();
     await screen.findAllByRole('listitem');
 
-    await validUser.click(screen.getByRole('button', { name: /new course/i }));
+    await validUser.click(screen.getByRole('button', { name: /add course/i }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('heading', { level: 2 })).toHaveTextContent('Add a course');
 
@@ -229,7 +229,7 @@ describe('CoursesPage create (AC 3)', () => {
     renderPage();
     await screen.findAllByRole('listitem');
 
-    await validUser.click(screen.getByRole('button', { name: /new course/i }));
+    await validUser.click(screen.getByRole('button', { name: /add course/i }));
     await screen.findByRole('dialog');
     await validUser.click(screen.getByRole('button', { name: 'Cancel' }));
 
@@ -258,7 +258,12 @@ describe('CoursesPage edit (AC 4)', () => {
     renderPage();
     await screen.findAllByRole('listitem');
 
-    await validUser.click(screen.getByRole('button', { name: /edit intro to computer science/i }));
+    await validUser.click(
+      screen.getByRole('button', { name: /actions for intro to computer science/i })
+    );
+    await validUser.click(
+      screen.getByRole('menuitem', { name: /edit intro to computer science/i })
+    );
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('heading', { level: 2 })).toHaveTextContent(
       'Edit Intro to Computer Science'
@@ -302,7 +307,10 @@ describe('CoursesPage archive and restore (AC 5, D111-2)', () => {
     await screen.findAllByRole('listitem');
 
     await validUser.click(
-      screen.getByRole('button', { name: /archive intro to computer science/i })
+      screen.getByRole('button', { name: /actions for intro to computer science/i })
+    );
+    await validUser.click(
+      screen.getByRole('menuitem', { name: /archive intro to computer science/i })
     );
 
     const dialog = await screen.findByRole('dialog');
@@ -338,7 +346,8 @@ describe('CoursesPage archive and restore (AC 5, D111-2)', () => {
 
     // Make the archived row visible, then restore it.
     await validUser.click(screen.getByRole('switch', { name: /show archived/i }));
-    await validUser.click(screen.getByRole('button', { name: /restore world history/i }));
+    await validUser.click(screen.getByRole('button', { name: /actions for world history/i }));
+    await validUser.click(screen.getByRole('menuitem', { name: /restore world history/i }));
 
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveTextContent('Restore World History?');
@@ -359,7 +368,8 @@ describe('CoursesPage archive and restore (AC 5, D111-2)', () => {
     renderPage();
     await screen.findAllByRole('listitem');
 
-    await validUser.click(screen.getByRole('button', { name: /archive calculus i/i }));
+    await validUser.click(screen.getByRole('button', { name: /actions for calculus i/i }));
+    await validUser.click(screen.getByRole('menuitem', { name: /archive calculus i/i }));
     await screen.findByRole('dialog');
     await validUser.click(screen.getByRole('button', { name: 'Cancel' }));
 
@@ -393,8 +403,10 @@ describe('CoursesPage accessibility and responsiveness (AC 6, DoD 6/7)', () => {
 
   it('opens the archive dialog with the keyboard and returns focus to the trigger on Escape', async () => {
     renderPage();
-    const trigger = await screen.findByRole('button', { name: /archive calculus i/i });
+    const trigger = await screen.findByRole('button', { name: /actions for calculus i/i });
     trigger.focus();
+    await validUser.keyboard('{Enter}');
+    await validUser.keyboard('{ArrowDown}');
     await validUser.keyboard('{Enter}');
 
     // The dialog takes focus (its safe action) — the trap is active.
@@ -413,7 +425,7 @@ describe('CoursesPage accessibility and responsiveness (AC 6, DoD 6/7)', () => {
     renderPage();
     await screen.findAllByRole('listitem');
 
-    const container = document.querySelector('.max-w-3xl');
+    const container = document.querySelector('.max-w-5xl');
     expect(container).not.toBeNull();
     expect(container).toHaveClass('px-4', 'sm:px-6', 'lg:px-8');
   });

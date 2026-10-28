@@ -167,7 +167,7 @@ describe('CourseList states (DoD 5)', () => {
     const user = userEvent.setup();
     renderList({ courses: [], onCreate });
 
-    expect(screen.getByText('No courses yet')).toBeInTheDocument();
+    expect(screen.getByText('No courses yet.')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /add your first course/i }));
     expect(onCreate).toHaveBeenCalledTimes(1);
   });
@@ -192,15 +192,20 @@ describe('CourseList row actions (AC 5)', () => {
     const user = userEvent.setup();
     renderList({ onEdit, onArchiveRestore });
 
-    await user.click(screen.getByRole('button', { name: /edit intro to computer science/i }));
+    await user.click(
+      screen.getByRole('button', { name: /actions for intro to computer science/i })
+    );
+    await user.click(screen.getByRole('menuitem', { name: /edit intro to computer science/i }));
     expect(onEdit).toHaveBeenCalledWith(cs101);
 
-    await user.click(screen.getByRole('button', { name: /archive calculus i/i }));
+    await user.click(screen.getByRole('button', { name: /actions for calculus i/i }));
+    await user.click(screen.getByRole('menuitem', { name: /archive calculus i/i }));
     expect(onArchiveRestore).toHaveBeenCalledWith(math101);
 
     // The archived row offers Restore (after toggling it visible).
     await user.click(screen.getByRole('switch', { name: /show archived/i }));
-    await user.click(screen.getByRole('button', { name: /restore world history/i }));
+    await user.click(screen.getByRole('button', { name: /actions for world history/i }));
+    await user.click(screen.getByRole('menuitem', { name: /restore world history/i }));
     expect(onArchiveRestore).toHaveBeenCalledWith(hist201);
     expect(
       screen.queryByRole('button', { name: /archive world history/i })
@@ -233,7 +238,8 @@ describe('CourseList row navigation (D112B-6)', () => {
     const user = setupUser();
     renderList({ onEdit });
 
-    await user.click(screen.getByRole('button', { name: /edit calculus i/i }));
+    await user.click(screen.getByRole('button', { name: /actions for calculus i/i }));
+    await user.click(screen.getByRole('menuitem', { name: /edit calculus i/i }));
     expect(onEdit).toHaveBeenCalledWith(math101);
     expect(screen.getByTestId('location')).toHaveTextContent('/');
   });

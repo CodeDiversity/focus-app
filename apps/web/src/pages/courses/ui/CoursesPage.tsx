@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/shared/ui/Button';
+import { Select } from '@/shared/ui/Select';
+import { Input } from '@/shared/ui/Input';
+import { Search, X } from 'lucide-react';
 import { getErrorMessage } from '@/shared/lib/errors';
 import { listCourses, type CourseWithSemester } from '@/entities/course/api/courseApi';
 import { listSemesters, type SemesterWithCount } from '@/entities/semester/api/semesterApi';
@@ -9,29 +12,6 @@ import { ArchiveCourseDialog } from '@/features/courses/ui/ArchiveCourseDialog';
 
 type FormMode = 'closed' | 'create' | 'edit';
 
-/**
- * `/courses` (SP-111B, D111-5): the student's course management surface —
- * list (color chip, code, name, semester, credits) with create/edit (dialog
- * form incl. the `instructor` field, D111-1), archive/restore with
- * confirmation, and a show-archived toggle.
- *
- * State is page-local (the SemestersPage precedent; no new RTK slice — the
- * entity API is the data home).  The list is the single source of truth and
- * is re-read after every successful mutation, so rows and badges always
- * re-derive from the API response.  **D111B-1:** the initial fetch uses
- * `includeArchived: true` and the "Show archived" switch (inside
- * `CourseList`) filters client-side — the toggle is instant, and archived
- * rows keep their data (AC-E02-05).
- *
- * The semester picker's options are the student's own semesters (a
- * principal-scoped `listSemesters` side fetch — non-fatal: on failure the
- * picker simply has no options).
- *
- * Feedback: successes announce through the always-present `role="status"`
- * live region; list failures render the actionable error state; form and
- * archive/restore failures toast the sanitized message inside their
- * respective dialog components (app convention).
- */
 export function CoursesPage() {
   const [courses, setCourses] = useState<CourseWithSemester[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,12 +22,13 @@ export function CoursesPage() {
   const [archivingCourse, setArchivingCourse] = useState<CourseWithSemester | null>(null);
   const [statusMessage, setStatusMessage] = useState('');
 
+  const [searchInput, setSearchInput] = useState('');
+  const [semesterFilter, setSemesterFilter] = useState('');
+
   const load = useCallback(async () => {
     setIsLoading(true);
     setListError(null);
     try {
-      // D111B-1: fetch once with the archived rows included; the switch
-      // filters client-side.
       setCourses(await listCourses({ includeArchived: true }));
     } catch (err: unknown) {
       setListError(getErrorMessage(err) || 'We could not load your courses. Try again.');
@@ -58,9 +39,6 @@ export function CoursesPage() {
 
   useEffect(() => {
     void load();
-    // The semester picker's options (the student's own semesters).  Non-fatal:
-    // on failure the picker simply offers no options — the course list is
-    // independent of it.
     void listSemesters()
       .then(setSemesters)
       .catch(() => undefined);
@@ -105,21 +83,80 @@ export function CoursesPage() {
     void load();
   };
 
-  const showList = !isLoading && !listError && formMode === 'closed';
+  const clearFilters = () => {
+    setSearchInput('');
+    setSemesterFilter('');
+  };
+
+  const filtersActive = Boolean(searchInput.trim()) || Boolean(semesterFilter);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-secondary-900">Courses</h1>
-        {showList && courses.length > 0 && <Button onClick={openCreate}>New course</Button>}
+    <section
+      aria-labelledby="courses-heading"
+      className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+    >
+      <div className="mb-6 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 id="courses-heading" className="text-3xl font-bold text-secondary-900">
+            My Courses
+          </h1>
+          <p className="mt-1 text-sm text-secondary-500">
+            Manage your courses, semesters, and class meetings.
+          </p>
+        </div>
+        <Button className="max-sm:min-h-[44px]" onClick={openCreate}>
+          Add Course
+        </Button>
       </div>
 
-      {/* Always present so status changes are announced (DoD 6). */}
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="relative w-full sm:min-w-[280px] sm:flex-1">
+          <Input
+            aria-label="Search courses"
+            placeholder="Search courses..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') setSearchInput(searchInput.trim());
+            }}
+            leftIcon={<Search size={16} aria-hidden />}
+            className="h-[42px] pr-10 max-sm:min-h-[44px]"
+          />
+          {searchInput && (
+            <button
+              type="button"
+              aria-label="Clear search"
+              onClick={() => setSearchInput('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600 focus:outline-none"
+            >
+              <X size={16} aria-hidden />
+            </button>
+          )}
+        </div>
+
+        <div className="w-full sm:w-[180px] sm:shrink-0">
+          <Select
+            aria-label="Semester"
+            value={semesterFilter}
+            onChange={(e) => setSemesterFilter(e.target.value)}
+            className="h-[42px] w-full pr-8 max-sm:min-h-[44px]"
+          >
+            <option value="">All semesters</option>
+            {semesters.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </div>
+
+      {/* Always present so status changes are announced. */}
       <div role="status" className="mb-4 min-h-5 text-sm text-secondary-600">
         {statusMessage}
       </div>
 
-      <div className="card p-6">
+      <div className="card p-4 sm:p-6">
         <CourseList
           courses={courses}
           isLoading={isLoading}
@@ -128,6 +165,10 @@ export function CoursesPage() {
           onCreate={openCreate}
           onEdit={openEdit}
           onArchiveRestore={setArchivingCourse}
+          searchQuery={searchInput}
+          semesterFilter={semesterFilter}
+          filtersActive={filtersActive}
+          onClearFilters={clearFilters}
         />
       </div>
 
@@ -156,6 +197,6 @@ export function CoursesPage() {
           onCancel={() => setArchivingCourse(null)}
         />
       )}
-    </div>
+    </section>
   );
 }
