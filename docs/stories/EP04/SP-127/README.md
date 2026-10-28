@@ -16,7 +16,7 @@ Covers the epic's proposed stories **1 (weekly academic calendar), 2 (course mee
 
 **Active substory:** None.
 
-**Next substory:** SP-127A — implement (backend): the calendar event read model.
+**Next substory:** SP-127B — ui-refiner pass (D404-9), then implement.
 
 **Implementation owner:** `implementer`, sequential (A → B).
 
@@ -24,7 +24,7 @@ Covers the epic's proposed stories **1 (weekly academic calendar), 2 (course mee
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-127A-calendar-events-api.md) | Ready | EP02 + EP03 complete (satisfied). No EP04 predecessor. | Implement (backend) | — |
+| [A](./SP-127A-calendar-events-api.md) | Implemented — awaiting parent review | EP02 + EP03 complete (satisfied). No EP04 predecessor. | Parent review (after SP-127B) | ./artifacts/SP-127A/implementation.md |
 | [B](./SP-127B-calendar-week-view.md) | Needs refinement | SP-127A implemented. | `ui-refiner` pass (D404-9), then implement | — |
 
 ## Why this is two children

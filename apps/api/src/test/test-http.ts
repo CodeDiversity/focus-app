@@ -18,6 +18,7 @@ import { OnboardingModule } from '../modules/onboarding/onboarding.module';
 import { SemestersModule } from '../modules/semesters/semesters.module';
 import { CoursesModule } from '../modules/courses/courses.module';
 import { AssignmentsModule } from '../modules/assignments/assignments.module';
+import { CalendarModule } from '../modules/calendar/calendar.module';
 import { PrismaService } from '../modules/prisma/prisma.service';
 import { EMAIL_PROVIDER } from '../modules/email/email-provider';
 import { AllExceptionsFilter } from '../common/filters/all-exceptions.filter';
@@ -80,6 +81,7 @@ export async function createIntegrationApp(): Promise<IntegrationApp> {
       SemestersModule,
       CoursesModule,
       AssignmentsModule,
+      CalendarModule,
     ],
   })
     .overrideProvider(EMAIL_PROVIDER)

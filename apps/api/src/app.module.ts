@@ -7,6 +7,7 @@ import { OnboardingModule } from './modules/onboarding/onboarding.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
 import { CoursesModule } from './modules/courses/courses.module';
 import { AssignmentsModule } from './modules/assignments/assignments.module';
+import { CalendarModule } from './modules/calendar/calendar.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AssignmentsModule } from './modules/assignments/assignments.module';
     SemestersModule,
     CoursesModule,
     AssignmentsModule,
+    CalendarModule,
   ],
 })
 export class AppModule {}

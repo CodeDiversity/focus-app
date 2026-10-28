@@ -6,7 +6,7 @@
 **Parent:** [SP-127](./SP-127-calendar-read-model-and-week-view.md)
 **Milestone:** M2
 **Layer:** Backend
-**Status:** Ready.
+**Status:** Implemented — awaiting parent review.
 **Dependencies:** EP02 + EP03 (both complete). No EP04 predecessor.
 **Jira key:** Pending creation
 
