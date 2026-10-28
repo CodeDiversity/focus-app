@@ -90,3 +90,48 @@ test('shows a seeded class meeting and assignment deadline on the right days and
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
 });
+
+test('SP-128B: slots created on /availability appear on the calendar as available and blocked events', async ({
+  page,
+  request,
+}) => {
+  const { email } = await createAuthenticatedUserViaApi(request);
+  await loginViaUi(page, email);
+
+  // Start empty and land on the page (SP-128B empty state).
+  await page.goto('/availability');
+  await expect(page.getByRole('heading', { name: 'Availability' })).toBeVisible();
+  await expect(page.getByText('No availability yet.')).toBeVisible();
+
+  // An available window on Monday (create default kind: "Available window").
+  await page.getByRole('button', { name: 'Add time slot' }).click();
+  const form = page.getByRole('dialog');
+  await expect(form.getByRole('heading', { name: 'Add a time slot' })).toBeVisible();
+  await expect(form.getByRole('radio', { name: 'Available window' })).toBeChecked();
+  await form.getByLabel('Start time').fill('09:00');
+  await form.getByLabel('End time').fill('10:30');
+  await form.getByRole('button', { name: 'Create time slot' }).click();
+  await expect(page.getByRole('dialog', { name: 'Add a time slot' })).toHaveCount(0);
+  await expect(page.getByText('Mon 09:00–10:30')).toBeVisible();
+  await expect(page.getByText('Available window added.')).toBeVisible();
+
+  // A blocked time on Wednesday evening through the same dialog.
+  await page.getByRole('button', { name: 'Add time slot' }).click();
+  const form2 = page.getByRole('dialog', { name: 'Add a time slot' });
+  await form2.getByRole('radio', { name: 'Blocked time' }).check();
+  await form2.getByLabel('Day').selectOption('3');
+  await form2.getByLabel('Start time').fill('20:00');
+  await form2.getByLabel('End time').fill('22:00');
+  await form2.getByRole('button', { name: 'Create time slot' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByText('Wed 20:00–22:00')).toBeVisible();
+  // The kind distinction is textual next to the matching icon (the badge is
+  // the exact "Blocked" text; the status line's sentence is its own match).
+  await expect(page.getByText('Blocked', { exact: true })).toBeVisible();
+  await expect(page.getByText('Showing 2 time slots.')).toBeVisible();
+
+  // The calendar (SP-127A/127B read model) shows both recurring events.
+  await page.goto('/calendar');
+  await expect(page.getByRole('button', { name: 'Available: Available, 09:00' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Blocked: Blocked time, 20:00' })).toBeVisible();
+});

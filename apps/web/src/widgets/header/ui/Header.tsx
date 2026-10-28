@@ -67,6 +67,14 @@ export function Header() {
                   Calendar
                 </Link>
                 <Link
+                  to="/availability"
+                  className={
+                    location.pathname === '/availability' ? 'text-primary-600 font-medium' : ''
+                  }
+                >
+                  Availability
+                </Link>
+                <Link
                   to="/profile"
                   className={location.pathname === '/profile' ? 'text-primary-600 font-medium' : ''}
                 >

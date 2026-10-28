@@ -3,7 +3,7 @@
 **Epic:** [EP04: Academic Calendar & Availability](../../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Parent:** [SP-128](./SP-128-availability-and-unavailable-blocks.md) — coordination record (not an implementation ticket)
 **Milestone:** M2
-**Status:** Draft — two children; SP-128A `Ready`, SP-128B `Needs refinement` (ui-refiner handoff, D404-9).
+**Status:** SP-128A and SP-128B both `Implemented — awaiting parent review` (combined review next).
 **Jira key:** Pending creation
 
 Covers the epic's proposed story **5 (study availability and unavailable blocks)**.
@@ -14,9 +14,9 @@ Covers the epic's proposed story **5 (study availability and unavailable blocks)
 
 **Artifact root:** `./artifacts/` — `./artifacts/SP-128/` (parent index, review, walkthrough) and `./artifacts/SP-128A/`, `./artifacts/SP-128B/`.
 
-**Active substory:** None (SP-128A finished).
+**Active substory:** None (SP-128A and SP-128B both implemented).
 
-**Next substory:** SP-128B — `ui-refiner` pass (D404-9), then implement: the availability settings editor UI.
+**Next substory:** None — both children are implemented; run the combined SP-128 parent review unit (`./artifacts/SP-128/review.md` + `walkthrough.md`) per the review unit below. Adjusted 2026-10-28 after SP-128B's implementation (queue reconciliation at start recorded the refinement-complete evidence, commit 24978c7).
 
 **Implementation owner:** `implementer`, sequential (A → B).
 
@@ -24,8 +24,8 @@ Covers the epic's proposed story **5 (study availability and unavailable blocks)
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-128A-availability-slots-api.md) | Implemented — awaiting parent review | EP02 + EP03 complete (satisfied). No EP04 predecessor. | None — combined SP-128 review after B implements | ./artifacts/SP-128A/implementation.md, ./artifacts/SP-128A/checkpoint.md |
-| [B](./SP-128B-availability-settings-ui.md) | Needs refinement | SP-128A implemented (the API it manages). | `ui-refiner` pass (D404-9), then implement | — |
+| [A](./SP-128A-availability-slots-api.md) | Implemented — awaiting parent review | EP02 + EP03 complete (satisfied). No EP04 predecessor. | None — combined SP-128 review | ./artifacts/SP-128A/implementation.md, ./artifacts/SP-128A/checkpoint.md |
+| [B](./SP-128B-availability-settings-ui.md) | Implemented — awaiting parent review | SP-128A implemented (the API it manages) — satisfied. | None — combined SP-128 review | ./artifacts/SP-128B/implementation.md, ./artifacts/SP-128B/checkpoint.md, ./artifacts/SP-128/implementation.md (parent index) |
 
 ## Why this is two children
 
