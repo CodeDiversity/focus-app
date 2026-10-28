@@ -3,7 +3,7 @@
 **Epic:** [EP04: Academic Calendar & Availability](../../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Parent:** [SP-127](./SP-127-calendar-read-model-and-week-view.md) — coordination record (not an implementation ticket)
 **Milestone:** M2
-**Status:** Draft — two children; SP-127A `Implemented — awaiting parent review`, SP-127B `Implemented — awaiting parent review`.
+**Status:** Reviewed (pass 3) — one combined SP-127 review after both children is complete; both children are `Reviewed`.
 **Jira key:** Pending creation
 
 Covers the epic's proposed stories **1 (weekly academic calendar), 2 (course meetings), 3 (assignments and exam deadlines), and 4 (planned study sessions)**.
@@ -24,8 +24,8 @@ Covers the epic's proposed stories **1 (weekly academic calendar), 2 (course mee
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-127A-calendar-events-api.md) | Implemented — awaiting parent review | EP02 + EP03 complete (satisfied). No EP04 predecessor. | Parent review (after SP-127B) | ./artifacts/SP-127A/implementation.md |
-| [B](./SP-127B-calendar-week-view.md) | Implemented — awaiting parent review | SP-127A implemented. | Parent review | ./artifacts/SP-127B/implementation.md |
+| [A](./SP-127A-calendar-events-api.md) | Reviewed | EP02 + EP03 complete (satisfied). No EP04 predecessor. | None — SP-128A next in EP04. | ./artifacts/SP-127A/implementation.md |
+| [B](./SP-127B-calendar-week-view.md) | Reviewed | SP-127A implemented. | None — SP-128B next in EP04. | ./artifacts/SP-127B/implementation.md |
 
 ## Why this is two children
 
@@ -64,6 +64,13 @@ See the [EP04 README](../README.md#security-invariants-and-counterexamples) — 
 
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
+| F1 | 2026-10-28 | Should-fix | `apps/api/src/modules/calendar/` | Missing required backend unit and data-scoping specs | Added `calendar.service.spec.ts` and `calendar-data-scoping.spec.ts` | Reviewer pass 2: 12 unit + 2 data-scoping tests pass | Closed |
+| F2 | 2026-10-28 | Should-fix | `apps/web/e2e/calendar.spec.ts` | E2E only checked page render/navigation, no event journey | Added seeded meeting + Monday deadline journey with dialog open/escape | Reviewer pass 2: 1 e2e test passed on self-contained stack; pass 3 full spec 3/3 | Closed |
+| F3 | 2026-10-28 | Should-fix | `CalendarPage.tsx`, `CalendarEventDetails.tsx` | TZ display drift from browser-local `Date` construction | Switched to `T12:00:00Z` UTC noon construction | Reviewer pass 2 code inspection; pass 3 tests unchanged | Closed |
+| F6 | 2026-10-28 | Should-fix | `apps/web/e2e/calendar.spec.ts` | Playwright strict-mode failure on two "Manage availability" links | Test now targets the first link with `.first()` | Reviewer pass 3: full calendar spec 3/3 green | Closed |
+| F7 | 2026-10-28 | Should-fix | `artifacts/SP-127A/implementation.md` | Stale verification count (8 → 12+2) | Record updated with actual counts and command | Reviewer pass 3: record verified | Closed |
+| F4 | 2026-10-28 | Polish | `CalendarEventDetails.tsx` | `handleKeyDown` effect re-subscribes every render | Not applied — optional polish | Not verified; not required | Open (optional) |
+| F5 | 2026-10-28 | Polish | `CalendarPage.tsx` | `role="status"` region absent in loading/empty/error early returns | Not applied — optional polish | Not verified; not required | Open (optional) |
 
 ## Quality gate (2026-10-28)
 
@@ -80,7 +87,7 @@ See the [EP04 README](../README.md#security-invariants-and-counterexamples) — 
 | 9 | Correction log | Pass | Empty — first plan of this parent. |
 | 10 | Jira identity/sync | Not applicable | No sync authorized; keys remain `Pending creation`. |
 
-**Outcome: Draft** — SP-127A is `Ready`; SP-127B is `Needs refinement` pending the `ui-refiner` pass.
+**Outcome: Reviewed (pass 3)** — the combined SP-127 review passed on `5eff735`; SP-127A and SP-127B are `Reviewed`, the final walkthrough and report are in `./artifacts/SP-127/`, and the remaining open work is EP04's SP-128A/SP-128B and SP-129A.
 
 ## Final implementation review unit
 
