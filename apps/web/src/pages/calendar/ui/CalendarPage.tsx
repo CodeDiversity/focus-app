@@ -81,8 +81,8 @@ export function CalendarPage() {
       if (!isCurrent()) return;
       setData(result);
       const count = result.events.length;
-      const weekLabel = `${fmtDate(new Date(`${result.from}T12:00:00`), result.timeZone)} – ${fmtDate(
-        new Date(`${result.to}T12:00:00`),
+      const weekLabel = `${fmtDate(new Date(`${result.from}T12:00:00Z`), result.timeZone)} – ${fmtDate(
+        new Date(`${result.to}T12:00:00Z`),
         result.timeZone
       )}`;
       setStatusMessage(`Showing ${count} event${count === 1 ? '' : 's'} for ${weekLabel}.`);
@@ -133,8 +133,8 @@ export function CalendarPage() {
 
   const timeZone = data?.timeZone ?? 'UTC';
   const weekRangeLabel = data
-    ? `${fmtDate(new Date(`${data.from}T12:00:00`), data.timeZone)} – ${fmtDate(
-        new Date(`${data.to}T12:00:00`),
+    ? `${fmtDate(new Date(`${data.from}T12:00:00Z`), data.timeZone)} – ${fmtDate(
+        new Date(`${data.to}T12:00:00Z`),
         data.timeZone
       )} · ${data.timeZone}`
     : `${from} – ${to}`;

@@ -8,6 +8,8 @@ Implemented `GET /calendar/events` read model in a new `calendar` module.
 - apps/api/src/modules/calendar/calendar.controller.ts
 - apps/api/src/modules/calendar/calendar.service.ts
 - apps/api/src/modules/calendar/dto/list-calendar-events-query.dto.ts
+- apps/api/src/modules/calendar/calendar.service.spec.ts (new, F1)
+- apps/api/src/modules/calendar/calendar-data-scoping.spec.ts (new, F1)
 - apps/api/src/modules/calendar/calendar-e2e.spec.ts
 - apps/api/src/app.module.ts
 - apps/api/src/test/test-http.ts
@@ -30,4 +32,4 @@ Implemented `GET /calendar/events` read model in a new `calendar` module.
 - `DATABASE_URL=... npx jest calendar` — 8 passed
 
 ## Findings/deviations
-None.
+F1 (review) closed: added `calendar.service.spec.ts` (unit) and `calendar-data-scoping.spec.ts` (integration). Verification re-run pending (no shell in this session).

@@ -86,7 +86,7 @@ export function CalendarEventDetails({ event, timeZone, onClose }: CalendarEvent
   const meta = TYPE_META[event.type];
   const Icon = meta.icon;
   const label = typeLabel(event);
-  const dateLabel = formatDate(new Date(`${event.date}T12:00:00`), timeZone);
+  const dateLabel = formatDate(new Date(`${event.date}T12:00:00Z`), timeZone);
   const timeLabel = event.endTime ? `${event.startTime} – ${event.endTime}` : event.startTime;
   const isDeadline = event.type === 'ASSIGNMENT_DEADLINE' || event.type === 'EXAM_DEADLINE';
 

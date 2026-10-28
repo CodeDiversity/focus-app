@@ -12,4 +12,4 @@ shared contract (timeZone, today, from, to, events with CalendarEvent shape) is
 honored field-by-field.
 
 ## Findings/deviations
-None.
+F1-F3 from the first review pass are addressed (backend tests added, e2e strengthened, TZ display fixed). F4/F5 remain optional polish. Awaiting re-review.

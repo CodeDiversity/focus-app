@@ -11,14 +11,14 @@ time-zone label, keyboard accessibility, and responsive layout.
 - apps/web/src/entities/calendar/api/calendarApi.test.ts (new)
 - apps/web/src/features/calendar/ui/CalendarEventChip.tsx (new)
 - apps/web/src/features/calendar/ui/CalendarEventChip.test.tsx (new)
-- apps/web/src/features/calendar/ui/CalendarEventDetails.tsx (new)
+- apps/web/src/features/calendar/ui/CalendarEventDetails.tsx (new, F3 TZ fix)
 - apps/web/src/features/calendar/ui/CalendarEventDetails.test.tsx (new)
 - apps/web/src/features/calendar/ui/WeekView.tsx (new)
-- apps/web/src/pages/calendar/ui/CalendarPage.tsx (new)
+- apps/web/src/pages/calendar/ui/CalendarPage.tsx (new, F3 TZ fix)
 - apps/web/src/pages/calendar/ui/CalendarPage.test.tsx (new)
 - apps/web/src/app/App.tsx
 - apps/web/src/widgets/header/ui/Header.tsx
-- apps/web/e2e/calendar.spec.ts (new)
+- apps/web/e2e/calendar.spec.ts (new, F2 strengthened)
 
 ## AC outcomes
 1. Renders selected week; prev/next/today move week and results follow — pass (tests).
@@ -38,4 +38,6 @@ time-zone label, keyboard accessibility, and responsive layout.
 - `pnpm --filter web test -- src/pages/calendar src/features/calendar src/entities/calendar` — 15 passed
 
 ## Findings/deviations
-None.
+F2 (review) closed: strengthened `e2e/calendar.spec.ts` with seeded meeting + assignment journey and details dialog.
+F3 (review) closed: TZ display uses UTC noon construction in `CalendarPage.tsx` and `CalendarEventDetails.tsx`.
+F4/F5 remain optional polish (not addressed).
