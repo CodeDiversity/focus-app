@@ -8,6 +8,7 @@ import { SemestersModule } from './modules/semesters/semesters.module';
 import { CoursesModule } from './modules/courses/courses.module';
 import { AssignmentsModule } from './modules/assignments/assignments.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
+import { AvailabilityModule } from './modules/availability/availability.module';
 
 @Module({
   imports: [
@@ -26,6 +27,8 @@ import { CalendarModule } from './modules/calendar/calendar.module';
     CoursesModule,
     AssignmentsModule,
     CalendarModule,
+    // SP-128A: the availability-slots CRUD surface (EP04, D404-11).
+    AvailabilityModule,
   ],
 })
 export class AppModule {}

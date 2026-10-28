@@ -14,9 +14,9 @@ Covers the epic's proposed story **5 (study availability and unavailable blocks)
 
 **Artifact root:** `./artifacts/` — `./artifacts/SP-128/` (parent index, review, walkthrough) and `./artifacts/SP-128A/`, `./artifacts/SP-128B/`.
 
-**Active substory:** None.
+**Active substory:** None (SP-128A finished).
 
-**Next substory:** SP-128A — implement (backend): the availability-slots CRUD API.
+**Next substory:** SP-128B — `ui-refiner` pass (D404-9), then implement: the availability settings editor UI.
 
 **Implementation owner:** `implementer`, sequential (A → B).
 
@@ -24,7 +24,7 @@ Covers the epic's proposed story **5 (study availability and unavailable blocks)
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-128A-availability-slots-api.md) | Ready | EP02 + EP03 complete (satisfied). No EP04 predecessor. | Implement (backend) | — |
+| [A](./SP-128A-availability-slots-api.md) | Implemented — awaiting parent review | EP02 + EP03 complete (satisfied). No EP04 predecessor. | None — combined SP-128 review after B implements | ./artifacts/SP-128A/implementation.md, ./artifacts/SP-128A/checkpoint.md |
 | [B](./SP-128B-availability-settings-ui.md) | Needs refinement | SP-128A implemented (the API it manages). | `ui-refiner` pass (D404-9), then implement | — |
 
 ## Why this is two children
