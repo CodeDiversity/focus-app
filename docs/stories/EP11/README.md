@@ -187,19 +187,19 @@ scope:
   descendants: [EP11A, EP11B]
   entry: ""
   limits: enclosing parent review unit
-stage: plan
+stage: ui_refine
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
   head: ""
-  active_dispatch:
-    name: EP11 planning
-    role: none
-    status: complete
-    pointer: docs/stories/EP11/
-    session: ""
-    assignment: plan
+active_dispatch:
+  name: EP11A ui-refine
+  role: ui-refiner
+  status: pending
+  pointer: docs/stories/EP11/EP11A-desktop-grouped-navigation-and-account-menu.md
+  session: ""
+  assignment: ui_refine
 last_result:
   evidence: "EP11 breakdown created: epic registered in M5, two frontend children (EP11A, EP11B), both Needs refinement (D11-3)."
   findings: ""
