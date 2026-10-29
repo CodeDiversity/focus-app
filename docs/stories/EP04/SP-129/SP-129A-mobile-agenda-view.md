@@ -6,7 +6,8 @@
 **Parent:** [SP-129](./SP-129-mobile-agenda-view.md)
 **Milestone:** M2
 **Layer:** Frontend
-**Status:** Needs refinement — `ui-refiner` pass required before implementation (D404-9). Not ready to code.
+**Status:** Ready — ui-refined (D404-9). Ready to implement.
+**Refined:** 2026-10-28
 **Dependencies:** SP-127B implemented.
 **Jira key:** Pending creation
 
@@ -53,9 +54,9 @@ A `CalendarAgenda` component renders the calendar's week as a vertical, day-grou
   - Omits days with no events.
   - Each entry carries its type label (text, not only color).
   - Activating an entry opens the details dialog; Escape returns focus to the entry.
-  - The empty state renders when the payload has no events.
-- `apps/web/src/pages/calendar/ui/CalendarPage.test.tsx` (extended) — the agenda is used at the narrow viewport and the week view at the wide viewport.
-- `apps/web/e2e/calendar.spec.ts` (extended) — a phone-sized viewport shows the agenda with the day's events in order, and the details dialog opens from an entry.
+  - The empty state renders when the payload has no events (calendar page passes empty array; `CalendarAgenda` renders nothing or lets page show empty state per D129A-05).
+- `apps/web/src/pages/calendar/ui/CalendarPage.test.tsx` (extended) — the agenda is used at the narrow viewport (`window.matchMedia('(max-width: 639px)')` mocked to true) and the week view at the wide viewport (mocked false); assert the agenda container/list is present and the week grid/list with role="list" is absent at narrow widths.
+- `apps/web/e2e/calendar.spec.ts` (extended) — at a phone-sized viewport (e.g. iPhone 12/375x667) the agenda shows events grouped by day with time+title+type label, no horizontal scroll, and opens the details dialog from an entry.
 
 ## Technical notes
 
@@ -65,14 +66,28 @@ A `CalendarAgenda` component renders the calendar's week as a vertical, day-grou
 - Responsive conventions in the codebase: `apps/web/src/pages/assignments/ui/AssignmentsPage.tsx` (toolbar `flex-col sm:flex-row sm:flex-wrap`, controls `h-[42px] max-sm:min-h-[44px]`, `max-w-5xl` shell with `px-4 sm:px-6 lg:px-8 py-12`); `apps/web/src/pages/courses/ui/CoursesPage.tsx` (SP-126 — `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4`). The agenda reuses the `sm:` breakpoint rather than introducing a new one.
 - Styling: Tailwind only (`apps/web/tailwind.config.js`, `apps/web/src/index.css`); `clsx` and `tailwind-merge` are available. No new UI library.
 - Accessibility conventions: `jsx-a11y` is enforced in `apps/web/.eslintrc.cjs`; the shared `Button`/`Input` components carry the focus-ring tokens; the existing pages use `role="status"` live regions and `aria-label`s on icon-only controls.
+- Interaction: `CalendarEventDetails` already implements a modal with `role="dialog"`, Escape to close, focus trap, and focus return to the trigger (tested). `CalendarEventChip` is a button with accessible name and icon+text type label (non-color-only). The agenda will reuse these patterns.
 
 ### Proposed files
 
-`apps/web/src/features/calendar/ui/CalendarAgenda.tsx` (new) + `CalendarAgenda.test.tsx` (new); `apps/web/src/pages/calendar/ui/CalendarPage.tsx` (the viewport switch — SP-127B's file); `apps/web/e2e/calendar.spec.ts` (extended).
+`apps/web/src/features/calendar/ui/CalendarAgenda.tsx` (new) + `CalendarAgenda.test.tsx` (new); `apps/web/src/pages/calendar/ui/CalendarPage.tsx` (viewport switch — SP-127B's file); `apps/web/e2e/calendar.spec.ts` (extended).
 
-### UI/UX gaps for the `ui-refiner` (D404-9 — required before implementation)
+### Decisions (ui-refined)
 
-The day-group header (date vs. weekday + date), the per-entry layout (time beside the title vs. above it), where the type label sits, the treatment of a completed deadline, the empty-state copy, and the exact breakpoint at which the agenda replaces the grid.
+- **D129A-01 — Breakpoint**: Use Tailwind's `sm` breakpoint (640px) as the switch point, matching repo convention (Assignments toolbar stacks at `sm:flex-row`, Courses grid switches at `sm:`). Below `sm` (`< 640px`, i.e. phone widths including 375px) render `CalendarAgenda`; at `sm` and above render `WeekView`. Do **not** introduce a custom breakpoint.
+- **D129A-02 — Day-group header**: Each day group is labelled with `Weekday DD` (e.g. "Mon 27") using the same civil-noon parsing approach as `WeekView.dayHeader` to avoid TZ drift. The header is a non-interactive heading element (`<h3>` or `<div role="heading" aria-level="3">`) inside a group with `role="group"` and `aria-labelledby` pointing to the header id.
+- **D129A-03 — Entry layout**: Time is shown on its own line above the title (or as a small time badge above) to maximize scannability on narrow widths and to avoid truncating time+title in one cramped row. Each entry reuses `CalendarEventChip`'s visual language where possible (icon, type label text, completed badge) but laid out vertically; alternatively render a slim button: left accent border/color preserved, icon + type label row, time, title. The accessible name remains descriptive (`{type label}: {title}, {time}`) consistent with `CalendarEventChip`.
+- **D129A-04 — Type label & completed state**: Keep the icon + text type label (non-color-only) as in `CalendarEventChip`/`TYPE_META`. For `ASSIGNMENT_DEADLINE`/`EXAM_DEADLINE` with `completed === true`, show the "Completed" text badge (icon + text) as in the chip; never rely solely on color.
+- **D129A-05 — Empty/loading/error states**: The agenda component itself is presentational over the events list. For the empty week case, the calendar page continues to show its existing "No events this week" empty state (inside the card) regardless of viewport (the agenda is not shown when `isEmpty` is true per current page logic) — this matches AC 7 ("The calendar page's loading, empty, and error states render in the agenda form as well" in the sense that the same states are used; when empty, no day groups are rendered). Loading/error states remain in `CalendarPage` as-is.
+- **D129A-06 — Focus & a11y**: Each entry is a focusable button (min height `min-h-[44px]` on mobile). Day groups use `role="group"` with `aria-labelledby` to the day header. The live region (`role="status"`) in `CalendarPage` continues to announce week/count as now; no changes needed there.
+- **D129A-07 — Component shape**: `CalendarAgenda` takes `days: string[]`, `eventsByDay: Map<string, CalendarEvent[]>`, `today: string`, `onOpenEvent: (event: CalendarEvent) => void` (same props shape as `WeekView`) for easy swapping in the viewport switch. It renders groups only for days that have events (omit empty days). No internal data fetching.
+- **D129A-08 — Reuse**: Prefer reusing `CalendarEventChip` inside the agenda when layout allows; if vertical layout needs adjustment, extract shared pieces or render equivalent markup while keeping behavior identical (type labels, icons, completed badge, accessible name, click/focus). Do not duplicate `CalendarEventDetails`.
+
+### Implementation notes (concrete)
+
+- **Viewport switch**: In `CalendarPage`, add a media query hook or simple `window.matchMedia('(max-width: 639px)')` with `useEffect`/`useState` (or `useSyncExternalStore`). When narrow, render `<CalendarAgenda .../>` instead of `<WeekView .../>`. Keep the same props (`days`, `eventsByDay`, `today`, `onOpenEvent`).
+- **Agenda markup**: Container `role="list"` or just vertical stack; each day group `role="group"` with header id. Entries as buttons with `className` including `min-h-[44px]` on mobile via `max-sm:min-h-[44px]` and focus ring `focus:outline-none focus:ring-2 focus:ring-primary-500`. No horizontal overflow.
+- **No horizontal scroll**: Ensure no `overflow-x-auto` on the agenda container; use `w-full` and `min-w-0` on text.
 
 ## Definition of Done
 
