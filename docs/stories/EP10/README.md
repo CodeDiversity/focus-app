@@ -192,3 +192,57 @@ One combined review for the EP10 parent — no per-child review gate.
 
 Child implementation completion unblocks the dependent child; only the passing combined review establishes sign-off. EP10A–EP10C must complete their `ui-refiner` pass before implementation.
 
+## Autopilot
+
+```yaml
+version: 1
+scope:
+  parent: EP10
+  descendants: [EP10A, EP10B, EP10C, EP10D, EP10E, EP10F, EP10G]
+  entry: ""
+  limits: enclosing parent review unit
+stage: plan_review
+coordinator:
+  workspace: /Users/michaelrobert/Desktop/focus-app
+  branch: main
+  baseline: ""
+  head: 3dc9714
+active_dispatch:
+  name: EP10 plan re-review
+  role: reviewer
+  status: pending
+  pointer: docs/stories/EP10/plan-review.md
+  session: ""
+  assignment: plan_review
+last_result:
+  evidence: ""
+  findings: ""
+  scope_note: ""
+  cycles: 0
+  same_findings: unknown
+gates:
+  breakdown: true
+  plan: findings_awaiting_rereview
+  ui: unknown
+  refinement: unknown
+  child_unfinished: unknown
+  eligible_child_state: unknown
+  closeout: unknown
+  integration: unknown
+  all_descendants_implemented: unknown
+  review: unknown
+  findings_owner: unknown
+  open_findings: unknown
+  walkthrough: unknown
+  judged_at_head: ""
+  queue_hash: ""
+writer: none
+session_live: unknown
+blocker:
+  kind: none
+  owner: ""
+  question: ""
+  answer: ""
+resume: ""
+judgment_attempts: 0
+
