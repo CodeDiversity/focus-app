@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP11A — `ui-refiner` pass first (D11-3), then implementation. EP11A is `Needs refinement`; it is the first actionable row. EP11B is blocked on EP11A (shared nav-groups contract + implementation order).
+**Next substory:** EP11A — `Ready`; implement EP11A (shared `navGroups.ts` + desktop grouped nav + account menu + tests). EP11B is blocked on EP11A (shared nav-groups contract + implementation order); its ui-refiner pass is complete.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (frontend only; the labels are scope, not concurrent roles).
 
@@ -22,7 +22,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP11A](./EP11A-desktop-grouped-navigation-and-account-menu.md) | Needs refinement | EP10C implemented & parent-reviewed (`410c343` + EP10 review PASS). `ui-refiner` pass required before implementation (D11-3). | Run `ui-refiner` on EP11A to settle dropdown interaction, icon set, account-menu trigger, copy. | `./artifacts/EP11A/` (pending) |
+| [EP11A](./EP11A-desktop-grouped-navigation-and-account-menu.md) | Ready | EP10C implemented & parent-reviewed (`410c343` + EP10 review PASS). UI refined (2026-10-29) and technical-refined (2026-10-29); Status `Ready`. | Implement EP11A: shared `navGroups.ts` + desktop dropdowns + account menu + tests (mobile drawer untouched). | `./artifacts/EP11A/` (pending) |
 | [EP11B](./EP11B-mobile-drawer-grouped-sections.md) | Needs refinement | EP11A (shared nav-groups contract + desktop implementation). `ui-refiner` pass required before implementation (D11-3). | After EP11A lands: run `ui-refiner` on EP11B, then implement grouped mobile drawer. | `./artifacts/EP11B/` (pending) |
 
 Sequence (one writer): EP11A → EP11B. EP11A defines the shared `navGroups`/`accountMenuItems` structure consumed by EP11B.
@@ -194,12 +194,12 @@ coordinator:
   baseline: ""
   head: ""
 active_dispatch:
-  name: EP11B ui-refine
+  name: EP11A technical-refine
   role: none
   status: complete
-  pointer: docs/stories/EP11/EP11B-mobile-drawer-grouped-sections.md
+  pointer: docs/stories/EP11/EP11A-desktop-grouped-navigation-and-account-menu.md
   session: ""
-  assignment: ui_refine
+  assignment: technical_refine
 last_result:
   evidence: "EP11 breakdown created: epic registered in M5, two frontend children (EP11A, EP11B), both Needs refinement (D11-3)."
   findings: ""
