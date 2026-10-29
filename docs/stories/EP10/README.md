@@ -206,11 +206,11 @@ coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: 5b83922
+  head: f2202d1
 active_dispatch:
-  name: EP10 plan re-review pass2
+  name: ep10-plan-review-pass2-fresh
   role: reviewer
-  status: pending
+  status: returned
   pointer: docs/stories/EP10/plan-review.md
   session: ""
   assignment: plan_review
