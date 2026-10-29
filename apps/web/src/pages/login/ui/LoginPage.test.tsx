@@ -111,7 +111,7 @@ describe('LoginPage', () => {
     );
 
     await user.type(screen.getByLabelText(/email/i), 'ada@example.com');
-    await user.type(screen.getByLabelText(/password/i), 'Password123');
+    await user.type(screen.getByLabelText(/^password$/i), 'Password123');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     // The login thunk rejects asynchronously through the Redux store, so the
@@ -137,7 +137,7 @@ describe('LoginPage', () => {
     emailInput.focus();
     await user.keyboard('ada@example.com');
     await user.tab();
-    expect(screen.getByLabelText(/password/i)).toHaveFocus();
+    expect(screen.getByLabelText(/^password$/i)).toHaveFocus();
 
     await user.keyboard('Password123');
     await user.keyboard('{Enter}');
@@ -181,7 +181,7 @@ describe('LoginPage', () => {
     );
 
     await user.type(screen.getByLabelText(/email/i), 'ada@example.com');
-    await user.type(screen.getByLabelText(/password/i), 'Password123');
+    await user.type(screen.getByLabelText(/^password$/i), 'Password123');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     expect(await screen.findByText('Profile page')).toBeInTheDocument();
@@ -205,7 +205,7 @@ describe('LoginPage', () => {
     );
 
     await user.type(screen.getByLabelText(/email/i), 'ada@example.com');
-    await user.type(screen.getByLabelText(/password/i), 'Password123');
+    await user.type(screen.getByLabelText(/^password$/i), 'Password123');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     // The state fetch runs, sees the incomplete wizard, and routes there.
@@ -227,7 +227,7 @@ describe('LoginPage', () => {
     );
 
     await user.type(screen.getByLabelText(/email/i), 'ada@example.com');
-    await user.type(screen.getByLabelText(/password/i), 'Password123');
+    await user.type(screen.getByLabelText(/^password$/i), 'Password123');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     expect(await screen.findByText('Profile page')).toBeInTheDocument();
@@ -249,7 +249,7 @@ describe('LoginPage', () => {
     );
 
     await user.type(screen.getByLabelText(/email/i), 'ada@example.com');
-    await user.type(screen.getByLabelText(/password/i), 'Password123');
+    await user.type(screen.getByLabelText(/^password$/i), 'Password123');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     expect(await screen.findByText('Onboarding page')).toBeInTheDocument();

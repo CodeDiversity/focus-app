@@ -26,22 +26,20 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+      'inline-flex items-center justify-center font-medium transition-colors duration-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed max-sm:min-h-[44px]';
 
     const variants = {
-      primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500',
-      secondary:
-        'bg-secondary-100 text-secondary-700 hover:bg-secondary-200 focus:ring-secondary-500',
-      outline:
-        'border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500',
-      ghost: 'text-secondary-600 hover:bg-secondary-100 focus:ring-secondary-500',
-      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+      primary: 'bg-accent text-white hover:bg-accent-hover',
+      secondary: 'bg-surface-muted text-text hover:bg-border',
+      outline: 'border-2 border-accent text-accent hover:bg-accent/10',
+      ghost: 'text-text-muted hover:bg-surface-muted hover:text-text',
+      danger: 'bg-danger text-white hover:bg-danger/90',
     };
 
     const sizes = {
-      sm: 'px-3 py-1.5 text-sm gap-1.5',
-      md: 'px-4 py-2 text-sm gap-2',
-      lg: 'px-6 py-3 text-base gap-2.5',
+      sm: 'px-3 py-1.5 text-body-sm gap-1.5',
+      md: 'px-4 py-2 text-body-sm gap-2',
+      lg: 'px-6 py-3 text-body gap-2.5',
     };
 
     return (
@@ -49,14 +47,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         className={twMerge(clsx(baseStyles, variants[variant], sizes[size], className))}
         disabled={disabled || isLoading}
+        aria-busy={isLoading || undefined}
         {...props}
       >
         {isLoading ? (
           <svg
-            className="animate-spin h-4 w-4"
+            className="animate-spin h-4 w-4 motion-reduce:animate-none"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <circle
               className="opacity-25"
@@ -74,9 +74,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           </svg>
         ) : (
           <>
-            {leftIcon && <span>{leftIcon}</span>}
+            {leftIcon && <span aria-hidden="true">{leftIcon}</span>}
             {children}
-            {rightIcon && <span>{rightIcon}</span>}
+            {rightIcon && <span aria-hidden="true">{rightIcon}</span>}
           </>
         )}
       </button>

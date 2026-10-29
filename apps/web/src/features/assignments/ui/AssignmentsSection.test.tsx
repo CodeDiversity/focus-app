@@ -277,7 +277,7 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     const user = setupUser();
     render(<AssignmentsSection assignments={all} />);
     const button = screen.getByRole('button', { name: 'Add assignment' });
-    expect(button).toHaveClass('bg-primary-600', 'text-sm', 'px-3');
+    expect(button).toHaveClass('bg-accent', 'text-body-sm', 'px-3');
     await user.click(button);
     expect(screen.getByRole('dialog', { name: 'Add an assignment' })).toBeInTheDocument();
   });
