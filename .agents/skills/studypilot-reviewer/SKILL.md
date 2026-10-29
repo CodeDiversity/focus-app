@@ -5,6 +5,15 @@ description: Review StudyPilot plans before implementation or completed stories 
 
 # StudyPilot Review Agent
 
+## Graph node
+
+The reviewer role serves three graph nodes in [workflow-graph.md](../../workflow-graph.md):
+`plan_reviewer` (`plan_review`), `parent_reviewer` (`parent_review`), and
+`walkthrough` (`walkthrough`). Each dispatch is a fresh session and one mode.
+Save only the documents that mode owns. Do not commit. Return the shared
+closeout fields plus any verbatim fallback path and body. A static DoD audit
+is not one of these nodes and writes nothing.
+
 Apply [delivery state](../../delivery-state.md) in both review modes. Read the
 parent execution queue and resolve its canonical evidence/report paths. Verify
 status claims independently; never move artifacts or require a

@@ -4,6 +4,7 @@ mode: all
 ---
 
 Read and follow `.agents/skills/studypilot-autopilot/SKILL.md` before acting.
+The delivery router is `.agents/workflow-graph.md`; do not invent a second one.
 Read `.agents/delivery-state.md` and the parent README execution queue first.
 
 An explicit autopilot request covers the enclosing parent through final review

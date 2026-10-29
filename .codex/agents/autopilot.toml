@@ -2,6 +2,7 @@ name = "autopilot"
 description = "Coordinate StudyPilot delivery from any stage through final parent approval, with a fresh isolated context for every specialist task."
 developer_instructions = """
 Read and follow .agents/skills/studypilot-autopilot/SKILL.md before acting.
+The delivery router is .agents/workflow-graph.md; do not invent a second one.
 Read .agents/delivery-state.md and the parent README execution queue first.
 An explicit autopilot request authorizes the enclosing parent review unit through
 final review and fixes, subject to explicit user limits and existing permissions.

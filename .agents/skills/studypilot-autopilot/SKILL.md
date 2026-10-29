@@ -9,6 +9,13 @@ Coordinate the existing delivery roles through a passing independent parent
 review. Every specialist task gets a new, isolated context; the repository carries
 progress. Autopilot is a coordinator, never the implementation or review owner.
 
+The only router is [workflow-graph.md](../../workflow-graph.md). Walk its edge
+table from the top and take the first match. If the prose table and the YAML
+fence disagree, the YAML wins. Do not add an edge in this skill. Do not launch
+the local runner, a shell, or another CLI to dispatch roles; that evades the
+host's permission model. In-session dispatch stays on the host's native
+isolated-session mechanism.
+
 ## Scope and ownership
 
 An explicit autopilot request authorizes the enclosing parent review unit and
@@ -91,20 +98,13 @@ An implemented or in-progress child goes to implementation closeout/fixes,
 never back to the refiner. Do not reset existing IDs or completed work.
 
 If no queue/path record exists, give the planner initialization grounded in
-existing evidence. After resolving the delivery home, maintain a small
-`## Autopilot` section in that README:
-
-- **Scope and entry:** authorized parent/descendants, entry hint and explicit limits.
-- **Coordinator:** workspace/branch and run identity; retain the original Git
-  baseline until the parent implementation index owns the combined scope.
-- **Stage:** reconcile, plan, plan review, refine, implement, integration,
-  parent review, fix, walkthrough, blocked, or complete.
-- **Active dispatch:** unique task name, role, bounded assignment, dispatch
-  pending/running/returned/not started, and checkpoint/report pointer; `None`
-  between dispatches.
-- **Last result / retry state:** evidence link, finding IDs, changed scope and
-  consecutive correction cycles without progress.
-- **Resume:** exact next action or blocker, required input and owner.
+existing evidence. After resolving the delivery home, maintain the `## Autopilot`
+checkpoint in that README using the schema in
+[workflow-graph.md](../../workflow-graph.md). Replace only that section. It
+records scope, stage, the active dispatch, retry state, gate judgment, writer
+ownership, and the one blocker. It is not a second task list. Stages include
+`ui_refine` when an unimplemented frontend child still has unsettled UI/UX
+decisions; that is a gap in the old prose table, not a new approval gate.
 
 The execution queue remains authoritative for active/next children and ordering;
 checkpoints own unfinished implementation and reports own findings/verdicts.
@@ -119,21 +119,11 @@ not start an unattended run or authorize a different parent.
 
 ## Select the next gate from evidence
 
-Reconcile after every returned task, then select the first applicable action:
-
-| Observed state | Next task / gate |
-| --- | --- |
-| Existing writer still owns work or ownership is unknown | Obtain safe checkpoint handoff and relinquished ownership before another writer; this does not authorize resumed coding. |
-| Missing/invalid breakdown, contracts, sizing or scope/dependency decisions | Fresh planner corrects only the affected planning scope, preserving implementation. Material unanswered decisions remain blocked. |
-| Missing whole-plan approval, unresolved plan findings, or substantive AC/contract/scope/dependency changes since approval | Fresh reviewer performs whole-plan review; route corrections to a fresh planner and re-review until `Plan Ready`. |
-| Planning gates satisfied; active child is unfinished or closeout is incomplete | Fresh implementer resumes the same checkpoint or finishes missing records/checks/commits before advancing. |
-| First eligible child needs technical refinement | Fresh refiner updates only that unimplemented story. Coordinator commits its output and reconciles readiness/dependencies; unanswered material questions prevent coding. |
-| First eligible child is Ready | Fresh implementer completes only that child and its closeout, then returns. |
-| All descendants implemented but integration or combined index is incomplete | Fresh implementer completes the bounded integration/index obligation, including any missing child closeout. |
-| Mandatory parent-review findings still need persisted corrections or closure evidence | Fresh implementer fixes implementation/evidence gaps; fresh planner fixes scope/planning gaps. Refresh affected evidence/index, then fresh parent re-review. |
-| All closeout/integration verified; final review absent/stale, or recorded corrections await independent closure | Fresh reviewer reviews the complete parent and combined Git scope once. |
-| Final implementation report passes but the final walkthrough is missing/stale/unverified | Persist returned verified content via permitted fallback, or request a fresh reviewer to prepare/verify the final document. Completion stays pending. |
-| Independent parent verdict passes current scope, final walkthrough is verified/saved, and all closeout is persisted | Record completion and stop within this parent. |
+Reconcile after every returned task, then take the first matching edge in
+[workflow-graph.md](../../workflow-graph.md). Missing records are unverified,
+not done. Do not treat a specialist status line as a gate. A live specialist
+session is waited on, not replaced. Unknown writer ownership is a handoff
+interrupt, not permission to start another writer.
 
 An existing `Plan Ready` report remains usable when only execution status or
 implementation detail changes within its accepted contracts/scope. Refining each

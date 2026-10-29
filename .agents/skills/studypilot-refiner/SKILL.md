@@ -7,6 +7,10 @@ description: Load when refining a StudyPilot story ticket into a technical, impl
 
 Refines a story ticket in place into a technical, implementation-ready ticket. The purpose of refinement is to surface and resolve ambiguity before implementation; asking the right questions matters more than filling every blank.
 
+## Graph node
+
+Node `refiner` in [workflow-graph.md](../../workflow-graph.md). Assignment: `technical_refine` for one unimplemented child. Write only that story file. Return readiness and the shared closeout fields. The coordinator commits. Do not edit the README or route the next task.
+
 Apply [delivery state](../../delivery-state.md), [story sizing](../../story-sizing.md)
 and [context efficiency](../../context-efficiency.md). Use the established parent
 review unit under [review cadence](../../review-cadence.md). For multi-window

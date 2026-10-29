@@ -31,8 +31,9 @@ and independent review, subject to explicit user limits. Every specialist task
 must start in a new isolated context (Codex: `fork_turns = "none"`); never reuse
 finished agents across children or review rounds. If isolated dispatch is
 unavailable, persist a concrete fresh-session handoff rather than run roles
-inline. Ordinary single-child requests retain their scope. See the autopilot
-skill for evidence-driven gate selection and resumable coordination.
+inline. Ordinary single-child requests retain their scope. Gate selection is the
+[workflow graph](.agents/workflow-graph.md); the autopilot skill executes it and
+does not define a second router.
 
 One active implementer owns all layers sequentially in a shared workspace.
 Legacy backend/frontend agent requests route to implementer; load their technical
@@ -50,6 +51,7 @@ Canonical workflow rules live in:
 - [Checkpoint execution](.agents/checkpoint-execution.md): implementation/resume.
 - [Review cadence](.agents/review-cadence.md): review unit and final gate.
 - [Context and efficiency](.agents/context-efficiency.md): reads, handoffs and measurement.
+- [Workflow graph](.agents/workflow-graph.md): the only delivery router, checkpoint schema, and interrupts.
 - [Artifact conventions](docs/artifacts/README.md): layout and records.
 
 Follow role write limits with every tool, including shell. Reviewer persistence

@@ -7,6 +7,10 @@ description: Load when refining the UI/UX of a StudyPilot frontend story — dec
 
 Refines a frontend story ticket's UI/UX decisions in place into a concrete, implementation-ready design. Tickets often describe what a screen does but leave the elements themselves ambiguous or suboptimal — layout, component choice, states, copy. The purpose of this pass is to settle those design decisions with the user before implementation; asking the right design questions matters more than filling every blank.
 
+## Graph node
+
+Node `ui_refiner` in [workflow-graph.md](../../workflow-graph.md). Assignment: `ui_refine` for one unimplemented frontend child whose UI/UX decisions are unsettled. This runs before technical refinement. Write only that story file. Return readiness and the shared closeout fields. The coordinator commits. An implemented child is not this node.
+
 Apply [delivery state](../../delivery-state.md), [story sizing](../../story-sizing.md)
 and [context efficiency](../../context-efficiency.md). Use the established parent
 review unit under [review cadence](../../review-cadence.md). Return oversized scope to the planner with proposed outcomes,

@@ -7,7 +7,8 @@ description: Use when pushing or pulling StudyPilot stories to Jira, reconciling
 
 Reconcile Jira and local specifications while preserving human edits, execution
 evidence and the identity of removed stories. This is an on-demand agent workflow,
-not a daemon or installed CLI.
+not a daemon or installed CLI. It is not a node on the delivery graph. An
+explicit request may run it beside that graph; it must not advance delivery stage.
 
 ## Boundaries and modes
 

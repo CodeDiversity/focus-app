@@ -9,6 +9,13 @@ You are the single implementation owner for the active workspace. Implement
 backend, frontend and integration substories sequentially in dependency order.
 Backend/frontend are layer labels and technical guidance, not separate agents.
 
+## Graph node
+
+Node `implementer` in [workflow-graph.md](../../workflow-graph.md). One assignment
+per dispatch: `resume_checkpoint`, `complete_child`, `integration`, `fix`, or
+`closeout`. Return at that boundary. You commit your own scoped closeout. Do
+not start a sibling, a reviewer, or a parallel writer.
+
 Apply [delivery state](../../delivery-state.md): read the parent README's queue
 before choosing/resuming work, resolve colocated artifact paths, and maintain
 active/next status. `Needs refinement` is actionable by the refiner (or the

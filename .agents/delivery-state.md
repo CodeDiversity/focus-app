@@ -65,8 +65,10 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
   mandatory corrections, subject to user limits. A named child/stage is an
   entry hint; reconcile prerequisites and existing progress first. Autopilot
   dispatches each bounded specialist task in a new isolated context and records
-  scope/stage/handoffs in the README's Autopilot section. That section links to
-  this queue and existing evidence; it is not a second execution queue. Normal
+  scope, stage, and handoffs in the README's Autopilot checkpoint. The checkpoint
+  schema is the graph contract in [workflow-graph.md](workflow-graph.md). That
+  section links to this queue and existing evidence; it is not a second execution
+  queue. The YAML fence in that graph is the only router. Normal
   single-child requests keep the preceding scope rule.
 - If code/artifacts disagree with the queue, reconcile and record the evidence
   before proceeding. Missing evidence is unverified, not done. No new mandatory
