@@ -3,7 +3,7 @@
 **Epic:** [EP04: Academic Calendar & Availability](../../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Parent:** [SP-129](./SP-129-mobile-agenda-view.md) — coordination record (not an implementation ticket)
 **Milestone:** M2
-**Status:** Implemented — SP-129A done; the 2026-10-28 parent review's required findings (R129-001…005) were fixed in the 2026-10-29 fix pass — combined re-review is next.
+**Status:** Implemented — SP-129A reviewed and passed (2026-10-29); parent DoD 10–11 satisfied.
 **Jira key:** Pending creation
 
 Covers the epic's proposed story **6 (build the mobile agenda view)**.
@@ -16,7 +16,7 @@ Covers the epic's proposed story **6 (build the mobile agenda view)**.
 
 **Active substory:** None.
 
-**Next substory:** None — the SP-129A fix pass for the 2026-10-28 parent review findings (R129-001…005) is complete; the next unit is the SP-129 parent **re-review** (`review.md` refreshed + `walkthrough.md`; R129-003's in-environment browser pass is reviewer-owned).
+**Next substory:** None — SP-129A fix pass complete and the combined SP-129 parent review passed (2026-10-29); DoD 10–11 satisfied. No child is auto-started. Downstream EP05 work is planner-owned.
 
 **Implementation owner:** `implementer`.
 
@@ -24,7 +24,7 @@ Covers the epic's proposed story **6 (build the mobile agenda view)**.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-129A-mobile-agenda-view.md) | Implemented — awaiting parent review (fix pass complete) | SP-127B implemented (the event data and shared event components it reuses). | Combined SP-129 parent **re-review** (`review.md` refresh + `walkthrough.md`) | [checkpoint](./artifacts/SP-129A/checkpoint.md) · [implementation record](./artifacts/SP-129A/implementation.md) · [fix-pass details](./artifacts/SP-129A/implementation.md#fix-pass-2026-10-29--sp-129-parent-review-findings) · code `afd48ec` + fix `91ba4dc` · first-pass [review](./artifacts/SP-129/review.md) |
+| [A](./SP-129A-mobile-agenda-view.md) | Reviewed (2026-10-29) | SP-127B implemented (the event data and shared event components it reuses). | None — parent review passed; no further action on this child. | [checkpoint](./artifacts/SP-129A/checkpoint.md) · [implementation record](./artifacts/SP-129A/implementation.md) · [fix-pass details](./artifacts/SP-129A/implementation.md#fix-pass-2026-10-29--sp-129-parent-review-findings) · code `afd48ec` + fix `91ba4dc` · [review (pass 2, Pass)](./artifacts/SP-129/review.md) · [walkthrough](./artifacts/SP-129/walkthrough.md) |
 
 ## Why this is one child
 
@@ -57,6 +57,12 @@ None new — the agenda reads the same principal-scoped payload as SP-127B and a
 
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
+| R129-001 | 2026-10-28 (pass 1) | Should-fix | `SP-129A-mobile-agenda-view.md` D129A-03 (time-above-title) + `artifacts/SP-129A/checkpoint.md:20,32` | Agenda entries rendered the time below the title even though D129A-03 places it above; the checkpoint claimed compliance. | `CalendarEventChip` gained `layout?: 'week' \| 'agenda'` (default `'week'`); `CalendarAgenda` passes `layout="agenda"` so the time line renders above the title; week layout unchanged. | Inspection: `CalendarEventChip.tsx:12,49,75–79`, `CalendarAgenda.tsx:40–44`; order-assertion tests in `CalendarAgenda.test.tsx`. Recorded gates: scoped vitest 26/26, full suite 773/773. | Resolved — 2026-10-29 (`91ba4dc`) |
+| R129-002 | 2026-10-28 (pass 1) | Should-fix | `SP-129A-mobile-agenda-view.md` tests-to-add + AC 7 + DoD 8 | No test covered the wholly-empty agenda case (component test only omitted empty days). | Added empty-map `CalendarAgenda` test and a narrow-viewport empty-payload page test (D129A-05 behaviour). | Inspection: `CalendarAgenda.test.tsx` "an entirely empty payload…"; `CalendarPage.test.tsx` "an empty week at a narrow viewport…". Recorded gates: scoped vitest 26/26. | Resolved — 2026-10-29 (`91ba4dc`) |
+| R129-003 | 2026-10-28 (pass 1) | Should-fix (verification gate) | DoD 6/7/10; `SP-129A` DoD 7; `calendar.spec.ts` phone test | Required integrated/keyboard/responsive evidence incomplete; tablet/desktop only mocked. | Extended the 375×667 e2e: real `boundingBox()` height ≥ 44px, Enter-open + Escape + focus return, live 768×1024→1280×720 resize to the week grid; desktop `Week view` assertion in the seeded test. | Recorded: Playwright `calendar.spec.ts` 5/5 (7.3s), self-contained throwaway DB; unit tests for live resize. Reviewer did not independently execute (no shell/browser tool). | Resolved — 2026-10-29 (`91ba4dc`) |
+| R129-004 | 2026-10-28 (pass 1) | Should-fix | `SP-129A-mobile-agenda-view.md:9` Status line | Completed child ticket still said "Ready — ui-refined … Ready to implement." | Scoped status edit to `Implemented — awaiting the SP-129 parent review (2026-10-29 fix pass…)`. | Inspection: story file :9; queue row reconciled. | Resolved — 2026-10-29 (`291f892`) |
+| R129-005 | 2026-10-28 (pass 1) | Polish | `CalendarPage.test.tsx:23–28` matchMedia mock | Mock stored the event type instead of the listener, so post-mount resize could not be tested. | Mock signature now `(type, callback)`; added an `act`-wrapped live-resize page test. | Inspection: `CalendarPage.test.tsx:23–28` + new test. Recorded: scoped vitest 26/26. | Resolved — 2026-10-29 (`91ba4dc`) |
+| R129-006 | 2026-10-29 (pass 3) | Should-fix (docs) | `SP-129A-mobile-agenda-view.md:9` child status line | After the passing final parent review (pass 2) the child ticket still read `Implemented — awaiting the SP-129 parent review`, a stale completion status; queue row had already advanced to `Reviewed`. | Scoped status edit to `Reviewed (2026-10-29) — combined SP-129 parent review passed (pass 3…)`. No AC/decision/plan content changed. | Inspection: story file :9; queue row reconciled (`Reviewed`). | Resolved — 2026-10-29 (this pass) |
 
 ## Quality gate (2026-10-28)
 

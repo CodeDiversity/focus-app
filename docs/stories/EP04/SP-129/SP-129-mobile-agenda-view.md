@@ -5,7 +5,7 @@
 **Parent epic:** [EP04: Academic Calendar & Availability](../../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Milestone:** M2
 **Layer:** Frontend (one child)
-**Status:** Draft — SP-129A `Needs refinement`.
+**Status:** Implemented — SP-129A reviewed and passed (2026-10-29); parent DoD 10–11 satisfied.
 **Dependencies:** SP-127B implemented (the event data and shared event components it reuses).
 **Jira key:** Pending creation
 
