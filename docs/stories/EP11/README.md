@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP11B — `Needs refinement`; complete readiness (refiner/planner) before implementing the grouped mobile drawer. Not started in EP11A.
+**Next substory:** EP11B — `Ready`; implement the grouped mobile drawer + Account section (consumes EP11A's `navGroups`).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (frontend only; the labels are scope, not concurrent roles).
 
@@ -23,7 +23,7 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [EP11A](./EP11A-desktop-grouped-navigation-and-account-menu.md) | Implemented — awaiting parent review | EP10C implemented & parent-reviewed (`410c343` + EP10 review PASS). UI refined (2026-10-29) and technical-refined (2026-10-29). | No action; combined EP11 parent review after EP11B. | [checkpoint](./artifacts/EP11A/checkpoint.md) · [implementation](./artifacts/EP11A/implementation.md) |
-| [EP11B](./EP11B-mobile-drawer-grouped-sections.md) | Needs refinement | EP11A (shared nav-groups contract + desktop implementation). `ui-refiner` pass required before implementation (D11-3). | After EP11A lands: run `ui-refiner` on EP11B, then implement grouped mobile drawer. | `./artifacts/EP11B/` (pending) |
+| [EP11B](./EP11B-mobile-drawer-grouped-sections.md) | Ready | EP11A implemented (`b7ae794`, `1aec0ea`) — shared `navGroups` contract available. UI refined and technical-refined (2026-10-29); Status `Ready`. | Implement EP11B: grouped mobile drawer sections + Account section, consuming `navGroups`. | `./artifacts/EP11B/` (pending) |
 
 Sequence (one writer): EP11A → EP11B. EP11A defines the shared `navGroups`/`accountMenuItems` structure consumed by EP11B.
 
@@ -187,19 +187,19 @@ scope:
   descendants: [EP11A, EP11B]
   entry: ""
   limits: enclosing parent review unit
-stage: implement
+stage: plan
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: "1aec0ea"
+  head: "957cbec"
 active_dispatch:
-  name: EP11A implement
+  name: EP11B technical-refine
   role: none
   status: complete
-  pointer: docs/stories/EP11/EP11A-desktop-grouped-navigation-and-account-menu.md
+  pointer: docs/stories/EP11/EP11B-mobile-drawer-grouped-sections.md
   session: ""
-  assignment: complete_child
+  assignment: technical_refine
 last_result:
   evidence: "EP11A implemented (b7ae794 + 1aec0ea): navGroups.ts, desktop grouped dropdowns, avatar account menu; header 22/22, web 842/842, typecheck/lint green. Mobile drawer unchanged; EP11B not started."
   findings: "Implementer findings F-A-1..F-A-3 fixed (focus-effect dep, lint tabindex, 4 page/banner test updates)."
