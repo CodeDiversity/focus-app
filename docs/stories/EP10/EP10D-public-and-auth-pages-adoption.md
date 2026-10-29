@@ -6,7 +6,7 @@
 **Parent:** [EP10 breakdown](./README.md)
 **Milestone:** M5
 **Layer:** Frontend
-**Status:** Queued
+**Status:** Implemented — awaiting parent review
 **Dependencies:** EP10C (settled design system).
 **Jira key:** Pending creation
 **Refined:** 2026-10-29 (planning)

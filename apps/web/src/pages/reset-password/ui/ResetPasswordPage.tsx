@@ -151,8 +151,8 @@ export function ResetPasswordPage() {
 
   return (
     <div className="max-w-xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      <h1 className="text-3xl font-bold mb-3">Choose a new password</h1>
-      <p className="text-secondary-700 mb-6">
+      <h1 className="text-3xl font-bold text-text mb-3">Choose a new password</h1>
+      <p className="text-text-muted mb-6">
         {token
           ? 'Enter your new password below. It must be at least 8 characters.'
           : 'The link in your reset email takes you here.'}
@@ -164,7 +164,7 @@ export function ResetPasswordPage() {
 
         {invalid ? (
           <>
-            <p role="alert" className="text-red-700">
+            <p role="alert" className="text-danger">
               {INVALID_RESET_MESSAGE}
             </p>
             <Link
@@ -198,12 +198,12 @@ export function ResetPasswordPage() {
               {...register('confirmPassword')}
             />
             {formError && (
-              <p role="alert" className="text-red-700">
+              <p role="alert" className="text-danger">
                 {formError}
               </p>
             )}
             {secondsRemaining > 0 && (
-              <p className="text-sm text-secondary-700">
+              <p className="text-sm text-text-muted">
                 Try again in {secondsRemaining} second{secondsRemaining === 1 ? '' : 's'}.
               </p>
             )}
@@ -218,7 +218,7 @@ export function ResetPasswordPage() {
           </form>
         ) : (
           <>
-            <p className="text-secondary-700">
+            <p className="text-text-muted">
               This page needs the link from your reset email. Check your inbox, including spam.
             </p>
             <Link

@@ -95,11 +95,11 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-secondary-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-secondary-900">Welcome back!</h1>
-          <p className="mt-2 text-secondary-600">Sign in to your StudyPilot account</p>
+          <h1 className="text-3xl font-bold text-text">Welcome back!</h1>
+          <p className="mt-2 text-text-muted">Sign in to your StudyPilot account</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="card">
@@ -123,10 +123,7 @@ export function LoginPage() {
             />
 
             <div className="flex items-center justify-end">
-              <Link
-                to="/forgot-password"
-                className="text-sm text-primary-600 hover:text-primary-700"
-              >
+              <Link to="/forgot-password" className="text-sm text-accent hover:text-accent-hover">
                 Forgot password?
               </Link>
             </div>
@@ -143,9 +140,9 @@ export function LoginPage() {
           </div>
         </form>
 
-        <div className="text-center text-sm text-secondary-600">
+        <div className="text-center text-sm text-text-muted">
           Don&apos;t have an account?{' '}
-          <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
+          <Link to="/register" className="text-accent hover:text-accent-hover font-medium">
             Sign up
           </Link>
         </div>

@@ -71,7 +71,7 @@ export function VerifyEmailPage() {
   return (
     <div className="max-w-xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       <h1 className="text-3xl font-bold mb-3">Verify your email</h1>
-      <p className="text-secondary-700 mb-6">
+      <p className="text-text-muted mb-6">
         You can keep using StudyPilot while your email is unverified.
       </p>
       <div className="card space-y-6">
@@ -79,13 +79,13 @@ export function VerifyEmailPage() {
           <div role="status" aria-label="Confirmation status" aria-live="polite" aria-atomic="true">
             {confirmationState === 'pending' && <p>Verifying your email…</p>}
             {confirmationState === 'success' && (
-              <p className="text-green-800">
+              <p className="text-success">
                 Email verified successfully. You can continue using StudyPilot.
               </p>
             )}
           </div>
           {confirmationError && (
-            <p role="alert" className="text-red-700">
+            <p role="alert" className="text-danger">
               {confirmationError}
             </p>
           )}
@@ -108,14 +108,11 @@ export function VerifyEmailPage() {
           )}
         </section>
 
-        <section
-          aria-labelledby="resend-heading"
-          className="border-t border-secondary-200 pt-6 space-y-4"
-        >
+        <section aria-labelledby="resend-heading" className="border-t border-border pt-6 space-y-4">
           <h2 id="resend-heading" className="text-lg">
             Request a verification email
           </h2>
-          <p className="text-sm text-secondary-700">
+          <p className="text-sm text-text-muted">
             Enter your account email address. Check your inbox, including spam, for the link.
           </p>
           <form
@@ -155,7 +152,7 @@ export function VerifyEmailPage() {
             aria-label="Resend status"
             aria-live="polite"
             aria-atomic="true"
-            className="text-sm text-secondary-700"
+            className="text-sm text-text-muted"
           >
             {resend.isPending
               ? 'Requesting a verification email…'
@@ -164,12 +161,12 @@ export function VerifyEmailPage() {
                 : ''}
           </div>
           {resend.secondsRemaining > 0 && (
-            <p className="text-sm text-secondary-700">
+            <p className="text-sm text-text-muted">
               Try again in {resend.secondsRemaining} seconds.
             </p>
           )}
           {resend.error && (
-            <p role="alert" className="text-red-700">
+            <p role="alert" className="text-danger">
               {resend.error}
             </p>
           )}
@@ -181,7 +178,7 @@ export function VerifyEmailPage() {
           {isAuthenticated ? 'Back to dashboard' : 'Go to login'}
         </Link>
         {user && (
-          <p className="text-sm text-secondary-700 break-words">
+          <p className="text-sm text-text-muted break-words">
             Signed in as {user.email}. This link confirms its recipient’s email and keeps your
             current session.
           </p>

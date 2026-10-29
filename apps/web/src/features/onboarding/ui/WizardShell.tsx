@@ -68,8 +68,8 @@ export function WizardShell({
         <div className="card min-h-[50vh] flex flex-col items-center justify-center gap-4">
           {/* Announced status: screen readers hear the transition. */}
           <div role="status" aria-live="polite" className="flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
-            <p className="text-secondary-600">Loading your setup…</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent motion-reduce:animate-none" />
+            <p className="text-text-muted">Loading your setup…</p>
           </div>
         </div>
       </div>
@@ -81,10 +81,8 @@ export function WizardShell({
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="card">
           <div role="alert" aria-live="assertive" className="space-y-4">
-            <h1 className="text-2xl font-bold text-secondary-900">
-              We couldn&apos;t load your setup
-            </h1>
-            <p className="text-secondary-600">{error || 'Something went wrong.'}</p>
+            <h1 className="text-2xl font-bold text-text">We couldn&apos;t load your setup</h1>
+            <p className="text-text-muted">{error || 'Something went wrong.'}</p>
             <div className="flex flex-col-reverse sm:flex-row gap-4 pt-2">
               <Button onClick={onRetryFetch}>Try again</Button>
               <Button variant="ghost" onClick={onSignOut}>
@@ -103,9 +101,9 @@ export function WizardShell({
       <div className="card">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-secondary-900">Set up StudyPilot</h1>
+            <h1 className="text-3xl font-bold text-text">Set up StudyPilot</h1>
             {/* Announced on step changes so the resume/advance is perceivable. */}
-            <p className="mt-1 text-secondary-600" aria-live="polite">
+            <p className="mt-1 text-text-muted" aria-live="polite">
               Step {step} of 3: {STEP_TITLES[step]}
             </p>
           </div>
@@ -117,9 +115,9 @@ export function WizardShell({
                 aria-current={n === step ? 'step' : undefined}
                 className={clsx(
                   'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium',
-                  n < step && 'bg-primary-100 text-primary-700',
-                  n === step && 'bg-primary-600 text-white',
-                  n > step && 'bg-secondary-100 text-secondary-500'
+                  n < step && 'bg-accent/10 text-accent',
+                  n === step && 'bg-accent text-white',
+                  n > step && 'bg-surface-muted text-text-muted'
                 )}
               >
                 {n}
@@ -133,12 +131,12 @@ export function WizardShell({
         {/* Actionable error from the last write (e.g. a failed progress save);
             the step content stays rendered so the student can retry. */}
         {error && (
-          <div role="alert" aria-live="assertive" className="mt-6 text-sm text-red-600">
+          <div role="alert" aria-live="assertive" className="mt-6 text-sm text-danger">
             {error}
           </div>
         )}
 
-        <div className="mt-8 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4 border-t border-secondary-200 pt-6">
+        <div className="mt-8 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4 border-t border-border pt-6">
           <Button variant="ghost" onClick={onSignOut} disabled={isBusy}>
             Sign out
           </Button>

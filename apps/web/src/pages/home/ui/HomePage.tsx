@@ -6,13 +6,13 @@ export function HomePage() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary-50 to-secondary-100">
+    <div className="min-h-screen bg-gradient-to-br from-background to-surface-muted">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-secondary-900 mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold text-text mb-6">
             Take Control of Your Studies
           </h1>
-          <p className="text-xl text-secondary-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-text-muted mb-8 max-w-2xl mx-auto">
             StudyPilot helps students with ADHD stay organized, manage deadlines, and build
             effective study habits with personalized planning tools.
           </p>
@@ -59,10 +59,10 @@ export function HomePage() {
               icon: '⏰',
             },
           ].map((feature, index) => (
-            <div key={index} className="card hover:shadow-lg transition-shadow">
+            <div key={index} className="card hover:shadow-md transition-shadow duration-base">
               <div className="text-4xl mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-secondary-900 mb-2">{feature.title}</h3>
-              <p className="text-secondary-600">{feature.description}</p>
+              <h3 className="text-xl font-semibold text-text mb-2">{feature.title}</h3>
+              <p className="text-text-muted">{feature.description}</p>
             </div>
           ))}
         </div>

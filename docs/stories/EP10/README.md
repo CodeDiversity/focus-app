@@ -15,7 +15,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP10D — implement public/auth pages adoption (EP10C app shell now implemented).
+**Next substory:** EP10E — implement academic data pages adoption (EP10C satisfied).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (frontend only; the labels are scope, not concurrent roles).
 
@@ -26,7 +26,7 @@
 | [EP10A](./EP10A-design-tokens-and-theme-foundation.md) | Implemented — awaiting parent review | None (ui-refiner pass complete, D10-4…D10-9 recorded). | Combined EP10 parent review after all children | `./artifacts/EP10A/` (checkpoint, implementation, contrast record) · commit `322c417` |
 | [EP10B](./EP10B-shared-ui-primitives-refresh.md) | Implemented — awaiting parent review | EP10A (tokens it consumes) — implemented (`322c417`). | Combined EP10 parent review after all children | `./artifacts/EP10B/` (checkpoint, implementation, tests) |
 | [EP10C](./EP10C-app-shell-refresh.md) | Implemented — awaiting parent review | EP10B (primitives it composes) — implemented (`9a88d9c`). | Combined EP10 parent review after all children | `./artifacts/EP10C/` (checkpoint, implementation) |
-| [EP10D](./EP10D-public-and-auth-pages-adoption.md) | Queued | EP10C (settled design system). | Implement after EP10C | — |
+| [EP10D](./EP10D-public-and-auth-pages-adoption.md) | Implemented — awaiting parent review | EP10C (settled design system) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10D/` (checkpoint, implementation) |
 | [EP10E](./EP10E-academic-data-pages-adoption.md) | Queued | EP10C; the pages it restyles (semesters, courses, assignments) must exist. | Implement after EP10C | — |
 | [EP10F](./EP10F-calendar-and-availability-pages-adoption.md) | Queued | EP10C; EP04 frontend children implemented and parent-reviewed (SP-127 pass 3, SP-128 pass 1 with SP-128B F-B-6 fix round open, SP-129 pass 3). | Implement after EP10C and the EP04 pages | — |
 | [EP10G](./EP10G-dashboard-and-profile-adoption.md) | Queued | EP10C; the dashboard and profile pages must exist. | Implement after EP10C | — |
@@ -209,10 +209,10 @@ coordinator:
   baseline: ""
   head: 9a88d9c
 active_dispatch:
-  name: EP10C implement
+  name: EP10D implement
   role: implementer
-  status: complete
-  pointer: docs/stories/EP10/EP10C-app-shell-refresh.md
+  status: completed
+  pointer: docs/stories/EP10/EP10D-public-and-auth-pages-adoption.md
   session: ""
   assignment: complete_child
 last_result:

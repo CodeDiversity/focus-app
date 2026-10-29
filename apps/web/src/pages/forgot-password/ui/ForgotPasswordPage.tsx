@@ -100,15 +100,15 @@ export function ForgotPasswordPage() {
 
   return (
     <div className="max-w-xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      <h1 className="text-3xl font-bold mb-3">Reset your password</h1>
-      <p className="text-secondary-700 mb-6">
+      <h1 className="text-3xl font-bold text-text mb-3">Reset your password</h1>
+      <p className="text-text-muted mb-6">
         Enter the email address of your account and we&apos;ll send you a link to choose a new
         password.
       </p>
       <div className="card space-y-6">
         <div role="status" aria-live="polite" aria-atomic="true">
           {isSubmitting && <p>Requesting your reset link…</p>}
-          {successMessage && <p className="text-green-800">{successMessage}</p>}
+          {successMessage && <p className="text-success">{successMessage}</p>}
         </div>
 
         <form
@@ -127,12 +127,12 @@ export function ForgotPasswordPage() {
             {...register('email')}
           />
           {formError && (
-            <p role="alert" className="text-red-700">
+            <p role="alert" className="text-danger">
               {formError}
             </p>
           )}
           {secondsRemaining > 0 && (
-            <p className="text-sm text-secondary-700">
+            <p className="text-sm text-text-muted">
               Try again in {secondsRemaining} second{secondsRemaining === 1 ? '' : 's'}.
             </p>
           )}
@@ -146,7 +146,7 @@ export function ForgotPasswordPage() {
           </Button>
         </form>
         {successMessage && (
-          <p className="text-sm text-secondary-700">
+          <p className="text-sm text-text-muted">
             Didn&apos;t get the email? Check your spam folder, or send another request below.
           </p>
         )}
