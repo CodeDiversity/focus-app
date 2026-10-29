@@ -85,6 +85,24 @@ and baselines, not implementation state. Explicit prune may remove verified
 completed specifications after the final review gate; keep parent queues,
 traceability, contracts and artifacts. Preserve tombstones to prevent re-import.
 
+## Shell access for agents
+
+The shell is a **direct top-level tool** (`shell`), available to every role without
+any special setup — it is not gated behind Code Mode. Do not look for it in the
+Code Mode (`execute`) catalog: `search()` there never lists it, and calling
+`tools.shell(...)` inside `execute` fails with `UnknownTool`, which can wrongly
+suggest this runtime has no shell at all. If a task seems blocked on "no terminal",
+check your direct tool list before routing work to a helper or declaring the gate
+unexecutable.
+
+Pass the repo or workspace path via the `workdir` parameter instead of `cd`-ing in
+the command string, and keep background/long-running commands explicit. Role write
+limits apply to every shell invocation exactly as to file writes: run only the
+commands your role is authorized to run (e.g. a reviewer runs read-only checks and
+never mutating Git or fix/format commands; an implementer commits only its scoped
+paths). Never read, display, or grep credential or secret files from the shell,
+including `.env` and `.env.*`.
+
 <!-- BEGIN:turborepo-agent-rules -->
 
 # This is NOT the Turborepo you know
