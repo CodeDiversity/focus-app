@@ -52,7 +52,7 @@ export function CalendarEventChip({ event, onOpen }: CalendarEventChipProps) {
       type="button"
       onClick={() => onOpen(event)}
       aria-label={`${label}: ${event.title}, ${event.startTime}`}
-      className="group flex w-full items-start gap-2 rounded-lg border border-secondary-200 bg-white p-2 text-left shadow-sm transition hover:border-primary-300 hover:shadow focus:outline-none focus:ring-2 focus:ring-primary-500"
+      className="group flex w-full items-start gap-2 rounded-lg border border-secondary-200 bg-white p-2 text-left shadow-sm transition hover:border-primary-300 hover:shadow focus:outline-none focus:ring-2 focus:ring-primary-500 max-sm:min-h-[44px]"
       style={{ borderLeftWidth: 3, borderLeftColor: event.courseColor ?? 'transparent' }}
     >
       <Icon aria-hidden size={14} className="mt-0.5 shrink-0 text-secondary-500" />

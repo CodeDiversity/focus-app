@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
@@ -8,7 +8,23 @@ import { formatDate as fmtDate } from '@/shared/lib/datetime';
 import { listCalendarEvents } from '@/entities/calendar/api/calendarApi';
 import type { CalendarEvent, CalendarEventsResult } from '@/entities/calendar/model/types';
 import { WeekView } from '@/features/calendar/ui/WeekView';
+import { CalendarAgenda } from '@/features/calendar/ui/CalendarAgenda';
 import { CalendarEventDetails } from '@/features/calendar/ui/CalendarEventDetails';
+
+const NARROW_QUERY = '(max-width: 639px)';
+
+/** Below Tailwind's `sm` breakpoint (640px) the agenda replaces the week
+ * grid (D129A-01, D129A-07 — same props shape as WeekView). */
+function useNarrowViewport(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia(NARROW_QUERY);
+      mq.addEventListener('change', onChange);
+      return () => mq.removeEventListener('change', onChange);
+    },
+    () => window.matchMedia(NARROW_QUERY).matches
+  );
+}
 
 function mondayOf(date: Date): Date {
   const d = new Date(date);
@@ -44,6 +60,7 @@ export function CalendarPage() {
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState('');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const isNarrow = useNarrowViewport();
 
   const requestSeq = useRef(0);
   const initialDoneRef = useRef(false);
@@ -251,6 +268,13 @@ export function CalendarPage() {
               </Link>
             </div>
           </div>
+        ) : isNarrow ? (
+          <CalendarAgenda
+            days={days}
+            eventsByDay={eventsByDay}
+            today={data?.today ?? ''}
+            onOpenEvent={setSelectedEvent}
+          />
         ) : (
           <WeekView
             days={days}

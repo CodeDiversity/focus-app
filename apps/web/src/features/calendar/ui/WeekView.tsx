@@ -8,7 +8,9 @@ export interface WeekViewProps {
   onOpenEvent: (event: CalendarEvent) => void;
 }
 
-function dayHeader(day: string): string {
+/** "Mon 26" style header (D127B-3, shared with CalendarAgenda per D129A-02).
+ * Parse as civil noon to avoid TZ drift. */
+export function dayHeader(day: string): string {
   // "Mon 26" style (D127B-3). Parse as civil noon to avoid TZ drift.
   const d = new Date(`${day}T12:00:00`);
   const weekday = d.toLocaleDateString('en-US', { weekday: 'short' });

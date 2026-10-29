@@ -91,6 +91,65 @@ test('shows a seeded class meeting and assignment deadline on the right days and
   await expect(dialog).toHaveCount(0);
 });
 
+test('SP-129A: at a phone viewport the week renders as the day-grouped agenda', async ({
+  page,
+  request,
+}) => {
+  const { email, accessToken } = await createAuthenticatedUserViaApi(request);
+
+  const semester = await createSemesterViaApi(request, accessToken, {
+    name: `E2E Agenda Semester ${Date.now()}`,
+    startDate: '2026-01-05',
+    endDate: '2026-05-15',
+  });
+  const course = await createCourseViaApi(request, accessToken, {
+    code: `E2E-${crypto.randomUUID().slice(0, 8)}`,
+    name: `E2E Agenda Course ${Date.now()}`,
+    semesterId: semester.id,
+  });
+
+  // Monday of the current week (the calendar defaults to the current week).
+  const now = new Date();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const mondayISO = monday.toISOString().slice(0, 10);
+
+  const meetingResponse = await request.post(`/api/courses/${course.id}/meetings`, {
+    headers: authHeaders(accessToken),
+    data: { dayOfWeek: 1, startTime: '09:00', endTime: '10:00' },
+  });
+  expect(meetingResponse.status()).toBe(201);
+
+  await loginViaUi(page, email);
+
+  // Phone-sized viewport (iPhone 12 ≈ 375×667) before loading the calendar.
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.goto('/calendar');
+
+  // The agenda replaces the week grid below the sm breakpoint; each entry
+  // carries its time + title (accessible name) and its type label as text.
+  const agenda = page.getByRole('list', { name: 'Week agenda' });
+  await expect(agenda).toBeVisible();
+  const entry = page.getByRole('button', { name: `Class: ${course.name}, 09:00` });
+  await expect(entry).toBeVisible();
+  await expect(page.getByText('Class', { exact: true })).toBeVisible();
+
+  // No horizontal scrolling at 375px.
+  const widths = await page.evaluate(() => ({
+    scroll: document.documentElement.scrollWidth,
+    client: document.documentElement.clientWidth,
+  }));
+  expect(widths.scroll).toBeLessThanOrEqual(widths.client);
+
+  // An agenda entry opens the details dialog; Escape closes it.
+  await entry.click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText(course.name);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+});
+
 test('SP-128B: slots created on /availability appear on the calendar as available and blocked events', async ({
   page,
   request,

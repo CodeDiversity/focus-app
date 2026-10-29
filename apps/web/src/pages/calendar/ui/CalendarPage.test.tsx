@@ -11,6 +11,31 @@ vi.mock('@/entities/calendar/api/calendarApi', () => ({
 
 const mocked = vi.mocked(listCalendarEvents);
 
+// jsdom has no matchMedia; stub it for the viewport switch. `narrow` drives
+// both the initial snapshot and change events (SP-129A tests).
+let narrow = false;
+const mediaListeners = new Set<() => void>();
+function installMatchMedia() {
+  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+    matches: query === '(max-width: 639px)' ? narrow : false,
+    media: query,
+    onchange: null,
+    addEventListener: (cb: () => void) => {
+      mediaListeners.add(cb);
+    },
+    removeEventListener: (cb: () => void) => {
+      mediaListeners.delete(cb);
+    },
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  }));
+}
+function setNarrow(value: boolean) {
+  narrow = value;
+  for (const listener of mediaListeners) listener();
+}
+
 const sampleEvent = {
   id: 'class:m1:2026-10-27',
   type: 'CLASS' as const,
@@ -48,6 +73,9 @@ const renderPage = () =>
 describe('CalendarPage (SP-127B)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mediaListeners.clear();
+    narrow = false;
+    installMatchMedia();
     mocked.mockResolvedValue(payload);
   });
   afterEach(() => {
@@ -113,5 +141,33 @@ describe('CalendarPage (SP-127B)', () => {
     await screen.findByText('Calculus');
     const status = screen.getByRole('status');
     expect(status).toHaveTextContent(/Showing 1 event/);
+  });
+
+  it('renders the agenda instead of the week grid at a narrow viewport (SP-129A)', async () => {
+    setNarrow(true);
+    renderPage();
+    expect(await screen.findByText('Calculus')).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'Week agenda' })).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Week view' })).not.toBeInTheDocument();
+  });
+
+  it('renders the week grid, not the agenda, at a wide viewport (SP-129A)', async () => {
+    renderPage();
+    expect(await screen.findByText('Calculus')).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'Week view' })).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Week agenda' })).not.toBeInTheDocument();
+  });
+
+  it('opens the details dialog from an agenda entry; Escape closes and focus returns (SP-129A)', async () => {
+    setNarrow(true);
+    renderPage();
+    const entry = await screen.findByRole('button', { name: /Class: Calculus, 09:00/ });
+    entry.focus();
+    await validUser.click(entry);
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('Calculus');
+    await validUser.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(entry).toHaveFocus();
   });
 });
