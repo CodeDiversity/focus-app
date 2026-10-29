@@ -1,6 +1,6 @@
 import { forwardRef, HTMLAttributes, ReactNode } from 'react';
 import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { twMerge } from '@/shared/lib/twMerge';
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: 'neutral' | 'accent' | 'success' | 'warning' | 'danger';

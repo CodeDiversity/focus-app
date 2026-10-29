@@ -1,6 +1,6 @@
 import { HTMLAttributes, ReactNode } from 'react';
 import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { twMerge } from '@/shared/lib/twMerge';
 
 export interface EmptyStateProps extends HTMLAttributes<HTMLDivElement> {
   icon?: ReactNode;

@@ -1,6 +1,6 @@
 import { forwardRef, SelectHTMLAttributes, useId } from 'react';
 import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { twMerge } from '@/shared/lib/twMerge';
 import { ChevronDown } from 'lucide-react';
 
 export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {

@@ -1,6 +1,6 @@
 import { forwardRef, InputHTMLAttributes, useState, useId } from 'react';
 import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { twMerge } from '@/shared/lib/twMerge';
 import { Eye, EyeOff } from 'lucide-react';
 
 export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
