@@ -3,7 +3,7 @@
 **Epic:** [EP10: UI Design System & Visual Refresh](../../epics/EP10-ui-design-system-and-visual-refresh.md) (Jira key: Pending creation)
 **Milestone:** M5 (Visual design system & refresh — MVP polish; cross-cutting)
 **Epic dependency:** None blocking. EP10 is cross-cutting and can run in parallel with the functional epics; page-adoption stories require the pages they restyle to exist.
-**Status:** Draft — seven frontend children planned; EP10A and EP10B implemented (awaiting parent review); EP10C is `Needs refinement` (ui-refiner handoff, D10-3); EP10D–EP10G are `Queued` behind them.
+**Status:** All seven frontend children implemented — awaiting combined parent review; EP10 fix F-G-2 resolved (TR-E10-03 E2E green).
 
 **Jira keys:** Pending creation (no sync authorized for this planning task).
 
@@ -201,17 +201,17 @@ scope:
   descendants: [EP10A, EP10B, EP10C, EP10D, EP10E, EP10F, EP10G]
   entry: ""
   limits: enclosing parent review unit
-stage: implement
+stage: review
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
   head: 9a88d9c
 active_dispatch:
-  name: EP10G implement
+  name: EP10 fix F-G-2
   role: implementer
   status: completed
-  pointer: docs/stories/EP10/EP10G-dashboard-and-profile-adoption.md
+  pointer: docs/stories/EP10/artifacts/EP10/implementation.md
   session: ""
   assignment: complete_child
 last_result:

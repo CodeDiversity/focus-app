@@ -61,7 +61,7 @@ test('login with valid credentials reaches an authenticated page', async ({ page
   await page.goto('/login');
 
   await page.getByLabel('Email').fill(testUser.email);
-  await page.getByLabel('Password').fill(testUser.password);
+  await page.getByRole('textbox', { name: 'Password' }).fill(testUser.password);
   await page.getByRole('button', { name: 'Sign In' }).click();
 
   // Login lands on onboarding for new accounts (or dashboard once onboarded).
@@ -72,7 +72,7 @@ test('login with a wrong password shows an error and stays on /login', async ({ 
   await page.goto('/login');
 
   await page.getByLabel('Email').fill(testUser.email);
-  await page.getByLabel('Password').fill('WrongPassword123!');
+  await page.getByRole('textbox', { name: 'Password' }).fill('WrongPassword123!');
   await page.getByRole('button', { name: 'Sign In' }).click();
 
   // The API's uniform 401 message is surfaced as an error toast (LoginPage

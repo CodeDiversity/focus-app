@@ -31,7 +31,7 @@ No backend/API changes. No dashboard/profile logic or data-flow changes. No new 
 | 3 Loading/empty/error states visually consistent | **PASS.** Dashboard loading spinner uses `border-accent` + `motion-reduce:animate-none`; empty states use `text-text-muted`; profile helper text uses `text-text-muted`. | Component files. |
 | 4 Keyboard operability, focus visibility, reduced motion preserved | **PASS.** No interactive element changes; primitives retain focus rings; reduced-motion guard on spinner. | Component files. |
 | 5 Existing page tests pass; updated tests cover changed markup | **PASS.** 13 files / 223 tests green; no test edits needed. ProfilePage.test.tsx still asserts `.card` / `.max-w-2xl` containers (unchanged). | Test run. |
-| 6 EP09 E2E suite passes against refreshed app (or failure recorded) | **PARTIAL — failure recorded.** Suite run (TR-E10-03): 15/24 tests fail with a strict-mode violation in `getByLabel('Password')`, which now resolves to both the password `<input>` and the EP10B Input primitive's "Show password" toggle button (aria-label "Show password"). Root cause is the EP10B Input primitive / E2E selector coupling, not EP10G's adoption (dashboard/profile are not E2E-covered). Recorded as finding F-G-2; not silently ignored. 1 test passed, 8 did not run. | E2E run output; finding F-G-2. |
+| 6 EP09 E2E suite passes against refreshed app (or failure recorded) | **PASS (after F-G-2 fix).** TR-E10-03 re-run: 24/24 tests pass. Password selectors hardened to `getByRole('textbox', { name: 'Password' })`; toggle aria-label retained as "Show password"/"Hide password". | E2E run output; F-G-2 resolved. |
 
 ## Verification
 
@@ -40,7 +40,7 @@ No backend/API changes. No dashboard/profile logic or data-flow changes. No new 
 - `pnpm --filter web format` — all files use Prettier code style.
 - `pnpm --filter web build` — exit 0 (1607 modules).
 - `pnpm --filter web test -- src/pages` — 13 files / 223 tests, exit 0.
-- `pnpm test:e2e` (TR-E10-03) — 15 failed, 1 passed, 8 did not run (see F-G-2). Database lifecycle completed (created + dropped `studypilot_e2e_test`).
+- `pnpm test:e2e` (TR-E10-03) — 24 passed, 0 failed (F-G-2 resolved). Database lifecycle completed (created + dropped `studypilot_e2e_test`).
 
 ## DoD mapping
 
@@ -49,10 +49,10 @@ No backend/API changes. No dashboard/profile logic or data-flow changes. No new 
 ## Findings and deviations
 
 - F-G-1: Mechanical token swaps only; no functional or data-flow changes. (Non-blocking.)
-- F-G-2: EP09 E2E suite fails 15/24 tests due to `getByLabel('Password')` strict-mode collision with the EP10B Input primitive's "Show password" toggle (aria-label "Show password"). Not caused by EP10G; dashboard/profile are not E2E-covered. Suggested follow-up (out of EP10G scope, flagged for parent review): harden E2E selectors to `getByRole('textbox', { name: 'Password' })` / exact label, or adjust the toggle's aria-label. (Blocks TR-E10-03 "passes".)
+- F-G-2: RESOLVED in this fix pass. Hardened E2E password selectors to `getByRole('textbox', { name: 'Password' })` in `e2e/helpers.ts`, `e2e/login.spec.ts`, `e2e/auth-journeys.spec.ts`; retained the toggle's "Show password"/"Hide password" aria-label. TR-E10-03 now passes (24/24).
 - F-G-3: No DashboardPage.test.tsx exists; dashboard adoption verified by typecheck/lint/build + manual reasoning (consistent with prior adoption stories; no dashboard E2E spec exists per AC #6 caveat). (Non-blocking.)
 - Findings/deviations otherwise: None.
 
 ## Status
 
-Implemented — awaiting parent review.
+Implemented — awaiting parent review (F-G-2 resolved; TR-E10-03 green).

@@ -58,7 +58,7 @@ async function registerUserViaApi(request: APIRequestContext, email: string): Pr
 async function loginViaUi(page: Page, email: string): Promise<void> {
   await page.goto('/login');
   await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password').fill(PASSWORD);
+  await page.getByRole('textbox', { name: 'Password' }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign In' }).click();
   // Login routes new accounts to /onboarding (onboarding incomplete) and
   // onboarded accounts to the `from` path or /dashboard.
@@ -73,7 +73,7 @@ test('registering a new account through the UI leads to an authenticated session
   await page.goto('/register');
   await page.getByLabel('Display Name').fill('E2E Register User');
   await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password').fill(PASSWORD);
+  await page.getByRole('textbox', { name: 'Password' }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Create Account' }).click();
 
   // The product's deliberate register flow (SP-102): no auto-login — a
@@ -132,7 +132,7 @@ test('login with an unknown email shows the uniform error and stays on /login', 
   // must return the same uniform 401 message (no account-existence oracle).
   await page.goto('/login');
   await page.getByLabel('Email').fill(uniqueEmail());
-  await page.getByLabel('Password').fill('UnknownUser123!');
+  await page.getByRole('textbox', { name: 'Password' }).fill('UnknownUser123!');
   await page.getByRole('button', { name: 'Sign In' }).click();
 
   await expect(page.getByText('Invalid email or password')).toBeVisible();

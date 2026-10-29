@@ -145,7 +145,7 @@ export async function createCourseViaApi(
 export async function loginViaUi(page: Page, email: string): Promise<void> {
   await page.goto('/login');
   await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password').fill(PASSWORD);
+  await page.getByRole('textbox', { name: 'Password' }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign In' }).click();
   // Login routes new accounts to /onboarding (onboarding incomplete) and
   // onboarded accounts to the `from` path or /dashboard.

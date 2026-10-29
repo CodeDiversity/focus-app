@@ -1,7 +1,7 @@
 # EP10B: Shared UI Primitives Refresh
 
 **Story ID:** EP10B
-**Title:** Frontend — refresh shared UI primitives (Button, Input, Select, Card, Dialog, Badge, EmptyState, …)
+**Title:** Frontend — refresh shared UI primitives (Button, Input, Select, Card, Dialog, Badge, EmptyState)
 **Parent epic:** [EP10: UI Design System & Visual Refresh](../../epics/EP10-ui-design-system-and-visual-refresh.md)
 **Parent:** [EP10 breakdown](./README.md)
 **Milestone:** M5
@@ -9,18 +9,18 @@
 **Status:** Implemented — awaiting parent review
 **Dependencies:** EP10A (tokens it consumes).
 **Jira key:** Pending creation
-**Refined:** 2026-10-29 (ui-refiner pass — primitive variants/sizes/states and new-primitive set settled; D10-11…D10-17 recorded below)
+**Refined:** 2026-10-29 (planning; ui-refiner pass — primitive set, variants/sizes, states, dialog, tap targets, focus ring settled)
 
 ## Summary
 
-Migrate the shared UI primitives in `apps/web/src/shared/ui/` to the token system and give them consistent variants, sizes, and states (loading, disabled, error, focus). Introduce any new primitives the refresh needs (Card, Dialog, Badge, EmptyState) so pages compose primitives instead of re-implementing styles.
+Migrate the shared UI primitives in `apps/web/src/shared/ui/` to the token system and give them consistent variants, sizes, and states (loading, disabled, error, focus). Introduce `Card`, `Dialog`, `Badge`, `EmptyState` primitives so pages compose primitives instead of re-implementing styles.
 
 ## Description & bounded scope
 
 ### In scope
 
 1. **Migrate** `Button`, `Input`, `Select` to consume semantic tokens; preserve their public props/API.
-2. **Introduce** (only if the ui-refiner records a need) `Card`, `Dialog`, `Badge`, `EmptyState` primitives in `shared/ui`, following the established component pattern (forwardRef, clsx/tailwind-merge, accessible attributes).
+2. **Introduce** `Card`, `Dialog`, `Badge`, `EmptyState` primitives in `shared/ui`, following the established component pattern (forwardRef where applicable, clsx/tailwind-merge, accessible attributes).
 3. **Consistent states:** loading, disabled, error, focus, hover, across variants/sizes.
 4. **Accessibility:** visible focus rings, `aria-*` attributes, keyboard operability, 44×44px tap targets on mobile.
 5. **Component tests** for variants, sizes, states, focus, and a11y.
@@ -29,19 +29,19 @@ Migrate the shared UI primitives in `apps/web/src/shared/ui/` to the token syste
 
 - Token definitions (EP10A).
 - App shell (EP10C).
-- Page adoption (EP10D–EP10G).
+- Page adoption (EP10D–EP10G) — existing per-feature dialogs remain as-is; migration to the shared `Dialog` is adoption work.
 - Backend/API changes (D10-2).
 
 ## Source requirement references
 
 - **Epic AC-E10-02, AC-E10-05, AC-E10-06**.
 - **Shared DoD** — items 1, 5, 6, 7, 8, 10/11 (parent review).
-- **Decisions:** D10-1, D10-3, D10-4, D10-6, D10-8, D10-11, D10-12, D10-13, D10-14, D10-15, D10-16, D10-17.
+- **Decisions:** D10-1, D10-3, D10-4, D10-6, D10-8.
 
 ## Acceptance criteria
 
 1. `Button`, `Input`, `Select` consume semantic tokens; their public props/API are unchanged (no call-site breakage).
-2. Any new primitive introduced (`Card`, `Dialog`, `Badge`, `EmptyState`) lives in `shared/ui`, follows the existing component pattern, and is token-driven.
+2. `Card`, `Dialog`, `Badge`, `EmptyState` live in `shared/ui`, follow the existing component pattern, and are token-driven.
 3. All primitives expose consistent variants, sizes, and states (loading, disabled, error, focus, hover).
 4. Focus rings are visible and tap targets are ≥ 44×44px on mobile for all interactive primitives.
 5. Component tests cover variants, sizes, states, focus, and a11y for each primitive.
@@ -52,7 +52,7 @@ Migrate the shared UI primitives in `apps/web/src/shared/ui/` to the token syste
 - `apps/web/src/shared/ui/Button.test.tsx` (update for token variants/states).
 - `apps/web/src/shared/ui/Input.test.tsx` (new).
 - `apps/web/src/shared/ui/Select.test.tsx` (new).
-- `apps/web/src/shared/ui/Card.test.tsx`, `Dialog.test.tsx`, `Badge.test.tsx`, `EmptyState.test.tsx` (new, if those primitives are introduced).
+- `apps/web/src/shared/ui/Card.test.tsx`, `Dialog.test.tsx`, `Badge.test.tsx`, `EmptyState.test.tsx` (new).
 - Verification: `pnpm --filter web test -- src/shared/ui`, `pnpm --filter web typecheck`, `pnpm --filter web lint`.
 
 ## Technical notes
@@ -64,78 +64,70 @@ Migrate the shared UI primitives in `apps/web/src/shared/ui/` to the token syste
 - `apps/web/src/shared/ui/Select.tsx`: label/error/hint, chevron, aria attributes.
 - Only `Button.test.tsx` exists; no Input/Select tests.
 - No `Card`/`Dialog`/`Badge`/`EmptyState` primitive exists; dialogs are implemented per-feature (e.g. `ArchiveCourseDialog`).
+- Empty states are inlined per page (e.g. `SemestersPage`: centered "No semesters yet" + CTA); badges are inlined (e.g. availability slot kind badge).
 
 ### Proposed files
 
 - `apps/web/src/shared/ui/Button.tsx` (modify)
 - `apps/web/src/shared/ui/Input.tsx` (modify)
 - `apps/web/src/shared/ui/Select.tsx` (modify)
-- `apps/web/src/shared/ui/Card.tsx` (new)
-- `apps/web/src/shared/ui/Dialog.tsx` (new)
-- `apps/web/src/shared/ui/Badge.tsx` (new)
-- `apps/web/src/shared/ui/EmptyState.tsx` (new)
-- corresponding `*.test.tsx` (new/updated: Button, Input, Select, Card, Dialog, Badge, EmptyState)
+- `apps/web/src/shared/ui/Card.tsx`, `Dialog.tsx`, `Badge.tsx`, `EmptyState.tsx` (new)
+- corresponding `*.test.tsx`
 
-### Decisions (ui-refiner, 2026-10-29) — settled; planner syncs register rows D10-11…D10-17
+### Decisions (ui-refiner, 2026-10-29)
 
-**D10-11 — New primitive set: introduce all four (`Card`, `Dialog`, `Badge`, `EmptyState`) in `shared/ui`, in addition to migrating `Button`/`Input`/`Select`.**
-- Rationale: each has ≥2 existing call sites or repeated patterns — `Card` for the many `.card` usages (availability, courses, assignments); `Badge` for inline status chips (slot kind, course status, calendar event kind); `EmptyState` for the repeated "No X yet" + CTA pattern (assignments, courses, meetings, semesters, availability); `Dialog` to consolidate the many hand-rolled focus-trapped dialogs (archive course, delete assignment/subtask/semester/slot/meeting).
-- All four are additive; no mass migration of existing callers in EP10B (page adoption stays in EP10D–G). Existing per-feature dialogs keep working unchanged; the primitive is available for new/adopted code. Dialog is the heaviest piece and is a checkpoint boundary (see Sizing).
+**Primitive set (all four introduced).** Card, Dialog, Badge, EmptyState are all needed: `.card`/inline empty-state/badge patterns recur across pages and per-feature dialogs duplicate focus-trap logic. Each is token-driven and lives in `shared/ui`.
 
-**D10-12 — `Button` variant/size matrix (tokenized).**
-- Variants (5, unchanged names so call sites don't break):
-  - `primary`: `bg-accent text-white hover:bg-accent-hover` — primary action.
-  - `secondary`: `bg-surface-muted text-text hover:bg-border` — secondary action.
-  - `outline`: `border-2 border-accent text-accent hover:bg-accent/10` (accent outline for primary affordance; not a neutral border variant).
-  - `ghost`: `text-text-muted hover:bg-surface-muted hover:text-text`.
-  - `danger`: `bg-danger text-white hover:bg-danger/90`.
-- All variants: `focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2`, `transition-colors duration-base`, `disabled:opacity-50 disabled:cursor-not-allowed`.
-- Sizes: `sm` `px-3 py-1.5 text-body-sm gap-1.5`; `md` (default) `px-4 py-2 text-body-sm gap-2`; `lg` `px-6 py-3 text-body gap-2.5`.
-- Tap targets: `max-sm:min-h-[44px]` on every size (so `sm` reaches 44px on mobile without growing desktop height).
-- Loading: spinner replaces children (existing behavior preserved), button disabled, `aria-busy="true"`. Spinner uses `currentColor`, `animate-spin`, `motion-reduce:animate-none` (covered by global reduced-motion too).
-- Icons: `leftIcon`/`rightIcon` rendered in a `gap` flex row; icons `aria-hidden` when decorative.
+**Button — variants/sizes/states.**
+- Variants: `primary`, `secondary`, `outline`, `ghost`, `danger` (unchanged set).
+- Sizes: `sm`, `md` (default), `lg` (unchanged).
+- Token mapping: primary `bg-accent text-white hover:bg-accent-hover`; secondary `bg-surface-muted text-text hover:bg-border`; outline `border-2 border-accent text-accent hover:bg-accent/10`; ghost `text-text hover:bg-surface-muted`; danger `bg-danger text-white hover:bg-danger/90`.
+- States: hover (per variant), focus-visible ring `ring-2 ring-focus-ring ring-offset-2`, active/pressed (hover color), disabled `opacity-50 cursor-not-allowed`, loading `isLoading` disables the button, renders an `aria-hidden` spinner in place of children, and sets `aria-busy="true"`.
+- Tap target: primitive applies `max-sm:min-h-[44px]` (D10-8).
 
-**D10-13 — `Input` / `Select` (single style + error, new `size` prop).**
-- No `variant` prop (single style); error is a state, not a variant. Add `size?: 'sm' | 'md' | 'lg'` (default `md`) — additive, no call-site breakage. Heights: `sm` `px-3 py-1.5 text-body-sm` (min-h 36), `md` `px-4 py-2 text-body-sm` (min-h 40), `lg` `px-4 py-3 text-body` (min-h 44). Mobile tap target `max-sm:min-h-[44px]` for `sm`/`md`.
-- Base: `bg-surface border-border-strong text-text placeholder:text-text-muted rounded-md`; focus `border-accent focus:ring-2 focus:ring-accent focus:outline-none`; transition `duration-base`.
-- Error: `border-danger text-danger placeholder-danger/70 focus:border-danger focus:ring-danger`; error text `text-danger text-body-sm mt-1` (`.error-message` parity). Hint text `text-text-muted text-body-sm mt-1`.
-- Label: `text-text text-body-sm font-medium mb-2`.
-- Disabled: `opacity-50 cursor-not-allowed bg-surface-muted`.
-- Password toggle / icon slots: `text-text-muted hover:text-text`, tap target `max-sm:min-h-[44px] max-sm:min-w-[44px]`, `aria-label` required (show/hide password).
-- Select: `appearance-none pr-10`, chevron `text-text-muted pointer-events-none` size 16. `aria-invalid`/`aria-describedby` preserved.
-- `aria-invalid`, `aria-describedby`, `useId` auto-id preserved (public API unchanged).
+**Input & Select — variants/sizes/states.**
+- Add `size?: 'sm' | 'md' | 'lg'` (default `md`) to both, matching Button padding/text scale: sm `px-3 py-1.5 text-sm`, md `px-4 py-2 text-sm`, lg `px-4 py-3 text-base`.
+- No `variant` prop; the `error` prop drives the error state.
+- Token mapping: base `bg-surface border-border-strong text-text placeholder-text-muted`; focus `border-accent focus:ring-2 focus:ring-accent`; error `border-danger text-danger placeholder-danger/70 focus:border-danger focus:ring-danger`; disabled `opacity-50 cursor-not-allowed bg-surface-muted`.
+- Label `text-text font-medium text-sm`; hint `text-text-muted text-sm`; error text `text-danger text-sm` (`.error-message` vocabulary), rendered below the control with `role="alert"` and an id for `aria-describedby`.
+- Password toggle (Input) is a focusable button with `aria-label`, focus-visible ring, and a mobile tap target.
+- Tap target: primitive applies `max-sm:min-h-[44px]` to the control.
 
-**D10-14 — `Card` primitive.**
-- Props: `variant?: 'default' | 'elevated' | 'outlined' | 'muted'` (default `default`); `padding?: 'sm' | 'md' | 'lg'` (default `md`); plus `className`/children.
-- `default`: `bg-surface rounded-lg shadow-md`; `elevated`: `bg-surface rounded-lg shadow-lg`; `outlined`: `bg-surface rounded-lg border border-border shadow-none`; `muted`: `bg-surface-muted rounded-lg shadow-none`.
-- Padding: `sm` `p-4`, `md` `p-6`, `lg` `p-8`. Renders a `div` (no interactive semantics); consumers can pass `as`? No — keep `div` to avoid polymorphism complexity; use `className` for overrides via `twMerge`.
+**Card.**
+- Props: `variant?: 'default' | 'flat' | 'elevated'` (default `default`), `padding?: 'none' | 'sm' | 'md' | 'lg'` (default `md`).
+- Base: `bg-surface rounded-lg`. Variants: default `shadow-md`; flat `border border-border`; elevated `shadow-lg`. Padding: none `p-0`, sm `p-4`, md `p-6`, lg `p-8`.
+- forwardRef, clsx/tailwind-merge, merges `className`.
 
-**D10-15 — `Badge` primitive.**
-- Props: `variant?: 'neutral' | 'accent' | 'success' | 'warning' | 'danger'` (default `neutral`); `size?: 'sm' | 'md'` (default `sm`); `icon?: ReactNode` (rendered before children, `aria-hidden`).
-- Style: `inline-flex items-center gap-1 rounded-full font-medium`. `sm`: `px-2 py-0.5 text-caption`; `md`: `px-2.5 py-1 text-body-sm`.
-- Colors: `neutral` `bg-surface-muted text-text-muted`; `accent` `bg-accent/10 text-accent`; `success` `bg-success/10 text-success`; `warning` `bg-warning/10 text-warning`; `danger` `bg-danger/10 text-danger`.
-- Non-color-only: Badge is presentational; consumers must pair color with text and/or `icon`. The primitive provides an `icon` slot so callers don't rely on color alone. No `role="status"` by default (avoid over-announcing); callers add if needed.
+**Dialog.**
+- Controlled: `open: boolean`, `onClose: () => void`. Renders via `ReactDOM.createPortal` to `document.body` only while open.
+- Props: `title: string`, `description?: string`, `children?` (body), `footer?` (ReactNode), `size?: 'sm' | 'md' | 'lg'` (default `md`, max-widths 24rem/32rem/48rem), `closeOnBackdrop?: boolean` (default true), `closeOnEscape?: boolean` (default true).
+- Accessibility: `role="dialog"`, `aria-modal="true"`, `aria-labelledby` (title id), `aria-describedby` (description id when present). Close button with `aria-label="Close"`.
+- Focus: on open, save `document.activeElement` and move focus to the first focusable element (or the container with `tabIndex={-1}`); trap Tab/Shift+Tab within the dialog; on close restore focus to the saved trigger. Escape closes (when enabled); backdrop click closes (when enabled).
+- Body scroll lock while open (`overflow-hidden` on `body`, restored on close).
+- Animation: backdrop fade + panel fade/scale using Tailwind transitions (`duration-base`, `transitionTimingFunction: standard`); under `prefers-reduced-motion` durations resolve to ~0 via the token media query. No framer-motion.
+- Tap target: close button meets 44×44px on mobile.
 
-**D10-16 — `EmptyState` primitive.**
-- Props: `icon?: ReactNode`, `title: string`, `description?: string`, `action?: ReactNode` (rendered below description).
-- Layout: centered column `flex flex-col items-center text-center gap-3 py-8 sm:py-12`; icon `text-text-muted` (size 32–40, `aria-hidden`); title `text-text font-semibold text-body`; description `text-text-muted text-body-sm max-w-sm`; action `mt-2`. No card chrome by default (caller wraps in `Card` if needed).
+**Badge.**
+- Props: `variant?: 'neutral' | 'accent' | 'success' | 'warning' | 'danger'` (default `neutral`), `size?: 'sm' | 'md'` (default `sm`).
+- Base: `inline-flex items-center gap-1 rounded-full font-medium`. sm `px-2 py-0.5 text-xs`; md `px-2.5 py-1 text-body-sm`.
+- Token mapping: neutral `bg-surface-muted text-text-muted`; accent `bg-accent text-white`; success `bg-success/10 text-success`; warning `bg-warning/10 text-warning`; danger `bg-danger/10 text-danger`. (Icon slots are the caller's; non-color distinction via icon/text is the caller's responsibility, per D10-8.)
+- Rendered as a `<span>`; not interactive, so no tap-target/focus-ring requirement.
 
-**D10-17 — `Dialog` primitive.**
-- Props: `open: boolean`, `onClose: () => void`, `title: string`, `description?: string`, `children?` (body), `footer?` (actions), `size?: 'sm' | 'md' | 'lg'` (default `md`: `max-w-sm`/`max-w-md`/`max-w-lg`).
-- Portal: `createPortal(..., document.body)`. Body scroll lock while open (restore on close).
-- Accessibility: `role="dialog"`, `aria-modal="true"`, `aria-labelledby` (title id), `aria-describedby` (description id when present). On open: save `document.activeElement`, focus first focusable (or dialog container `tabIndex={-1}`); trap Tab/Shift+Tab inside; Escape calls `onClose`. On close: restore focus to the saved trigger.
-- Backdrop: `fixed inset-0 bg-text/50`, click calls `onClose`. Backdrop click is disabled only if the consumer passes a busy flag? Dialog itself has no busy state; consumers disable their own action buttons; backdrop click always closes (matches existing dialogs where frozen-while-working disables backdrop click). Decision: add optional `disableBackdropClose?: boolean` (default false) for in-flight actions.
-- Animation: enter fade + scale (`opacity-0 scale-95` → `opacity-100 scale-100`, `duration-base`, `ease-standard`); close unmounts immediately (no exit delay) to keep reduced-motion simple. Under `prefers-reduced-motion`, all durations resolve to ~0 (global rule), so no transform/transition runs.
-- Focus trap implementation mirrors the existing per-feature dialogs (`FOCUSABLE_SELECTOR`); extracted into the primitive.
+**EmptyState.**
+- Props: `icon?: ReactNode`, `title: string`, `description?: string`, `action?: ReactNode`.
+- Layout: centered column, `py-8 sm:py-12`, gap-2. Icon `text-text-muted` (size 32–40 via caller or default 32). Title `text-base font-semibold text-text`. Description `text-sm text-text-muted max-w-sm`. Action `mt-4`.
+- Used by pages for loading/empty/error presentation; error variant is caller-composed (icon + danger title) or a future prop — keep the primitive minimal (no error prop) to avoid inventing states; pages compose.
 
-**Shared state/copy/focus rules (all primitives).**
-- Focus ring: `focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2` (teal, meets WCAG 2.2 AA — see EP10A contrast record). All interactive primitives use `focus-visible` (not `focus`) so mouse clicks don't show rings; keyboard navigation does.
-- Tap targets: `max-sm:min-h-[44px]` (and `min-w` for icon-only) on all interactive elements.
-- Reduced motion: rely on global `prefers-reduced-motion` rule; no per-component animation durations beyond `duration-*` tokens.
-- Error copy placement: below the control, `mt-1`, `text-danger`, `role="alert"` only when the message is dynamic (Input/Select error already has `aria-describedby` + `aria-invalid`). Keep existing aria wiring.
-- Loading copy: Button is spinner-only while loading (children replaced by spinner, button disabled, `aria-busy`). Callers that want "Saving…" text should render it outside the button or pass it as children when not loading; documented in component JSDoc. API stays stable.
+**Focus ring (all interactive primitives).** `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2`. Inputs/selects also keep `focus-visible:border-accent` (error state uses `focus-visible:border-danger focus-visible:ring-danger`). Keyboard-only via `focus-visible`, matching legacy `.btn`/`.input-error`.
 
-**Resolved (was "Unverified / for ui-refiner"):** all items above. No open UI/UX questions remain for this story.
+**Tap targets.** Interactive primitives enforce `max-sm:min-h-[44px]` (and `max-sm:min-w-[44px]` for icon-only controls) internally, so callers no longer need `max-sm:min-h-[44px]` overrides (e.g. availability rows). Mobile-only to keep desktop compact.
+
+**Loading/empty/error consistency.** Button owns loading; EmptyState owns empty; error text style is shared via the `.error-message` vocabulary and `text-danger`. Pages compose these rather than re-styling.
+
+### Unverified / for implementer
+
+- Confirm `aria-busy`/spinner replacement does not break existing `Button.test.tsx` expectations (test update recorded).
+- Dialog portal requires `ReactDOM` import; verify jsdom test environment supports `createPortal` (existing dialog tests render without portal, so Dialog tests must wrap in a container or use `screen` queries).
 
 ## Definition of Done
 
@@ -157,21 +149,10 @@ Jira key: Pending creation. No sync authorized.
 
 ## Sizing
 
-- **Outcome:** shared primitives migrated to tokens with consistent variants/sizes/states, four new primitives (Card, Dialog, Badge, EmptyState), and component tests.
-- **Request/token estimate:** ~4–6 requests/tokens — 3 migrated + 4 new primitives + 7 test files. Checkpoint boundaries: (1) migrate Button/Input/Select; (2) Card/Badge/EmptyState; (3) Dialog (portal + focus trap + animation) + tests. Dialog is the heaviest; if scope pressure appears, Dialog can be split into a sibling (EP10B2) by the planner, but keep it here by default for one cohesive primitives outcome.
-- **Model recommendation:** 3 — composition over a settled token set; moderate presentation risk; Dialog focus-trap logic needs care.
-- **Files:** `apps/web/src/shared/ui/{Button,Input,Select,Card,Dialog,Badge,EmptyState}.tsx` + tests.
-- **Start context:** this story file; EP10A token output + contrast record; `apps/web/src/shared/ui/*`; `apps/web/src/features/courses/ui/ArchiveCourseDialog.tsx` (dialog pattern).
+- **Outcome:** shared primitives migrated to tokens with consistent variants/sizes/states and component tests; four new primitives introduced.
+- **Request/token estimate:** ~2–3 requests/tokens — three migrated primitives, four new primitives, tests. Checkpoint milestones: (1) migrate Button/Input/Select; (2) add Card/Badge/EmptyState; (3) add Dialog + tests; (4) run verification. Resume inputs: this story, EP10A token values, `shared/ui/*`.
+- **Model recommendation:** 3 — composition over a settled token set; moderate presentation risk.
+- **Files:** `apps/web/src/shared/ui/{Button,Input,Select}.tsx` (modify) + `Card.tsx`, `Dialog.tsx`, `Badge.tsx`, `EmptyState.tsx` (new) + corresponding `*.test.tsx`.
+- **Start context:** this story file; EP10A token output; `apps/web/src/shared/ui/*`; `apps/web/src/features/courses/ui/ArchiveCourseDialog.tsx` (dialog pattern); `apps/web/src/pages/semesters/ui/SemestersPage.tsx` (empty-state pattern).
 - **Verification:** `pnpm --filter web test -- src/shared/ui`, `pnpm --filter web typecheck`, `pnpm --filter web lint`.
-- **Dependencies / exclusions:** EP10A implemented. Excludes token definitions, shell, and page adoption. Existing per-feature dialogs are not refactored here (additive only).
-
-## UI/UX gaps (resolved by ui-refiner, 2026-10-29)
-
-All gaps settled in the Decisions block above (D10-11…D10-17). Summary:
-- **Primitive set:** introduce `Card`, `Dialog`, `Badge`, `EmptyState` + migrate `Button`/`Input`/`Select` (D10-11).
-- **Variants/sizes:** matrices recorded (D10-12 Button 5×3; D10-13 Input/Select size sm/md/lg; D10-14 Card 4×3; D10-15 Badge 5×2).
-- **States:** loading (Button spinner + aria-busy), disabled, error, focus (focus-visible ring), hover — treatment recorded (D10-12, D10-13).
-- **Dialog:** portal + focus trap + Escape + backdrop + enter animation + reduced motion (D10-17).
-- **Tap targets & focus:** `max-sm:min-h-[44px]` and teal focus ring confirmed (shared rules).
-
-No open UI/UX questions remain for this story.
+- **Dependencies / exclusions:** EP10A implemented. Excludes token definitions, shell, and page adoption.

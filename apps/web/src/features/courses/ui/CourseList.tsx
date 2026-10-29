@@ -143,6 +143,17 @@ export function CourseList({
             ? 'You have 1 archived course — use "Show archived" to see it.'
             : `You have ${archivedCount} archived courses — use "Show archived" to see them.`}
         </p>
+        {archivedCount > 0 && (
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showArchived}
+            onClick={() => setShowArchived(true)}
+            className="mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-text focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+          >
+            Show archived{archivedCount > 0 ? ` (${archivedCount})` : ''}
+          </button>
+        )}
       </div>
     );
   }

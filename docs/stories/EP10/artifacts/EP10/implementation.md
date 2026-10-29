@@ -24,14 +24,14 @@
 
 **Owner:** EP10G.
 **Command:** `pnpm test:e2e` (Playwright, self-contained stack: throwaway `studypilot_e2e_test` database created + migrated in global setup, dropped in teardown; API on :4100, Vite on :3100).
-**Run date:** 2026-10-29.
-**Result:** 15 failed, 1 passed, 8 did not run (24 total).
+**Run date:** 2026-10-29 (re-run after F-G-2 fix).
+**Result:** 24 passed (0 failed) (24 total).
 
-**Failure detail (single root cause):** every failing test calls `page.getByLabel('Password')` in `e2e/helpers.ts` (loginViaUi) and the auth specs. After the EP10B Input primitive refresh, the password `<Input>` renders a "Show password" toggle `<button aria-label="Show password">`. Playwright's `getByLabel('Password')` matches both the password `<input>` (labelled "Password") and that button (aria-label "Show password"), producing a strict-mode violation. The failure is therefore an E2E-selector / primitive-coupling issue originating in EP10B, **not** a regression introduced by EP10G's dashboard/profile adoption (those surfaces are not E2E-covered; the suite has no dashboard/profile spec per the AC #6 caveat).
+**Resolution (F-G-2):** hardened E2E password selectors to `page.getByRole('textbox', { name: 'Password' })` in `e2e/helpers.ts`, `e2e/login.spec.ts`, and `e2e/auth-journeys.spec.ts`. The Input primitive's toggle aria-label remains "Show password"/"Hide password" (preserves a11y and EP10B unit tests; option 2's suggested relabel would still collide under Playwright's default substring matching). During the same verification pass, additional E2E selector drift exposed by the refresh was corrected: `semesters-courses.spec.ts` (semester select scoped to the dialog; course edit/archive/restore actions routed through the "Actions for …" menu as `menuitem`; "Show archived" switch rendered in the all-archived empty state in `CourseList.tsx`), and `CourseList.tsx` gained the switch in the "No active courses" state. All 24 specs now pass.
 
 **Scope caveat (PR-003):** the existing EP09 E2E suite (`auth-journeys`, `assignments-list`, `calendar`, `semesters-courses`, `login`) covers auth/assignments/calendar/semesters-courses only. Dashboard/profile adoption is verified by unit tests + manual pass, not E2E. No E2E spec was added here (per AC #6, E2E expansion is an EP09-scope decision requiring approval).
 
-**Disposition:** recorded as finding F-G-2 (EP10G) for the combined parent review. Suggested follow-up (out of EP10G scope): harden E2E selectors to `getByRole('textbox', { name: 'Password' })` or an exact label, or adjust the toggle's aria-label. TR-E10-03 "passes" is **not** met until that is resolved; recorded honestly rather than silenced.
+**Disposition:** F-G-2 resolved; TR-E10-03 "passes" is now met.
 
 ## Verification summary (EP10G)
 
@@ -40,11 +40,11 @@
 - `pnpm --filter web format` — all files use Prettier code style.
 - `pnpm --filter web build` — exit 0 (1607 modules).
 - `pnpm --filter web test -- src/pages` — 13 files / 223 tests, exit 0.
-- `pnpm test:e2e` (TR-E10-03) — 15 failed / 1 passed / 8 did not run (see above).
+- `pnpm test:e2e` (TR-E10-03) — 24 passed / 0 failed (see above).
 
 ## Findings (cross-child)
 
-- F-G-2 (EP10G): EP09 E2E suite fails due to password-toggle aria-label collision (EP10B Input primitive). Blocks TR-E10-03 "passes"; flagged for parent review.
+- F-G-2 (EP10G): RESOLVED — hardened E2E password selectors to `getByRole('textbox', { name: 'Password' })` (toggle aria-label retained as "Show password"/"Hide password"). TR-E10-03 now passes (24/24).
 - All other child findings are non-blocking mechanical-adoption notes (F-D-1, F-E, F-F-1/2, F-G-1/3). See each child's implementation record.
 
 ## DoD (EP10 epic)

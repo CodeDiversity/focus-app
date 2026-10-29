@@ -128,7 +128,7 @@ test('a signed-in user can create a course and it appears in the list', async ({
   await page.getByLabel('Course name').fill(courseName);
   // The picker offers the student's own semesters — select the setup one by
   // its id value (the label's "(active)" suffix may vary).
-  await page.getByLabel('Semester').selectOption(semester.id);
+  await page.getByRole('dialog').getByLabel('Semester').selectOption(semester.id);
   await page.getByLabel('Instructor').fill('Ada Lovelace');
   await page.getByLabel('Credits').fill('4');
   await page.getByRole('button', { name: 'Create course' }).click();
@@ -163,7 +163,8 @@ test('editing a course persists and renders the updated values', async ({ page, 
   await page.goto('/courses');
   await expect(page.locator('li').filter({ hasText: courseName })).toBeVisible();
 
-  await page.getByRole('button', { name: `Edit ${courseName}` }).click();
+  await page.getByRole('button', { name: `Actions for ${courseName}` }).click();
+  await page.getByRole('menuitem', { name: `Edit ${courseName}` }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('heading', { name: `Edit ${courseName}` })).toBeVisible();
 
@@ -184,7 +185,8 @@ test('editing a course persists and renders the updated values', async ({ page, 
 
   // The instructor change persisted (the list does not render it) — the
   // reopened dialog is prefilled with the stored value.
-  await page.getByRole('button', { name: `Edit ${newName}` }).click();
+  await page.getByRole('button', { name: `Actions for ${newName}` }).click();
+  await page.getByRole('menuitem', { name: `Edit ${newName}` }).click();
   await expect(page.getByRole('dialog').getByLabel('Instructor')).toHaveValue('Grace Hopper');
   await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
 });
@@ -207,7 +209,8 @@ test('archiving hides a course from the active list and it can be restored', asy
   await expect(row).toBeVisible();
 
   // Archive with confirmation.
-  await page.getByRole('button', { name: `Archive ${courseName}` }).click();
+  await page.getByRole('button', { name: `Actions for ${courseName}` }).click();
+  await page.getByRole('menuitem', { name: `Archive ${courseName}` }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('heading', { name: `Archive ${courseName}?` })).toBeVisible();
   await dialog.getByRole('button', { name: `Archive ${courseName}` }).click();
@@ -223,7 +226,8 @@ test('archiving hides a course from the active list and it can be restored', asy
   await expect(row).toContainText('Archived');
 
   // Restore puts it back in the active list (badge gone).
-  await page.getByRole('button', { name: `Restore ${courseName}` }).click();
+  await page.getByRole('button', { name: `Actions for ${courseName}` }).click();
+  await page.getByRole('menuitem', { name: `Restore ${courseName}` }).click();
   await expect(dialog.getByRole('heading', { name: `Restore ${courseName}?` })).toBeVisible();
   await dialog.getByRole('button', { name: `Restore ${courseName}` }).click();
   await expect(page.getByText(`${courseName} restored.`)).toBeVisible();
