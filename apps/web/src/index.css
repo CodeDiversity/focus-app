@@ -3,12 +3,32 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-background: 248 250 252;
+    --color-surface: 255 255 255;
+    --color-surface-muted: 241 245 249;
+    --color-text: 15 23 42;
+    --color-text-muted: 71 85 105;
+    --color-border: 226 232 240;
+    --color-border-strong: 100 116 139;
+    --color-accent: 15 118 110;
+    --color-accent-hover: 17 94 89;
+    --color-danger: 220 38 38;
+    --color-success: 21 128 61;
+    --color-warning: 161 98 7;
+    --color-focus-ring: 15 118 110;
+
+    --duration-fast: 150ms;
+    --duration-base: 200ms;
+    --duration-slow: 300ms;
+  }
+
   html {
     @apply scroll-smooth;
   }
 
   body {
-    @apply font-sans antialiased text-secondary-900 bg-secondary-50;
+    @apply font-sans antialiased bg-background text-text;
   }
 
   h1,
@@ -17,21 +37,21 @@
   h4,
   h5,
   h6 {
-    @apply font-semibold text-secondary-900;
+    @apply font-semibold text-text;
   }
 
   a {
-    @apply text-primary-600 hover:text-primary-700 transition-colors;
+    @apply text-accent hover:text-accent-hover transition-colors;
   }
 
   button {
-    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
   }
 
   input,
   textarea,
   select {
-    @apply w-full px-4 py-2 border border-secondary-300 rounded-lg bg-white text-secondary-900 placeholder-secondary-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors;
+    @apply w-full px-4 py-2 border border-border-strong rounded-md bg-surface text-text placeholder-text-muted focus:border-accent focus:ring-2 focus:ring-accent focus:outline-none transition-colors;
   }
 
   label {
@@ -41,31 +61,31 @@
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 font-medium rounded-lg transition-colors duration-200;
+    @apply inline-flex items-center justify-center px-4 py-2 font-medium rounded-md transition-colors duration-base;
   }
 
   .btn-primary {
-    @apply btn bg-primary-600 text-white hover:bg-primary-700;
+    @apply btn bg-accent text-white hover:bg-accent-hover focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2;
   }
 
   .btn-secondary {
-    @apply btn bg-secondary-100 text-secondary-700 hover:bg-secondary-200;
+    @apply btn bg-surface-muted text-text hover:bg-border;
   }
 
   .btn-outline {
-    @apply btn border-2 border-primary-600 text-primary-600 hover:bg-primary-50;
+    @apply btn border-2 border-accent text-accent hover:bg-accent/10;
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-md p-6;
+    @apply bg-surface rounded-lg shadow-md p-6;
   }
 
   .input-error {
-    @apply border-red-500 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500;
+    @apply border-danger text-danger placeholder-danger/70 focus:border-danger focus:ring-danger;
   }
 
   .error-message {
-    @apply mt-1 text-sm text-red-600;
+    @apply mt-1 text-sm text-danger;
   }
 }
 
@@ -76,23 +96,45 @@
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-secondary-100 rounded-full;
+  @apply bg-surface-muted rounded-full;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-secondary-300 rounded-full hover:bg-secondary-400;
+  @apply bg-border rounded-full hover:bg-border-strong;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-secondary-400;
+  @apply bg-border-strong;
 }
 
 /* Focus visible for accessibility */
 :focus-visible {
-  @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+  @apply outline-none ring-2 ring-focus-ring ring-offset-2;
 }
 
 /* Remove default focus outline when using mouse */
 :focus:not(:focus-visible) {
   @apply outline-none;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0.01ms;
+    --duration-base: 0.01ms;
+    --duration-slow: 0.01ms;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

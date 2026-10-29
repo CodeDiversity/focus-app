@@ -3,8 +3,7 @@
 **Epic:** [EP10: UI Design System & Visual Refresh](../../epics/EP10-ui-design-system-and-visual-refresh.md) (Jira key: Pending creation)
 **Milestone:** M5 (Visual design system & refresh — MVP polish; cross-cutting)
 **Epic dependency:** None blocking. EP10 is cross-cutting and can run in parallel with the functional epics; page-adoption stories require the pages they restyle to exist.
-**Status:** Draft — seven frontend children planned; EP10A, EP10B, EP10C are `Needs refinement` (ui-refiner handoff, D10-3); EP10D–EP10G are `Queued` behind them. No implementation has started.
-**Jira keys:** Pending creation (no sync authorized for this planning task).
+**Status:** Draft — seven frontend children planned; EP10A implemented (awaiting parent review); EP10B, EP10C are `Needs refinement` (ui-refiner handoff, D10-3); EP10D–EP10G are `Queued` behind them.**Jira keys:** Pending creation (no sync authorized for this planning task).
 
 ## Execution queue
 
@@ -14,7 +13,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP10A — `ui-refiner` pass (D10-3), then implement (design tokens & theme foundation).
+**Next substory:** EP10B — `ui-refiner` pass (D10-3), then implement (shared UI primitives refresh).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (frontend only; the labels are scope, not concurrent roles).
 
@@ -22,8 +21,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP10A](./EP10A-design-tokens-and-theme-foundation.md) | Needs refinement | None. | `ui-refiner` pass (D10-3), then implement | — |
-| [EP10B](./EP10B-shared-ui-primitives-refresh.md) | Needs refinement | EP10A (tokens it consumes). | `ui-refiner` pass after EP10A is settled, then implement | — |
+| [EP10A](./EP10A-design-tokens-and-theme-foundation.md) | Implemented — awaiting parent review | None. | Combined EP10 parent review after all children | `./artifacts/EP10A/` (checkpoint, implementation, contrast record) || [EP10B](./EP10B-shared-ui-primitives-refresh.md) | Needs refinement | EP10A (tokens it consumes). | `ui-refiner` pass after EP10A is settled, then implement | — |
 | [EP10C](./EP10C-app-shell-refresh.md) | Needs refinement | EP10B (primitives it composes). | `ui-refiner` pass after EP10B is settled, then implement | — |
 | [EP10D](./EP10D-public-and-auth-pages-adoption.md) | Queued | EP10C (settled design system). | Implement after EP10C | — |
 | [EP10E](./EP10E-academic-data-pages-adoption.md) | Queued | EP10C; the pages it restyles (semesters, courses, assignments) must exist. | Implement after EP10C | — |
@@ -201,19 +199,19 @@ scope:
   descendants: [EP10A, EP10B, EP10C, EP10D, EP10E, EP10F, EP10G]
   entry: ""
   limits: enclosing parent review unit
-stage: plan
+stage: implement
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: f2202d1
+  head: d3cfeaf
 active_dispatch:
-  name: ep10-plan-review-pass2-fresh
-  role: reviewer
-  status: returned
-  pointer: docs/stories/EP10/plan-review.md
+  name: EP10A implement
+  role: implementer
+  status: pending
+  pointer: docs/stories/EP10/EP10A-design-tokens-and-theme-foundation.md
   session: ""
-  assignment: plan_review
+  assignment: complete_child
 last_result:
   evidence: ""
   findings: ""
@@ -222,11 +220,11 @@ last_result:
   same_findings: unknown
 gates:
   breakdown: true
-  plan: findings_awaiting_rereview
-  ui: unknown
-  refinement: unknown
+  plan: pass
+  ui: true
+  refinement: true
   child_unfinished: unknown
-  eligible_child_state: unknown
+  eligible_child_state: Ready
   closeout: unknown
   integration: unknown
   all_descendants_implemented: unknown
@@ -244,5 +242,5 @@ blocker:
   question: ""
   answer: ""
 resume: ""
-judgment_attempts: 0
-
+judgment_attempts: 1
+```
