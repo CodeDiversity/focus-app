@@ -309,7 +309,7 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
         aria-modal="true"
         aria-labelledby="slot-form-title"
         tabIndex={-1}
-        className="card relative max-h-[90vh] w-full max-w-md overflow-y-auto p-6"
+        className="card relative max-h-[90vh] w-full max-w-md overflow-y-auto overflow-x-hidden p-6"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
           <h2 id="slot-form-title" className="text-lg font-semibold text-secondary-900">
@@ -354,11 +354,16 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
                         value={option.value}
                         aria-label={option.label}
                         checked={selectedKind === option.value}
-                        className="mt-1 shrink-0"
+                        // Explicit size + resets: the global base rule
+                        // `input { @apply w-full px-4 py-2 border … }`
+                        // (index.css) would otherwise stretch this radio to
+                        // the full card width (F-B-6: the text beside it
+                        // collapsed and the card content overflowed).
+                        className="mt-1 h-4 w-4 shrink-0 p-0 border-0 bg-transparent"
                         disabled={isSubmitting}
                         {...register('kind')}
                       />
-                      <span className="min-w-0">
+                      <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-1.5 text-sm font-medium text-secondary-900">
                           <Icon aria-hidden size={14} className="shrink-0 text-secondary-500" />
                           {option.label}

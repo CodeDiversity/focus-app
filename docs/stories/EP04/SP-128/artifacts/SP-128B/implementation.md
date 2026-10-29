@@ -69,6 +69,8 @@ No backend/API/Prisma change (DoD 9 N/A; D404-5), no new dependency, no UI libra
 
 No open findings owned by SP-128B itself (F-B-4 is cross-feature, reported for the parent review). No scope changes, no AC edits, no planning-document changes beyond the implementer-authorized execution fields.
 
+**Correction round (2026-10-28, post-review):** F-B-6 opened by user report — the modal's kind radio cards render broken in the real browser (global `input { w-full … }` base rule vs. the app's first radio inputs; details and fix in the F-B-6 rows of the [checkpoint](./checkpoint.md)). Full visual verification is pending a test/browser run; until it closes, SP-128B's visual state is **fix applied — unverified**.
+
 ## Documentation
 
 No new in-repo documentation beyond this record, the checkpoint, and the queue updates: the story's contract links (EP04 shared API contract) already cover the consumed API, and the code comments carry the D128B decision references. No migration, no API doc change.

@@ -100,6 +100,16 @@ describe('AvailabilitySlotForm fields (D128B-5, D128B-6)', () => {
     expect(screen.getByText('You are unavailable then')).toBeInTheDocument();
   });
 
+  it('create mode: the kind radios carry the explicit size/resets that neutralize the global input base rule (F-B-6 — jsdom cannot catch the visual layout)', () => {
+    renderForm();
+
+    for (const name of ['Available window', 'Blocked time']) {
+      expect(kindRadio(name)).toHaveClass('h-4', 'w-4', 'p-0', 'border-0', 'bg-transparent');
+    }
+    // The text span takes the remaining card width (never collapses to zero).
+    expect(screen.getByText('You are unavailable then').parentElement).toHaveClass('flex-1');
+  });
+
   it("edit mode: the row's full name in the title and the prefilled kind/day/times", () => {
     renderForm({ slot: mondayWindow });
 

@@ -3,7 +3,7 @@
 **Epic:** [EP04: Academic Calendar & Availability](../../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Parent:** [SP-128](./SP-128-availability-and-unavailable-blocks.md) — coordination record (not an implementation ticket)
 **Milestone:** M2
-**Status:** SP-128A and SP-128B both `Implemented — awaiting parent review` (combined review next).
+**Status:** SP-128 correction round open — SP-128B's kind-selector layout defect (F-B-6, user-reported, fix applied 2026-10-28) awaits verification; SP-128A unchanged `Reviewed`; SP-128B was `Reviewed` (pass 1) pending this fix.
 **Jira key:** Pending creation
 
 Covers the epic's proposed story **5 (study availability and unavailable blocks)**.
@@ -16,7 +16,7 @@ Covers the epic's proposed story **5 (study availability and unavailable blocks)
 
 **Active substory:** None (SP-128A and SP-128B both implemented).
 
-**Next substory:** None — both children are implemented; run the combined SP-128 parent review unit (`./artifacts/SP-128/review.md` + `walkthrough.md`) per the review unit below. Adjusted 2026-10-28 after SP-128B's implementation (queue reconciliation at start recorded the refinement-complete evidence, commit 24978c7).
+**Next substory:** SP-128B — resume: verify the F-B-6 fix (`pnpm vitest run src/features/availability`, visual re-check of the modal), reconcile records, then commit (fix + records + the previously deferred review/walkthrough sync). SP-128A stays `Reviewed`. (2026-10-28: F-B-6 opened by user report, fix applied but unverified — no test/browser runtime in this session.)
 
 **Implementation owner:** `implementer`, sequential (A → B).
 
@@ -24,8 +24,8 @@ Covers the epic's proposed story **5 (study availability and unavailable blocks)
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-128A-availability-slots-api.md) | Implemented — awaiting parent review | EP02 + EP03 complete (satisfied). No EP04 predecessor. | None — combined SP-128 review | ./artifacts/SP-128A/implementation.md, ./artifacts/SP-128A/checkpoint.md |
-| [B](./SP-128B-availability-settings-ui.md) | Implemented — awaiting parent review | SP-128A implemented (the API it manages) — satisfied. | None — combined SP-128 review | ./artifacts/SP-128B/implementation.md, ./artifacts/SP-128B/checkpoint.md, ./artifacts/SP-128/implementation.md (parent index) |
+| [A](./SP-128A-availability-slots-api.md) | Reviewed | EP02 + EP03 complete (satisfied). No EP04 predecessor. | None — parent complete (combined review passed 2026-10-28) | ./artifacts/SP-128A/implementation.md, ./artifacts/SP-128A/checkpoint.md, ./artifacts/SP-128/review.md (combined) |
+| [B](./SP-128B-availability-settings-ui.md) | Reviewed — F-B-6 fix round open (fix applied, verification pending) | SP-128A implemented (the API it manages) — satisfied. | Resume: verify the F-B-6 fix (vitest + visual), reconcile, commit | ./artifacts/SP-128B/implementation.md, ./artifacts/SP-128B/checkpoint.md, ./artifacts/SP-128/implementation.md (parent index), ./artifacts/SP-128/review.md + walkthrough.md (combined) |
 
 ## Why this is two children
 
@@ -62,6 +62,8 @@ See the [EP04 README](../README.md#security-invariants-and-counterexamples) — 
 
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
+| IR-001 | 2026-10-28 | Routed should-fix (outside SP-128; not verdict-affecting) | Combined review — SP-128B finding F-B-4, `apps/web/e2e/semesters-courses.spec.ts` (~lines 107/145/192) | Three course e2e tests time out clicking direct `Archive ${name}`-style buttons removed by the SP-126 redesign (`Actions for ${name}` menus) — test drift, not an app defect; the implementer reproduced identical 3 failures at baseline `24978c7` in a clean worktree, so not an SP-128 regression | Refresh the courses spec to the menu-button hierarchy or a small story; owner planner/coordinator (EP02 scope) | Reviewer-verified pre-existing via the implementer's baseline worktree evidence (SP-128B checkpoint F-B-4); open outside this parent | Open (routed) |
+| IR-002 | 2026-10-28 | Polish (optional) | Combined review — SP-128A finding F-A-3 residual, `apps/api/tsconfig.json` | Base tsconfig excludes `dist/` but not `dist-test/`; a stale gitignored `dist-test/` build output can break `pnpm --filter api typecheck` (nothing committed; F-A-3 already dispositioned in-story) | Add `dist-test` to the base `exclude` next time API build config is touched; owner planner/implementer | Latent, environment-only; no verification obligation for this parent | Open (optional) |
 
 ## Quality gate (2026-10-28)
 
@@ -78,7 +80,7 @@ See the [EP04 README](../README.md#security-invariants-and-counterexamples) — 
 | 9 | Correction log | Pass | Empty — first plan of this parent. |
 | 10 | Jira identity/sync | Not applicable | No sync authorized; keys remain `Pending creation`. |
 
-**Outcome: Draft** — SP-128A is `Ready`; SP-128B is `Needs refinement` pending the `ui-refiner` pass.
+**Outcome: Draft** — SP-128A is `Ready`; SP-128B is `Needs refinement` pending the `ui-refiner` pass. (Historical planning-gate record, superseded by implementation: SP-128B's ui-refiner pass completed at `24978c7`; the parent is `Reviewed` per the review unit below.)
 
 ## Final implementation review unit
 
@@ -86,3 +88,5 @@ See the [EP04 README](../README.md#security-invariants-and-counterexamples) — 
 - **In scope:** SP-128A, SP-128B
 - **Integration/index owner:** SP-128B (writes `./artifacts/SP-128/implementation.md`)
 - **Gate:** one combined SP-128 review after both children are implemented (`./artifacts/SP-128/review.md` + `walkthrough.md`).
+
+**Outcome: Reviewed (pass 1, 2026-10-28)** — the combined SP-128 review **passed** at HEAD `cb6f9c1` (feature commits SP-128A `35ed47d`, SP-128B `a13cd31`): parent ACs 1–8 satisfied and the applicable DoD items pass ([report](./artifacts/SP-128/review.md), [walkthrough](./artifacts/SP-128/walkthrough.md)); SP-128A and SP-128B are `Reviewed`. Open routed items live in the correction log (IR-001: pre-existing `semesters-courses.spec.ts` test drift, EP02 owner; IR-002: optional `dist-test` tsconfig exclude). Remaining EP04 work: SP-129A.

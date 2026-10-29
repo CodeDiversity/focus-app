@@ -5,7 +5,7 @@
 **Parent epic:** [EP04: Academic Calendar & Availability](../../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Milestone:** M2
 **Layer:** Backend + Frontend (two children)
-**Status:** Draft — SP-128A `Ready`, SP-128B `Needs refinement`.
+**Status:** Reviewed — SP-128A and SP-128B implemented and the combined parent review passed 2026-10-28 (report + walkthrough in [`./artifacts/SP-128/`](./README.md#final-implementation-review-unit)).
 **Dependencies:** EP02 + EP03 (both complete). No EP04 predecessor.
 **Jira key:** Pending creation
 
