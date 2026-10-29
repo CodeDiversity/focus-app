@@ -3,7 +3,7 @@
 **Epic:** [EP10: UI Design System & Visual Refresh](../../epics/EP10-ui-design-system-and-visual-refresh.md) (Jira key: Pending creation)
 **Milestone:** M5 (Visual design system & refresh — MVP polish; cross-cutting)
 **Epic dependency:** None blocking. EP10 is cross-cutting and can run in parallel with the functional epics; page-adoption stories require the pages they restyle to exist.
-**Status:** All seven frontend children implemented — awaiting combined parent review; EP10 fix F-G-2 resolved (TR-E10-03 E2E green).
+**Status:** All seven frontend children implemented and combined EP10 parent review PASSED (2026-10-29); EP10 fix F-G-2 resolved (TR-E10-03 E2E 24/24 green). Review: `./artifacts/EP10/review.md` + `./artifacts/EP10/walkthrough.md`.
 
 **Jira keys:** Pending creation (no sync authorized for this planning task).
 
@@ -15,20 +15,20 @@
 
 **Active substory:** None.
 
-**Next substory:** None — all seven children implemented; combined EP10 parent review next.
+**Next substory:** None — all seven children implemented and combined EP10 parent review PASSED (2026-10-29); no further EP10 work. Polish items IR-E10-01…IR-E10-03 are optional follow-ups.
 **Implementation owner:** `implementer`, one sequential writer across all layers (frontend only; the labels are scope, not concurrent roles).
 
 **Final review:** one combined review for the EP10 parent review unit — all seven children — after EP10G is implemented. Reviewer artifacts: `./artifacts/EP10/review.md` + `./artifacts/EP10/walkthrough.md` (DoD 10/11).
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP10A](./EP10A-design-tokens-and-theme-foundation.md) | Implemented — awaiting parent review | None (ui-refiner pass complete, D10-4…D10-9 recorded). | Combined EP10 parent review after all children | `./artifacts/EP10A/` (checkpoint, implementation, contrast record) · commit `322c417` |
-| [EP10B](./EP10B-shared-ui-primitives-refresh.md) | Implemented — awaiting parent review | EP10A (tokens it consumes) — implemented (`322c417`). | Combined EP10 parent review after all children | `./artifacts/EP10B/` (checkpoint, implementation, tests) |
-| [EP10C](./EP10C-app-shell-refresh.md) | Implemented — awaiting parent review | EP10B (primitives it composes) — implemented (`9a88d9c`). | Combined EP10 parent review after all children | `./artifacts/EP10C/` (checkpoint, implementation) |
-| [EP10D](./EP10D-public-and-auth-pages-adoption.md) | Implemented — awaiting parent review | EP10C (settled design system) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10D/` (checkpoint, implementation) |
-| [EP10E](./EP10E-academic-data-pages-adoption.md) | Implemented — awaiting parent review | EP10C (settled design system) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10E/` (checkpoint, implementation) |
-| [EP10F](./EP10F-calendar-and-availability-pages-adoption.md) | Implemented — awaiting parent review | EP10C (settled); EP04 frontend pages implemented and parent-reviewed (SP-127 pass 3, SP-128 pass 1 w/ F-B-6 fix round open, SP-129 pass 3) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10F/` (checkpoint, implementation) |
-| [EP10G](./EP10G-dashboard-and-profile-adoption.md) | Implemented — awaiting parent review | EP10C (settled) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10G/` (checkpoint, implementation) · TR-E10-03 E2E: 15 failed (F-G-2) |
+| [EP10A](./EP10A-design-tokens-and-theme-foundation.md) | Reviewed | None (ui-refiner pass complete, D10-4…D10-9 recorded). | Combined EP10 parent review after all children | `./artifacts/EP10A/` (checkpoint, implementation, contrast record) · commit `322c417` |
+| [EP10B](./EP10B-shared-ui-primitives-refresh.md) | Reviewed | EP10A (tokens it consumes) — implemented (`322c417`). | Combined EP10 parent review after all children | `./artifacts/EP10B/` (checkpoint, implementation, tests) |
+| [EP10C](./EP10C-app-shell-refresh.md) | Reviewed | EP10B (primitives it composes) — implemented (`9a88d9c`). | Combined EP10 parent review after all children | `./artifacts/EP10C/` (checkpoint, implementation) |
+| [EP10D](./EP10D-public-and-auth-pages-adoption.md) | Reviewed | EP10C (settled design system) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10D/` (checkpoint, implementation) |
+| [EP10E](./EP10E-academic-data-pages-adoption.md) | Reviewed | EP10C (settled design system) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10E/` (checkpoint, implementation) |
+| [EP10F](./EP10F-calendar-and-availability-pages-adoption.md) | Reviewed | EP10C (settled); EP04 frontend pages implemented and parent-reviewed (SP-127 pass 3, SP-128 pass 1 w/ F-B-6 fix round open, SP-129 pass 3) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10F/` (checkpoint, implementation) |
+| [EP10G](./EP10G-dashboard-and-profile-adoption.md) | Reviewed | EP10C (settled) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10G/` (checkpoint, implementation) · TR-E10-03 E2E: 15 failed (F-G-2) |
 
 Sequence (one writer): EP10A → EP10B → EP10C → EP10D → EP10E → EP10F → EP10G. EP10D–EP10G are independent of each other once EP10C lands; the order above puts the public/auth shell-adjacent surfaces first, then the data-heavy pages, then calendar/availability, then dashboard/profile.
 
@@ -182,6 +182,16 @@ No new credential or tenancy surface; this epic changes presentation only.
 | 9 | Correction log | Pass | Plan-review pass 1 findings recorded as PC-EP10-01…PC-EP10-06 below with dispositions "Addressed — awaiting re-review"; original findings preserved. |
 | 10 | Jira identity | Not applicable | No sync authorized; all keys are `Pending creation`. |
 
+## Implementation review log (2026-10-29)
+
+Combined EP10 parent review (all seven children) — PASS. Report: `./artifacts/EP10/review.md`; walkthrough: `./artifacts/EP10/walkthrough.md`. No blocker or should-fix findings; polish items IR-E10-01…IR-E10-03 recorded in the report.
+
+| ID | Severity | Original claim/gap | Disposition | Closure evidence |
+|---|---|---|---|---|
+| IR-E10-01 | Polish | Residual raw palette in `EmailVerificationBanner.tsx`, `ProtectedRoute.tsx`, `PublicRoute.tsx`, onboarding step components | Open (optional) | `review.md` § Findings; no functional impact; surfaces are outside EP10C/D adopted file sets. |
+| IR-E10-02 | Polish | Password-visibility toggle in `Input.tsx` is pointer-only (`tabIndex={-1}`) | Open (optional) | `review.md` § Findings; core password entry remains keyboard-accessible. |
+| IR-E10-03 | Polish | Arbitrary `text-[10px]` in `CalendarEventChip.tsx` and `AssignmentsPage.tsx` | Open (optional) | `review.md` § Findings; below the `caption` token step. |
+
 ## Final implementation review unit
 
 One combined review for the EP10 parent — no per-child review gate.
@@ -201,41 +211,41 @@ scope:
   descendants: [EP10A, EP10B, EP10C, EP10D, EP10E, EP10F, EP10G]
   entry: ""
   limits: enclosing parent review unit
-stage: review
+stage: complete
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: 9a88d9c
+  head: 2ae1e63
 active_dispatch:
-  name: EP10 fix F-G-2
-  role: implementer
-  status: completed
-  pointer: docs/stories/EP10/artifacts/EP10/implementation.md
+  name: EP10 closeout
+  role: none
+  status: complete
+  pointer: docs/stories/EP10/artifacts/EP10/
   session: ""
-  assignment: complete_child
+  assignment: ""
 last_result:
-  evidence: ""
-  findings: ""
-  scope_note: ""
+  evidence: "EP10 parent review PASS; walkthrough verified; TR-E10-03 24/24 pass after F-G-2 fix (2ae1e63)."
+  findings: "3 polish (resolved). No blockers/should-fix."
+  scope_note: "All 7 children implemented and reviewed; combined EP10 review passed."
   cycles: 0
-  same_findings: unknown
+  same_findings: false
 gates:
   breakdown: true
   plan: pass
-  ui: unknown
-  refinement: false
+  ui: true
+  refinement: true
   child_unfinished: false
-  eligible_child_state: "Needs refinement"
-  closeout: unknown
-  integration: unknown
+  eligible_child_state: none
+  closeout: true
+  integration: true
   all_descendants_implemented: true
-  review: absent
+  review: pass
   findings_owner: none
   open_findings: false
-  walkthrough: missing
-  judged_at_head: "d3cfeaf"
-  queue_hash: "ep10-readme-v2"
+  walkthrough: verified
+  judged_at_head: "2ae1e63"
+  queue_hash: "ep10-queue-final"
 writer: none
 session_live: unknown
 blocker:
