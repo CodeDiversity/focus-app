@@ -3,7 +3,7 @@
 **Epic:** [EP04: Academic Calendar & Availability](../../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Parent:** [SP-129](./SP-129-mobile-agenda-view.md) — coordination record (not an implementation ticket)
 **Milestone:** M2
-**Status:** Implemented — SP-129A done, awaiting the combined SP-129 parent review.
+**Status:** Implemented — SP-129A done; the 2026-10-28 parent review's required findings (R129-001…005) were fixed in the 2026-10-29 fix pass — combined re-review is next.
 **Jira key:** Pending creation
 
 Covers the epic's proposed story **6 (build the mobile agenda view)**.
@@ -16,15 +16,15 @@ Covers the epic's proposed story **6 (build the mobile agenda view)**.
 
 **Active substory:** None.
 
-**Next substory:** None — the parent's only child is implemented; the next unit is the combined SP-129 parent review (`artifacts/SP-129/implementation.md` prepared; reviewer writes `review.md` + `walkthrough.md`).
+**Next substory:** None — the SP-129A fix pass for the 2026-10-28 parent review findings (R129-001…005) is complete; the next unit is the SP-129 parent **re-review** (`review.md` refreshed + `walkthrough.md`; R129-003's in-environment browser pass is reviewer-owned).
 
 **Implementation owner:** `implementer`.
 
-**Final review:** one combined SP-129 review after the child is implemented.
+**Final review:** one combined SP-129 review after the child is implemented (first pass: Changes Required 2026-10-28 → fix pass 2026-10-29 → re-review).
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-129A-mobile-agenda-view.md) | Implemented — awaiting parent review | SP-127B implemented (the event data and shared event components it reuses). | Combined SP-129 parent review (`review.md` + `walkthrough.md`) | [checkpoint](./artifacts/SP-129A/checkpoint.md) · [implementation record](./artifacts/SP-129A/implementation.md) · code `afd48ec` |
+| [A](./SP-129A-mobile-agenda-view.md) | Implemented — awaiting parent review (fix pass complete) | SP-127B implemented (the event data and shared event components it reuses). | Combined SP-129 parent **re-review** (`review.md` refresh + `walkthrough.md`) | [checkpoint](./artifacts/SP-129A/checkpoint.md) · [implementation record](./artifacts/SP-129A/implementation.md) · [fix-pass details](./artifacts/SP-129A/implementation.md#fix-pass-2026-10-29--sp-129-parent-review-findings) · code `afd48ec` + fix `91ba4dc` · first-pass [review](./artifacts/SP-129/review.md) |
 
 ## Why this is one child
 

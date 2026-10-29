@@ -6,7 +6,7 @@
 **Parent:** [SP-129](./SP-129-mobile-agenda-view.md)
 **Milestone:** M2
 **Layer:** Frontend
-**Status:** Ready — ui-refined (D404-9). Ready to implement.
+**Status:** Implemented — awaiting the SP-129 parent review (2026-10-29 fix pass: R129-001…R129-005 from `artifacts/SP-129/review.md`).
 **Refined:** 2026-10-28
 **Dependencies:** SP-127B implemented.
 **Jira key:** Pending creation

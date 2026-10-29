@@ -1,17 +1,25 @@
 # SP-129A checkpoint
 
-Updated: 2026-10-28 (closeout) — work complete; record lives in [implementation.md](./implementation.md)
-Execution state: [SP-129 README execution queue](../../README.md) — SP-129A `Implemented — awaiting parent review`
+Updated: 2026-10-29 — fix pass for the SP-129 parent review findings (R129-001…R129-005); original implementation closed out in [implementation.md](./implementation.md)
+Execution state: [SP-129 README execution queue](../../README.md) — SP-129A `Implemented — awaiting parent review`; fix pass addressing `review.md` findings
 Story: [SP-129A-mobile-agenda-view.md](../../SP-129A-mobile-agenda-view.md)
-Review unit: parent SP-129 — final implementation index at `docs/stories/EP04/SP-129/artifacts/SP-129/implementation.md` (written after this child completes)
-Role / scope: implementer; frontend only — `CalendarAgenda` component, CalendarPage viewport switch, component tests, e2e extension. No backend, no new contracts, no filters/per-day indexes.
+Review unit: parent SP-129 — parent review report at `docs/stories/EP04/SP-129/artifacts/SP-129/review.md` (Changes Required, 2026-10-28)
+Role / scope: implementer; frontend fix pass only — agenda entry layout (D129A-03), required empty-agenda test, child status metadata, e2e/keyboard+responsive evidence, test-mock polish. No backend, no new contracts. Reviewer report and final walkthrough remain reviewer-owned.
 
 ## Repository state
 
 - Workspace / branch: `master` (single shared workspace; no other writers active)
-- HEAD at last update: `89df8f2` (docs(AGENTS): shell is a direct top-level tool)
-- Saved work: ui-refiner's finished story spec found **uncommitted** in the working tree (`docs/stories/EP04/SP-129/SP-129A-mobile-agenda-view.md`, diff = Needs-refinement → Ready + decisions D129A-01…D129A-08). Preserved verbatim; queued for its own scoped commit mirroring the SP-128B pattern (`24978c7`, refiner-output commit) before implementation edits.
-- Other work to preserve: none observed (`git status` shows only the story file modified).
+- HEAD at fix-pass start: `d8da534` (docs(SP-129A): implementation record, parent index, queue — awaiting parent review)
+- Saved work: original implementation commits `7eb8b43`, `e4e96d7`, `afd48ec`, closeout `d8da534` (history preserved).
+- Other work to preserve: `docs/stories/EP04/SP-129/artifacts/SP-129/review.md` is untracked reviewer output — never stage, move or edit it.
+
+## Fix-pass findings (from review.md; IDs preserved)
+
+- **R129-001** (should-fix) — agenda entries render time below title; D129A-03 requires time above title. Disposition: open → fixing via a `layout="agenda"` chip variant (shared `CalendarEventChip`, default `'week'` unchanged).
+- **R129-002** (should-fix) — required empty-agenda test missing. Disposition: open → adding an empty-map `CalendarAgenda` test and a narrow-viewport empty-payload page test (D129A-05 behavior).
+- **R129-003** (verification gate) — integrated/keyboard/responsive evidence incomplete. Disposition: open → implementer extends the 375×667 e2e (keyboard activation, Escape focus return, ≥44px entry height), adds live tablet-resize (768×1024 → week grid) and a desktop week-view assertion; the reviewer still owns the in-environment browser pass in a review-capable session.
+- **R129-004** (should-fix) — child ticket stale: says "Ready to implement". Disposition: open → scoped story status update to `Implemented — awaiting parent review` with artifact pointers (no AC/decision edits).
+- **R129-005** (polish) — matchMedia mock stores the event type instead of the listener. Disposition: open → fix mock signature and add an `act`-wrapped live-resize page test.
 
 ## Progress
 
@@ -25,7 +33,15 @@ Role / scope: implementer; frontend only — `CalendarAgenda` component, Calenda
 - [x] Verification: scoped vitest 21/21; full web suite 768/768; typecheck exit 0; lint clean; calendar Playwright spec 5/5 (self-contained stack).
 - [x] Closeout: implementation.md written; queue/status updated; commits `7eb8b43`, `e4e96d7`, `afd48ec` + closeout docs commit (hash in handoff).
 
-Current step: none — implementation complete; combined SP-129 parent review is the next unit.
+Fix pass (2026-10-29):
+
+- [x] R129-001: chip `layout="agenda"` variant — time line above title; week layout untouched.
+- [x] R129-002: empty-agenda component test + narrow empty-page test (D129A-05 behavior).
+- [x] R129-003: e2e keyboard (Enter opens) / Escape focus return / ≥44px entry height / document-overflow; live tablet→desktop resize back to the week grid; desktop week-view assertion in the seeded test.
+- [x] R129-004: child story status reconciled to `Implemented — awaiting the SP-129 parent review`.
+- [x] R129-005: matchMedia mock listener signature fixed; added an `act`-wrapped live-resize page test.
+- [x] Fix-pass verification: scoped vitest 26/26, full suite 773/773, typecheck exit 0, lint clean (incl. pre-existing unused `mondayISO` fixed in the SP-129A phone e2e), Playwright calendar spec 5/5.
+- Current step: none — fix pass complete; re-run of the combined SP-129 parent review is the next unit.
 
 ## Decisions and dependencies
 
@@ -45,7 +61,19 @@ All final checks pass on the committed working code (`afd48ec`):
 
 Full command/results table: [implementation.md](./implementation.md).
 
+## Fix-pass verification (2026-10-29, implementer-executed)
+
+| Command | cwd | Exit | Result |
+|---|---|---|---|
+| `pnpm --filter web test -- src/features/calendar src/pages/calendar` | repo root | 0 | 4 files, 26 tests passed (21 before the fix pass; +5 new tests) |
+| `pnpm --filter web test` | repo root | 0 | full web suite: 60 files, 773 tests passed (768 before) |
+| `pnpm --filter web typecheck` | repo root | 0 | clean |
+| `pnpm --filter web lint` | repo root | 0 | clean — also cleared a **pre-existing** HEAD lint error (`unused mondayISO` in the SP-129A phone e2e; confirmed present at `d8da534` HEAD before any fix-pass edit) |
+| `pnpm --filter @studypilot/web exec playwright test calendar.spec.ts` | `apps/web` | 0 | 5 passed (7.3s) incl. the extended 375×667 agenda test; self-contained throwaway DB dropped afterward. One earlier failed run: `weekList is not defined` (my own e2e edit, fixed), then green. |
+
+Also verified for evidence, not code-change: the two `act(...)` warnings in the agenda-dialog page test pre-date the fix pass (2 warnings at HEAD for the same single test; still 2 with the corrected mock) — no new noise introduced.
+
 ## Resume next
 
-1. None — implementation complete and closed out. This parent's next unit is the combined SP-129 review (report + walkthrough at `docs/stories/EP04/SP-129/artifacts/SP-129/`), requested by the coordinator per the review cadence. DoD items 10–11 belong to that review.
-- Read next (reviewer): SP-129A implementation record, story ACs, `apps/web/src/features/calendar/ui/CalendarAgenda.tsx`, `apps/web/src/pages/calendar/ui/CalendarPage.tsx`.
+1. None implementation-side — the fix pass is complete and closed out. Next unit: **combined SP-129 parent re-review** (`review.md` refresh + `walkthrough.md`) by the reviewer; R129-003's in-environment browser pass remains reviewer-owned.
+- Read next (reviewer): [implementation.md](./implementation.md) fix-pass section, `artifacts/SP-129/review.md` findings, `CalendarEventChip.tsx` (`layout` prop), `CalendarAgenda.tsx`, `CalendarPage.test.tsx`, `e2e/calendar.spec.ts`.
