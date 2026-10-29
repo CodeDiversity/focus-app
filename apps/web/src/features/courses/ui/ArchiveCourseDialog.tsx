@@ -113,7 +113,7 @@ export function ArchiveCourseDialog({ course, onDone, onCancel }: ArchiveCourseD
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop: click closes without a request (frozen while working). */}
       <div
-        className="absolute inset-0 bg-secondary-900/50"
+        className="absolute inset-0 bg-text/50"
         aria-hidden="true"
         onClick={isWorking ? undefined : onCancel}
       />
@@ -125,10 +125,10 @@ export function ArchiveCourseDialog({ course, onDone, onCancel }: ArchiveCourseD
         tabIndex={-1}
         className="card relative w-full max-w-md"
       >
-        <h2 id="archive-course-title" className="text-lg font-semibold text-secondary-900">
+        <h2 id="archive-course-title" className="text-lg font-semibold text-text">
           {isArchiving ? `Archive ${course.name}?` : `Restore ${course.name}?`}
         </h2>
-        <p className="mt-2 text-sm text-secondary-600">
+        <p className="mt-2 text-sm text-text-muted">
           {isArchiving
             ? 'This hides the course from your active list. Nothing is deleted — you can restore it at any time.'
             : 'This puts the course back in your active list. You can archive it again at any time.'}
@@ -137,7 +137,7 @@ export function ArchiveCourseDialog({ course, onDone, onCancel }: ArchiveCourseD
         {error && (
           <p
             role="alert"
-            className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+            className="mt-4 rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
           >
             {error}
           </p>

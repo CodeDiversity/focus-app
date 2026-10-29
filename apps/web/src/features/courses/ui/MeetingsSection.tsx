@@ -65,7 +65,7 @@ export function MeetingsSection({ courseId, meetings, onMeetingChanged }: Meetin
   return (
     <section className="card p-6">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-secondary-900">Meetings</h2>
+        <h2 className="text-lg font-semibold text-text">Meetings</h2>
         <Button size="sm" variant="primary" onClick={openCreate}>
           Add meeting
         </Button>
@@ -73,13 +73,13 @@ export function MeetingsSection({ courseId, meetings, onMeetingChanged }: Meetin
 
       {meetings.length === 0 ? (
         <div className="py-8 text-center">
-          <p className="text-sm text-secondary-700">No meetings yet</p>
+          <p className="text-sm text-text">No meetings yet</p>
           <Button className="mt-4" onClick={openCreate}>
             Add your first meeting
           </Button>
         </div>
       ) : (
-        <ul className="divide-y divide-secondary-100">
+        <ul className="divide-y divide-border">
           {meetings.map((meeting) => {
             const label = formatMeetingLabel(meeting);
             return (
@@ -87,7 +87,7 @@ export function MeetingsSection({ courseId, meetings, onMeetingChanged }: Meetin
                 key={meeting.id}
                 className="flex flex-col gap-3 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
               >
-                <span className="font-medium text-secondary-900">{label}</span>
+                <span className="font-medium text-text">{label}</span>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     size="sm"

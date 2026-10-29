@@ -15,7 +15,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP10E — implement academic data pages adoption (EP10C satisfied).
+**Next substory:** EP10F — implement calendar and availability pages adoption (EP10C + EP04 pages).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (frontend only; the labels are scope, not concurrent roles).
 
@@ -27,7 +27,7 @@
 | [EP10B](./EP10B-shared-ui-primitives-refresh.md) | Implemented — awaiting parent review | EP10A (tokens it consumes) — implemented (`322c417`). | Combined EP10 parent review after all children | `./artifacts/EP10B/` (checkpoint, implementation, tests) |
 | [EP10C](./EP10C-app-shell-refresh.md) | Implemented — awaiting parent review | EP10B (primitives it composes) — implemented (`9a88d9c`). | Combined EP10 parent review after all children | `./artifacts/EP10C/` (checkpoint, implementation) |
 | [EP10D](./EP10D-public-and-auth-pages-adoption.md) | Implemented — awaiting parent review | EP10C (settled design system) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10D/` (checkpoint, implementation) |
-| [EP10E](./EP10E-academic-data-pages-adoption.md) | Queued | EP10C; the pages it restyles (semesters, courses, assignments) must exist. | Implement after EP10C | — |
+| [EP10E](./EP10E-academic-data-pages-adoption.md) | Implemented — awaiting parent review | EP10C (settled design system) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10E/` (checkpoint, implementation) |
 | [EP10F](./EP10F-calendar-and-availability-pages-adoption.md) | Queued | EP10C; EP04 frontend children implemented and parent-reviewed (SP-127 pass 3, SP-128 pass 1 with SP-128B F-B-6 fix round open, SP-129 pass 3). | Implement after EP10C and the EP04 pages | — |
 | [EP10G](./EP10G-dashboard-and-profile-adoption.md) | Queued | EP10C; the dashboard and profile pages must exist. | Implement after EP10C | — |
 
@@ -209,10 +209,10 @@ coordinator:
   baseline: ""
   head: 9a88d9c
 active_dispatch:
-  name: EP10D implement
+  name: EP10E implement
   role: implementer
   status: completed
-  pointer: docs/stories/EP10/EP10D-public-and-auth-pages-adoption.md
+  pointer: docs/stories/EP10/EP10E-academic-data-pages-adoption.md
   session: ""
   assignment: complete_child
 last_result:

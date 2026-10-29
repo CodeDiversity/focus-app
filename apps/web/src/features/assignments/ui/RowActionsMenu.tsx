@@ -102,9 +102,9 @@ export function RowActionsMenu({
         aria-label={`Actions for ${assignmentTitle}`}
         data-assignment-focus={`actions:${assignmentId}`}
         className={clsx(
-          'inline-flex h-9 w-9 items-center justify-center rounded-lg text-secondary-500',
-          'transition-colors hover:bg-secondary-100 hover:text-secondary-700',
-          'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1',
+          'inline-flex h-9 w-9 items-center justify-center rounded-lg text-text-muted',
+          'transition-colors hover:bg-surface-muted hover:text-text',
+          'focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1',
           'disabled:cursor-not-allowed disabled:opacity-60'
         )}
         onClick={() => setOpen((value) => !value)}
@@ -121,13 +121,13 @@ export function RowActionsMenu({
           aria-labelledby={triggerId}
           aria-orientation="vertical"
           onKeyDown={onMenuKeyDown}
-          className="absolute right-0 z-20 mt-1 w-44 rounded-lg border border-secondary-200 bg-white py-1 shadow-lg"
+          className="absolute right-0 z-20 mt-1 w-44 rounded-lg border border-border bg-surface py-1 shadow-lg"
         >
           <button
             role="menuitem"
             type="button"
             aria-label={`Edit ${assignmentTitle}`}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-secondary-700 hover:bg-secondary-50 focus:outline-none focus:bg-secondary-50"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-text hover:bg-surface-muted focus:outline-none focus:bg-surface-muted"
             onClick={() => runAction(onEdit)}
           >
             <SquarePen size={14} aria-hidden />
@@ -137,7 +137,7 @@ export function RowActionsMenu({
             role="menuitem"
             type="button"
             aria-label={`Delete ${assignmentTitle}`}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 focus:outline-none focus:bg-red-50"
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-danger hover:bg-danger/10 focus:outline-none focus:bg-danger/10"
             onClick={() => runAction(onDelete)}
           >
             <Trash2 size={14} aria-hidden />

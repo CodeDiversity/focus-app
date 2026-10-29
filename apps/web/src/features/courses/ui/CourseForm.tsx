@@ -356,7 +356,7 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop: click closes without a request (frozen while submitting). */}
       <div
-        className="absolute inset-0 bg-secondary-900/50"
+        className="absolute inset-0 bg-text/50"
         aria-hidden="true"
         onClick={isSubmitting ? undefined : onClose}
       />
@@ -369,7 +369,7 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
         className="card relative max-h-[90vh] w-full max-w-xl overflow-y-auto"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-          <h2 id="course-form-title" className="text-lg font-semibold text-secondary-900">
+          <h2 id="course-form-title" className="text-lg font-semibold text-text">
             {mode === 'create' ? 'Add a course' : `Edit ${course?.name ?? ''}`}
           </h2>
 
@@ -440,10 +440,7 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
             </div>
 
             <div className="w-full">
-              <span
-                id="course-color-label"
-                className="block mb-2 text-sm font-medium text-secondary-700"
-              >
+              <span id="course-color-label" className="block mb-2 text-sm font-medium text-text">
                 Color
               </span>
               {/* The color swatches (F111C-3 — the DoD-10 walk asked for the
@@ -475,8 +472,8 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
                       style={{ backgroundColor: option.value }}
                       className={clsx(
                         'h-8 w-8 rounded-full border-2 transition-all duration-150',
-                        'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
-                        checked ? 'border-secondary-900' : 'border-transparent',
+                        'focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2',
+                        checked ? 'border-text' : 'border-transparent',
                         isSubmitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                       )}
                     />
@@ -485,9 +482,9 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
               </div>
               <input type="hidden" {...register('color')} />
               {errors.color?.message && (
-                <p className="mt-1 text-sm text-red-600">{errors.color.message}</p>
+                <p className="mt-1 text-sm text-danger">{errors.color.message}</p>
               )}
-              <p className="mt-1 text-sm text-secondary-500">
+              <p className="mt-1 text-sm text-text-muted">
                 {isEdit ? 'Pick a different color to change it.' : 'Optional — defaults to indigo.'}
               </p>
             </div>
@@ -495,7 +492,7 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
             <div className="w-full">
               <label
                 htmlFor="course-description"
-                className="block mb-2 text-sm font-medium text-secondary-700"
+                className="block mb-2 text-sm font-medium text-text"
               >
                 Description
               </label>
@@ -507,16 +504,16 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
                   errors.description?.message ? 'course-description-error' : undefined
                 }
                 placeholder="Optional notes about the course"
-                className={`w-full px-4 py-2 border rounded-lg bg-white text-secondary-900 placeholder-secondary-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors duration-200 ${
+                className={`w-full px-4 py-2 border rounded-lg bg-surface text-text placeholder-text-muted focus:border-accent focus:ring-2 focus:ring-accent focus:outline-none transition-colors duration-200 ${
                   errors.description?.message
-                    ? 'border-red-500 text-red-900 placeholder-red-700'
-                    : 'border-secondary-300'
-                } ${isSubmitting ? 'opacity-50 cursor-not-allowed bg-secondary-50' : ''}`}
+                    ? 'border-danger text-danger placeholder-danger/70'
+                    : 'border-border'
+                } ${isSubmitting ? 'opacity-50 cursor-not-allowed bg-surface-muted' : ''}`}
                 disabled={isSubmitting}
                 {...register('description')}
               />
               {errors.description?.message && (
-                <p id="course-description-error" className="mt-1 text-sm text-red-600">
+                <p id="course-description-error" className="mt-1 text-sm text-danger">
                   {errors.description.message}
                 </p>
               )}
@@ -526,7 +523,7 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
           {formError && (
             <p
               role="alert"
-              className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+              className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
             >
               {formError}
             </p>

@@ -118,7 +118,7 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     // Priority and type are neutral meta text now (R-125-007), not badges.
     expect(screen.getByText('Medium')).toBeInTheDocument();
     expect(screen.getByText('High')).toBeInTheDocument();
-    expect(screen.getByText('Medium')).not.toHaveClass('bg-amber-100');
+    expect(screen.getByText('Medium')).not.toHaveClass('bg-warning/10');
   });
 
   it('keeps priority text neutral instead of colored badges (SP-115H AC 2, R-125-007)', () => {
@@ -127,8 +127,8 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     // The old pill palettes no longer decorate priority or type; the meta
     // line is plain text so dozens of rows stay easy to scan.
     expect(screen.getByText('Medium')).toBeInTheDocument();
-    expect(screen.getByText('High')).not.toHaveClass('bg-orange-100');
-    expect(screen.getByText('Homework')).not.toHaveClass('bg-slate-100');
+    expect(screen.getByText('High')).not.toHaveClass('bg-warning/10');
+    expect(screen.getByText('Homework')).not.toHaveClass('bg-surface-muted');
   });
 
   it('shows the stored type as meta text and keeps null types unlabeled (SP-115H AC 2)', () => {
@@ -136,7 +136,7 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
 
     const typeLabel = screen.getByText('Homework');
     // Plain text in the meta line (R-125-007) — not the old neutral pill.
-    expect(typeLabel).not.toHaveClass('bg-slate-100');
+    expect(typeLabel).not.toHaveClass('bg-surface-muted');
   });
 
   it('shows no type category for a null-type row (SP-115H AC 2)', () => {
@@ -172,7 +172,7 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     // by the due-soon/overdue badge next to the title instead.
     expect(screen.getByText('Urgent')).toBeInTheDocument();
     expect(screen.getByText('Low')).toBeInTheDocument();
-    expect(screen.getByText('Urgent')).not.toHaveClass('bg-red-100');
+    expect(screen.getByText('Urgent')).not.toHaveClass('bg-danger/10');
   });
 
   it('renders an overflow actions menu for each assignment row', () => {
@@ -286,7 +286,7 @@ describe('AssignmentsSection (AC 4, D112-6)', () => {
     const undated = { ...problemSet, dueDate: null, id: 'asgn-u' };
     const { rerender } = render(<AssignmentsSection assignments={[undated, essay]} />);
     // The meta paragraph itself carries the muted tone for null due dates.
-    expect(screen.getByText('No due date').closest('p')).toHaveClass('text-secondary-500');
+    expect(screen.getByText('No due date').closest('p')).toHaveClass('text-text-muted');
     expect(screen.getAllByRole('listitem')[0]).toHaveTextContent('Problem Set 4');
     expect(screen.getAllByRole('listitem')[1]).toHaveTextContent('Research Essay');
     rerender(<AssignmentsSection assignments={[undated, essay]} />);
@@ -658,11 +658,11 @@ describe('AssignmentsSection overdue + completed views (SP-123A/B)', () => {
   it('shows the Overdue badge beside the title on an overdue unfinished row', () => {
     render(<AssignmentsSection assignments={[problemSet]} />);
     const pill = screen.getByText('Overdue');
-    expect(pill).toHaveClass('bg-red-100', 'text-red-700', 'rounded-full');
+    expect(pill).toHaveClass('bg-danger/10', 'text-danger', 'rounded-full');
     // The badge sits beside the title (R-125-007), not inside the meta line,
     // which stays neutral.
     expect(pill.closest('p')).toBeNull();
-    expect(screen.getByText('Homework').closest('p')).toHaveClass('text-secondary-600');
+    expect(screen.getByText('Homework').closest('p')).toHaveClass('text-text-muted');
   });
 
   it('does not show the Overdue pill on a non-overdue row', () => {

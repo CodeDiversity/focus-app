@@ -217,7 +217,7 @@ export function CourseDetailPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Always present so status changes are announced (DoD 6). */}
-      <div role="status" className="mb-4 min-h-5 text-sm text-secondary-600">
+      <div role="status" className="mb-4 min-h-5 text-sm text-text-muted">
         {statusMessage}
       </div>
 
@@ -225,9 +225,9 @@ export function CourseDetailPage() {
         // One stable `h1` (AC 6): the generic "Course" while loading; it
         // becomes the course name on success (D112B-11).
         <div className="flex flex-col items-center gap-3 py-12">
-          <h1 className="text-3xl font-bold text-secondary-900">Course</h1>
+          <h1 className="text-3xl font-bold text-text">Course</h1>
           <svg
-            className="animate-spin h-8 w-8 text-primary-500"
+            className="animate-spin h-8 w-8 text-accent"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -247,17 +247,17 @@ export function CourseDetailPage() {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <p className="text-sm text-secondary-600">Loading your course…</p>
+          <p className="text-sm text-text-muted">Loading your course…</p>
         </div>
       ) : error ? (
         <>
-          <h1 className="mb-4 text-3xl font-bold text-secondary-900">Course</h1>
+          <h1 className="mb-4 text-3xl font-bold text-text">Course</h1>
           <div className="card p-6" role="alert">
-            <p className="text-sm text-secondary-700">{error.message}</p>
+            <p className="text-sm text-text">{error.message}</p>
             {error.isNotFound ? (
               <Link
                 to="/courses"
-                className="mt-4 inline-block font-medium text-primary-600 hover:underline"
+                className="mt-4 inline-block font-medium text-accent hover:underline"
               >
                 Back to courses
               </Link>
@@ -273,7 +273,7 @@ export function CourseDetailPage() {
           {/* Archived banner (D112B-5): a full-width strip above the header
               card (text-only — no duplicate badge inside the header). */}
           {!course.isActive && (
-            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
               This course is archived — it is hidden from your course list. You can restore it at
               any time.
             </div>
@@ -290,18 +290,18 @@ export function CourseDetailPage() {
                     className="h-3 w-3 shrink-0 rounded-full"
                     style={{ backgroundColor: course.color }}
                   />
-                  <h1 className="text-3xl font-bold text-secondary-900">{course.name}</h1>
-                  <code className="font-mono text-sm text-secondary-500">{course.code}</code>
+                  <h1 className="text-3xl font-bold text-text">{course.name}</h1>
+                  <code className="font-mono text-sm text-text-muted">{course.code}</code>
                 </div>
-                <p className="mt-2 text-sm text-secondary-600">
-                  <span className={course.instructor ? undefined : 'text-secondary-400'}>
+                <p className="mt-2 text-sm text-text-muted">
+                  <span className={course.instructor ? undefined : 'text-text-muted'}>
                     {course.instructor ?? '—'}
                   </span>
                   {' · '}
                   {course.semester ? (
                     course.semester.name
                   ) : (
-                    <span className="text-secondary-400">No semester</span>
+                    <span className="text-text-muted">No semester</span>
                   )}
                   {course.credits !== null && (
                     <>
@@ -314,7 +314,7 @@ export function CourseDetailPage() {
                   <p
                     ref={descriptionRef}
                     className={clsx(
-                      'mt-3 text-sm text-secondary-600',
+                      'mt-3 text-sm text-text-muted',
                       !descriptionExpanded && 'line-clamp-3'
                     )}
                   >
@@ -325,7 +325,7 @@ export function CourseDetailPage() {
                   <button
                     type="button"
                     onClick={() => setDescriptionExpanded((expanded) => !expanded)}
-                    className="mt-1 text-sm font-medium text-primary-600 hover:underline"
+                    className="mt-1 text-sm font-medium text-accent hover:underline"
                   >
                     {descriptionExpanded ? 'Show less' : 'Show more'}
                   </button>

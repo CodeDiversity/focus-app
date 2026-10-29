@@ -242,7 +242,7 @@ export function MeetingForm({ courseId, meeting, onSuccess, onClose }: MeetingFo
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop: click closes without a request (frozen while submitting). */}
       <div
-        className="absolute inset-0 bg-secondary-900/50"
+        className="absolute inset-0 bg-text/50"
         aria-hidden="true"
         onClick={isSubmitting ? undefined : onClose}
       />
@@ -255,7 +255,7 @@ export function MeetingForm({ courseId, meeting, onSuccess, onClose }: MeetingFo
         className="card relative max-h-[90vh] w-full max-w-md overflow-y-auto"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-          <h2 id="meeting-form-title" className="text-lg font-semibold text-secondary-900">
+          <h2 id="meeting-form-title" className="text-lg font-semibold text-text">
             {meeting ? `Edit ${formatMeetingLabel(meeting)}` : 'Add a meeting'}
           </h2>
 
@@ -294,13 +294,13 @@ export function MeetingForm({ courseId, meeting, onSuccess, onClose }: MeetingFo
           {formError && (
             <div
               role="alert"
-              className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+              className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
             >
               <p>{formError.message}</p>
               {formError.isNotFound && (
                 <Link
                   to="/courses"
-                  className="mt-2 inline-block font-medium text-primary-600 hover:underline"
+                  className="mt-2 inline-block font-medium text-accent hover:underline"
                 >
                   Back to courses
                 </Link>

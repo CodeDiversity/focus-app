@@ -44,7 +44,7 @@ export function SemesterList({
   onActivate,
 }: SemesterListProps) {
   return (
-    <ul className="divide-y divide-secondary-100">
+    <ul className="divide-y divide-border">
       {semesters.map((semester) => {
         const pending = activatingId === semester.id;
         const courseCountLabel =
@@ -56,14 +56,14 @@ export function SemesterList({
           >
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-medium text-secondary-900">{semester.name}</span>
+                <span className="font-medium text-text">{semester.name}</span>
                 {semester.isActive && (
-                  <span className="inline-flex items-center rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-medium text-primary-700">
+                  <span className="inline-flex items-center rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent-hover">
                     Active
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-sm text-secondary-600">
+              <p className="mt-1 text-sm text-text-muted">
                 {formatCalendarDate(semester.startDate)} – {formatCalendarDate(semester.endDate)}
                 {' · '}
                 {courseCountLabel}

@@ -112,7 +112,7 @@ export function DeleteSubtaskDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-secondary-900/50"
+        className="absolute inset-0 bg-text/50"
         aria-hidden="true"
         onClick={isDeleting ? undefined : onCancel}
       />
@@ -124,15 +124,15 @@ export function DeleteSubtaskDialog({
         tabIndex={-1}
         className="card relative w-full max-w-md p-6"
       >
-        <h2 id="delete-subtask-title" className="text-lg font-semibold text-secondary-900">
+        <h2 id="delete-subtask-title" className="text-lg font-semibold text-text">
           Delete {subtask.title}?
         </h2>
-        <p className="mt-2 text-sm text-secondary-600">This permanently deletes the subtask.</p>
+        <p className="mt-2 text-sm text-text-muted">This permanently deletes the subtask.</p>
 
         {error && (
           <p
             role="alert"
-            className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+            className="mt-4 rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
           >
             {error}
           </p>

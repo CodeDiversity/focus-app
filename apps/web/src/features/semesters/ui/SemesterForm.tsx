@@ -155,7 +155,7 @@ export function SemesterForm({ mode, semester, onSuccess, onClose }: SemesterFor
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-      <h2 className="text-lg font-semibold text-secondary-900">
+      <h2 className="text-lg font-semibold text-text">
         {mode === 'create' ? 'Add a semester' : `Edit ${semester?.name ?? ''}`}
       </h2>
 

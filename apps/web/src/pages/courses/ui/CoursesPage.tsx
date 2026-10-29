@@ -97,10 +97,10 @@ export function CoursesPage() {
     >
       <div className="mb-6 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 id="courses-heading" className="text-3xl font-bold text-secondary-900">
+          <h1 id="courses-heading" className="text-3xl font-bold text-text">
             My Courses
           </h1>
-          <p className="mt-1 text-sm text-secondary-500">
+          <p className="mt-1 text-sm text-text-muted">
             Manage your courses, semesters, and class meetings.
           </p>
         </div>
@@ -127,7 +127,7 @@ export function CoursesPage() {
               type="button"
               aria-label="Clear search"
               onClick={() => setSearchInput('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600 focus:outline-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-muted focus:outline-none"
             >
               <X size={16} aria-hidden />
             </button>
@@ -152,7 +152,7 @@ export function CoursesPage() {
       </div>
 
       {/* Always present so status changes are announced. */}
-      <div role="status" className="mb-4 min-h-5 text-sm text-secondary-600">
+      <div role="status" className="mb-4 min-h-5 text-sm text-text-muted">
         {statusMessage}
       </div>
 

@@ -85,7 +85,7 @@ describe('SubtaskChecklist (SP-120J)', () => {
 
   it('shows the empty state and the inline add form', () => {
     renderChecklist([]);
-    expect(screen.getByText('No subtasks yet.')).toHaveClass('text-sm', 'text-secondary-700');
+    expect(screen.getByText('No subtasks yet.')).toHaveClass('text-sm', 'text-text');
     expect(titleInput()).toBeInTheDocument();
     expect(addButton()).toBeInTheDocument();
     expect(addButton().closest('form')).toHaveClass(
@@ -178,7 +178,7 @@ describe('SubtaskChecklist (SP-120J)', () => {
       expect(mockedUpdate).toHaveBeenCalledWith('asgn-1', 's1', { status: 'COMPLETED' })
     );
     expect(onChanged).toHaveBeenCalledWith('completed');
-    expect(screen.getByText('Read chapter')).toHaveClass('font-medium', 'text-secondary-900');
+    expect(screen.getByText('Read chapter')).toHaveClass('font-medium', 'text-text');
     expect(screen.getByText('Read chapter').className).not.toMatch(/line-through/);
     expect(screen.queryByText('Completed')).not.toBeInTheDocument();
 

@@ -52,7 +52,7 @@ export function CourseList({
     return (
       <div className="flex flex-col items-center gap-3 py-12">
         <svg
-          className="animate-spin h-8 w-8 text-primary-500"
+          className="animate-spin h-8 w-8 text-accent"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -72,7 +72,7 @@ export function CourseList({
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           />
         </svg>
-        <p className="text-sm text-secondary-600">Loading your courses…</p>
+        <p className="text-sm text-text-muted">Loading your courses…</p>
       </div>
     );
   }
@@ -80,7 +80,7 @@ export function CourseList({
   if (error) {
     return (
       <div className="py-8 text-center" role="alert">
-        <p className="text-sm text-secondary-700">{error}</p>
+        <p className="text-sm text-text">{error}</p>
         <Button className="mt-4" onClick={onRetry}>
           Try again
         </Button>
@@ -107,9 +107,9 @@ export function CourseList({
   if (courses.length === 0) {
     return (
       <div className="py-8 text-center">
-        <BookOpen size={40} aria-hidden className="mx-auto mb-3 text-secondary-300" />
-        <p className="text-sm text-secondary-700">No courses yet.</p>
-        <p className="mt-1 text-sm text-secondary-500">
+        <BookOpen size={40} aria-hidden className="mx-auto mb-3 text-text-muted" />
+        <p className="text-sm text-text">No courses yet.</p>
+        <p className="mt-1 text-sm text-text-muted">
           Add your first course to start organizing your semester.
         </p>
         <Button className="mt-4" onClick={onCreate}>
@@ -122,9 +122,9 @@ export function CourseList({
   if (visible.length === 0 && anyFilterActive) {
     return (
       <div className="py-8 text-center">
-        <Search size={36} aria-hidden className="mx-auto mb-3 text-secondary-300" />
-        <p className="text-sm text-secondary-700">No courses match these filters.</p>
-        <p className="mt-1 text-sm text-secondary-500">
+        <Search size={36} aria-hidden className="mx-auto mb-3 text-text-muted" />
+        <p className="text-sm text-text">No courses match these filters.</p>
+        <p className="mt-1 text-sm text-text-muted">
           Try adjusting your search or semester filter.
         </p>
         <Button className="mt-4" onClick={onClearFilters}>
@@ -137,8 +137,8 @@ export function CourseList({
   if (visible.length === 0) {
     return (
       <div className="py-8 text-center">
-        <p className="text-sm text-secondary-700">No active courses</p>
-        <p className="mt-1 text-sm text-secondary-500">
+        <p className="text-sm text-text">No active courses</p>
+        <p className="mt-1 text-sm text-text-muted">
           {archivedCount === 1
             ? 'You have 1 archived course — use "Show archived" to see it.'
             : `You have ${archivedCount} archived courses — use "Show archived" to see them.`}
@@ -155,21 +155,21 @@ export function CourseList({
           role="switch"
           aria-checked={showArchived}
           onClick={() => setShowArchived((value) => !value)}
-          className="inline-flex items-center gap-2 rounded-lg px-1 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          className="inline-flex items-center gap-2 rounded-lg px-1 py-1 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
         >
           <span
             aria-hidden="true"
             className={`relative inline-block h-5 w-9 rounded-full transition-colors ${
-              showArchived ? 'bg-primary-600' : 'bg-secondary-300'
+              showArchived ? 'bg-accent' : 'bg-surface-muted'
             }`}
           >
             <span
-              className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+              className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-surface shadow transition-transform ${
                 showArchived ? 'translate-x-4' : 'translate-x-0'
               }`}
             />
           </span>
-          <span className="text-sm font-medium text-secondary-700">
+          <span className="text-sm font-medium text-text">
             Show archived{archivedCount > 0 ? ` (${archivedCount})` : ''}
           </span>
         </button>
@@ -184,10 +184,8 @@ export function CourseList({
       </ul>
 
       {anyFilterActive && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-secondary-100 pt-3">
-          <p className="text-xs text-secondary-500">
-            Change the search above, or reset every filter.
-          </p>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+          <p className="text-xs text-text-muted">Change the search above, or reset every filter.</p>
           <Button variant="ghost" size="sm" onClick={onClearFilters}>
             Clear filters
           </Button>

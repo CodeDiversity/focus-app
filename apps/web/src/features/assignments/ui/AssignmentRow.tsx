@@ -51,7 +51,7 @@ function StatusPillSelect({
         onChange={(event) => onStatusChange(event.target.value as AssignmentStatus)}
         className={clsx(
           'cursor-pointer appearance-none rounded-full border py-1.5 pl-3 pr-7 text-xs font-semibold',
-          'transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500',
+          'transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent',
           'disabled:cursor-not-allowed disabled:opacity-60',
           STATUS_SELECT_STYLES[statusValue]
         )}
@@ -86,7 +86,7 @@ function CourseChip({ course }: { course: AssignmentRowProps['course'] }) {
   if (course === null) {
     return (
       <div className="mt-0.5">
-        <span className="text-xs text-secondary-500">No course</span>
+        <span className="text-xs text-text-muted">No course</span>
       </div>
     );
   }
@@ -95,7 +95,7 @@ function CourseChip({ course }: { course: AssignmentRowProps['course'] }) {
       <Link
         to={`/courses/${course.id}`}
         aria-label={`View course: ${course.name}`}
-        className="relative z-10 inline-flex max-w-full items-center gap-1.5 rounded text-xs text-secondary-600 hover:text-secondary-900 hover:underline focus:outline-none focus:ring-2 focus:ring-primary-500"
+        className="relative z-10 inline-flex max-w-full items-center gap-1.5 rounded text-xs text-text-muted hover:text-text hover:underline focus:outline-none focus:ring-2 focus:ring-accent"
       >
         <span
           className="h-2.5 w-2.5 shrink-0 rounded-full"
@@ -178,7 +178,7 @@ export function AssignmentRow({
   ].filter(Boolean);
 
   return (
-    <li className="relative rounded-xl border border-secondary-200 bg-white p-4 shadow-sm transition-shadow duration-200 hover:border-secondary-300 hover:shadow">
+    <li className="relative rounded-xl border border-border bg-surface p-4 shadow-sm transition-shadow duration-200 hover:border-border hover:shadow">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         {/* Left: identity + metadata. The title's stretched pseudo-element
             makes the section clickable; interactive children stay above it
@@ -187,7 +187,7 @@ export function AssignmentRow({
           <div className="flex items-center gap-2">
             <span
               aria-hidden="true"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary-100 text-secondary-600"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-muted text-text-muted"
             >
               <TypeIcon size={16} />
             </span>
@@ -196,8 +196,8 @@ export function AssignmentRow({
               onClick={onTitleActivate}
               data-assignment-focus={`edit:${assignment.id}`}
               className={clsx(
-                'relative z-10 min-w-0 rounded text-left font-semibold text-secondary-900',
-                'hover:underline focus:outline-none focus:ring-2 focus:ring-primary-500',
+                'relative z-10 min-w-0 rounded text-left font-semibold text-text',
+                'hover:underline focus:outline-none focus:ring-2 focus:ring-accent',
                 "after:absolute after:inset-0 after:content-['']"
               )}
             >
@@ -207,7 +207,7 @@ export function AssignmentRow({
               <span
                 className={clsx(
                   'relative z-10 inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium',
-                  'bg-red-100 text-red-700'
+                  'bg-danger/10 text-danger'
                 )}
               >
                 {OVERDUE_LABEL}
@@ -230,17 +230,17 @@ export function AssignmentRow({
           <p
             className={clsx(
               'mt-1 flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 text-xs',
-              assignment.dueDate === null ? 'text-secondary-500' : 'text-secondary-600'
+              assignment.dueDate === null ? 'text-text-muted' : 'text-text-muted'
             )}
           >
             <span className="min-w-0">{metaParts[0]}</span>
-            <span aria-hidden="true" className="text-secondary-300">
+            <span aria-hidden="true" className="text-text-muted">
               ·
             </span>
             <span>{metaParts[1]}</span>
             {metaParts[2] && (
               <>
-                <span aria-hidden="true" className="text-secondary-300">
+                <span aria-hidden="true" className="text-text-muted">
                   ·
                 </span>
                 <span>{metaParts[2]}</span>

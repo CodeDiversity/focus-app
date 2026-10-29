@@ -90,7 +90,7 @@ export function AssignmentsSection({
   return (
     <section ref={actions.sectionRef} className="card p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-secondary-900">Assignments</h2>
+        <h2 className="text-lg font-semibold text-text">Assignments</h2>
         <Button size="sm" variant="primary" data-assignment-focus="add" onClick={actions.openForm}>
           Add assignment
         </Button>
@@ -98,7 +98,7 @@ export function AssignmentsSection({
 
       {assignments.length === 0 ? (
         <div className="py-8 text-center">
-          <p className="text-sm text-secondary-700">No assignments yet.</p>
+          <p className="text-sm text-text">No assignments yet.</p>
           <Button className="mt-4" data-assignment-focus="empty-add" onClick={actions.openForm}>
             Add your first assignment
           </Button>
@@ -106,22 +106,17 @@ export function AssignmentsSection({
       ) : (
         <>
           {unfinished.length > 0 && (
-            <ul className="divide-y divide-secondary-100 max-sm:[&_button]:min-h-[44px] max-sm:[&_select]:min-h-[44px]">
+            <ul className="divide-y divide-border max-sm:[&_button]:min-h-[44px] max-sm:[&_select]:min-h-[44px]">
               {unfinished.map(renderRow)}
             </ul>
           )}
           {unfinished.length === 0 && (
             <div className="py-8 text-center">
-              <p className="text-sm text-secondary-500">All assignments are complete.</p>
+              <p className="text-sm text-text-muted">All assignments are complete.</p>
             </div>
           )}
           {finished.length > 0 && (
-            <div
-              className={clsx(
-                'mt-4',
-                unfinished.length > 0 && 'border-t border-secondary-100 pt-3'
-              )}
-            >
+            <div className={clsx('mt-4', unfinished.length > 0 && 'border-t border-border pt-3')}>
               <Button
                 id="completed-assignments-toggle"
                 variant="ghost"
@@ -148,7 +143,7 @@ export function AssignmentsSection({
                   aria-labelledby="completed-assignments-toggle"
                   className="mt-3"
                 >
-                  <ul className="divide-y divide-secondary-100 max-sm:[&_button]:min-h-[44px] max-sm:[&_select]:min-h-[44px]">
+                  <ul className="divide-y divide-border max-sm:[&_button]:min-h-[44px] max-sm:[&_select]:min-h-[44px]">
                     {finished.map(renderRow)}
                   </ul>
                 </div>

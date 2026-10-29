@@ -256,18 +256,18 @@ export function SubtaskChecklist({
       aria-busy={busy}
       // Framed subtask panel (SP-125 / D125-9): inset gray surface inside the
       // row so the checklist reads as the row's own detail, not a sibling list.
-      className="min-w-0 mt-1 rounded-lg border border-secondary-200/80 bg-secondary-50/75 p-3 sm:p-4"
+      className="min-w-0 mt-1 rounded-lg border border-border/80 bg-surface-muted/75 p-3 sm:p-4"
     >
       <div className="mb-2 flex items-center justify-between gap-3">
-        <span className="text-xs font-semibold uppercase tracking-wider text-secondary-500">
+        <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
           Subtasks
         </span>
-        <span className="rounded-full bg-white px-2 py-0.5 text-xs text-secondary-600">
+        <span className="rounded-full bg-surface px-2 py-0.5 text-xs text-text-muted">
           {done} of {subtasks.length} complete
         </span>
       </div>
       {subtasks.length === 0 ? (
-        <p className="text-sm text-secondary-700">No subtasks yet.</p>
+        <p className="text-sm text-text">No subtasks yet.</p>
       ) : (
         <ul>
           {subtasks.map((subtask, index) => {
@@ -281,15 +281,13 @@ export function SubtaskChecklist({
                 <label className="flex min-w-0 items-start gap-2">
                   <input
                     type="checkbox"
-                    className="mt-1 h-6 w-6 shrink-0 accent-primary-600"
+                    className="mt-1 h-6 w-6 shrink-0 accent-accent"
                     checked={subtask.status === 'COMPLETED'}
                     disabled={busy}
                     data-subtask-focus={`check:${subtask.id}`}
                     onChange={() => void handleToggle(subtask)}
                   />
-                  <span className="min-w-0 break-words font-medium text-secondary-900">
-                    {subtask.title}
-                  </span>
+                  <span className="min-w-0 break-words font-medium text-text">{subtask.title}</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                   <Button

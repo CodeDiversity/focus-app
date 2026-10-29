@@ -262,10 +262,10 @@ export function AssignmentsPage() {
   if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-3xl font-bold text-secondary-900 mb-6">Assignments</h1>
+        <h1 className="text-3xl font-bold text-text mb-6">Assignments</h1>
         <div className="card p-6 flex items-center justify-center py-16">
-          <Loader2 className="animate-spin text-primary-600" size={24} aria-hidden />
-          <span className="ml-3 text-sm text-secondary-600">Loading your assignments…</span>
+          <Loader2 className="animate-spin text-accent" size={24} aria-hidden />
+          <span className="ml-3 text-sm text-text-muted">Loading your assignments…</span>
         </div>
       </div>
     );
@@ -274,9 +274,9 @@ export function AssignmentsPage() {
   if (initialError) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-3xl font-bold text-secondary-900 mb-6">Assignments</h1>
-        <div role="alert" className="card border border-red-200 bg-red-50/60 p-6">
-          <p className="text-sm text-red-600">{initialError}</p>
+        <h1 className="text-3xl font-bold text-text mb-6">Assignments</h1>
+        <div role="alert" className="card border border-danger/30 bg-danger/10 p-6">
+          <p className="text-sm text-danger">{initialError}</p>
           <Button className="mt-4 max-sm:min-h-[44px]" onClick={handleRetry}>
             Try again
           </Button>
@@ -294,7 +294,7 @@ export function AssignmentsPage() {
       className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
     >
       <div className="mb-6 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 id="assignments-heading" className="text-3xl font-bold text-secondary-900">
+        <h1 id="assignments-heading" className="text-3xl font-bold text-text">
           Assignments
         </h1>
         {/* Stable focus target for the shared hook's last-row delete fallback. */}
@@ -340,7 +340,7 @@ export function AssignmentsPage() {
                 setSearchInput('');
                 setQ('');
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600 focus:outline-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-muted focus:outline-none"
             >
               <X size={16} aria-hidden />
             </button>
@@ -399,7 +399,7 @@ export function AssignmentsPage() {
         >
           <span>{showFilters ? 'Hide filters' : 'Filters'}</span>
           {secondaryActiveCount > 0 && (
-            <span className="ml-1 rounded-full bg-primary-600 px-1.5 py-px text-[10px] font-semibold leading-none text-white">
+            <span className="ml-1 rounded-full bg-accent px-1.5 py-px text-[10px] font-semibold leading-none text-white">
               {secondaryActiveCount}
             </span>
           )}
@@ -412,12 +412,12 @@ export function AssignmentsPage() {
       {showFilters && (
         <div
           id="advanced-filters-panel"
-          className="mb-5 grid grid-cols-1 items-start gap-2 rounded-lg border border-secondary-100 bg-secondary-50/60 p-3 sm:grid-cols-2 lg:grid-cols-5"
+          className="mb-5 grid grid-cols-1 items-start gap-2 rounded-lg border border-border bg-surface-muted/60 p-3 sm:grid-cols-2 lg:grid-cols-5"
         >
           <div className="flex items-center gap-2">
             <label
               htmlFor="filter-due-from"
-              className="shrink-0 text-xs font-medium text-secondary-600"
+              className="shrink-0 text-xs font-medium text-text-muted"
             >
               Due from
             </label>
@@ -430,10 +430,7 @@ export function AssignmentsPage() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <label
-              htmlFor="filter-due-to"
-              className="shrink-0 text-xs font-medium text-secondary-600"
-            >
+            <label htmlFor="filter-due-to" className="shrink-0 text-xs font-medium text-text-muted">
               Due to
             </label>
             <Input
@@ -447,7 +444,7 @@ export function AssignmentsPage() {
           <div className="flex items-center gap-2">
             <label
               htmlFor="filter-priority"
-              className="shrink-0 text-xs font-medium text-secondary-600"
+              className="shrink-0 text-xs font-medium text-text-muted"
             >
               Priority
             </label>
@@ -466,10 +463,7 @@ export function AssignmentsPage() {
             </Select>
           </div>
           <div className="flex items-center gap-2">
-            <label
-              htmlFor="filter-type"
-              className="shrink-0 text-xs font-medium text-secondary-600"
-            >
+            <label htmlFor="filter-type" className="shrink-0 text-xs font-medium text-text-muted">
               Type
             </label>
             <Select
@@ -487,10 +481,7 @@ export function AssignmentsPage() {
             </Select>
           </div>
           <div className="flex items-center gap-2">
-            <label
-              htmlFor="filter-sort"
-              className="shrink-0 text-xs font-medium text-secondary-600"
-            >
+            <label htmlFor="filter-sort" className="shrink-0 text-xs font-medium text-text-muted">
               Sort by
             </label>
             <Select
@@ -510,7 +501,7 @@ export function AssignmentsPage() {
               aria-label={order === 'asc' ? 'Sort ascending' : 'Sort descending'}
               title="Toggle sort order"
               onClick={toggleOrder}
-              className="inline-flex min-h-[44px] w-11 shrink-0 items-center justify-center rounded-lg border border-secondary-300 bg-white text-secondary-700 hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="inline-flex min-h-[44px] w-11 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-text hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-accent"
             >
               {order === 'asc' ? (
                 <ArrowUp size={16} aria-hidden />
@@ -528,11 +519,9 @@ export function AssignmentsPage() {
       <div className="card p-4 sm:p-6">
         <div
           role="status"
-          className="mb-3 flex min-h-5 items-center gap-2 text-xs font-medium uppercase tracking-wider text-secondary-500"
+          className="mb-3 flex min-h-5 items-center gap-2 text-xs font-medium uppercase tracking-wider text-text-muted"
         >
-          {isFetching && (
-            <Loader2 className="animate-spin text-primary-600" size={16} aria-hidden />
-          )}
+          {isFetching && <Loader2 className="animate-spin text-accent" size={16} aria-hidden />}
           {statusMessage}
         </div>
 
@@ -540,9 +529,9 @@ export function AssignmentsPage() {
           <div className="py-8 text-center">
             {filtersActive ? (
               <>
-                <Search size={36} aria-hidden className="mx-auto mb-3 text-secondary-300" />
-                <p className="text-sm text-secondary-700">No assignments match these filters.</p>
-                <p className="mt-1 text-sm text-secondary-500">
+                <Search size={36} aria-hidden className="mx-auto mb-3 text-text-muted" />
+                <p className="text-sm text-text">No assignments match these filters.</p>
+                <p className="mt-1 text-sm text-text-muted">
                   Try adjusting your search terms or clearing filters.
                 </p>
                 <Button className="mt-4 max-sm:min-h-[44px]" onClick={clearFilters}>
@@ -551,9 +540,9 @@ export function AssignmentsPage() {
               </>
             ) : (
               <>
-                <ClipboardList size={40} aria-hidden className="mx-auto mb-3 text-secondary-300" />
-                <p className="text-sm text-secondary-700">No assignments yet.</p>
-                <p className="mt-1 text-sm text-secondary-500">
+                <ClipboardList size={40} aria-hidden className="mx-auto mb-3 text-text-muted" />
+                <p className="text-sm text-text">No assignments yet.</p>
+                <p className="mt-1 text-sm text-text-muted">
                   Create an assignment directly or browse your courses.
                 </p>
                 <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
@@ -602,8 +591,8 @@ export function AssignmentsPage() {
         )}
 
         {filtersActive && !isEmpty && (
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-secondary-100 pt-3">
-            <p className="text-xs text-secondary-500">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+            <p className="text-xs text-text-muted">
               Change the search above, or reset every filter and sort.
             </p>
             <Button variant="ghost" size="sm" onClick={clearFilters}>

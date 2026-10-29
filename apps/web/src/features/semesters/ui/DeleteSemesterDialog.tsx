@@ -106,7 +106,7 @@ export function DeleteSemesterDialog({ semester, onDeleted, onCancel }: DeleteSe
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop: click closes without a request (frozen while deleting). */}
       <div
-        className="absolute inset-0 bg-secondary-900/50"
+        className="absolute inset-0 bg-text/50"
         aria-hidden="true"
         onClick={isDeleting ? undefined : onCancel}
       />
@@ -118,10 +118,10 @@ export function DeleteSemesterDialog({ semester, onDeleted, onCancel }: DeleteSe
         tabIndex={-1}
         className="card relative w-full max-w-md p-6"
       >
-        <h2 id="delete-semester-title" className="text-lg font-semibold text-secondary-900">
+        <h2 id="delete-semester-title" className="text-lg font-semibold text-text">
           Delete {semester.name}?
         </h2>
-        <p className="mt-2 text-sm text-secondary-600">
+        <p className="mt-2 text-sm text-text-muted">
           This permanently deletes the semester. Its courses will not be deleted — they will remain
           in your account, unaffiliated with any semester.
         </p>
@@ -129,7 +129,7 @@ export function DeleteSemesterDialog({ semester, onDeleted, onCancel }: DeleteSe
         {error && (
           <p
             role="alert"
-            className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+            className="mt-4 rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
           >
             {error}
           </p>

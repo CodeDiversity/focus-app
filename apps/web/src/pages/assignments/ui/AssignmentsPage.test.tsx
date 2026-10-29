@@ -284,7 +284,7 @@ describe('AssignmentsPage', () => {
     renderPage();
     await screen.findByText('Problem Set 4');
     const pill = screen.getByText('Overdue');
-    expect(pill).toHaveClass('bg-red-100', 'text-red-700', 'rounded-full');
+    expect(pill).toHaveClass('bg-danger/10', 'text-danger', 'rounded-full');
   });
 
   it('does not show the Overdue pill on a non-overdue row', async () => {
@@ -311,7 +311,7 @@ describe('AssignmentsPage', () => {
     const pill = screen.getByText('Overdue');
     // Badge moved next to the title (R-125-007); the meta line stays neutral.
     expect(pill.closest('p')).toBeNull();
-    expect(screen.getByText('Quiz').closest('p')).toHaveClass('text-secondary-600');
+    expect(screen.getByText('Quiz').closest('p')).toHaveClass('text-text-muted');
   });
 });
 
@@ -375,7 +375,7 @@ describe('AssignmentsPage shared interaction (SP-124B AC 8)', () => {
 
     const link = screen.getByRole('link', { name: 'View course: Calculus I' });
     expect(link).toHaveAttribute('href', '/courses/course-1');
-    expect(link).toHaveClass('focus:ring-2', 'focus:ring-primary-500');
+    expect(link).toHaveClass('focus:ring-2', 'focus:ring-accent');
     expect(within(link).getByText('MATH101')).toHaveClass('font-mono');
 
     await user.click(link);
@@ -388,7 +388,7 @@ describe('AssignmentsPage shared interaction (SP-124B AC 8)', () => {
     renderPage();
     await screen.findByText('Problem Set 4');
 
-    expect(screen.getByText('No course')).toHaveClass('text-xs', 'text-secondary-500');
+    expect(screen.getByText('No course')).toHaveClass('text-xs', 'text-text-muted');
     expect(screen.queryByRole('link', { name: /view course/i })).not.toBeInTheDocument();
   });
 
@@ -841,16 +841,16 @@ describe('AssignmentsPage presentation (SP-125)', () => {
     await screen.findByText('Problem Set 4');
 
     const select = screen.getByRole('combobox', { name: 'Status for Problem Set 4' });
-    expect(select).toHaveClass('bg-slate-100', 'text-slate-700');
+    expect(select).toHaveClass('bg-surface-muted', 'text-text-muted');
 
     await user.selectOptions(select, 'COMPLETED');
-    expect(select).toHaveClass('bg-green-100', 'text-green-700');
+    expect(select).toHaveClass('bg-success/10', 'text-success');
 
     resolvePatch({ ...item, status: 'COMPLETED' });
     await screen.findByText('Assignment marked as completed. Showing 1 assignment.');
     // The refetch (mock data still PENDING) returns the select to its slate
     // pending palette — the pill always reflects the committed item status.
-    expect(select).toHaveClass('bg-slate-100', 'text-slate-700');
+    expect(select).toHaveClass('bg-surface-muted', 'text-text-muted');
     expect(select).toHaveValue('PENDING');
   });
 
@@ -866,7 +866,7 @@ describe('AssignmentsPage presentation (SP-125)', () => {
     const region = screen.getByRole('region', {
       name: 'Subtasks for Problem Set 4: 1 subtask, 1 complete',
     });
-    expect(region).toHaveClass('rounded-lg', 'bg-secondary-50/75', 'p-3');
+    expect(region).toHaveClass('rounded-lg', 'bg-surface-muted/75', 'p-3');
     expect(screen.getByText('Subtasks')).toBeInTheDocument();
     expect(screen.getByText('1 of 1 complete')).toBeInTheDocument();
   });

@@ -261,7 +261,7 @@ export function AssignmentForm({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-secondary-900/50"
+        className="absolute inset-0 bg-text/50"
         aria-hidden="true"
         onClick={isSubmitting ? undefined : onClose}
       />
@@ -275,7 +275,7 @@ export function AssignmentForm({
         className="card relative max-h-[90vh] w-full max-w-lg overflow-y-auto"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-          <h2 id="assignment-form-title" className="text-lg font-semibold text-secondary-900">
+          <h2 id="assignment-form-title" className="text-lg font-semibold text-text">
             {isEdit ? 'Edit assignment' : 'Add an assignment'}
           </h2>
           <div className="space-y-4">
@@ -381,7 +381,7 @@ export function AssignmentForm({
             <div className="w-full">
               <label
                 htmlFor="assignment-description"
-                className="block mb-2 text-sm font-medium text-secondary-700"
+                className="block mb-2 text-sm font-medium text-text"
               >
                 Description
               </label>
@@ -397,24 +397,24 @@ export function AssignmentForm({
                 }
                 placeholder="Optional notes or instructions"
                 className={clsx(
-                  'w-full px-4 py-2 border rounded-lg bg-white text-secondary-900 placeholder-secondary-400',
+                  'w-full px-4 py-2 border rounded-lg bg-surface text-text placeholder-text-muted',
                   'max-sm:min-h-[44px]',
-                  'focus:border-primary-500 focus:ring-2 focus:ring-primary-500 focus:outline-none transition-colors duration-200',
+                  'focus:border-accent focus:ring-2 focus:ring-accent focus:outline-none transition-colors duration-200',
                   errors.description?.message
-                    ? 'border-red-500 text-red-900 placeholder-red-700'
-                    : 'border-secondary-300',
-                  isSubmitting && 'opacity-50 cursor-not-allowed bg-secondary-50'
+                    ? 'border-danger text-danger placeholder-danger/70'
+                    : 'border-border',
+                  isSubmitting && 'opacity-50 cursor-not-allowed bg-surface-muted'
                 )}
                 disabled={isSubmitting}
                 {...register('description')}
               />
               {errors.description?.message && (
-                <p id="assignment-description-error" className="mt-1 text-sm text-red-600">
+                <p id="assignment-description-error" className="mt-1 text-sm text-danger">
                   {errors.description.message}
                 </p>
               )}
               {!errors.description?.message && (
-                <p id="assignment-description-hint" className="mt-1 text-sm text-secondary-500">
+                <p id="assignment-description-hint" className="mt-1 text-sm text-text-muted">
                   {isEdit
                     ? 'Optional — up to 2000 characters. Leave blank to clear.'
                     : 'Optional — up to 2000 characters.'}
@@ -425,18 +425,18 @@ export function AssignmentForm({
           {formError && (
             <div
               role="alert"
-              className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+              className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
             >
               <p>{formError}</p>
               <Link
                 to="/courses"
-                className="mt-2 inline-block font-medium text-primary-600 hover:underline"
+                className="mt-2 inline-block font-medium text-accent hover:underline"
               >
                 Back to courses
               </Link>
             </div>
           )}
-          <div className="flex flex-col-reverse gap-3 border-t border-secondary-100 pt-4 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-3 border-t border-border pt-4 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="secondary"

@@ -88,7 +88,7 @@ describe('DeleteAssignmentDialog (AC 6, AC 7)', () => {
     expect(mockedDeleteAssignment).not.toHaveBeenCalled();
 
     // Click backdrop (aria-hidden overlay)
-    const backdrop = document.querySelector('.bg-secondary-900\\/50') as HTMLElement;
+    const backdrop = document.querySelector('.bg-text\\/50') as HTMLElement;
     expect(backdrop).toBeInTheDocument();
     fireEvent.click(backdrop);
     expect(onCancel).toHaveBeenCalledTimes(2);

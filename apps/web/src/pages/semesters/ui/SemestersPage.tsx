@@ -111,12 +111,12 @@ export function SemestersPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="text-3xl font-bold text-secondary-900">Semesters</h1>
+        <h1 className="text-3xl font-bold text-text">Semesters</h1>
         {showList && semesters.length > 0 && <Button onClick={openCreate}>Add semester</Button>}
       </div>
 
       {/* Always present so status changes are announced (AC 5). */}
-      <div role="status" className="mb-4 min-h-5 text-sm text-secondary-600">
+      <div role="status" className="mb-4 min-h-5 text-sm text-text-muted">
         {statusMessage}
       </div>
 
@@ -124,7 +124,7 @@ export function SemestersPage() {
         {isLoading ? (
           <div className="flex flex-col items-center gap-3 py-12">
             <svg
-              className="animate-spin h-8 w-8 text-primary-500"
+              className="animate-spin h-8 w-8 text-accent"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -144,11 +144,11 @@ export function SemestersPage() {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            <p className="text-sm text-secondary-600">Loading your semesters…</p>
+            <p className="text-sm text-text-muted">Loading your semesters…</p>
           </div>
         ) : listError ? (
           <div className="py-8 text-center" role="alert">
-            <p className="text-sm text-secondary-700">{listError}</p>
+            <p className="text-sm text-text">{listError}</p>
             <Button className="mt-4" onClick={() => void load()}>
               Try again
             </Button>
@@ -164,7 +164,7 @@ export function SemestersPage() {
           />
         ) : semesters.length === 0 ? (
           <div className="py-8 text-center">
-            <p className="text-sm text-secondary-700">No semesters yet</p>
+            <p className="text-sm text-text">No semesters yet</p>
             <Button className="mt-4" onClick={openCreate}>
               Add your first semester
             </Button>

@@ -20,19 +20,19 @@ import type {
  * (WCAG 2.2 AA).
  */
 export const STATUS_STYLES: Record<AssignmentStatus, string> = {
-  PENDING: 'bg-slate-100 text-slate-700',
-  IN_PROGRESS: 'bg-blue-100 text-blue-700',
-  SUBMITTED: 'bg-violet-100 text-violet-700',
-  COMPLETED: 'bg-green-100 text-green-700',
-  GRADED: 'bg-teal-100 text-teal-700',
+  PENDING: 'bg-surface-muted text-text-muted',
+  IN_PROGRESS: 'bg-accent/10 text-accent',
+  SUBMITTED: 'bg-accent/10 text-accent',
+  COMPLETED: 'bg-success/10 text-success',
+  GRADED: 'bg-accent/10 text-accent',
 };
 
 /** The priority pill palette (D112B-4) — the same text-plus-color pairing. */
 export const PRIORITY_STYLES: Record<AssignmentPriority, string> = {
-  LOW: 'bg-slate-100 text-slate-700',
-  MEDIUM: 'bg-amber-100 text-amber-800',
-  HIGH: 'bg-orange-100 text-orange-700',
-  URGENT: 'bg-red-100 text-red-700',
+  LOW: 'bg-surface-muted text-text-muted',
+  MEDIUM: 'bg-warning/10 text-warning',
+  HIGH: 'bg-warning/10 text-warning',
+  URGENT: 'bg-danger/10 text-danger',
 };
 
 /** The status labels (title-cased — the raw enum values are API wire format). */
@@ -59,14 +59,14 @@ export const PRIORITY_LABELS: Record<AssignmentPriority, string> = {
  * always rendered (D112B-4). A null type renders no badge: absence of a
  * category is not a category (SP-115, refined 2026-10-25).
  */
-export const TYPE_STYLE = 'bg-slate-100 text-slate-700';
+export const TYPE_STYLE = 'bg-surface-muted text-text-muted';
 
 /** Overdue pill palette (SP-123A, D123A-3): red text-plus-color pill. */
-export const OVERDUE_STYLE = 'bg-red-100 text-red-700';
+export const OVERDUE_STYLE = 'bg-danger/10 text-danger';
 export const OVERDUE_LABEL = 'Overdue';
 
 /** Due-soon badge palette (SP-125 / R-125-007): amber text-plus-color badge. */
-export const DUE_SOON_STYLE = 'bg-amber-100 text-amber-800';
+export const DUE_SOON_STYLE = 'bg-warning/10 text-warning';
 export const DUE_SOON_LABEL = 'Due soon';
 
 /**
@@ -106,11 +106,11 @@ export const DEFAULT_TYPE_ICON: LucideIcon = FileText;
  * it never encodes it alone).
  */
 export const STATUS_SELECT_STYLES: Record<AssignmentStatus, string> = {
-  PENDING: 'bg-slate-100 text-slate-700 border-slate-300',
-  IN_PROGRESS: 'bg-blue-100 text-blue-700 border-blue-300',
-  SUBMITTED: 'bg-violet-100 text-violet-700 border-violet-300',
-  COMPLETED: 'bg-green-100 text-green-700 border-green-300',
-  GRADED: 'bg-teal-100 text-teal-700 border-teal-300',
+  PENDING: 'bg-surface-muted text-text-muted border-border',
+  IN_PROGRESS: 'bg-accent/10 text-accent border-accent/30',
+  SUBMITTED: 'bg-accent/10 text-accent border-accent/30',
+  COMPLETED: 'bg-success/10 text-success border-success/30',
+  GRADED: 'bg-accent/10 text-accent border-accent/30',
 };
 
 export const TYPE_LABELS: Record<AssignmentType, string> = {

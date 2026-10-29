@@ -64,7 +64,7 @@ describe('DeleteSubtaskDialog (SP-120J AC 5)', () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
     expect(mockedDelete).not.toHaveBeenCalled();
 
-    const backdrop = document.querySelector('.bg-secondary-900\\/50') as HTMLElement;
+    const backdrop = document.querySelector('.bg-text\\/50') as HTMLElement;
     fireEvent.click(backdrop);
     expect(onCancel).toHaveBeenCalledTimes(2);
     expect(mockedDelete).not.toHaveBeenCalled();
