@@ -195,8 +195,8 @@ coordinator:
   head: ""
   active_dispatch:
     name: EP11 planning
-    role: planner
-    status: pending
+    role: none
+    status: complete
     pointer: docs/stories/EP11/
     session: ""
     assignment: plan
