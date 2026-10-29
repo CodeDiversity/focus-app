@@ -16,6 +16,12 @@ the local runner, a shell, or another CLI to dispatch roles; that evades the
 host's permission model. In-session dispatch stays on the host's native
 isolated-session mechanism.
 
+Save the parent README `## Autopilot` checkpoint before spawning the specialist
+that edge names. The fence must be version 1, and `active_dispatch` must name
+that role with `status: pending`. Dispatch is rejected until the file is saved.
+Update it to `returned` after the specialist comes back, before the next spawn.
+Do not write the specialist's story, epic, or code yourself.
+
 ## Scope and ownership
 
 An explicit autopilot request authorizes the enclosing parent review unit and
