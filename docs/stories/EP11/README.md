@@ -187,7 +187,7 @@ scope:
   descendants: [EP11A, EP11B]
   entry: ""
   limits: enclosing parent review unit
-stage: ui_refine
+stage: plan
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
@@ -195,8 +195,8 @@ coordinator:
   head: ""
 active_dispatch:
   name: EP11A ui-refine
-  role: ui-refiner
-  status: pending
+  role: none
+  status: complete
   pointer: docs/stories/EP11/EP11A-desktop-grouped-navigation-and-account-menu.md
   session: ""
   assignment: ui_refine
