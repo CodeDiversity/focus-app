@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { Header } from '@/widgets/header/ui/Header';
 import { useAuth } from '@/features/auth/model/AuthContext';
+import { setupUser } from '@/test/user';
 import type { SessionUser } from '@/entities/user/model/types';
 
 type AuthContextType = ReturnType<typeof useAuth>;
@@ -93,16 +94,93 @@ describe('Header semesters navigation (F110B-3)', () => {
     });
 
     const semesters = screen.getByRole('link', { name: 'Semesters' });
-    expect(semesters.className).toContain('text-primary-600');
-    expect(screen.getByRole('link', { name: 'Dashboard' })).not.toHaveClass('text-primary-600');
-    expect(screen.getByRole('link', { name: 'Courses' })).not.toHaveClass('text-primary-600');
-    expect(screen.getByRole('link', { name: 'Profile' })).not.toHaveClass('text-primary-600');
+    expect(semesters.className).toContain('text-accent');
+    expect(semesters).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Dashboard' })).not.toHaveClass('text-accent');
+    expect(screen.getByRole('link', { name: 'Courses' })).not.toHaveClass('text-accent');
+    expect(screen.getByRole('link', { name: 'Profile' })).not.toHaveClass('text-accent');
 
     unmount();
     renderHeader('/profile', { isAuthenticated: true, user: sessionUser });
 
-    expect(screen.getByRole('link', { name: 'Semesters' })).not.toHaveClass('text-primary-600');
-    expect(screen.getByRole('link', { name: 'Courses' })).not.toHaveClass('text-primary-600');
-    expect(screen.getByRole('link', { name: 'Profile' })).toHaveClass('text-primary-600');
+    expect(screen.getByRole('link', { name: 'Semesters' })).not.toHaveClass('text-accent');
+    expect(screen.getByRole('link', { name: 'Courses' })).not.toHaveClass('text-accent');
+    const profile = screen.getByRole('link', { name: 'Profile' });
+    expect(profile).toHaveClass('text-accent');
+    expect(profile).toHaveAttribute('aria-current', 'page');
+  });
+});
+
+describe('Header mobile drawer', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('opens and closes the drawer via the hamburger', async () => {
+    const user = setupUser();
+    renderHeader('/', { isAuthenticated: false, user: null });
+
+    const hamburger = screen.getByRole('button', { name: 'Open menu' });
+    expect(hamburger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('dialog', { name: 'Primary navigation' })).not.toBeInTheDocument();
+
+    await user.click(hamburger);
+    expect(screen.getByRole('dialog', { name: 'Primary navigation' })).toBeInTheDocument();
+
+    const openHamburger = document.querySelector(
+      'button[aria-controls="mobile-nav"]'
+    ) as HTMLElement;
+    expect(openHamburger).toHaveAttribute('aria-expanded', 'true');
+
+    await user.click(openHamburger);
+    expect(screen.queryByRole('dialog', { name: 'Primary navigation' })).not.toBeInTheDocument();
+  });
+
+  it('closes the drawer on Escape and restores focus to the hamburger', async () => {
+    const user = setupUser();
+    renderHeader('/', { isAuthenticated: false, user: null });
+
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(screen.getByRole('dialog', { name: 'Primary navigation' })).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog', { name: 'Primary navigation' })).not.toBeInTheDocument();
+  });
+
+  it('closes the drawer when a nav link is clicked', async () => {
+    const user = setupUser();
+    renderHeader('/', { isAuthenticated: true, user: sessionUser });
+
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    const dialog = screen.getByRole('dialog', { name: 'Primary navigation' });
+    expect(dialog).toBeInTheDocument();
+
+    // Click a link inside the drawer
+    const dashboardLinks = screen.getAllByRole('link', { name: 'Dashboard' });
+    const drawerLink = dashboardLinks.find((l) => dialog.contains(l))!;
+    await user.click(drawerLink);
+    expect(screen.queryByRole('dialog', { name: 'Primary navigation' })).not.toBeInTheDocument();
+  });
+
+  it('locks body scroll while open and restores it on close', async () => {
+    const user = setupUser();
+    renderHeader('/', { isAuthenticated: false, user: null });
+
+    const prev = document.body.style.overflow;
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(document.body.style.overflow).toBe('hidden');
+
+    await user.keyboard('{Escape}');
+    expect(document.body.style.overflow).toBe(prev);
+  });
+
+  it('drawer contains auth actions on mobile', async () => {
+    const user = setupUser();
+    renderHeader('/', { isAuthenticated: false, user: null });
+
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    const dialog = screen.getByRole('dialog', { name: 'Primary navigation' });
+    expect(within(dialog).getByRole('button', { name: 'Login' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
   });
 });

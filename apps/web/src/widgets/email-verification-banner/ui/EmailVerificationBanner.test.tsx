@@ -119,7 +119,7 @@ describe('EmailVerificationBanner', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Navigate' }));
     expect(screen.queryByRole('region', { name: /verify your email/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Email verification' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Verify email' })).toHaveAttribute(
       'href',
       '/verify-email'
     );
