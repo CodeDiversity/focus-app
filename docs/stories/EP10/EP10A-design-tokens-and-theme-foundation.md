@@ -44,7 +44,7 @@ Establish the token-driven styling foundation: semantic color, typography, spaci
 3. `.card`, `.btn`, `.btn-primary`, `.btn-secondary`, `.btn-outline`, `.input-error`, `.error-message` consume tokens; their class names are unchanged.
 4. Under `prefers-reduced-motion: reduce`, motion durations resolve to zero (or near-zero).
 5. No component or page file is changed; existing tests, typecheck, and lint pass.
-6. Token text/background pairs meet WCAG 2.2 AA contrast (recorded values).
+6. Token text/background pairs meet WCAG 2.2 AA contrast. The recorded contrast values live in two inspectable places: (a) the `ui-refiner` decision register on EP10A (D10-3/D10-4 — the palette mapping with per-pair contrast ratios), and (b) the EP10A implementation record under `./artifacts/EP10A/` (the final verified token→value table). "Recorded values" means a concrete, inspectable artifact in one of those two locations, not an unspecified note. Exact values remain the `ui-refiner`'s job (D10-3).
 
 ## Tests to add / update
 
@@ -78,7 +78,7 @@ Establish the token-driven styling foundation: semantic color, typography, spaci
 3. Not applicable — no data access.
 4. Not applicable — no API changes.
 5. Not applicable — no state changes; existing states preserved.
-6. Not applicable — focus styles retained (verified in EP10B/C).
+6. Not applicable for component behavior (verified in EP10B/C), but EP10A owns the focus-ring **token**: include a quick verification that the `focus-ring` semantic token meets WCAG 2.2 AA contrast against the surfaces it appears on (`surface`, `background`, `surface-muted`), and record the value alongside the contrast record (see AC #6). Primitive behavior verification stays in EP10B/C.
 7. Responsive behavior unchanged (verified by build + manual smoke).
 8. Not applicable — no component logic; verification is build/typecheck/lint + manual visual.
 9. Not applicable — no API/migration changes.

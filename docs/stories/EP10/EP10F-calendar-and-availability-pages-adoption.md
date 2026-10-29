@@ -7,7 +7,7 @@
 **Milestone:** M5
 **Layer:** Frontend
 **Status:** Queued
-**Dependencies:** EP10C (settled design system); EP04 frontend children (SP-127B, SP-128B, SP-129A) implemented.
+**Dependencies:** EP10C (settled design system); EP04 frontend children implemented and parent-reviewed — SP-127 (pass 3), SP-128 (pass 1, SP-128B with the F-B-6 fix round open), SP-129 (pass 3).
 **Jira key:** Pending creation
 **Refined:** 2026-10-29 (planning)
 
@@ -55,7 +55,7 @@ Restyle the calendar and availability surfaces — the week view, event chips/de
 ### Verified current behavior (inspected 2026-10-29)
 
 - Pages: `calendar`, `availability`.
-- EP04 frontend children (SP-127B week view, SP-128B availability editor, SP-129A mobile agenda) are implemented and awaiting parent review; their UI specifics were settled by ui-refiner (D404-9) and recorded in SP-127B/SP-128B/SP-129A.
+- EP04 frontend children are implemented and parent-reviewed: SP-127 (pass 3), SP-128 (pass 1, SP-128B with the F-B-6 fix round open — fix applied, verification pending), SP-129 (pass 3). Their UI specifics were settled by ui-refiner (D404-9) and recorded in SP-127B/SP-128B/SP-129A. Because SP-128B's kind-selector visual defect (F-B-6) is in the availability modal, EP10F's restyle of that modal should re-verify the F-B-6 fix alongside token adoption; no other EP04 UI changes are pending.
 - Calendar UI uses event chips with type icons + text labels, course color as secondary cue.
 
 ### Proposed files
@@ -94,7 +94,7 @@ Jira key: Pending creation. No sync authorized.
 - **Files:** page + feature components across calendar/availability (modify) + tests.
 - **Start context:** this story file; EP10A–EP10C output; EP04 story files (SP-127B/SP-128B/SP-129A); the page/feature directories.
 - **Verification:** `pnpm --filter web test -- src/pages/calendar src/pages/availability src/features/calendar src/features/availability`, `pnpm --filter web typecheck`, `pnpm --filter web lint`.
-- **Dependencies / exclusions:** EP10C implemented and EP04 frontend pages implemented. Excludes token/primitive/shell definitions and other page groups.
+- **Dependencies / exclusions:** EP10C implemented and EP04 frontend pages implemented and parent-reviewed (SP-128B with F-B-6 fix round open). Excludes token/primitive/shell definitions and other page groups.
 
 ## UI/UX refinement
 

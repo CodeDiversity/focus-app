@@ -27,7 +27,7 @@
 | [EP10C](./EP10C-app-shell-refresh.md) | Needs refinement | EP10B (primitives it composes). | `ui-refiner` pass after EP10B is settled, then implement | — |
 | [EP10D](./EP10D-public-and-auth-pages-adoption.md) | Queued | EP10C (settled design system). | Implement after EP10C | — |
 | [EP10E](./EP10E-academic-data-pages-adoption.md) | Queued | EP10C; the pages it restyles (semesters, courses, assignments) must exist. | Implement after EP10C | — |
-| [EP10F](./EP10F-calendar-and-availability-pages-adoption.md) | Queued | EP10C; EP04 frontend children (SP-127B, SP-128B, SP-129A) implemented. | Implement after EP10C and the EP04 pages | — |
+| [EP10F](./EP10F-calendar-and-availability-pages-adoption.md) | Queued | EP10C; EP04 frontend children implemented and parent-reviewed (SP-127 pass 3, SP-128 pass 1 with SP-128B F-B-6 fix round open, SP-129 pass 3). | Implement after EP10C and the EP04 pages | — |
 | [EP10G](./EP10G-dashboard-and-profile-adoption.md) | Queued | EP10C; the dashboard and profile pages must exist. | Implement after EP10C | — |
 
 Sequence (one writer): EP10A → EP10B → EP10C → EP10D → EP10E → EP10F → EP10G. EP10D–EP10G are independent of each other once EP10C lands; the order above puts the public/auth shell-adjacent surfaces first, then the data-heavy pages, then calendar/availability, then dashboard/profile.
@@ -77,7 +77,7 @@ The epic defines no test requirements (TR-*); stable TR IDs are assigned here.
 | AC-E10-07 | No backend/API changes unless flagged | All |
 | TR-E10-01 | Primitive component tests (variants, states, focus, a11y) | EP10B |
 | TR-E10-02 | Existing page/component tests still pass after adoption | EP10D, EP10E, EP10F, EP10G |
-| TR-E10-03 | EP09 E2E journeys still pass (no visual-snapshot changes required) | EP10G (final verification owner) |
+| TR-E10-03 | EP09 E2E journeys still pass (no visual-snapshot changes required) | EP10G (final verification owner). Scope caveat (PR-003): the existing suite covers auth/assignments/calendar/semesters-courses only; dashboard/profile adoption is verified by unit tests + manual pass, not E2E. E2E expansion to dashboard/profile is an EP09-scope decision requiring approval. |
 | TR-E10-04 | Manual accessibility review recorded (contrast, keyboard, screen reader) | EP10C, EP10D, EP10E, EP10F, EP10G |
 | TR-E10-05 | Reduced-motion verification (`prefers-reduced-motion`) | EP10A, EP10B, EP10C |
 
@@ -154,14 +154,20 @@ No new credential or tenancy surface; this epic changes presentation only.
 
 ## Plan correction log
 
-(First plan of this epic.)
+(First plan of this epic. Plan-review pass 1 findings PR-001…PR-006 addressed below; original findings preserved verbatim in summary form. Status dispositions are the planner's; reviewer closure is pending re-review.)
 
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
+| PR-001 | 2026-10-29 | Should-fix | `docs/stories/EP04/README.md` queue rows 25–29 + Status/Next substory; `docs/stories/EP04/SP-128/SP-128B-…md` Status line; `docs/stories/EP10/EP10F-…md` Dependencies/Technical notes/Sizing; `docs/stories/EP10/README.md` queue row EP10F + quality-gate rows 7 + verdict line | EP04 dependency status stale/inconsistent: EP10F and the EP10 README claimed the EP04 frontend children (SP-127B, SP-128B, SP-129A) were "implemented"/"implemented, awaiting parent review", while the EP04 README queue still listed SP-128B/SP-129A as `Needs refinement` and the SP-128B story `Status` read `Ready … not implemented`. | Reconciled EP04 README queue rows + Status/Next substory to the actual parent-reviewed state (SP-127A/B Reviewed pass 3; SP-128A Reviewed; SP-128B Reviewed pass 1 with F-B-6 fix round open; SP-129A Reviewed pass 3); updated SP-127A/B, SP-128A, SP-128B story `Status` lines; updated EP10F Dependencies/Technical notes/Sizing and the EP10 README queue row EP10F + quality-gate row 7 + verdict line to "implemented and parent-reviewed (SP-128B F-B-6 fix round open)". | Cross-file comparison: EP04 README queue rows 25–29 now match the implementation records (`SP-127/artifacts/SP-127/review.md` PASS pass 3, `SP-128/artifacts/SP-128/review.md` PASS pass 1, `SP-129/artifacts/SP-129/review.md` PASS pass 3) and the SP-128 README F-B-6 status; EP10F dependency text matches. | Addressed — awaiting re-review |
+| PR-002 | 2026-10-29 | Polish | `docs/stories/EP10/EP10D-…md` AC #1 ("All six public/auth surfaces"), Sizing ("six surfaces", "the six page directories") | EP10D says "six" public/auth surfaces but lists seven directories (`home, login, register, forgot-password, reset-password, verify-email, onboarding`). | Changed "six" → "seven" in AC #1, the request/token estimate, and the start context. | Verified the seven directories are listed in EP10D Technical notes and the EP10 README code baseline; count now consistent. | Addressed — awaiting re-review |
+| PR-003 | 2026-10-29 | Polish | `docs/stories/EP10/EP10G-…md` AC #6, Tests; `docs/stories/EP10/README.md` traceability (TR-E10-03) | EP10G's final E2E verification (TR-E10-03) exercises auth/assignments/calendar/semesters-courses only; the EP09 E2E suite has no dashboard/profile spec, so dashboard/profile adoption is covered only by unit tests + manual pass. | Stated explicitly in EP10G AC #6 and Tests that dashboard/profile adoption is verified by unit tests + manual pass, not E2E, and that any E2E expansion is an EP09-scope decision requiring approval (no silent spec addition). Added the same caveat to the EP10 README TR-E10-03 row. | Verified against the listed EP09 E2E specs (`auth-journeys`, `assignments-list`, `calendar`, `semesters-courses`, `login`) in EP10G Technical notes; no dashboard/profile spec exists. | Addressed — awaiting re-review |
+| PR-004 | 2026-10-29 | Polish | `docs/stories/EP10/EP10A-…md` AC #6 ("Token text/background pairs meet WCAG 2.2 AA contrast (recorded values)") | "Recorded values" was an unspecified note with no concrete home. | Specified the contrast record's home: (a) the `ui-refiner` decision register on EP10A (D10-3/D10-4 palette mapping with per-pair ratios) and (b) the EP10A implementation record under `./artifacts/EP10A/`. Exact values remain the `ui-refiner`'s job (D10-3). | Cross-referenced AC #6 with the EP10A UI/UX gaps section and the DoD item 6 focus-ring note; both now point at the same two locations. | Addressed — awaiting re-review |
+| PR-005 | 2026-10-29 | Polish | `EP10A` (6 ACs), `EP10B` (6), `EP10C` (6), `EP10G` (6) | Story sizing notes >5 ACs as a signal to inspect; the extra criteria are a11y/responsive/reduced-motion DoD obligations attached to each surface. | Decision: keep the ACs as-is (no grouping). The extra criteria are legitimate DoD obligations attached to each surface, not separate outcomes; grouping them into a single "accessibility & responsiveness" AC would obscure traceability to DoD items 6/7/8. Revisit only if a future refinement makes the grouping clearer. | Re-inspected each affected story's AC list; all map 1:1 to DoD items and source AC-E10-06. No split or grouping required. | Addressed — awaiting re-review |
+| PR-006 | 2026-10-29 | Polish | `docs/stories/EP10/EP10A-…md` DoD item 6 ("Not applicable — focus styles retained (verified in EP10B/C)"); `index.css` base `button/input/select` focus rings use `primary-500` | EP10A tokenizes the focus-ring color (semantic `focus-ring`), so focus visibility is partly an EP10A concern even though primitives verify behavior in EP10B/C. | Updated DoD item 6: component behavior stays verified in EP10B/C, but EP10A now includes a quick verification that the `focus-ring` token meets WCAG 2.2 AA contrast against the surfaces it appears on (`surface`, `background`, `surface-muted`), recorded alongside the contrast record (AC #6). | Cross-checked with the shared contract (`focus-ring` semantic token) and AC #6's recorded-values locations; wording now assigns the token-level check to EP10A and the behavior check to EP10B/C. | Addressed — awaiting re-review |
 
 ## Quality gate (2026-10-29)
 
-**Verdict: Draft** — the breakdown is complete and internally consistent, but EP10A/EP10B/EP10C are `Needs refinement` (D10-3) and the plan cannot be `Plan Ready` for them until the `ui-refiner` pass records the palette, typography, spacing, radius, shadow, motion, primitive variants, and shell layout. EP10D–EP10G are `Queued` behind them. No implementation blocker exists beyond refinement; EP10F additionally waits on the EP04 frontend pages (already implemented, awaiting parent review). No backend or API dependency.
+**Verdict: Draft** — the breakdown is complete and internally consistent, but EP10A/EP10B/EP10C are `Needs refinement` (D10-3) and the plan cannot be `Plan Ready` for them until the `ui-refiner` pass records the palette, typography, spacing, radius, shadow, motion, primitive variants, and shell layout. EP10D–EP10G are `Queued` behind them. No implementation blocker exists beyond refinement; EP10F additionally waits on the EP04 frontend pages (implemented and parent-reviewed: SP-127 pass 3, SP-128 pass 1 with SP-128B F-B-6 fix round open, SP-129 pass 3). No backend or API dependency.
 
 | # | Check | Result | Reference |
 |---|---|---|---|
@@ -171,9 +177,9 @@ No new credential or tenancy surface; this epic changes presentation only.
 | 4 | Contract consistency | Pass | One shared design-token contract section (provisional values); EP10A implements, EP10B–EP10G consume; parent review verifies end to end. |
 | 5 | Code paths inspected | Pass | Baseline section (Tailwind, global CSS, shared primitives, app shell, pages, design references, FSD, accessibility). Unverified: exact token values and primitive/shell specifics are for the ui-refiner (D10-3); no browser screenshots taken. |
 | 6 | Feature-specific risks/counterexamples | Pass | Accessibility regression (focus rings, tap targets), functional regression (visual-only adoption), reduced motion — table above. |
-| 7 | Dependencies | Pass | EP10A → EP10B → EP10C → EP10D/E/F/G. EP10F additionally depends on EP04 frontend pages (implemented, awaiting review). No dependency on EP05–EP08 implementation. |
+| 7 | Dependencies | Pass | EP10A → EP10B → EP10C → EP10D/E/F/G. EP10F additionally depends on EP04 frontend pages (implemented and parent-reviewed: SP-127 pass 3, SP-128 pass 1 with SP-128B F-B-6 fix round open, SP-129 pass 3). No dependency on EP05–EP08 implementation. |
 | 8 | Material decisions | Blocked | D10-3 (ui-refiner) + D10-4…D10-7/D10-9 provisional token/primitive/shell values. D10-1, D10-2, D10-8, D10-10 are planner-recorded and grounded. |
-| 9 | Correction log | Pass | Empty — first plan of this epic. |
+| 9 | Correction log | Pass | Plan-review pass 1 findings PR-001…PR-006 recorded below with dispositions "Addressed — awaiting re-review"; original findings preserved. |
 | 10 | Jira identity | Not applicable | No sync authorized; all keys are `Pending creation`. |
 
 ## Final implementation review unit
@@ -185,3 +191,4 @@ One combined review for the EP10 parent — no per-child review gate.
 | [EP10](./README.md) | EP10A, EP10B, EP10C, EP10D, EP10E, EP10F, EP10G | `./artifacts/EP10/` | EP10G (writes `./artifacts/EP10/implementation.md`, including the TR-E10-03 E2E verification) | One combined EP10 review after all seven children (`review.md` + `walkthrough.md`) |
 
 Child implementation completion unblocks the dependent child; only the passing combined review establishes sign-off. EP10A–EP10C must complete their `ui-refiner` pass before implementation.
+

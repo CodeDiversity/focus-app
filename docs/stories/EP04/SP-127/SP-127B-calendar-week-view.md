@@ -6,7 +6,7 @@
 **Parent:** [SP-127](./SP-127-calendar-read-model-and-week-view.md)
 **Milestone:** M2
 **Layer:** Frontend
-**Status:** Implemented — awaiting parent review.
+**Status:** Reviewed (pass 3) — combined SP-127 parent review passed (pass 3, `artifacts/SP-127/review.md`).
 **Dependencies:** SP-127A implemented (the read model it renders).
 **Jira key:** Pending creation
 **Refined:** 2026-10-28

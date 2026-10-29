@@ -43,12 +43,12 @@ Restyle the dashboard and profile surfaces to the refreshed design system, prese
 3. Loading/empty/error states are visually consistent with the shared patterns.
 4. Keyboard operability, focus visibility, and reduced motion are preserved.
 5. Existing page tests pass; updated tests cover changed markup.
-6. The EP09 E2E suite passes against the refreshed app (or any failure is recorded as a finding, not silently ignored).
+6. The EP09 E2E suite passes against the refreshed app (or any failure is recorded as a finding, not silently ignored). Note: the existing EP09 E2E suite (`auth-journeys`, `assignments-list`, `calendar`, `semesters-courses`, `login`) covers auth/assignments/calendar/semesters-courses journeys only — it contains **no** dashboard or profile spec. Dashboard/profile adoption is therefore verified by unit tests plus a manual pass, not by E2E. Any expansion of E2E to cover dashboard/profile is an EP09-scope decision requiring approval; do not silently add a spec here.
 
 ## Tests to add / update
 
 - `apps/web/src/pages/dashboard/ui/DashboardPage.test.tsx`, `apps/web/src/pages/profile/ui/ProfilePage.test.tsx` if present.
-- EP09 E2E: `pnpm test:e2e` (recorded result in the parent implementation index).
+- EP09 E2E: `pnpm test:e2e` (recorded result in the parent implementation index). Scope caveat: the suite covers auth/assignments/calendar/semesters-courses only; dashboard/profile adoption is not E2E-covered (see AC #6).
 - Verification: `pnpm --filter web test -- src/pages`, `pnpm --filter web typecheck`, `pnpm --filter web lint`.
 
 ## Technical notes

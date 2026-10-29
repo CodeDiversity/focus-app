@@ -3,7 +3,7 @@
 **Epic:** [EP04: Academic Calendar & Availability](../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Milestone:** M2 (Calendar and dashboard)
 **Epic dependency:** EP02 (Semester & Course Management) — complete 2026-10-23; EP03 (Assignment & Task Management) — complete (all nine parents reviewed, see [EP03 README](../EP03/README.md)). EP04 implementation is **not blocked**.
-**Status:** Draft — three parent stories broken down (SP-127, SP-128, SP-129) with five implementation children. Backend children are `Ready`; SP-127B is `Ready` (ui-refiner pass complete); SP-128B and SP-129A remain `Needs refinement` (ui-refiner handoff, D404-9).
+**Status:** Draft — three parent stories broken down (SP-127, SP-128, SP-129) with five implementation children. All children are implemented and parent-reviewed: SP-127A/B reviewed (pass 3), SP-128A reviewed, SP-128B reviewed (pass 1) with the F-B-6 fix round open (fix applied, verification pending), SP-129A reviewed (pass 3). SP-128B's kind-selector visual defect (F-B-6) is tracked in `SP-128/README.md` and `SP-128B`'s checkpoint; it does not reopen the parent review verdict.
 **Jira keys:** Pending creation (no sync authorized for this planning task).
 
 ## Execution queue
@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** SP-129A — ui-refiner pass (D404-9), then implement (mobile agenda).
+**Next substory:** None — all EP04 children are implemented and parent-reviewed. Open item: SP-128B F-B-6 verification (vitest + visual re-check of the kind-selector modal) per `SP-128/README.md`; SP-128A stays Reviewed. No new implementation child is queued.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (backend → frontend → integration; the labels are scope, not concurrent roles).
 
@@ -22,11 +22,11 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [SP-127A](./SP-127/SP-127A-calendar-events-api.md) | Implemented — awaiting parent review | EP02 + EP03 complete (satisfied) — no upstream EP04 work. | Parent review (after SP-127B) | ./SP-127/artifacts/SP-127A/implementation.md |
-| [SP-127B](./SP-127/SP-127B-calendar-week-view.md) | Implemented — awaiting parent review | SP-127A implemented (the read model it renders). | Parent review (after all SP-127 children) | ./SP-127/artifacts/SP-127B/implementation.md |
-| [SP-128A](./SP-128/SP-128A-availability-slots-api.md) | Implemented — awaiting parent review | EP02 + EP03 complete (satisfied) — no upstream EP04 work. | Parent review (after SP-128B) | ./SP-128/artifacts/SP-128A/implementation.md |
-| [SP-128B](./SP-128/SP-128B-availability-settings-ui.md) | Needs refinement | SP-128A implemented (the API it manages). | `ui-refiner` pass (D404-9), then implement | — |
-| [SP-129A](./SP-129/SP-129A-mobile-agenda-view.md) | Needs refinement | SP-127B implemented (the event data + shared event components it reuses). | `ui-refiner` pass (D404-9), then implement | — |
+| [SP-127A](./SP-127/SP-127A-calendar-events-api.md) | Reviewed (pass 3) | EP02 + EP03 complete (satisfied) — no upstream EP04 work. | — | ./SP-127/artifacts/SP-127A/implementation.md |
+| [SP-127B](./SP-127/SP-127B-calendar-week-view.md) | Reviewed (pass 3) | SP-127A implemented (the read model it renders). | — | ./SP-127/artifacts/SP-127B/implementation.md |
+| [SP-128A](./SP-128/SP-128A-availability-slots-api.md) | Reviewed | EP02 + EP03 complete (satisfied) — no upstream EP04 work. | — | ./SP-128/artifacts/SP-128A/implementation.md |
+| [SP-128B](./SP-128/SP-128B-availability-settings-ui.md) | Reviewed (pass 1) — F-B-6 fix round open (fix applied, verification pending) | SP-128A implemented (the API it manages) — satisfied. | Resume: verify the F-B-6 fix (vitest + visual), reconcile, commit | ./SP-128/artifacts/SP-128B/implementation.md, ./SP-128/artifacts/SP-128B/checkpoint.md |
+| [SP-129A](./SP-129/SP-129A-mobile-agenda-view.md) | Reviewed (pass 3) | SP-127B implemented (the event data + shared event components it reuses) — satisfied. | — | ./SP-129/artifacts/SP-129A/implementation.md |
 
 Sequence (one writer): SP-127A → SP-127B → SP-129A → SP-128A → SP-128B. SP-127A and SP-128A are independent of each other and of the frontend work; the order above front-loads the read model the two frontend surfaces both consume.
 
@@ -197,7 +197,7 @@ No new credential or tenancy surface; the invariants are ownership and input san
 
 ## Quality gate (2026-10-28)
 
-**Verdict: Draft** — the breakdown is complete and internally consistent, but the three frontend children are `Needs refinement` (D404-9) and the plan cannot be `Plan Ready` for them until the `ui-refiner` pass records the layout, states, and copy. The backend children are `Ready`. No implementation blocker exists (EP02 and EP03 are complete).
+**Verdict: Plan Ready (implementation complete)** — all five children are implemented and parent-reviewed (SP-127 pass 3, SP-128 pass 1 with SP-128B F-B-6 fix round open, SP-129 pass 3). The frontend children are no longer `Needs refinement`: their ui-refiner passes (D404-9) are recorded in SP-127B/SP-128B/SP-129A. The open item is SP-128B's F-B-6 verification (vitest + visual), which does not reopen the parent review verdict. No implementation blocker remains (EP02 and EP03 are complete).
 
 | # | Check | Result | Reference |
 |---|---|---|---|
@@ -208,7 +208,7 @@ No new credential or tenancy surface; the invariants are ownership and input san
 | 5 | Code paths inspected | Pass | Baseline section (schema, API modules, ownership/validation conventions, test harness, web FSD layout, nav/routes, design references). Unverified: no browser screenshots were taken and the `ui-refiner` decisions are outstanding by design. |
 | 6 | Feature-specific risks/counterexamples | Pass | Scheduling/time-zone risks: DST (D404-4), week-range boundaries and the 31-day cap (SP-127A), zone resolution from the profile (D404-3), and the ownership/input invariants table above. |
 | 7 | Dependencies | Pass | EP02 + EP03 complete (satisfied); SP-127A → SP-127B → SP-129A; SP-128A → SP-128B. No EP04 child depends on EP05+; EP05 (dashboard) and EP06 (scheduling) consume EP04's outputs later. |
-| 8 | Material decisions | Blocked | D404-9: the layout/hierarchy/states/copy of the three frontend surfaces are for `ui-refiner`. D404-1…8 and D404-10…13 are planner-recorded, grounded, and reversible. |
+| 8 | Material decisions | Pass | D404-9 is settled and recorded in SP-127B/SP-128B/SP-129A; D404-1…8 and D404-10…13 are planner-recorded, grounded, and reversible. The only open item is SP-128B's F-B-6 verification (fix applied, unverified). |
 | 9 | Correction log | Pass | Empty — first plan of this epic. |
 | 10 | Jira identity | Not applicable | No sync was authorized; all keys are `Pending creation`. |
 

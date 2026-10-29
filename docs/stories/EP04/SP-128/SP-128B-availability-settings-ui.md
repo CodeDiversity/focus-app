@@ -6,7 +6,7 @@
 **Parent:** [SP-128](./SP-128-availability-and-unavailable-blocks.md)
 **Milestone:** M2
 **Layer:** Frontend
-**Status:** Ready — `ui-refiner` pass complete (D404-9 settled by D128B-1…13 below); not implemented.
+**Status:** Reviewed (pass 1) — F-B-6 fix round open (fix applied, verification pending). Parent review `SP-128` passed (pass 1); the F-B-6 kind-selector visual defect (user-reported 2026-10-28) was fixed in code but its vitest + visual verification is pending (see `./artifacts/SP-128B/checkpoint.md`).
 **Dependencies:** SP-128A implemented (the API it manages).
 **Jira key:** Pending creation
 **Refined:** 2026-10-28

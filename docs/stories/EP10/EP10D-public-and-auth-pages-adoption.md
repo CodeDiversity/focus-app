@@ -39,7 +39,7 @@ Restyle the public and authentication surfaces — home, login, register, forgot
 
 ## Acceptance criteria
 
-1. All six public/auth surfaces render with the refreshed system.
+1. All seven public/auth surfaces render with the refreshed system.
 2. Forms, validation messages, and submit flows behave exactly as before (no functional regression).
 3. Loading/error states are visually consistent with the shared patterns.
 4. Keyboard operability, focus visibility, and reduced motion are preserved.
@@ -86,10 +86,10 @@ Jira key: Pending creation. No sync authorized.
 ## Sizing
 
 - **Outcome:** public/auth pages adopted onto the refreshed system with no functional regression.
-- **Request/token estimate:** ~2–3 requests/tokens — six surfaces, tests.
+- **Request/token estimate:** ~2–3 requests/tokens — seven surfaces, tests.
 - **Model recommendation:** 2 — mechanical adoption over a settled system; low risk.
 - **Files:** public/auth page components (modify) + tests.
-- **Start context:** this story file; EP10A–EP10C output; the six page directories.
+- **Start context:** this story file; EP10A–EP10C output; the seven page directories.
 - **Verification:** `pnpm --filter web test -- src/pages`, `pnpm --filter web typecheck`, `pnpm --filter web lint`.
 - **Dependencies / exclusions:** EP10C implemented. Excludes token/primitive/shell definitions and other page groups.
 

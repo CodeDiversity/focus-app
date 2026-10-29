@@ -6,7 +6,7 @@
 **Parent:** [SP-128](./SP-128-availability-and-unavailable-blocks.md)
 **Milestone:** M2
 **Layer:** Backend
-**Status:** Ready.
+**Status:** Reviewed — combined SP-128 parent review passed (pass 1, `artifacts/SP-128/review.md`).
 **Dependencies:** EP02 + EP03 (both complete). No EP04 predecessor.
 **Jira key:** Pending creation
 
