@@ -194,10 +194,10 @@ coordinator:
   baseline: ""
   head: ""
 active_dispatch:
-  name: EP11A ui-refine
+  name: EP11B ui-refine
   role: none
   status: complete
-  pointer: docs/stories/EP11/EP11A-desktop-grouped-navigation-and-account-menu.md
+  pointer: docs/stories/EP11/EP11B-mobile-drawer-grouped-sections.md
   session: ""
   assignment: ui_refine
 last_result:
