@@ -3,7 +3,7 @@
 **Epic:** [EP04: Academic Calendar & Availability](../../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Parent:** [SP-129](./SP-129-mobile-agenda-view.md) — coordination record (not an implementation ticket)
 **Milestone:** M2
-**Status:** Draft — SP-129A Ready (ui-refined 2026-10-28); implementation in progress.
+**Status:** Implemented — SP-129A done, awaiting the combined SP-129 parent review.
 **Jira key:** Pending creation
 
 Covers the epic's proposed story **6 (build the mobile agenda view)**.
@@ -14,9 +14,9 @@ Covers the epic's proposed story **6 (build the mobile agenda view)**.
 
 **Artifact root:** `./artifacts/` — `./artifacts/SP-129/` (parent index, review, walkthrough) and `./artifacts/SP-129A/`.
 
-**Active substory:** SP-129A (implementer; implement the agenda per the ui-refined decisions).
+**Active substory:** None.
 
-**Next substory:** SP-129A — implement (spec is Ready; the ui-refiner pass landed: story file carries decisions D129A-01…08 and `Status: Ready`. Reconciled 2026-10-28 before implementing).
+**Next substory:** None — the parent's only child is implemented; the next unit is the combined SP-129 parent review (`artifacts/SP-129/implementation.md` prepared; reviewer writes `review.md` + `walkthrough.md`).
 
 **Implementation owner:** `implementer`.
 
@@ -24,7 +24,7 @@ Covers the epic's proposed story **6 (build the mobile agenda view)**.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-129A-mobile-agenda-view.md) | In progress | SP-127B implemented (the event data and shared event components it reuses). | Implement (ui-refiner pass done: decisions D129A-01…08, story `Ready`) | [checkpoint](./artifacts/SP-129A/checkpoint.md) |
+| [A](./SP-129A-mobile-agenda-view.md) | Implemented — awaiting parent review | SP-127B implemented (the event data and shared event components it reuses). | Combined SP-129 parent review (`review.md` + `walkthrough.md`) | [checkpoint](./artifacts/SP-129A/checkpoint.md) · [implementation record](./artifacts/SP-129A/implementation.md) · code `afd48ec` |
 
 ## Why this is one child
 
