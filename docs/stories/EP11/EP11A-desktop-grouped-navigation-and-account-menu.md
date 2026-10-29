@@ -6,7 +6,7 @@
 **Parent:** [EP11 breakdown](./README.md)
 **Milestone:** M5
 **Layer:** Frontend
-**Status:** Ready
+**Status:** Implemented — awaiting parent review (2026-10-29).
 **Dependencies:** EP10C (app shell refresh — header, layout, navigation, mobile drawer) implemented and parent-reviewed (EP10 parent review PASSED 2026-10-29). `ui-refiner` pass completed 2026-10-29 (D11-3); technical-refine completed 2026-10-29.
 **Jira key:** Pending creation
 **Refined:** 2026-10-29 (ui-refiner pass — dropdown interaction, icon set, account-menu trigger, copy, availability placement, home-for-authenticated decision settled); 2026-10-29 (technical-refine — codebase grounding, contract types, exact edits, test updates, risks)

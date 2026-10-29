@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { Header } from '@/widgets/header/ui/Header';
 import { useAuth } from '@/features/auth/model/AuthContext';
@@ -50,64 +50,297 @@ function renderHeader(path: string, auth: Partial<AuthContextType>) {
   );
 }
 
-describe('Header semesters navigation (F110B-3)', () => {
+function renderAuthenticated(path: string, user: SessionUser = sessionUser) {
+  return renderHeader(path, { isAuthenticated: true, user });
+}
+
+describe('Header desktop grouped navigation (EP11A)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('shows the Semesters link for an authenticated user', () => {
-    renderHeader('/dashboard', { isAuthenticated: true, user: sessionUser });
+  it('renders Home and Dashboard as single links plus Academics/Planning menu triggers', () => {
+    renderAuthenticated('/dashboard');
 
-    const link = screen.getByRole('link', { name: 'Semesters' });
-    expect(link).toHaveAttribute('href', '/semesters');
-    // The other authenticated links remain alongside it.
-    expect(screen.getByRole('link', { name: 'Dashboard' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Profile' })).toBeInTheDocument();
-  });
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/dashboard');
 
-  it('shows the Courses link for an authenticated user (SP-111B)', () => {
-    renderHeader('/dashboard', { isAuthenticated: true, user: sessionUser });
+    const academics = screen.getByRole('button', { name: 'Academics menu' });
+    expect(academics).toHaveAttribute('aria-haspopup', 'menu');
+    expect(academics).toHaveAttribute('aria-expanded', 'false');
 
-    const link = screen.getByRole('link', { name: 'Courses' });
-    expect(link).toHaveAttribute('href', '/courses');
-    // The other authenticated links remain alongside it.
-    expect(screen.getByRole('link', { name: 'Dashboard' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Semesters' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Profile' })).toBeInTheDocument();
-  });
+    const planning = screen.getByRole('button', { name: 'Planning menu' });
+    expect(planning).toHaveAttribute('aria-haspopup', 'menu');
+    expect(planning).toHaveAttribute('aria-expanded', 'false');
 
-  it('hides the Semesters link (and other protected links) when unauthenticated', () => {
-    renderHeader('/', { isAuthenticated: false, user: null });
+    const account = screen.getByRole('button', { name: 'Open account menu' });
+    expect(account).toHaveAttribute('aria-haspopup', 'menu');
+    expect(account).toHaveAttribute('aria-expanded', 'false');
 
+    // Grouped children stay unmounted until their menu opens.
     expect(screen.queryByRole('link', { name: 'Semesters' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Courses' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Dashboard' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Profile' })).not.toBeInTheDocument();
-    // Public navigation is unaffected.
-    expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Assignments' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Calendar' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Availability' })).not.toBeInTheDocument();
   });
 
-  it('applies the active highlight to the Semesters link only on /semesters', () => {
-    const { unmount } = renderHeader('/semesters', {
-      isAuthenticated: true,
-      user: sessionUser,
-    });
+  it('renders only Home and auth buttons when unauthenticated', () => {
+    renderHeader('/', { isAuthenticated: false, user: null });
 
-    const semesters = screen.getByRole('link', { name: 'Semesters' });
-    expect(semesters.className).toContain('text-accent');
-    expect(semesters).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'Dashboard' })).not.toHaveClass('text-accent');
-    expect(screen.getByRole('link', { name: 'Courses' })).not.toHaveClass('text-accent');
-    expect(screen.getByRole('link', { name: 'Profile' })).not.toHaveClass('text-accent');
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('button', { name: 'Login' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Academics menu' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Planning menu' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Open account menu' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Dashboard' })).not.toBeInTheDocument();
+  });
+
+  it('opens the Academics menu on click with menu semantics', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+
+    const trigger = screen.getByRole('button', { name: 'Academics menu' });
+    await user.click(trigger);
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    const menu = screen.getByRole('menu', { name: 'Academics' });
+    expect(within(menu).getByRole('menuitem', { name: 'Semesters' })).toHaveAttribute(
+      'href',
+      '/semesters'
+    );
+    expect(within(menu).getByRole('menuitem', { name: 'Courses' })).toHaveAttribute(
+      'href',
+      '/courses'
+    );
+    expect(within(menu).getByRole('menuitem', { name: 'Assignments' })).toHaveAttribute(
+      'href',
+      '/assignments'
+    );
+  });
+
+  it('keeps only one menu open at a time', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+
+    const academics = screen.getByRole('button', { name: 'Academics menu' });
+    const planning = screen.getByRole('button', { name: 'Planning menu' });
+
+    await user.click(academics);
+    expect(screen.getByRole('menu', { name: 'Academics' })).toBeInTheDocument();
+
+    await user.click(planning);
+    expect(academics).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('menu', { name: 'Academics' })).not.toBeInTheDocument();
+    expect(planning).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('menu', { name: 'Planning' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Calendar' })).toBeInTheDocument();
+  });
+
+  it('closes on outside mousedown', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+
+    await user.click(screen.getByRole('button', { name: 'Academics menu' }));
+    expect(screen.getByRole('menu', { name: 'Academics' })).toBeInTheDocument();
+
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole('menu', { name: 'Academics' })).not.toBeInTheDocument();
+  });
+
+  it('closes on Escape and restores focus to the trigger', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+
+    const trigger = screen.getByRole('button', { name: 'Academics menu' });
+    await user.click(trigger);
+    expect(screen.getByRole('menuitem', { name: 'Semesters' })).toHaveFocus();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('menu', { name: 'Academics' })).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
+  it('toggles the menu with Enter and Space on the trigger', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+
+    const trigger = screen.getByRole('button', { name: 'Academics menu' });
+    trigger.focus();
+    await user.keyboard('{Enter}');
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    trigger.focus();
+    await user.keyboard('{Enter}');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+    trigger.focus();
+    await user.keyboard(' ');
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    trigger.focus();
+    await user.keyboard(' ');
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('opens with ArrowDown focusing the first item and ArrowUp focusing the last', async () => {
+    const user = setupUser();
+    const { unmount } = renderAuthenticated('/dashboard');
+
+    const trigger = screen.getByRole('button', { name: 'Academics menu' });
+    trigger.focus();
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('menuitem', { name: 'Semesters' })).toHaveFocus();
 
     unmount();
-    renderHeader('/profile', { isAuthenticated: true, user: sessionUser });
+    renderAuthenticated('/dashboard');
+    const planning = screen.getByRole('button', { name: 'Planning menu' });
+    planning.focus();
+    await user.keyboard('{ArrowUp}');
+    expect(screen.getByRole('menuitem', { name: 'Availability' })).toHaveFocus();
+  });
 
-    expect(screen.getByRole('link', { name: 'Semesters' })).not.toHaveClass('text-accent');
-    expect(screen.getByRole('link', { name: 'Courses' })).not.toHaveClass('text-accent');
-    const profile = screen.getByRole('link', { name: 'Profile' });
-    expect(profile).toHaveClass('text-accent');
-    expect(profile).toHaveAttribute('aria-current', 'page');
+  it('cycles items with ArrowUp/ArrowDown and supports Home/End', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+
+    await user.click(screen.getByRole('button', { name: 'Academics menu' }));
+    const semesters = screen.getByRole('menuitem', { name: 'Semesters' });
+    const courses = screen.getByRole('menuitem', { name: 'Courses' });
+    const assignments = screen.getByRole('menuitem', { name: 'Assignments' });
+
+    expect(semesters).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(courses).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(assignments).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(semesters).toHaveFocus();
+    await user.keyboard('{ArrowUp}');
+    expect(assignments).toHaveFocus();
+    await user.keyboard('{Home}');
+    expect(semesters).toHaveFocus();
+    await user.keyboard('{End}');
+    expect(assignments).toHaveFocus();
+  });
+
+  it('activates the focused item with Enter and Space', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+
+    await user.click(screen.getByRole('button', { name: 'Academics menu' }));
+    expect(screen.getByRole('menuitem', { name: 'Semesters' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(screen.queryByRole('menu', { name: 'Academics' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Academics menu' }));
+    expect(screen.getByRole('menuitem', { name: 'Semesters' })).toHaveFocus();
+    await user.keyboard(' ');
+    expect(screen.queryByRole('menu', { name: 'Academics' })).not.toBeInTheDocument();
+  });
+
+  it('closes when Tab moves focus out without restoring the trigger', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+
+    const trigger = screen.getByRole('button', { name: 'Academics menu' });
+    await user.click(trigger);
+    expect(screen.getByRole('menuitem', { name: 'Semesters' })).toHaveFocus();
+
+    await user.tab();
+    expect(screen.queryByRole('menu', { name: 'Academics' })).not.toBeInTheDocument();
+    expect(trigger).not.toHaveFocus();
+  });
+
+  it('shows account menu contents for an unverified user', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+
+    const trigger = screen.getByRole('button', { name: 'Open account menu' });
+    expect(trigger).toHaveTextContent('A');
+    await user.click(trigger);
+
+    const menu = screen.getByRole('menu', { name: 'Account' });
+    expect(within(menu).getByText('Signed in as Ada Lovelace')).toBeInTheDocument();
+    expect(within(menu).getByRole('menuitem', { name: 'Profile' })).toHaveAttribute(
+      'href',
+      '/profile'
+    );
+    expect(within(menu).getByRole('menuitem', { name: 'Availability' })).toHaveAttribute(
+      'href',
+      '/availability'
+    );
+    expect(within(menu).getByRole('menuitem', { name: 'Verify email' })).toHaveAttribute(
+      'href',
+      '/verify-email'
+    );
+    expect(within(menu).getByRole('menuitem', { name: 'Logout' })).toBeInTheDocument();
+  });
+
+  it('hides Verify email in the account menu for a verified user', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard', {
+      ...sessionUser,
+      emailVerifiedAt: '2026-01-01T00:00:00.000Z',
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Open account menu' }));
+    const menu = screen.getByRole('menu', { name: 'Account' });
+
+    expect(within(menu).queryByRole('menuitem', { name: 'Verify email' })).not.toBeInTheDocument();
+    expect(within(menu).getByRole('menuitem', { name: 'Profile' })).toBeInTheDocument();
+    expect(within(menu).getByRole('menuitem', { name: 'Logout' })).toBeInTheDocument();
+  });
+
+  it('supports keyboard navigation inside the account menu', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+
+    await user.click(screen.getByRole('button', { name: 'Open account menu' }));
+    expect(screen.getByRole('menuitem', { name: 'Profile' })).toHaveFocus();
+
+    await user.keyboard('{End}');
+    expect(screen.getByRole('menuitem', { name: 'Logout' })).toHaveFocus();
+
+    await user.keyboard('{Home}');
+    expect(screen.getByRole('menuitem', { name: 'Profile' })).toHaveFocus();
+  });
+
+  it('marks the active dropdown item and its group trigger', async () => {
+    const user = setupUser();
+    renderAuthenticated('/semesters');
+
+    const trigger = screen.getByRole('button', { name: 'Academics menu' });
+    expect(trigger).toHaveClass('text-accent');
+    expect(trigger).toHaveClass('font-semibold');
+
+    await user.click(trigger);
+    const semesters = screen.getByRole('menuitem', { name: 'Semesters' });
+    expect(semesters).toHaveAttribute('aria-current', 'page');
+    expect(semesters).toHaveClass('text-accent');
+    expect(screen.getByRole('menuitem', { name: 'Courses' })).not.toHaveClass('text-accent');
+    expect(screen.getByRole('menuitem', { name: 'Assignments' })).not.toHaveClass('text-accent');
+    expect(screen.getByRole('link', { name: 'Dashboard' })).not.toHaveClass('text-accent');
+  });
+
+  it('highlights the Academics trigger for nested course routes only', () => {
+    const { unmount } = renderAuthenticated('/courses/abc');
+    expect(screen.getByRole('button', { name: 'Academics menu' })).toHaveClass('text-accent');
+    expect(screen.getByRole('button', { name: 'Academics menu' })).toHaveClass('font-semibold');
+
+    unmount();
+    renderAuthenticated('/dashboard');
+    expect(screen.getByRole('button', { name: 'Academics menu' })).not.toHaveClass('text-accent');
+  });
+
+  it('marks the active single link and keeps Home for authenticated users', () => {
+    renderAuthenticated('/dashboard');
+
+    const dashboard = screen.getByRole('link', { name: 'Dashboard' });
+    expect(dashboard).toHaveAttribute('aria-current', 'page');
+    expect(dashboard).toHaveClass('text-accent');
+    expect(screen.getByRole('link', { name: 'Home' })).not.toHaveClass('text-accent');
   });
 });
 

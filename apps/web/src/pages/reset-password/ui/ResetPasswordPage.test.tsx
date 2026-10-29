@@ -315,7 +315,7 @@ describe('ResetPasswordPage', () => {
     expect(button).toBeDisabled();
     // G: a failed reset preserves the session — token and user survive.
     expect(tokenStore.getToken()).toBe('existing-session');
-    expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open account menu' })).toBeInTheDocument();
     expect(password).toHaveValue('NewPassword1!');
     clock.mockReturnValue(1_000_000 + 5_000);
     await waitFor(() => expect(button).toBeEnabled(), { timeout: 1500 });
@@ -393,7 +393,7 @@ describe('ResetPasswordPage', () => {
     );
     expect(tokenStore.getToken()).toBeNull();
     // The local user is cleared (G) — the signed-in header is gone.
-    expect(screen.queryByRole('button', { name: /logout/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Open account menu' })).not.toBeInTheDocument();
     // The Login form is the landing state.
     expect(await screen.findByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });

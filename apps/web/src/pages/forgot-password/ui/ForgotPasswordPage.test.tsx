@@ -170,7 +170,7 @@ describe('ForgotPasswordPage', () => {
       if (signed) {
         // forgot-password never touches the live session — no barrier, no clear.
         expect(tokenStore.getToken()).toBe('existing-session');
-        expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Open account menu' })).toBeInTheDocument();
       } else {
         expect(tokenStore.getToken()).toBeNull();
       }

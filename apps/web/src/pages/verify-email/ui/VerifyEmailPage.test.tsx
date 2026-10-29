@@ -111,7 +111,7 @@ describe('VerifyEmailPage', () => {
         linkToken
       );
       if (authenticated) {
-        expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Open account menu' })).toBeInTheDocument();
         expect(tokenStore.getToken()).toBe('existing-session');
         await waitFor(() => expect(calls.some((call) => call.path === '/users/me')).toBe(true));
         // A successful link does not mark the signed-in account verified: only its profile does.

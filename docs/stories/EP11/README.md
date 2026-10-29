@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP11A — `Ready`; implement EP11A (shared `navGroups.ts` + desktop grouped nav + account menu + tests). EP11B is blocked on EP11A (shared nav-groups contract + implementation order); its ui-refiner pass is complete.
+**Next substory:** EP11B — `Needs refinement`; complete readiness (refiner/planner) before implementing the grouped mobile drawer. Not started in EP11A.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (frontend only; the labels are scope, not concurrent roles).
 
@@ -22,7 +22,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP11A](./EP11A-desktop-grouped-navigation-and-account-menu.md) | Ready | EP10C implemented & parent-reviewed (`410c343` + EP10 review PASS). UI refined (2026-10-29) and technical-refined (2026-10-29); Status `Ready`. | Implement EP11A: shared `navGroups.ts` + desktop dropdowns + account menu + tests (mobile drawer untouched). | `./artifacts/EP11A/` (pending) |
+| [EP11A](./EP11A-desktop-grouped-navigation-and-account-menu.md) | Implemented — awaiting parent review | EP10C implemented & parent-reviewed (`410c343` + EP10 review PASS). UI refined (2026-10-29) and technical-refined (2026-10-29). | No action; combined EP11 parent review after EP11B. | [checkpoint](./artifacts/EP11A/checkpoint.md) · [implementation](./artifacts/EP11A/implementation.md) |
 | [EP11B](./EP11B-mobile-drawer-grouped-sections.md) | Needs refinement | EP11A (shared nav-groups contract + desktop implementation). `ui-refiner` pass required before implementation (D11-3). | After EP11A lands: run `ui-refiner` on EP11B, then implement grouped mobile drawer. | `./artifacts/EP11B/` (pending) |
 
 Sequence (one writer): EP11A → EP11B. EP11A defines the shared `navGroups`/`accountMenuItems` structure consumed by EP11B.
