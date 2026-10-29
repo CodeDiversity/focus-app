@@ -298,11 +298,7 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop: click closes without a request (frozen while submitting). */}
-      <div
-        className="absolute inset-0 bg-secondary-900/50"
-        aria-hidden="true"
-        onClick={requestClose}
-      />
+      <div className="absolute inset-0 bg-text/50" aria-hidden="true" onClick={requestClose} />
       <div
         ref={dialogRef}
         role="dialog"
@@ -312,7 +308,7 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
         className="card relative max-h-[90vh] w-full max-w-md overflow-y-auto overflow-x-hidden p-6"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-          <h2 id="slot-form-title" className="text-lg font-semibold text-secondary-900">
+          <h2 id="slot-form-title" className="text-lg font-semibold text-text">
             {slot ? `Edit ${formatSlotName(slot)}` : 'Add a time slot'}
           </h2>
 
@@ -323,10 +319,7 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
                 default "Available window". `aria-label` keeps the radio's
                 name exactly the option label (the caption stays visual). */}
             <div>
-              <span
-                id="slot-kind-label"
-                className="mb-2 block text-sm font-medium text-secondary-700"
-              >
+              <span id="slot-kind-label" className="mb-2 block text-sm font-medium text-text">
                 Kind
               </span>
               <div
@@ -342,10 +335,10 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
                       key={option.value}
                       className={clsx(
                         'flex cursor-pointer items-start gap-2 rounded-lg border p-3 transition-colors duration-150',
-                        'focus-within:outline-none focus-within:ring-2 focus-within:ring-primary-500',
+                        'focus-within:outline-none focus-within:ring-2 focus-within:ring-accent',
                         checked
-                          ? 'border-primary-500 bg-primary-50'
-                          : 'border-secondary-300 bg-white hover:border-secondary-400',
+                          ? 'border-accent bg-accent/10'
+                          : 'border-border bg-surface hover:border-border-strong',
                         isSubmitting && 'opacity-50 cursor-not-allowed'
                       )}
                     >
@@ -364,11 +357,11 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
                         {...register('kind')}
                       />
                       <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-1.5 text-sm font-medium text-secondary-900">
-                          <Icon aria-hidden size={14} className="shrink-0 text-secondary-500" />
+                        <span className="flex items-center gap-1.5 text-sm font-medium text-text">
+                          <Icon aria-hidden size={14} className="shrink-0 text-text-muted" />
                           {option.label}
                         </span>
-                        <span className="mt-0.5 block text-xs text-secondary-500">
+                        <span className="mt-0.5 block text-xs text-text-muted">
                           {option.caption}
                         </span>
                       </span>
@@ -412,7 +405,7 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
           {formError && (
             <div
               role="alert"
-              className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+              className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
             >
               <p>{formError.message}</p>
             </div>

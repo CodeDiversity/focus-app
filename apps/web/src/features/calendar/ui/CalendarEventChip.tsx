@@ -56,17 +56,17 @@ export function CalendarEventChip({ event, onOpen, layout = 'week' }: CalendarEv
       type="button"
       onClick={() => onOpen(event)}
       aria-label={`${label}: ${event.title}, ${event.startTime}`}
-      className="group flex w-full items-start gap-2 rounded-lg border border-secondary-200 bg-white p-2 text-left shadow-sm transition hover:border-primary-300 hover:shadow focus:outline-none focus:ring-2 focus:ring-primary-500 max-sm:min-h-[44px]"
+      className="group flex w-full items-start gap-2 rounded-lg border border-border bg-surface p-2 text-left shadow-sm transition hover:border-accent hover:shadow focus:outline-none focus:ring-2 focus:ring-accent max-sm:min-h-[44px]"
       style={{ borderLeftWidth: 3, borderLeftColor: event.courseColor ?? 'transparent' }}
     >
-      <Icon aria-hidden size={14} className="mt-0.5 shrink-0 text-secondary-500" />
+      <Icon aria-hidden size={14} className="mt-0.5 shrink-0 text-text-muted" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1">
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-secondary-500">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">
             {label}
           </span>
           {event.completed && (
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
               <Check aria-hidden size={10} />
               Completed
             </span>
@@ -74,13 +74,13 @@ export function CalendarEventChip({ event, onOpen, layout = 'week' }: CalendarEv
         </div>
         {layout === 'agenda' ? (
           <>
-            <p className="text-xs text-secondary-500">{event.startTime}</p>
-            <p className="truncate text-sm font-medium text-secondary-900">{event.title}</p>
+            <p className="text-xs text-text-muted">{event.startTime}</p>
+            <p className="truncate text-sm font-medium text-text">{event.title}</p>
           </>
         ) : (
           <>
-            <p className="truncate text-sm font-medium text-secondary-900">{event.title}</p>
-            <p className="text-xs text-secondary-500">{event.startTime}</p>
+            <p className="truncate text-sm font-medium text-text">{event.title}</p>
+            <p className="text-xs text-text-muted">{event.startTime}</p>
           </>
         )}
       </div>

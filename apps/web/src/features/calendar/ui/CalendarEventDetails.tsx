@@ -92,7 +92,7 @@ export function CalendarEventDetails({ event, timeZone, onClose }: CalendarEvent
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-secondary-900/50" aria-hidden="true" onClick={onClose} />
+      <div className="absolute inset-0 bg-text/50" aria-hidden="true" onClick={onClose} />
       <div
         ref={dialogRef}
         role="dialog"
@@ -102,14 +102,14 @@ export function CalendarEventDetails({ event, timeZone, onClose }: CalendarEvent
         className="card relative w-full max-w-md"
       >
         <div className="flex items-start justify-between gap-3">
-          <h2 id="calendar-event-title" className="text-lg font-semibold text-secondary-900">
+          <h2 id="calendar-event-title" className="text-lg font-semibold text-text">
             {event.title}
           </h2>
           <button
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="rounded p-1 text-secondary-500 hover:bg-secondary-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded p-1 text-text-muted hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <X aria-hidden size={16} />
           </button>
@@ -117,24 +117,24 @@ export function CalendarEventDetails({ event, timeZone, onClose }: CalendarEvent
 
         <dl className="mt-4 space-y-3 text-sm">
           <div className="flex items-center gap-2">
-            <dt className="font-medium text-secondary-600">Type</dt>
-            <dd className="flex items-center gap-1 text-secondary-900">
+            <dt className="font-medium text-text-muted">Type</dt>
+            <dd className="flex items-center gap-1 text-text">
               <Icon aria-hidden size={14} />
               {label}
             </dd>
           </div>
           <div>
-            <dt className="font-medium text-secondary-600">Date</dt>
-            <dd className="text-secondary-900">{dateLabel}</dd>
+            <dt className="font-medium text-text-muted">Date</dt>
+            <dd className="text-text">{dateLabel}</dd>
           </div>
           <div>
-            <dt className="font-medium text-secondary-600">Time</dt>
-            <dd className="text-secondary-900">{timeLabel}</dd>
+            <dt className="font-medium text-text-muted">Time</dt>
+            <dd className="text-text">{timeLabel}</dd>
           </div>
           {event.courseName && (
             <div>
-              <dt className="font-medium text-secondary-600">Course</dt>
-              <dd className="flex items-center gap-2 text-secondary-900">
+              <dt className="font-medium text-text-muted">Course</dt>
+              <dd className="flex items-center gap-2 text-text">
                 {event.courseColor && (
                   <span
                     aria-hidden
@@ -145,7 +145,7 @@ export function CalendarEventDetails({ event, timeZone, onClose }: CalendarEvent
                 {event.courseId ? (
                   <Link
                     to={event.link ?? `/courses/${event.courseId}`}
-                    className="text-primary-600 underline focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="text-accent underline focus:outline-none focus:ring-2 focus:ring-accent"
                   >
                     {event.courseName}
                   </Link>
@@ -157,18 +157,14 @@ export function CalendarEventDetails({ event, timeZone, onClose }: CalendarEvent
           )}
           {isDeadline && (
             <div>
-              <dt className="font-medium text-secondary-600">Status</dt>
-              <dd className="text-secondary-900">
-                {event.completed ? 'Completed' : 'Not completed'}
-              </dd>
+              <dt className="font-medium text-text-muted">Status</dt>
+              <dd className="text-text">{event.completed ? 'Completed' : 'Not completed'}</dd>
             </div>
           )}
           {event.type === 'STUDY_SESSION' && (
             <div>
-              <dt className="font-medium text-secondary-600">Focus</dt>
-              <dd className="text-secondary-900">
-                {event.focus ? 'Focus session' : 'Study session'}
-              </dd>
+              <dt className="font-medium text-text-muted">Focus</dt>
+              <dd className="text-text">{event.focus ? 'Focus session' : 'Study session'}</dd>
             </div>
           )}
         </dl>

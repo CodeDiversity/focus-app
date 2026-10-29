@@ -50,12 +50,12 @@ export function AvailabilitySlotList({ slots, onEdit, onDelete }: AvailabilitySl
         return (
           <section key={day} className="card p-4 sm:p-6" aria-label={WEEKDAY_FULL[day]}>
             <div className="mb-3 flex items-baseline justify-between gap-3">
-              <h3 className="text-base font-semibold text-secondary-900">{WEEKDAY_FULL[day]}</h3>
-              <span className="text-xs font-medium uppercase tracking-wider text-secondary-500">
+              <h3 className="text-base font-semibold text-text">{WEEKDAY_FULL[day]}</h3>
+              <span className="text-xs font-medium uppercase tracking-wider text-text-muted">
                 {group.length === 1 ? '1 slot' : `${group.length} slots`}
               </span>
             </div>
-            <ul className="divide-y divide-secondary-100">
+            <ul className="divide-y divide-border">
               {group.map((slot) => {
                 const name = formatSlotName(slot);
                 const isAvailable = slot.isAvailable;
@@ -66,15 +66,11 @@ export function AvailabilitySlotList({ slots, onEdit, onDelete }: AvailabilitySl
                     className="flex flex-col gap-3 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <span className="flex min-w-0 flex-wrap items-center gap-2">
-                      <span className="font-medium text-secondary-900">
-                        {formatSlotLabel(slot)}
-                      </span>
+                      <span className="font-medium text-text">{formatSlotLabel(slot)}</span>
                       <span
                         className={
                           'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ' +
-                          (isAvailable
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : 'bg-red-50 text-red-700')
+                          (isAvailable ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger')
                         }
                       >
                         <BadgeIcon aria-hidden size={12} className="shrink-0" />

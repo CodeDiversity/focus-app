@@ -127,10 +127,10 @@ export function AvailabilityPage() {
     >
       <div className="mb-6 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 id="availability-heading" className="text-3xl font-bold text-secondary-900">
+          <h1 id="availability-heading" className="text-3xl font-bold text-text">
             Availability
           </h1>
-          <p className="mt-1 text-sm text-secondary-500">
+          <p className="mt-1 text-sm text-text-muted">
             When you can study — and when you can&apos;t.
           </p>
         </div>
@@ -149,16 +149,16 @@ export function AvailabilityPage() {
   if (isLoading) {
     return shell(
       <div className="card p-6 flex items-center justify-center py-16">
-        <Loader2 className="animate-spin text-primary-600" size={24} aria-hidden />
-        <span className="ml-3 text-sm text-secondary-600">Loading your availability…</span>
+        <Loader2 className="animate-spin text-accent" size={24} aria-hidden />
+        <span className="ml-3 text-sm text-text-muted">Loading your availability…</span>
       </div>
     );
   }
 
   if (initialError) {
     return shell(
-      <div role="alert" className="card border border-red-200 bg-red-50/60 p-6">
-        <p className="text-sm text-red-600">{initialError}</p>
+      <div role="alert" className="card border border-danger/30 bg-danger/10 p-6">
+        <p className="text-sm text-danger">{initialError}</p>
         <Button className="mt-4 max-sm:min-h-[44px]" onClick={() => void runFetch(true)}>
           Try again
         </Button>
@@ -175,19 +175,17 @@ export function AvailabilityPage() {
             doubles as the count header and hosts the refetch spinner. */}
         <div
           role="status"
-          className="mb-3 flex min-h-5 items-center gap-2 text-xs font-medium uppercase tracking-wider text-secondary-500"
+          className="mb-3 flex min-h-5 items-center gap-2 text-xs font-medium uppercase tracking-wider text-text-muted"
         >
-          {isFetching && (
-            <Loader2 className="animate-spin text-primary-600" size={16} aria-hidden />
-          )}
+          {isFetching && <Loader2 className="animate-spin text-accent" size={16} aria-hidden />}
           {statusMessage}
         </div>
 
         {isEmpty ? (
           <div className="py-8 text-center">
-            <CalendarClock size={40} aria-hidden className="mx-auto mb-3 text-secondary-300" />
-            <p className="text-sm text-secondary-700">No availability yet.</p>
-            <p className="mt-1 text-sm text-secondary-500">
+            <CalendarClock size={40} aria-hidden className="mx-auto mb-3 text-text-muted" />
+            <p className="text-sm text-text">No availability yet.</p>
+            <p className="mt-1 text-sm text-text-muted">
               Add when you can study, and when you can&apos;t.
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3">

@@ -6,8 +6,7 @@
 **Parent:** [EP10 breakdown](./README.md)
 **Milestone:** M5
 **Layer:** Frontend
-**Status:** Queued
-**Dependencies:** EP10C (settled design system); EP04 frontend children implemented and parent-reviewed — SP-127 (pass 3), SP-128 (pass 1, SP-128B with the F-B-6 fix round open), SP-129 (pass 3).
+**Status:** Implemented — awaiting parent review**Dependencies:** EP10C (settled design system); EP04 frontend children implemented and parent-reviewed — SP-127 (pass 3), SP-128 (pass 1, SP-128B with the F-B-6 fix round open), SP-129 (pass 3).
 **Jira key:** Pending creation
 **Refined:** 2026-10-29 (planning)
 

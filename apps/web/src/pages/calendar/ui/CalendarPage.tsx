@@ -159,18 +159,15 @@ export function CalendarPage() {
   if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-3xl font-bold text-secondary-900 mb-2">Calendar</h1>
-        <p className="text-sm text-secondary-600 mb-6">Your week at a glance.</p>
+        <h1 className="text-3xl font-bold text-text mb-2">Calendar</h1>
+        <p className="text-sm text-text-muted mb-6">Your week at a glance.</p>
         <div className="card p-4 sm:p-6">
           <div className="sr-only">Loading your calendar…</div>
           <div className="grid grid-cols-7 gap-2 overflow-x-auto">
             {Array.from({ length: 7 }).map((_, i) => (
-              <div
-                key={i}
-                className="min-w-[140px] space-y-2 rounded-lg border border-secondary-200 p-2"
-              >
+              <div key={i} className="min-w-[140px] space-y-2 rounded-lg border border-border p-2">
                 {Array.from({ length: 3 }).map((__, j) => (
-                  <div key={j} className="h-12 animate-pulse rounded-lg bg-secondary-100" />
+                  <div key={j} className="h-12 animate-pulse rounded-lg bg-surface-muted" />
                 ))}
               </div>
             ))}
@@ -183,10 +180,10 @@ export function CalendarPage() {
   if (error) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-3xl font-bold text-secondary-900 mb-2">Calendar</h1>
-        <p className="text-sm text-secondary-600 mb-6">Your week at a glance.</p>
-        <div role="alert" className="card border border-red-200 bg-red-50/60 p-6">
-          <p className="text-sm text-red-600">{error}</p>
+        <h1 className="text-3xl font-bold text-text mb-2">Calendar</h1>
+        <p className="text-sm text-text-muted mb-6">Your week at a glance.</p>
+        <div role="alert" className="card border border-danger/30 bg-danger/10 p-6">
+          <p className="text-sm text-danger">{error}</p>
           <Button className="mt-4 max-sm:min-h-[44px]" onClick={handleRetry}>
             Try again
           </Button>
@@ -204,10 +201,10 @@ export function CalendarPage() {
     >
       <div className="mb-6 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 id="calendar-heading" className="text-3xl font-bold text-secondary-900">
+          <h1 id="calendar-heading" className="text-3xl font-bold text-text">
             Calendar
           </h1>
-          <p className="text-sm text-secondary-600">Your week at a glance.</p>
+          <p className="text-sm text-text-muted">Your week at a glance.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button variant="secondary" className="max-sm:min-h-[44px]" onClick={handleToday}>
@@ -217,7 +214,7 @@ export function CalendarPage() {
             type="button"
             aria-label="Previous week"
             onClick={handlePrev}
-            className="inline-flex min-h-[44px] w-11 items-center justify-center rounded-lg border border-secondary-300 bg-white text-secondary-700 hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="inline-flex min-h-[44px] w-11 items-center justify-center rounded-lg border border-border bg-surface text-text hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <ChevronLeft size={18} aria-hidden />
           </button>
@@ -225,7 +222,7 @@ export function CalendarPage() {
             type="button"
             aria-label="Next week"
             onClick={handleNext}
-            className="inline-flex min-h-[44px] w-11 items-center justify-center rounded-lg border border-secondary-300 bg-white text-secondary-700 hover:bg-secondary-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="inline-flex min-h-[44px] w-11 items-center justify-center rounded-lg border border-border bg-surface text-text hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <ChevronRight size={18} aria-hidden />
           </button>
@@ -238,32 +235,27 @@ export function CalendarPage() {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-medium text-secondary-700">{weekRangeLabel}</p>
-        {isFetching && <Loader2 className="animate-spin text-primary-600" size={16} aria-hidden />}
+        <p className="text-sm font-medium text-text">{weekRangeLabel}</p>
+        {isFetching && <Loader2 className="animate-spin text-accent" size={16} aria-hidden />}
       </div>
 
       <div className="card p-4 sm:p-6">
         <div
           role="status"
-          className="mb-3 flex min-h-5 items-center gap-2 text-xs font-medium uppercase tracking-wider text-secondary-500"
+          className="mb-3 flex min-h-5 items-center gap-2 text-xs font-medium uppercase tracking-wider text-text-muted"
         >
-          {isFetching && (
-            <Loader2 className="animate-spin text-primary-600" size={14} aria-hidden />
-          )}
+          {isFetching && <Loader2 className="animate-spin text-accent" size={14} aria-hidden />}
           {statusMessage}
         </div>
 
         {isEmpty ? (
           <div className="grid grid-cols-7 gap-2 overflow-x-auto">
             <div className="col-span-7 py-8 text-center">
-              <p className="text-sm text-secondary-700">No events this week</p>
-              <p className="mt-1 text-sm text-secondary-500">
+              <p className="text-sm text-text">No events this week</p>
+              <p className="mt-1 text-sm text-text-muted">
                 Try another week, or add a course meeting or assignment.
               </p>
-              <Link
-                to="/availability"
-                className="mt-3 inline-block text-sm text-primary-600 underline"
-              >
+              <Link to="/availability" className="mt-3 inline-block text-sm text-accent underline">
                 Manage availability
               </Link>
             </div>

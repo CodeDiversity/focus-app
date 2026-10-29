@@ -29,9 +29,7 @@ export function CalendarAgenda({ days, eventsByDay, today, onOpenEvent }: Calend
           <div key={day} role="listitem" className="w-full min-w-0">
             <h3
               id={headerId}
-              className={`mb-2 text-sm font-semibold ${
-                isToday ? 'text-primary-700' : 'text-secondary-700'
-              }`}
+              className={`mb-2 text-sm font-semibold ${isToday ? 'text-accent' : 'text-text'}`}
             >
               {dayHeader(day)}
             </h3>

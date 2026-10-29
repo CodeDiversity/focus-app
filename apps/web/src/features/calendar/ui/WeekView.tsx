@@ -36,13 +36,13 @@ export function WeekView({ days, eventsByDay, today, onOpenEvent }: WeekViewProp
           <div
             key={day}
             role="listitem"
-            className={`min-w-[140px] snap-start rounded-lg border border-secondary-200 bg-white ${
-              isToday ? 'bg-primary-50' : ''
+            className={`min-w-[140px] snap-start rounded-lg border border-border bg-surface ${
+              isToday ? 'bg-accent/10' : ''
             }`}
           >
             <div
-              className={`border-b border-secondary-200 px-2 py-1 text-sm ${
-                isToday ? 'font-bold text-primary-700' : 'font-medium text-secondary-700'
+              className={`border-b border-border px-2 py-1 text-sm ${
+                isToday ? 'font-bold text-accent' : 'font-medium text-text'
               }`}
             >
               {dayHeader(day)}

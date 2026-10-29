@@ -15,8 +15,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP10F — implement calendar and availability pages adoption (EP10C + EP04 pages).
-
+**Next substory:** EP10G — implement dashboard and profile adoption (EP10C satisfied).
 **Implementation owner:** `implementer`, one sequential writer across all layers (frontend only; the labels are scope, not concurrent roles).
 
 **Final review:** one combined review for the EP10 parent review unit — all seven children — after EP10G is implemented. Reviewer artifacts: `./artifacts/EP10/review.md` + `./artifacts/EP10/walkthrough.md` (DoD 10/11).
@@ -28,8 +27,7 @@
 | [EP10C](./EP10C-app-shell-refresh.md) | Implemented — awaiting parent review | EP10B (primitives it composes) — implemented (`9a88d9c`). | Combined EP10 parent review after all children | `./artifacts/EP10C/` (checkpoint, implementation) |
 | [EP10D](./EP10D-public-and-auth-pages-adoption.md) | Implemented — awaiting parent review | EP10C (settled design system) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10D/` (checkpoint, implementation) |
 | [EP10E](./EP10E-academic-data-pages-adoption.md) | Implemented — awaiting parent review | EP10C (settled design system) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10E/` (checkpoint, implementation) |
-| [EP10F](./EP10F-calendar-and-availability-pages-adoption.md) | Queued | EP10C; EP04 frontend children implemented and parent-reviewed (SP-127 pass 3, SP-128 pass 1 with SP-128B F-B-6 fix round open, SP-129 pass 3). | Implement after EP10C and the EP04 pages | — |
-| [EP10G](./EP10G-dashboard-and-profile-adoption.md) | Queued | EP10C; the dashboard and profile pages must exist. | Implement after EP10C | — |
+| [EP10F](./EP10F-calendar-and-availability-pages-adoption.md) | Implemented — awaiting parent review | EP10C (settled); EP04 frontend pages implemented and parent-reviewed (SP-127 pass 3, SP-128 pass 1 w/ F-B-6 fix round open, SP-129 pass 3) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10F/` (checkpoint, implementation) || [EP10G](./EP10G-dashboard-and-profile-adoption.md) | Queued | EP10C; the dashboard and profile pages must exist. | Implement after EP10C | — |
 
 Sequence (one writer): EP10A → EP10B → EP10C → EP10D → EP10E → EP10F → EP10G. EP10D–EP10G are independent of each other once EP10C lands; the order above puts the public/auth shell-adjacent surfaces first, then the data-heavy pages, then calendar/availability, then dashboard/profile.
 
@@ -209,11 +207,10 @@ coordinator:
   baseline: ""
   head: 9a88d9c
 active_dispatch:
-  name: EP10E implement
+  name: EP10F implement
   role: implementer
   status: completed
-  pointer: docs/stories/EP10/EP10E-academic-data-pages-adoption.md
-  session: ""
+  pointer: docs/stories/EP10/EP10F-calendar-and-availability-pages-adoption.md  session: ""
   assignment: complete_child
 last_result:
   evidence: ""
