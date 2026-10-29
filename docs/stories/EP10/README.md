@@ -15,7 +15,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP10G — implement dashboard and profile adoption (EP10C satisfied).
+**Next substory:** None — all seven children implemented; combined EP10 parent review next.
 **Implementation owner:** `implementer`, one sequential writer across all layers (frontend only; the labels are scope, not concurrent roles).
 
 **Final review:** one combined review for the EP10 parent review unit — all seven children — after EP10G is implemented. Reviewer artifacts: `./artifacts/EP10/review.md` + `./artifacts/EP10/walkthrough.md` (DoD 10/11).
@@ -27,7 +27,8 @@
 | [EP10C](./EP10C-app-shell-refresh.md) | Implemented — awaiting parent review | EP10B (primitives it composes) — implemented (`9a88d9c`). | Combined EP10 parent review after all children | `./artifacts/EP10C/` (checkpoint, implementation) |
 | [EP10D](./EP10D-public-and-auth-pages-adoption.md) | Implemented — awaiting parent review | EP10C (settled design system) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10D/` (checkpoint, implementation) |
 | [EP10E](./EP10E-academic-data-pages-adoption.md) | Implemented — awaiting parent review | EP10C (settled design system) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10E/` (checkpoint, implementation) |
-| [EP10F](./EP10F-calendar-and-availability-pages-adoption.md) | Implemented — awaiting parent review | EP10C (settled); EP04 frontend pages implemented and parent-reviewed (SP-127 pass 3, SP-128 pass 1 w/ F-B-6 fix round open, SP-129 pass 3) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10F/` (checkpoint, implementation) || [EP10G](./EP10G-dashboard-and-profile-adoption.md) | Queued | EP10C; the dashboard and profile pages must exist. | Implement after EP10C | — |
+| [EP10F](./EP10F-calendar-and-availability-pages-adoption.md) | Implemented — awaiting parent review | EP10C (settled); EP04 frontend pages implemented and parent-reviewed (SP-127 pass 3, SP-128 pass 1 w/ F-B-6 fix round open, SP-129 pass 3) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10F/` (checkpoint, implementation) |
+| [EP10G](./EP10G-dashboard-and-profile-adoption.md) | Implemented — awaiting parent review | EP10C (settled) — satisfied. | Combined EP10 parent review after all children | `./artifacts/EP10G/` (checkpoint, implementation) · TR-E10-03 E2E: 15 failed (F-G-2) |
 
 Sequence (one writer): EP10A → EP10B → EP10C → EP10D → EP10E → EP10F → EP10G. EP10D–EP10G are independent of each other once EP10C lands; the order above puts the public/auth shell-adjacent surfaces first, then the data-heavy pages, then calendar/availability, then dashboard/profile.
 
@@ -207,10 +208,11 @@ coordinator:
   baseline: ""
   head: 9a88d9c
 active_dispatch:
-  name: EP10F implement
+  name: EP10G implement
   role: implementer
   status: completed
-  pointer: docs/stories/EP10/EP10F-calendar-and-availability-pages-adoption.md  session: ""
+  pointer: docs/stories/EP10/EP10G-dashboard-and-profile-adoption.md
+  session: ""
   assignment: complete_child
 last_result:
   evidence: ""
@@ -227,7 +229,7 @@ gates:
   eligible_child_state: "Needs refinement"
   closeout: unknown
   integration: unknown
-  all_descendants_implemented: false
+  all_descendants_implemented: true
   review: absent
   findings_owner: none
   open_findings: false

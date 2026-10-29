@@ -153,7 +153,7 @@ export function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-secondary-900">Profile</h1>
+        <h1 className="text-3xl font-bold text-text">Profile</h1>
       </div>
 
       <div className="card">
@@ -186,7 +186,7 @@ export function ProfilePage() {
                 </option>
               ))}
             </Select>
-            <p className="text-sm text-secondary-500">
+            <p className="text-sm text-text-muted">
               Your time zone: <span className="font-mono">{displayedTimeZone}</span> (currently{' '}
               {formatDateTime(new Date(), displayedTimeZone)} there)
             </p>
@@ -207,10 +207,10 @@ export function ProfilePage() {
           </div>
         </form>
 
-        <hr className="my-8 border-secondary-200" />
+        <hr className="my-8 border-border" />
 
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-secondary-900">Account Actions</h2>
+          <h2 className="text-lg font-semibold text-text">Account Actions</h2>
           <Button variant="danger" onClick={logout} className="w-full sm:w-auto">
             Logout
           </Button>
