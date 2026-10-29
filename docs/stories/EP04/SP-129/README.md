@@ -3,7 +3,7 @@
 **Epic:** [EP04: Academic Calendar & Availability](../../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Parent:** [SP-129](./SP-129-mobile-agenda-view.md) — coordination record (not an implementation ticket)
 **Milestone:** M2
-**Status:** Draft — one child, SP-129A `Needs refinement` (ui-refiner handoff, D404-9).
+**Status:** Draft — SP-129A Ready (ui-refined 2026-10-28); implementation in progress.
 **Jira key:** Pending creation
 
 Covers the epic's proposed story **6 (build the mobile agenda view)**.
@@ -14,9 +14,9 @@ Covers the epic's proposed story **6 (build the mobile agenda view)**.
 
 **Artifact root:** `./artifacts/` — `./artifacts/SP-129/` (parent index, review, walkthrough) and `./artifacts/SP-129A/`.
 
-**Active substory:** None.
+**Active substory:** SP-129A (implementer; implement the agenda per the ui-refined decisions).
 
-**Next substory:** SP-129A — `ui-refiner` pass (D404-9), then implement.
+**Next substory:** SP-129A — implement (spec is Ready; the ui-refiner pass landed: story file carries decisions D129A-01…08 and `Status: Ready`. Reconciled 2026-10-28 before implementing).
 
 **Implementation owner:** `implementer`.
 
@@ -24,7 +24,7 @@ Covers the epic's proposed story **6 (build the mobile agenda view)**.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [A](./SP-129A-mobile-agenda-view.md) | Needs refinement | SP-127B implemented (the event data and shared event components it reuses). | `ui-refiner` pass (D404-9), then implement | — |
+| [A](./SP-129A-mobile-agenda-view.md) | In progress | SP-127B implemented (the event data and shared event components it reuses). | Implement (ui-refiner pass done: decisions D129A-01…08, story `Ready`) | [checkpoint](./artifacts/SP-129A/checkpoint.md) |
 
 ## Why this is one child
 
