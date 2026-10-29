@@ -6,10 +6,10 @@
 **Parent:** [EP11 breakdown](./README.md)
 **Milestone:** M5
 **Layer:** Frontend
-**Status:** Needs refinement
-**Dependencies:** EP10C (app shell refresh — header, layout, navigation, mobile drawer) implemented and parent-reviewed (EP10 parent review PASSED 2026-10-29). `ui-refiner` pass required before implementation (D11-3).
+**Status:** Ready
+**Dependencies:** EP10C (app shell refresh — header, layout, navigation, mobile drawer) implemented and parent-reviewed (EP10 parent review PASSED 2026-10-29). `ui-refiner` pass completed 2026-10-29 (D11-3); technical-refine completed 2026-10-29.
 **Jira key:** Pending creation
-**Refined:** 2026-10-29 (ui-refiner pass — dropdown interaction, icon set, account-menu trigger, copy, availability placement, home-for-authenticated decision settled)
+**Refined:** 2026-10-29 (ui-refiner pass — dropdown interaction, icon set, account-menu trigger, copy, availability placement, home-for-authenticated decision settled); 2026-10-29 (technical-refine — codebase grounding, contract types, exact edits, test updates, risks)
 
 ## Summary
 
@@ -52,27 +52,50 @@ Redesign the desktop primary navigation from a flat eight-link list into grouped
 
 ## Tests to add / update
 
-- `apps/web/src/widgets/header/ui/Header.test.tsx`:
-  - Authenticated: Home + Dashboard links present; Academics/Planning triggers present; their items (Semesters, Courses, Assignments, Calendar, Availability) present inside menus (after open); account menu trigger present.
-  - Unauthenticated: only Home (and Login/Get Started) present; no grouped sections or account menu.
-  - Dropdown open/close via click and keyboard; Escape closes; arrow navigation; focus restoration.
-  - Account menu contents by verification state (Verify email only when unverified).
-  - Active `aria-current="page"` on the active item (including inside a dropdown) and active styling on the group trigger.
-  - Verification: `pnpm --filter web test -- src/widgets/header`, `pnpm --filter web typecheck`, `pnpm --filter web lint`.
+- `apps/web/src/widgets/header/ui/Header.test.tsx` (rewrite affected cases; keep mobile-drawer cases):
+  - **Auth state — authenticated:** `Home` + `Dashboard` links present (single); `Academics menu` + `Planning menu` buttons present with `aria-haspopup="menu"` and `aria-expanded="false"`; account menu trigger (avatar) present with `aria-label="Open account menu"`; `Semesters`/`Courses`/`Assignments`/`Calendar`/`Availability` are NOT in the document until the relevant dropdown is opened.
+  - **Auth state — unauthenticated:** only `Home` link + `Login`/`Get Started` buttons; no `Academics menu`/`Planning menu`/account trigger; no grouped sections.
+  - **Dropdown open via click:** clicking `Academics menu` sets `aria-expanded="true"` and reveals `Semesters`, `Courses`, `Assignments` links with `role="menuitem"` inside a `role="menu"` panel labeled "Academics".
+  - **Single-open:** opening `Academics menu` while `Planning menu` is open closes Planning (its `aria-expanded` returns to "false" and its items unmount).
+  - **Escape + focus restoration:** Escape closes the open menu and returns focus to its trigger.
+  - **Outside click:** `mousedown` on `document.body` (or clicking outside) closes the open menu.
+  - **Keyboard — trigger:** Enter/Space toggle; ArrowDown opens and focuses first item; ArrowUp opens and focuses last item.
+  - **Keyboard — panel:** ArrowDown/ArrowUp cycle (wrapping); Home/End focus first/last; Enter/Space activates the focused item; Tab moves focus out and closes without restoring focus.
+  - **Account menu contents (unverified user):** opening reveals "Signed in as Ada Lovelace", `Profile`, `Availability`, `Verify email`, `Logout`. `Verify email` link points to `/verify-email`.
+  - **Account menu contents (verified user):** `Verify email` absent; others present. (Use `sessionUser` with `emailVerifiedAt: '2026-...'`.)
+  - **Active highlight — item:** on `/semesters`, the `Semesters` item (after opening Academics) has `aria-current="page"` and `text-accent`; other items and the Dashboard link do not.
+  - **Active highlight — group trigger:** on `/courses/:id` (use `/courses/abc`), the `Academics menu` trigger has `text-accent` (and `font-semibold`); on `/dashboard`, it does not.
+  - **Active highlight — single link:** on `/dashboard`, `Dashboard` link has `aria-current="page"` and active classes; `Home` does not.
+  - **Home present for authenticated users.**
+  - **Mobile drawer regression:** existing drawer cases (toggle, Escape, scroll lock, close-on-link-click, auth actions) still pass unchanged.
+  - **Verification:** `pnpm --filter web test -- src/widgets/header`, `pnpm --filter web typecheck`, `pnpm --filter web lint`.
 
 ## Technical notes
 
-### Verified current behavior (inspected 2026-10-29)
+### Verified codebase facts (inspected 2026-10-29)
 
-- `apps/web/src/widgets/header/ui/Header.tsx`: flat `navLinks` array; desktop `<nav aria-label="Primary">` maps links; auth area renders welcome text + verify link + Logout button (desktop); mobile drawer reuses `navLinks` + auth area.
-- `Header.test.tsx`: asserts nav by auth state, active highlight (`text-accent` + `aria-current`), mobile drawer toggle/Escape/scroll lock/auth actions.
-- Icons available via lucide-react (already dependency); currently `Menu`, `X` imported.
+- `apps/web/src/widgets/header/ui/Header.tsx`:
+  - Exports `Header`; uses `useAuth()` (`isAuthenticated`, `logout`, `user`), `useLocation`, `useState`/`useRef`/`useEffect`.
+  - Flat `navLinks: NavLinkItem[]` (`{ to, label }`) rendered both in desktop `<nav aria-label="Primary">` and the mobile drawer; mobile drawer reuses `navLinks` plus an auth area.
+  - `navLinkClass(isActive, mobile)` returns `text-accent font-semibold border-accent` (active) vs `text-text-muted hover:text-text border-transparent`; mobile variant adds `min-h-[44px] px-2 w-full`.
+  - Auth area (desktop): `Hi, {name}` span + conditional `Verify email` link + `Logout` Button; unauth: Login/Get Started Buttons.
+  - Mobile drawer: right-side slide-in, focus trap, scroll lock, Escape, route-change close, `aria-modal` dialog labeled "Primary navigation"; drawer nav `aria-label="Primary"`.
+  - `name = user?.name || user?.email?.split('@')[0] || ''`; `showVerify = isAuthenticated && !user?.emailVerifiedAt`.
+- `apps/web/src/widgets/header/ui/Header.test.tsx`: mocks `useAuth`; `sessionUser` (Ada Lovelace, unverified). Asserts Semesters/Courses/Dashboard/Profile links, active `text-accent` + `aria-current="page"`, mobile drawer toggle/Escape/scroll lock/auth actions. **These assertions target the flat inline links and must be rewritten to open dropdowns first (see Test cases).**
+- Icons: `lucide-react` `^0.312.0`; currently only `Menu`, `X` imported. `type LucideIcon` is exported from `lucide-react` (verified) and is the correct type for icon component references.
+- Shared primitives: `Button` (`variant`, `size`, `leftIcon`/`rightIcon`), `Dialog` (focus-trap reference). No menu/dropdown primitive exists (EP10B); inline implementation is required.
+- Existing dropdown pattern to mirror: `apps/web/src/features/assignments/ui/RowActionsMenu.tsx` and `apps/web/src/features/courses/ui/CourseActionsMenu.tsx` — `rootRef` + `triggerRef` + `menuRef`, `pointerdown` outside-click, Escape restore focus, `useLayoutEffect` focus first `[role="menuitem"]`, `focusCycle` with ArrowUp/Down, `runAction` restores trigger focus before callback. **Reuse this interaction skeleton; extend with Enter/Space toggle, Home/End, Tab-out, chevron, and `NavLink` items.**
+- `SessionUser` (`apps/web/src/entities/user/model/types.ts`): `{ id, email, name, emailVerifiedAt: string | null, ... }`. `emailVerifiedAt` is `string | null`, so `!user.emailVerifiedAt` is the unverified check (matches existing `showVerify`).
+- `useAuth()` returns `{ user, isAuthenticated, logout, ... }`; `logout()` is `() => Promise<void>`.
+- Routes (from `App.tsx`): `/`, `/dashboard`, `/semesters`, `/courses`, `/courses/:id`, `/assignments`, `/calendar`, `/availability`, `/profile`, `/verify-email`, etc. All stay unchanged.
+- `Layout.tsx` provides skip link + landmarks; untouched by this story.
+- Tailwind tokens: `duration-fast` (150ms), `ease-standard`, `z-40` available; no new animation library.
 
 ### Proposed files
 
-- `apps/web/src/widgets/header/ui/Header.tsx` (modify — desktop dropdowns + account menu + navGroups extraction).
-- Optional new `apps/web/src/widgets/header/ui/NavDropdown.tsx` or `AccountMenu.tsx` in the same folder if complexity warrants (implementer's call; FSD placement).
-- `apps/web/src/widgets/header/ui/Header.test.tsx` (update).
+- `apps/web/src/widgets/header/ui/navGroups.ts` (**new**) — shared nav contract data + types (see "Shared nav contract types" below). Single source consumed by desktop now and mobile drawer in EP11B.
+- `apps/web/src/widgets/header/ui/Header.tsx` (modify) — desktop dropdowns + account menu; mobile drawer keeps the legacy flat list in EP11A (see Decisions).
+- `apps/web/src/widgets/header/ui/Header.test.tsx` (update) — grouped nav by auth state, dropdown keyboard, account menu, active `aria-current`.
 
 ### Decisions (ui-refiner, 2026-10-29)
 
@@ -207,13 +230,97 @@ Redesign the desktop primary navigation from a flat eight-link list into grouped
   - Home stays present for authenticated users.
   - Verification: `pnpm --filter web test -- src/widgets/header`, `pnpm --filter web typecheck`, `pnpm --filter web lint`.
 
-### Unverified / for implementer
+### Shared nav contract types (to define in `navGroups.ts`)
 
-- Implement dropdown open/close state, outside-click handling, and focus management without an existing shared dropdown primitive (EP10B has `Dialog` but no menu primitive; inline implementation in the widget is acceptable per FSD).
-- Ensure `NavLink` `end` matching is preserved so nested routes (e.g. `/courses/:id`) do not highlight the parent item (current behavior; D10-13).
-- Existing `Header.test.tsx` active-highlight assertions reference the inline flat links; update to the grouped structure.
-- Keep the mobile drawer (EP10C) working unchanged in this story; EP11B adapts it.
-- `navGroups`/`accountMenuItems` shape must be reusable by EP11B (mobile drawer) without drift; document the type.
+```ts
+import type { LucideIcon } from 'lucide-react';
+import type { SessionUser } from '@/entities/user/model/types';
+
+export interface NavItem {
+  id: string;          // stable key, e.g. 'semesters'
+  label: string;       // display + accessible name, e.g. 'Semesters'
+  icon: LucideIcon;    // component reference (aria-hidden at render)
+  to: string;          // route, e.g. '/semesters'
+}
+
+export interface NavSection {
+  id: string;          // 'home' | 'dashboard' | 'academics' | 'planning'
+  label: string;
+  icon: LucideIcon;
+  /** Present for single links (Home, Dashboard). Omit for groups. */
+  to?: string;
+  /** Present for groups (Academics, Planning). Omit for single links. */
+  items?: NavItem[];
+}
+
+export interface AccountMenuItem {
+  id: string;          // 'profile' | 'availability' | 'verify-email' | 'logout'
+  label: string;
+  icon: LucideIcon;
+  /** Link target. Omit for action items (logout). */
+  to?: string;
+  /** Action discriminator. Omit for link items. */
+  action?: 'logout';
+  /** Render only when the user is unverified (`!user.emailVerifiedAt`). */
+  requiresUnverified?: boolean;
+}
+
+export const authenticatedNavGroups: NavSection[] = [ /* Home, Dashboard, Academics, Planning */ ];
+export const unauthenticatedNavGroups: NavSection[] = [ /* Home */ ];
+
+export function getNavGroups(isAuthenticated: boolean): NavSection[] {
+  return isAuthenticated ? authenticatedNavGroups : unauthenticatedNavGroups;
+}
+
+export const accountMenuItems: AccountMenuItem[] = [ /* Profile, Availability, Verify email, Logout */ ];
+```
+
+Invariants:
+- Every `NavSection` is either a single link (`to` set, `items` omitted) or a group (`items` set, `to` omitted) — never both, never neither. Renderers branch on `'items' in section`.
+- Icons are component references (not strings); rendered as `<Icon className="h-4 w-4" aria-hidden="true" />` (triggers use `h-5 w-5` where appropriate per ui-refiner).
+- `requiresUnverified` is the only conditional-visibility flag in the contract; all other visibility is auth-state-driven at the section level (`getNavGroups`).
+- `accountMenuItems` is always the authenticated set; it is only rendered when `isAuthenticated`. `requiresUnverified` filters Verify email.
+- `end` matching: `NavLink` items use `end` (exact) so nested routes (e.g. `/courses/:id`) do not mark the item active (D10-13 preserved).
+- Group trigger active state uses **prefix matching**: a trigger is active when `location.pathname === item.to` OR `location.pathname.startsWith(item.to + '/')` for any of its items (or for its own `to` when it is a single link — though single links use `NavLink`'s own active state, not the trigger path). Settled by refiner question 2026-10-29: Yes.
+
+### Decisions (technical-refine, 2026-10-29)
+
+1. **Shared contract file location:** `apps/web/src/widgets/header/ui/navGroups.ts`. Stays inside the header widget (FSD `ui/` segment) because both consumers (desktop now, mobile drawer in EP11B) live in the same widget; no cross-widget import needed. Re-export nothing from a barrel (none exists). EP11B imports from this path.
+2. **Mobile drawer in EP11A stays on the legacy flat list.** The drawer keeps rendering `navLinks` (Home, Dashboard, Semesters, Courses, Assignments, Calendar, Availability, Profile) unchanged in EP11A to preserve mobile UX and avoid a regression (Profile is only in the account menu on desktop, but the mobile Account section is EP11B's job). The legacy `navLinks` array is retained as a temporary derived flat list for the drawer only and is marked `// EP11B: replace with grouped rendering`. This is a deliberate, scoped exception to the "no link in one surface but not the other" rule; EP11B removes the legacy list and unifies on `navGroups`/`accountMenuItems`. Rationale: EP11A's out-of-scope is the mobile drawer; touching it risks regression and expands scope.
+3. **Dropdown state model:** a single `openMenu: 'academics' | 'planning' | 'account' | null` state. Opening one closes the others (single-open). `null` when none open. This replaces three independent booleans and guarantees single-open without effect chains.
+4. **Outside-click:** `mousedown` listener on `document` while `openMenu !== null`, attached in a single `useEffect` keyed on `openMenu`; closes if `event.target` is outside the open menu's container `rootRef`. Matches the ui-refiner wording; `pointerdown` is an acceptable superset but `mousedown` is used for parity with the story text. (Existing `RowActionsMenu` uses `pointerdown`; both close correctly in jsdom.)
+5. **Focus restoration policy:** on Escape, outside-click, or item selection → restore focus to the trigger. On Tab/Shift+Tab moving out of the menu → close but **do not** restore focus (let the browser's Tab proceed to the next focusable element). Rationale: restoring on Tab would fight the user's tab direction and re-focus the trigger. This refines the ui-refiner's "focus returns on close (any path)" to exclude the Tab-out path, which is the only path where the user is intentionally leaving.
+6. **Focus entry:** `useLayoutEffect` on `openMenu` focuses the first `[role="menuitem"]` in the open panel (mirrors `RowActionsMenu`). For the account menu, the first item is Profile (the "Signed in as" header is non-focusable).
+7. **Keyboard handling per menu:** trigger handles Enter/Space/ArrowDown/ArrowUp (toggle/open); panel handles ArrowUp/ArrowDown (cycle, wrapping), Home, End, Enter/Space (activate), Escape (close + restore trigger). Tab/Shift+Tab close without restoring. Roving tabindex is NOT used (items unmounted when closed; when open they are tabbable in DOM order).
+8. **Space activation on `NavLink` items:** `NavLink` renders `<a>`, which activates on Enter natively but not on Space. Each item gets `onKeyDown` that calls `event.preventDefault()` + `event.currentTarget.click()` on Space so Space activates the link, matching WAI-ARIA menu item behavior. Enter works natively.
+9. **Conditional render:** menus are unmounted when closed (`{openMenu === 'academics' && (...)}`), matching `RowActionsMenu` and keeping closed items out of the tab order and out of `screen` queries unless opened. Tests must open first.
+10. **Active highlight:**
+    - Single links (Home, Dashboard): `NavLink` with `end`, classes `text-accent font-semibold border-b-2 border-accent` active (D10-13, unchanged).
+    - Dropdown items: `NavLink` with `end`, active classes `text-accent font-semibold` (no underline inside menus; weight + color + `aria-current`).
+    - Group trigger: button (not a link); active when any descendant route matches (prefix match, settled above) → classes `text-accent font-semibold`. No `aria-current` on the trigger (it is not a link).
+11. **Avatar trigger initials:** `initials = (name?.trim()[0] || user?.email?.split('@')[0]?.[0] || '')`. If non-empty, render uppercase letter in the avatar circle; otherwise render `<User className="h-4 w-4" aria-hidden />`. `aria-label` toggles "Open account menu"/"Close account menu". Panel `aria-label="Account"`.
+12. **Account menu item rendering:** Profile and Availability and Verify email render as `NavLink` (with `end`) with `role="menuitem"`; Logout renders as a `<button role="menuitem">` that calls `logout()` then closes. Verify email item renders only when `!user.emailVerifiedAt` (`requiresUnverified`).
+13. **Availability secondary shortcut:** rendered in both the Planning group and the account menu (same route, same `Clock` icon), per settled decision D11-8. The Planning group is documented as canonical owner in `navGroups.ts` comments.
+14. **Chevron:** `ChevronDown` after the label in group triggers, `aria-hidden`, rotates 180° when open (`transition-transform duration-fast`), zeroed by global reduced-motion.
+15. **Panel classes:** `absolute top-full left-0 mt-2 min-w-[12rem] w-max max-w-xs bg-surface border border-border rounded-lg shadow-lg p-1 z-40`; account panel `right-0 left-auto`. Entrance: opacity + slight translate-y using `duration-fast ease-standard`. (No new animation library.)
+16. **Item classes:** `flex items-center gap-2 w-full px-3 py-2 rounded-md text-body-sm`; hover `bg-surface-muted`; active `text-accent font-semibold`; focus ring `focus-visible:ring-2 ring-focus-ring ring-offset-2`.
+17. **Dividers:** account menu has `border-t border-border` after the "Signed in as {name}" header and another before Logout. Group menus have no dividers.
+18. **z-index:** dropdown panels `z-40`; mobile drawer/backdrop remain `z-50` (drawer is `md:hidden`, no overlap).
+19. **Testing entry point:** `getNavGroups` and `accountMenuItems` are pure data exports, so tests may import them directly for shape assertions; component tests use `screen.getByRole('button', { name: /academics menu/i })` etc.
+
+### Remaining risks / implementation notes (not blockers)
+
+- **No shared menu primitive.** Inline implementation is required (FSD). Mirror `RowActionsMenu`'s skeleton and extend per Decisions 4–9. Do not introduce a new shared primitive in this story (out of scope; EP10B owns primitives).
+- **`NavLink` + `role="menuitem"` + Space.** `NavLink` renders `<a>`; Space does not activate links natively. Implement Decision 8 (`onKeyDown` → `click()`). Tests may assert Enter activation only; Space handling is a robustness addition.
+- **Focus restoration vs. Tab-out conflict.** Decision 5 resolves it (no restore on Tab-out). Ensure the outside-click/Escape handlers restore focus and that the Tab handler closes without restoring. A regression here would trap or lose focus.
+- **Single-open state across desktop menus.** `openMenu` single value guarantees it, but the outside-click effect must re-run when `openMenu` changes (key the effect on `openMenu`, not `[]`).
+- **`useLayoutEffect` focus on first open.** Guard against `null` panel (e.g., if `openMenu` is set before paint). Mirror `RowActionsMenu`'s `menuRef.current?.querySelector(...)`.
+- **Mobile drawer unchanged.** Decision 2 keeps the legacy flat list; do not delete `navLinks` in EP11A. EP11B owns the migration and removal.
+- **`end` matching preserved.** All `NavLink` items use `end` (D10-13). Group trigger uses prefix matching only for its own active styling (Decision 10), not for item highlighting.
+- **Test rewrites.** Existing `Header.test.tsx` cases that expect `Semesters`/`Courses`/`Assignments`/`Calendar`/`Availability`/`Profile` links inline must open the relevant dropdown first (`user.click(screen.getByRole('button', { name: /academics menu/i }))`) or query within the panel. `Profile` moves to the account menu. `getByRole('link', { name: 'Profile' })` will only resolve after opening the account menu.
+- **jsdom + `mousedown` outside-click.** Tests for outside-click should dispatch a mousedown on `document.body` (or call `user.click` on an element outside) and assert the menu closes. Ensure the listener is attached only while a menu is open (no leaked global listeners).
+- **Initials fallback.** If `name` and email are both empty, render the `User` icon. `sessionUser` in tests has `name: 'Ada Lovelace'`, so avatar renders "A". Tests may assert `aria-label="Open account menu"` rather than initials text.
+- **No backend/API changes** (D11-2). None required.
 
 ## Definition of Done
 
@@ -238,7 +345,7 @@ Jira key: Pending creation. No sync authorized.
 - **Outcome:** desktop navigation reorganized into grouped dropdowns with icons + text, plus a user/account menu; shared nav-groups definition introduced.
 - **Request/token estimate:** ~2–3 requests/tokens — dropdown components + account menu + icons + keyboard/focus logic + tests.
 - **Model recommendation:** 3 — moderate interaction/focus-management risk; dropdown a11y needs care.
-- **Files:** `apps/web/src/widgets/header/ui/Header.tsx` (modify), optional `NavDropdown.tsx`/`AccountMenu.tsx` (new), `apps/web/src/widgets/header/ui/Header.test.tsx` (update).
+- **Files:** `apps/web/src/widgets/header/ui/navGroups.ts` (new — shared contract data + types), `apps/web/src/widgets/header/ui/Header.tsx` (modify — desktop dropdowns + account menu; mobile drawer unchanged), `apps/web/src/widgets/header/ui/Header.test.tsx` (update — grouped nav, dropdown keyboard, account menu, active states). Optional extraction of `NavDropdown.tsx`/`AccountMenu.tsx` in the same folder if complexity warrants (implementer's call).
 - **Start context:** this story; EP10C story + implementation (`410c343`); `apps/web/src/widgets/header/ui/Header.tsx`; `apps/web/src/widgets/header/ui/Header.test.tsx`; `apps/web/src/widgets/layout/ui/Layout.tsx`; `apps/web/src/app/App.tsx`; shared nav contract in `docs/stories/EP11/README.md`.
 - **Verification:** `pnpm --filter web test -- src/widgets/header`, `pnpm --filter web typecheck`, `pnpm --filter web lint`.
 - **Dependencies / exclusions:** EP10C implemented & reviewed. Excludes mobile drawer adaptation (EP11B), token/primitive definitions (EP10A/EP10B), page adoption (EP10D–EP10G).
