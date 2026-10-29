@@ -3,7 +3,7 @@
 **Epic:** [EP04: Academic Calendar & Availability](../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Milestone:** M2 (Calendar and dashboard)
 **Epic dependency:** EP02 (Semester & Course Management) — complete 2026-10-23; EP03 (Assignment & Task Management) — complete (all nine parents reviewed, see [EP03 README](../EP03/README.md)). EP04 implementation is **not blocked**.
-**Status:** Draft — three parent stories broken down (SP-127, SP-128, SP-129) with five implementation children. All children are implemented and parent-reviewed: SP-127A/B reviewed (pass 3), SP-128A reviewed, SP-128B reviewed (pass 1) with the F-B-6 fix round open (fix applied, verification pending), SP-129A reviewed (pass 3). SP-128B's kind-selector visual defect (F-B-6) is tracked in `SP-128/README.md` and `SP-128B`'s checkpoint; it does not reopen the parent review verdict.
+**Status:** Plan Ready (implementation complete) — three parent stories broken down (SP-127, SP-128, SP-129) with five implementation children. All children are implemented and parent-reviewed: SP-127A/B reviewed (pass 3), SP-128A reviewed, SP-128B reviewed (pass 1) with the F-B-6 fix round open (fix applied, verification pending), SP-129A reviewed (pass 3). SP-128B's kind-selector visual defect (F-B-6) is tracked in `SP-128/README.md` and `SP-128B`'s checkpoint; it does not reopen the parent review verdict.
 **Jira keys:** Pending creation (no sync authorized for this planning task).
 
 ## Execution queue
@@ -207,7 +207,7 @@ No new credential or tenancy surface; the invariants are ownership and input san
 | 4 | Contract consistency | Pass | One shared contract section; SP-127A/SP-128A implement, the frontend children consume, each parent's combined review verifies. |
 | 5 | Code paths inspected | Pass | Baseline section (schema, API modules, ownership/validation conventions, test harness, web FSD layout, nav/routes, design references). Unverified: no browser screenshots were taken and the `ui-refiner` decisions are outstanding by design. |
 | 6 | Feature-specific risks/counterexamples | Pass | Scheduling/time-zone risks: DST (D404-4), week-range boundaries and the 31-day cap (SP-127A), zone resolution from the profile (D404-3), and the ownership/input invariants table above. |
-| 7 | Dependencies | Pass | EP02 + EP03 complete (satisfied); SP-127A → SP-127B → SP-129A; SP-128A → SP-128B. No EP04 child depends on EP05+; EP05 (dashboard) and EP06 (scheduling) consume EP04's outputs later. |
+| 7 | Dependencies | Pass | EP02 + EP03 complete (satisfied); SP-127A → SP-127B → SP-129A; SP-128A → SP-128B. All EP04 children implemented and reviewed (SP-127 pass 3, SP-128 pass 1 with SP-128B F-B-6 fix round open, SP-129 pass 3). No EP04 child depends on EP05+; EP05 (dashboard) and EP06 (scheduling) consume EP04's outputs later. |
 | 8 | Material decisions | Pass | D404-9 is settled and recorded in SP-127B/SP-128B/SP-129A; D404-1…8 and D404-10…13 are planner-recorded, grounded, and reversible. The only open item is SP-128B's F-B-6 verification (fix applied, unverified). |
 | 9 | Correction log | Pass | Empty — first plan of this epic. |
 | 10 | Jira identity | Not applicable | No sync was authorized; all keys are `Pending creation`. |
