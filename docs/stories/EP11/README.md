@@ -187,22 +187,22 @@ scope:
   descendants: [EP11A, EP11B]
   entry: ""
   limits: enclosing parent review unit
-stage: plan
+stage: implement
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: ""
+  head: "1aec0ea"
 active_dispatch:
-  name: EP11A technical-refine
+  name: EP11A implement
   role: none
   status: complete
   pointer: docs/stories/EP11/EP11A-desktop-grouped-navigation-and-account-menu.md
   session: ""
-  assignment: technical_refine
+  assignment: complete_child
 last_result:
-  evidence: "EP11 breakdown created: epic registered in M5, two frontend children (EP11A, EP11B), both Needs refinement (D11-3)."
-  findings: ""
+  evidence: "EP11A implemented (b7ae794 + 1aec0ea): navGroups.ts, desktop grouped dropdowns, avatar account menu; header 22/22, web 842/842, typecheck/lint green. Mobile drawer unchanged; EP11B not started."
+  findings: "Implementer findings F-A-1..F-A-3 fixed (focus-effect dep, lint tabindex, 4 page/banner test updates)."
   scope_note: "New epic: ADHD-friendly nav redesign. User decisions: new epic EP11; grouped sections; icons+text; account menu for Profile/Availability/verify/Logout. Frontend only."
   cycles: 0
   same_findings: unknown
