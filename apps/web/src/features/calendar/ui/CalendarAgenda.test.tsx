@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CalendarAgenda } from './CalendarAgenda';
+import { CalendarEventChip } from './CalendarEventChip';
 import type { CalendarEvent } from '@/entities/calendar/model/types';
 
 const baseEvent: Omit<CalendarEvent, 'id' | 'type' | 'title'> = {
@@ -143,5 +144,43 @@ describe('CalendarAgenda (SP-129A)', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Class: Physics, 11:00' }));
     expect(onOpen).toHaveBeenCalledWith(events[2]);
+  });
+
+  it('agenda entries show the time above the title (D129A-03, R129-001)', () => {
+    render(
+      <CalendarAgenda
+        days={days}
+        eventsByDay={eventsByDay}
+        today="2026-10-28"
+        onOpenEvent={vi.fn()}
+      />
+    );
+    const physics = screen.getByRole('button', { name: 'Class: Physics, 11:00' });
+    const text = physics.textContent ?? '';
+    expect(text.indexOf('11:00')).toBeGreaterThanOrEqual(0);
+    expect(text.indexOf('11:00')).toBeLessThan(text.indexOf('Physics'));
+  });
+
+  it('an entirely empty payload renders no day groups and no entries (R129-002)', () => {
+    render(
+      <CalendarAgenda
+        days={days}
+        eventsByDay={new Map()}
+        today="2026-10-28"
+        onOpenEvent={vi.fn()}
+      />
+    );
+    // D129A-05: the page owns the empty week; the agenda itself has nothing.
+    const agenda = screen.getByRole('list', { name: 'Week agenda' });
+    expect(agenda).toBeInTheDocument();
+    expect(within(agenda).queryByRole('listitem')).not.toBeInTheDocument();
+    expect(within(agenda).queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading')).not.toBeInTheDocument();
+  });
+
+  it('the week-layout chip keeps the title above the time (contrast check)', () => {
+    const { container } = render(<CalendarEventChip event={events[2]} onOpen={vi.fn()} />);
+    const text = container.querySelector('button')?.textContent ?? '';
+    expect(text.indexOf('Physics')).toBeLessThan(text.indexOf('11:00'));
   });
 });

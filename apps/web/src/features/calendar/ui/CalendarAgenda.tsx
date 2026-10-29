@@ -14,7 +14,8 @@ export interface CalendarAgendaProps {
  * one thumb scrolls it, nothing pans sideways. Reuses the week view's day
  * header (D129A-02) and the event chip (D129A-08); groups render only for
  * days that have events (AC 5). The chip carries the type label, completed
- * badge and accessible name, so type stays identifiable without color (AC 3).
+ * badge and accessible name, so type stays identifiable without color (AC 3),
+ * and renders in the agenda layout — time above title (D129A-03, R129-001).
  */
 export function CalendarAgenda({ days, eventsByDay, today, onOpenEvent }: CalendarAgendaProps) {
   const daysWithEvents = days.filter((day) => (eventsByDay.get(day) ?? []).length > 0);
@@ -36,7 +37,12 @@ export function CalendarAgenda({ days, eventsByDay, today, onOpenEvent }: Calend
             </h3>
             <div role="group" aria-labelledby={headerId} className="w-full min-w-0 space-y-2">
               {(eventsByDay.get(day) ?? []).map((event) => (
-                <CalendarEventChip key={event.id} event={event} onOpen={onOpenEvent} />
+                <CalendarEventChip
+                  key={event.id}
+                  event={event}
+                  onOpen={onOpenEvent}
+                  layout="agenda"
+                />
               ))}
             </div>
           </div>

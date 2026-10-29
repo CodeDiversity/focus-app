@@ -77,6 +77,12 @@ test('shows a seeded class meeting and assignment deadline on the right days and
   await loginViaUi(page, email);
   await page.goto('/calendar');
 
+  // Desktop viewport (Playwright default): the week grid renders, not the
+  // agenda (DoD 7 desktop evidence; R129-003).
+  const weekList = page.getByRole('list', { name: 'Week view' });
+  await expect(weekList).toBeVisible();
+  await expect(page.getByRole('list', { name: 'Week agenda' })).toHaveCount(0);
+
   // Both events render as chips.
   await expect(page.getByText(course.name)).toBeVisible();
   await expect(page.getByText(assignmentTitle)).toBeVisible();
@@ -108,12 +114,8 @@ test('SP-129A: at a phone viewport the week renders as the day-grouped agenda', 
     semesterId: semester.id,
   });
 
-  // Monday of the current week (the calendar defaults to the current week).
-  const now = new Date();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-  const mondayISO = monday.toISOString().slice(0, 10);
-
+  // The meeting is Monday-only (dayOfWeek 1); the calendar defaults to the
+  // current week, so no explicit date range is needed.
   const meetingResponse = await request.post(`/api/courses/${course.id}/meetings`, {
     headers: authHeaders(accessToken),
     data: { dayOfWeek: 1, startTime: '09:00', endTime: '10:00' },
@@ -129,6 +131,7 @@ test('SP-129A: at a phone viewport the week renders as the day-grouped agenda', 
   // The agenda replaces the week grid below the sm breakpoint; each entry
   // carries its time + title (accessible name) and its type label as text.
   const agenda = page.getByRole('list', { name: 'Week agenda' });
+  const weekList = page.getByRole('list', { name: 'Week view' });
   await expect(agenda).toBeVisible();
   const entry = page.getByRole('button', { name: `Class: ${course.name}, 09:00` });
   await expect(entry).toBeVisible();
@@ -148,6 +151,27 @@ test('SP-129A: at a phone viewport the week renders as the day-grouped agenda', 
   await expect(dialog).toContainText(course.name);
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
+
+  // Real tap-target height at 375px: the interactive entry is ≥ 44px (AC 6).
+  const box = await entry.boundingBox();
+  expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+
+  // Keyboard operability (DoD 6): focusing the entry and pressing Enter opens
+  // the dialog; Escape closes it and focus returns to the entry (R129-003).
+  await entry.focus();
+  await page.keyboard.press('Enter');
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(entry).toBeFocused();
+
+  // Live responsive switch (DoD 7): growing to a tablet width flips the page
+  // back to the week grid — no reload — and it stays there on desktop.
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await expect(weekList).toBeVisible();
+  await expect(page.getByRole('list', { name: 'Week agenda' })).toHaveCount(0);
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await expect(weekList).toBeVisible();
 });
 
 test('SP-128B: slots created on /availability appear on the calendar as available and blocked events', async ({

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Providers } from '@/test/providers';
 import { CalendarPage } from './CalendarPage';
@@ -12,7 +12,9 @@ vi.mock('@/entities/calendar/api/calendarApi', () => ({
 const mocked = vi.mocked(listCalendarEvents);
 
 // jsdom has no matchMedia; stub it for the viewport switch. `narrow` drives
-// both the initial snapshot and change events (SP-129A tests).
+// both the initial snapshot and change events (SP-129A tests). The listener
+// signature matches the real MediaQueryList addEventListener(type, callback)
+// so change events can be replayed after mount (R129-005).
 let narrow = false;
 const mediaListeners = new Set<() => void>();
 function installMatchMedia() {
@@ -20,10 +22,10 @@ function installMatchMedia() {
     matches: query === '(max-width: 639px)' ? narrow : false,
     media: query,
     onchange: null,
-    addEventListener: (cb: () => void) => {
+    addEventListener: (_type: string, cb: () => void) => {
       mediaListeners.add(cb);
     },
-    removeEventListener: (cb: () => void) => {
+    removeEventListener: (_type: string, cb: () => void) => {
       mediaListeners.delete(cb);
     },
     addListener: vi.fn(),
@@ -169,5 +171,25 @@ describe('CalendarPage (SP-127B)', () => {
     await validUser.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(entry).toHaveFocus();
+  });
+
+  it('an empty week at a narrow viewport shows the page empty state, not an agenda (SP-129A, R129-002)', async () => {
+    setNarrow(true);
+    mocked.mockResolvedValue({ ...payload, events: [] });
+    renderPage();
+    expect(await screen.findByText('No events this week')).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Week agenda' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Week view' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
+  });
+
+  it('switches from the week view to the agenda after a live narrow resize (SP-129A, R129-005)', async () => {
+    renderPage();
+    expect(await screen.findByRole('list', { name: 'Week view' })).toBeInTheDocument();
+    await act(async () => {
+      setNarrow(true);
+    });
+    expect(screen.getByRole('list', { name: 'Week agenda' })).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Week view' })).not.toBeInTheDocument();
   });
 });

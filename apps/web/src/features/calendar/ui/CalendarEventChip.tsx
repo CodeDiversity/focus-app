@@ -12,6 +12,9 @@ import type { CalendarEvent } from '@/entities/calendar/model/types';
 export interface CalendarEventChipProps {
   event: CalendarEvent;
   onOpen: (event: CalendarEvent) => void;
+  /** `'agenda'` (SP-129A, D129A-03) puts the time on its own line above the
+   * title; `'week'` (default) keeps the SP-127B layout. */
+  layout?: 'week' | 'agenda';
 }
 
 interface TypeMeta {
@@ -40,9 +43,10 @@ function typeLabel(event: CalendarEvent): string {
  * One event chip (D127B-4): start time, title, type icon + text label. The
  * course color is a 3px left border only (secondary cue). A completed
  * deadline shows an additional "Completed" text badge. The accessible name
- * is "{type label}: {title}, {time}".
+ * is "{type label}: {title}, {time}". The agenda layout (D129A-03) shows the
+ * time above the title; the week layout keeps the title above the time.
  */
-export function CalendarEventChip({ event, onOpen }: CalendarEventChipProps) {
+export function CalendarEventChip({ event, onOpen, layout = 'week' }: CalendarEventChipProps) {
   const meta = TYPE_META[event.type];
   const Icon = meta.icon;
   const label = typeLabel(event);
@@ -68,8 +72,17 @@ export function CalendarEventChip({ event, onOpen }: CalendarEventChipProps) {
             </span>
           )}
         </div>
-        <p className="truncate text-sm font-medium text-secondary-900">{event.title}</p>
-        <p className="text-xs text-secondary-500">{event.startTime}</p>
+        {layout === 'agenda' ? (
+          <>
+            <p className="text-xs text-secondary-500">{event.startTime}</p>
+            <p className="truncate text-sm font-medium text-secondary-900">{event.title}</p>
+          </>
+        ) : (
+          <>
+            <p className="truncate text-sm font-medium text-secondary-900">{event.title}</p>
+            <p className="text-xs text-secondary-500">{event.startTime}</p>
+          </>
+        )}
       </div>
     </button>
   );
