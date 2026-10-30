@@ -235,13 +235,15 @@ Paths are relative to the API root; the web client calls them through the `/api`
   "title": "string",
   "courseCode": "string | null",
   "dueDate": "ISO-8601 | null",
-  "estimatedMinutes": 180,
+  "estimatedMinutes": 180 | null,      // null exactly when flagged MISSING_ESTIMATE
   "confirmedMinutes": 0,
-  "remainingMinutes": 180,
+  "remainingMinutes": 180 | null,      // null exactly when flagged MISSING_ESTIMATE
   "status": "PENDING | IN_PROGRESS",
   "flagged": null | "MISSING_ESTIMATE" | "MISSING_DUE_DATE"
 }
 ```
+
+The items are ordered by due date ascending (nulls last), then priority descending, then `id` ascending — the same deterministic key the engine uses (D06-9), so the read and the plan agree on which work is "next".
 
 `PlanPreview`:
 
