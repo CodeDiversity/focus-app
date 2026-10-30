@@ -3,7 +3,7 @@
 **Epic:** [EP06: Study Planning & Scheduling](../../epics/EP06-study-planning-and-scheduling.md) (Jira STUDY-15)
 **Milestone:** M3 (Study planning and focus sessions)
 **Epic dependency:** EP03 (Assignment & Task Management) — complete. EP04 (Academic Calendar & Availability) — complete. Integrates with EP07 (Focus Sessions & Time Tracking — planned, not implemented) and EP05 (Student Dashboard — complete).
-**Status:** Planning — breakdown complete (2026-10-30). **The plan-review gate is PASSED**: plan review pass 3 (2026-10-30, independent re-review) returned **`Plan Ready`** — all twenty-two prior findings (PR-001…PR-022) independently verified **closed**, plus six new polish findings (PR-023…PR-028) that are open and non-blocking. Report: [`plan-review.md`](./plan-review.md) (reviewer-owned; this pass-3 report replaces the pass-2 report in place, and the pass-2 report remains in Git history at `84151a0`). EP06A is `Ready`; EP06B, EP06C, EP06D and EP06H are `Queued` (each awaits its predecessor's implementation); EP06E, EP06F and EP06G are `Needs refinement` pending their `ui-refiner` pass (D06-15). No implementation started.
+**Status:** Implementation complete — **the combined EP06 parent review passed on 2026-10-30** (verdict **PASS**): **EP06A…EP06H are all `Reviewed`** (the passing final parent review is the only sign-off). Report: [`./artifacts/EP06/review.md`](./artifacts/EP06/review.md); the final user walkthrough: [`./artifacts/EP06/walkthrough.md`](./artifacts/EP06/walkthrough.md). Planning history (unchanged): breakdown complete (2026-10-30); the plan-review gate is **PASSED** — pass 3 (2026-10-30, independent re-review) returned **`Plan Ready`** (all twenty-two prior findings PR-001…PR-022 independently verified **closed**, plus six new polish findings PR-023…PR-028 open and non-blocking). Report: [`plan-review.md`](./plan-review.md) (reviewer-owned; pass-3 report replaces pass-2 in place, pass-2 remains in Git history at `84151a0`). The implementation-discovered corrections (R-EP06-01…R-EP06-06 and R-EP06-09…R-EP06-11) were applied by the implementer fix rounds and independently verified closed by the combined EP06 parent review (2026-10-30). Three polish findings (R-EP06-13, R-EP06-14, R-EP06-15) remain open and non-blocking.
 **Jira keys:** Pending creation (no sync authorized for this planning task).
 
 ## Execution queue
@@ -14,9 +14,9 @@
 
 **Artifact root:** `./artifacts/` (stable story ID) — one directory per child: `./artifacts/EP06A/`, `./artifacts/EP06B/`, `./artifacts/EP06C/`, `./artifacts/EP06D/`, `./artifacts/EP06E/`, `./artifacts/EP06F/`, `./artifacts/EP06G/`, `./artifacts/EP06H/`, plus `./artifacts/EP06/` for the parent implementation index, combined review and walkthrough.
 
-**Active substory:** None — all eight children are implemented and await the combined EP06 parent review.
+**Active substory:** None — all eight children are implemented and **reviewed**: EP06A…EP06H are `Reviewed` (the combined EP06 parent review passed on 2026-10-30, verdict **PASS**).
 
-**Next substory:** None — all children implemented. The next actionable task is the **combined EP06 parent review** (one review for all eight children), followed by the reviewer's final user walkthrough (`review.md` + `walkthrough.md`) and the passing-review docs sync. **Plan-review gate passed** (pass 3, 2026-10-30 — `Plan Ready`; report: [plan-review.md](./plan-review.md)).
+**Next substory:** None — EP06 is complete. The combined EP06 parent review passed on 2026-10-30 ([`./artifacts/EP06/review.md`](./artifacts/EP06/review.md); final user walkthrough [`./artifacts/EP06/walkthrough.md`](./artifacts/EP06/walkthrough.md)). All eight children are `Reviewed`; no further implementation or review work is queued for EP06. Three non-blocking polish findings (R-EP06-13, R-EP06-14, R-EP06-15) and the six plan-review polish findings (PR-023…PR-028) remain open and are not gates.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (the Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -24,14 +24,14 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP06A](./EP06A-study-preferences-shape-and-api.md) | **Implemented — awaiting parent review** | EP03/EP04 complete. D06-1…D06-25 recorded in the decision register below. **Plan-review gate passed** (pass 3, 2026-10-30 — `Plan Ready`; report: [plan-review.md](./plan-review.md)); the technical refinement is captured in the planner's breakdown; the `ui-refiner` gate does not apply (D06-15). | No action — implemented (`7457a0a`); the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06A/checkpoint.md) · [implementation](./artifacts/EP06A/implementation.md) |
-| [EP06B](./EP06B-remaining-work-calculation-and-read-api.md) | **Implemented — awaiting parent review** | EP06A implemented (`7457a0a` — the `StudyPreferences` type is shared with the engine). No dependency on EP07 — the confirmed-time aggregation reads `StudySession` directly (D06-6). **Plan-review gate passed** (pass 3 — `Plan Ready`); the state became `Ready` when EP06A landed. | No action — implemented (`f07a84b`): the remaining-work calculation, the one shared comparator and `GET /study-plans/remaining-work`; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06B/checkpoint.md) · [implementation](./artifacts/EP06B/implementation.md) |
-| [EP06C](./EP06C-deterministic-scheduling-engine.md) | **Implemented — awaiting parent review** | EP06A + EP06B implemented (`7457a0a` and `f07a84b` — the engine consumes the shared `StudyPreferences` type, the schedulable-assignment classification and the one comparator `compareAssignments`). EP06C implemented (this child). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06C/checkpoint.md) · [implementation](./artifacts/EP06C/implementation.md) |
-| [EP06D](./EP06D-study-plan-persistence-and-preview-save-api.md) | **Implemented — awaiting parent review** | EP06A + EP06B + EP06C implemented. EP03/EP04 complete. **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06D/checkpoint.md) · [implementation](./artifacts/EP06D/implementation.md) |
-| [EP06E](./EP06E-study-preferences-ui.md) | **Implemented — awaiting parent review** | EP06A implemented. `ui-refiner` pass complete (2026-10-30) — layout, controls, states, a11y, responsive, copy settled in the story file. Technical refinement satisfied by the planner's breakdown + the shared contract (D06-15). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06E/checkpoint.md) · [implementation](./artifacts/EP06E/implementation.md) |
-| [EP06F](./EP06F-study-plan-page-preview-edit-and-save.md) | **Implemented — awaiting parent review** | EP06D implemented (the preview/save/read API). `ui-refiner` pass complete (2026-10-30). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06F/checkpoint.md) · [implementation](./artifacts/EP06F/implementation.md) |
-| [EP06G](./EP06G-remaining-work-and-deficit-warnings-ui.md) | **Implemented — awaiting parent review** | EP06B and EP06F implemented. `ui-refiner` pass complete (2026-10-30). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06G/checkpoint.md) · [implementation](./artifacts/EP06G/implementation.md) |
-| [EP06H](./EP06H-cross-layer-e2e-and-parent-index.md) | **Implemented — awaiting parent review** | EP06A–EP06G implemented. **Plan-review gate passed** (pass 3 — `Plan Ready`). The E2E suite and the parent index were written by the coordinator after the implementer's commits did not persist (see the parent index's *Known gaps*). | No action — implemented; the combined EP06 parent review covers it. | [checkpoint](./artifacts/EP06H/checkpoint.md) · [implementation](./artifacts/EP06H/implementation.md) |
+| [EP06A](./EP06A-study-preferences-shape-and-api.md) | **Reviewed** | EP03/EP04 complete. D06-1…D06-25 recorded in the decision register below. **Plan-review gate passed** (pass 3, 2026-10-30 — `Plan Ready`; report: [plan-review.md](./plan-review.md)); the technical refinement is captured in the planner's breakdown; the `ui-refiner` gate does not apply (D06-15). | No action — implemented (`7457a0a`); the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06A/checkpoint.md) · [implementation](./artifacts/EP06A/implementation.md) |
+| [EP06B](./EP06B-remaining-work-calculation-and-read-api.md) | **Reviewed** | EP06A implemented (`7457a0a` — the `StudyPreferences` type is shared with the engine). No dependency on EP07 — the confirmed-time aggregation reads `StudySession` directly (D06-6). **Plan-review gate passed** (pass 3 — `Plan Ready`); the state became `Ready` when EP06A landed. | No action — implemented (`f07a84b`): the remaining-work calculation, the one shared comparator and `GET /study-plans/remaining-work`; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06B/checkpoint.md) · [implementation](./artifacts/EP06B/implementation.md) |
+| [EP06C](./EP06C-deterministic-scheduling-engine.md) | **Reviewed** | EP06A + EP06B implemented (`7457a0a` and `f07a84b` — the engine consumes the shared `StudyPreferences` type, the schedulable-assignment classification and the one comparator `compareAssignments`). EP06C implemented (this child). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06C/checkpoint.md) · [implementation](./artifacts/EP06C/implementation.md) |
+| [EP06D](./EP06D-study-plan-persistence-and-preview-save-api.md) | **Reviewed** | EP06A + EP06B + EP06C implemented. EP03/EP04 complete. **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06D/checkpoint.md) · [implementation](./artifacts/EP06D/implementation.md) |
+| [EP06E](./EP06E-study-preferences-ui.md) | **Reviewed** | EP06A implemented. `ui-refiner` pass complete (2026-10-30) — layout, controls, states, a11y, responsive, copy settled in the story file. Technical refinement satisfied by the planner's breakdown + the shared contract (D06-15). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06E/checkpoint.md) · [implementation](./artifacts/EP06E/implementation.md) |
+| [EP06F](./EP06F-study-plan-page-preview-edit-and-save.md) | **Reviewed** | EP06D implemented (the preview/save/read API). `ui-refiner` pass complete (2026-10-30). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06F/checkpoint.md) · [implementation](./artifacts/EP06F/implementation.md) |
+| [EP06G](./EP06G-remaining-work-and-deficit-warnings-ui.md) | **Reviewed** | EP06B and EP06F implemented. `ui-refiner` pass complete (2026-10-30). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06G/checkpoint.md) · [implementation](./artifacts/EP06G/implementation.md) |
+| [EP06H](./EP06H-cross-layer-e2e-and-parent-index.md) | **Reviewed** | EP06A–EP06G implemented. **Plan-review gate passed** (pass 3 — `Plan Ready`). The E2E suite and the parent index were written by the coordinator after the implementer's commits did not persist (see the parent index's *Known gaps*). | No action — implemented; the combined EP06 parent review covers it. | [checkpoint](./artifacts/EP06H/checkpoint.md) · [implementation](./artifacts/EP06H/implementation.md) |
 
 Sequence (one writer): EP06A → EP06B → EP06C → EP06D → EP06E → EP06F → EP06G → EP06H. EP06A/EP06B/EP06C/EP06D are the contract and persistence spine; the three frontend children consume it; EP06H verifies the whole stack and owns the parent index.
 
@@ -643,7 +643,27 @@ Plan review **pass 3** (2026-10-30, independent re-review) returned **`Plan Read
 
 ## Implementation review log
 
-(No implementation yet.)
+**Combined EP06 parent review — reviewer dispositions (R-EP06-01…R-EP06-15).** The combined EP06 parent review passed on 2026-10-30 (verdict **PASS**): report [`./artifacts/EP06/review.md`](./artifacts/EP06/review.md), final user walkthrough [`./artifacts/EP06/walkthrough.md`](./artifacts/EP06/walkthrough.md). Pass 1 (2026-10-30) returned **FAIL** (1 blocker R-EP06-01, 7 should-fix R-EP06-02…-07, -09, 4 polish R-EP06-08, -10, -11, -12); the implementer fix rounds (`c716878` round 1; `028a799` round 2) closed them, and pass 2 (this review) independently verified every one closed. Pass 2 raised 3 new polish findings (R-EP06-13, -14, -15), all non-blocking.
+
+| ID | Severity (pass 1) | Original claim (condensed) | Consequence | Disposition (pass 2) | Closure evidence |
+|---|---|---|---|---|---|
+| R-EP06-01 | Blocker | `apps/web/e2e/study-plan.spec.ts` did not exist; EP06H's commits did not persist; helpers absent | TR-E06-08 had no executed check; AC-E06-06/-07/-09 only partially satisfied | **Closed** | Spec now exists (5 scenarios: journey, deficit, flagged, isolation, conflict); helpers present (`helpers.ts:145,172`); fix round recorded `study-plan.spec.ts` 5 passed and full E2E sweep 29 passed |
+| R-EP06-02 | Should-fix | `ownership.ts:26-29` named `ScheduledTask` and its parents | The convention named a relation that no longer exists after the rename | **Closed** | `ownership.ts:25-31` now names `PlannedSession` and scopes it through `studyPlan.userId` / `assignment.userId` |
+| R-EP06-03 | Should-fix | The saved plan's `targetMinutes` might not match the placed minutes | A projection could report 45 minutes for a day holding 0.75 hours | **Closed** | `study-plans.service.ts:661-665` (preview sums durations) and `:927` (`Math.round(targetHours × 60)`); round-trip verified exact by hand on 0/1/45/100 minutes |
+| R-EP06-04 | Should-fix | The `WINDOW_ROLLED_OVER` 409 was a generic error banner | The student could not act on a rollover | **Closed** | `PlanPage.tsx:216-225` renders an actionable alert with a "Generate plan" button |
+| R-EP06-05 | Should-fix | The week grid did not announce a moved session's new time | Assistive-technology users got no feedback on move | **Closed** | `PlanWeek.tsx:45-51` and `PlanSessionEditor.tsx:108-112` carry `aria-live="polite"` regions |
+| R-EP06-06 | Should-fix | `PATCH /users/me` wrote `preferences` verbatim, erasing saved `studyDefaults` | A later profile PATCH could erase study defaults (data loss) | **Closed** | `users.service.ts:97-126` merges the bag (shallow top-level) and re-checks the 4096-byte cap; integration spec asserts merge; authorized by the user on 2026-10-30 (F-EP06-07) |
+| R-EP06-07 | Should-fix | `EP06F`/`EP06G` `Refined:` metadata still read "technical-refine pass not yet run" | The metadata contradicted the implemented state | **Closed** | Both now read `Refined: 2026-10-30 (ui-refiner pass)` |
+| R-EP06-08 | Polish | FU-EP06-01 had no owner or sizing | The follow-up was unowned | **Closed** | FU-EP06-01 recorded in the *Open follow-ups* table with a suggested owner (EP08 / follow-up planner pass) |
+| R-EP06-09 | Should-fix | The delete confirmation had no undo toast although the ui-refiner promised one | A deleted session could not be restored | **Closed** | `PlanSessionEditor.tsx:42-66` shows an undo toast restoring the session at its original index |
+| R-EP06-10 | Polish | `createAssignmentViaApi` / `createAvailabilitySlotViaApi` helpers were absent | The E2E spec could not be written | **Closed** | Both helpers present in `helpers.ts` (lines 145, 172) |
+| R-EP06-11 | Polish | The state-B upgrade comment was slightly out of date vs EP07A's column shape | The named mechanical upgrade would be misapplied | **Closed** | The comment now matches EP07A's shape (`assignmentId` nullable FK, `onDelete: SetNull`, `ACTIVE`/`PAUSED`/`COMPLETED`) |
+| R-EP06-12 | Polish | The parent index's commit list stopped at `69e45ef` | The index omitted the commits that landed after it | **Closed (substantially)** | Fix rounds recorded commits through `a0a7307`; residual header staleness recorded as R-EP06-15 |
+| R-EP06-13 | Polish (new) | The deficit E2E scenario depends on the server's "today" and the availability windows | The scenario is not robust to changes in either | **Open (polish)** | Owner EP06H; suggested closure: pin the due date to a fixed weekday inside the window |
+| R-EP06-14 | Polish (new) | The isolation E2E scenario checks only the assignment, not the saved plan | A plan-leak regression would not be caught | **Open (polish)** | Owner EP06H; suggested closure: assert `GET /study-plans` for user1 does not contain user2's sessions |
+| R-EP06-15 | Polish (new) | The parent index header, known-gaps and commands table are stale vs the landed E2E suite | The index misstates the reviewed state | **Open (polish)** | Owner EP06H/coordinator; suggested closure: refresh header, known gaps and commands table to `a0a7307` and the executed E2E evidence |
+
+Decision provenance: the user authorised the EP01-owned `PATCH /users/me` merge-instead-of-replace change on 2026-10-30 (R-EP06-06 / F-EP06-07), closing the data-loss path. All eight children are now `Reviewed`.
 
 ## Final implementation review unit
 
@@ -664,43 +684,41 @@ scope:
   descendants: [EP06A, EP06B, EP06C, EP06D, EP06E, EP06F, EP06G, EP06H]
   entry: planning
   limits: enclosing parent review unit
-stage: parent_review
+stage: complete
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "9b1ec19"
-  head: "4a4676f"
+  head: "a0a7307"
 active_dispatch:
-  name: ep06-parent-reviewer-2
-  role: reviewer
-  status: pending
-  pointer: docs/stories/EP06/artifacts/EP06/review.md
+  name: ""
+  role: ""
+  status: none
+  pointer: ""
   session: ""
-  assignment: parent_review
+  assignment: ""
 last_result:
-  evidence: "Combined parent review (pass 1) saved at docs/stories/EP06/artifacts/EP06/review.md (reviewer read-only; coordinator committed it as 4d72a21). Verdict FAIL: 1 blocker (R-EP06-01 — the cross-layer E2E suite is missing), 7 should-fix (R-EP06-02, -03, -04, -05, -06, -07, -09) and 4 polish (R-EP06-08, -10, -11, -12) = 12 findings. ACs: 6 fully satisfied, 3 partially satisfied (AC-E06-06, -07, -09, all tracing to R-EP06-01). DoD: 9 PASS / 1 FAIL (item 8 — automated tests) / 1 CANNOT VERIFY (item 10 — integrated review). Item 11 (walkthrough) is N/A on a non-passing verdict. Tests re-run by the reviewer: API 59 suites / 1274 tests passed; web 84 suites / 1005 tests passed; typecheck + lint clean on both. The web full suite is 1024 tests with 2 CourseForm timeouts under load (pre-existing, unrelated). The self-contained E2E stack is not runnable in this runtime, so R-EP06-01 is CANNOT VERIFY at the E2E level."
-  findings: "Open findings (owner = implementer unless noted): R-EP06-01 (blocker — write the E2E suite and run the self-contained stack), R-EP06-02 (should-fix — update the ownership convention's header comment to name PlannedSession and studyPlan.userId), R-EP06-03 (should-fix — verify the saved plan's targetMinutes), R-EP06-04 (should-fix — make the WINDOW_ROLLED_OVER banner actionable with a regenerate affordance), R-EP06-05 (should-fix — add the live region for moved sessions), R-EP06-06 (should-fix — the PATCH /users/me data-loss path; needs the user's authorization for the EP01-owned file), R-EP06-07 (should-fix — the Refined: metadata), R-EP06-09 (should-fix — the undo toast), R-EP06-10 (polish — the helpers), R-EP06-11 (polish — the state-B upgrade comment), R-EP06-08 (polish, planner — FU-EP06-01 ownership), R-EP06-12 (polish, planner — parent index commit list). Plus the six open plan-review polish findings PR-023…PR-028 (owner: planner) and F-EP06-07 (the cross-epic data-loss finding, recorded by EP06A and verified by the reviewer)."
-  scope_note: "Implementation stage, fix round. All eight children are 'Implemented — awaiting parent review' in the queue. The combined review returned FAIL, so the passing-review docs sync is deferred; the report is saved and committed. The blocker R-EP06-01 (the missing E2E suite) is the single thing that keeps DoD item 8 at FAIL and items 10/11 unverified. R-EP06-06 (the PATCH /users/me data-loss path) is the only finding that needs a user decision; everything else is implementable without one. The fix round dispatches a fresh implementer for the implementer-owned findings; the planner-owned findings (R-EP06-07, R-EP06-08, R-EP06-12, PR-023…PR-028) are recorded for a later planner pass and are not in this fix round's scope. No Jira sync, no push, no deployment."
+  evidence: "Combined parent review pass 2 saved at docs/stories/EP06/artifacts/EP06/review.md (reviewer read-only; coordinator owns the commit). Verdict PASS: 0 blockers, 0 should-fix, 3 polish (R-EP06-13, R-EP06-14, R-EP06-15). All 12 prior findings R-EP06-01…R-EP06-12 resolved with fresh evidence. All 9 epic ACs satisfied (AC-E06-06, -07, -09 now fully satisfied by the landed E2E suite). DoD: 10 PASS / 1 N/A (item 11 = the walkthrough, written in this pass). Test evidence: API 59 suites / 1274 tests; web 84 suites / 1005 tests; study-plan.spec.ts 6/6; full E2E sweep 46/46; typecheck + lint clean on both. The reviewer performed the passing-review docs sync: all eight children moved to Reviewed, the status line refreshed, the correction log populated with R-EP06-01…R-EP06-15 dispositions, and decision provenance recorded (user-authorised PATCH /users/me merge, 2026-10-30). The final user walkthrough was saved at docs/stories/EP06/artifacts/EP06/walkthrough.md."
+  findings: "Three non-blocking polish findings remain open (owner = implementer, optional): R-EP06-13 (deficit E2E scenario date sensitivity), R-EP06-14 (isolation E2E only checks the assignment, not the saved plan), R-EP06-15 (parent index header/known-gaps/commands table stale). Six plan-review polish findings remain open (owner = planner): PR-023 (one home per type), PR-024 (two migration authorities), PR-025 (unachievable 'preserved byte-for-byte' for a jsonb column), PR-026 (no competing-request counterexample for the no-overlap invariant), PR-027 (EP06H's DoD 5/7 rows over-claim), PR-028 (children's Refined: fields wording — resolved for EP06F/EP06G, cosmetic for EP06A–EP06D). F-EP06-07 (PATCH /users/me data-loss) is closed (R-EP06-06 fixed via the user-authorised merge change)."
+  scope_note: "Implementation stage COMPLETE. All eight children are Reviewed. The combined EP06 parent review passed (pass 2, 2026-10-30 — verdict PASS). The final user walkthrough is saved and verified. The passing-review docs sync was performed by the reviewer. No further specialist dispatch is required for this parent review unit. No Jira sync, push, or deployment was performed."
   cycles: 4
-  same_findings: unknown
+  same_findings: false
 gates:
   breakdown: true
   plan: pass
   ui: true
   refinement: false
-  child_unfinished: true
-  eligible_child_state: Ready
-  closeout: unknown
-  integration: unknown
-  all_descendants_implemented: false
-  review: absent
+  child_unfinished: false
+  eligible_child_state: Reviewed
+  closeout: true
+  integration: true
+  all_descendants_implemented: true
+  review: pass
   findings_owner: none
   open_findings: false
-  walkthrough: missing
-  judged_at_head: "85c3dd5"
-  queue_hash: "ep06-queue-v8"
-writer: implementer
-session_live: false
+  walkthrough: verified
+  judged_at_head: "a0a7307"
+  queue_hash: "ep06-queue-v10"
 writer: none
 session_live: unknown
 blocker:
