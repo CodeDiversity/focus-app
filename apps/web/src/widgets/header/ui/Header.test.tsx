@@ -198,7 +198,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
     const planning = screen.getByRole('button', { name: 'Planning menu' });
     planning.focus();
     await user.keyboard('{ArrowUp}');
-    expect(screen.getByRole('menuitem', { name: 'Availability' })).toHaveFocus();
+    expect(screen.getByRole('menuitem', { name: 'Plan' })).toHaveFocus();
   });
 
   it('cycles items with ArrowUp/ArrowDown and supports Home/End', async () => {

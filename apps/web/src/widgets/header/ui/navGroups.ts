@@ -1,6 +1,7 @@
 import {
   BookOpen,
   Calendar,
+  CalendarCheck,
   CalendarDays,
   CalendarRange,
   ClipboardList,
@@ -80,6 +81,7 @@ export const authenticatedNavGroups: NavSection[] = [
       // Canonical home is the Planning group; the account menu also exposes a
       // secondary shortcut to the same route (D11-8).
       { id: 'availability', label: 'Availability', icon: Clock, to: '/availability' },
+      { id: 'plan', label: 'Plan', icon: CalendarCheck, to: '/plan' },
     ],
   },
 ];

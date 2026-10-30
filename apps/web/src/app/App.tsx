@@ -9,6 +9,7 @@ import { CoursesPage } from '@/pages/courses/ui/CoursesPage';
 import { AssignmentsPage } from '@/pages/assignments/ui/AssignmentsPage';
 import { CalendarPage } from '@/pages/calendar/ui/CalendarPage';
 import { AvailabilityPage } from '@/pages/availability/ui/AvailabilityPage';
+import { PlanPage } from '@/pages/plan/ui/PlanPage';
 import { CourseDetailPage } from '@/pages/courses/ui/CourseDetailPage';
 import { ProfilePage } from '@/pages/profile/ui/ProfilePage';
 import { OnboardingPage } from '@/pages/onboarding/ui/OnboardingPage';
@@ -53,6 +54,7 @@ function App() {
               /availability page, inside ProtectedRoute, rendered within the
               standard Layout like the other pages) */}
           <Route path="/availability" element={<AvailabilityPage />} />
+          <Route path="/plan" element={<PlanPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           {/* SP-107C: onboarding wizard (D107-3: inside ProtectedRoute,
               rendered within the standard Layout like all existing pages) */}
