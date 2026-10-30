@@ -150,3 +150,47 @@ All commands were run by the implementing children and recorded in their impleme
 - The combined review covers all eight children and their integration; there is no per-child review gate.
 - The reviewer must also prepare and verify the separate final `walkthrough.md` (code explanation, correctness evidence after correction rounds, and manual test steps/expected results for every applicable workflow) before the parent can be marked `Reviewed`.
 - F-H-1 (the self-contained stack's API on port 4100 is reached through the web server's Vite proxy, not directly) is recorded in EP06H's implementation record and is relevant to how the E2E suite is run.
+
+## Fix round — implementer-owned review findings (R-EP06-01, -02, -03, -04, -05, -09, -10, -11)
+
+**Scope:** eight implementer-owned findings from `review.md`. Excluded (other owners): R-EP06-06 (user authorization, EP01 file), R-EP06-07 (planner metadata), R-EP06-08 (planner FU ownership), R-EP06-12 (planner index), PR-023…PR-028 (planner), F-EP06-07 (coordinator).
+
+### Findings / dispositions
+
+| Finding | Disposition | Evidence |
+|---|---|---|
+| R-EP06-01 (missing E2E spec) | Fixed | `apps/web/e2e/study-plan.spec.ts` added (5 scenarios: journey, deficit warning, flagged marker, isolation, conflict); all green |
+| R-EP06-02 (ownership comment names ScheduledTask) | Already satisfied in tree — comment names `PlannedSession` and `studyPlan.userId` (no change) | `apps/api/src/common/ownership/ownership.ts:25-31` |
+| R-EP06-03 (saved plan targetMinutes) | Verified — preview sums session durations; saved reads `round(targetHours × 60)` with `targetHours = placedMinutes / 60`; round-trip exact | `study-plans.service.ts` preview (line ~663) and getPlan (line ~927) |
+| R-EP06-04 (WINDOW_ROLLED_OVER banner) | Already satisfied — actionable message + regenerate affordance present | `PlanPage.tsx` rolledOver block |
+| R-EP06-05 (live region for moved sessions) | Fixed | live region added to `PlanWeek.tsx` (WeekGrid) and `PlanSessionEditor.tsx` (announcement on move) |
+| R-EP06-09 (undo toast) | Fixed | `PlanSessionEditor.tsx` removeAt now shows an undo toast restoring the session |
+| R-EP06-10 (E2E helpers) | Fixed | `createAssignmentViaApi`, `createAvailabilitySlotViaApi` added to `helpers.ts` |
+| R-EP06-11 (state-B upgrade comment) | Already current — comment matches EP07A's column shape | `study-plans.service.ts` getRemainingWork |
+
+### Changed paths (this round)
+- `apps/web/e2e/study-plan.spec.ts` (new)
+- `apps/web/e2e/helpers.ts` (two helpers)
+- `apps/web/e2e/auth-journeys.spec.ts` (logout selector aligned to current account menu — pre-existing failure fix for green sweep)
+- `apps/web/src/pages/plan/ui/PlanPage.tsx` (PlanWeek in preview for seven-day view)
+- `apps/web/src/pages/plan/ui/PlanPage.test.tsx` (strict-mode update for added PlanWeek)
+- `apps/web/src/features/study-plan/ui/PlanWeek.tsx` (live region)
+- `apps/web/src/features/study-plan/ui/PlanSessionEditor.tsx` (undo toast + live region + announcement)
+- `docs/stories/EP06/artifacts/EP06/checkpoint.md` (new)
+- `docs/stories/EP06/artifacts/EP06/implementation.md` (this section)
+- `docs/stories/EP06/README.md` (queue/Active/Next reconciliation — narrow execution fields)
+
+### Verification (this round)
+| Command | cwd | Result |
+|---|---|---|
+| `pnpm --filter web test:e2e -- study-plan.spec.ts` | apps/web | 5 passed |
+| `pnpm --filter web test:e2e` | apps/web | 29 passed |
+| `pnpm --filter api test` | apps/api | 38 suites / 1274 tests passed (integration specs skip without DB) |
+| `pnpm --filter web test` | apps/web | 84 suites passed; 2 pre-existing CourseForm flakes under full-suite load (pass in isolation); PlanPage 7 passed |
+| `pnpm --filter api typecheck` | apps/api | clean |
+| `pnpm --filter web typecheck` | apps/web | clean |
+| `pnpm --filter api lint` | apps/api | clean |
+| `pnpm --filter web lint` | apps/web | clean |
+
+### Findings/deviations
+R-EP06-06 not fixed (user authorization required for EP01-owned `users.service.ts`); R-EP06-07/08/12 and PR-023…PR-028 remain planner-owned (not touched); F-EP06-07 (cross-epic) left for coordinator. No other deviations.
