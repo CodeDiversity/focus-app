@@ -6,10 +6,10 @@
 **Parent:** [EP06 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Frontend
-**Status:** Needs refinement — a `ui-refiner` pass is required before implementation (D06-15).
+**Status:** Needs refinement — `ui-refiner` pass complete (2026-10-30); technical refinement pending before implementation (D06-15).
 **Dependencies:** EP06B implemented (the `GET /study-plans/remaining-work` read) and EP06F implemented (the plan page that hosts the two sections).
 **Jira key:** Pending creation
-**Refined:** — (technical-refine pass not yet run; this file is the planner's breakdown)
+**Refined:** 2026-10-30 (ui-refiner pass). Technical refinement satisfied by the planner's breakdown and the shared contract (D06-15).
 
 ## Summary
 
@@ -63,13 +63,21 @@ Two things the epic asks for are about understanding, not scheduling: the studen
   - a `MISSING_ESTIMATE` item shows the marker and reads "not set" for its estimate and its remaining minutes;
   - a `MISSING_DUE_DATE` item shows the marker and keeps its estimate;
   - the empty state renders when there are no items;
-  - the error state renders a readable message;
-  - the marker is not colour-only (it carries text).
+  - the error state renders a readable message with a "Try again" button that re-runs the read;
+  - the marker is not colour-only (it carries text);
+  - **(ui-refiner)** the summary line renders `<total> of work left` when at least one item has a numeric `remainingMinutes`, and is omitted when every item is flagged;
+  - **(ui-refiner)** a loading skeleton is shown before the read resolves and does not flash "0 items";
+  - **(ui-refiner)** the due date is rendered verbatim as the `YYYY-MM-DD` string the API returned (no zone shift);
+  - **(ui-refiner)** at a 375px viewport the rows stack and the badge wraps rather than truncating the title.
 - `apps/web/src/features/study-plan/ui/WorkloadWarnings.test.tsx` (new) — the component tests:
   - each warning category renders with its assignment and its minutes;
-  - the deferred list renders separately from the warnings;
+  - the deferred list renders separately from the warnings, under the `Continues in a later plan` heading;
   - the empty state renders when there are neither warnings nor deferred work;
-  - the error state renders a readable message.
+  - the error state renders a readable message when `errorMessage` is supplied;
+  - **(ui-refiner)** the three category sentences match the settled wording (no blame, factual);
+  - **(ui-refiner)** before a preview exists the empty state reads `Generate a plan to see what doesn't fit before a deadline.`;
+  - **(ui-refiner)** when a preview produced no warnings/deferred the empty state reads `Everything fits in this week.`;
+  - **(ui-refiner)** the deferred row reads `<title> — <minutes>`.
 - `apps/web/src/pages/plan/ui/PlanPage.test.tsx` (modify) — the page renders both sections and the remaining-work read happens on mount, independently of the preview.
 
 ## Technical notes
@@ -97,10 +105,105 @@ Two things the epic asks for are about understanding, not scheduling: the studen
    None of them blames the student (EP08's principle).
 6. **`ui-refiner` pass.** This story's row design, the section order on the page, the marker, the wording, the empty/loading/error states, the responsive behaviour and the keyboard behaviour are settled by the `ui-refiner` **before** implementation, and this file is amended in place by that pass.
 
+### UI/UX specification (ui-refiner pass, 2026-10-30)
+
+**Element decisions**
+
+- **Reuse** `Card` for each section container; `Badge` (with text) for the flagged marker; `EmptyState` for both calm empty states; `Button` (`variant="outline"`, `size="sm"`) for "Try again"; `getErrorMessage` for the error state; the shared `twMerge`/`clsx` token classes for layout.
+- **Reuse** the civil-date rendering rule from `PlanWeek.formatDateLabel` (UTC-midnight derivation, no browser clock) for the due date — it is rendered as the `YYYY-MM-DD` string the API returns, with the weekday derived in UTC, and the section labels the profile zone so the date is unambiguous (D06-24).
+- **New** `apps/web/src/entities/study-plan/api/studyPlanApi.ts` (modify) — `listRemainingWork(): Promise<RemainingWorkResponse>` → `GET /study-plans/remaining-work`, unwrapping `{ items, unattributedConfirmedMinutes }`.
+- **New** `apps/web/src/entities/study-plan/model/types.ts` (modify) — `RemainingWorkItem`, `RemainingWorkResponse`, `RemainingWorkFlag` (`null | 'MISSING_ESTIMATE' | 'MISSING_DUE_DATE'`), `PlanWarning` (the preview's warning shape, narrowed from the loose `PlanPreviewWarning`), `PlanDeferred`.
+- **New** `apps/web/src/features/study-plan/ui/RemainingWorkSection.tsx` — owns its own fetch on mount, its own loading/empty/error/data states; renders one row per item; no props beyond an optional `className`.
+- **New** `apps/web/src/features/study-plan/ui/WorkloadWarnings.tsx` — pure presentational: takes `warnings`, `deferred` and an optional `errorMessage`; renders the three categories, the deferred list and the calm empty state.
+- **New** `apps/web/src/features/study-plan/lib/formatMinutes.ts` — `formatMinutes(total): string` returning `"3 h 20 min"`, `"45 min"`, `"0 min"`; used by both sections and their tests.
+- **New** `apps/web/src/pages/plan/ui/PlanPage.tsx` (modify) — mounts `RemainingWorkSection` above the week view and `WorkloadWarnings` below it, passing `preview?.warnings` / `preview?.deferred` (and `previewError` as the optional error).
+- **No new primitive.** No dialog, no new shared component, no chart. `Badge` carries text; colour is never the only signal (EP04 AC-E04-08).
+
+**Layout & hierarchy**
+
+- Page order on `/plan` (top → bottom): page heading + generate/save controls; **Remaining work** section; the week view (preview or saved); **Workload warnings** section. Remaining work leads because it is available on mount and frames the plan ("what is left"); warnings follow the week because they are a property of a preview.
+- Remaining-work section (`Card`, `p-4 sm:p-6`):
+  - Heading: `Remaining work` (`h2`, `text-lg font-semibold text-text`), with a one-line sub-caption: `How much is left on each assignment.` (`text-sm text-text-muted`).
+  - A single summary line above the list (when items exist): `<total> of work left` (e.g. `3 h 20 min of work left`), `text-sm text-text-muted`.
+  - The list is a semantic `<ul>` of rows. Each row is a `<li>` with a two-line layout:
+    - Line 1: the assignment title (`text-sm font-medium text-text`, truncated with `truncate` + `title` attribute for the full text) and, when present, the course code as a muted inline label `· <courseCode>`; the flagged `Badge` sits at the end of line 1.
+    - Line 2 (a `flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-muted` row): due date (`Due <date>` or `No due date`), then `Estimate <value>`, `Confirmed <value>`, `Left <value>`. For a flagged item the estimate/remaining cells read `not set` (text, not an em dash); the confirmed cell still reads `0` when nothing is confirmed (D06-7).
+  - Rows are separated by `divide-y divide-border`; each row has `py-3`.
+- Workload-warnings section (`Card`, `p-4 sm:p-6`):
+  - Heading: `Workload warnings` (`h2`, `text-lg font-semibold text-text`), sub-caption: `Work that does not fit before a deadline.` (`text-sm text-text-muted`).
+  - Warnings render as a `<ul>` of alert-style rows (border-l-4, `border-warning/60`, `bg-warning/5`) — factual, not punitive. Each row: the assignment title (`text-sm font-medium text-text`), then the category sentence (`text-sm text-text`), then `N min` (`text-xs text-text-muted`). Due date, when present, is shown as `due <date>`.
+  - The deferred list renders as a separate `<ul>` beneath the warnings, headed by a small `h3` `Continues in a later plan` (`text-xs font-semibold text-text-muted uppercase tracking-wide`), with rows `text-sm text-text-muted`: `<title> — <minutes>`.
+
+**States**
+
+- **Remaining work — loading:** render the `Card` with a skeleton: three rows of `h-4 animate-pulse rounded bg-surface-muted` placeholders inside `space-y-3`, plus `aria-busy="true"` on the section. Never render "0 items" before the read resolves.
+- **Remaining work — empty (no unfinished assignments):** `EmptyState` with title `Nothing left to do.` and description `Every assignment is finished or has no remaining work.` No action button (there is no action to take — AC 6).
+- **Remaining work — error:** a `role="alert"` block inside the card (`border border-danger/30 bg-danger/10 p-4`) with `We could not load your remaining work. Try again.` and a "Try again" button that re-runs `GET /study-plans/remaining-work`.
+- **Workload warnings — empty (no warnings and no deferred):** `EmptyState` with title `Nothing to report.` and description `Generate a plan to see what doesn't fit before a deadline.` No action button. (When a preview exists but produced no warnings/deferred, the description reads `Everything fits in this week.`)
+- **Workload warnings — before a preview:** the same empty state with the "Generate a plan…" description (calm, not an error).
+- **Workload warnings — error:** when an `errorMessage` is supplied, render a `role="alert"` block with the message and no list.
+
+**Accessibility**
+
+- The remaining-work list is a semantic `<ul>`/`<li>`; each row's marker `Badge` carries its text ("No estimate" / "No due date") and is not colour-only (the badge variant `warning` is accompanied by the word).
+- The due date is the civil string the API returned; it is never re-anchored to an instant and re-rendered in another zone (D06-24). The section's `aria-label` states the profile zone when it is known (the page passes `timeZone` from the preview/saved plan; when absent, the label is `Remaining work`).
+- Keyboard: every "Try again" button is a native `Button` with a visible focus ring; the list itself has no interactive rows (no false affordances). Tab order follows DOM order: remaining-work "Try again" → week controls → warnings (none interactive). Focus is not moved programmatically after the fetch resolves; the outcome is announced by the `role="alert"`/`role="status"` region where applicable.
+- Non-colour-only: flagged rows carry the text badge **and** the "not set" cells; warnings use the warning border **plus** the sentence; the empty states use text only.
+- Reduced motion: the skeleton uses `motion-reduce:animate-none`; no other animation.
+- Touch targets: "Try again" uses `max-sm:min-h-[44px]`; rows are not tappable.
+
+**Responsive**
+
+- Mobile (<640px): the remaining-work row stacks — title on line 1, the due/minute cells wrap to multiple lines (`flex-wrap`); the badge wraps to the next line rather than truncating the title. The section padding drops to `p-4`.
+- `sm:` and up: title and badge share line 1; the minute cells sit on one line.
+- The warnings rows are single-column at all widths; the deferred list is single-column.
+- Both sections inherit the page container (`max-w-5xl`) and never exceed the week view's width.
+
+**Copy (concrete)**
+
+- Remaining-work heading: `Remaining work`
+- Remaining-work sub-caption: `How much is left on each assignment.`
+- Summary line: `<total> of work left` (e.g. `3 h 20 min of work left`) — only when at least one item has a numeric `remainingMinutes`; omitted entirely when all items are flagged.
+- Row cells: `Due <YYYY-MM-DD>` or `No due date`; `Estimate <value>`; `Confirmed <value>`; `Left <value>`, where `<value>` is `formatMinutes(n)` or the literal `not set` (estimate/remaining) or `0 min`-formatted `0` (confirmed, via `formatMinutes(0)` → `0 min`).
+- Flagged badges: `No estimate` (`MISSING_ESTIMATE`), `No due date` (`MISSING_DUE_DATE`).
+- Empty (nothing unfinished): title `Nothing left to do.` / description `Every assignment is finished or has no remaining work.`
+- Error: `We could not load your remaining work. Try again.` / button `Try again`
+- Loading: no text (skeleton only).
+- Warnings heading: `Workload warnings`
+- Warnings sub-caption: `Work that does not fit before a deadline.`
+- Category sentences (calm, blame-free, factual):
+  - `NO_AVAILABLE_TIME`: `No free study time this week for "<title>" — <minutes> of work remain.`
+  - `INSUFFICIENT_TIME_BEFORE_DEADLINE`: `<minutes> of "<title>" do not fit before its <dueDate> deadline.`
+  - `OVERDUE`: `"<title>" was due on <dueDate> and <minutes> remain.`
+- Deferred heading: `Continues in a later plan`
+- Deferred row: `<title> — <minutes>`
+- Warnings empty (preview exists, nothing to report): title `Nothing to report.` / description `Everything fits in this week.`
+- Warnings empty (no preview yet): title `Nothing to report.` / description `Generate a plan to see what doesn't fit before a deadline.`
+- Warnings error: the supplied message (defaults to `We could not load the workload warnings. Try again.`).
+
+### Decisions
+
+- **Section order:** Remaining work above the week view; Workload warnings below it. (ui-refiner, 2026-10-30)
+- **Scale:** show every unfinished assignment; no cap, no "See all" (the epic asks for no cap and there is no full-list destination). (ui-refiner, 2026-10-30)
+- **Units:** minutes render as `"<h> h <m> min"` (e.g. `3 h 20 min`, `45 min`, `0 min`) via `formatMinutes`; a one-line summary `<total> of work left` sits above the list and is omitted when no item has a numeric `remainingMinutes`. (ui-refiner, 2026-10-30)
+- **Flagged marker:** `Badge` (variant `warning`) with the text `No estimate` / `No due date`, placed at the end of the title line; estimate and remaining cells read the literal `not set` (not `0`, not an em dash); the confirmed cell always renders `formatMinutes(confirmedMinutes)` (`0 min` when nothing is confirmed, per D06-7). (ui-refiner, 2026-10-30)
+- **Row content & order:** title (truncated, full text via `title`) + course code (when present) on line 1; due date, estimate, confirmed, remaining on a wrapping line 2 in that order; remaining is not promoted above the title. (ui-refiner, 2026-10-30)
+- **Due date rendering:** the civil `YYYY-MM-DD` string the API returns, rendered as-is with a UTC-derived weekday and labelled with the profile zone; never re-anchored to an instant (D06-24). (ui-refiner, 2026-10-30)
+- **Warning wording:** three calm, blame-free, factual sentences per category (above); the deferred list is a separate `<ul>` headed `Continues in a later plan` with rows `<title> — <minutes>`; deferred work is never called a warning. (ui-refiner, 2026-10-30)
+- **Warnings availability:** warnings only exist after a preview; before one, the section shows the calm empty state with `Generate a plan to see what doesn't fit before a deadline.` — never an error. (ui-refiner, 2026-10-30)
+- **Empty states:** both are calm and factual and offer no action that does not exist (remaining work: `Nothing left to do.`; warnings: `Nothing to report.`). (ui-refiner, 2026-10-30)
+- **Loading state:** skeleton rows for remaining work (no "0 items" flash); no spinner text. (ui-refiner, 2026-10-30)
+- **Error state:** `role="alert"` block with a "Try again" button that re-runs the read (remaining work); warnings surface an `errorMessage` prop when supplied. (ui-refiner, 2026-10-30)
+- **Responsive:** rows stack and wrap below 640px; badge wraps rather than truncating the title; both sections inherit the page container width. (ui-refiner, 2026-10-30)
+- **Keyboard:** no interactive rows; only the "Try again" buttons are focusable, each with a visible focus ring; tab order follows DOM order; no programmatic focus movement after load. (ui-refiner, 2026-10-30)
+- **Assumption (total):** the summary total sums only items whose `remainingMinutes` is a number; flagged items contribute 0 and, when every item is flagged, the summary line is omitted rather than showing `0 min of work left`. (ui-refiner, 2026-10-30)
+- **Assumption (WorkloadWarnings error prop):** the component accepts an optional `errorMessage`; when present it renders the alert and no list, so the error path is unit-testable without a fetch. The page passes `previewError` through it (the top-level preview-error card remains as the generate-action surface). (ui-refiner, 2026-10-30)
+- **Assumption (no cap):** the list renders every item and scrolls with the page; no virtualisation, no pagination. (ui-refiner, 2026-10-30)
+
 ### Risks / open questions (none blocking)
 
-- **The confirmed minutes read `0` until EP07A lands (D06-7, V-07-3).** The section shows `0` — an honest value, since no study time can be logged today — and the `unattributedConfirmedMinutes` total is not surfaced as a separate line in this story (it is a diagnostic, not a student-facing number). If the `ui-refiner` pass judges that the total deserves a line, it is a copy decision, not an API change.
-- **The remaining-work list grows with the student's coursework.** A student with thirty unfinished assignments gets a long list. The cap + "see all" convention of EP05's dashboard is a precedent, but the epic asks for no cap here; the `ui-refiner` may settle one, and a cap would need a full list behind it.
+- **The confirmed minutes read `0` until EP07A lands (D06-7, V-07-3).** The section shows `0` — an honest value, since no study time can be logged today — and the `unattributedConfirmedMinutes` total is not surfaced as a separate line in this story (it is a diagnostic, not a student-facing number; settled by the ui-refiner pass).
+- **The remaining-work list grows with the student's coursework.** A student with thirty unfinished assignments gets a long list. Settled by the ui-refiner pass: no cap and no "See all" — the list renders every item and scrolls with the page (no virtualisation, no pagination); a cap would need a full-list destination that does not exist.
 - **This section overlaps EP08's "unfinished-work recovery summary".** EP08 owns the *recovery* workflow; this section is the current remaining work only, and it must not grow into a catch-up surface (the epic's scope, and EP08's dependency on EP06).
 
 ## Definition of Done
@@ -142,14 +245,4 @@ Jira key: Pending creation. No sync was authorized for this planning task. (If t
 
 ## UI/UX gaps for the `ui-refiner`
 
-**This story needs a `ui-refiner` pass before implementation (D06-15).** The gaps, recorded here so the pass can settle them:
-
-1. **The remaining-work row's content and order.** Which fields the row shows and in which order (title, course, due date, estimate, confirmed, remaining); whether the remaining minutes lead the row; how a long title is handled.
-2. **The marker.** The wording of the `MISSING_ESTIMATE` and `MISSING_DUE_DATE` markers, their placement in the row, and whether the estimate/remaining cells read "not set" or show an em dash.
-3. **The section's position on the page.** Whether the remaining-work list sits above or below the week, and how the two sections relate visually (they answer different questions: "what is planned" versus "what is left").
-4. **The warning wording.** The three sentences for the three categories, the deferred list's wording, and whether the warnings are shown before a plan is generated (the warnings only exist after a preview — the empty state must say so calmly).
-5. **The units.** How the minutes are rendered ("3 h 20 min", "3h 20m", "200 minutes"), and whether a day-level or week-level total is shown.
-6. **The scale.** Whether the list is capped with a "see all" affordance (EP05's dashboard precedent) or shows every item.
-7. **The empty, loading and error copy.** The exact wording for the calm empty states (nothing unfinished, nothing to schedule), the loading state and the error state.
-8. **The responsive behaviour.** The row layout at 375px (a stacked row versus a truncated row), the badge placement, and the touch-target sizes.
-9. **The keyboard behaviour.** The tab order across the sections, whether the list is a semantic list, and the focus behaviour after a section's data loads.
+All nine gaps recorded for this pass are settled — see Technical Notes → **UI/UX specification (ui-refiner pass)** and **Decisions** above. No open UI/UX question remains for this story.
