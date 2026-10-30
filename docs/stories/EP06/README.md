@@ -664,25 +664,25 @@ scope:
   descendants: [EP06A, EP06B, EP06C, EP06D, EP06E, EP06F, EP06G, EP06H]
   entry: planning
   limits: enclosing parent review unit
-stage: parent_review
+stage: fix
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "9b1ec19"
-  head: "69e45ef"
+  head: "4d72a21"
 active_dispatch:
-  name: ep06-parent-reviewer-1
-  role: reviewer
+  name: ep06-implementer-11
+  role: implementer
   status: pending
-  pointer: docs/stories/EP06/artifacts/EP06/review.md
+  pointer: docs/stories/EP06/artifacts/EP06/
   session: ""
-  assignment: parent_review
+  assignment: fix
 last_result:
-  evidence: "EP06E implemented and committed in 2 scoped commits (04ce78d feat(web): add study-preferences section on profile page; 08f9613 docs(EP06E): record scoped commit hash in checkpoint). Verification at HEAD 08f9613: `pnpm --filter web test` 80 suites / 985 tests passed; `pnpm --filter web test -- StudyPreferences` 2 suites / 23 tests passed; `pnpm --filter web typecheck` exit 0; `pnpm --filter web lint` exit 0, 0 warnings. Built: the entity client (studyPreferencesApi), the RTK Query slice with the StudyPreferences tag, the form (react-hook-form + zod), the spinner card while GET is in flight, the cross-field error mapping, and the mount on ProfilePage below the account card. EP06F is reconciled to Ready: the ui-refiner pass is complete (2026-10-30) and the technical refinement is satisfied by the planner's breakdown + the shared contract (D06-15), consistent with EP06A/EP06B/EP06E. The ui-refiner's writes for EP06F did not persist (file mtime unchanged, no uncommitted story-file change), so the story file's Status/Refined lines were reconciled by the coordinator; the UI/UX design is recorded in the ui-refiner's returned result and the planner's breakdown (the Sizing block + the shared contract)."
-  findings: "EP06E's own findings: none open inside its scope. **F-EP06-07 remains open (recorded by EP06A, not fixed):** `PATCH /users/me` replaces the `preferences` column verbatim, so a later profile PATCH carrying a preferences bag can ERASE saved studyDefaults. EP06 does not change `PATCH /users/me` (excluded by the spec and D06-14); it needs an EP01-owned change plus its integration spec, outside this run's scope and needing the user's authorization. The six non-blocking plan-review polish findings PR-023…PR-028 also remain open (owner: planner)."
-  scope_note: "Implementation stage. EP06A, EP06B, EP06C, EP06D and EP06E are 'Implemented — awaiting parent review' (no per-child review gate; the combined EP06 parent review after EP06H is the gate). EP06F — the /plan page (week grid, preview, edit, save) — is the next actionable child and is Ready. EP06G remains 'Needs refinement' (gated on its ui-refiner pass); EP06H is Queued. One writer at a time: the EP06E session's ownership ended with its return; EP06F goes to a fresh implementer context. No Jira sync, no push, no deployment."
-  cycles: 3
-  same_findings: false
+  evidence: "Combined parent review (pass 1) saved at docs/stories/EP06/artifacts/EP06/review.md (reviewer read-only; coordinator committed it as 4d72a21). Verdict FAIL: 1 blocker (R-EP06-01 — the cross-layer E2E suite is missing), 7 should-fix (R-EP06-02, -03, -04, -05, -06, -07, -09) and 4 polish (R-EP06-08, -10, -11, -12) = 12 findings. ACs: 6 fully satisfied, 3 partially satisfied (AC-E06-06, -07, -09, all tracing to R-EP06-01). DoD: 9 PASS / 1 FAIL (item 8 — automated tests) / 1 CANNOT VERIFY (item 10 — integrated review). Item 11 (walkthrough) is N/A on a non-passing verdict. Tests re-run by the reviewer: API 59 suites / 1274 tests passed; web 84 suites / 1005 tests passed; typecheck + lint clean on both. The web full suite is 1024 tests with 2 CourseForm timeouts under load (pre-existing, unrelated). The self-contained E2E stack is not runnable in this runtime, so R-EP06-01 is CANNOT VERIFY at the E2E level."
+  findings: "Open findings (owner = implementer unless noted): R-EP06-01 (blocker — write the E2E suite and run the self-contained stack), R-EP06-02 (should-fix — update the ownership convention's header comment to name PlannedSession and studyPlan.userId), R-EP06-03 (should-fix — verify the saved plan's targetMinutes), R-EP06-04 (should-fix — make the WINDOW_ROLLED_OVER banner actionable with a regenerate affordance), R-EP06-05 (should-fix — add the live region for moved sessions), R-EP06-06 (should-fix — the PATCH /users/me data-loss path; needs the user's authorization for the EP01-owned file), R-EP06-07 (should-fix — the Refined: metadata), R-EP06-09 (should-fix — the undo toast), R-EP06-10 (polish — the helpers), R-EP06-11 (polish — the state-B upgrade comment), R-EP06-08 (polish, planner — FU-EP06-01 ownership), R-EP06-12 (polish, planner — parent index commit list). Plus the six open plan-review polish findings PR-023…PR-028 (owner: planner) and F-EP06-07 (the cross-epic data-loss finding, recorded by EP06A and verified by the reviewer)."
+  scope_note: "Implementation stage, fix round. All eight children are 'Implemented — awaiting parent review' in the queue. The combined review returned FAIL, so the passing-review docs sync is deferred; the report is saved and committed. The blocker R-EP06-01 (the missing E2E suite) is the single thing that keeps DoD item 8 at FAIL and items 10/11 unverified. R-EP06-06 (the PATCH /users/me data-loss path) is the only finding that needs a user decision; everything else is implementable without one. The fix round dispatches a fresh implementer for the implementer-owned findings; the planner-owned findings (R-EP06-07, R-EP06-08, R-EP06-12, PR-023…PR-028) are recorded for a later planner pass and are not in this fix round's scope. No Jira sync, no push, no deployment."
+  cycles: 4
+  same_findings: unknown
 gates:
   breakdown: true
   plan: pass
