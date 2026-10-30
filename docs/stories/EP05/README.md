@@ -431,23 +431,23 @@ scope:
     - EP05C
   entry: "implement EP05A"
   limits: enclosing parent review unit
-stage: parent_review
+stage: fix
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "dbaf35b"
-  head: "fdc3dce"
+  head: "0209812"
 active_dispatch:
-  name: ep05-parent-review-1
-  role: reviewer
+  name: ep05-implementer-fix-2
+  role: implementer
   status: pending
-  pointer: docs/stories/EP05/artifacts/EP05/review.md
+  pointer: docs/stories/EP05/artifacts/EP05/implementation.md
   session: ""
-  assignment: parent_review
+  assignment: fix
 last_result:
-  evidence: "EP05C implemented and committed: f93a4c4 (the quick action, the empty states and the shared-owner mount; 6 files) and fdc3dce (the EP05 parent implementation index + the EP05C closeout records; 7 files). Coordinator-verified: `git status --porcelain` shows only the unrelated apps/api/tsconfig.json; the artifacts exist (artifacts/EP05/{implementation.md}, artifacts/EP05A/{checkpoint,implementation}.md, artifacts/EP05B/{checkpoint,implementation}.md, artifacts/EP05C/{checkpoint,implementation}.md); the parent index has its sections 1-8 (review scope + child inventory, the combined Git change scope, the AC/TR/DoD -> evidence map, the verification evidence, the DoD-10 pass, the known gaps, the DoD status, and what the file is not); the coordinator ran `pnpm --filter web test -- src/features/dashboard src/pages/dashboard` at HEAD fdc3dce -> 9 files, 110 tests, ALL PASSED, and the FULL web suite `pnpm --filter web test` -> 78 files, 962 tests, ALL PASSED (the implementer's own run had 2 failures, both the known pre-existing courses flake F-EP05A-03, which did not reproduce in the coordinator's run - it passes 36/36 in isolation and is courses/EP02's)."
-  findings: "EP05C closed the two remaining in-scope items: F-EP05B-02 (the page's `onOpenDetails` is now wired to `actions.openEdit(row)`, so the assignment row's details affordance works) and the first inter-commit transient (the working 'Add assignment' action now exists). F-EP05B-01 was closed by the earlier fix round (03665fe) and awaits only independent verification here. The DoD-10 manual browser pass was EXECUTED, not a checklist: 2026-10-30, self-contained stack (throwaway studypilot_e2e_test DB, test API :4100, test web :3100, Playwright Chromium), 2 journeys passed and 15 observations recorded (empty states, quick action, one shared dialog, a failed create -> shared actionable message + form stays open + no row, a successful create -> dialog closes + dashboard refreshes + focus lands on a stable control + announcement, reload persistence, one shared edit dialog, tab order, the error state twice, the loading skeleton, and 375px with a 44px target, no overflow and a working create). The driver was a temporary, uncommitted spec that was deleted - no dashboard e2e spec was added to the repo (D05-14 / EP10's PR-003). The implementer's verification: typecheck PASS (exit 0), lint PASS (exit 0), the focused command 9 files / 110 tests PASS. Out of EP05's scope and NOT to be absorbed by this review: FU-EP04-01 (EP04's calendar-page zone drift), EP04's `apps/web/src/features/calendar/ui/CalendarEventDetails.tsx:89` (the same noon-UTC construction for an EVENT's civil date - EP04's reviewed surface, flagged for the EP04 owner), and the pre-existing courses flake F-EP05A-03."
-  scope_note: "All three children are implemented and the parent implementation index exists, so the combined EP05 parent review is the next gate (graph edge parent_review -> parent_reviewer). The reviewer must check every child's AC, all seven epic ACs, the TR-E05-01..08 obligations and DoD 1-11 against the code and the evidence, independently verify F-EP05B-01's fix round and the two closed transients, and judge DoD 10 on the executed pass (recording the provenance: implementer-executed, not reviewer-executed, unless the reviewer re-runs it). If the verdict is passing, it must ALSO write and verify the separate `docs/stories/EP05/artifacts/EP05/walkthrough.md` (the user-facing code explanation, the correctness evidence and the manual test workflows with honest execution labels) BEFORE the passing-review docs sync, and only then may the children be marked `Reviewed`. A non-passing verdict saves the report only; the coordinator then persists the deferred status edits and routes the fixes. The planner-owned `**Status:**` line and the quality gate still read as if EP05C were `Ready` - the reviewer's passing-review docs sync owns them. The coordinator commits the reviewer's outputs (graph `commit: coordinator`). No work advances into another epic."
+  evidence: "The combined EP05 parent review is complete: verdict PASS, with docs/stories/EP05/artifacts/EP05/review.md (281 lines) and docs/stories/EP05/artifacts/EP05/walkthrough.md (244 lines) saved and verified by the reviewer (the walkthrough was written BEFORE the report, then both were verified before the passing-review docs sync), and the docs sync applied to docs/stories/EP05/README.md (the three queue rows -> `Reviewed`, the status line, the quality gate, and a new reviewer-dispositions subsection). The coordinator committed all three as 0209812. Coordinator-verified: the report's verdict line is PASS with no open blocker or should-fix finding; the walkthrough covers the final code, 12 manual workflows with 4 explicit 'Not applicable' reasons, and an honest per-workflow execution label (W1-W9 Executed with the date, environment and provenance; the W10 manual browser variant, W11 and W12 'Not executed - user test instructions'); the queue rows and the status line read `Reviewed`; `git status --porcelain` shows only the unrelated apps/api/tsconfig.json."
+  findings: "The reviewer's dispositions: 13 child ACs (EP05A 4 / EP05B 5 / EP05C 4) satisfied, 7 epic ACs satisfied, TR-E05-01..08 satisfied, DoD 1-11 PASS (2 Not applicable with reasons: item 2 no new input, item 9 no API/migration). F-EP05B-01/PC-EP05-13 (the day-line construction) independently verified CLOSED; PC-EP05-14/F-EP05B-02 and the missing-quick-action transient both closed in the product state; F-EP05B-03/04, F-EP05A-01..04 and F-EP05C-01..03 closed/accepted. **LIM-01 (a recorded limitation, not a finding)** - the review session had no shell and its bounded command helper was refused by the runtime's subagent-depth limit, so the reviewer executed NO gate and every result in the report is recorded evidence; the reviewer named the closure condition as 're-run the four gates at fdc3dce (or later) in an execution-capable session and attach the results'. The coordinator IS execution-capable and has now done exactly that, at HEAD 858d260 (the reviewed code scope fdc3dce plus a docs-only checkpoint commit): the five-filter focused command `pnpm --filter web test -- src/features/dashboard src/features/assignments src/features/calendar src/pages/dashboard src/app/store` -> 257 tests PASSED; `pnpm --filter web typecheck` -> exit 0; `pnpm --filter web lint` -> exit 0; the full web suite `pnpm --filter web test` -> 78 files / 962 tests, ALL PASSED (the known pre-existing courses flake F-EP05A-03 did not reproduce). The reviewer also independently reconciled the test count (110 cases across 9 files) by inspection, matching the recorded result. Two polish findings remain open: **R-EP05-01** (the parent index's AC/TR -> evidence table records `DashboardQuickActions.test.tsx` and `dashboardEmptyStates.test.tsx` as 7 cases each when both actually have 8, and its A6 row quotes the shared form's 404 copy as 'Resource not found - this course may no longer exist.' while the shipped copy is 'Resource not found - this course or assignment may no longer exist.' at `features/assignments/ui/AssignmentForm.tsx:249`; the owner is EP05C as the index's author and the correction is docs-only) and **R-EP05-02** (the house 'Button inside a Link' pattern gives one visual control two tab stops; the owner is the shared/house UI owner - EP10's `shared/ui` and the existing host pages - NOT EP05, so it is out of this review unit's scope and is not to be fixed here). FU-EP04-01, EP04's `CalendarEventDetails.tsx:89` and the courses flake were NOT absorbed into the EP05 review - EP05's handling of each was checked and is correct."
+  scope_note: "The parent review gate is PASSED and the walkthrough is saved and verified. One EP05-owned polish item (R-EP05-01) remains open in an implementer-owned artifact (the parent index). Next graph edge: fix_implementer (open_findings=true, findings_owner=implementer) -> implementer, assignment `fix`, for a DOCS-ONLY correction of `docs/stories/EP05/artifacts/EP05/implementation.md` plus attaching the coordinator's LIM-01 gate results. No code changes, no new tests, no re-review required (the correction is to an evidence document's counts and one quote; the reviewer's verdict and its closure of F-EP05B-01 are unaffected). R-EP05-02 is explicitly OUT of this review unit's scope (the shared/house UI owner's item) and must not be fixed by EP05. After that round: the final closeout - the three children's Status lines reconciled to `Reviewed` (scoped status pointers), the coordinator's executed gate results recorded in the README's implementation review log, the run record updated to `complete`, and the coordinator's scoped commit. Nothing advances into another epic."
   cycles: 0
   same_findings: unknown
 gates:
@@ -456,16 +456,16 @@ gates:
   ui: true
   refinement: false
   child_unfinished: false
-  eligible_child_state: Implemented — awaiting parent review
+  eligible_child_state: Reviewed
   closeout: unknown
   integration: true
   all_descendants_implemented: true
-  review: absent
-  findings_owner: none
-  open_findings: false
-  walkthrough: missing
-  judged_at_head: "fdc3dce"
-  queue_hash: "b5593cbf40423b17"
+  review: pass
+  findings_owner: implementer
+  open_findings: true
+  walkthrough: verified
+  judged_at_head: "0209812"
+  queue_hash: "16caf3d3d8cdf3d6"
 writer: none
 session_live: false
 blocker:
