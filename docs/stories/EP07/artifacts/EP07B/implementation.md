@@ -27,4 +27,4 @@ Backend completion, confirmed-time log and read APIs for EP07.
 
 ## Commit
 
-See scoped commit hash below.
+- `bfe1cbf10b08013904c696f13a56db2249711d69` — feat(api): EP07B completion, confirmed-time and read APIs
