@@ -65,6 +65,8 @@ Working directory: `/Users/michaelrobert/Desktop/focus-app` for every command (t
 
 The integration specs were **executed**, not skipped (the database was reachable); the counts above include them.
 
+**Final confirmation run.** All five commands above were re-run after both commits, at HEAD `4ea2b63` (the application code is byte-identical to `7457a0a`; only this child's docs were added on top): `-- study-plans` 3 suites / 35 tests, `-- preferences` 1 suite / 27 tests, the full suite 53 suites / 1151 tests, `typecheck` exit 0, `lint` exit 0. The working tree after the runs holds one path only — the pre-existing, unrelated `apps/api/tsconfig.json` (left modified and unstaged on purpose).
+
 ## Decisions followed
 
 - **The reader's input is the whole `preferences` bag** (the child spec, implementation note 2): `readStudyPreferences(preferences)` narrows it to an object and reads the `studyDefaults` key from it. The bag's other keys are never read.
