@@ -6,7 +6,7 @@
 **Parent:** [EP06 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Backend
-**Status:** Queued
+**Status:** Implemented — awaiting parent review (implemented 2026-10-30; commit `f07a84b`). Artifacts: [checkpoint](./artifacts/EP06B/checkpoint.md) · [implementation record](./artifacts/EP06B/implementation.md)
 **Dependencies:** EP06A implemented (the shared `StudyPreferences` type and the domain folder). EP03 complete (assignments exist). **No dependency on EP07** — EP06 reads the `StudySession` log itself (D06-6); the only EP07 coupling is the named, unobservable-until-EP07A seam **V-07-3** (D06-7).
 **Jira key:** Pending creation
 **Refined:** — (technical-refine pass not yet run; this file is the planner's breakdown)
