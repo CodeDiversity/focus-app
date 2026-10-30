@@ -470,7 +470,7 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 scope:
   parent: EP06
-  descendants: []
+  descendants: [EP06A, EP06B, EP06C, EP06D, EP06E, EP06F, EP06G, EP06H]
   entry: planning
   limits: enclosing parent review unit
 stage: plan
@@ -478,36 +478,36 @@ coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "9b1ec19"
-  head: "9b1ec19"
+  head: "1b595e6"
 active_dispatch:
-  name: ep06-planner-1
+  name: ep06-planner-2
   role: planner
   status: pending
   pointer: docs/stories/EP06/README.md
   session: ""
-  assignment: plan
+  assignment: plan_correction
 last_result:
-  evidence: ""
-  findings: ""
-  scope_note: ""
+  evidence: "Plan review pass 1 saved at docs/stories/EP06/plan-review.md (reviewer read-only; coordinator committed it as 1b595e6). Verdict 'Changes Required': 9 should-fix (PR-001…PR-009) and 6 polish (PR-010…PR-015), no blocker, no user decision required, no settled product decision reopened. Coverage confirmed: 9/9 epic ACs and 9/9 TRs have named owners, all 11 DoD items have owners or a justified N/A, one sequential implementer owns all layers, EP06 genuinely does not depend on EP07. Failing rows: contract consistency (PR-001/003/004/005/006/007/008) and cross-epic ownership (PR-009)."
+  findings: "Open, owner = planner: PR-001 (the saved-plan read has no server-owned window source — GET /study-plans requires from/to), PR-002 (the documented migration SQL names physical objects that do not exist: task_id/study_plan_id/scheduled_tasks_study_plan_id_task_id_key vs the real taskId/studyPlanId/scheduled_tasks_studyPlanId_taskId_key), PR-003 (the daily cap and the session-length rule contradict each other), PR-004 (the save body/time representation/write-side conversion unpinned; 'duration does not match the range' unreachable), PR-005 (the remaining-work read sorts overdue first and omits createdAt while the engine processes overdue last, yet the contract calls them the same key), PR-006 (the defensive reader's per-field default vs cross-field clamp is unspecified), PR-007 (Assignment.dueDate is an instant and its profile-zone civil-date conversion is unspecified), PR-008 (the window is recomputed from 'today' at save time; the preview→save rollover is unspecified), PR-009 (D06-1's supersession of EP03's D120-2/D120-4/D120-8 deferral is unrecorded). Polish PR-010…PR-015. Coordinator note: the planner's four findings F-EP06-01…04 were verified sound by the reviewer."
+  scope_note: "Planning stage, no implementation and no Jira sync (all eight children stay 'Pending creation'). The plan-review verdict is non-passing, so the passing-review docs sync is deferred by the reviewer; the coordinator applies it only after a passing re-review. Coordinator settled PR-003's optional reading: Reading A — a session's length is also bounded by the remaining daily budget (the cap truncates rather than skipping the session), which keeps the student's declared daily cap meaningful; the planner must state the arithmetic precisely (including the case where the truncation lands below minSessionMinutes) and record it as a decision. Correction pass next, then an independent re-review; the plan-review report is not to be edited by the planner."
   cycles: 0
   same_findings: unknown
 gates:
-  breakdown: false
-  plan: unknown
-  ui: unknown
-  refinement: unknown
+  breakdown: true
+  plan: findings_open
+  ui: false
+  refinement: false
   child_unfinished: unknown
-  eligible_child_state: none
+  eligible_child_state: Queued
   closeout: unknown
   integration: unknown
   all_descendants_implemented: false
   review: absent
-  findings_owner: none
-  open_findings: false
+  findings_owner: planner
+  open_findings: true
   walkthrough: missing
-  judged_at_head: ""
-  queue_hash: ""
+  judged_at_head: "1b595e6"
+  queue_hash: "ep06-queue-v1"
 writer: none
 session_live: unknown
 blocker:
