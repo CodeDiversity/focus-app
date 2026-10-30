@@ -374,32 +374,32 @@ scope:
     - EP05C
   entry: "implement EP05A"
   limits: enclosing parent review unit
-stage: implement
+stage: ui_refine
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "dbaf35b"
-  head: "45807c7"
+  head: "bc5ae7a"
 active_dispatch:
-  name: ep05-implementer-1
-  role: implementer
+  name: ep05-ui-refiner-1
+  role: ui-refiner
   status: pending
-  pointer: docs/stories/EP05/artifacts/EP05A/
+  pointer: docs/stories/EP05/EP05B-dashboard-sections-classes-deadlines-overdue-sessions.md
   session: ""
-  assignment: complete_child
+  assignment: ui_refine
 last_result:
-  evidence: "Plan review pass 2 saved at docs/stories/EP05/plan-review.md (pass 1 preserved in Git history at 70bfb99); verdict `Plan Ready`. The reviewer re-verified the pass-1 findings against the corrected files and the real code and closed all nine (PR-001..PR-009 Resolved) and raised two NEW polish findings (PR-010, PR-011) - polish-only findings still pass, so no blocker or should-fix finding remains open and the passing-review docs sync was due. The reviewer wrote only docs/stories/EP05/plan-review.md (replaced) and docs/stories/EP05/README.md (passing-review docs sync: status line, queue plan-review gate = PASSED, Active substory/Next substory, EP05A queue row, Plan correction log intro + a new 'Plan-review pass 2 - reviewer dispositions (PR-001..PR-011)' subsection, quality-gate heading/verdict/rows 8/9/11) and ran no git write command. Coordinator-verified: the pass-2 report is on disk and states `Plan Ready`; the reviewer's README edits did not touch the `## Autopilot` section; git status shows only the reviewer's two files plus the unrelated apps/api/tsconfig.json. PR-002 was re-verified by the reviewer against a remote tzdata source (Kiritimati +14:00, Etc/GMT+12 -12:00, Midway/Niue/Pago_Pago -11, Apia/Tongatapu/Auckland +13, Chatham +13:45, Marquesas -9:30) - the reviewer's pass-1 premise was wrong and is now recorded as such."
-  findings: "The plan-review gate is PASSED. PR-001..PR-009 all Resolved with fresh evidence and citations (PR-001 the shared owner contract D05-17/D05-18 verified against useAssignmentActions.ts:25-32/86-88/230-238/244-246, AssignmentRow.tsx:112-134, AssignmentsSection.tsx:57-65/94/102/156, AssignmentsPage.tsx:301-307; PR-002 the +-2-day window and the result.today key unchanged with the bound restated precisely and the containment-property test adopted; PR-003 DoD 10 requires executed evidence or a named owned exception, 'an unexecuted checklist is never a pass'; PR-004 DoD 3/4 reclassified as 'Applies - satisfied by mechanism' in the README map and in all three children, only items 2 and 9 remain Not applicable; PR-005..PR-009 each closure condition verified). Two NEW polish findings remain open and are NOT blocking: PR-010 the ui-refiner's open affordance choice still includes 'navigates to the course page' while the row->host callback `onOpenDetails(row: AssignmentListItem): void` is mandatory, so if navigation is chosen EP05B's AC #2/test become unimplementable as written; PR-011 EP05B's sizing 'Files' list omits `DashboardAssignmentRow.tsx` (present in its Proposed files/in-scope lists). Two gates remain open BY DESIGN and are not plan-review findings: the ui-refiner gate for EP05B and EP05C (D05-12 - BOTH passes run before EP05B's implementation) and the user's confirmation of the D05-1..D05-5 provenance (non-blocking, PR-009)."
-  scope_note: "Plan Ready - implementation may start on EP05A only. EP05A is `Ready` and needs no ui-refiner pass (D05-12: no user-visible surface); it is amended first if either later pass changes the query-state contract it exposes. EP05B and EP05C remain `Needs refinement`: both ui-refiner passes run BEFORE EP05B's implementation (the queue records that order), then EP05B implements, then EP05C. PR-010 and PR-011 are polish and are carried into the EP05B refinement rather than re-opening the plan gate. FU-EP04-01 remains EP04's, not EP05's (D05-16) and must not be absorbed by the combined EP05 review. Next graph edge: child_ready (planning_satisfied=true, eligible_child_state=Ready) -> implementer, assignment complete_child, for EP05A only."
+  evidence: "EP05A implemented and committed as bc5ae7a (17 files, +1358/-61: 12 app files + EP05A's story status + the README queue updates + artifacts/EP05A/{checkpoint.md,implementation.md}). Coordinator-verified: `git status --porcelain` shows only the unrelated apps/api/tsconfig.json (modified, unstaged, uncommitted - preserved); `git show --stat bc5ae7a` lists exactly the 12 expected app paths plus the 4 doc paths; the coordinator ran the story's required focused command `pnpm --filter web test -- src/features/dashboard src/features/assignments src/features/calendar src/app/store` at HEAD bc5ae7a -> 14 files, 171 tests, ALL PASSED. The implementer's own recorded verification: the same focused command green; `pnpm --filter web typecheck` PASS (tsc --noEmit, exit 0); `pnpm --filter web lint` PASS (eslint --max-warnings 0, exit 0); `pnpm --filter web test -- src/features/session` PASS (21 tests - the base-query move is a move); the full suite 71 files / 876 tests with ONE pre-existing flake. The implementer re-ran the offset-verification command and recorded its output in implementation.md section 5: Pacific/Kiritimati -> GMT+14:00, Etc/GMT+12 -> GMT-12:00, Pacific/Midway -> GMT-11:00, Pacific/Auckland -> GMT+13:00, UTC -> GMT+00:00 - the 26-hour spread is confirmed on this machine (PR-002's recorded-evidence obligation satisfied)."
+  findings: "EP05A's four ACs are recorded PASS with evidence (AC 1 the request shapes field by field - assignments `params === undefined`, calendar `params` exactly `{from,to}` and `Object.keys(params) === ['from','to']`, payload unchanged, no transformResponse; AC 2 the 5-day +/-2-day window, the server-echoed `today` selection, the adversarial 26-hour-spread containment case in both directions and the worst picker-to-picker pair; AC 3 shared predicates only, the overdue boundaries (strictly-before now, null dueDate, due exactly at now), the order-preservation case; AC 4 both reducers + both middlewares + the serializability ignore list, the exposed query states, the session API's 8 pre-existing tests unchanged). Deviations recorded: D-1 the base query gained an optional `params` argument (additive, inert for the session API); D-2 apps/web/src/test/providers.tsx now mirrors the app store so EP05B's component tests can mount the new hooks; D-3 the slice tests also render the hooks to prove AC 4's exposed query states. ONE OPEN FINDING, NOT EP05A's to fix: F-EP05A-03 - apps/web/src/features/courses/ui/CourseForm.test.tsx intermittently fails 'rejects a description over 2000 characters' and 'selects a color swatch and submits it (F111C-3)' in the full parallel suite (a timing-sensitive userEvent case). The implementer reproduced it at pristine b7728c8 by stashing every EP05A change (2 of 3 runs), so it is PRE-EXISTING and out of EP05's scope; owner is the courses feature / EP02, not this review unit. The two open polish findings from the plan review are carried into EP05B's refinement: PR-010 the ui-refiner's open 'open relevant details' affordance must stay compatible with the mandatory `onOpenDetails(row: AssignmentListItem): void` callback (choosing plain navigation would make EP05B's AC #2/test unimplementable as written) and PR-011 EP05B's sizing 'Files' list must include `DashboardAssignmentRow.tsx`."
+  scope_note: "EP05A is `implementation complete - awaiting parent review`; implementation ownership was explicitly relinquished (nothing left uncommitted). The next graph edge is ui_needed (planning_satisfied=true, needs_ui_refinement=true, eligible_child_state=Needs refinement) -> ui_refiner. Per D05-12 (amended, plan review pass 2) BOTH ui-refiner passes - EP05B's AND EP05C's - run BEFORE EP05B's implementation, because the section shapes and the empty-state copy are one decision; the queue records this order in the EP05B row's next action. This dispatch is the EP05B pass; the EP05C pass follows immediately, before EP05B's implementation. EP05A is amended first only if either pass changes the query-state contract it exposes (implementation.md section 9 lists the API surface EP05B/EP05C consume). No automatic child review: EP05A is verified only by the combined EP05 parent review after EP05C."
   cycles: 0
   same_findings: unknown
 gates:
   breakdown: true
   plan: plan_ready
-  ui: unknown
+  ui: true
   refinement: false
   child_unfinished: false
-  eligible_child_state: Ready
+  eligible_child_state: Needs refinement
   closeout: unknown
   integration: unknown
   all_descendants_implemented: false
@@ -407,9 +407,9 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: missing
-  judged_at_head: "45807c7"
-  queue_hash: "20525576a8c862d9"
-writer: held
+  judged_at_head: "bc5ae7a"
+  queue_hash: "ba641fcb1ac9ddf6"
+writer: none
 session_live: false
 blocker:
   kind: none
