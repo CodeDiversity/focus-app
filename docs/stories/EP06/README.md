@@ -664,19 +664,19 @@ scope:
   descendants: [EP06A, EP06B, EP06C, EP06D, EP06E, EP06F, EP06G, EP06H]
   entry: planning
   limits: enclosing parent review unit
-stage: ui_refine
+stage: refine
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "9b1ec19"
-  head: "4380ce9"
+  head: "aca61b3"
 active_dispatch:
-  name: ep06-ui-refiner-1
-  role: ui-refiner
+  name: ep06-refiner-1
+  role: refiner
   status: pending
   pointer: docs/stories/EP06/EP06E-study-preferences-ui.md
   session: ""
-  assignment: ui_refine
+  assignment: technical_refine
 last_result:
   evidence: "EP06D implemented and committed in 1 scoped commit (4380ce9, 14 files — the migration, the schema change, the conflicts helper, the save/preview/read service and controller, the two DTOs, the three specs, the ownership-comment update, the checkpoint and implementation record). Verification at HEAD 4380ce9: `pnpm --filter api db:migrate` applied the migration cleanly (the guard succeeded on the empty table; `planned_sessions`, `PlannedSessionStatus` and the two indexes exist); `pnpm --filter api test -- study-plans` 3 suites / 56 tests passed; `pnpm --filter api test -- conflicts` 1 suite / 8 tests passed; `pnpm --filter api test` 59 suites / 1274 tests passed; `pnpm --filter api typecheck` exit 0; `pnpm --filter api lint` exit 0. Built: the migration `20261030185825_study_plan_planned_sessions` (rename + index/column/assignmentId-guard + two indexes), the ownership-convention comment update, the data gathering (profile, candidate assignments, availability slots, ClassMeeting windows, confirmed StudySession intervals converted to wall-clock), the seven-date window, POST /study-plans/preview (side-effect-free), POST /study-plans (atomic save with the conflict re-check and the rollover rejection), GET /study-plans (optional from/to, server-named window), and the conflicts helper `findConflicts` calling freeIntervals with base { kind: 'whole-day' } and emitting exactly the four reason codes."
   findings: "EP06D's findings: F-EP06D-01 (the AllExceptionsFilter did not preserve the `conflicts` array on a 409 — fixed additively, no other handler changed); otherwise `Findings/deviations: None`. **F-EP06-07 remains open (recorded by EP06A, not fixed):** `PATCH /users/me` replaces the `preferences` column verbatim, so a later profile PATCH carrying a preferences bag can ERASE saved studyDefaults. EP06 does not change `PATCH /users/me` (excluded by the spec and D06-14); it needs an EP01-owned change plus its integration spec, outside this run's scope and needing the user's authorization. The six non-blocking plan-review polish findings PR-023…PR-028 also remain open (owner: planner), of which PR-028 (the children's 'Refined:' fields still read 'technical-refine pass not yet run') is now visible in EP06A–EP06D."
