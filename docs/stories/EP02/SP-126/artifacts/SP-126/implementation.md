@@ -4,6 +4,7 @@
 **Parent / review unit:** SP-126 — one frontend story; one combined parent review (DoD 10/11).
 **Layer:** Frontend (React + Vite + Tailwind, `apps/web`)
 **Baseline:** `914a5d2` (feat(web): redesign Courses page to match Assignments (SP-126)) — the commit under review.
+**Correction commit:** `97803b4` (fix(web): SP-126 review findings RV-126-001/003/004 — tests, implementation index, token polish).
 **Completed:** 2026-10-30, implementer, single sequential writer (review-fix round for RV-126-001…004).
 **Status:** Implementation complete — awaiting re-review. Non-passing review pass 1 (`../review.md`) findings RV-126-001…003 closed; RV-126-004 polish applied.
 
