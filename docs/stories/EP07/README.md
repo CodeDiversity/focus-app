@@ -3,7 +3,7 @@
 **Epic:** [EP07: Focus Sessions & Time Tracking](../../epics/EP07-focus-sessions-and-time-tracking.md) (Jira STUDY-13)
 **Milestone:** M3 (Study planning and focus sessions)
 **Epic dependency:** EP03 (Assignment & Task Management) — complete. Integrates with EP06 (Study Planning & Scheduling — not yet broken down).
-**Status:** Planning — breakdown in progress (2026-10-29). No implementation started.
+**Status:** Planning — breakdown complete (2026-10-29). EP07A, EP07B and EP07F are ready to implement; EP07C, EP07D and EP07E are `Needs refinement` pending their `ui-refiner` pass (D07-5). No implementation started.
 **Jira keys:** Pending creation (no sync authorized for this planning task).
 
 ## Execution queue
@@ -27,10 +27,13 @@
 | [EP07C](./EP07C-start-focus-session-from-an-assignment.md) | Needs refinement | EP07A + EP07B implemented. `ui-refiner` pass required (D07-5). | `ui-refiner` pass on EP07C, then implement | `./artifacts/EP07C/` (pending) |
 | [EP07D](./EP07D-focus-mode-interface-and-timer-controls.md) | Needs refinement | EP07A + EP07B + EP07C implemented (EP07C navigates into this route). `ui-refiner` pass required (D07-5). | `ui-refiner` pass on EP07D, then implement | `./artifacts/EP07D/` (pending) |
 | [EP07E](./EP07E-completion-confirm-adjust-and-study-history.md) | Needs refinement | EP07A + EP07B + EP07D implemented. `ui-refiner` pass required (D07-5). | `ui-refiner` pass on EP07E, then implement | `./artifacts/EP07E/` (pending) |
+| [EP07F](./EP07F-cross-layer-e2e-calendar-regression-and-parent-index.md) | Queued | EP07A–EP07E implemented; the EP09 self-contained E2E stack must be runnable. | Implement EP07F: cross-layer E2E + calendar regression + parent index | `./artifacts/EP07F/` (pending) |
 
 Sequence (one writer): EP07A → EP07B → EP07C → EP07D → EP07E → EP07F. EP07A and EP07B are the contract/persistence spine; the three frontend children consume it; EP07F verifies the whole stack and owns the parent index.
 
 **Do not start EP07C, EP07D or EP07E before their `ui-refiner` pass** — focus-mode layout and information hierarchy, timer presentation, distraction reduction, subtask visibility, history layout, empty/loading/error states, copy, responsive behavior and keyboard behavior are deliberately undecided (D07-5). EP07A, EP07B and EP07F are backend/integration work and need no `ui-refiner` pass.
+
+**One accepted inter-commit transient.** EP07C's start action navigates into the focus route, but the route and the focus page land with EP07D. Between those two commits the navigation falls through to the catch-all redirect (`apps/web/src/app/App.tsx:63`). This is a work-in-progress state inside one sequential implementation, not a release: the combined EP07 review is the gate, and EP07C is explicitly not releasable on its own.
 
 ## Stories
 
@@ -59,7 +62,7 @@ Original wording from [EP07](../../epics/EP07-focus-sessions-and-time-tracking.m
 | Students can confirm or adjust recorded study time. | AC-E07-04 | **EP07B** (finish endpoint accepts a bounded confirmed/adjusted value), **EP07E** (confirm/adjust UI). |
 | Recorded study time is associated with the correct assignment. | AC-E07-05 | **EP07A** (assignment FK on the session, ownership-checked at create), **EP07B** (confirmed-time read is per assignment), **EP07E** (history shows the assignment), **EP07F** (cross-layer proof). |
 | Reloading the app does not automatically mark a session complete. | AC-E07-06 | **EP07A** (recovery is a read of stored state; completion only happens through the finish endpoint), **EP07D** (reload restores, never completes), **EP07F** (cross-layer proof). |
-| A study session can be finished without marking the assignment complete. | AC-E07-07 | **EP07B** (finish writes only the session row), **EP07F** (cross-layer proof that the assignment is unchanged). |
+| A study session can be finished without marking the assignment complete. | AC-E07-07 | **EP07B** (finish writes only the session row), **EP07E** (the completion flow never completes the assignment), **EP07F** (cross-layer proof that the assignment is unchanged). |
 | Actual study time contributes to remaining-work calculations. | AC-E07-08 | **EP07B** (per-assignment confirmed-time endpoint — the EP06 read seam), **EP07E** (per-assignment remaining-work contribution in the EP07 surface), **EP07F** (recorded time reaches the endpoint). |
 
 ## Requirement and test traceability
@@ -264,22 +267,22 @@ Both seams are recorded as **provisional**: EP07's own acceptance criteria do no
 |---|---|---|---|---|---|---|---|
 | — | — | — | — | No findings yet. | — | — | — |
 
-## Quality gate
+## Quality gate (2026-10-29)
 
-*(Final verdict is recorded in the README consolidation commit once every child file exists.)*
+**Verdict: Draft** — the breakdown is complete and internally consistent, but EP07C, EP07D and EP07E are `Needs refinement` (D07-5): the focus-mode layout and information hierarchy, the timer presentation, the distraction-reduction approach, the subtask visibility, the history layout, the empty/loading/error states, the copy, the responsive behavior and the keyboard behavior are deliberately undecided and must be settled by the `ui-refiner` before those children are implemented. EP07A, EP07B and EP07F carry no UI decisions and are ready to implement. **No implementation blocker exists** beyond refinement: EP03 is complete, and the EP06 seam stays provisional (V-07-1, V-07-2) because EP07's own acceptance criteria do not depend on EP06. EP05 is also not yet broken down, so the dashboard's "Start Focus Session" quick action stays non-functional by decision (D07-9).
 
 | # | Check | Result | Reference |
 |---|---|---|---|
-| 1 | Child separation and sizing | Pass | Six children, each a substantive outcome (persistence/lifecycle API, completion/read API, start entry points, focus-mode interface, completion+history surface, cross-layer E2E + calendar regression + parent index). No README-only/status-only/evidence-only children. Split reasons are stated per child in the Stories table and in each sizing block. |
-| 2 | Original AC/TR coverage | Pass | All eight epic ACs mapped above; eight TRs assigned (TR-E07-01…08). |
-| 3 | Definition of Done | Pass | DoD map above; items 10/11 belong to the combined EP07 parent review. |
-| 4 | Contract consistency | Pass | One shared API/data contract section; EP07A/EP07B implement, EP07C/D/E consume, EP07F verifies. |
-| 5 | Code paths inspected | Pass | Code baseline section above. Unverified paths disclosed there. |
-| 6 | Feature-specific risks/counterexamples | Pass | Invariants table above (ownership, no-assignment-completion, reload, timestamp-derived time, lost race, calendar null `endTime`, EP06 seam, single open session, keyboard). |
-| 7 | Dependencies | Pass | EP07A → EP07B → EP07C → EP07D → EP07E → EP07F. EP06/EP05 are not broken down; the EP06 seam stays provisional (V-07-1, V-07-2). |
-| 8 | Material decisions | Blocked | D07-1…D07-4 are settled user decisions. D07-5 (the frontend children's UI/UX) is unresolved — the `ui-refiner` owns it. D07-6 is provisional. |
-| 9 | Correction log | Pass | First plan; no findings yet. Log initialized. |
-| 10 | Jira identity | Not applicable | No sync authorized; all child keys are `Pending creation`. |
+| 1 | Child separation and sizing | Pass | Six children, each a substantive outcome (persistence/lifecycle API, completion/read API, start entry points, focus-mode interface, completion+history surface, cross-layer E2E + calendar regression + parent index). No README-only/status-only/evidence-only child. Each split has a stated reason: the backend/frontend seam (substantial independent work on each side), the focus interface as its own screen, and the integration child (a **new Playwright suite** plus the calendar regression harness plus the parent index — real integration implementation and a substantial new test harness, not routine verification). |
+| 2 | Original AC/TR coverage | Pass | All eight epic ACs mapped to owners above; eight TRs assigned (TR-E07-01…08). Every AC has at least one owning child and every TR has a named owner. |
+| 3 | Definition of Done | Pass | DoD map above; items 10/11 belong to the combined EP07 parent review; the per-child DoD lists carry a justified N/A reason for every item that does not apply to that layer. |
+| 4 | Contract consistency | Pass | One shared API/data contract section (endpoints, projection, lifecycle, timestamp bookkeeping, validation bounds, error contract); EP07A/EP07B implement, EP07C/D/E consume, EP07F verifies. The EP06 seam is recorded with its two verification tasks. |
+| 5 | Code paths inspected | Pass | Code baseline section above (schema, calendar query and mapping, ownership helpers, assignments API, module pattern, routes, entry surfaces, entity clients, FSD, EP10 design system, testing conventions). Unverified items are disclosed there: the `ui-refiner` decisions, EP06's preference shape, EP05's widget shape, and any browser rendering (no screenshots taken). |
+| 6 | Feature-specific risks/counterexamples | Pass | Invariants table above — nine claims with concrete counterexamples: cross-student access, no assignment completion, no auto-complete on reload, server-derived time, the lost race on a double pause, the calendar's null `endTime`, the confirmed-time read, one open session, and keyboard operability. |
+| 7 | Dependencies | Pass | EP07A → EP07B → EP07C → EP07D → EP07E → EP07F, with the one-way frontend dependency (EP07C navigates into EP07D's route) and the accepted inter-commit transient recorded. EP06/EP05 are not broken down; the EP06 seam stays provisional (V-07-1, V-07-2). EP03 is complete. |
+| 8 | Material decisions | Blocked | D07-1…D07-4 are settled user decisions (2026-10-29). D07-5 (the three frontend children's UI/UX) is unresolved and is the `ui-refiner`'s to settle — this is what keeps the verdict at `Draft`. D07-6 (one open session at a time) is provisional and reversible. |
+| 9 | Correction log | Pass | First plan of this epic; no plan-review pass yet. The log is initialized with no findings. |
+| 10 | Jira identity | Not applicable | No sync authorized; the epic key is STUDY-13 and all six child keys are `Pending creation`. |
 
 ## Implementation review log
 
