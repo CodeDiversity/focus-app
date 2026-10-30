@@ -1,7 +1,7 @@
 # EP06E checkpoint
 
 Updated: 2026-10-30
-Execution state: [EP06 README queue](../../README.md#execution-queue) row EP06E — `Ready` → implementing → implemented (pending closeout commit)
+Execution state: [EP06 README queue](../../README.md#execution-queue) row EP06E — `Implemented — awaiting parent review`
 Story: [EP06E-study-preferences-ui.md](../../EP06E-study-preferences-ui.md)
 Review unit: EP06 combined parent review (`../EP06/review.md` + `../EP06/walkthrough.md`) after EP06H
 Role / scope: implementer; **frontend only** — the study-preferences section on `/profile`. Excluded: EP06F (plan page), EP06G (remaining-work surface), any change to `PATCH /users/me`, any change to the existing name/time-zone form or its payload, the backend (EP06A, done), the scheduling engine/plan API (EP06C/EP06D, done).
@@ -9,7 +9,7 @@ Role / scope: implementer; **frontend only** — the study-preferences section o
 ## Repository state
 - Workspace / branch: `/Users/michaelrobert/Desktop/focus-app`, `main`
 - HEAD at last update: `8f470d1` (coordinator's reconciliation commit); baseline `9b1ec19` (plan baseline)
-- Saved work: EP06E code + tests written, uncommitted (entity client, form, ProfilePage mount, tests)
+- Saved work: EP06E scoped commit `04ce78d` — feat(web): add study-preferences section on profile page (EP06E) (code, tests, ProfilePage mount, artifacts, status updates)
 - Other work to preserve: `apps/api/tsconfig.json` — pre-existing, unrelated, modified and **unstaged** (adds `dist-test` to `exclude`). Never stage it, never commit it, leave it modified.
 
 ## Progress
@@ -19,8 +19,8 @@ Role / scope: implementer; **frontend only** — the study-preferences section o
 - [x] Mount on `ProfilePage` as a separate Card below the account card.
 - [x] Write entity-client tests (7) + component tests (16).
 - [x] Verification: `pnpm --filter web test` 985/985 pass; `typecheck` clean; `lint` clean.
-- [ ] README queue + child Status/artifact pointers + implementation.md
-- [ ] Scoped commit
+- [x] README queue + child Status/artifact pointers + implementation.md
+- [x] Scoped commit (`04ce78d`)
 
 ## Decisions and dependencies
 - Consumes EP06A's `GET/PUT /study-preferences` (live at `8f470d1`).
