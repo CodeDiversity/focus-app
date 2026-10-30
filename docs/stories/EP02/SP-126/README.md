@@ -2,7 +2,7 @@
 
 **Epic:** [EP02: Semester & Course Management](../../../epics/EP02-semester-and-course-management.md) (Jira STUDY-18)
 **Milestone:** M1
-**Status:** Refined — one frontend story, `Ready` (ui-refiner pass complete 2026-10-28). User request 2026-10-27: redesign the Courses page to match the recently redesigned Assignments page.
+**Status:** Reviewed — SP-126 implementation complete and approved (final parent review pass 2, 2026-10-30). Code commit `97803b4`, docs commit `baa859d`; tests 162/162, typecheck/lint green, e2e 7/7. User request 2026-10-27: redesign the Courses page to match the recently redesigned Assignments page.
 **Jira key:** Pending creation
 
 ## Execution queue
@@ -15,7 +15,7 @@
 
 **Active substory:** None.
 
-**Next substory:** None — implementation complete (914a5d2); final parent review is next.
+**Next substory:** None — SP-126 final parent review passed (pass 2, 2026-10-30); unit complete. No further implementation work.
 
 **Implementation owner:** `implementer`, one frontend writer. No backend writer.
 
@@ -23,7 +23,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [SP-126](./SP-126-course-experience.md) | Implemented — awaiting parent review | SP-125 reviewed (`9dce1c4`) — the design reference is in code; no implementation dependency. | Final parent review (DoD 10/11) | commit 914a5d2 |
+| [SP-126](./SP-126-course-experience.md) | Reviewed | SP-125 reviewed (`9dce1c4`) — the design reference is in code; no implementation dependency. | Complete — final parent review passed (pass 2) | code `97803b4`, docs `baa859d`; tests 162/162; e2e 7/7; report `artifacts/SP-126/review.md`; walkthrough `artifacts/SP-126/walkthrough.md` |
 
 This unit adds no new epic acceptance criterion. It is a presentation pass over
 behavior SP-111 and SP-112 already own.
@@ -116,6 +116,10 @@ with stable IDs and are never rewritten.)
 
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
+| RV-126-001 | 2026-10-30 | should-fix | DoD 8; story "Tests to add / update" | Missing required automated tests for extracted `CourseCard`/`CourseActionsMenu` and search/filter/no-results paths. | Added `CourseCard.test.tsx` (8) and `CourseActionsMenu.test.tsx` (8); expanded `CoursesPage.test.tsx` (+8) and `CourseList.test.tsx` (+11) with search/filter/no-results/semester-filter and card-content assertions. | Focused suite recorded 11 files / 162 tests passing (implementer evidence); reviewer inspected test files. | Closed — pass 2 |
+| RV-126-002 | 2026-10-30 | should-fix | Review cadence final-review gate | Missing parent implementation index (`artifacts/SP-126/implementation.md`). | Created `artifacts/SP-126/implementation.md` with review scope, combined Git scope (base `914a5d2`, correction `97803b4`), AC/DoD ownership, commands/results, deviations. | File present and inspected by reviewer. | Closed — pass 2 |
+| RV-126-003 | 2026-10-30 | should-fix (gate) | DoD 10; README "integrated review in a development environment verified" | No recorded browser/IDE or e2e verification for SP-126. | Ran self-contained stack e2e `pnpm test:e2e -- e2e/semesters-courses.spec.ts`; recorded date/environment/command/exit code; no pin updates needed (D126-7). | Recorded exit 0, 7/7 passed (2026-10-30); reviewer inspected e2e spec (selectors still match redesigned markup). | Closed — pass 2 |
+| RV-126-004 | 2026-10-30 | polish | D126-14 / D126-15 settled tokens | Empty-state icons used `text-text-muted`; archived pill used `bg-surface-muted`/`text-text-muted` instead of settled `text-secondary-300` / `bg-secondary-100`/`text-secondary-600`. | Aligned tokens: empty/no-match icons `text-secondary-300`; archived pill `bg-secondary-100`/`text-secondary-600`. | Code inspection (`CourseCard.tsx:29`, `CourseList.tsx:110,125`). | Applied — pass 2 |
 
 ## Quality gate (2026-10-27)
 
