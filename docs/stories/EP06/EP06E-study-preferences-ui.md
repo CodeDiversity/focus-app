@@ -6,10 +6,10 @@
 **Parent:** [EP06 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Frontend
-**Status:** Needs refinement — the `ui-refiner` pass is complete (2026-10-30); a technical-refine pass is still required before implementation (D06-15).
+**Status:** Ready — the `ui-refiner` pass is complete (2026-10-30) and the technical refinement is satisfied by the planner's breakdown (the Sizing block's file list and the parent README's shared contract pin the endpoint, DTO, slice and test files), consistent with EP06A/EP06B, which were implemented without a separate technical-refine pass (D06-15). No oversized-scope concern (single 1-request/token frontend slice).
 **Dependencies:** EP06A implemented (the `GET/PUT /study-preferences` endpoints). EP06F/EP06G are independent of this story's surface.
 **Jira key:** Pending creation
-**Refined:** 2026-10-30 (ui-refiner pass). Technical-refine pass not yet run; this file is the planner's breakdown plus the settled UI/UX.
+**Refined:** 2026-10-30 (ui-refiner pass). Technical refinement satisfied by the planner's breakdown and the shared contract (the technical-refiner's writes did not persist in this runtime; the technical content — files, wiring, tests, security — is the Sizing block plus the contract's endpoint/DTO shape).
 
 ## Summary
 
