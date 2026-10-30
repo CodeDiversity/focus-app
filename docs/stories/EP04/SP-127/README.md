@@ -72,6 +72,10 @@ See the [EP04 README](../README.md#security-invariants-and-counterexamples) — 
 | F4 | 2026-10-28 | Polish | `CalendarEventDetails.tsx` | `handleKeyDown` effect re-subscribes every render | Not applied — optional polish | Not verified; not required | Open (optional) |
 | F5 | 2026-10-28 | Polish | `CalendarPage.tsx` | `role="status"` region absent in loading/empty/error early returns | Not applied — optional polish | Not verified; not required | Open (optional) |
 
+## Open follow-ups
+
+- **FU-EP04-01 — the calendar page's week range and column headers are derived from the browser's civil date** (`CalendarPage.tsx:29-43`, `:56`, `:68-85`, `:141`) while the server interprets `from`/`to` in the **profile zone** and buckets events by the profile-zone civil date — so the column headers and the event buckets can disagree. Found during EP05's 2026-10-29 planning correction pass (EP05 log **PC-EP05-02**), **after** this parent's pass-3 review. Full record, owner, required fix, evidence and review route: [EP04 README → Open follow-ups](../README.md#open-follow-ups). **This parent's pass-3 verdict and the `Reviewed` state of SP-127A/SP-127B are unchanged**, and `artifacts/SP-127/review.md` is not rewritten; the follow-up is new work with its own standalone review unit. F3 above remains closed exactly as recorded — F3 fixed the **display** construction (UTC noon), not the **range derivation**, so it did not cover this defect.
+
 ## Quality gate (2026-10-28)
 
 | # | Check | Result | Reference |
