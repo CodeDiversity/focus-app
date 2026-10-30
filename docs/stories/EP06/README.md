@@ -16,7 +16,7 @@
 
 **Active substory:** None — EP06G is implemented and awaits the combined EP06 parent review (after EP06H). The next actionable task is EP06H's implementation (see *Next substory* below).
 
-**Next substory:** EP06H — implement (cross-layer E2E + the regression sweep + the parent index). EP06G is now implemented; EP06H's state becomes `Ready` when EP06A–EP06G have landed. **Plan-review gate passed** (pass 3, 2026-10-30 — `Plan Ready`; report: [plan-review.md](./plan-review.md)). EP06H is `Queued`.
+**Next substory:** EP06H — implement (cross-layer E2E + the regression sweep + the parent index). EP06A–EP06G are implemented; EP06H is `Ready`. **Plan-review gate passed** (pass 3, 2026-10-30 — `Plan Ready`; report: [plan-review.md](./plan-review.md)).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (the Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -31,7 +31,7 @@
 | [EP06E](./EP06E-study-preferences-ui.md) | **Implemented — awaiting parent review** | EP06A implemented. `ui-refiner` pass complete (2026-10-30) — layout, controls, states, a11y, responsive, copy settled in the story file. Technical refinement satisfied by the planner's breakdown + the shared contract (D06-15). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06E/checkpoint.md) · [implementation](./artifacts/EP06E/implementation.md) |
 | [EP06F](./EP06F-study-plan-page-preview-edit-and-save.md) | **Implemented — awaiting parent review** | EP06D implemented (the preview/save/read API). `ui-refiner` pass complete (2026-10-30). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06F/checkpoint.md) · [implementation](./artifacts/EP06F/implementation.md) |
 | [EP06G](./EP06G-remaining-work-and-deficit-warnings-ui.md) | **Implemented — awaiting parent review** | EP06B and EP06F implemented. `ui-refiner` pass complete (2026-10-30). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06G/checkpoint.md) · [implementation](./artifacts/EP06G/implementation.md) |
-| [EP06H](./EP06H-cross-layer-e2e-and-parent-index.md) | Queued | EP06A–EP06G implemented; the EP09 self-contained E2E stack must be runnable. **Plan-review gate passed** (pass 3 — `Plan Ready`); the state becomes `Ready` when EP06A–EP06G land. | Implement EP06H: cross-layer E2E + the regression sweep + the parent index | `./artifacts/EP06H/` (pending) |
+| [EP06H](./EP06H-cross-layer-e2e-and-parent-index.md) | **Ready** | EP06A–EP06G implemented. **Plan-review gate passed** (pass 3 — `Plan Ready`). | Implement EP06H: cross-layer E2E + the regression sweep + the parent index | `./artifacts/EP06H/` (pending) |
 
 Sequence (one writer): EP06A → EP06B → EP06C → EP06D → EP06E → EP06F → EP06G → EP06H. EP06A/EP06B/EP06C/EP06D are the contract and persistence spine; the three frontend children consume it; EP06H verifies the whole stack and owns the parent index.
 
@@ -669,12 +669,12 @@ coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "9b1ec19"
-  head: "50a6fa8"
+  head: "c6aa220"
 active_dispatch:
-  name: ep06-implementer-9
+  name: ep06-implementer-10
   role: implementer
   status: pending
-  pointer: docs/stories/EP06/artifacts/EP06G/
+  pointer: docs/stories/EP06/artifacts/EP06H/
   session: ""
   assignment: complete_child
 last_result:
