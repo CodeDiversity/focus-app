@@ -311,37 +311,37 @@ stage: plan
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
-  baseline: ""
-  head: "8e31c0d"
+  baseline: "8e31c0d"
+  head: "535ffa2"
 active_dispatch:
   name: ep07-planner-1
   role: planner
-  status: pending
+  status: returned
   pointer: docs/stories/EP07/README.md
   session: ""
   assignment: plan
 last_result:
-  evidence: ""
-  findings: ""
-  scope_note: ""
+  evidence: "Breakdown committed: 6e0088d (EP07A + README), f5e8e42 (EP07B), 80b1dc6 (EP07C), 94d3f3a (EP07D), 617673c (EP07E), 1a97087 (EP07F + README consolidation), 535ffa2 (EP07E scope vs the EP06 remaining-work boundary). All commits touch docs/stories/EP07/** only; the unrelated dirty apps/api/tsconfig.json was preserved unstaged."
+  findings: "None. Planner recorded D07-1…D07-9 (D07-1…D07-4 user-settled; D07-5 the ui-refiner handoff; D07-6 one-open-session provisional; D07-7 elapsed vs confirmed columns; D07-8 the calendar compatibility change owned by EP07A; D07-9 the dashboard quick action stays EP05's)."
+  scope_note: "Planning only — no implementation, no Jira sync (children stay `Pending creation`). Verdict Draft: EP07A/EP07B/EP07F ready; EP07C/D/E await the ui-refiner pass (D07-5). EP06 seam recorded as provisional (V-07-1, V-07-2)."
   cycles: 0
   same_findings: unknown
 gates:
-  breakdown: unknown
-  plan: unknown
+  breakdown: true
+  plan: draft
   ui: unknown
-  refinement: unknown
-  child_unfinished: unknown
-  eligible_child_state: unknown
+  refinement: false
+  child_unfinished: false
+  eligible_child_state: Queued
   closeout: unknown
   integration: unknown
-  all_descendants_implemented: unknown
-  review: unknown
-  findings_owner: unknown
-  open_findings: unknown
-  walkthrough: unknown
-  judged_at_head: ""
-  queue_hash: ""
+  all_descendants_implemented: false
+  review: absent
+  findings_owner: none
+  open_findings: false
+  walkthrough: missing
+  judged_at_head: "535ffa2"
+  queue_hash: "ep07-queue-v1"
 writer: none
 session_live: unknown
 blocker:
