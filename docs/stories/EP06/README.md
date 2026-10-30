@@ -664,19 +664,19 @@ scope:
   descendants: [EP06A, EP06B, EP06C, EP06D, EP06E, EP06F, EP06G, EP06H]
   entry: planning
   limits: enclosing parent review unit
-stage: implement
+stage: ui_refine
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "9b1ec19"
-  head: "e101e1f"
+  head: "08f9613"
 active_dispatch:
-  name: ep06-implementer-6
-  role: implementer
+  name: ep06-ui-refiner-2
+  role: ui-refiner
   status: pending
-  pointer: docs/stories/EP06/artifacts/EP06E/
+  pointer: docs/stories/EP06/EP06F-study-plan-page-preview-edit-and-save.md
   session: ""
-  assignment: complete_child
+  assignment: ui_refine
 last_result:
   evidence: "EP06E reconciled to Ready. The ui-refiner pass is complete (2026-10-30; committed aca61b3) and settled the UI/UX specification and Decisions in the story file. The technical-refiner was dispatched twice for EP06E; both runs reported success but neither persisted a write to the story file (the file's mtime stayed at 15:15 and git status showed no uncommitted story-file change). The technical content is already present in the planner's breakdown (EP06E's Sizing block lists the files to create/modify) and the parent README's shared contract pins the endpoint, DTO and payload shape, so EP06E is reconciled to Ready on the same basis as EP06A and EP06B, which were implemented without a separate technical-refine pass. The 'Refined:' line and 'Status:' line were updated to reflect this (coordinator-authorized metadata reconciliation, because the refiner's writes did not persist in this runtime)."
   findings: "EP06E's own findings: none open inside its scope. **F-EP06-07 remains open (recorded by EP06A, not fixed):** `PATCH /users/me` replaces the `preferences` column verbatim, so a later profile PATCH carrying a preferences bag can ERASE saved studyDefaults. EP06 does not change `PATCH /users/me` (excluded by the spec and D06-14); it needs an EP01-owned change plus its integration spec, outside this run's scope and needing the user's authorization. The six non-blocking plan-review polish findings PR-023…PR-028 also remain open (owner: planner)."
