@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { PreparedVerificationToken } from '../auth/email-verification.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -95,7 +95,34 @@ export class UsersService {
       data.timeZone = updateUserDto.timeZone;
     }
     if (updateUserDto.preferences !== undefined) {
-      data.preferences = updateUserDto.preferences;
+      // Merge the incoming bag into the stored bag (shallow merge at the
+      // top level) instead of replacing the column: a partial PATCH that
+      // carries one key must not erase the other keys (e.g. studyDefaults)
+      // that were saved by an earlier request. (R-EP06-06 / F-EP06-07.)
+      const current = await this.prisma.user.findUnique({
+        where: { id },
+        select: { preferences: true },
+      });
+      const stored =
+        current?.preferences !== null &&
+        current?.preferences !== undefined &&
+        typeof current.preferences === 'object' &&
+        !Array.isArray(current.preferences)
+          ? (current.preferences as Record<string, unknown>)
+          : {};
+      const merged: Record<string, unknown> = {
+        ...stored,
+        ...updateUserDto.preferences,
+      };
+
+      // The 4096-byte cap is enforced on the provided bag by the DTO
+      // validator; re-check it on the merged result, which can be larger.
+      const serialized = JSON.stringify(merged);
+      if (Buffer.byteLength(serialized, 'utf8') > 4096) {
+        throw new BadRequestException('preferences serialized size must not exceed 4096 bytes');
+      }
+
+      data.preferences = merged;
     }
 
     return this.prisma.user.update({

@@ -159,6 +159,24 @@ describeIntegration('profile and preferences integration (real database, SP-106D
         preferences,
       });
 
+      // 2b. A later PATCH carrying a *different* key must MERGE into the
+      //     stored bag rather than replacing it: the earlier keys (theme and
+      //     studyDefaults) survive, and the new key is added.
+      const mergedPreferences = {
+        ...preferences,
+        locale: 'fr',
+      };
+      const patchedAgain = await agent
+        .patch('/users/me')
+        .set('Authorization', `Bearer ${studentA.accessToken}`)
+        .send({ preferences: { locale: 'fr' } })
+        .expect(HttpStatus.OK);
+      expect(patchedAgain.body).toMatchObject({
+        id: studentA.id,
+        timeZone: 'America/New_York',
+        preferences: mergedPreferences,
+      });
+
       // 3. Log out for real (the login cookie is used and the session is revoked).
       await agent.post('/auth/logout').set('Cookie', studentA.refreshCookie).expect(HttpStatus.OK);
 
@@ -189,7 +207,7 @@ describeIntegration('profile and preferences integration (real database, SP-106D
         id: studentA.id,
         email: studentA.email,
         timeZone: 'America/New_York',
-        preferences,
+        preferences: mergedPreferences,
       });
 
       // 6. The persistence is in the row, not in a per-session cache.
@@ -197,7 +215,10 @@ describeIntegration('profile and preferences integration (real database, SP-106D
         where: { id: studentA.id },
         select: { timeZone: true, preferences: true },
       });
-      expect(stored).toMatchObject({ timeZone: 'America/New_York', preferences });
+      expect(stored).toMatchObject({
+        timeZone: 'America/New_York',
+        preferences: mergedPreferences,
+      });
 
       // Leave student A in the new session for the isolation cases below.
       studentA = newSession;
