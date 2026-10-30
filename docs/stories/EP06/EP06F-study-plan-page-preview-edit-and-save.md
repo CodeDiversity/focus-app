@@ -6,7 +6,7 @@
 **Parent:** [EP06 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Frontend
-**Status:** Ready — the `ui-refiner` pass is complete (2026-10-30) and the technical refinement is satisfied by the planner's breakdown + the shared contract (D06-15), consistent with EP06A/EP06B/EP06E. No oversized-scope concern (single 2–3 request/token frontend slice).
+**Status:** Implemented — awaiting parent review (EP06F). Artifacts: `docs/stories/EP06/artifacts/EP06F/`.
 **Dependencies:** EP06D implemented (the preview, the save and the read endpoints). EP06A implemented (the preferences the preview echoes).
 **Jira key:** Pending creation
 **Refined:** 2026-10-30 (ui-refiner pass). Technical refinement satisfied by the planner's breakdown and the shared contract.
