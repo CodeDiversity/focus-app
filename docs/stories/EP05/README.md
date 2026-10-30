@@ -285,7 +285,7 @@ EP05 adds **no new route**; every link points at an existing full list. The stud
 
 ## Plan correction log
 
-(First plan of this epic. The planner's 2026-10-29 correction pass added **PC-EP05-01…PC-EP05-03** below; the original plan's claims are preserved verbatim in the "Original finding" column and are not rewritten. The planner's 2026-10-30 correction pass for plan-review pass 1 added **PC-EP05-04…PC-EP05-12** in its own subsection below; the **reviewer's** independent pass-2 dispositions are in [Plan-review pass 2 — reviewer dispositions](#plan-review-pass-2--reviewer-dispositions-pr-001pr-011) below.)
+(First plan of this epic. The planner's 2026-10-29 correction pass added **PC-EP05-01…PC-EP05-03** below; the original plan's claims are preserved verbatim in the "Original finding" column and are not rewritten. The planner's 2026-10-30 correction pass for plan-review pass 1 added **PC-EP05-04…PC-EP05-12** in its own subsection below; the **reviewer's** independent pass-2 dispositions are in [Plan-review pass 2 — reviewer dispositions](#plan-review-pass-2--reviewer-dispositions-pr-001pr-011) below. The planner's 2026-10-30 correction pass for the **implementation-discovered** finding **F-EP05B-01** (and its sibling **F-EP05B-02**) added **PC-EP05-13…PC-EP05-14** in [Implementation-discovered correction — EP05B's day-line construction](#implementation-discovered-correction--ep05bs-day-line-construction-pc-ep05-13-pc-ep05-14) below.)
 
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
