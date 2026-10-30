@@ -136,3 +136,97 @@ export type SchedulableAssignment = ClassifiedAssignment & {
 export type FlaggedAssignment = ClassifiedAssignment & {
   flagged: RemainingWorkFlag;
 };
+
+// ---------------------------------------------------------------------------
+// EP06C — the scheduling engine's types (the pure domain module).
+// ---------------------------------------------------------------------------
+
+/**
+ * A weekly window: a recurring interval on one weekday. `dayOfWeek` is
+ * `0`–`6` with **Sunday = 0** (the schema's own convention,
+ * `schema.prisma:292-305` and `:167-181`; the availability API's validation
+ * message, `availability.service.ts:99`). `startMinute` / `endMinute` are
+ * wall-clock minutes from midnight, half-open `[start, end)`.
+ */
+export type WeeklyWindow = {
+  dayOfWeek: number;
+  startMinute: number;
+  endMinute: number;
+};
+
+/**
+ * A half-open `[startMinute, endMinute)` interval on one civil date
+ * (`YYYY-MM-DD`). The engine's and the helper's working unit.
+ */
+export type DatedInterval = {
+  date: string;
+  startMinute: number;
+  endMinute: number;
+};
+
+/**
+ * The base the day's free intervals are computed from (see the shared
+ * contract → *The shared free-interval helper `freeIntervals(...)`*).
+ *
+ * - `{ kind: 'declared', windows }` — the student's declared available
+ *   windows for that weekday (an empty array means the student declared no
+ *   availability, so the day has no free time);
+ * - `{ kind: 'whole-day' }` — the whole civil day `[00:00, 1440)`, the
+ *   availability-omitted mode used by EP06D's save-time re-check (D06-12).
+ */
+export type FreeIntervalBase =
+  { kind: 'declared'; windows: DatedInterval[] } | { kind: 'whole-day' };
+
+/**
+ * The deficit categories the engine reports (D06-11). `null` in the
+ * result means "no deficit".
+ */
+export type DeficitCategory = 'NO_AVAILABLE_TIME' | 'INSUFFICIENT_TIME_BEFORE_DEADLINE' | 'OVERDUE';
+
+/**
+ * One proposed session the engine places (the preview's session shape,
+ * without the response-only `assignmentTitle`/`durationMinutes` extras —
+ * `durationMinutes` is derived as `endMinute - startMinute`).
+ */
+export type PlannedSessionProposal = {
+  assignmentId: string;
+  assignmentTitle: string;
+  date: string;
+  startMinute: number;
+  endMinute: number;
+  durationMinutes: number;
+};
+
+/**
+ * The per-assignment outcome of a run.
+ */
+export type AssignmentScheduleResult = {
+  assignmentId: string;
+  placedMinutes: number;
+  deferredMinutes: number;
+  deficitMinutes: number;
+  deficitCategory: DeficitCategory | null;
+};
+
+/**
+ * The engine's input. Everything the engine needs is supplied by the caller
+ * — "today" is `days[0]`, and every time window is already converted to
+ * wall-clock minutes on a civil date (D06-17, D06-24).
+ */
+export type SchedulerInput = {
+  days: string[];
+  assignments: SchedulableAssignment[];
+  availability: WeeklyWindow[];
+  blocked: WeeklyWindow[];
+  classes: WeeklyWindow[];
+  busy: DatedInterval[];
+  preferences: StudyPreferences;
+};
+
+/**
+ * The engine's output: the proposed sessions and the per-assignment results.
+ */
+export type SchedulerOutput = {
+  sessions: PlannedSessionProposal[];
+  results: AssignmentScheduleResult[];
+};
