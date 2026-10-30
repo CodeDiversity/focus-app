@@ -430,3 +430,108 @@ describe('CoursesPage accessibility and responsiveness (AC 6, DoD 6/7)', () => {
     expect(container).toHaveClass('px-4', 'sm:px-6', 'lg:px-8');
   });
 });
+
+describe('CoursesPage search and filtering (AC 2, D126-3)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockedListSemesters.mockResolvedValue([
+      {
+        id: 'sem-1',
+        name: 'Fall 2026',
+        courseCount: 1,
+        isActive: true,
+        startDate: '2026-09-01',
+        endDate: '2026-12-20',
+        createdAt: 'x',
+        updatedAt: 'x',
+      },
+      {
+        id: 'sem-2',
+        name: 'Spring 2026',
+        courseCount: 1,
+        isActive: false,
+        startDate: '2026-01-10',
+        endDate: '2026-05-15',
+        createdAt: 'x',
+        updatedAt: 'x',
+      },
+    ] as never);
+    mockedListCourses.mockResolvedValue(allCourses);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('renders the toolbar: search input, semester select, and show-archived switch', async () => {
+    renderPage();
+    await screen.findAllByRole('listitem');
+    expect(screen.getByLabelText(/search courses/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/semester/i)).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: /show archived/i })).toBeInTheDocument();
+  });
+
+  it('filters by name (case-insensitive) without refetching', async () => {
+    renderPage();
+    await screen.findAllByRole('listitem');
+    const input = screen.getByLabelText(/search courses/i);
+    await validUser.type(input, 'calculus');
+    await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(1));
+    expect(screen.getByText('Calculus I')).toBeInTheDocument();
+    expect(mockedListCourses).toHaveBeenCalledTimes(1);
+  });
+
+  it('filters by code', async () => {
+    renderPage();
+    await screen.findAllByRole('listitem');
+    const input = screen.getByLabelText(/search courses/i);
+    await validUser.type(input, 'CS101');
+    await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(1));
+    expect(screen.getByText('Intro to Computer Science')).toBeInTheDocument();
+  });
+
+  it('filters by semester select', async () => {
+    renderPage();
+    await screen.findAllByRole('listitem');
+    await validUser.selectOptions(screen.getByLabelText(/semester/i), 'sem-1');
+    await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(1));
+    expect(screen.getByText('Calculus I')).toBeInTheDocument();
+  });
+
+  it('composes search and semester filter with show-archived', async () => {
+    renderPage();
+    await screen.findAllByRole('listitem');
+    await validUser.click(screen.getByRole('switch', { name: /show archived/i }));
+    const input = screen.getByLabelText(/search courses/i);
+    await validUser.type(input, 'world');
+    await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(1));
+    expect(screen.getByText('World History')).toBeInTheDocument();
+  });
+
+  it('shows the no-results state when filters match nothing', async () => {
+    renderPage();
+    await screen.findAllByRole('listitem');
+    const input = screen.getByLabelText(/search courses/i);
+    await validUser.type(input, 'zzzz');
+    expect(await screen.findByText('No courses match these filters.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /clear filters/i })).toBeInTheDocument();
+  });
+
+  it('restores the full list when Clear filters is used', async () => {
+    renderPage();
+    await screen.findAllByRole('listitem');
+    const input = screen.getByLabelText(/search courses/i);
+    await validUser.type(input, 'zzzz');
+    expect(await screen.findByText('No courses match these filters.')).toBeInTheDocument();
+    await validUser.click(screen.getByRole('button', { name: /clear filters/i }));
+    await waitFor(() => expect(screen.getAllByRole('listitem')).toHaveLength(2));
+  });
+
+  it('keeps a single fetch under filtering', async () => {
+    renderPage();
+    await screen.findAllByRole('listitem');
+    await validUser.type(screen.getByLabelText(/search courses/i), 'calculus');
+    await validUser.selectOptions(screen.getByLabelText(/semester/i), 'sem-1');
+    expect(mockedListCourses).toHaveBeenCalledTimes(1);
+  });
+});

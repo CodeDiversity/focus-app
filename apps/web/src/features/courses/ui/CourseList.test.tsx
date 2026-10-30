@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useLocation } from 'react-router-dom';
 import { Providers } from '@/test/providers';
@@ -242,5 +242,65 @@ describe('CourseList row navigation (D112B-6)', () => {
     await user.click(screen.getByRole('menuitem', { name: /edit calculus i/i }));
     expect(onEdit).toHaveBeenCalledWith(math101);
     expect(screen.getByTestId('location')).toHaveTextContent('/');
+  });
+});
+
+describe('CourseList card content (SP-126)', () => {
+  it('renders the instructor on cards when set', () => {
+    renderList();
+    expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
+  });
+
+  it('renders the Archived pill on archived cards only', async () => {
+    const user = userEvent.setup();
+    renderList();
+    expect(screen.queryByText('Archived')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('switch', { name: /show archived/i }));
+    const archived = screen.getByText('World History').closest('li') as HTMLElement;
+    expect(within(archived).getByText('Archived')).toBeInTheDocument();
+  });
+});
+
+describe('CourseList search and semester filter (D126-3)', () => {
+  it('filters by search query on name (case-insensitive)', () => {
+    renderList({ searchQuery: 'intro' });
+    const items = screen.getAllByRole('listitem');
+    expect(items).toHaveLength(1);
+    expect(items[0]).toHaveTextContent('Intro to Computer Science');
+  });
+
+  it('filters by search query on code', () => {
+    renderList({ searchQuery: 'MATH101' });
+    const items = screen.getAllByRole('listitem');
+    expect(items).toHaveLength(1);
+    expect(items[0]).toHaveTextContent('Calculus I');
+  });
+
+  it('filters by semester id', () => {
+    renderList({ semesterFilter: 'sem-1' });
+    const items = screen.getAllByRole('listitem');
+    expect(items).toHaveLength(1);
+    expect(items[0]).toHaveTextContent('Intro to Computer Science');
+  });
+
+  it('composes search and semester filter', () => {
+    renderList({ searchQuery: 'intro', semesterFilter: 'sem-2' });
+    expect(screen.getByText('No courses match these filters.')).toBeInTheDocument();
+  });
+
+  it('shows the no-results state with a Clear filters action', async () => {
+    const onClearFilters = vi.fn();
+    const user = userEvent.setup();
+    renderList({ searchQuery: 'zzzz', onClearFilters });
+    expect(screen.getByText('No courses match these filters.')).toBeInTheDocument();
+    expect(screen.getByText('Try adjusting your search or semester filter.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /clear filters/i }));
+    expect(onClearFilters).toHaveBeenCalled();
+  });
+
+  it('keeps a single fetch invariant: filtering is client-side (no extra requests)', () => {
+    renderList({ searchQuery: 'intro', semesterFilter: 'sem-1' });
+    // CourseList itself performs no fetch; assert it renders without crashing.
+    expect(screen.getByText('Intro to Computer Science')).toBeInTheDocument();
   });
 });

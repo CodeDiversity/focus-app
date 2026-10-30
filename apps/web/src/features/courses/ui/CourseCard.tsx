@@ -26,7 +26,7 @@ export function CourseCard({ course, onEdit, onArchiveRestore }: CourseCardProps
             />
             <span className="font-mono text-sm text-text">{course.code}</span>
             {!course.isActive && (
-              <span className="inline-flex items-center rounded-full bg-surface-muted px-2.5 py-0.5 text-xs font-medium text-text-muted">
+              <span className="inline-flex items-center rounded-full bg-secondary-100 px-2.5 py-0.5 text-xs font-medium text-secondary-600">
                 Archived
               </span>
             )}

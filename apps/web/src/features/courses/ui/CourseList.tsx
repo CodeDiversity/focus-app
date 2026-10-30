@@ -107,7 +107,7 @@ export function CourseList({
   if (courses.length === 0) {
     return (
       <div className="py-8 text-center">
-        <BookOpen size={40} aria-hidden className="mx-auto mb-3 text-text-muted" />
+        <BookOpen size={40} aria-hidden className="mx-auto mb-3 text-secondary-300" />
         <p className="text-sm text-text">No courses yet.</p>
         <p className="mt-1 text-sm text-text-muted">
           Add your first course to start organizing your semester.
@@ -122,7 +122,7 @@ export function CourseList({
   if (visible.length === 0 && anyFilterActive) {
     return (
       <div className="py-8 text-center">
-        <Search size={36} aria-hidden className="mx-auto mb-3 text-text-muted" />
+        <Search size={36} aria-hidden className="mx-auto mb-3 text-secondary-300" />
         <p className="text-sm text-text">No courses match these filters.</p>
         <p className="mt-1 text-sm text-text-muted">
           Try adjusting your search or semester filter.
