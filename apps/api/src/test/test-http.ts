@@ -20,6 +20,7 @@ import { CoursesModule } from '../modules/courses/courses.module';
 import { AssignmentsModule } from '../modules/assignments/assignments.module';
 import { CalendarModule } from '../modules/calendar/calendar.module';
 import { AvailabilityModule } from '../modules/availability/availability.module';
+import { StudyPlansModule } from '../modules/study-plans/study-plans.module';
 import { PrismaService } from '../modules/prisma/prisma.service';
 import { EMAIL_PROVIDER } from '../modules/email/email-provider';
 import { AllExceptionsFilter } from '../common/filters/all-exceptions.filter';
@@ -85,6 +86,8 @@ export async function createIntegrationApp(): Promise<IntegrationApp> {
       CalendarModule,
       // SP-128A: the availability-slots routes the integration specs drive.
       AvailabilityModule,
+      // EP06A: the study-preferences routes the integration specs drive.
+      StudyPlansModule,
     ],
   })
     .overrideProvider(EMAIL_PROVIDER)
