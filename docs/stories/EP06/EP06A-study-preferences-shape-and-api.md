@@ -6,7 +6,7 @@
 **Parent:** [EP06 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Backend
-**Status:** Queued
+**Status:** Implemented — awaiting parent review (implemented 2026-10-30; commit `7457a0a`). Artifacts: [checkpoint](./artifacts/EP06A/checkpoint.md) · [implementation record](./artifacts/EP06A/implementation.md)
 **Dependencies:** EP03 complete (assignments exist), EP04 complete (availability exists). No dependency on EP07 — the preferences shape is EP06's own (D06-4). Decisions D06-1…D06-25 are recorded in the parent README's decision register and the shared API/data contract section.
 **Jira key:** Pending creation
 **Refined:** — (technical-refine pass not yet run; this file is the planner's breakdown)
