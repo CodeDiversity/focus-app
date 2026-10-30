@@ -669,9 +669,9 @@ coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "9b1ec19"
-  head: "4d72a21"
+  head: "6fd4d14"
 active_dispatch:
-  name: ep06-implementer-11
+  name: ep06-implementer-12
   role: implementer
   status: pending
   pointer: docs/stories/EP06/artifacts/EP06/
