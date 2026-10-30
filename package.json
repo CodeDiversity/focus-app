@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "StudyPilot - AI-powered study planner for students with ADHD",
   "private": true,
+  "license": "MIT",
   "workspaces": [
     "apps/*",
     "packages/**"
