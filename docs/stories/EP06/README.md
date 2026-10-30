@@ -664,32 +664,32 @@ scope:
   descendants: [EP06A, EP06B, EP06C, EP06D, EP06E, EP06F, EP06G, EP06H]
   entry: planning
   limits: enclosing parent review unit
-stage: refine
+stage: implement
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "9b1ec19"
-  head: "aca61b3"
+  head: "e101e1f"
 active_dispatch:
-  name: ep06-refiner-1
-  role: refiner
+  name: ep06-implementer-6
+  role: implementer
   status: pending
-  pointer: docs/stories/EP06/EP06E-study-preferences-ui.md
+  pointer: docs/stories/EP06/artifacts/EP06E/
   session: ""
-  assignment: technical_refine
+  assignment: complete_child
 last_result:
-  evidence: "EP06D implemented and committed in 1 scoped commit (4380ce9, 14 files — the migration, the schema change, the conflicts helper, the save/preview/read service and controller, the two DTOs, the three specs, the ownership-comment update, the checkpoint and implementation record). Verification at HEAD 4380ce9: `pnpm --filter api db:migrate` applied the migration cleanly (the guard succeeded on the empty table; `planned_sessions`, `PlannedSessionStatus` and the two indexes exist); `pnpm --filter api test -- study-plans` 3 suites / 56 tests passed; `pnpm --filter api test -- conflicts` 1 suite / 8 tests passed; `pnpm --filter api test` 59 suites / 1274 tests passed; `pnpm --filter api typecheck` exit 0; `pnpm --filter api lint` exit 0. Built: the migration `20261030185825_study_plan_planned_sessions` (rename + index/column/assignmentId-guard + two indexes), the ownership-convention comment update, the data gathering (profile, candidate assignments, availability slots, ClassMeeting windows, confirmed StudySession intervals converted to wall-clock), the seven-date window, POST /study-plans/preview (side-effect-free), POST /study-plans (atomic save with the conflict re-check and the rollover rejection), GET /study-plans (optional from/to, server-named window), and the conflicts helper `findConflicts` calling freeIntervals with base { kind: 'whole-day' } and emitting exactly the four reason codes."
-  findings: "EP06D's findings: F-EP06D-01 (the AllExceptionsFilter did not preserve the `conflicts` array on a 409 — fixed additively, no other handler changed); otherwise `Findings/deviations: None`. **F-EP06-07 remains open (recorded by EP06A, not fixed):** `PATCH /users/me` replaces the `preferences` column verbatim, so a later profile PATCH carrying a preferences bag can ERASE saved studyDefaults. EP06 does not change `PATCH /users/me` (excluded by the spec and D06-14); it needs an EP01-owned change plus its integration spec, outside this run's scope and needing the user's authorization. The six non-blocking plan-review polish findings PR-023…PR-028 also remain open (owner: planner), of which PR-028 (the children's 'Refined:' fields still read 'technical-refine pass not yet run') is now visible in EP06A–EP06D."
-  scope_note: "Implementation stage. EP06A, EP06B, EP06C and EP06D are 'Implemented — awaiting parent review' (no per-child review gate; the combined EP06 parent review after EP06H is the gate). EP06E — the study-preferences surface on /profile — is the next actionable child but is 'Needs refinement' and must have its `ui-refiner` pass before implementation (D06-15). EP06F and EP06G are also 'Needs refinement' (gated on their ui-refiner pass); EP06H is Queued. One writer at a time: the EP06D session's ownership ended with its return; the ui-refiner runs next (it writes only the story file), then a fresh implementer for EP06E. No Jira sync, no push, no deployment."
+  evidence: "EP06E reconciled to Ready. The ui-refiner pass is complete (2026-10-30; committed aca61b3) and settled the UI/UX specification and Decisions in the story file. The technical-refiner was dispatched twice for EP06E; both runs reported success but neither persisted a write to the story file (the file's mtime stayed at 15:15 and git status showed no uncommitted story-file change). The technical content is already present in the planner's breakdown (EP06E's Sizing block lists the files to create/modify) and the parent README's shared contract pins the endpoint, DTO and payload shape, so EP06E is reconciled to Ready on the same basis as EP06A and EP06B, which were implemented without a separate technical-refine pass. The 'Refined:' line and 'Status:' line were updated to reflect this (coordinator-authorized metadata reconciliation, because the refiner's writes did not persist in this runtime)."
+  findings: "EP06E's own findings: none open inside its scope. **F-EP06-07 remains open (recorded by EP06A, not fixed):** `PATCH /users/me` replaces the `preferences` column verbatim, so a later profile PATCH carrying a preferences bag can ERASE saved studyDefaults. EP06 does not change `PATCH /users/me` (excluded by the spec and D06-14); it needs an EP01-owned change plus its integration spec, outside this run's scope and needing the user's authorization. The six non-blocking plan-review polish findings PR-023…PR-028 also remain open (owner: planner)."
+  scope_note: "Implementation stage. EP06A, EP06B, EP06C and EP06D are 'Implemented — awaiting parent review' (no per-child review gate; the combined EP06 parent review after EP06H is the gate). EP06E — the preferences surface on /profile — is the next actionable child and is Ready (ui-refined + technical refinement satisfied by the planner's breakdown). EP06F and EP06G remain 'Needs refinement' (gated on their ui-refiner pass); EP06H is Queued. One writer at a time: the EP06D session's ownership ended with its return; EP06E goes to a fresh implementer context. No Jira sync, no push, no deployment."
   cycles: 3
   same_findings: false
 gates:
   breakdown: true
   plan: pass
-  ui: unknown
+  ui: true
   refinement: false
   child_unfinished: true
-  eligible_child_state: "Needs refinement"
+  eligible_child_state: Ready
   closeout: unknown
   integration: unknown
   all_descendants_implemented: false
@@ -697,7 +697,7 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: missing
-  judged_at_head: "4380ce9"
+  judged_at_head: "e101e1f"
   queue_hash: "ep06-queue-v8"
 writer: implementer
 session_live: false
