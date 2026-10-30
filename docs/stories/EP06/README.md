@@ -664,19 +664,19 @@ scope:
   descendants: [EP06A, EP06B, EP06C, EP06D, EP06E, EP06F, EP06G, EP06H]
   entry: planning
   limits: enclosing parent review unit
-stage: implement
+stage: ui_refine
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "9b1ec19"
-  head: "85c3dd5"
+  head: "356b87e"
 active_dispatch:
-  name: ep06-implementer-8
-  role: implementer
+  name: ep06-ui-refiner-3
+  role: ui-refiner
   status: pending
-  pointer: docs/stories/EP06/artifacts/EP06F/
+  pointer: docs/stories/EP06/EP06G-remaining-work-and-deficit-warnings-ui.md
   session: ""
-  assignment: complete_child
+  assignment: ui_refine
 last_result:
   evidence: "EP06E implemented and committed in 2 scoped commits (04ce78d feat(web): add study-preferences section on profile page; 08f9613 docs(EP06E): record scoped commit hash in checkpoint). Verification at HEAD 08f9613: `pnpm --filter web test` 80 suites / 985 tests passed; `pnpm --filter web test -- StudyPreferences` 2 suites / 23 tests passed; `pnpm --filter web typecheck` exit 0; `pnpm --filter web lint` exit 0, 0 warnings. Built: the entity client (studyPreferencesApi), the RTK Query slice with the StudyPreferences tag, the form (react-hook-form + zod), the spinner card while GET is in flight, the cross-field error mapping, and the mount on ProfilePage below the account card. EP06F is reconciled to Ready: the ui-refiner pass is complete (2026-10-30) and the technical refinement is satisfied by the planner's breakdown + the shared contract (D06-15), consistent with EP06A/EP06B/EP06E. The ui-refiner's writes for EP06F did not persist (file mtime unchanged, no uncommitted story-file change), so the story file's Status/Refined lines were reconciled by the coordinator; the UI/UX design is recorded in the ui-refiner's returned result and the planner's breakdown (the Sizing block + the shared contract)."
   findings: "EP06E's own findings: none open inside its scope. **F-EP06-07 remains open (recorded by EP06A, not fixed):** `PATCH /users/me` replaces the `preferences` column verbatim, so a later profile PATCH carrying a preferences bag can ERASE saved studyDefaults. EP06 does not change `PATCH /users/me` (excluded by the spec and D06-14); it needs an EP01-owned change plus its integration spec, outside this run's scope and needing the user's authorization. The six non-blocking plan-review polish findings PR-023…PR-028 also remain open (owner: planner)."
