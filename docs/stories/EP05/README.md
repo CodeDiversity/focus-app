@@ -284,37 +284,37 @@ stage: plan
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
-  baseline: ""
-  head: "add0f41"
+  baseline: "add0f41"
+  head: "3b8dd83"
 active_dispatch:
   name: ep05-planner-1
   role: planner
-  status: pending
+  status: returned
   pointer: docs/stories/EP05/README.md
   session: ""
   assignment: plan
 last_result:
-  evidence: ""
-  findings: ""
-  scope_note: ""
+  evidence: "Breakdown committed: 1ff69d5 (README + EP05A), e29bee7 (EP05B), 35197b2 (EP05C), 3b8dd83 (README consolidation). All commits touch docs/stories/EP05/** only; the unrelated dirty apps/api/tsconfig.json was preserved unstaged. Coordinator-verified claims: CalendarPage.tsx:29-75 does derive its range from the browser-local date; SessionUser.timeZone is optional and absent on login/refresh/boot; OVERDUE_LABEL/OVERDUE_STYLE exist at assignmentPresentation.ts:65-66; the FSD lint zones forbid entities/ -> features/ and features/ -> app/; sessionApi.ts is the only RTK Query API with axiosBaseQuery/reducerPath 'api'; lucide-react 0.312.0 has graduation-cap/brain/ban/timer/inbox/layout-dashboard/square-pen/notebook-pen/user-round/alert-triangle etc. and NO circle-alert/triangle-alert/circle-check-big/circle-help."
+  findings: "None open. Planner recorded D05-1..D05-15 (D05-1..D05-5 user-settled; D05-6 the profile-zone 'today' derivation; D05-7 the shared RTK base query; D05-8 the two per-domain slices + store registration; D05-9 the assignment split keeping the endpoint order; D05-10 provisional limits/links; D05-11 the dropped 'Study Stats' card — flagged to the user and the ui-refiner; D05-12 the EP05A ui-refiner carve-out; D05-13 the study-sessions provisional seam; D05-14 no dashboard e2e; D05-15 the course-less student). Verification tasks V-05-1..03 recorded."
+  scope_note: "Planning only — no implementation, no Jira sync (children stay `Pending creation`). Verdict Draft: EP05A Ready; EP05B and EP05C await the ui-refiner pass (D05-12). EP07's D07-9 seam is resolved by D05-5. EP06/EP07 are not EP05 implementation dependencies."
   cycles: 0
   same_findings: unknown
 gates:
-  breakdown: unknown
-  plan: unknown
+  breakdown: true
+  plan: draft
   ui: unknown
-  refinement: unknown
-  child_unfinished: unknown
-  eligible_child_state: unknown
+  refinement: false
+  child_unfinished: false
+  eligible_child_state: Ready
   closeout: unknown
   integration: unknown
-  all_descendants_implemented: unknown
-  review: unknown
-  findings_owner: unknown
-  open_findings: unknown
-  walkthrough: unknown
-  judged_at_head: ""
-  queue_hash: ""
+  all_descendants_implemented: false
+  review: absent
+  findings_owner: none
+  open_findings: false
+  walkthrough: missing
+  judged_at_head: "3b8dd83"
+  queue_hash: "ep05-queue-v1"
 writer: none
 session_live: unknown
 blocker:
