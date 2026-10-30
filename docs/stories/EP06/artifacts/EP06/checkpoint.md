@@ -18,10 +18,14 @@ Role / scope: implementer; `apps/api/src/modules/users/users.service.ts` (merge 
 - [x] Re-check 4096 cap on merged result
 - [x] Update users-profile-integration.spec.ts (lines 147-160) for merge behaviour
 - [x] Run users specs, whole API suite, typecheck, lint
-- [ ] Write implementation.md fix-round section
-- [ ] Reconcile README queue (Active/Next already None)
-- [ ] Commit scoped work
-- Current step: write implementation.md fix-round section + commit
+- [x] Write implementation.md fix-round section
+- [x] Reconcile README queue (Active/Next already None)
+- [x] Commit scoped work
+- Current step: none — fix round complete
+
+## Commit
+- 028a799 fix(api): merge preferences bag in PATCH /users/me instead of replacing (service + spec)
+- 7be37ed docs(EP06): record R-EP06-06 preferences-merge fix round (checkpoint + implementation)
 
 ## Decisions and dependencies
 - Shallow merge at top level: `{ ...stored, ...provided }`.
