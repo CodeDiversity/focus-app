@@ -3,7 +3,7 @@
 **Epic:** [EP07: Focus Sessions & Time Tracking](../../epics/EP07-focus-sessions-and-time-tracking.md) (Jira STUDY-13)
 **Milestone:** M3 (Study planning and focus sessions)
 **Epic dependency:** EP03 (Assignment & Task Management) — complete. Integrates with EP06 (Study Planning & Scheduling — not yet broken down).
-**Status:** Planning — breakdown complete (2026-10-29). EP07A implemented (awaiting parent review); EP07B and EP07F ready to implement; EP07C, EP07D and EP07E are `Needs refinement` pending their `ui-refiner` pass (D07-5).
+**Status:** Planning — breakdown complete (2026-10-29). EP07A and EP07B implemented (awaiting parent review); EP07F ready to implement; EP07C, EP07D and EP07E are `Needs refinement` pending their `ui-refiner` pass (D07-5).
 **Jira keys:** Pending creation (no sync authorized for this planning task).
 
 ## Execution queue
@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP07B — implement (completion, confirmed time, read APIs).
+**Next substory:** EP07C — needs ui-refiner pass (D07-5), then implement.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (the Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -23,7 +23,7 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [EP07A](./EP07A-focus-session-persistence-and-lifecycle-api.md) | Implemented — awaiting parent review | EP03 complete (assignments/tasks exist). D07-1…D07-4 settled. Technical refinement captured 2026-10-30. | EP07B implement (unblocked) | `./artifacts/EP07A/` |
-| [EP07B](./EP07B-completion-confirmed-time-and-read-apis.md) | Ready | EP07A implemented (e52abde). Technical refinement captured 2026-10-30. | Implement EP07B: finish + confirmed-time + history APIs | `./artifacts/EP07B/` (pending) |
+| [EP07B](./EP07B-completion-confirmed-time-and-read-apis.md) | Implemented — awaiting parent review | EP07A implemented (e52abde). Technical refinement captured 2026-10-30. | (done) EP07B: finish + confirmed-time + history APIs | `./artifacts/EP07B/` |
 | [EP07C](./EP07C-start-focus-session-from-an-assignment.md) | Needs refinement | EP07A + EP07B implemented. `ui-refiner` pass required (D07-5). | `ui-refiner` pass on EP07C, then implement | `./artifacts/EP07C/` (pending) |
 | [EP07D](./EP07D-focus-mode-interface-and-timer-controls.md) | Needs refinement | EP07A + EP07B + EP07C implemented (EP07C navigates into this route). `ui-refiner` pass required (D07-5). | `ui-refiner` pass on EP07D, then implement | `./artifacts/EP07D/` (pending) |
 | [EP07E](./EP07E-completion-confirm-adjust-and-study-history.md) | Needs refinement | EP07A + EP07B + EP07D implemented. `ui-refiner` pass required (D07-5). | `ui-refiner` pass on EP07E, then implement | `./artifacts/EP07E/` (pending) |

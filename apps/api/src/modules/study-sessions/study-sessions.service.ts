@@ -9,7 +9,8 @@ import { StudySession, StudySessionStatus } from '../../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service';
 import { RESOURCE_NOT_FOUND, ownedWhere } from '../../common/ownership/ownership';
 import { StartStudySessionDto } from './dto/start-study-session.dto';
-
+import { FinishStudySessionDto } from './dto/finish-study-session.dto';
+import { ListStudySessionsQueryDto } from './dto/list-study-sessions-query.dto';
 type StudySessionRow = StudySession;
 
 function toStudySessionResponse(row: StudySessionRow) {
@@ -229,5 +230,176 @@ export class StudySessionsService {
       orderBy: { startTime: 'desc' },
     });
     return row ? toStudySessionResponse(row) : null;
+  }
+
+  async finish(userId: string, id: string, dto: FinishStudySessionDto) {
+    const fieldErrors = dtoErrors(
+      dto ?? ({} as FinishStudySessionDto),
+      new FinishStudySessionDto()
+    );
+    if (fieldErrors) {
+      throwFieldErrors(fieldErrors);
+    }
+
+    const row = await this.prisma.studySession.findFirst({
+      where: ownedWhere(userId, id),
+    });
+    if (!row) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+    if (row.status === StudySessionStatus.COMPLETED) {
+      throw new ConflictException('This session is already completed.');
+    }
+    if (row.status !== StudySessionStatus.ACTIVE && row.status !== StudySessionStatus.PAUSED) {
+      throw new ConflictException('This session cannot be finished.');
+    }
+
+    const now = new Date();
+    let newElapsed = row.elapsedSeconds;
+    if (row.status === StudySessionStatus.ACTIVE) {
+      const segmentStart = row.resumedAt ?? row.startTime;
+      const added = Math.max(0, Math.floor((now.getTime() - segmentStart.getTime()) / 1000));
+      newElapsed = row.elapsedSeconds + added;
+    }
+
+    const confirmed =
+      dto?.confirmedMinutes != null ? dto.confirmedMinutes : Math.round(newElapsed / 60);
+
+    const result = await this.prisma.studySession.updateMany({
+      where: {
+        id,
+        userId,
+        status: row.status,
+      },
+      data: {
+        status: StudySessionStatus.COMPLETED,
+        endTime: now,
+        durationMinutes: confirmed,
+        elapsedSeconds: newElapsed,
+        resumedAt: null,
+      },
+    });
+    if (result.count === 0) {
+      throw new ConflictException('The session changed; reload and try again.');
+    }
+
+    const updated = await this.prisma.studySession.findFirst({
+      where: ownedWhere(userId, id),
+    });
+    if (!updated) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+    return toStudySessionResponse(updated);
+  }
+
+  async list(userId: string, query: ListStudySessionsQueryDto) {
+    const fieldErrors = dtoErrors(
+      query ?? ({} as ListStudySessionsQueryDto),
+      new ListStudySessionsQueryDto()
+    );
+    if (fieldErrors) {
+      throwFieldErrors(fieldErrors);
+    }
+
+    const assignmentId = query?.assignmentId ?? null;
+    if (assignmentId) {
+      const assignment = await this.prisma.assignment.findFirst({
+        where: ownedWhere(userId, assignmentId),
+        select: { id: true },
+      });
+      if (!assignment) {
+        throw new NotFoundException(RESOURCE_NOT_FOUND);
+      }
+    }
+
+    const from = query?.from ? new Date(query.from) : null;
+    const to = query?.to ? new Date(query.to) : null;
+
+    const where: Record<string, unknown> = {
+      userId,
+      status: StudySessionStatus.COMPLETED,
+    };
+    if (assignmentId) {
+      where.assignmentId = assignmentId;
+    }
+    if (from || to) {
+      where.startTime = {
+        ...(from ? { gte: from } : {}),
+        ...(to ? { lte: to } : {}),
+      };
+    }
+
+    const limit = query?.limit ?? 50;
+    const offset = query?.offset ?? 0;
+
+    const [rows, total] = await Promise.all([
+      this.prisma.studySession.findMany({
+        where,
+        orderBy: [{ startTime: 'desc' }, { id: 'desc' }],
+        skip: offset,
+        take: limit,
+      }),
+      this.prisma.studySession.count({ where }),
+    ]);
+
+    return {
+      items: rows.map((row: StudySession) => toStudySessionResponse(row)),
+      total,
+    };
+  }
+
+  async confirmedTime(userId: string, assignmentId?: string) {
+    if (assignmentId) {
+      const assignment = await this.prisma.assignment.findFirst({
+        where: ownedWhere(userId, assignmentId),
+        select: { id: true },
+      });
+      if (!assignment) {
+        throw new NotFoundException(RESOURCE_NOT_FOUND);
+      }
+      const agg = await this.prisma.studySession.aggregate({
+        where: {
+          userId,
+          status: StudySessionStatus.COMPLETED,
+          assignmentId,
+        },
+        _sum: { durationMinutes: true },
+        _count: true,
+      });
+      return {
+        assignmentId,
+        confirmedMinutes: agg._sum.durationMinutes ?? 0,
+        sessionCount: (typeof agg._count === 'number' ? agg._count : 0) as number,
+      };
+    }
+
+    const groups = await this.prisma.studySession.groupBy({
+      by: ['assignmentId'],
+      where: {
+        userId,
+        status: StudySessionStatus.COMPLETED,
+        assignmentId: { not: null },
+      },
+      _sum: { durationMinutes: true },
+      _count: { _all: true },
+    });
+
+    const assignments = groups
+      .map(
+        (group: {
+          assignmentId: string | null;
+          _sum: { durationMinutes: number | null };
+          _count: { _all: number };
+        }) => ({
+          assignmentId: group.assignmentId as string,
+          confirmedMinutes: group._sum.durationMinutes ?? 0,
+          sessionCount: group._count._all ?? 0,
+        })
+      )
+      .sort((a, b) =>
+        a.assignmentId < b.assignmentId ? -1 : a.assignmentId > b.assignmentId ? 1 : 0
+      );
+
+    return { assignments };
   }
 }
