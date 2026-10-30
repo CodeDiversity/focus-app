@@ -138,14 +138,14 @@ Rebuild the dashboard page around four real sections — today's classes, upcomi
 
 1. The functional acceptance criteria above pass.
 2. Not applicable — no new input on the dashboard (the add-assignment form is EP05C's and reuses the existing validation).
-3. Not applicable — no data-access change; the dashboard adds no endpoint and sends no principal-scoped identifier.
-4. Not applicable — no API error-contract change; the error surface shows the existing actionable copy.
+3. **Applies — satisfied by construction; no EP05 change.** The dashboard adds no endpoint and sends no principal-scoped identifier (D05-3): `GET /assignments` is principal-scoped server-side (`where: { userId }`, `apps/api/src/modules/assignments/assignments.service.ts:297`) and `GET /calendar/events` takes its zone from the stored profile row (`calendar.service.ts:182-186`) and whitelists only `from`/`to` (`list-calendar-events-query.dto.ts:16-39`) under the global `whitelist + forbidNonWhitelisted` pipe (`apps/api/src/main.ts:14-23`). **The combined EP05 review must check:** the sections request no `userId`/`courseId`/`assignmentId`/`tz` parameter, and the rendered rows are the principal's own.
+4. **Applies — satisfied by construction; no EP05 change.** The error copy path is `getErrorMessage` (`apps/web/src/shared/lib/errors.ts:3-13`) over the RTK Query error shape (`{ message, code }`); every section renders that message with a retry action (AC #4). **The combined EP05 review must check:** a failed query shows the actionable message and a "Try again" action that refetches.
 5. Loading, empty and error states are implemented per section, with a retry on error and no blanking of the other sections.
 6. Keyboard accessibility: the sections are labelled regions in a predictable order, every control is a native link/button with a visible focus ring, the "see all" links are operable, and the overdue marking does not rely on colour.
 7. Responsive: the sections stack in one column at 375px with no horizontal scrolling and tap targets ≥ 44px.
 8. Automated component tests pass (TR-E05-02, TR-E05-03, TR-E05-04, TR-E05-07).
 9. Not applicable — no API change and no migration.
-10. Integrated review — the combined EP05 parent review (all three children) plus EP05C's manual browser pass.
+10. Integrated review — the combined EP05 parent review (all three children) plus the DoD-10 manual browser pass (TR-E05-08), which must be **executed** against the integrated stack (the environment, the date and the observed result per step recorded) or recorded as a **named exception** (owner + the exact steps); the combined review marks DoD 10 PASS only on executed evidence or on that recorded exception (D05-14). EP05B's contribution is the set of states the pass exercises — the four sections' loading/empty/error states, the page's live region and the 375px layout.
 11. Reviewer walkthrough — the combined EP05 parent review.
 
 ## Tracker reference

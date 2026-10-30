@@ -13,7 +13,7 @@
 
 ## Summary
 
-Make the dashboard actionable: ship the one quick action EP05 owns — "Add assignment" — wired through the shared assignment owner so a created assignment appears on the dashboard immediately, and give every section an empty state that explains what the student can do next. Close the epic by writing the EP05 parent implementation index (combined change scope, AC/TR ownership, commands and results, and the DoD-10 manual browser pass).
+Make the dashboard actionable: ship the one quick action EP05 owns — "Add assignment" — wired through the shared assignment owner so a created assignment appears on the dashboard immediately, and give every section an empty state that explains what the student can do next. Close the epic by writing the EP05 parent implementation index (combined change scope, AC/TR ownership, commands and results, and the DoD-10 manual browser pass — **executed**, or recorded as a named exception, D05-14).
 
 ## Description & bounded scope
 
@@ -24,7 +24,7 @@ Make the dashboard actionable: ship the one quick action EP05 owns — "Add assi
 2. **The cache hand-off** — after a successful create, the dashboard's assignments query is invalidated/refetched so the upcoming/overdue sections update without a page reload.
 3. **The empty states** — every section's empty state (AC-E05-06): each states what the student can do next and offers the matching action or link (add an assignment, open the calendar, open the assignments list, …). The empty states live with the sections (EP05B) but their **copy** is settled here, so the two children agree.
 4. **The focus and announcement contract** — where focus lands after the dialog closes, and what the page's live region announces after a create (DoD 6).
-5. **The EP05 parent index** — `./artifacts/EP05/implementation.md`: the review scope (parent + the complete child inventory + each implementation link), the combined Git change scope (base and final commits, not only the last child's diff), the AC/TR/DoD ownership with links to the collected evidence, the commands run and their results (planned checks are never labelled as executed), the known gaps, and the DoD-10 manual browser pass (TR-E05-08).
+5. **The EP05 parent index** — `./artifacts/EP05/implementation.md`: the review scope (parent + the complete child inventory + each implementation link), the combined Git change scope (base and final commits, not only the last child's diff), the AC/TR/DoD ownership with links to the collected evidence, the commands run and their results (planned checks are never labelled as executed), the known gaps, and the DoD-10 manual browser pass (TR-E05-08) — **executed** against the integrated stack, with the environment, the date and the observed result per step recorded, **or** recorded as a **named exception** (owner + the exact steps). An unexecuted checklist is **not** a pass (D05-14).
 6. **Tests** (TR-E05-05, TR-E05-06, TR-E05-07).
 
 ### Out of scope
@@ -47,7 +47,7 @@ Make the dashboard actionable: ship the one quick action EP05 owns — "Add assi
 1. **The quick action, and one owner of the assignment state.** The dashboard's quick-actions block offers exactly one action — "Add assignment" — which opens the shared assignment form in create mode. The placeholder's "Create Study Plan" and "Start Focus Session" buttons are not rendered (D05-5). The dashboard mounts the shared assignment owner (`useAssignmentActions` + `AssignmentDialogs`) **exactly once**, at page level, and **exposes a page-level `onOpenDetails(row: AssignmentListItem): void` callback** that EP05B's rows invoke; no section mounts the owner and no row opens a dialog itself (D05-17). The "Add assignment" control carries `data-assignment-focus="add"`, and at most one mounted control carries `data-assignment-focus="empty-add"`.
 2. **The create round-trip.** A successful create closes the dialog, refreshes the dashboard's assignment data so the affected sections update, and moves focus to a stable, visible control; a failed create shows an actionable message, keeps the form open with the student's input, and announces the failure.
 3. **The empty states.** Every section's empty state explains what the student can do next and offers the matching action or link; no section renders an empty state that names a feature the dashboard does not have (AC-E05-06).
-4. **The EP05 parent index.** `./artifacts/EP05/implementation.md` records the review scope (parent + all three children + their implementation links), the combined Git change scope (base and final commits, with each child's commits), the AC/TR/DoD ownership mapped to the collected evidence, the commands run with their results (planned checks are never labelled as executed), the known gaps (including D05-14's missing e2e coverage and the deliberately dropped "Study Stats" card — D05-11, final), and the DoD-10 manual browser pass with its steps and expected results.
+4. **The EP05 parent index.** `./artifacts/EP05/implementation.md` records the review scope (parent + all three children + their implementation links), the combined Git change scope (base and final commits, with each child's commits), the AC/TR/DoD ownership mapped to the collected evidence, the commands run with their results (planned checks are never labelled as executed), the known gaps (including D05-14's missing e2e coverage and the deliberately dropped "Study Stats" card — D05-11, final), and the **DoD-10 manual browser pass (TR-E05-08)** — **executed**, with the environment, the date and the **observed result per step** recorded, **or**, if it cannot be executed in the agent context, recorded as a **named exception** (owner + the exact steps). A checklist of steps that nobody ran is **not** a pass and is never recorded as one (D05-14).
 
 ## Tests to add
 
@@ -64,6 +64,7 @@ Make the dashboard actionable: ship the one quick action EP05 owns — "Add assi
   - No empty state mentions a study plan, a focus session, or any other action the dashboard does not offer — and none mentions a study-stats figure ("Hours Studied" / "Tasks Completed") that the dashboard does not have (D05-11, final).
   - The empty states are distinguishable from the error states (an error state is announced, an empty state is not).
 - **Responsive / accessibility (TR-E05-07):** the quick-actions block is operable and fully visible at 375px with tap targets ≥ 44px; the empty states wrap without horizontal scrolling; every action is reachable in the tab order.
+- **DoD-10 record (a record obligation, not a test file):** the parent index carries the manual browser pass **as executed** — the environment (the integrated stack: EP09's self-contained API + throwaway Postgres), the date, and the **observed result per step** — or, if it cannot be executed in the agent context, it carries a **named exception** (the owner + the exact steps) in the repository's D122C-1 / D123B-DoD10 form. **A checklist of unrun steps is never recorded as a pass** (D05-14).
 - **Verification:** `pnpm --filter web test -- src/features/dashboard src/pages/dashboard`, `pnpm --filter web typecheck`, `pnpm --filter web lint`.
 
 ## Technical notes
@@ -116,14 +117,14 @@ Make the dashboard actionable: ship the one quick action EP05 owns — "Add assi
 
 1. The functional acceptance criteria above pass.
 2. Not applicable — no new input; the reused `AssignmentForm` keeps the SP-113/SP-114 validation and its tests unchanged.
-3. Not applicable — no data-access change; the action uses the existing `POST /assignments` (principal-scoped server-side).
-4. Not applicable — no API error-contract change; the shared actionable error copy is reused.
+3. **Applies — satisfied by construction; no EP05 change.** The action uses the existing `POST /assignments`, which is principal-scoped server-side; the dashboard adds no endpoint and sends no principal-scoped identifier (D05-3): `GET /assignments` is principal-scoped server-side (`where: { userId }`, `apps/api/src/modules/assignments/assignments.service.ts:297`) and `GET /calendar/events` takes its zone from the stored profile row (`calendar.service.ts:182-186`) and whitelists only `from`/`to` (`list-calendar-events-query.dto.ts:16-39`) under the global `whitelist + forbidNonWhitelisted` pipe (`apps/api/src/main.ts:14-23`). **The combined EP05 review must check:** the dashboard's requests carry no `userId`/`courseId`/`assignmentId`/`tz` parameter.
+4. **Applies — satisfied by construction; no EP05 change.** The error copy path is `getErrorMessage` (`apps/web/src/shared/lib/errors.ts:3-13`) over the RTK Query error shape (`{ message, code }`); a failed create shows that actionable message, keeps the form open with the student's input and announces the failure (AC #2). **The combined EP05 review must check:** a failed create shows the shared actionable copy and the input survives.
 5. Loading, empty and error states are implemented: the empty states explain the next step, the create failure keeps the form open with an actionable message, and the page's error states are EP05B's.
 6. Keyboard accessibility: the action is operable with the keyboard, the dialog's focus trap and restoration come from the shared form, focus lands on a stable control after a create, and the page's live region announces the outcome.
 7. Responsive: the quick-actions block and the empty states are fully usable at 375px with tap targets ≥ 44px.
 8. Automated component tests pass (TR-E05-05, TR-E05-06, TR-E05-07).
 9. Not applicable — no API change and no migration; the parent index documents what was built and what was run.
-10. Integrated review — the manual browser pass recorded in `./artifacts/EP05/implementation.md` (TR-E05-08) plus the combined EP05 parent review.
+10. Integrated review — the DoD-10 manual browser pass (TR-E05-08) plus the combined EP05 parent review. The pass must be **executed** against the integrated stack (the EP09 self-contained API + throwaway Postgres), recording the environment, the date and the **observed result per step**; if it cannot be executed in the agent context it must be recorded as a **named exception** (owner + the exact steps), following the repository's precedent (SP-122's D122C-1, SP-123's D123B-DoD10). **An unexecuted checklist is not a pass** — the combined EP05 review marks DoD 10 PASS only on executed evidence or on that recorded, accepted exception (D05-14).
 11. Reviewer walkthrough — the combined EP05 parent review (the reviewer owns `walkthrough.md`).
 
 ## Tracker reference
