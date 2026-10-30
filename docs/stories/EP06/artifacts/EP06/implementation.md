@@ -194,3 +194,35 @@ All commands were run by the implementing children and recorded in their impleme
 
 ### Findings/deviations
 R-EP06-06 not fixed (user authorization required for EP01-owned `users.service.ts`); R-EP06-07/08/12 and PR-023…PR-028 remain planner-owned (not touched); F-EP06-07 (cross-epic) left for coordinator. No other deviations.
+
+## Fix round 2 — R-EP06-06 (preferences merge, authorized 2026-10-30)
+
+**Scope:** the data-loss path `PATCH /users/me` writing the `preferences` column verbatim. Authorized cross-epic edit to EP01-owned `users.service.ts` + `users-profile-integration.spec.ts`.
+
+### Findings / dispositions
+| Finding | Disposition | Evidence |
+|---|---|---|
+| R-EP06-06 / F-EP06-07 (`PATCH /users/me` erases saved `studyDefaults`) | Fixed | `users.service.ts` now merges the incoming bag into the stored bag (shallow, top-level) and re-checks the 4096-byte cap on the merged result; `users-profile-integration.spec.ts` updated to assert merge behaviour |
+
+### Changed paths (this round)
+- `apps/api/src/modules/users/users.service.ts` (merge + cap re-check)
+- `apps/api/src/modules/users/users-profile-integration.spec.ts` (merge behaviour at the former 147-160 block)
+- `docs/stories/EP06/artifacts/EP06/checkpoint.md`
+- `docs/stories/EP06/artifacts/EP06/implementation.md` (this section)
+
+### Verification (this round)
+| Command | cwd | Result |
+|---|---|---|
+| `pnpm --filter api test -- users` | apps/api | 38 suites passed, 854 tests passed, 21 skipped (integration, no DB), exit 0 |
+| `pnpm --filter api test` | apps/api | 38 suites passed, 854 tests passed, 21 skipped, 1274 total, exit 0 |
+| `pnpm --filter api typecheck` | apps/api | clean (exit 0) |
+| `pnpm --filter api lint` | apps/api | clean (exit 0) |
+
+### AC-by-AC outcomes
+- Merge instead of replace: implemented (shallow top-level merge).
+- 4096-byte cap re-checked on merged result: implemented (throws `BadRequestException` if exceeded).
+- Other keys (including `studyDefaults`) survive a PATCH sending a different key: implemented and asserted in the integration spec.
+- A PATCH sending `preferences: { studyDefaults: { ... } }` merges into the existing bag rather than erasing other keys: implemented (top-level merge replaces the `studyDefaults` key value but keeps sibling keys).
+
+### Findings/deviations
+Findings/deviations: None (beyond the authorized scope already recorded). The unrelated dirty path `apps/api/tsconfig.json` was left modified and unstaged.
