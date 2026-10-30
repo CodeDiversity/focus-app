@@ -6,7 +6,7 @@
 **Parent:** [EP06 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Frontend
-**Status:** Needs refinement — `ui-refiner` pass complete (2026-10-30); technical refinement pending before implementation (D06-15).
+**Status:** Ready — `ui-refiner` pass complete (2026-10-30); technical refinement satisfied by the planner's breakdown + the shared contract (D06-15), consistent with EP06A/EP06B/EP06E/EP06F. No oversized-scope concern (single 1-request/token frontend slice).
 **Dependencies:** EP06B implemented (the `GET /study-plans/remaining-work` read) and EP06F implemented (the plan page that hosts the two sections).
 **Jira key:** Pending creation
 **Refined:** 2026-10-30 (ui-refiner pass). Technical refinement satisfied by the planner's breakdown and the shared contract (D06-15).
