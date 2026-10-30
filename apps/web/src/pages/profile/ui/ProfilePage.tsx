@@ -7,6 +7,7 @@ import { useAuth } from '@/features/auth/model/AuthContext';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
+import { StudyPreferencesForm } from '@/features/study-preferences/ui/StudyPreferencesForm';
 import { getFieldError, getErrorMessage } from '@/shared/lib/errors';
 import {
   formatDateTime,
@@ -216,6 +217,8 @@ export function ProfilePage() {
           </Button>
         </div>
       </div>
+
+      <StudyPreferencesForm />
     </div>
   );
 }
