@@ -10,6 +10,7 @@ import { AssignmentsModule } from './modules/assignments/assignments.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
 import { AvailabilityModule } from './modules/availability/availability.module';
 import { StudyPlansModule } from './modules/study-plans/study-plans.module';
+import { StudySessionsModule } from './modules/study-sessions/study-sessions.module';
 
 @Module({
   imports: [
@@ -33,6 +34,8 @@ import { StudyPlansModule } from './modules/study-plans/study-plans.module';
     // EP06A: the study-preferences surface (D06-4) — the preferences half
     // of the study-planning module; EP06B/EP06D extend it.
     StudyPlansModule,
+    // EP07A: focus-session persistence & lifecycle API.
+    StudySessionsModule,
   ],
 })
 export class AppModule {}

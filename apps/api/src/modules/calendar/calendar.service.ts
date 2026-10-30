@@ -205,7 +205,7 @@ export class CalendarService {
       where: {
         userId,
         startTime: { lt: rangeEnd },
-        endTime: { gt: rangeStart },
+        OR: [{ endTime: null }, { endTime: { gt: rangeStart } }],
       },
     });
 
@@ -297,15 +297,13 @@ export class CalendarService {
     // STUDY_SESSION.
     for (const s of sessions) {
       const start = zoneDateParts(s.startTime, timeZone);
-      const end = zoneDateParts(s.endTime, timeZone);
       // include if start date within range (already filtered by overlap, but ensure date in range)
       if (start.date < from || start.date > to) {
-        // still might overlap range but start before; use range? We'll include with start date clamped?
-        // Keep simple: only include if start date in range; otherwise skip to avoid out-of-range events.
-        // But to honor "overlapping", if start before from but end within, we could emit on from date.
-        // Contract expects local start/end; tests likely within range. Skip out-of-range start.
+        // Skip out-of-range start (incl. open sessions whose start is outside the range).
         continue;
       }
+      // Null endTime (open session) is emitted with endTime: null (D07-8).
+      const end = s.endTime ? zoneDateParts(s.endTime, timeZone) : null;
       events.push({
         id: `session:${s.id}`,
         type: 'STUDY_SESSION',
@@ -313,7 +311,7 @@ export class CalendarService {
         subtitle: null,
         date: start.date,
         startTime: start.time,
-        endTime: end.time,
+        endTime: end ? end.time : null,
         courseId: null,
         courseName: null,
         courseColor: null,

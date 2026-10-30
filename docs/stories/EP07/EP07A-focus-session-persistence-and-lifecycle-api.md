@@ -6,7 +6,7 @@
 **Parent:** [EP07 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Backend
-**Status:** Ready
+**Status:** Implemented — awaiting parent review
 **Dependencies:** EP03 complete (assignments and tasks exist). Decisions D07-1…D07-8 recorded in the parent README. **No dependency on EP06** — the EP06 seam is provisional (V-07-1, V-07-2).
 **Jira key:** Pending creation
 **Refined:** technical refinement captured in this file (backend-only; no `ui-refiner` pass required) — 2026-10-30

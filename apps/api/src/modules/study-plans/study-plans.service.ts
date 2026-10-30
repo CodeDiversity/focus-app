@@ -569,7 +569,9 @@ export class StudyPlansService {
       include: { meetings: true },
     });
 
-    const sessions = await this.prisma.studySession.findMany({ where: { userId } });
+    const sessions = await this.prisma.studySession.findMany({
+      where: { userId, endTime: { not: null } },
+    });
 
     const facts: AssignmentFacts[] = assignments.map((a) => ({
       id: a.id,
@@ -606,11 +608,13 @@ export class StudyPlansService {
         });
       }
     }
-    const busy: DatedInterval[] = sessions.map((s) => {
-      const start = zoneParts(s.startTime, timeZone);
-      const end = zoneParts(s.endTime, timeZone);
-      return { date: start.date, startMinute: start.minutes, endMinute: end.minutes };
-    });
+    const busy: DatedInterval[] = sessions
+      .filter((s): s is typeof s & { endTime: Date } => s.endTime !== null)
+      .map((s) => {
+        const start = zoneParts(s.startTime, timeZone);
+        const end = zoneParts(s.endTime, timeZone);
+        return { date: start.date, startMinute: start.minutes, endMinute: end.minutes };
+      });
 
     const titleById = new Map(assignments.map((a) => [a.id, a.title]));
     const dueById = new Map(

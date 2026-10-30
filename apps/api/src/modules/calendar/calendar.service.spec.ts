@@ -280,4 +280,45 @@ describe('CalendarService (SP-127A)', () => {
       BadRequestException
     );
   });
+
+  it('emits an in-range open session (null endTime) as STUDY_SESSION with endTime null', async () => {
+    prisma.user.findUnique.mockResolvedValue({ timeZone: 'UTC' });
+    prisma.course.findMany.mockResolvedValue([]);
+    prisma.assignment.findMany.mockResolvedValue([]);
+    prisma.availabilitySlot.findMany.mockResolvedValue([]);
+    prisma.studySession.findMany.mockResolvedValue([
+      {
+        id: 's1',
+        userId: 'u1',
+        startTime: new Date('2026-10-26T09:00:00.000Z'),
+        endTime: null,
+        notes: 'Focus',
+        isFocusMode: true,
+      },
+    ]);
+    const result = await service.list('u1', { from: '2026-10-26', to: '2026-10-26' });
+    const ev = result.events.find((e) => e.type === 'STUDY_SESSION');
+    expect(ev).toBeDefined();
+    expect(ev!.endTime).toBeNull();
+    expect(ev!.startTime).toBe('09:00');
+  });
+
+  it('does not emit an open session whose start date is outside the range', async () => {
+    prisma.user.findUnique.mockResolvedValue({ timeZone: 'UTC' });
+    prisma.course.findMany.mockResolvedValue([]);
+    prisma.assignment.findMany.mockResolvedValue([]);
+    prisma.availabilitySlot.findMany.mockResolvedValue([]);
+    prisma.studySession.findMany.mockResolvedValue([
+      {
+        id: 's2',
+        userId: 'u1',
+        startTime: new Date('2026-10-20T09:00:00.000Z'),
+        endTime: null,
+        notes: null,
+        isFocusMode: true,
+      },
+    ]);
+    const result = await service.list('u1', { from: '2026-10-26', to: '2026-10-26' });
+    expect(result.events.filter((e) => e.type === 'STUDY_SESSION')).toHaveLength(0);
+  });
 });

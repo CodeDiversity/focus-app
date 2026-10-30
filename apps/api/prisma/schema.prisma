@@ -206,7 +206,8 @@ model Assignment {
   // Relations
   tasks Task[]
   plannedSessions PlannedSession[]
- 
+  studySessions StudySession[]
+  
   @@map("assignments")
 }
 
@@ -241,6 +242,8 @@ model Task {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   assignmentId String?
   assignment  Assignment? @relation(fields: [assignmentId], references: [id])
+  // EP07A: inverse relation for StudySession.taskId (SetNull on delete).
+  studySessions StudySession[]
   title       String
   description String?
   dueDate     DateTime?
@@ -277,16 +280,32 @@ model StudySession {
   id          String   @id @default(uuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignmentId String?
+  assignment  Assignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  taskId      String?
+  task        Task?       @relation(fields: [taskId], references: [id], onDelete: SetNull)
   startTime   DateTime
-  endTime     DateTime
-  durationMinutes Int    @default(0) // Calculated
+  endTime     DateTime?
+  status      StudySessionStatus @default(ACTIVE)
+  elapsedSeconds Int @default(0)
+  durationMinutes Int    @default(0) // Calculated (confirmed minutes)
+  plannedMinutes Int?
   notes       String?
   isFocusMode Boolean  @default(true)
   rating      Int?      // 1-5 user rating
+  resumedAt   DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([userId, status])
+  @@index([userId, startTime])
   @@map("study_sessions")
+}
+
+enum StudySessionStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
 }
 
 model AvailabilitySlot {
