@@ -23,6 +23,7 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [EP07A](./EP07A-focus-session-persistence-and-lifecycle-api.md) | Queued | EP03 complete (assignments/tasks exist). D07-1…D07-4 settled. | Implement EP07A: migration + lifecycle API | `./artifacts/EP07A/` (pending) |
+| [EP07B](./EP07B-completion-confirmed-time-and-read-apis.md) | Queued | EP07A (the module, the projection and the transition guard must exist). | Implement EP07B: finish + confirmed-time + history APIs | `./artifacts/EP07B/` (pending) |
 
 Sequence (one writer): EP07A → EP07B → EP07C → EP07D → EP07E → EP07F. EP07A and EP07B are the contract/persistence spine; the three frontend children consume it; EP07F verifies the whole stack and owns the parent index.
 
