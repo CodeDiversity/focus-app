@@ -298,31 +298,34 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 scope:
   parent: EP05
-  descendants: []
-  entry: planning
+  descendants:
+    - EP05A
+    - EP05B
+    - EP05C
+  entry: "implement EP05A"
   limits: enclosing parent review unit
-stage: plan
+stage: plan_review
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
-  baseline: "add0f41"
-  head: "3b8dd83"
+  baseline: "dbaf35b"
+  head: "dbaf35b"
 active_dispatch:
-  name: ep05-planner-2
-  role: planner
+  name: ep05-plan-review-1
+  role: reviewer
   status: returned
-  pointer: docs/stories/EP05/README.md
-  session: ""
-  assignment: plan_correction
+  pointer: docs/stories/EP05/plan-review.md
+  session: "ses_e733c3b9cffeb3UUtEXihQF28x"
+  assignment: plan_review
 last_result:
-  evidence: "Initial breakdown: 1ff69d5 (README + EP05A), e29bee7 (EP05B), 35197b2 (EP05C), 3b8dd83 (README consolidation). Correction pass: 3355455 (EP05A window rule + adversarial test), 1d967cc (EP05B/EP05C Study Stats removal), cde6f17 (EP05 README correction pass PC-EP05-01..03), b595e4f (EP04 README + SP-127 README, FU-EP04-01). All commits touch docs/** only; the unrelated dirty apps/api/tsconfig.json was preserved unstaged. Coordinator-verified: the 26-hour IANA offset bound (UTC-12 Etc/GMT+12 <-> UTC+14 Pacific/Kiritimati) and that a 26h civil difference can place the two civil dates two days apart; CalendarPage.tsx:29-43/56/68-85/141 derives from browser-local getters while calendar.service.ts interprets from/to via wallToInstant(..., timeZone) and buckets by zoneDateParts -> profile-zone date; AuthContext.tsx:142/153 calls refreshProfile() only when emailVerifiedAt === null, so a verified student's SessionUser.timeZone stays undefined; lucide-react 0.312.0 exports graduation-cap/brain/ban/timer/inbox/layout-dashboard/square-pen/notebook-pen/user-round/alert-triangle and NOT circle-alert/triangle-alert/circle-check-big/circle-help."
-  findings: "PC-EP05-01 (should-fix): the ±1-day request window was too narrow — corrected to ±2 days (5 days) with the 26-hour derivation and an adversarial Kiritimati/Etc-GMT+12 test obligation. PC-EP05-02 (should-fix, cross-epic): the shipped calendar page's browser-local week range and column headers are a real defect (events land in the wrong column or vanish) — owned by EP04 as FU-EP04-01 with a standalone review route; SP-127's PASS verdict is not reopened. PC-EP05-03: the 'Study Stats' card is dropped entirely — D05-11 is now final, not provisional; V-05-2 extended. D05-16 added: EP05's own 'today' handling is correct and must not be changed to match the calendar page; the combined EP05 review must not absorb FU-EP04-01."
-  scope_note: "Planning only — no implementation, no Jira sync (children stay `Pending creation`). Verdict Draft: EP05A Ready; EP05B and EP05C await the ui-refiner pass (D05-12), which must not re-add a Study Stats card. FU-EP04-01 needs a planner sizing pass before it can be built; EP04's Next substory stays None."
+  evidence: "Plan review pass 1 saved at docs/stories/EP05/plan-review.md (173 lines) on 2026-10-30; reviewer wrote only that file and ran no git command; the docs sync was deferred (non-passing verdict). The reviewer had no shell in its session, so it recorded Git state as CANNOT VERIFY and left apps/api/tsconfig.json untouched. Coordinator-verified against the repo: no EP05 application code exists (no apps/web/src/features/dashboard/, no features/assignments/api/, no features/calendar/api/, no shared/api/rtkBaseQuery.ts, no DashboardPage.test.tsx); store.test.tsx really asserts ['api','auth','onboarding'] and state size 3, so EP05A's store-test obligation is real; the calendar DTO whitelist + global forbidNonWhitelisted, the 31-day cap, from===to legality, today=profile-zone date, events[].link===null for STUDY_SESSION, the assignments default sort (dueDate asc, title asc, id asc) and its lack of pagination, the shared predicates' signatures, the session user's missing timeZone (the API login/refresh projection selects only id/name/email/emailVerifiedAt), the FSD lint zones and the OVERDUE_LABEL text badge were all confirmed by the reviewer. Coordinator-verified tzdata (recorded command, node Intl on this machine): Pacific/Kiritimati = GMT+14:00 and Etc/GMT+12 = GMT-12:00 (both 2026-01-01 and 2026-01-15) -> the 26-hour spread the plan names IS realizable; Intl.supportedValuesOf('timeZone') returns 418 location zones (Etc/* pseudo-zones excluded) spanning -11 (Pacific/Midway/Niue/Pago_Pago) to +14 (Pacific/Kiritimati)."
+  findings: "Pass 1 verdict: Changes Required (not Plan Ready). Open should-fix: PR-001 the shared assignment owner (useAssignmentActions + AssignmentDialogs) has no single owner across EP05B/EP05C, and the ui-refiner is offered 'reuse AssignmentRow with reduced props' although AssignmentRowProps has no summary variant and every prop is required (would force an unscoped edit to a shared EP03 component); PR-002 the plan's 26-hour IANA spread exemplar is claimed wrong (reviewer says Kiritimati is UTC+13 today and only Etc/GMT-14 is +14); PR-003 DoD-10's evidence is worded so an unexecuted checklist could satisfy it (the repo precedent is SP-122 D122C-1 / SP-123 D123B-DoD10: an unexecuted pass recorded as an explicitly owned exception); PR-004 DoD 3 and DoD 4 are marked 'Not applicable' although the dashboard displays student academic data and surfaces API errors, so both rows should read 'Applies - satisfied by <named mechanism>'. Polish: PR-005 reduced motion has no owning test case and TR-E05-08's EP05B contribution is undefined; PR-006 the reusable-UI inventory omits AssignmentsSection.tsx (the existing host precedent) and DeleteSubtaskDialog.tsx; PR-007 three citation errors (subtasks vs tasks, the predicate signatures, the AuthContext:142 attribution); PR-008 EP05B has no bounded milestone sequence and the ui-refiner order for EP05B vs EP05C is ambiguous; PR-009 D05-1..D05-5 cite no in-repo record of the user approval. Reviewer raised NO finding against the EP04 calendar-page defect (FU-EP04-01 is correctly bounded to EP04) and confirmed the endpoint, ownership, default-order, predicate, presentation-reuse and dependency facts. Coordinator note on PR-002: the reviewer's premise is contradicted by the recorded command above - Pacific/Kiritimati is UTC+14 in current tzdata, so the plan's 26-hour bound stands; the plan correction must record that evidence rather than 'correct' a correct rule into a wrong one, while adopting the reviewer's sound robustness ask (assert the containment property, verify offsets with a bounded command at implement time) and the realistic 25-hour profile-picker pair."
+  scope_note: "Planning only — no implementation, no Jira sync (children stay `Pending creation`). Verdict Draft: EP05A Ready; EP05B and EP05C await the ui-refiner pass (D05-12), which must not re-add a Study Stats card. FU-EP04-01 needs a planner sizing pass before it can be built; EP04's Next substory stays None. Reconciled 2026-10-30 by the coordinator: the user's `implement EP05A` request is an entry hint — the enclosing EP05 parent review unit is authorized (EP05A → EP05B → EP05C → combined review → walkthrough → closeout). `docs/stories/EP05/plan-review.md` does not exist, so the plan approval gate is `missing` (the breakdown README's own quality-gate verdict is `Draft`), which routes to the plan reviewer before any implementation. HEAD dbaf35b; the only dirty path is the unrelated `apps/api/tsconfig.json` (preserved unstaged, outside every role's scope)."
   cycles: 0
   same_findings: unknown
 gates:
   breakdown: true
-  plan: draft
+  plan: findings_open
   ui: unknown
   refinement: false
   child_unfinished: false
@@ -331,11 +334,11 @@ gates:
   integration: unknown
   all_descendants_implemented: false
   review: absent
-  findings_owner: none
-  open_findings: false
+  findings_owner: planner
+  open_findings: true
   walkthrough: missing
-  judged_at_head: "3b8dd83"
-  queue_hash: "ep05-queue-v1"
+  judged_at_head: "dbaf35b"
+  queue_hash: "ba1f0ccb8e99d0be"
 writer: none
 session_live: unknown
 blocker:
