@@ -122,6 +122,12 @@ const calendarPayload: CalendarEventsResult = {
 let requests: { url?: string; params?: unknown }[] = [];
 let assignmentsFailure: string | null = null;
 let calendarFailure: string | null = null;
+/**
+ * The profile zone the calendar payload echoes. The default case uses
+ * `America/New_York`; the zone-extreme cases override it to pin the day
+ * line's construction at both ends of the offset range (PC-EP05-13).
+ */
+let calendarTimeZone = TIME_ZONE;
 
 const originalAdapter = httpClient.defaults.adapter;
 
@@ -151,7 +157,7 @@ function installAdapter() {
     if (config.url === '/calendar/events') {
       if (calendarFailure) throw failure(config, calendarFailure);
       return {
-        data: calendarPayload,
+        data: { ...calendarPayload, timeZone: calendarTimeZone },
         status: 200,
         statusText: 'OK',
         headers: {},
@@ -197,6 +203,7 @@ describe('DashboardPage (EP05B)', () => {
     requests = [];
     assignmentsFailure = null;
     calendarFailure = null;
+    calendarTimeZone = TIME_ZONE;
     installAdapter();
     mockedRefreshToken.mockResolvedValue({ accessToken: 'test-token', user: sessionUser });
   });
@@ -226,6 +233,36 @@ describe('DashboardPage (EP05B)', () => {
 
     expect(await screen.findByText('Welcome back, Ada Lovelace!')).toBeInTheDocument();
     expect(await screen.findByText(`Today, Oct 30, 2026 · ${TIME_ZONE}`)).toBeInTheDocument();
+  });
+
+  /**
+   * Day-line zone extremes (PC-EP05-13, finding F-EP05B-01 — REQUIRED test
+   * obligations). The payload's `today` is a **civil date**, so the day line
+   * renders it **verbatim** in **every** profile zone; the profile zone is
+   * printed beside it as context and is never applied to it.
+   *
+   * These two cases are mandatory because no single UTC-anchored instant is
+   * correct at both ends of the offset range: the superseded noon-UTC
+   * construction (`new Date(`${today}T12:00:00Z`)` re-rendered in the profile
+   * zone) is one day **ahead** at UTC+12 and later, and a midnight-UTC
+   * construction is one day **behind** at UTC−12 and earlier.
+   */
+  it('renders the payload’s civil date verbatim at the UTC+14 extreme (Pacific/Kiritimati)', async () => {
+    calendarTimeZone = 'Pacific/Kiritimati';
+    renderPage();
+
+    expect(await screen.findByText('Today, Oct 30, 2026 · Pacific/Kiritimati')).toBeInTheDocument();
+    // The noon-UTC construction rendered this zone one day ahead.
+    expect(screen.queryAllByText(/Oct 31, 2026/)).toHaveLength(0);
+  });
+
+  it('renders the payload’s civil date verbatim at the UTC-12 extreme (Etc/GMT+12)', async () => {
+    calendarTimeZone = 'Etc/GMT+12';
+    renderPage();
+
+    expect(await screen.findByText('Today, Oct 30, 2026 · Etc/GMT+12')).toBeInTheDocument();
+    // A midnight-UTC construction rendered this zone one day behind.
+    expect(screen.queryAllByText(/Oct 29, 2026/)).toHaveLength(0);
   });
 
   it('shows no day line while the calendar query has no payload', async () => {

@@ -37,8 +37,10 @@ import type { AssignmentListItem } from '@/shared/types/academic';
  *   calendar query's argument identity and refetch endlessly; a window frozen
  *   at mount would go stale across midnight). The refresh control replaces
  *   it;
- * - the **day line** — built from the payload's `today` and `timeZone` with
- *   the noon-UTC construction EP04 settled. The client performs **no**
+ * - the **day line** — the payload's `today` is a **civil date**, not an
+ *   instant, so it is rendered **verbatim**: it is formatted in `UTC` and
+ *   the profile zone is printed **beside** it as the payload's raw IANA id
+ *   (context only, never applied to the date). The client performs **no**
  *   profile-zone arithmetic (D05-6): it only displays what the server
  *   echoed. The line is absent while the calendar query has no payload;
  * - the **single page-level live region** (`role="status"`) with the count
@@ -119,10 +121,21 @@ export function DashboardPage({ onOpenDetails }: DashboardPageProps = {}) {
 
   const name = user?.name || user?.email.split('@')[0];
 
+  /**
+   * The day line (Decisions #2 — corrected by PC-EP05-13, finding
+   * F-EP05B-01). The payload's `today` is a **civil date**, not an instant,
+   * so it is rendered **verbatim**: the civil date is formatted in `UTC` and
+   * the profile zone is printed **beside** it as the payload's raw IANA id —
+   * context only, never applied to the date. The civil date is deliberately
+   * **not** re-anchored to an instant and re-rendered in the profile zone:
+   * no single UTC-anchored instant is correct in every zone (a noon-UTC
+   * instant shifts the displayed date for every profile zone at UTC+12 or
+   * later, a midnight-UTC instant at UTC−12 and earlier), and re-anchoring
+   * would break the invariant "Today is the student's profile-zone day" for a
+   * legal zone such as `Pacific/Kiritimati` (UTC+14).
+   */
   const dayLine = calendar
-    ? `Today, ${formatDate(new Date(`${calendar.today}T12:00:00Z`), calendar.timeZone)} · ${
-        calendar.timeZone
-      }`
+    ? `Today, ${formatDate(new Date(`${calendar.today}T00:00:00Z`), 'UTC')} · ${calendar.timeZone}`
     : null;
 
   const isInitialLoading = assignmentsQuery.isLoading || calendarQuery.isLoading;
