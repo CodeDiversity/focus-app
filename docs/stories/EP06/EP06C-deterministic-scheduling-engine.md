@@ -6,7 +6,7 @@
 **Parent:** [EP06 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Backend (pure domain module)
-**Status:** Queued
+**Status:** Implemented — awaiting parent review
 **Dependencies:** EP06A implemented (the shared `StudyPreferences` type and the domain folder) and EP06B implemented (the schedulable/flagged classification the engine consumes). EP03 + EP04 complete.
 **Jira key:** Pending creation
 **Refined:** — (technical-refine pass not yet run; this file is the planner's breakdown)
