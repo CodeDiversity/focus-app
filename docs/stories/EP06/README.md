@@ -664,32 +664,32 @@ scope:
   descendants: [EP06A, EP06B, EP06C, EP06D, EP06E, EP06F, EP06G, EP06H]
   entry: planning
   limits: enclosing parent review unit
-stage: implement
+stage: ui_refine
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "9b1ec19"
-  head: "7c13b2c"
+  head: "4380ce9"
 active_dispatch:
-  name: ep06-implementer-4
-  role: implementer
+  name: ep06-ui-refiner-1
+  role: ui-refiner
   status: pending
-  pointer: docs/stories/EP06/artifacts/EP06D/
+  pointer: docs/stories/EP06/EP06E-study-preferences-ui.md
   session: ""
-  assignment: complete_child
+  assignment: ui_refine
 last_result:
-  evidence: "EP06C implemented and committed in 2 scoped commits (ee619ad the code and tests — types.ts, intervals.ts, intervals.spec.ts, scheduler.ts, scheduler.spec.ts; 7c13b2c the closeout docs). Verification at HEAD 7c13b2c: `pnpm --filter api test -- scheduler` 1 suite / 25 tests passed; `pnpm --filter api test -- intervals` 1 suite / 24 tests passed; `pnpm --filter api test -- study-plans` 3 suites / 56 tests passed (DATABASE_URL supplied on the command line); `pnpm --filter api test` 58 suites / 1266 tests passed; `pnpm --filter api typecheck` exit 0; `pnpm --filter api lint` exit 0. Built: the pure scheduling engine (deterministic ordering via the shared comparator, window placement, splitting across days, the truncating daily cap per D06-20, the deadline horizon, the deficit categories NO_AVAILABLE_TIME / INSUFFICIENT_TIME_BEFORE_DEADLINE / OVERDUE plus deferred, flag refusal) and the shared freeIntervals(...) helper whose two base modes (declared / whole-day) and required placed input EP06D's re-check depends on."
-  findings: "EP06C's findings, all resolved or documented: F-C-1 (the calendar's dayOfWeekOf is module-private, so the engine recomputes the weekday with getUTCDay() — identical arithmetic), F-C-2 (a short interval is INSUFFICIENT_TIME_BEFORE_DEADLINE rather than NO_AVAILABLE_TIME — the distinction is recorded in scheduler.spec.ts), F-C-3 (DATABASE_URL unset — supplied on the command line), F-C-4 (the stale parent status line is outside the implementer's write boundary — coordinator/reviewer). **F-EP06-07 remains open (recorded by EP06A, not fixed):** `PATCH /users/me` replaces the `preferences` column verbatim, so a later profile PATCH carrying a preferences bag can ERASE saved studyDefaults. EP06 does not change `PATCH /users/me` (excluded by the spec and D06-14); it needs an EP01-owned change plus its integration spec, outside this run's scope and needing the user's authorization. The six non-blocking plan-review polish findings PR-023…PR-028 also remain open (owner: planner)."
-  scope_note: "Implementation stage. EP06A, EP06B and EP06C are 'Implemented — awaiting parent review' (no per-child review gate; the combined EP06 parent review after EP06H is the gate). EP06D — the plan persistence, the migration, the preview/save/read API and the save-time conflict re-check — is the next actionable child and is Ready. One writer at a time: the EP06C session's ownership ended with its return; EP06D goes to a fresh implementer context. No Jira sync, no push, no deployment. EP06D is the first child that touches the database schema (a migration) — the implementer must run `prisma migrate dev` against a migrated local database (the machine's `postgresql://michaelrobert@localhost:5432/studypilot` is available) rather than rely on a self-skipping integration run."
+  evidence: "EP06D implemented and committed in 1 scoped commit (4380ce9, 14 files — the migration, the schema change, the conflicts helper, the save/preview/read service and controller, the two DTOs, the three specs, the ownership-comment update, the checkpoint and implementation record). Verification at HEAD 4380ce9: `pnpm --filter api db:migrate` applied the migration cleanly (the guard succeeded on the empty table; `planned_sessions`, `PlannedSessionStatus` and the two indexes exist); `pnpm --filter api test -- study-plans` 3 suites / 56 tests passed; `pnpm --filter api test -- conflicts` 1 suite / 8 tests passed; `pnpm --filter api test` 59 suites / 1274 tests passed; `pnpm --filter api typecheck` exit 0; `pnpm --filter api lint` exit 0. Built: the migration `20261030185825_study_plan_planned_sessions` (rename + index/column/assignmentId-guard + two indexes), the ownership-convention comment update, the data gathering (profile, candidate assignments, availability slots, ClassMeeting windows, confirmed StudySession intervals converted to wall-clock), the seven-date window, POST /study-plans/preview (side-effect-free), POST /study-plans (atomic save with the conflict re-check and the rollover rejection), GET /study-plans (optional from/to, server-named window), and the conflicts helper `findConflicts` calling freeIntervals with base { kind: 'whole-day' } and emitting exactly the four reason codes."
+  findings: "EP06D's findings: F-EP06D-01 (the AllExceptionsFilter did not preserve the `conflicts` array on a 409 — fixed additively, no other handler changed); otherwise `Findings/deviations: None`. **F-EP06-07 remains open (recorded by EP06A, not fixed):** `PATCH /users/me` replaces the `preferences` column verbatim, so a later profile PATCH carrying a preferences bag can ERASE saved studyDefaults. EP06 does not change `PATCH /users/me` (excluded by the spec and D06-14); it needs an EP01-owned change plus its integration spec, outside this run's scope and needing the user's authorization. The six non-blocking plan-review polish findings PR-023…PR-028 also remain open (owner: planner), of which PR-028 (the children's 'Refined:' fields still read 'technical-refine pass not yet run') is now visible in EP06A–EP06D."
+  scope_note: "Implementation stage. EP06A, EP06B, EP06C and EP06D are 'Implemented — awaiting parent review' (no per-child review gate; the combined EP06 parent review after EP06H is the gate). EP06E — the study-preferences surface on /profile — is the next actionable child but is 'Needs refinement' and must have its `ui-refiner` pass before implementation (D06-15). EP06F and EP06G are also 'Needs refinement' (gated on their ui-refiner pass); EP06H is Queued. One writer at a time: the EP06D session's ownership ended with its return; the ui-refiner runs next (it writes only the story file), then a fresh implementer for EP06E. No Jira sync, no push, no deployment."
   cycles: 3
   same_findings: false
 gates:
   breakdown: true
   plan: pass
-  ui: false
+  ui: unknown
   refinement: false
   child_unfinished: true
-  eligible_child_state: Ready
+  eligible_child_state: "Needs refinement"
   closeout: unknown
   integration: unknown
   all_descendants_implemented: false
@@ -697,7 +697,7 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: missing
-  judged_at_head: "7c13b2c"
+  judged_at_head: "4380ce9"
   queue_hash: "ep06-queue-v8"
 writer: implementer
 session_live: false
