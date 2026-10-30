@@ -43,7 +43,7 @@ Sequence (one writer): EP07A → EP07B → EP07C → EP07D → EP07E → EP07F. 
 | [EP07B](./EP07B-completion-confirmed-time-and-read-apis.md) | 4. Implement session completion and time logging (API half) | Backend | Pending creation |
 | [EP07C](./EP07C-start-focus-session-from-an-assignment.md) | 1. Implement focus-session creation and startup (frontend half) | Frontend | Pending creation |
 | [EP07D](./EP07D-focus-mode-interface-and-timer-controls.md) | 2. Implement timer controls and recovery after interruption + 3. Build the distraction-reduced focus interface | Frontend | Pending creation |
-| [EP07E](./EP07E-completion-confirm-adjust-and-study-history.md) | 4. Implement session completion and time logging (frontend half) + 5. Display study history and remaining workload | Frontend | Pending creation |
+| [EP07E](./EP07E-completion-confirm-adjust-and-study-history.md) | 4. Implement session completion and time logging (frontend half) + 5. Display study history (the history surface + the per-assignment confirmed-time contribution; the **full** remaining-work view stays EP06's per D07-3) | Frontend | Pending creation |
 | [EP07F](./EP07F-cross-layer-e2e-calendar-regression-and-parent-index.md) | Cross-layer verification of all five proposed stories + the EP07 parent index | Integration | Pending creation |
 
 All five of the epic's proposed stories are covered. The split follows the epic's own three-way seam: persistence (backend), HTTP surface (backend), and student-facing surfaces (frontend), plus one integration child.
