@@ -30,21 +30,21 @@ Make the dashboard actionable: ship the one quick action EP05 owns — "Add assi
 
 - Creating study plans (EP06) or focus sessions (EP07) — no such action ships (D05-5).
 - Any backend change or new endpoint (D05-3); the action uses the existing `POST /assignments`.
-- A study-stats surface (D05-11 — no endpoint exists; V-05-2).
+- Any **"Study Stats" card** or study-time / completed-task figure (D05-11, **final** — EP05 ships none: "Hours Studied" has no endpoint until EP07's `GET /study-sessions/confirmed-time` (D07-3), and "Tasks Completed" is deliberately not re-added by EP05; V-05-2 reconsiders only if a real study-time endpoint exists, and EP07's study-history surface owns study time).
 - The reviewer-owned `review.md` and `walkthrough.md` — the reviewer writes them (DoD 11).
 
 ## Source requirement references
 
 - **Epic AC-E05-05** (the "add assignments" half), **AC-E05-06** (empty states).
 - **Shared DoD** — items 1, 5, 6, 7, 8, 9 (the parent index), 10 (the manual browser pass) and 11 (the reviewer walkthrough, in the combined review).
-- **Decisions:** D05-5 (quick actions: add assignment only; the EP07 D07-9 seam resolves here), D05-11 (the placeholder's static cards are not carried over), D05-14 (no dashboard e2e spec; the DoD-10 evidence is a recorded manual browser pass), D05-15 (a student with no courses can still use the dashboard).
+- **Decisions:** D05-5 (quick actions: add assignment only; the EP07 D07-9 seam resolves here), D05-11 (the placeholder's static cards are not carried over and **no "Study Stats" card is shipped** — final), D05-14 (no dashboard e2e spec; the DoD-10 evidence is a recorded manual browser pass), D05-15 (a student with no courses can still use the dashboard).
 
 ## Acceptance criteria
 
 1. **The quick action.** The dashboard's quick-actions block offers exactly one action — "Add assignment" — which opens the shared assignment form in create mode. The placeholder's "Create Study Plan" and "Start Focus Session" buttons are not rendered (D05-5).
 2. **The create round-trip.** A successful create closes the dialog, refreshes the dashboard's assignment data so the affected sections update, and moves focus to a stable, visible control; a failed create shows an actionable message, keeps the form open with the student's input, and announces the failure.
 3. **The empty states.** Every section's empty state explains what the student can do next and offers the matching action or link; no section renders an empty state that names a feature the dashboard does not have (AC-E05-06).
-4. **The EP05 parent index.** `./artifacts/EP05/implementation.md` records the review scope (parent + all three children + their implementation links), the combined Git change scope (base and final commits, with each child's commits), the AC/TR/DoD ownership mapped to the collected evidence, the commands run with their results (planned checks are never labelled as executed), the known gaps (including D05-14's missing e2e coverage), and the DoD-10 manual browser pass with its steps and expected results.
+4. **The EP05 parent index.** `./artifacts/EP05/implementation.md` records the review scope (parent + all three children + their implementation links), the combined Git change scope (base and final commits, with each child's commits), the AC/TR/DoD ownership mapped to the collected evidence, the commands run with their results (planned checks are never labelled as executed), the known gaps (including D05-14's missing e2e coverage and the deliberately dropped "Study Stats" card — D05-11, final), and the DoD-10 manual browser pass with its steps and expected results.
 
 ## Tests to add
 
@@ -56,7 +56,7 @@ Make the dashboard actionable: ship the one quick action EP05 owns — "Add assi
   - The action is keyboard-operable (Enter/Space) with a visible focus ring.
 - `apps/web/src/features/dashboard/ui/DashboardEmptyStates.test.tsx` (new) — one case per section:
   - Each empty state renders its heading, a sentence naming what the student can do next, and the matching action or link (a link to `/assignments` or `/calendar`, or the add-assignment action where that is the right next step).
-  - No empty state mentions a study plan, a focus session, or any other action the dashboard does not offer.
+  - No empty state mentions a study plan, a focus session, or any other action the dashboard does not offer — and none mentions a study-stats figure ("Hours Studied" / "Tasks Completed") that the dashboard does not have (D05-11, final).
   - The empty states are distinguishable from the error states (an error state is announced, an empty state is not).
 - **Responsive / accessibility (TR-E05-07):** the quick-actions block is operable and fully visible at 375px with tap targets ≥ 44px; the empty states wrap without horizontal scrolling; every action is reachable in the tab order.
 - **Verification:** `pnpm --filter web test -- src/features/dashboard src/pages/dashboard`, `pnpm --filter web typecheck`, `pnpm --filter web lint`.
@@ -130,14 +130,14 @@ Jira key: Pending creation. No sync authorized.
 - **Files:** `apps/web/src/features/dashboard/ui/DashboardQuickActions.tsx` (new), `.../DashboardEmptyStates.tsx` (new), `.../DashboardQuickActions.test.tsx` (new), `.../DashboardEmptyStates.test.tsx` (new), `apps/web/src/pages/dashboard/ui/DashboardPage.tsx` (modify), `apps/web/src/features/dashboard/ui/*Section.tsx` (modify — empty-state content), `docs/stories/EP05/artifacts/EP05/implementation.md` (new — parent index).
 - **Start context:** this story; `docs/stories/EP05/README.md` (shared contract + D05-5, D05-11, D05-14, D05-15); EP05A's and EP05B's implementation records (`./artifacts/EP05A/implementation.md`, `./artifacts/EP05B/implementation.md`) for the exact hook/selector names and the section components; `apps/web/src/features/assignments/model/useAssignmentActions.ts`; `apps/web/src/features/assignments/ui/AssignmentDialogs.tsx`; `apps/web/src/features/assignments/ui/AssignmentForm.tsx`; `apps/web/src/pages/assignments/ui/AssignmentsPage.tsx` (the reference host).
 - **Verification:** `pnpm --filter web test -- src/features/dashboard src/pages/dashboard`, `pnpm --filter web typecheck`, `pnpm --filter web lint`; plus the manual browser pass recorded in the parent index (TR-E05-08).
-- **Dependencies / exclusions:** EP05A and EP05B implemented. Excludes the data layer (EP05A), the sections (EP05B), any study-plan/focus-session action (D05-5), any backend work (D05-3), a study-stats surface (D05-11), a dashboard e2e spec (D05-14), and the reviewer-owned `review.md`/`walkthrough.md`.
+- **Dependencies / exclusions:** EP05A and EP05B implemented. Excludes the data layer (EP05A), the sections (EP05B), any study-plan/focus-session action (D05-5), any backend work (D05-3), any study-stats / study-time / completed-task surface (D05-11, final), a dashboard e2e spec (D05-14), and the reviewer-owned `review.md`/`walkthrough.md`.
 
 ## UI/UX gaps for the `ui-refiner` (D05-12 — not yet settled)
 
 - **The quick-actions layout:** where the block sits on the page (above the sections? beside the heading?), its shape (a card, a button row, a CTA in the heading), and how it behaves at 375px.
 - **The action's label and icon:** "Add assignment" (matching the assignments page) vs. the placeholder's "Add New Assignment"; whether an icon accompanies the label.
 - **The add-assignment dialog on the dashboard:** whether the create form offers a **course select** (which needs the student's course list) or creates a course-less assignment (D05-15); and whether the dialog is presented identically to the assignments page's.
-- **The empty-state copy per section:** what each section says when it is empty and what it tells the student to do next (the assignments sections point at "Add assignment"; the class and session sections point at the calendar / the course list) — the copy must not imply a study plan or a focus session exists (D05-5).
+- **The empty-state copy per section:** what each section says when it is empty and what it tells the student to do next (the assignments sections point at "Add assignment"; the class and session sections point at the calendar / the course list) — the copy must not imply a study plan or a focus session exists (D05-5), and must not name a study-stats figure the dashboard does not have (D05-11, final).
 - **The empty state's affordance:** a button, a link, or both; and whether the assignments sections repeat the "Add assignment" action inside their empty state.
 - **Loading/error presentation for the action:** the busy state of the "Add assignment" button while the form is open, and whether the page announces the created assignment in a live region.
 - **Focus behaviour after a create:** the shared hook moves focus to the stable add control — whether the dashboard wants that, or wants focus to move to the newly created row instead (the hook's default is the add control; changing it means changing the shared owner, which is out of scope — flag it if it is wanted).

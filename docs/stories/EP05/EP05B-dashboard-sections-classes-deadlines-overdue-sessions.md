@@ -24,7 +24,7 @@ Rebuild the dashboard page around four real sections — today's classes, upcomi
    - `UpcomingDeadlinesSection.tsx` — unfinished, not-overdue assignments ordered by upcoming deadline; the due date shown; a null `dueDate` labelled ("No due date"); capped; "see all" → `/assignments`.
    - `OverdueAssignmentsSection.tsx` — unfinished assignments whose `dueDate` is in the past; each row marked with the text label "Overdue" (never colour alone); capped; "see all" → `/assignments`.
    - `TodayStudySessionsSection.tsx` — today's `STUDY_SESSION` events; the focus flag shown as text ("Focus session"); capped; "see all" → `/calendar`. Renders an empty state until EP06/EP07 create sessions (D05-2).
-2. **The dashboard page** — `apps/web/src/pages/dashboard/ui/DashboardPage.tsx` is rebuilt: a heading with the current day, the four sections in a responsive layout, per-section states, and the page's live region. The placeholder's quick-action card, its static "Recent Assignments" card, its static "Study Stats" card and its static "Upcoming Deadlines" card are removed (D05-11) — the working "Add assignment" action is EP05C's.
+2. **The dashboard page** — `apps/web/src/pages/dashboard/ui/DashboardPage.tsx` is rebuilt: a heading with the current day, the four sections in a responsive layout, per-section states, and the page's live region. The placeholder's quick-action card, its static "Recent Assignments" card, its static "Study Stats" card and its static "Upcoming Deadlines" card are removed (D05-11) — the working "Add assignment" action is EP05C's. The "Recent Assignments" and "Upcoming Deadlines" cards are **superseded** by the upcoming/overdue sections; the **"Study Stats" card is removed and not rebuilt in any form** (D05-11, **final**): its two values ("0 Hours Studied" / "0 Tasks Completed") have no data source — "Hours Studied" waits for EP07's `GET /study-sessions/confirmed-time` (D07-3) and "Tasks Completed" is not one of the epic's scope items (V-05-2). This rebuild is an explicit **replacement** of the placeholder, not a silent omission.
 3. **The "open relevant details directly" affordances** (the second half of AC-E05-05): a class row opens the course (`event.link` → `/courses/:id`); an assignment row opens its details (the shared edit dialog via `useAssignmentActions`, or the course page — the ui-refiner decides, see the gaps); a study-session row has **no** deep link today (`events[].link` is `null` for sessions — verified) and must not pretend to have one.
 4. **Tests** for the four sections and the page (TR-E05-02, TR-E05-03, TR-E05-04, TR-E05-07).
 
@@ -34,13 +34,13 @@ Rebuild the dashboard page around four real sections — today's classes, upcomi
 - Any backend change, new endpoint, new route, or date picker (D05-3, D05-4).
 - The data layer itself (EP05A).
 - Re-styling EP03's assignments page or EP04's calendar page; the dashboard only **links** to them.
-- A "study stats" surface (D05-11 — no endpoint exists; V-05-2).
+- A **"Study Stats" card** or any other study-time / completed-task surface (D05-11, **final** — EP05 ships none: "Hours Studied" has no endpoint until EP07's confirmed-time seam, and "Tasks Completed" is not an EP05 scope item; V-05-2 reconsiders only if a real study-time endpoint exists).
 
 ## Source requirement references
 
 - **Epic AC-E05-01, AC-E05-02, AC-E05-03, AC-E05-04** (display half), **AC-E05-05** (the "open relevant details" half), **AC-E05-07**.
 - **Shared DoD** — items 1, 5, 6, 7, 8 (and item 10 through the combined EP05 parent review).
-- **Decisions:** D05-2 (the study-sessions widget ships now), D05-4 (today only, no day picker), D05-9 (the assignment split and its order), D05-10 (provisional limits and "see all" targets — the `ui-refiner` confirms them), D05-11 (the placeholder's static cards are not carried over), D05-15 (no courses is a valid state).
+- **Decisions:** D05-2 (the study-sessions widget ships now), D05-4 (today only, no day picker), D05-9 (the assignment split and its order), D05-10 (provisional limits and "see all" targets — the `ui-refiner` confirms them), D05-11 (the placeholder's static cards are not carried over and **no "Study Stats" card is shipped** — final), D05-15 (no courses is a valid state).
 
 ## Acceptance criteria
 
@@ -69,7 +69,7 @@ Rebuild the dashboard page around four real sections — today's classes, upcomi
   - The four sections render in the page's order with their headings.
   - A failing assignments query shows the error only in the two assignment sections while the calendar sections still render (partial failure).
   - The page shows the current day and the student's time zone; the live region announces the loaded state.
-  - The page contains no leftover placeholder content (no "Hours Studied", no hard-coded "No assignments yet", no inert "Create Study Plan"/"Start Focus Session" buttons).
+  - The page contains no leftover placeholder content (no "Hours Studied", no hard-coded "No assignments yet", no inert "Create Study Plan"/"Start Focus Session" buttons) and renders **no study-stats card at all** — neither an "Hours Studied" figure nor a "Tasks Completed" figure (D05-11, final).
 - **Accessibility / responsive (TR-E05-07):**
   - Every section is a labelled region/heading in a predictable order; the "see all" links are reachable and operable by keyboard in that order.
   - Visible focus rings on all interactive elements (the EP10 token `focus-ring`).
@@ -105,7 +105,7 @@ Rebuild the dashboard page around four real sections — today's classes, upcomi
 3. **The endpoint's order is the section's order** (D05-9) — the sections never re-sort.
 4. **The overdue marker is text.** The row shows the word "Overdue" (`OVERDUE_LABEL`) in a `Badge`; colour is an addition, never the signal.
 5. **The class row links to the course** via the payload's `link` (`/courses/:id`); the assignment row's affordance is the ui-refiner's call (the shared edit dialog vs. the course page); the study-session row has no deep link today and is not given a fake one — it may open the calendar, or be non-interactive (ui-refiner).
-6. **The page removes the placeholder's static content** (D05-11). The "Quick Actions" card is removed here and re-added as a working block by EP05C (an accepted inter-commit transient).
+6. **The page removes the placeholder's static content** (D05-11). The "Quick Actions" card is removed here and re-added as a working block by EP05C (an accepted inter-commit transient). The "Study Stats" card is **removed and not replaced by any equivalent** (D05-11, final): shipping hard-coded zeros asserts a false fact to the student, and no real data source exists for either value.
 
 ### Proposed files
 
@@ -152,11 +152,13 @@ Jira key: Pending creation. No sync authorized.
 - **Files:** `apps/web/src/features/dashboard/ui/TodayClassesSection.tsx` (new), `.../UpcomingDeadlinesSection.tsx` (new), `.../OverdueAssignmentsSection.tsx` (new), `.../TodayStudySessionsSection.tsx` (new), `apps/web/src/pages/dashboard/ui/DashboardPage.tsx` (modify), `.../TodayClassesSection.test.tsx`, `.../UpcomingDeadlinesSection.test.tsx`, `.../OverdueAssignmentsSection.test.tsx`, `.../TodayStudySessionsSection.test.tsx`, `apps/web/src/pages/dashboard/ui/DashboardPage.test.tsx` (new).
 - **Start context:** this story; `docs/stories/EP05/README.md` (shared dashboard data contract + D05-2, D05-4, D05-9…D05-11); EP05A's implementation record (`./artifacts/EP05A/implementation.md`) for the exact selector and hook names; `apps/web/src/pages/dashboard/ui/DashboardPage.tsx` (the page being replaced); `apps/web/src/features/calendar/ui/CalendarEventChip.tsx` and `CalendarEventDetails.tsx` (the row/icon/dialog precedents); `apps/web/src/features/assignments/ui/assignmentPresentation.ts` and `AssignmentRow.tsx` (the row precedents); `apps/web/src/pages/assignments/ui/AssignmentsPage.tsx` (the page-shell precedent).
 - **Verification:** `pnpm --filter web test -- src/features/dashboard src/pages/dashboard`, `pnpm --filter web typecheck`, `pnpm --filter web lint`.
-- **Dependencies / exclusions:** EP05A implemented. Excludes the working "Add assignment" action and the empty-state copy (EP05C), the parent index (EP05C), any backend work (D05-3), a day picker (D05-4), and a study-stats surface (D05-11).
+- **Dependencies / exclusions:** EP05A implemented. Excludes the working "Add assignment" action and the empty-state copy (EP05C), the parent index (EP05C), any backend work (D05-3), a day picker (D05-4), and any study-stats / study-time / completed-task surface (D05-11, final).
 
 ## UI/UX gaps for the `ui-refiner` (D05-12 — not yet settled)
 
 These are deliberately undecided. The `ui-refiner` settles them with the user; this story is not ready to implement until they are recorded.
+
+**Out of scope for this pass (not a gap to close):** re-introducing a **"Study Stats" card** or any study-time / completed-task figure. D05-11 is final — there is no endpoint for "Hours Studied" until EP07's confirmed-time seam (D07-3) and "Tasks Completed" is not an EP05 scope item, so any such card would either ship fake zeros or duplicate a surface EP07 owns (V-05-2). The section layout below is decided **without** it.
 
 - **Section layout and information hierarchy:** which section leads (overdue first, or classes first?), the grid shape and ordering on desktop, and how the four sections stack at 375px (one column, in what order?).
 - **How "today" is communicated:** the page heading, the date label (and its wording), whether the profile time zone is shown next to it, and what happens at midnight (the payload's `today` is the day at request time).
