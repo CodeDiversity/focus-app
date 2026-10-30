@@ -1,5 +1,6 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import * as React from 'react';
+import toast from 'react-hot-toast';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
@@ -28,6 +29,7 @@ function clampTime(v: string): string {
 
 export function PlanSessionEditor({ sessions, days, onChange, className }: PlanSessionEditorProps) {
   const dayOptions = days.map((d) => ({ value: d, label: d }));
+  const [announcement, setAnnouncement] = useState('');
 
   const updateAt = useCallback(
     (index: number, patch: Partial<ProposedSession>) => {
@@ -39,7 +41,28 @@ export function PlanSessionEditor({ sessions, days, onChange, className }: PlanS
 
   const removeAt = useCallback(
     (index: number) => {
-      onChange(sessions.filter((_, i) => i !== index));
+      const removed = sessions[index];
+      if (!removed) return;
+      const next = sessions.filter((_, i) => i !== index);
+      onChange(next);
+      toast(
+        (t) => (
+          <div className="flex items-center gap-3">
+            <span>Session deleted.</span>
+            <button
+              type="button"
+              className="font-medium underline"
+              onClick={() => {
+                onChange([...next.slice(0, index), removed, ...next.slice(index)]);
+                toast.dismiss(t.id);
+              }}
+            >
+              Undo
+            </button>
+          </div>
+        ),
+        { duration: 5000 }
+      );
     },
     [sessions, onChange]
   );
@@ -54,6 +77,7 @@ export function PlanSessionEditor({ sessions, days, onChange, className }: PlanS
       const pad = (n: number) =>
         String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0');
       updateAt(index, { startTime: pad(start), endTime: pad(end) });
+      setAnnouncement(`${s.assignmentTitle} moved to ${pad(start)} to ${pad(end)}`);
     },
     [sessions, updateAt]
   );
@@ -83,6 +107,9 @@ export function PlanSessionEditor({ sessions, days, onChange, className }: PlanS
 
   return (
     <div className={className} data-testid="plan-session-editor">
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {announcement}
+      </div>
       {sessions.map((s, i) => (
         <article
           key={`${s.assignmentId}-${i}-${s.date}`}

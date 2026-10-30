@@ -41,37 +41,46 @@ export function PlanWeek({ days, timeZone, emptyMessage }: PlanWeekProps) {
   }
 
   return (
-    <div
-      className="grid grid-cols-7 gap-2 overflow-x-auto"
-      data-testid="plan-week"
-      aria-label={timeZone ? `Plan week (${timeZone})` : 'Plan week'}
-    >
-      {days.map((day) => (
-        <section
-          key={day.date}
-          aria-label={formatDateLabel(day.date)}
-          className="min-w-[140px] space-y-2 rounded-lg border border-border p-2"
-        >
-          <h3 className="text-xs font-semibold text-text-muted">{formatDateLabel(day.date)}</h3>
-          {day.sessions.length === 0 ? (
-            <p className="text-xs text-text-muted">No sessions</p>
-          ) : (
-            day.sessions.map((s, i) => (
-              <article
-                key={`${day.date}-${i}-${s.startTime}`}
-                aria-label={`${s.assignmentTitle}, ${s.startTime} to ${s.endTime}, ${s.durationMinutes} minutes`}
-                className="rounded-md border border-border bg-surface p-2 text-xs"
-              >
-                <p className="font-medium text-text">{s.assignmentTitle}</p>
-                <p className="text-text-muted">
-                  {s.startTime} – {s.endTime} ({s.durationMinutes} min)
-                </p>
-              </article>
-            ))
-          )}
-        </section>
-      ))}
-    </div>
+    <>
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        data-testid="plan-week-live"
+      />
+      <div
+        className="grid grid-cols-7 gap-2 overflow-x-auto"
+        data-testid="plan-week"
+        aria-label={timeZone ? `Plan week (${timeZone})` : 'Plan week'}
+      >
+        {days.map((day) => (
+          <section
+            key={day.date}
+            aria-label={formatDateLabel(day.date)}
+            className="min-w-[140px] space-y-2 rounded-lg border border-border p-2"
+          >
+            <h3 className="text-xs font-semibold text-text-muted">{formatDateLabel(day.date)}</h3>
+            {day.sessions.length === 0 ? (
+              <p className="text-xs text-text-muted">No sessions</p>
+            ) : (
+              day.sessions.map((s, i) => (
+                <article
+                  key={`${day.date}-${i}-${s.startTime}`}
+                  aria-label={`${s.assignmentTitle}, ${s.startTime} to ${s.endTime}, ${s.durationMinutes} minutes`}
+                  className="rounded-md border border-border bg-surface p-2 text-xs"
+                >
+                  <p className="font-medium text-text">{s.assignmentTitle}</p>
+                  <p className="text-text-muted">
+                    {s.startTime} – {s.endTime} ({s.durationMinutes} min)
+                  </p>
+                </article>
+              ))
+            )}
+          </section>
+        ))}
+      </div>
+    </>
   );
 }
 

@@ -254,6 +254,18 @@ export function PlanPage() {
               <p className="text-sm text-text">No sessions proposed — Generate a plan</p>
             </div>
           )}
+          <PlanWeek
+            days={preview.days.map((d) => ({
+              date: d.date,
+              sessions: d.sessions.map((s) => ({
+                assignmentTitle: s.assignmentTitle,
+                startTime: s.startTime,
+                endTime: s.endTime,
+                durationMinutes: s.durationMinutes,
+              })),
+            }))}
+            timeZone={preview.timeZone}
+          />
           <PlanSessionEditor sessions={edited} days={windowDays} onChange={setEdited} />
           {conflicts.length > 0 && (
             <div

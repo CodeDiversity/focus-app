@@ -141,6 +141,64 @@ export async function createCourseViaApi(
   return (await response.json()) as { id: string; code: string; name: string };
 }
 
+/** Creates an assignment via the real API (201) and returns the created row. */
+export async function createAssignmentViaApi(
+  request: APIRequestContext,
+  accessToken: string,
+  data: {
+    title: string;
+    courseId?: string | null;
+    dueDate?: string | null;
+    estimatedHours?: number | null;
+    priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT' | null;
+    type?: 'HOMEWORK' | 'PAPER' | 'PROJECT' | 'QUIZ' | 'EXAM' | null;
+    description?: string | null;
+  }
+): Promise<{ id: string; title: string }> {
+  let response;
+  try {
+    response = await request.post('/api/assignments', {
+      headers: authHeaders(accessToken),
+      data,
+    });
+  } catch (error) {
+    throw describeSetupFailure('/assignments', error);
+  }
+  requireStatus(response, [201]);
+  return (await response.json()) as { id: string; title: string };
+}
+
+/** Creates an availability slot via the real API (201) and returns the created row. */
+export async function createAvailabilitySlotViaApi(
+  request: APIRequestContext,
+  accessToken: string,
+  data: { dayOfWeek: number; startTime: string; endTime: string; isAvailable?: boolean }
+): Promise<{
+  id: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isAvailable: boolean;
+}> {
+  let response;
+  try {
+    response = await request.post('/api/availability-slots', {
+      headers: authHeaders(accessToken),
+      data,
+    });
+  } catch (error) {
+    throw describeSetupFailure('/availability-slots', error);
+  }
+  requireStatus(response, [201]);
+  return (await response.json()) as {
+    id: string;
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    isAvailable: boolean;
+  };
+}
+
 /** Log in through the real login UI and wait for an authenticated destination. */
 export async function loginViaUi(page: Page, email: string): Promise<void> {
   await page.goto('/login');

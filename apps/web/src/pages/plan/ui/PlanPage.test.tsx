@@ -131,7 +131,7 @@ describe('PlanPage', () => {
     await waitFor(() => expect(mockedList).toHaveBeenCalled());
     await user.click(screen.getByRole('button', { name: /generate plan/i }));
     await waitFor(() => expect(mockedPreview).toHaveBeenCalled());
-    expect(screen.getByText('Essay')).toBeInTheDocument();
+    expect(screen.getAllByText('Essay').length).toBeGreaterThan(0);
   });
 
   it('save posts projected four-field sessions and renders saved week', async () => {

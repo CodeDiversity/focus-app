@@ -85,7 +85,8 @@ test('registering a new account through the UI leads to an authenticated session
   // The just-registered credentials now work: logging in through the real UI
   // reaches the authenticated app.
   await loginViaUi(page, email);
-  await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
+  await page.getByRole('button', { name: /open account menu/i }).click();
+  await expect(page.getByRole('menuitem', { name: 'Logout' })).toBeVisible();
 });
 
 test('a logged-in session survives a page reload', async ({ page, request }) => {
@@ -97,7 +98,8 @@ test('a logged-in session survives a page reload', async ({ page, request }) => 
   // the protected route must not bounce back to /login.
   await page.reload();
   await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 10_000 });
-  await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
+  await page.getByRole('button', { name: /open account menu/i }).click();
+  await expect(page.getByRole('menuitem', { name: 'Logout' })).toBeVisible();
 });
 
 test('logout returns to /login and the protected route then redirects there', async ({
@@ -110,7 +112,8 @@ test('logout returns to /login and the protected route then redirects there', as
 
   // Logout clears the session; because we are on a protected route,
   // ProtectedRoute immediately navigates to /login.
-  await page.getByRole('button', { name: 'Logout' }).click();
+  await page.getByRole('button', { name: /open account menu/i }).click();
+  await page.getByRole('menuitem', { name: 'Logout' }).click();
   await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
 
   // The protected route must not render while logged out.
