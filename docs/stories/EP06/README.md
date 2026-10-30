@@ -669,18 +669,18 @@ coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "9b1ec19"
-  head: "447bd74"
+  head: "7007aa0"
 active_dispatch:
-  name: ep06-implementer-1
+  name: ep06-implementer-3
   role: implementer
   status: pending
-  pointer: docs/stories/EP06/artifacts/EP06A/
+  pointer: docs/stories/EP06/artifacts/EP06C/
   session: ""
   assignment: complete_child
 last_result:
-  evidence: "Plan review pass 3 (2026-10-30) returned 'Plan Ready' — report saved at docs/stories/EP06/plan-review.md (reviewer read-only; coordinator owns the commit). All 22 prior findings PR-001…PR-022 independently verified CLOSED against the corrected files and the real code (the reviewer re-executed the freeIntervals contract over the pass-2 counterexample, re-walked the six forward and five rollback migration statements against the init migration, and re-verified every deleteMany occurrence as the relation form). No blocker and no should-fix finding open; coverage re-verified (9/9 ACs, 9/9 TRs, 11/11 DoD obligations owned, eight substantive children behind one sequential implementer, EP06 genuinely independent of EP07). The reviewer applied the passing-review docs sync: the parent status line, a 'Plan-review gate: PASSED' paragraph, EP06A → Ready, Active/Next substory → EP06A's implementation, the per-row gate notes and the pass-3 disposition table (PR-001…PR-028) in the correction log. Nothing was marked Reviewed."
-  findings: "Six new non-blocking polish findings are open and owned by the planner for a future pass: PR-023 (one home per type — StudyPreferences and DatedInterval are declared in two places), PR-024 (two migration authorities — the documented rename SQL with its guard vs 'prisma migrate diff', whose literal run emits a destructive DROP TABLE without the guard), PR-025 (EP06A AC 3's 'preserved byte-for-byte' is unachievable for a jsonb column), PR-026 (the no-overlap invariant has no competing-request counterexample — the re-check runs before the transaction, so two simultaneous saves of one window can both insert), PR-027 (EP06H's DoD 5/7 rows claim an empty state and a phone viewport its six scenarios do not cover), PR-028 (all eight children still read 'technical-refine pass not yet run' while the queue treats them as implementable). None blocks EP06A. The coordinator's own findings F-EP06-01…06 remain recorded and undecided by design; each has a safe default and none blocks implementation."
-  scope_note: "Planning gate PASSED (Plan Ready, pass 3). The planning stage is complete; the six user-settled assumptions (D06-1…D06-6) are recorded and were never reopened. No implementation exists yet and no Jira sync was authorized (all eight children stay 'Pending creation'). Implementation now starts with EP06A — the only child that is Ready — under one sequential implementer. The three frontend children (EP06E/EP06F/EP06G) stay gated on their ui-refiner pass (D06-15) and will get it when they become the eligible child."
+  evidence: "EP06B implemented and committed in 2 scoped commits (f07a84b the code and tests, 7007aa0 the closeout docs); `git diff --name-only 236e460..HEAD` touches only EP06B's scope (the domain files remaining-work.ts/ordering.ts/types.ts, the new common/lib/civil-date.ts, the study-plans module and its three specs, EP06B's checkpoint/implementation and the queue/status pointers) and the unrelated dirty apps/api/tsconfig.json stayed unstaged. Verification actually executed at HEAD 7007aa0: `pnpm --filter api test -- remaining-work` 1 suite / 21 tests passed; `pnpm --filter api test -- ordering` 1 suite / 15 tests passed; `pnpm --filter api test -- study-plans` 3 suites / 56 tests passed (the integration specs EXECUTED — DATABASE_URL was supplied on the command line, not read from a .env file); `pnpm --filter api test` 56 suites / 1217 tests passed (baseline 53/1151); `pnpm --filter api typecheck` exit 0; `pnpm --filter api lint` exit 0, 0 warnings, prettier clean. Built: classifyAssignments (estimate→minutes, the unfinished-status filter, the D06-25 flagging matrix, max(0, estimate − confirmed)), the one shared comparator compareAssignments, the civil-date helper, and GET /study-plans/remaining-work → { items, unattributedConfirmedMinutes } in state A with the state-B upgrade written out as a named change (seam V-07-3)."
+  findings: "EP06B's findings, all resolved or documented: F-B-1 (the calendar's zoneDateParts is module-private and EP04's file is out of EP06's write boundary, so EP06 owns an equivalent conversion with the same Intl arithmetic and the same UTC fallback — behaviour identical), F-B-2 (the contract's within-group key list and the child spec's wording differ for the OVERDUE group; implemented as due-date-ascending-first inside every dated group and stated in the comparator's JSDoc so EP06C inherits it unchanged), F-B-3 (DATABASE_URL unset — supplied on the command line), F-B-4 (the parent README's top Status line still reads 'No implementation started'; the delivery state assigns the stale parent status line to the reviewer's passing-review sync, so it was left). **F-EP06-07 remains open (recorded by EP06A, not fixed):** `PATCH /users/me` replaces the `preferences` column verbatim, so a later profile PATCH carrying a preferences bag can ERASE saved studyDefaults — sharper than D06-14's recorded residual risk. EP06 does not change `PATCH /users/me` (excluded by the spec and D06-14); it needs an EP01-owned change plus its integration spec, which is outside this run's scope and needs the user's authorization. The six non-blocking plan-review polish findings PR-023…PR-028 also remain open (owner: planner)."
+  scope_note: "Implementation stage. EP06A and EP06B are 'Implemented — awaiting parent review' (no per-child review gate; the combined EP06 parent review after EP06H is the gate). EP06C — the pure scheduling engine and the conflict rules — is the next actionable child and is Ready. One writer at a time: the EP06B session's ownership ended with its return; EP06C goes to a fresh implementer context. No Jira sync, no push, no deployment."
   cycles: 3
   same_findings: false
 gates:
@@ -694,11 +694,11 @@ gates:
   integration: unknown
   all_descendants_implemented: false
   review: absent
-  findings_owner: planner
+  findings_owner: none
   open_findings: false
   walkthrough: missing
-  judged_at_head: "447bd74"
-  queue_hash: "ep06-queue-v5"
+  judged_at_head: "7007aa0"
+  queue_hash: "ep06-queue-v7"
 writer: implementer
 session_live: false
 writer: none
