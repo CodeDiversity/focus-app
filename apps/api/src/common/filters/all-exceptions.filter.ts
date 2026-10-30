@@ -15,6 +15,7 @@ interface NormalizedError {
   message: string | string[];
   error: string;
   errors?: Record<string, string[]>;
+  conflicts?: unknown;
 }
 
 interface ErrorResponseBody extends NormalizedError {
@@ -82,6 +83,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
           record.errors && typeof record.errors === 'object'
             ? (record.errors as Record<string, string[]>)
             : undefined,
+        conflicts: record.conflicts,
       };
     }
 

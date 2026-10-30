@@ -1,6 +1,8 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
 
 import { StudyPlansService } from './study-plans.service';
+import { SaveStudyPlanDto } from './dto/save-study-plan.dto';
+import { ListStudyPlansQueryDto } from './dto/list-study-plans-query.dto';
 import { AuthenticatedUser } from '../../common/types';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -35,5 +37,32 @@ export class StudyPlanController {
   @Get('remaining-work')
   getRemainingWork(@CurrentUser() user: AuthenticatedUser) {
     return this.studyPlansService.getRemainingWork(user.id);
+  }
+
+  /**
+   * POST /study-plans/preview — run the engine over the student's data and
+   * return the proposal. Writes nothing.
+   */
+  @Post('preview')
+  @HttpCode(200)
+  preview(@CurrentUser() user: AuthenticatedUser) {
+    return this.studyPlansService.preview(user.id);
+  }
+
+  /**
+   * POST /study-plans — save the edited proposal (atomic, conflict re-check).
+   */
+  @Post()
+  save(@CurrentUser() user: AuthenticatedUser, @Body() dto: SaveStudyPlanDto) {
+    return this.studyPlansService.save(user.id, dto);
+  }
+
+  /**
+   * GET /study-plans — the saved plan for a range (or the most recent saved
+   * window when no range is given).
+   */
+  @Get()
+  list(@CurrentUser() user: AuthenticatedUser, @Query() query: ListStudyPlansQueryDto) {
+    return this.studyPlansService.getPlan(user.id, query.from, query.to);
   }
 }

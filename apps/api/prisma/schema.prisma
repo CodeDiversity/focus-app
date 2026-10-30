@@ -205,7 +205,8 @@ model Assignment {
 
   // Relations
   tasks Task[]
-
+  plannedSessions PlannedSession[]
+ 
   @@map("assignments")
 }
 
@@ -251,8 +252,7 @@ model Task {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  scheduledTasks ScheduledTask[]
-
+ 
   @@map("tasks")
 }
 
@@ -315,30 +315,31 @@ model StudyPlan {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  scheduledTasks ScheduledTask[]
-
+  sessions PlannedSession[]
+ 
   @@unique([userId, date])
   @@map("study_plans")
 }
 
-model ScheduledTask {
+model PlannedSession {
   id          String   @id @default(uuid())
   studyPlanId String
-  studyPlan  StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
-  taskId      String
-  task        Task     @relation(fields: [taskId], references: [id])
+  studyPlan   StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+  assignmentId String
+  assignment  Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
   startTime   DateTime
   endTime     DateTime
   durationMinutes Int
-  status      ScheduledTaskStatus @default(SCHEDULED)
+  status      PlannedSessionStatus @default(SCHEDULED)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@unique([studyPlanId, taskId])
-  @@map("scheduled_tasks")
+  @@index([studyPlanId])
+  @@index([assignmentId])
+  @@map("planned_sessions")
 }
 
-enum ScheduledTaskStatus {
+enum PlannedSessionStatus {
   SCHEDULED
   IN_PROGRESS
   COMPLETED

@@ -6,7 +6,7 @@
 **Parent:** [EP06 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Backend
-**Status:** Queued
+**Status:** Implemented — awaiting parent review
 **Dependencies:** EP06A, EP06B and EP06C implemented (the preferences, the remaining-work classification and the engine). EP03 + EP04 complete. **No dependency on EP07** (D06-6).
 **Jira key:** Pending creation
 **Refined:** — (technical-refine pass not yet run; this file is the planner's breakdown)
