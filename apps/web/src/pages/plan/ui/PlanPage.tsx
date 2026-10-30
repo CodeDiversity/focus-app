@@ -17,6 +17,8 @@ import type {
 import { CONFLICT_REASON_LABEL } from '@/entities/study-plan/model/types';
 import { PlanWeek } from '@/features/study-plan/ui/PlanWeek';
 import { PlanSessionEditor } from '@/features/study-plan/ui/PlanSessionEditor';
+import { RemainingWorkSection } from '@/features/study-plan/ui/RemainingWorkSection';
+import { WorkloadWarnings } from '@/features/study-plan/ui/WorkloadWarnings';
 
 type Mode = 'initial' | 'generating' | 'preview' | 'saved';
 
@@ -140,6 +142,8 @@ export function PlanPage() {
     return [];
   }, [preview, savedPlan]);
 
+  const timeZone = preview?.timeZone ?? savedPlan?.timeZone;
+
   if (isLoadingSaved) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -206,6 +210,8 @@ export function PlanPage() {
           )}
         </div>
       </div>
+
+      <RemainingWorkSection timeZone={timeZone} className="mb-6" />
 
       {rolledOver && (
         <div role="alert" className="mb-4 card border border-warning/30 bg-warning/10 p-4">
@@ -306,6 +312,13 @@ export function PlanPage() {
           </div>
         </div>
       )}
+
+      <WorkloadWarnings
+        className="mt-6"
+        warnings={preview?.warnings}
+        deferred={preview?.deferred}
+        errorMessage={previewError ?? undefined}
+      />
     </section>
   );
 }

@@ -3,6 +3,7 @@ import type {
   PlanPreview,
   SavedPlan,
   ProposedSessionInput,
+  RemainingWorkResponse,
 } from '@/entities/study-plan/model/types';
 
 export {
@@ -10,12 +11,18 @@ export {
   type PlanPreviewDay,
   type PlanPreviewSession,
   type PlanPreviewWarning,
+  type PlanWarning,
+  type PlanWarningCategory,
+  type PlanDeferred,
   type SavedPlan,
   type SavedPlanDay,
   type SavedPlanSession,
   type ProposedSession,
   type ProposedSessionInput,
   type PlanConflict,
+  type RemainingWorkItem,
+  type RemainingWorkResponse,
+  type RemainingWorkFlag,
   CONFLICT_REASON_LABEL,
 } from '@/entities/study-plan/model/types';
 
@@ -44,5 +51,10 @@ export async function saveStudyPlan(
 
 export async function listStudyPlan(): Promise<SavedPlan> {
   const response = await api.get<SavedPlan>('/study-plans');
+  return response.data;
+}
+
+export async function listRemainingWork(): Promise<RemainingWorkResponse> {
+  const response = await api.get<RemainingWorkResponse>('/study-plans/remaining-work');
   return response.data;
 }

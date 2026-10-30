@@ -19,12 +19,26 @@ export interface PlanPreviewDay {
   sessions: PlanPreviewSession[];
 }
 
-export interface PlanPreviewWarning {
+export type PlanWarningCategory =
+  'NO_AVAILABLE_TIME' | 'INSUFFICIENT_TIME_BEFORE_DEADLINE' | 'OVERDUE';
+
+export interface PlanWarning {
   assignmentId: string;
   assignmentTitle: string;
-  category: string;
+  category: PlanWarningCategory;
   minutes: number;
   dueDate: string | null;
+}
+
+/** Backwards-compatible alias for the looser preview warning shape (EP06F). */
+export type PlanPreviewWarning = PlanWarning;
+
+export interface PlanDeferred {
+  assignmentId: string;
+  minutes: number;
+  /** Optional display title; falls back to assignmentId when absent. */
+  assignmentTitle?: string;
+  title?: string;
 }
 
 export interface PlanPreview {
@@ -39,8 +53,8 @@ export interface PlanPreview {
     dailyCapMinutes: number;
   };
   days: PlanPreviewDay[];
-  warnings: PlanPreviewWarning[];
-  deferred: { assignmentId: string; minutes: number }[];
+  warnings: PlanWarning[];
+  deferred: PlanDeferred[];
 }
 
 export interface SavedPlanSession {
@@ -101,3 +115,23 @@ export const CONFLICT_REASON_LABEL: Record<PlanConflict['reason'], string> = {
   OVERLAPS_CONFIRMED_SESSION: 'This overlaps a logged study session',
   OVERLAPS_PLANNED_SESSION: 'This overlaps another planned session',
 };
+
+// Remaining work (EP06G). Mirrors the API contract in the EP06 parent README.
+export type RemainingWorkFlag = null | 'MISSING_ESTIMATE' | 'MISSING_DUE_DATE';
+
+export interface RemainingWorkItem {
+  assignmentId: string;
+  title: string;
+  courseCode: string | null;
+  dueDate: string | null;
+  estimatedMinutes: number | null;
+  confirmedMinutes: number;
+  remainingMinutes: number | null;
+  status: string;
+  flagged: RemainingWorkFlag;
+}
+
+export interface RemainingWorkResponse {
+  items: RemainingWorkItem[];
+  unattributedConfirmedMinutes: number;
+}

@@ -8,12 +8,14 @@ import {
   previewStudyPlan,
   saveStudyPlan,
   listStudyPlan,
+  listRemainingWork,
 } from '@/entities/study-plan/api/studyPlanApi';
 
 vi.mock('@/entities/study-plan/api/studyPlanApi', () => ({
   previewStudyPlan: vi.fn(),
   saveStudyPlan: vi.fn(),
   listStudyPlan: vi.fn(),
+  listRemainingWork: vi.fn(),
 }));
 
 vi.mock('react-hot-toast', () => ({
@@ -23,6 +25,7 @@ vi.mock('react-hot-toast', () => ({
 const mockedPreview = vi.mocked(previewStudyPlan);
 const mockedSave = vi.mocked(saveStudyPlan);
 const mockedList = vi.mocked(listStudyPlan);
+const mockedRemainingWork = vi.mocked(listRemainingWork);
 
 const emptySaved = {
   from: '2026-10-30',
@@ -112,6 +115,7 @@ describe('PlanPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockedList.mockResolvedValue(emptySaved as never);
+    mockedRemainingWork.mockResolvedValue({ items: [], unattributedConfirmedMinutes: 0 } as never);
   });
 
   it('initial state offers the generate action', async () => {
@@ -179,7 +183,7 @@ describe('PlanPage', () => {
     renderPage();
     await waitFor(() => expect(mockedList).toHaveBeenCalled());
     await user.click(screen.getByRole('button', { name: /generate plan/i }));
-    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByRole('alert').length).toBeGreaterThan(0));
   });
 
   it('rollover renders the rolled-over message and generate action', async () => {
