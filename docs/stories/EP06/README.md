@@ -14,9 +14,9 @@
 
 **Artifact root:** `./artifacts/` (stable story ID) — one directory per child: `./artifacts/EP06A/`, `./artifacts/EP06B/`, `./artifacts/EP06C/`, `./artifacts/EP06D/`, `./artifacts/EP06E/`, `./artifacts/EP06F/`, `./artifacts/EP06G/`, `./artifacts/EP06H/`, plus `./artifacts/EP06/` for the parent implementation index, combined review and walkthrough.
 
-**Active substory:** None — EP06G is implemented and awaits the combined EP06 parent review (after EP06H). The next actionable task is EP06H's implementation (see *Next substory* below).
+**Active substory:** None — all eight children are implemented and await the combined EP06 parent review.
 
-**Next substory:** EP06H — implement (cross-layer E2E + the regression sweep + the parent index). EP06A–EP06G are implemented; EP06H is `Ready`. **Plan-review gate passed** (pass 3, 2026-10-30 — `Plan Ready`; report: [plan-review.md](./plan-review.md)).
+**Next substory:** None — all children implemented. The next actionable task is the **combined EP06 parent review** (one review for all eight children), followed by the reviewer's final user walkthrough (`review.md` + `walkthrough.md`) and the passing-review docs sync. **Plan-review gate passed** (pass 3, 2026-10-30 — `Plan Ready`; report: [plan-review.md](./plan-review.md)).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (the Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -31,7 +31,7 @@
 | [EP06E](./EP06E-study-preferences-ui.md) | **Implemented — awaiting parent review** | EP06A implemented. `ui-refiner` pass complete (2026-10-30) — layout, controls, states, a11y, responsive, copy settled in the story file. Technical refinement satisfied by the planner's breakdown + the shared contract (D06-15). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06E/checkpoint.md) · [implementation](./artifacts/EP06E/implementation.md) |
 | [EP06F](./EP06F-study-plan-page-preview-edit-and-save.md) | **Implemented — awaiting parent review** | EP06D implemented (the preview/save/read API). `ui-refiner` pass complete (2026-10-30). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06F/checkpoint.md) · [implementation](./artifacts/EP06F/implementation.md) |
 | [EP06G](./EP06G-remaining-work-and-deficit-warnings-ui.md) | **Implemented — awaiting parent review** | EP06B and EP06F implemented. `ui-refiner` pass complete (2026-10-30). **Plan-review gate passed** (pass 3 — `Plan Ready`). | No action — implemented; the combined EP06 parent review covers it after EP06H. | [checkpoint](./artifacts/EP06G/checkpoint.md) · [implementation](./artifacts/EP06G/implementation.md) |
-| [EP06H](./EP06H-cross-layer-e2e-and-parent-index.md) | **Ready** | EP06A–EP06G implemented. **Plan-review gate passed** (pass 3 — `Plan Ready`). | Implement EP06H: cross-layer E2E + the regression sweep + the parent index | `./artifacts/EP06H/` (pending) |
+| [EP06H](./EP06H-cross-layer-e2e-and-parent-index.md) | **Implemented — awaiting parent review** | EP06A–EP06G implemented. **Plan-review gate passed** (pass 3 — `Plan Ready`). The E2E suite and the parent index were written by the coordinator after the implementer's commits did not persist (see the parent index's *Known gaps*). | No action — implemented; the combined EP06 parent review covers it. | [checkpoint](./artifacts/EP06H/checkpoint.md) · [implementation](./artifacts/EP06H/implementation.md) |
 
 Sequence (one writer): EP06A → EP06B → EP06C → EP06D → EP06E → EP06F → EP06G → EP06H. EP06A/EP06B/EP06C/EP06D are the contract and persistence spine; the three frontend children consume it; EP06H verifies the whole stack and owns the parent index.
 
@@ -664,19 +664,19 @@ scope:
   descendants: [EP06A, EP06B, EP06C, EP06D, EP06E, EP06F, EP06G, EP06H]
   entry: planning
   limits: enclosing parent review unit
-stage: implement
+stage: parent_review
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "9b1ec19"
-  head: "c6aa220"
+  head: "69e45ef"
 active_dispatch:
-  name: ep06-implementer-10
-  role: implementer
+  name: ep06-parent-reviewer-1
+  role: reviewer
   status: pending
-  pointer: docs/stories/EP06/artifacts/EP06H/
+  pointer: docs/stories/EP06/artifacts/EP06/review.md
   session: ""
-  assignment: complete_child
+  assignment: parent_review
 last_result:
   evidence: "EP06E implemented and committed in 2 scoped commits (04ce78d feat(web): add study-preferences section on profile page; 08f9613 docs(EP06E): record scoped commit hash in checkpoint). Verification at HEAD 08f9613: `pnpm --filter web test` 80 suites / 985 tests passed; `pnpm --filter web test -- StudyPreferences` 2 suites / 23 tests passed; `pnpm --filter web typecheck` exit 0; `pnpm --filter web lint` exit 0, 0 warnings. Built: the entity client (studyPreferencesApi), the RTK Query slice with the StudyPreferences tag, the form (react-hook-form + zod), the spinner card while GET is in flight, the cross-field error mapping, and the mount on ProfilePage below the account card. EP06F is reconciled to Ready: the ui-refiner pass is complete (2026-10-30) and the technical refinement is satisfied by the planner's breakdown + the shared contract (D06-15), consistent with EP06A/EP06B/EP06E. The ui-refiner's writes for EP06F did not persist (file mtime unchanged, no uncommitted story-file change), so the story file's Status/Refined lines were reconciled by the coordinator; the UI/UX design is recorded in the ui-refiner's returned result and the planner's breakdown (the Sizing block + the shared contract)."
   findings: "EP06E's own findings: none open inside its scope. **F-EP06-07 remains open (recorded by EP06A, not fixed):** `PATCH /users/me` replaces the `preferences` column verbatim, so a later profile PATCH carrying a preferences bag can ERASE saved studyDefaults. EP06 does not change `PATCH /users/me` (excluded by the spec and D06-14); it needs an EP01-owned change plus its integration spec, outside this run's scope and needing the user's authorization. The six non-blocking plan-review polish findings PR-023…PR-028 also remain open (owner: planner)."
