@@ -7,7 +7,7 @@
 **Milestone:** M3
 **Layer:** Backend
 **Status:** Queued
-**Dependencies:** EP03 complete (assignments exist), EP04 complete (availability exists). No dependency on EP07 — the preferences shape is EP06's own (D06-4). Decisions D06-1…D06-19 are recorded in the parent README's decision register and the shared API/data contract section.
+**Dependencies:** EP03 complete (assignments exist), EP04 complete (availability exists). No dependency on EP07 — the preferences shape is EP06's own (D06-4). Decisions D06-1…D06-25 are recorded in the parent README's decision register and the shared API/data contract section.
 **Jira key:** Pending creation
 **Refined:** — (technical-refine pass not yet run; this file is the planner's breakdown)
 
@@ -45,13 +45,13 @@ EP06 defines the concrete shape of the study preferences that D106-1 left open: 
 
 ## Acceptance criteria
 
-1. `User.preferences.studyDefaults` has the documented shape: `sessionLengthMinutes` (integer, 5–480), `minSessionMinutes` (integer, 5–480), `maxSessionMinutes` (integer, 5–480), `dailyCapMinutes` (integer, 5–1440), with the defaults `60 / 15 / 120 / 240`; the cross-field rules `min ≤ sessionLength ≤ max` and `dailyCap ≥ min` hold for every value the endpoint returns or accepts.
-2. `GET /study-preferences` returns exactly the four keys with their effective values, never `userId` and never any other key of the preferences bag; it returns the defaults when the bag is absent and the per-field defaults for any missing or invalid stored field.
+1. `User.preferences.studyDefaults` has the documented shape: `sessionLengthMinutes` (integer, 5–480), `minSessionMinutes` (integer, 5–480), `maxSessionMinutes` (integer, 5–480), `dailyCapMinutes` (integer, 5–1440), with the defaults `60 / 15 / 120 / 240`; the cross-field rules `min ≤ sessionLength ≤ max` and `dailyCap ≥ min` hold for **every value the endpoint returns or accepts** — the reader's ordered algorithm (implementation note 2) guarantees them for the returned values, and the merged-value validator guarantees them for the accepted ones.
+2. `GET /study-preferences` returns exactly the four keys with their **effective** values — the per-field defaults for any missing or invalid stored field, then the documented repair order (AC 6) — never `userId` and never any other key of the preferences bag; with no stored bag the values are the defaults `60 / 15 / 120 / 240`.
 3. `PUT /study-preferences` accepts any subset of the four keys, merges it onto the current effective values and writes the **complete** four-key object into `preferences.studyDefaults`; the other keys of the student's `preferences` bag are preserved byte-for-byte.
 4. An invalid merged value is rejected with a 400 carrying a field-level `errors` map — each out-of-range value and each broken cross-field rule is named — and **nothing is written** (the stored bag is unchanged).
 5. Unknown body fields are rejected with 400 by the global `FieldValidationPipe` (repo convention), and the service re-runs the DTO constraint set for non-HTTP callers (the `availability.service.ts` precedent).
-6. A stored `studyDefaults` that is not an object, or whose fields are of the wrong type or out of range, never fails a read: the affected field falls back to its default and the other fields are unaffected.
-7. Unit, data-scoping and e2e specs cover the bounds matrix, the cross-field rules, the merge behaviour, the defensive read, the bag's other keys surviving, the ownership scoping and the uniform 404/401 behaviour.
+6. A stored `studyDefaults` that is not an object, or whose fields are of the wrong type or out of range, never fails a read: the affected field falls back to its default in the first step, and the **cross-field rules are then re-established by the documented repair order** (repair the inverted min/max pair → clamp `sessionLengthMinutes` into `[min, max]` → raise `dailyCapMinutes` to `minSessionMinutes`). The repair is the only thing that may change another field; a field that needs no repair is returned unchanged.
+7. Unit, data-scoping and e2e specs cover the bounds matrix, the cross-field rules, the merge behaviour, the defensive read (including every repair step), the bag's other keys surviving, the ownership scoping and the uniform 404/401 behaviour.
 
 ## Tests to add / update
 
@@ -59,6 +59,8 @@ EP06 defines the concrete shape of the study preferences that D106-1 left open: 
   - each field's defaults when the bag is `null`, absent, not an object, or the field is missing;
   - each field's fallback when the stored value is a string, a float, a negative number, zero, or above its bound;
   - the cross-field validator: `min > sessionLength`, `sessionLength > max`, `dailyCap < min` each rejected, and the valid boundary combinations accepted;
+  - **the reader's ordered algorithm, step by step**: the per-field fallback; the inverted min/max pair repaired (`minSessionMinutes := maxSessionMinutes`); the session length clamped into `[min, max]`; the daily cap raised to `minSessionMinutes`; and the **worked examples** from the shared contract (the review's counterexample bag `60 / 90 / 120 / 240` → `90 / 90 / 120 / 240`, and `60 / 300 / 200 / 240` → `200 / 200 / 200 / 240`);
+  - **the post-condition**: for every input, the returned values satisfy both cross-field rules and every field is inside its bounds;
   - the reader never throws for any input (a fuzz of shapes).
 - `apps/api/src/modules/study-plans/study-plans.service.spec.ts` (new) — the service against a mocked Prisma service:
   - `GET` returns the effective values and never exposes `userId`;
@@ -87,7 +89,13 @@ EP06 defines the concrete shape of the study preferences that D106-1 left open: 
 ### Implementation notes (concrete)
 
 1. **Where the shape lives.** `apps/api/src/domain/study-planning/preferences.ts` exports `STUDY_PREFERENCE_DEFAULTS`, `STUDY_PREFERENCE_BOUNDS`, `type StudyPreferences`, `validateStudyPreferences(input): Record<string, string[]> | null` (the cross-field + bounds rules) and `readStudyPreferences(bag: unknown): StudyPreferences` (the defensive reader). The file imports nothing from `@nestjs/*` and nothing from Prisma (D06-17), so EP06C/EP06D and (later) EP08 can import it directly.
-2. **The defensive reader.** `readStudyPreferences` takes the whole `preferences` value (which may be `null`), narrows it to an object, and for each of the four keys accepts the value only when it is an integer inside its bounds; otherwise it uses that key's default. It never throws and never returns an invalid combination: after the per-field fallback it re-applies the cross-field rules by lowering `sessionLengthMinutes` into `[min, max]` and raising `dailyCapMinutes` to at least `minSessionMinutes` (falling back to the defaults if that is impossible). The order of the fallback matters and is covered by the unit tests.
+2. **The defensive reader — one ordered algorithm.** `readStudyPreferences` takes the whole `preferences` value (which may be `null`), narrows it to an object and runs **these four steps in this order**:
+   1. **Per-field bounds fallback** — for each of the four keys, accept the stored value only if it is an integer inside that key's bounds (`5..480 / 5..480 / 5..480 / 5..1440`); otherwise use that key's default (`60 / 15 / 120 / 240`). The fields are independent at this step.
+   2. **Repair the inverted min/max pair** — if `minSessionMinutes > maxSessionMinutes`, then `minSessionMinutes := maxSessionMinutes` (the maximum is kept, the minimum is lowered to it).
+   3. **Clamp the session length** — if `sessionLengthMinutes < minSessionMinutes` then `sessionLengthMinutes := minSessionMinutes`; if `sessionLengthMinutes > maxSessionMinutes` then `sessionLengthMinutes := maxSessionMinutes`. (At most one applies, because step 2 guarantees `min ≤ max`.)
+   4. **Repair the daily cap** — if `dailyCapMinutes < minSessionMinutes` then `dailyCapMinutes := minSessionMinutes`.
+
+   The reader never throws and never returns an invalid combination: the post-condition is that every returned value is inside its bounds **and** both cross-field rules hold. The order is part of the contract (it is what makes the effective `sessionLengthMinutes` — and therefore EP07's V-07-1 re-check — mechanical), so the unit tests pin each step. The full algorithm, the worked examples and the V-07-1 pinning are in the parent README's shared contract, *The study-preferences shape* → *Read behaviour (defensive)*.
 3. **The merge-on-partial-update rule.** `PUT /study-preferences` reads the current effective values (through the defensive reader), applies the client's subset on top, validates the merged result and writes the complete four-key object. A single-field update is therefore legal against the stored values only — exactly the `availability` module's "validation runs on the merged values" rule.
 4. **Writing into the bag.** The service reads the user's current `preferences` (defaulting to `{}`), builds `{ ...currentBag, studyDefaults: merged }` and writes the whole column. The bag's other keys survive unchanged. The column's 4096-byte cap is re-checked after the merge (the bag's existing validator applies to the resulting value).
 5. **The DTO.** `UpdateStudyPreferencesDto` with four optional integer fields, each carrying `@IsInt()` and `@Min()`/`@Max()` decorators. The service re-runs the same constraint set for non-HTTP callers with the `dtoErrors` helper.
@@ -122,7 +130,7 @@ Jira key: Pending creation. No sync was authorized for this planning task. (If t
 ## Sizing
 
 - **Outcome:** the student's study-session defaults have a validated shape, a documented default, a defensive reader and a validated, ownership-scoped endpoint pair, so that every later EP06 child and EP07's V-07-1 re-check can rely on one contract.
-- **Request/token estimate:** 2 requests/tokens — one small pure-domain module (the shape, the bounds, the cross-field rules, the defensive reader) with its unit tests, one NestJS module with two endpoints (the merge-on-partial-update rule and the field-level errors), and three spec files. The uncertainty is in the fallback ordering inside the defensive reader, which the unit tests pin.
+- **Request/token estimate:** 2 requests/tokens — one small pure-domain module (the shape, the bounds, the cross-field rules, the defensive reader) with its unit tests, one NestJS module with two endpoints (the merge-on-partial-update rule and the field-level errors), and three spec files. The uncertainty is in the reader's repair ordering (which the unit tests pin step by step), not in the endpoints.
 - **Model recommendation:** 3 — the work is conventional NestJS and ordinary validation, but the defensive reader's fallback ordering and the merge-on-partial-update rule are the two places where a subtle mistake produces a wrong (not a crashing) result. A capable mid-tier model is appropriate.
 - **Files:**
   - `apps/api/src/domain/study-planning/preferences.ts` (new);

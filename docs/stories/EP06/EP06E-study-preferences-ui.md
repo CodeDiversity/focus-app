@@ -37,7 +37,7 @@ The epic's first acceptance criterion is that students can set preferred study-s
 ## Source requirement references
 
 - **Epic AC-E06-01** ("Students can set preferred study-session durations") — the frontend half.
-- **TR-E06-05** (this child's test obligations).
+- **TR-E06-05** (this child's test obligations) and **TR-E06-09** (the recorded manual accessibility pass — this surface's manual pass is part of TR-E06-09's evidence).
 - **Shared DoD** — items 1, 2, 4, 5, 6, 7, 8 apply; items 10/11 belong to the combined EP06 parent review.
 - **Decisions:** D06-4 (the shape and the bounds the form mirrors), D06-14 (the bag's second writer — the form's own endpoint is the supported path), D06-15 (this story's `Needs refinement` status), D06-16 (the key names); and the parent README's **Shared API/data contract** → *The study-preferences shape* and *Endpoints*.
 
@@ -98,8 +98,8 @@ The epic's first acceptance criterion is that students can set preferred study-s
 3. Academic data is scoped to the authenticated student — the endpoint is scoped server-side (EP06A); the client sends no user id.
 4. API errors produce actionable messages — the field-level 400 renders under the matching field; any other failure shows a readable message.
 5. Loading, empty and error states are handled — the read's loading state, the write's in-flight state, the success announcement and the error state.
-6. Core interactions support keyboard accessibility — every control is a native element with a visible focus ring and an accessible name; the section is reachable and operable by keyboard.
-7. Responsive layouts work on desktop and mobile — the section is usable at 375px and at desktop widths.
+6. Core interactions support keyboard accessibility — every control is a native element with a visible focus ring and an accessible name; the section is reachable and operable by keyboard; the **manual** pass (375px viewport and keyboard only) is recorded as TR-E06-09's evidence.
+7. Responsive layouts work on desktop and mobile — the section is usable at 375px and at desktop widths; the **manual** pass at 375px is recorded as TR-E06-09's evidence.
 8. Business rules have automated tests — the component tests and the entity-client tests.
 9. API changes are documented — not applicable in this story (no API change); the contract is EP06A's and lives in the parent README.
 10. Integrated review — the combined EP06 parent review.

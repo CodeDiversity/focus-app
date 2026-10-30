@@ -21,13 +21,13 @@ This is the epic's student-facing centre: the page where a student asks for a pl
 
 1. **The route** `/plan`, inside the `ProtectedRoute` block of `apps/web/src/app/App.tsx`, rendered within the standard `Layout` like every other page.
 2. **The navigation entry** — one item in the shared `Planning` group of `apps/web/src/widgets/header/ui/navGroups.ts` (the shared nav contract, EP11's file, edited additively — the desktop header and the mobile drawer both read it, so there is no drift).
-3. **The entity client** `apps/web/src/entities/study-plan/api/studyPlanApi.ts` (and its types in `apps/web/src/entities/study-plan/model/types.ts`) — `previewStudyPlan()`, `saveStudyPlan(sessions)` and `listStudyPlan(from, to)`, over the shared axios transport.
+3. **The entity client** `apps/web/src/entities/study-plan/api/studyPlanApi.ts` (and its types in `apps/web/src/entities/study-plan/model/types.ts`) — `previewStudyPlan()`, `saveStudyPlan(from, to, sessions)` and `listStudyPlan()` (the no-parameter mount read; the optional `?from&to` variant exists for an explicit range), over the shared axios transport.
 4. **The page** `apps/web/src/pages/plan/ui/PlanPage.tsx` and its feature components under `apps/web/src/features/study-plan/ui/`:
    - **the week view** — the seven days of the window with their proposed sessions;
    - **the generate action** — calls `POST /study-plans/preview` and shows the proposal (including the effective preferences the plan was built with);
    - **the editing interactions** — move a proposed session to another slot, resize it, and delete it, all **in the preview** (D06-5). **There is no free-form "add a session" affordance** (the epic does not require it);
-   - **the save action** — sends the edited session list to `POST /study-plans` and then shows the saved week (or the conflict it was rejected with);
-   - **the saved-plan view** — `GET /study-plans` renders the persisted week, so a reload shows what was saved.
+   - **the save action** — projects the edited sessions onto the save body's four fields, posts them with the preview's window, and then shows the saved week (or the conflict it was rejected with);
+   - **the saved-plan view** — `GET /study-plans` **with no query parameters** renders the persisted week, so a reload shows what was saved.
 5. **The states** — the initial (no plan generated yet), the generating, the empty week (no schedulable work), the error (the preview or the save failed), the conflict (the save was rejected with per-session reasons) and the saved confirmation.
 6. **Tests** — the page and component tests (TR-E06-06).
 
@@ -47,17 +47,17 @@ This is the epic's student-facing centre: the page where a student asks for a pl
 - **Epic AC-E06-03 / AC-E06-04 / AC-E06-05 / AC-E06-07** — the student-facing half of what the preview shows (the windows the plan respects, the conflicts it avoided, the deadline order, the warnings).
 - **TR-E06-06** (this child's test obligations) and **TR-E06-09** (the recorded manual accessibility pass).
 - **Shared DoD** — items 1, 2, 4, 5, 6, 7, 8 apply; items 10/11 belong to the combined EP06 parent review.
-- **Decisions:** D06-3 (the 7-day window the page shows), D06-5 (the editing model), D06-11 (the structured warnings the page renders), D06-12 (the advisory availability window and daily cap for a manual edit), D06-13 (the replace semantics the save performs), D06-15 (this story's `Needs refinement` status), D06-19 (the client-held proposal); and the parent README's **Shared API/data contract** → *Endpoints*, *The save, the edits and the conflict re-check* and the `PlanPreview`/`SavedPlan` payloads.
+- **Decisions:** D06-3 (the 7-day window the page shows), D06-5 (the editing model), D06-11 (the structured warnings the page renders), D06-12 (the advisory availability window and daily cap for a manual edit), D06-13 (the replace semantics the save performs), D06-15 (this story's `Needs refinement` status), D06-19 (the client-held proposal), D06-21 (the save names the window it applies to; the rollover), D06-23 (the server owns the window in the read path); and the parent README's **Shared API/data contract** → *Endpoints*, *The window, the dates and the time representation*, *The save, the edits and the conflict re-check* and the `PlanPreview`/`SavedPlan` payloads.
 
 ## Acceptance criteria
 
 1. `/plan` is a protected route rendered inside the standard layout, and it appears once in the shared navigation (the Planning group) so the desktop header and the mobile drawer show the same entry.
 2. The page's initial state offers a way to generate a plan; generating calls `POST /study-plans/preview` and renders the seven days of the window with their proposed sessions, the effective preferences the plan was built with, and any warnings the preview returned.
 3. A proposed session can be **moved** to another slot, **resized** to another length, and **deleted** — all inside the preview, before saving. There is no control that adds a session the engine did not propose.
-4. The save sends the edited session list to `POST /study-plans`; on success the page shows the **saved** week (the server's response) and the student is told the plan was saved.
+4. The save sends the edited session list to `POST /study-plans` as `{ from, to, sessions }` — the preview's `from`/`to` and, per session, **exactly** `{ assignmentId, date, startTime, endTime }` (the client **projects** the preview's session, dropping `assignmentTitle` and `durationMinutes`; posting them unchanged is a 400). The times are the preview's own wall-clock `HH:mm` strings — the client converts nothing. On success the page shows the **saved** week (the server's response) and the student is told the plan was saved.
 5. A save rejected with a 409 is presented as a conflict: each offending session is identified (its day and time) with the reason, the proposal stays on screen so the student can fix it, and **nothing** was saved.
-6. A failed preview or save shows a readable, actionable message; the page never shows a partially applied plan, and the previously saved week stays visible.
-7. The page reads the saved plan on mount, so a reload shows the saved week; when no plan is saved the page says so plainly rather than showing an empty week that looks like a failure.
+6. A failed preview or save shows a readable, actionable message; the page never shows a partially applied plan, and the previously saved week stays visible. A save rejected with the rollover code (`WINDOW_ROLLED_OVER`) says plainly that the week has rolled over and offers the generate action — it is never shown as a bare failure.
+7. The page reads the saved plan on mount with **`GET /study-plans` and no query parameters** — the server names the window (the student's most recent saved plan week, or the current rolling week when nothing is saved) and the page renders exactly the days the response states. The page never computes "today" from the browser's clock and never derives a date locally. When the server returns no saved plan, the page says so plainly rather than showing an empty week that looks like a failure.
 8. Every control is reachable and operable with the keyboard, has a visible focus ring and an accessible name; the page is usable at a 375px viewport; the moving and resizing interactions have a non-pointer path.
 9. The page tests cover the generate → preview → move → resize → delete → save journey, the saved-plan view, the conflict presentation and the loading/empty/error states.
 
@@ -77,10 +77,11 @@ This is the epic's student-facing centre: the page where a student asks for a pl
 - `apps/web/src/pages/plan/ui/PlanPage.test.tsx` (new) — the page:
   - the initial state offers the generate action;
   - generating renders the preview's days and sessions;
-  - the save posts the edited list and renders the saved week;
+  - the save posts `{ from, to, sessions }` with the **projected** four-field sessions (no `durationMinutes`, no `assignmentTitle`) and renders the saved week;
   - a 409 is rendered as a conflict with the offending session and the reason, and the proposal stays;
   - a failed preview renders a readable error;
-  - the saved plan is read on mount.
+  - a save rejected with `WINDOW_ROLLED_OVER` renders the rolled-over message and the generate action;
+  - the saved plan is read on mount **with no query parameters**, and the days rendered are the ones the response states (the test never computes a date locally).
 - `apps/web/src/entities/study-plan/api/studyPlanApi.test.ts` (new) — the client calls the right method and path and unwraps the payloads.
 
 ## Technical notes
@@ -98,19 +99,20 @@ This is the epic's student-facing centre: the page where a student asks for a pl
 
 ### Implementation notes (concrete)
 
-1. **The client.** `previewStudyPlan(): Promise<PlanPreview>` → `POST /study-plans/preview`; `saveStudyPlan(sessions: ProposedSessionInput[]): Promise<SavedPlan>` → `POST /study-plans`; `listStudyPlan(from: string, to: string): Promise<SavedPlan>` → `GET /study-plans?from&to`. The types mirror the API contract exactly — the client's `PlanPreview`/`SavedPlan` shapes are the server's payloads, unchanged.
+1. **The client.** `previewStudyPlan(): Promise<PlanPreview>` → `POST /study-plans/preview`; `saveStudyPlan(from: string, to: string, sessions: ProposedSessionInput[]): Promise<SavedPlan>` → `POST /study-plans`; `listStudyPlan(): Promise<SavedPlan>` → `GET /study-plans` **with no query parameters** (the server names the window — D06-23; the optional `?from&to` variant exists for an explicit range). The types mirror the API contract exactly — the client's `PlanPreview`/`SavedPlan` shapes are the server's payloads, unchanged. **`ProposedSessionInput` is the four-field projection** `{ assignmentId, date, startTime, endTime }` — the client must strip `assignmentTitle` and `durationMinutes` before saving, because the global `FieldValidationPipe` rejects unknown fields with 400.
 2. **The proposal lives in the client (D06-19).** The page holds the preview's sessions in component state and edits them there. Nothing is persisted until the save. The page must not keep a second copy of the saved week that can drift from the server's — the saved view is rendered from the server's response.
 3. **The move and resize interactions.** The exact interaction model (drag-and-drop, a slot picker, a form with day and time inputs, or a combination) is **undecided and is the `ui-refiner`'s to settle** (see the gaps below). Whatever is chosen must have a **keyboard-operable path** (DoD 6) — a drag-only interaction would not satisfy it.
-4. **The window is the server's.** The page renders the seven days of the `from`/`to` the server returned and labels them with the server's `timeZone`. It never computes "today" from the browser's clock (the FU-EP04-01 lesson).
+4. **The window is the server's.** The page renders the seven days of the `from`/`to` the server returned — the preview's for a proposal, the saved plan's for the persisted week — and labels them with the server's `timeZone`. On mount it calls `GET /study-plans` **without** query parameters, so the server states the window (D06-23). It never computes "today" from the browser's clock (the FU-EP04-01 lesson) and never derives a date locally.
 5. **The conflict presentation.** A 409's `conflicts` array is rendered per session (the day, the time range and the reason). The reason codes (`OVERLAPS_CLASS`, `OVERLAPS_BLOCKED_TIME`, `OVERLAPS_CONFIRMED_SESSION`, `OVERLAPS_PLANNED_SESSION`) are mapped to student-facing wording by the page — the copy is part of the `ui-refiner` pass.
-6. **The states.** The initial state (no plan yet), the generating state (the generate control is in flight), the empty week (the engine proposed nothing — the empty state explains why and points at the next step), the error state (the preview failed) and the saved confirmation. The empty state must not read as a failure.
+6. **The states.** The initial state (no plan yet), the generating state (the generate control is in flight), the empty week (the engine proposed nothing — the empty state explains why and points at the next step), the error state (the preview failed), the **rolled-over state** (the save was rejected with `WINDOW_ROLLED_OVER`: the page says the week has rolled over and offers the generate action — the manual edits are then lost, FU-EP06-01's recorded consequence) and the saved confirmation. The empty state must not read as a failure.
 7. **`ui-refiner` pass.** This story's layout, the week grid's structure, the session card's content, the move/resize/delete interaction model, the conflict presentation, the empty/loading/error copy, the responsive behaviour and the keyboard behaviour are settled by the `ui-refiner` **before** implementation, and this file is amended in place by that pass.
 
 ### Risks / open questions (none blocking)
 
 - **The move/resize interaction is the hard part of this story.** A week grid invites drag-and-drop, which is inaccessible by default and hard to test. The `ui-refiner` must settle a model with a first-class keyboard path (a slot picker or an explicit day/time control), and the tests must drive that path.
 - **A regeneration loses the manual edits (FU-EP06-01).** After a save, the only way to change the plan is to generate a new proposal, which is computed from the current remaining work and therefore does not carry the previous manual edits. The page must not imply that the saved plan can be edited in place.
-- **The page's week is the server's, not the browser's.** The student may be in a different zone from the browser; the server's `from`/`to`/`timeZone` are the truth (and the label of each day must state the zone).
+- **The page's week is the server's, not the browser's.** The student may be in a different zone from the browser; the server's `from`/`to`/`timeZone` are the truth (and the label of each day must state the zone). The mount read uses **no query parameters**, so the server names the window even on a fresh tab (D06-23).
+- **The midnight rollover.** A proposal held across midnight is saved against the window it was generated for — the server accepts it (D06-21) — so the student's edits survive. Only a proposal older than seven days is rejected; the page then says the week has rolled over and offers to regenerate (the edits are lost, FU-EP06-01).
 - **The preview is recomputed on every generate.** Two generates with unchanged inputs produce the same proposal (the engine is deterministic), so a student who generates twice sees the same week — that is a feature, and the page must not imply randomness.
 
 ## Definition of Done
@@ -149,7 +151,7 @@ Jira key: Pending creation. No sync was authorized for this planning task. (If t
   - `apps/web/src/pages/plan/ui/PlanPage.test.tsx` (new);
   - `apps/web/src/app/App.tsx` (modify — the route);
   - `apps/web/src/widgets/header/ui/navGroups.ts` (modify — the nav entry).
-- **Start context:** this story file; the parent README's shared API/data contract → *Endpoints*, *The save, the edits and the conflict re-check*, the `PlanPreview`/`SavedPlan` payloads, and the decision register (D06-3, D06-5, D06-11, D06-12, D06-13, D06-15, D06-19); EP06D's story file (the three endpoints and their exact payloads); `apps/web/src/app/App.tsx`; `apps/web/src/widgets/header/ui/navGroups.ts`; `apps/web/src/features/calendar/ui/` (the week-shaped precedent); `apps/web/src/shared/ui/` (the EP10 primitives); `apps/web/src/shared/lib/errors.ts`. Do not read unrelated epic stories.
+- **Start context:** this story file; the parent README's shared API/data contract → *Endpoints*, *The window, the dates and the time representation*, *The save, the edits and the conflict re-check*, the `PlanPreview`/`SavedPlan` payloads, and the decision register (D06-3, D06-5, D06-11, D06-12, D06-13, D06-15, D06-19, D06-21, D06-23); EP06D's story file (the three endpoints and their exact payloads); `apps/web/src/app/App.tsx`; `apps/web/src/widgets/header/ui/navGroups.ts`; `apps/web/src/features/calendar/ui/` (the week-shaped precedent); `apps/web/src/shared/ui/` (the EP10 primitives); `apps/web/src/shared/lib/errors.ts`. Do not read unrelated epic stories.
 - **Verification:** `pnpm --filter web test -- Plan` (the page, the week view and the editor tests); `pnpm --filter web test` (the whole web suite — the nav and route changes must not break the dashboard or the calendar); `pnpm --filter web typecheck`; `pnpm --filter web lint`; a manual browser pass at a 375px viewport and with the keyboard only (recorded as part of TR-E06-09's evidence).
 - **Dependencies / exclusions:** EP06D implemented (EP06A too, for the preferences the preview echoes). Excludes the remaining-work and deficit sections (EP06G), the preferences surface (EP06E), editing a saved session (FU-EP06-01), adding a session that was not proposed, the calendar read model (D06-18), and any navigation redesign.
 

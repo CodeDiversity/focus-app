@@ -43,7 +43,7 @@ One Playwright suite proves the epic's cross-layer behaviour against the real st
 - **Epic AC-E06-01, AC-E06-02, AC-E06-03, AC-E06-04, AC-E06-05, AC-E06-06, AC-E06-07, AC-E06-08, AC-E06-09** (the cross-layer proof of every criterion).
 - **TR-E06-08** (this child's test obligations) and **TR-E06-09** (the manual accessibility evidence collected for the combined review).
 - **Shared DoD** — items 1, 3, 8, 9, 10, 11 apply; items 10/11 are the combined review itself.
-- **Decisions:** D06-5 (the edit-then-save flow the journey drives), D06-6 (EP06's own confirmed-time read — the seam stays EP07's), D06-13 (the replace semantics the reload proves), D06-19 (the client-held proposal the journey exercises); and the parent README's **Shared API/data contract** → *Endpoints*.
+- **Decisions:** D06-5 (the edit-then-save flow the journey drives), D06-6 (EP06's own confirmed-time read — the seam stays EP07's), D06-13 (the replace semantics the reload proves), D06-19 (the client-held proposal the journey exercises), D06-23 (the server names the window the page reads); and the parent README's **Shared API/data contract** → *Endpoints*.
 
 ## Acceptance criteria
 
@@ -59,7 +59,7 @@ One Playwright suite proves the epic's cross-layer behaviour against the real st
 
 - `apps/web/e2e/study-plan.spec.ts` (new) — the cross-layer suite:
   1. **the journey** — register/log in, create the course, the class meeting, the availability windows and the assignments through the real API, set the study preferences in the profile page, open `/plan`, generate, assert the preview shows the seven days and the proposed sessions, move a session, delete a session, save, and assert the saved week;
-  2. **the saved plan survives a reload** — reload `/plan` and assert the saved sessions are still shown; read the saved plan through the API and compare the session ids and times;
+  2. **the saved plan survives a reload** — reload `/plan` and assert the saved sessions are still shown; the window is read from the API response (the page calls `GET /study-plans` with **no query parameters** — the server names the window, D06-23) and the assertion never computes a date in the browser; read the saved plan through the API and compare the session ids and times;
   3. **the deficit warning** — with an assignment due tomorrow whose estimate exceeds the available capacity, assert the warnings section names it with its minutes;
   4. **the flagged assignment** — an assignment with no estimate is marked as flagged and has no session in the plan;
   5. **the isolation case** — a second student's assignment id is not in the preview, and a save naming it is rejected with the uniform 404;
@@ -81,7 +81,7 @@ One Playwright suite proves the epic's cross-layer behaviour against the real st
 
 ### Implementation notes (concrete)
 
-1. **Determinism around "today".** The plan's window starts at the server's "today" in the profile zone. The fixtures must therefore create due dates relative to the server's date, not to a hard-coded calendar week. The suite reads the window from the preview response (`from`/`to`) and derives its assertions from it — for example, "the first session of the preview is on the `from` date".
+1. **Determinism around "today".** The plan's window starts at the server's "today" in the profile zone. The fixtures must therefore create due dates relative to the server's date, not to a hard-coded calendar week. The suite reads the window from the preview response (`from`/`to`) and derives its assertions from it — for example, "the first session of the preview is on the `from` date". **The reload assertion does the same with the read**: the page calls `GET /study-plans` without query parameters and the server's response states the effective window (`from`/`to`), so the suite compares the rendered days against the API's — it never derives a date in the browser (D06-23).
 2. **The data setup.** The course and its class meeting, the availability windows (one available, one recurring blocked), and the assignments are created through the real API with the bearer token, following the `calendar.spec.ts` pattern. The **journey itself** is driven through the UI — that is the thing under test.
 3. **The isolation case.** A second student's assignment id must be inserted into the plan **through the API** (not through the UI, which cannot express it) and the 404 asserted. The response must be byte-identical to the response for a non-existent id.
 4. **The conflict case.** A save naming a slot inside the class meeting must be rejected with a 409 whose `conflicts` array names the session, and the stored plan must be unchanged afterwards (read it back through the API).
@@ -91,7 +91,7 @@ One Playwright suite proves the epic's cross-layer behaviour against the real st
 
 ### Risks / open questions (none blocking)
 
-- **The date-dependent fixture.** The suite's data depends on "today", so it can fail at a date boundary (a run that starts at 23:59 in the profile zone crosses midnight mid-run). The suite must read the window from the preview and assert against it, and it must not assume a fixed weekday.
+- **The date-dependent fixture.** The suite's data depends on "today", so it can fail at a date boundary (a run that starts at 23:59 in the profile zone crosses midnight mid-run). The suite must read the window from the preview and assert against it, and it must not assume a fixed weekday. A run that crosses midnight **between the preview and the save** is covered by the contract: the save names the window it applies to and the server accepts any rolling window it could itself have generated (D06-21), so the save still succeeds — the suite asserts the saved sessions, not the save's success alone.
 - **The manual accessibility pass (TR-E06-09)** is collected here for the combined review; the automated part of the accessibility evidence lives in EP06F's/EP06G's component tests. The manual pass must be recorded as a manual pass, with honest labels.
 - **The migration in the E2E harness.** The self-contained harness creates and migrates the test database per run; EP06's migration (with its guard and its renames) must apply cleanly there. The rollback is documented in EP06D's record but is not exercised by this suite.
 
