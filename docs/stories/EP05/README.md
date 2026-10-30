@@ -16,9 +16,9 @@
 
 **Parent artifacts:** `./artifacts/EP05/` (parent `implementation.md` written by EP05C; `review.md` and `walkthrough.md` written by the reviewer).
 
-**Active substory:** None — no EP05 implementation is in progress; the next concrete actionable work is EP05A (below).
+**Active substory:** None — EP05A's implementation is complete and awaiting the combined EP05 parent review; no EP05 implementation is in progress. EP05A's records: [`./artifacts/EP05A/implementation.md`](./artifacts/EP05A/implementation.md) (behaviour, AC outcomes, verification) and [`./artifacts/EP05A/checkpoint.md`](./artifacts/EP05A/checkpoint.md) (resume state).
 
-**Next substory:** EP05A — implement (dashboard data layer: RTK Query slices, store registration, "today" derivation, assignment split).
+**Next substory:** EP05B — refine (the `ui-refiner` pass on **both** EP05B and EP05C, D05-12, then implement EP05B). EP05B/EP05C remain `Needs refinement`; the ui-refiner is the next actionable step, and the combined EP05 parent review follows EP05C.
 
 **Implementation owner:** `implementer`, one sequential writer across the epic (frontend only; the layer labels are scope, not concurrent roles).
 
@@ -28,7 +28,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP05A](./EP05A-dashboard-data-layer-rtk-query-slices.md) | Ready | EP02 + EP03 + EP04 complete (satisfied). No EP05 sibling dependency. No `ui-refiner` pass needed (D05-12 — no user-visible surface). **Plan-review gate passed** (pass 2, 2026-10-30 — `Plan Ready`). | Implement EP05A: RTK Query slices + store wiring + today derivation + assignment split | `./artifacts/EP05A/` (pending) |
+| [EP05A](./EP05A-dashboard-data-layer-rtk-query-slices.md) | Implemented — awaiting parent review | EP02 + EP03 + EP04 complete (satisfied). No EP05 sibling dependency. No `ui-refiner` pass needed (D05-12 — no user-visible surface). **Plan-review gate passed** (pass 2, 2026-10-30 — `Plan Ready`). | EP05A is implemented — no further implementation work; it is verified against the combined EP05 parent review (dispatched after EP05C) | [`./artifacts/EP05A/implementation.md`](./artifacts/EP05A/implementation.md) · [`./artifacts/EP05A/checkpoint.md`](./artifacts/EP05A/checkpoint.md) |
 | [EP05B](./EP05B-dashboard-sections-classes-deadlines-overdue-sessions.md) | Needs refinement | EP05A implemented (the queries and derived sets it renders). `ui-refiner` pass required (D05-12) — **both** `ui-refiner` passes (EP05B's **and** EP05C's) run **before** EP05B's implementation, because the section shapes and the empty-state copy are one decision (D05-12). | `ui-refiner` pass on EP05B **and** EP05C (both before implementation), then implement EP05B | `./artifacts/EP05B/` (pending) |
 | [EP05C](./EP05C-quick-actions-empty-states-and-parent-index.md) | Needs refinement | EP05A + EP05B implemented (the sections whose empty states it writes). `ui-refiner` pass required (D05-12) — it must run **before** EP05B's implementation (same decision). | (after both `ui-refiner` passes) implement EP05C | `./artifacts/EP05C/` (pending) |
 

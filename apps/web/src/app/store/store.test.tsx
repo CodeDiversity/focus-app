@@ -14,9 +14,22 @@ describe('store', () => {
 
     // Dispatch a no-op action to confirm the middleware chain is active
     store.dispatch({ type: '@@test/no-op' });
-    // SP-107C added the onboarding reducer alongside auth and the RTK Query api.
-    expect(Object.keys(store.getState()).sort()).toEqual(['api', 'auth', 'onboarding']);
+    // SP-107C added the onboarding reducer alongside auth and the RTK Query api;
+    // EP05A added the dashboard's two per-domain RTK Query slices.
+    expect(Object.keys(store.getState()).sort()).toEqual([
+      'api',
+      'assignmentsApi',
+      'auth',
+      'calendarApi',
+      'onboarding',
+    ]);
     expect(store.getState().api).toEqual(expect.objectContaining({ queries: {}, mutations: {} }));
+    expect(store.getState().assignmentsApi).toEqual(
+      expect.objectContaining({ queries: {}, mutations: {} })
+    );
+    expect(store.getState().calendarApi).toEqual(
+      expect.objectContaining({ queries: {}, mutations: {} })
+    );
   });
 
   it('dispatching an unknown action is rejected by the serializability middleware', () => {
@@ -54,15 +67,15 @@ describe('store', () => {
       </Provider>
     );
 
-    // The store registers the auth, onboarding and api (RTK Query) reducers,
-    // so state has three keys
-    expect(getByTestId('state-size').textContent).toBe('3');
+    // The store registers the auth, onboarding, api (RTK Query), assignmentsApi
+    // and calendarApi reducers, so state has five keys
+    expect(getByTestId('state-size').textContent).toBe('5');
 
     // Dispatch should work without error
     const btn = getByTestId('dispatch-btn');
     btn.click();
 
     // Verify dispatch changed nothing (no reducers listening)
-    expect(getByTestId('state-size').textContent).toBe('3');
+    expect(getByTestId('state-size').textContent).toBe('5');
   });
 });

@@ -1,52 +1,15 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import type { BaseQueryFn } from '@reduxjs/toolkit/query';
-import type { AxiosRequestConfig, Method } from 'axios';
-import httpClient from '@/shared/api/httpClient';
+import { axiosBaseQuery } from '@/shared/api/rtkBaseQuery';
 import type { VerificationResponse } from '@/features/auth/model/types';
 
-/** Shape every endpoint passes to the baseQuery — transport details only. */
-export interface AxiosBaseQueryArgs {
-  url: string;
-  method: Method;
-  body?: unknown;
-}
-
 /**
- * RTK's `miniSerializeError` copies only the *string* properties `name`,
- * `message`, `stack` and `code`, so the HTTP status travels as `code`.
+ * The shared RTK Query base query moved here from this module (D05-7) so the
+ * dashboard's per-domain slices do not import across features. Re-exported so
+ * existing importers of `features/session/api/sessionApi` keep working
+ * unchanged; the transport itself is untouched.
  */
-export interface AxiosBaseQueryError {
-  message: string;
-  code?: string;
-}
-
-/**
- * Every RTK Query request goes through the shared `shared/api/httpClient.ts` axios
- * instance, so the SP-105G interceptor chain (bearer token, single-flight
- * refresh, recovery barrier, session generations, `AUTH_PATHS`, error
- * sanitization) stays the single transport — RD4.
- */
-export const axiosBaseQuery: BaseQueryFn<AxiosBaseQueryArgs, unknown, AxiosBaseQueryError> = async (
-  args
-) => {
-  const { url, method, body } = args;
-  try {
-    const config: AxiosRequestConfig = { url, method, data: body };
-    const response = await httpClient.request(config);
-    return { data: response.data };
-  } catch (error: unknown) {
-    // The response interceptor rejects with `{ ...error, message }`, which keeps
-    // `response.status` readable (authService relies on the same shape).
-    const failure = error as { message?: string; response?: { status?: number } };
-    const status = failure.response?.status;
-    return {
-      error: {
-        message: failure.message ?? 'An unexpected error occurred',
-        code: status === undefined ? undefined : String(status),
-      },
-    };
-  }
-};
+export { axiosBaseQuery } from '@/shared/api/rtkBaseQuery';
+export type { AxiosBaseQueryArgs, AxiosBaseQueryError } from '@/shared/api/rtkBaseQuery';
 
 export const RESEND_INVALID_EMAIL_MESSAGE = 'Please enter a valid email address';
 export const RESEND_FALLBACK_MESSAGE =

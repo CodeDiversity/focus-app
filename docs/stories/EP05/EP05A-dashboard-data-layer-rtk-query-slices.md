@@ -6,7 +6,7 @@
 **Parent:** [EP05 breakdown](./README.md)
 **Milestone:** M2 (Calendar and dashboard)
 **Layer:** Frontend (data)
-**Status:** Ready — sized, contracts settled (D05-1, D05-3, D05-6…D05-9); no `ui-refiner` pass applies (D05-12 — no user-visible surface). Not implemented.
+**Status:** Implemented — awaiting parent review (implementation complete 2026-10-30). Sized, contracts settled (D05-1, D05-3, D05-6…D05-9); no `ui-refiner` pass applies (D05-12 — no user-visible surface). Records: [`artifacts/EP05A/implementation.md`](./artifacts/EP05A/implementation.md) (AC outcomes, verification, findings) and [`artifacts/EP05A/checkpoint.md`](./artifacts/EP05A/checkpoint.md).
 **Dependencies:** EP02, EP03, EP04 complete (satisfied). No EP05 sibling dependency. `features/session/api/sessionApi.ts` (the only existing RTK Query API) is refactored, not duplicated.
 **Jira key:** Pending creation
 **Refined:** — (technical refinement is captured in this file; the `ui-refiner` pass does not apply to this child)
