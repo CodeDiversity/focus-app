@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { AxiosError } from 'axios';
@@ -10,6 +10,7 @@ import { authService } from '@/features/auth/api/authService';
 import { dashboardTodayRange } from '@/features/dashboard/model/dashboardRange';
 import type { AssignmentListItem } from '@/shared/types/academic';
 import type { CalendarEvent, CalendarEventsResult } from '@/entities/calendar/model/types';
+import type { CourseWithSemester } from '@/entities/course/api/courseApi';
 import { DashboardPage } from './DashboardPage';
 
 /**
@@ -96,6 +97,22 @@ const assignmentsPayload: AssignmentListItem[] = [
   makeAssignment({ id: 'done-1', title: 'Finished work', status: 'COMPLETED' }),
 ];
 
+/**
+ * The student's courses — the create dialog's course select (EP05C
+ * Decision #7). The plain-axios `listCourses()` goes through the same
+ * `httpClient`, so the adapter answers it too.
+ */
+const coursesPayload: CourseWithSemester[] = [
+  {
+    id: 'c1',
+    name: 'Calculus',
+    code: 'MATH101',
+    color: '#10b981',
+    semesterId: 's1',
+    semester: { id: 's1', name: 'Fall 2026' },
+  } as unknown as CourseWithSemester,
+];
+
 const calendarPayload: CalendarEventsResult = {
   timeZone: TIME_ZONE,
   today: TODAY,
@@ -119,9 +136,20 @@ const calendarPayload: CalendarEventsResult = {
 };
 
 /** The requests the adapter saw, in order. */
-let requests: { url?: string; params?: unknown }[] = [];
+let requests: { url?: string; method?: string; params?: unknown }[] = [];
 let assignmentsFailure: string | null = null;
 let calendarFailure: string | null = null;
+/**
+ * The assignment rows the adapter serves. The create mutates it, so the
+ * refetch after a create shows the new row (EP05C's cache hand-off).
+ */
+let assignmentRows: AssignmentListItem[] = assignmentsPayload;
+/** The courses the adapter serves — empty models the "no courses" student. */
+let courseRows: CourseWithSemester[] = coursesPayload;
+/** The calendar events the adapter serves — empty models an empty day. */
+let calendarEvents: CalendarEvent[] = calendarPayload.events;
+/** A create failure: the shared form's 400 field-error body. */
+let createFieldError: string | null = null;
 /**
  * The profile zone the calendar payload echoes. The default case uses
  * `America/New_York`; the zone-extreme cases override it to pin the day
@@ -141,13 +169,52 @@ function failure(config: InternalAxiosRequestConfig, message: string): AxiosErro
   } as AxiosResponse);
 }
 
+/** A 400 with a per-field error — the shared form's field-error branch. */
+function fieldErrorFailure(
+  config: InternalAxiosRequestConfig,
+  field: string,
+  message: string
+): AxiosError {
+  return new AxiosError('Request failed', 'ERR_BAD_REQUEST', config, null, {
+    config,
+    data: { statusCode: 400, message: 'Invalid assignment', errors: { [field]: [message] } },
+    status: 400,
+    statusText: 'Bad Request',
+    headers: {},
+  } as AxiosResponse);
+}
+
 function installAdapter() {
   httpClient.defaults.adapter = async (config) => {
-    requests.push({ url: config.url, params: config.params });
+    const method = (config.method ?? 'get').toLowerCase();
+    requests.push({ url: config.url, method, params: config.params });
+    if (config.url === '/assignments' && method === 'post') {
+      if (createFieldError) {
+        throw fieldErrorFailure(config, 'title', createFieldError);
+      }
+      // axios serializes the body before the adapter sees it.
+      const raw = typeof config.data === 'string' ? config.data : JSON.stringify(config.data ?? {});
+      const body = JSON.parse(raw) as { title?: string; courseId?: string };
+      const created = makeAssignment({
+        id: `created-${assignmentRows.length}`,
+        title: body.title ?? 'Created assignment',
+        course: body.courseId
+          ? { id: body.courseId, name: 'Calculus', code: 'MATH101', color: '#10b981' }
+          : null,
+      });
+      assignmentRows = [...assignmentRows, created];
+      return {
+        data: created,
+        status: 201,
+        statusText: 'Created',
+        headers: {},
+        config,
+      } as AxiosResponse;
+    }
     if (config.url === '/assignments') {
       if (assignmentsFailure) throw failure(config, assignmentsFailure);
       return {
-        data: assignmentsPayload,
+        data: assignmentRows,
         status: 200,
         statusText: 'OK',
         headers: {},
@@ -157,7 +224,16 @@ function installAdapter() {
     if (config.url === '/calendar/events') {
       if (calendarFailure) throw failure(config, calendarFailure);
       return {
-        data: { ...calendarPayload, timeZone: calendarTimeZone },
+        data: { ...calendarPayload, timeZone: calendarTimeZone, events: calendarEvents },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      } as AxiosResponse;
+    }
+    if (config.url === '/courses') {
+      return {
+        data: courseRows,
         status: 200,
         statusText: 'OK',
         headers: {},
@@ -189,6 +265,7 @@ function controlKinds(container: HTMLElement): string[] {
       })
       .map((node) => {
         if (node.getAttribute('aria-label') === 'Refresh dashboard') return 'refresh';
+        if (node.getAttribute('data-assignment-focus') === 'add') return 'add';
         if (node.getAttribute('href') === '/profile') return 'profile';
         if (node.getAttribute('aria-label')?.startsWith('See all')) return 'see-all';
         if (node.getAttribute('data-assignment-focus')?.startsWith('edit:')) return 'row';
@@ -204,6 +281,10 @@ describe('DashboardPage (EP05B)', () => {
     assignmentsFailure = null;
     calendarFailure = null;
     calendarTimeZone = TIME_ZONE;
+    assignmentRows = assignmentsPayload;
+    courseRows = coursesPayload;
+    calendarEvents = calendarPayload.events;
+    createFieldError = null;
     installAdapter();
     mockedRefreshToken.mockResolvedValue({ accessToken: 'test-token', user: sessionUser });
   });
@@ -384,6 +465,7 @@ describe('DashboardPage (EP05B)', () => {
 
     expect(controlKinds(container)).toEqual([
       'refresh',
+      'add',
       'profile',
       'see-all',
       'row',
@@ -450,11 +532,231 @@ describe('DashboardPage (EP05B)', () => {
     });
   });
 
-  it('renders exactly one reserved add slot and no empty-add control', async () => {
+  it('renders exactly one add control and no empty-add control', async () => {
     const { container } = renderPage();
     await screen.findByText('Lab report');
 
+    // The reserved slot is replaced by the working "Add assignment" button —
+    // exactly one `[data-assignment-focus="add"]`, and no `empty-add` control
+    // (the shared hook falls back to the "add" control).
     expect(container.querySelectorAll('[data-assignment-focus="add"]')).toHaveLength(1);
     expect(container.querySelectorAll('[data-assignment-focus="empty-add"]')).toHaveLength(0);
+    expect(screen.getByRole('button', { name: 'Add assignment' })).toHaveAttribute(
+      'data-assignment-focus',
+      'add'
+    );
+  });
+});
+
+/**
+ * EP05C — the quick action, the shared-owner mount, the empty states and the
+ * focus/announcement contract (TR-E05-05, TR-E05-06, TR-E05-07).
+ */
+describe('DashboardPage (EP05C)', () => {
+  beforeEach(() => {
+    requests = [];
+    assignmentsFailure = null;
+    calendarFailure = null;
+    calendarTimeZone = TIME_ZONE;
+    assignmentRows = assignmentsPayload;
+    courseRows = coursesPayload;
+    calendarEvents = calendarPayload.events;
+    createFieldError = null;
+    installAdapter();
+    mockedRefreshToken.mockResolvedValue({ accessToken: 'test-token', user: sessionUser });
+  });
+
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+    vi.restoreAllMocks();
+  });
+
+  it('opens exactly one dialog from the quick action and creates the assignment end to end', async () => {
+    // One overdue row only, so the created row is visible in the section.
+    assignmentRows = [
+      makeAssignment({ id: 'overdue-1', title: 'Lab report', dueDate: '2020-01-05T12:00:00.000Z' }),
+    ];
+    renderPage();
+    await screen.findByText('Lab report');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add assignment' }));
+
+    // Exactly one dialog — the shared create form, mounted once (D05-17).
+    const dialogs = screen.getAllByRole('dialog');
+    expect(dialogs).toHaveLength(1);
+    expect(dialogs[0]).toHaveAccessibleName('Add an assignment');
+    // The shared form owns the focus: the first field takes it.
+    expect(screen.getByLabelText('Title')).toHaveFocus();
+
+    await userEvent.type(screen.getByLabelText('Title'), 'Reading list');
+    await userEvent.click(screen.getByRole('button', { name: 'Create assignment' }));
+
+    // The POST went through the shared client, the dialog closed and the
+    // assignments query was refetched — no page reload.
+    await waitFor(() =>
+      expect(
+        requests.filter((request) => request.url === '/assignments' && request.method === 'post')
+      ).toHaveLength(1)
+    );
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Reading list')).toBeInTheDocument());
+    expect(
+      requests.filter((request) => request.url === '/assignments' && request.method === 'get')
+        .length
+    ).toBeGreaterThanOrEqual(2);
+  });
+
+  it('moves focus to the add control after a create and announces it in the single live region', async () => {
+    assignmentRows = [];
+    renderPage();
+    await screen.findByText('Nothing overdue.');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add assignment' }));
+    await userEvent.type(screen.getByLabelText('Title'), 'Focus check');
+    await userEvent.click(screen.getByRole('button', { name: 'Create assignment' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    // The shared form restores focus to its activator, and the shared hook
+    // focuses the same stable control once the refetch lands.
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Add assignment' })).toHaveFocus()
+    );
+
+    // One live region only, and it carries the action sentence.
+    const regions = screen.getAllByRole('status');
+    expect(regions).toHaveLength(1);
+    await waitFor(() => expect(regions[0]).toHaveTextContent('Assignment added.'));
+    // The count summary is never lost.
+    expect(regions[0]).toHaveTextContent('upcoming deadline');
+  });
+
+  it('keeps the form open with the input and the shared message when the create fails', async () => {
+    createFieldError = 'Title is already taken';
+    assignmentRows = [];
+    renderPage();
+    await screen.findByText('Nothing overdue.');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add assignment' }));
+    await userEvent.type(screen.getByLabelText('Title'), 'Rejected work');
+    await userEvent.click(screen.getByRole('button', { name: 'Create assignment' }));
+
+    // The shared actionable message — the form's own field error.
+    expect(await screen.findByText('Title is already taken')).toBeInTheDocument();
+    // The form stays open with the student's input; the dashboard closes
+    // nothing and adds no error surface of its own.
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByLabelText('Title')).toHaveValue('Rejected work');
+    // No row was added.
+    expect(screen.queryByText('Rejected work')).not.toBeInTheDocument();
+  });
+
+  it('mounts the shared owner exactly once and opens the same single dialog from a row', async () => {
+    const { container } = renderPage();
+    await screen.findByText('Lab report');
+
+    // One owner, one mount (D05-17): one add control, no empty-add control.
+    expect(container.querySelectorAll('[data-assignment-focus="add"]')).toHaveLength(1);
+    expect(container.querySelectorAll('[data-assignment-focus="empty-add"]')).toHaveLength(0);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Lab report' }));
+
+    // The row's affordance opens the shared edit dialog — the same single
+    // dialog mount, never a second one.
+    const dialogs = screen.getAllByRole('dialog');
+    expect(dialogs).toHaveLength(1);
+    expect(dialogs[0]).toHaveAccessibleName('Edit assignment');
+  });
+
+  it('gives the four sections the settled empty-state copy and affordances', async () => {
+    assignmentRows = [];
+    calendarEvents = [];
+    renderPage();
+    await screen.findByText('Nothing overdue.');
+
+    // The four settled title/description pairs.
+    expect(screen.getByText('Nothing overdue.')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "You're all caught up — no assignment is past its due date. Add an assignment to put the next one on your list."
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByText('No upcoming deadlines.')).toBeInTheDocument();
+    expect(
+      screen.getByText("Nothing is due ahead. Add an assignment to keep track of what's next.")
+    ).toBeInTheDocument();
+    expect(screen.getByText('No classes today.')).toBeInTheDocument();
+    expect(
+      screen.getByText("No classes are scheduled for today. View your week to see what's ahead.")
+    ).toBeInTheDocument();
+    expect(screen.getByText('No study sessions today.')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Nothing is scheduled for study today. Check the calendar for your classes and deadlines.'
+      )
+    ).toBeInTheDocument();
+
+    // The two assignment sections offer a primary "Add an assignment" that
+    // opens the shared create form.
+    const addButtons = screen.getAllByRole('button', { name: 'Add an assignment' });
+    expect(addButtons).toHaveLength(2);
+    await userEvent.click(addButtons[0]);
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    // The two calendar sections offer an outline link to /calendar.
+    const weekLink = screen.getByRole('link', { name: 'View your week' });
+    expect(weekLink).toHaveAttribute('href', '/calendar');
+    const calendarLink = screen.getByRole('link', { name: 'Open the calendar' });
+    expect(calendarLink).toHaveAttribute('href', '/calendar');
+  });
+
+  it('offers the course select in the create dialog and still creates without a course', async () => {
+    renderPage();
+    await screen.findByText('Lab report');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add assignment' }));
+    const select = await screen.findByLabelText('Course');
+    expect(
+      within(select)
+        .getAllByRole('option')
+        .map((option) => option.textContent)
+    ).toEqual(['No course', 'MATH101 Calculus']);
+  });
+
+  it('lets a student with no courses create a course-less assignment', async () => {
+    courseRows = [];
+    renderPage();
+    await screen.findByText('Lab report');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add assignment' }));
+    const select = await screen.findByLabelText('Course');
+    expect(
+      within(select)
+        .getAllByRole('option')
+        .map((option) => option.textContent)
+    ).toEqual(['No course']);
+
+    await userEvent.type(screen.getByLabelText('Title'), 'Course-less work');
+    await userEvent.click(screen.getByRole('button', { name: 'Create assignment' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    const created = requests.find(
+      (request) => request.url === '/assignments' && request.method === 'post'
+    );
+    expect(created).toBeDefined();
+  });
+
+  it('keeps the header action group wrapping and the trigger at the 44 px tap target', async () => {
+    const { container } = renderPage();
+    await screen.findByText('Lab report');
+
+    const group = screen.getByRole('button', { name: 'Add assignment' }).closest('div');
+    expect(group?.className).toContain('flex-wrap');
+    const trigger = screen.getByRole('button', { name: 'Add assignment' });
+    expect(trigger.className).toContain('max-sm:min-h-[44px]');
+    expect(trigger.className).toContain('focus-visible:ring-focus-ring');
+    expect(trigger.className).toContain('focus-visible:ring-offset-2');
+    expect(container.querySelectorAll('.overflow-x-auto')).toHaveLength(0);
   });
 });
