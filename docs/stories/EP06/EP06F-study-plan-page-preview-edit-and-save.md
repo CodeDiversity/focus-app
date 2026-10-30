@@ -13,7 +13,7 @@
 
 ## Summary
 
-This is the epic's student-facing centre: the page where a student asks for a plan, reviews the proposed week, moves, resizes or deletes a proposed session, and saves the result. The proposal lives in the client until the save (D06-19), the save is atomic and re-checks every conflict on the server (D06-05), and the saved week is then shown.
+This is the epic's student-facing centre: the page where a student asks for a plan, reviews the proposed week, moves, resizes or deletes a proposed session, and saves the result. The proposal lives in the client until the save (D06-19), the save is atomic and re-checks every conflict on the server (D06-5), and the saved week is then shown.
 
 ## Description & bounded scope
 
@@ -25,7 +25,7 @@ This is the epic's student-facing centre: the page where a student asks for a pl
 4. **The page** `apps/web/src/pages/plan/ui/PlanPage.tsx` and its feature components under `apps/web/src/features/study-plan/ui/`:
    - **the week view** — the seven days of the window with their proposed sessions;
    - **the generate action** — calls `POST /study-plans/preview` and shows the proposal (including the effective preferences the plan was built with);
-   - **the editing interactions** — move a proposed session to another slot, resize it, and delete it, all **in the preview** (D06-05). **There is no free-form "add a session" affordance** (the epic does not require it);
+   - **the editing interactions** — move a proposed session to another slot, resize it, and delete it, all **in the preview** (D06-5). **There is no free-form "add a session" affordance** (the epic does not require it);
    - **the save action** — sends the edited session list to `POST /study-plans` and then shows the saved week (or the conflict it was rejected with);
    - **the saved-plan view** — `GET /study-plans` renders the persisted week, so a reload shows what was saved.
 5. **The states** — the initial (no plan generated yet), the generating, the empty week (no schedulable work), the error (the preview or the save failed), the conflict (the save was rejected with per-session reasons) and the saved confirmation.
@@ -36,7 +36,7 @@ This is the epic's student-facing centre: the page where a student asks for a pl
 - The remaining-work list and the deficit warnings — **EP06G** (they are sections on this page, added by a later child).
 - The preferences surface — **EP06E**.
 - The engine, the persistence and the endpoints — **EP06D**.
-- **Editing a session after it is saved** — out of EP06's scope per D06-05; regenerating the week is the way to change a saved plan (recorded as **FU-EP06-01**).
+- **Editing a session after it is saved** — out of EP06's scope per D06-5; regenerating the week is the way to change a saved plan (recorded as **FU-EP06-01**).
 - Adding a session that the engine did not propose (no create affordance).
 - The calendar read model and the dashboard widget — **not EP06's** (D06-18, seam V-05-1).
 - Any navigation or information-architecture redesign (EP11's).

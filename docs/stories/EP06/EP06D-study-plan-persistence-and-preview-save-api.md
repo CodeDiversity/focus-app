@@ -27,7 +27,7 @@ The epic's fifth proposed story — the plan preview, its editing and its confir
    - the rollback is documented and reversible.
 2. **The ownership convention's comment** — `apps/api/src/common/ownership/ownership.ts:26-29` names `ScheduledTask` and its parents; it must name `PlannedSession` and `studyPlan.userId` in the same change.
 3. **The data gathering** — the service reads, all ownership-scoped: the profile (`timeZone`, `preferences.studyDefaults`), the candidate assignments (through EP06B's classification), the availability slots (available and blocked), the `ClassMeeting` windows of the active courses, and the confirmed `StudySession` intervals — converted into the profile zone's wall-clock intervals, one entry per local date.
-4. **The window** — the seven civil dates from "today" in the profile zone (D06-03), computed by the service (the engine takes the dates as an input).
+4. **The window** — the seven civil dates from "today" in the profile zone (D06-3), computed by the service (the engine takes the dates as an input).
 5. **`POST /study-plans/preview`** — runs the engine over the student's data and returns the proposal (`PlanPreview`). **It writes nothing**: no `StudyPlan` row, no `PlannedSession` row, no assignment field.
 6. **`POST /study-plans`** — saves the edited proposal: the seven `StudyPlan` rows for the window are upserted, the window's existing `PlannedSession` rows are deleted and the submitted ones inserted, **in one Prisma transaction**. Every submitted session is re-validated (the malformed ones → 400 with a field-level `errors` map; a foreign assignment → the uniform 404; an overlap → 409 with a per-session `conflicts` array).
 7. **`GET /study-plans?from&to`** — the saved plan for a range (the inclusive span ≤ 31 days, the `calendar` module's rule).
@@ -40,8 +40,8 @@ The epic's fifth proposed story — the plan preview, its editing and its confir
 - The remaining-work calculation and the confirmed-time aggregation — **EP06B**.
 - The preferences shape and endpoint — **EP06A**.
 - Any frontend work — **EP06F**.
-- Editing a **saved** session (moving or deleting one after the save) — out of EP06's scope per D06-05 (the epic requires editing *before* saving); recorded as **FU-EP06-01**.
-- Free-form session creation — the epic does not require it (D06-05). The endpoint accepts the edited session list, so a crafted request could introduce a session; that is not reachable through the product, and the rule is a scope rule, not a security invariant (D06-11/D06-12 in the parent README).
+- Editing a **saved** session (moving or deleting one after the save) — out of EP06's scope per D06-5 (the epic requires editing *before* saving); recorded as **FU-EP06-01**.
+- Free-form session creation — the epic does not require it (D06-5). The endpoint accepts the edited session list, so a crafted request could introduce a session; that is not reachable through the product, and the rule is a scope rule, not a security invariant (D06-11/D06-12 in the parent README).
 - The calendar read model — **not EP06's** (D06-18, seam V-05-1).
 - Writing `Assignment.actualHours`, `Assignment.status` or any other assignment field (AC-E06-08).
 

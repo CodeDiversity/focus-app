@@ -99,7 +99,7 @@ Two things the epic asks for are about understanding, not scheduling: the studen
 
 ### Risks / open questions (none blocking)
 
-- **The confirmed minutes read `0` until EP07A lands (D06-07, V-07-3).** The section shows `0` — an honest value, since no study time can be logged today — and the `unattributedConfirmedMinutes` total is not surfaced as a separate line in this story (it is a diagnostic, not a student-facing number). If the `ui-refiner` pass judges that the total deserves a line, it is a copy decision, not an API change.
+- **The confirmed minutes read `0` until EP07A lands (D06-7, V-07-3).** The section shows `0` — an honest value, since no study time can be logged today — and the `unattributedConfirmedMinutes` total is not surfaced as a separate line in this story (it is a diagnostic, not a student-facing number). If the `ui-refiner` pass judges that the total deserves a line, it is a copy decision, not an API change.
 - **The remaining-work list grows with the student's coursework.** A student with thirty unfinished assignments gets a long list. The cap + "see all" convention of EP05's dashboard is a precedent, but the epic asks for no cap here; the `ui-refiner` may settle one, and a cap would need a full list behind it.
 - **This section overlaps EP08's "unfinished-work recovery summary".** EP08 owns the *recovery* workflow; this section is the current remaining work only, and it must not grow into a catch-up surface (the epic's scope, and EP08's dependency on EP06).
 
