@@ -1,16 +1,15 @@
 # SP-128B checkpoint
 
-Updated: 2026-10-28 (final state, after the scoped commit)
-Execution state: [SP-128 queue](../../README.md) — Active substory: none; SP-128B `Implemented — awaiting parent review`.
+Updated: 2026-10-28 (correction round closed — F-B-6 verified)
+Execution state: [SP-128 queue](../../README.md) — Active substory: none; SP-128B `Reviewed` (pass 1; F-B-6 fix verified, correction round closed).
 Story: [SP-128B-availability-settings-ui.md](../../SP-128B-availability-settings-ui.md)
 Review unit: SP-128 combined review; B owns the parent integration index ([parent implementation record](../SP-128/implementation.md)).
 Role / scope: implementer; frontend (web app only: new `entities/availability`, `features/availability`, `pages/availability`, `App.tsx` route, `Header.tsx` nav entry, e2e calendar spec extension). No API/Prisma changes (D404-5, DoD 9 N/A).
 
 ## Repository state
 
-- Repository / branch: main, clean after the scoped commit (a13cd31; the checkpoint records milestones without embedding its own hash).
-- HEAD at last update: a13cd31 (feat(web): SP-128B availability settings UI).
-- Saved work: SP-128A at 35ed47d; SP-128B at a13cd31 (code + e2e + closeout docs + queue).
+- Repository / branch: main.
+- SP-128-relevant commits: SP-128A `35ed47d`; SP-128B `a13cd31`; combined review `dc78036` (report + walkthrough); F-B-6 fix `f44b792` (verified this round). The checkpoint records milestones without embedding its own hash.
 - Other work to preserve: none — working tree clean post-commit.
 
 ## Progress
@@ -51,9 +50,8 @@ Role / scope: implementer; frontend (web app only: new `entities/availability`, 
 
 ## Resume next
 
-1. **Fix round open (F-B-6, user-reported 2026-10-28):** the availability modal's kind radio cards render broken in the real browser — the global `input { w-full … }` base rule stretches the app's first radio inputs and collapses the text beside them. Code fix applied: explicit `h-4 w-4 p-0 border-0 bg-transparent` on the kind radios, `flex-1 min-w-0` on the text span, `overflow-x-hidden` on the dialog, plus a regression class-assertion test. **Not yet verified**: run `pnpm vitest run src/features/availability` and re-check the modal visually; then reconcile this checkpoint, SP-128B/parent status, and commit (code fix + records + the previously deferred review/walkthrough/sync files).
-2. After verification, the scoped commits pending from the passing review (review.md, walkthrough.md, queue/status sync) plus this fix can land.
-- Read next: [SP-128's review unit](../../README.md#final-implementation-review-unit).
+None — correction round closed. F-B-6 fix verified: `pnpm vitest run src/features/availability` → 37/37 passed (incl. the F-B-6 class-assertion regression test). Visual re-check was not performed in this environment (no browser runtime); the fix is a targeted CSS reset pinned by the regression test. SP-128B and SP-128 are `Reviewed`. Remaining EP04 work: SP-129A.
+- Read next: [SP-128's review unit](../../README.md#final-implementation-review-unit) (passed, pass 1).
 
 ## Findings record
 
@@ -64,7 +62,7 @@ Role / scope: implementer; frontend (web app only: new `entities/availability`, 
 | F-B-3 | test authoring | features/availability/ui/AvailabilitySlotForm.test.tsx | The first 400-mapping test omitted its submit click and held one contradictory assertion; fixed before any verification relied on it. | closed | Suite passes 19/19. |
 | F-B-4 | pre-existing `semesters-courses.spec.ts` course-test failures | apps/web/e2e/semesters-courses.spec.ts (course tests at lines 107/145/192) | Three course e2e tests time out clicking direct `Archive ${name}`-style buttons absent from the redesigned courses list (`Actions for ${name}` menu buttons). Verified identical at the baseline commit 24978c7 in a clean throwaway worktree without this story's changes; the four semester tests and all SP-128 suites pass. | open — out of SP-128B scope, routed to the parent review | Baseline reproduction (3 failed / 4 passed twice here, same 3/4 in the worktree); owner: planner/coordinator. |
 | F-B-5 | e2e fixture isolation | apps/web/e2e/calendar.spec.ts | Using `page.request` for API setup shared auth cookies with the page context and surfaced the verification banner on /login (strict-mode failure on `getByLabel('Email')`). | closed | Switched to the isolated `request` fixture like the rest of the spec; journey passes. |
-| F-B-6 | User-reported visual defect (2026-10-28, after the parent review) | features/availability/ui/AvailabilitySlotForm.tsx (kind radio pair); apps/web/src/index.css (global `input` base rule) | The add/edit modal's kind cards render broken in the real browser: the global base rule `input { @apply w-full px-4 py-2 border … }` stretches the app's **first radio inputs** to the full card width; the adjoining `min-w-0` text span collapses and its content overflows the cards (caption slivers in the card gap / past the dialog edge), with a horizontal scrollbar under the dialog. jsdom applies no CSS and the e2e asserted roles/checked state, not geometry — both green despite the broken layout. | open — fix applied in code, **verification pending** (no test/browser runtime in the fix session) | Radio inputs carry explicit `h-4 w-4 p-0 border-0 bg-transparent` (utilities beat the base element rule); text span gained `flex-1`; dialog gained `overflow-x-hidden`; regression-pinned by a class-assertion test in `AvailabilitySlotForm.test.tsx`. Closure needs a vitest run + visual browser confirmation. |
+| F-B-6 | User-reported visual defect (2026-10-28, after the parent review) | features/availability/ui/AvailabilitySlotForm.tsx (kind radio pair); apps/web/src/index.css (global `input` base rule) | The add/edit modal's kind cards render broken in the real browser: the global base rule `input { @apply w-full px-4 py-2 border … }` stretches the app's **first radio inputs** to the full card width; the adjoining `min-w-0` text span collapses and its content overflows the cards (caption slivers in the card gap / past the dialog edge), with a horizontal scrollbar under the dialog. jsdom applies no CSS and the e2e asserted roles/checked state, not geometry — both green despite the broken layout. | closed — verified 2026-10-28 | Fix in commit `f44b792`: radio inputs carry explicit `h-4 w-4 p-0 border-0 bg-transparent` (utilities beat the base element rule); text span gained `flex-1`; dialog gained `overflow-x-hidden`; regression-pinned by a class-assertion test in `AvailabilitySlotForm.test.tsx`. Verification: `pnpm vitest run src/features/availability` → 37/37 passed. Visual re-check was not performed in this environment (no browser runtime); the fix is a targeted CSS reset pinned by the regression test. |
 
 ## Deviations
 

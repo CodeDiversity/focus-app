@@ -6,7 +6,7 @@
 **Parent:** [SP-128](./SP-128-availability-and-unavailable-blocks.md)
 **Milestone:** M2
 **Layer:** Frontend
-**Status:** Reviewed (pass 1) — F-B-6 fix round open (fix applied, verification pending). Parent review `SP-128` passed (pass 1); the F-B-6 kind-selector visual defect (user-reported 2026-10-28) was fixed in code but its vitest + visual verification is pending (see `./artifacts/SP-128B/checkpoint.md`).
+**Status:** Reviewed (pass 1) — F-B-6 fix verified and correction round closed. Parent review `SP-128` passed (pass 1); the F-B-6 kind-selector layout defect (user-reported 2026-10-28) is fixed in code (commit `f44b792`) and verified: `pnpm vitest run src/features/availability` → 37/37 passed (incl. the F-B-6 class-assertion regression test). Visual re-check was not performed in this environment (no browser runtime); the fix is a targeted CSS reset pinned by the regression test. See `./artifacts/SP-128B/checkpoint.md`.
 **Dependencies:** SP-128A implemented (the API it manages).
 **Jira key:** Pending creation
 **Refined:** 2026-10-28

@@ -1,7 +1,7 @@
 # SP-128B Implementation Record — Availability Settings UI
 
 **Story:** [SP-128B](../../../SP-128B-availability-settings-ui.md)
-**Status:** Implementation complete — awaiting parent review
+**Status:** Reviewed (pass 1) — F-B-6 fix verified and correction round closed (vitest `src/features/availability` 37/37; visual re-check not performed in this environment — no browser runtime)
 **Completed:** 2026-10-28
 
 ## Changed paths (commit scope)
@@ -58,6 +58,7 @@ No backend/API/Prisma change (DoD 9 N/A; D404-5), no new dependency, no UI libra
 | `pnpm exec playwright test calendar` (both standalone runs, before and after the e2e formatting pass) | **4/4 passed**, including the new SP-128B journey (self-contained stack: throwaway `studypilot_e2e_test` database created and dropped by the configured global setup) |
 | `pnpm exec playwright test` (full e2e suite) | 20 passed, 3 failed — **pre-existing at the baseline commit 24978c7**, verified in a clean throwaway worktree without this story's changes (see F-B-4) |
 | `pnpm exec prettier --check` on all new/changed paths | pass (fixed `e2e/calendar.spec.ts` formatting before the final commit check) |
+| `pnpm vitest run src/features/availability` (F-B-6 correction round, 2026-10-28) | **37/37 passed** (slotLabel 7 + delete dialog 10 + form 20 incl. the F-B-6 class-assertion regression test) — fix verified at code/test level; visual re-check not performed (no browser runtime in this environment) |
 
 ## Findings / deviations
 
@@ -69,7 +70,7 @@ No backend/API/Prisma change (DoD 9 N/A; D404-5), no new dependency, no UI libra
 
 No open findings owned by SP-128B itself (F-B-4 is cross-feature, reported for the parent review). No scope changes, no AC edits, no planning-document changes beyond the implementer-authorized execution fields.
 
-**Correction round (2026-10-28, post-review):** F-B-6 opened by user report — the modal's kind radio cards render broken in the real browser (global `input { w-full … }` base rule vs. the app's first radio inputs; details and fix in the F-B-6 rows of the [checkpoint](./checkpoint.md)). Full visual verification is pending a test/browser run; until it closes, SP-128B's visual state is **fix applied — unverified**.
+**Correction round (2026-10-28, post-review):** F-B-6 opened by user report — the modal's kind radio cards render broken in the real browser (global `input { w-full … }` base rule vs. the app's first radio inputs; details and fix in the F-B-6 rows of the [checkpoint](./checkpoint.md)). Fix applied in commit `f44b792` (explicit `h-4 w-4 p-0 border-0 bg-transparent` on the kind radios, `flex-1` on the text span, `overflow-x-hidden` on the dialog) and verified: `pnpm vitest run src/features/availability` → 37/37 passed, including the F-B-6 class-assertion regression test. Visual re-check was not performed in this environment (no browser runtime); the fix is a targeted CSS reset pinned by the regression test. Correction round closed.
 
 ## Documentation
 

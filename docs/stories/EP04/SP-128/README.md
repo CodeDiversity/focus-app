@@ -3,7 +3,7 @@
 **Epic:** [EP04: Academic Calendar & Availability](../../../epics/EP04-academic-calendar-and-availability.md) (Jira STUDY-14)
 **Parent:** [SP-128](./SP-128-availability-and-unavailable-blocks.md) — coordination record (not an implementation ticket)
 **Milestone:** M2
-**Status:** SP-128 correction round open — SP-128B's kind-selector layout defect (F-B-6, user-reported, fix applied 2026-10-28) awaits verification; SP-128A unchanged `Reviewed`; SP-128B was `Reviewed` (pass 1) pending this fix.
+**Status:** Reviewed — SP-128A and SP-128B `Reviewed` (combined review pass 1, 2026-10-28); F-B-6 kind-selector fix verified (vitest `src/features/availability` 37/37 + class-assertion regression test) and the correction round is closed. Remaining EP04 work: SP-129A.
 **Jira key:** Pending creation
 
 Covers the epic's proposed story **5 (study availability and unavailable blocks)**.
@@ -16,7 +16,7 @@ Covers the epic's proposed story **5 (study availability and unavailable blocks)
 
 **Active substory:** None (SP-128A and SP-128B both implemented).
 
-**Next substory:** SP-128B — resume: verify the F-B-6 fix (`pnpm vitest run src/features/availability`, visual re-check of the modal), reconcile records, then commit (fix + records + the previously deferred review/walkthrough sync). SP-128A stays `Reviewed`. (2026-10-28: F-B-6 opened by user report, fix applied but unverified — no test/browser runtime in this session.)
+**Next substory:** None — correction round closed. F-B-6 fix verified (vitest `src/features/availability` 37/37; visual re-check not performed in this environment — no browser runtime; the fix is a targeted CSS reset pinned by the class-assertion regression test). Combined SP-128 review passed (pass 1, 2026-10-28); SP-128A and SP-128B are `Reviewed`. Remaining EP04 work: SP-129A.
 
 **Implementation owner:** `implementer`, sequential (A → B).
 
@@ -25,7 +25,7 @@ Covers the epic's proposed story **5 (study availability and unavailable blocks)
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [A](./SP-128A-availability-slots-api.md) | Reviewed | EP02 + EP03 complete (satisfied). No EP04 predecessor. | None — parent complete (combined review passed 2026-10-28) | ./artifacts/SP-128A/implementation.md, ./artifacts/SP-128A/checkpoint.md, ./artifacts/SP-128/review.md (combined) |
-| [B](./SP-128B-availability-settings-ui.md) | Reviewed — F-B-6 fix round open (fix applied, verification pending) | SP-128A implemented (the API it manages) — satisfied. | Resume: verify the F-B-6 fix (vitest + visual), reconcile, commit | ./artifacts/SP-128B/implementation.md, ./artifacts/SP-128B/checkpoint.md, ./artifacts/SP-128/implementation.md (parent index), ./artifacts/SP-128/review.md + walkthrough.md (combined) |
+| [B](./SP-128B-availability-settings-ui.md) | Reviewed | SP-128A implemented (the API it manages) — satisfied. | None — correction round closed (F-B-6 fix verified) | ./artifacts/SP-128B/implementation.md, ./artifacts/SP-128B/checkpoint.md, ./artifacts/SP-128/implementation.md (parent index), ./artifacts/SP-128/review.md + walkthrough.md (combined) |
 
 ## Why this is two children
 

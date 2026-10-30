@@ -1,7 +1,7 @@
 # SP-128 Parent Implementation Record — Availability & Unavailable Blocks
 
 **Parent:** [SP-128](../../SP-128-availability-and-unavailable-blocks.md)
-**Status:** Both children implemented — awaiting the combined SP-128 parent review
+**Status:** Reviewed (pass 1, 2026-10-28) — SP-128A and SP-128B `Reviewed`; F-B-6 kind-selector fix verified (vitest `src/features/availability` 37/37) and the correction round closed.
 **Prepared by:** SP-128B's implementer (the integration/index owner, per the README's review unit)
 **Baseline:** `9bf65f7` (the commit before SP-128A's first included change)
 
