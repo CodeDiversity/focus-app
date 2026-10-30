@@ -96,8 +96,8 @@ The review unit is **EP05** — one combined review of the whole parent scope af
 | **AC-E05-02** — incomplete assignments are ordered by upcoming deadline | EP05A (the split, the endpoint's order preserved), EP05B (the section) | `features/dashboard/model/dashboardSelectors.ts` + `dashboardSelectors.test.ts`; `features/dashboard/ui/UpcomingDeadlinesSection.tsx` + `UpcomingDeadlinesSection.test.tsx` (13 cases). |
 | **AC-E05-03** — overdue assignments are clearly identified | EP05A (the shared predicate, never re-derived), EP05B (the section + the text badge) | `entities/assignment/model/status.ts` (unchanged); `features/dashboard/ui/OverdueAssignmentsSection.tsx` + `DashboardAssignmentRow.tsx` + `OverdueAssignmentsSection.test.tsx` (11 cases). |
 | **AC-E05-04** — planned study sessions appear for the selected day (**display half**; creation is EP06/EP07's) | EP05A (the `STUDY_SESSION` selection), EP05B (the section) | `features/dashboard/ui/TodayStudySessionsSection.tsx` + `TodayStudySessionsSection.test.tsx` (10 cases); the empty state is EP05C's copy (below). |
-| **AC-E05-05** — students can add assignments and open relevant details directly | EP05B (the row affordances), **EP05C** (the working "Add assignment" action through the shared owner, mounted **once**) | `features/dashboard/ui/DashboardQuickActions.tsx` + `DashboardQuickActions.test.tsx` (7 cases); `pages/dashboard/ui/DashboardPage.test.tsx` — the create round trip, the focus/announcement contract, the failed create, the one-mount case; `artifacts/EP05C/implementation.md` §1 (AC 1 and AC 2); the DoD-10 pass, observations 3–8 (§5 below). |
-| **AC-E05-06** — empty states explain what the student can do next | EP05C | `features/dashboard/ui/dashboardEmptyStates.tsx` + `dashboardEmptyStates.test.tsx` (7 cases); `pages/dashboard/ui/DashboardPage.test.tsx` — the four sections receive the settled copy; DoD-10 observation 1 (§5). |
+| **AC-E05-05** — students can add assignments and open relevant details directly | EP05B (the row affordances), **EP05C** (the working "Add assignment" action through the shared owner, mounted **once**) | `features/dashboard/ui/DashboardQuickActions.tsx` + `DashboardQuickActions.test.tsx` (8 cases); `pages/dashboard/ui/DashboardPage.test.tsx` — the create round trip, the focus/announcement contract, the failed create, the one-mount case; `artifacts/EP05C/implementation.md` §1 (AC 1 and AC 2); the DoD-10 pass, observations 3–8 (§5 below). |
+| **AC-E05-06** — empty states explain what the student can do next | EP05C | `features/dashboard/ui/dashboardEmptyStates.tsx` + `dashboardEmptyStates.test.tsx` (8 cases); `pages/dashboard/ui/DashboardPage.test.tsx` — the four sections receive the settled copy; DoD-10 observation 1 (§5). |
 | **AC-E05-07** — dashboard sections have sensible limits and links to full lists | EP05B | The four section components (`dashboardSection.ts`'s limits 5/5/5/3, D05-10) + their four test files; the "See all" links to `/assignments` and `/calendar`. |
 
 ### 3.2 The test requirements
@@ -108,8 +108,8 @@ The review unit is **EP05** — one combined review of the whole parent scope af
 | **TR-E05-02** — class-section tests | EP05B | `features/dashboard/ui/TodayClassesSection.test.tsx` (11 cases). |
 | **TR-E05-03** — assignment-section tests | EP05B | `features/dashboard/ui/UpcomingDeadlinesSection.test.tsx` (13) + `OverdueAssignmentsSection.test.tsx` (11). |
 | **TR-E05-04** — study-session-section tests | EP05B | `features/dashboard/ui/TodayStudySessionsSection.test.tsx` (10). |
-| **TR-E05-05** — quick-action tests (the shared form opens, a successful create closes it and refreshes the data, focus lands on a stable control, a failed create shows an actionable message and leaves the form open) | EP05C | `features/dashboard/ui/DashboardQuickActions.test.tsx` (7); `pages/dashboard/ui/DashboardPage.test.tsx` — the create round trip, the focus/announcement contract, the failed create. |
-| **TR-E05-06** — empty-state tests (every section names the next step and offers the matching action or link) | EP05C | `features/dashboard/ui/dashboardEmptyStates.test.tsx` (7); the page test's empty-state case. |
+| **TR-E05-05** — quick-action tests (the shared form opens, a successful create closes it and refreshes the data, focus lands on a stable control, a failed create shows an actionable message and leaves the form open) | EP05C | `features/dashboard/ui/DashboardQuickActions.test.tsx` (8); `pages/dashboard/ui/DashboardPage.test.tsx` — the create round trip, the focus/announcement contract, the failed create. |
+| **TR-E05-06** — empty-state tests (every section names the next step and offers the matching action or link) | EP05C | `features/dashboard/ui/dashboardEmptyStates.test.tsx` (8); the page test's empty-state case. |
 | **TR-E05-07** — accessibility and responsive tests (keyboard operability and focus order, visible focus, overdue marked without colour alone, 375 px, reduced motion) | EP05B (reduced motion, the page's layout, the focus order), EP05C (the quick action, the empty states) | The page test's control-order, focus-treatment, class-contract and reduced-motion cases; `DashboardQuickActions.test.tsx` (the focus treatment, the 44 px tap target, the reduced-motion companion); the DoD-10 pass at 375 px (observations 13–14). |
 | **TR-E05-08** — the manual browser pass (desktop + 375 px, every section's states, the add-assignment flow) | **EP05C executes it**; EP05B contributes the states it exercises | **Executed** — §5 below (the environment, the date and the observed result per step). |
 
@@ -147,6 +147,56 @@ The commands below were run from the repository root `/Users/michaelrobert/Deskt
 **A planned check is never recorded as executed.** Everything in this table was run; nothing was planned only.
 
 **Per-child verification** (the children's own commands, their results and their tested state): `artifacts/EP05A/implementation.md` §…, `artifacts/EP05B/implementation.md` §4 (and its §4.1 fix-round table), `artifacts/EP05C/implementation.md` §4.
+
+### 4.1 The coordinator-executed gate runs (attached against the review's **LIM-01**)
+
+**Provenance: these runs were executed by the **coordinator**, not by the implementer.** Rows 1–6 of the table above are the **implementer-executed** results; the rows below are a **separate, coordinator-executed** set. The two sets are deliberately **not merged** — the implementer did not run these commands in this round and does not claim them as its own.
+
+The combined EP05 parent review could not execute any gate in its own session (no shell; the bounded read-only helper was refused by the runtime's subagent-depth limit) and recorded that as **LIM-01** (`./review.md` §2.3), whose closure condition was: *"re-run the four gates at `fdc3dce` (or later) in an execution-capable session and attach the results."* The **coordinator** is execution-capable and has done so; the results are attached here. The review's own **LIM-01** row remains the **reviewer's** to update — this index only attaches the results it asked for.
+
+| # | Command | cwd | Tested state | Exit code | Result |
+|---|---|---|---|---|---|
+| C1 | `pnpm --filter web test -- src/features/dashboard src/features/assignments src/features/calendar src/pages/dashboard src/app/store` | repo root `/Users/michaelrobert/Desktop/focus-app` (the command executes in `apps/web`) | HEAD **`858d260`** — the reviewed code scope `fdc3dce` plus one docs-only checkpoint commit; **the application code is identical to `fdc3dce`** | **0** | **257 tests passed** (all green). |
+| C2 | `pnpm --filter web typecheck` | repo root | the same state | **0** | `tsc --noEmit`, **no output**. |
+| C3 | `pnpm --filter web lint` | repo root | the same state | **0** | `eslint --max-warnings 0`, **no output**. |
+| C4 | `pnpm --filter web test` (the **full** web suite) | repo root | the same state | **0** | **78 files / 962 tests, all passed** — the known pre-existing courses flake **F-EP05A-03** (see §6) **did not reproduce** in this run. |
+
+**How this relates to the table above.** C4 is the coordinator's counterpart to row 5 (the implementer's full-suite run, in which the same known flake failed twice and the file passed in isolation) — the two runs are the recorded evidence that the flake is intermittent and **not** an EP05 regression. C2 and C3 are the coordinator's counterpart to rows 3 and 4. C1 is the **broader** focused run (it adds the assignments, calendar and store paths to the row-1 scope); the row-1 scope itself — `src/features/dashboard src/pages/dashboard` → 9 files / 110 tests — is contained in it and was separately green in the implementer's own runs.
+
+**The application code is unchanged since the reviewed scope.** Verified for this correction round: `git diff --stat fdc3dce..HEAD -- apps/` is **empty** — every commit after `fdc3dce` (`858d260`, `0209812`, `bdf9131` and this correction round's own commit) touches documentation only, so the tree the coordinator ran at `858d260` is the reviewed code, unchanged.
+
+### 4.2 The **R-EP05-01** correction round (docs-only, implementer-executed)
+
+**R-EP05-01** was raised by the combined EP05 parent review (`./review.md` §2.1, severity **polish**, owner: the parent index's author). It is **closed** by the following corrections to this index. **No application code, test, configuration or CI file was changed.**
+
+| Element | Before | After | Evidence |
+|---|---|---|---|
+| §3.1 row **AC-E05-05** — `DashboardQuickActions.test.tsx` | "7 cases" | **"8 cases"** | The `it(...)` blocks were counted in the file itself: `DashboardQuickActions.test.tsx:22, 36, 44, 53, 61, 74, 86, 96` — **8**. The child's own record already said 8 (`artifacts/EP05C/implementation.md` §1). |
+| §3.1 row **AC-E05-06** — `dashboardEmptyStates.test.tsx` | "7 cases" | **"8 cases"** | The `it(...)` blocks: `dashboardEmptyStates.test.tsx:36, 57, 90, 106, 121, 134, 146, 153` — **8**. |
+| §3.2 row **TR-E05-05** — `DashboardQuickActions.test.tsx` | "(7)" | **"(8)"** | As above. |
+| §3.2 row **TR-E05-06** — `dashboardEmptyStates.test.tsx` | "(7)" | **"(8)"** | As above. |
+| §6 row **A6** — the shared form's 404 copy | quoted as "Resource not found — this course may no longer exist." | **"Resource not found — this course or assignment may no longer exist."**, cited to `apps/web/src/features/assignments/ui/AssignmentForm.tsx:249` | The shipped string was read in the file (the edit-mode 404 branch at `:246-251`); the create-mode variant at `:251` is quoted alongside it. |
+
+**The total is unchanged and remains self-consistent.** Row 1 of §4 still records **9 files / 110 tests**, and the per-file counts now agree with it:
+
+| File | Cases |
+|---|---|
+| `features/dashboard/model/dashboardRange.test.ts` | 12 |
+| `features/dashboard/model/dashboardSelectors.test.ts` | 12 |
+| `features/dashboard/ui/TodayClassesSection.test.tsx` | 11 |
+| `features/dashboard/ui/UpcomingDeadlinesSection.test.tsx` | 13 |
+| `features/dashboard/ui/OverdueAssignmentsSection.test.tsx` | 11 |
+| `features/dashboard/ui/TodayStudySessionsSection.test.tsx` | 10 |
+| `features/dashboard/ui/DashboardQuickActions.test.tsx` | **8** (corrected) |
+| `features/dashboard/ui/dashboardEmptyStates.test.tsx` | **8** (corrected) |
+| `pages/dashboard/ui/DashboardPage.test.tsx` | 25 (EP05B's 17 + EP05C's 8) |
+| **Total (9 files)** | **110** |
+
+This reproduces the recorded "9 files, 110 tests" exactly and matches the review's own independent count and the child's V1/V2/V8 results.
+
+**No application gate was re-run for this round, and none was needed.** The correction is documentation-only: no file under `apps/**` was touched, so the gates in §4 (implementer-executed) and §4.1 (coordinator-executed) still describe the tree as it stands. The coordinator's runs in §4.1 cover the reviewed code.
+
+**R-EP05-02 was deliberately not fixed here.** The house "`Button` inside a `Link`" treatment that gives one visual control two tab stops is owned by the **shared/house UI owner** (EP10's `shared/ui` and the existing host pages), is **out of EP05's scope**, is **inherited rather than introduced by EP05**, and the review states that **no EP05 change is required** for it. It is therefore left open and unmodified, with its ownership unchanged.
 
 ---
 
@@ -195,7 +245,7 @@ The commands below were run from the repository root `/Users/michaelrobert/Deskt
 | **D05-14 — no dashboard e2e coverage.** The browser suite covers `login`, `auth-journeys`, `assignments-list`, `calendar` and `semesters-courses`; there is **no** dashboard spec. | The **EP09 owner** / the user — an EP09-scope decision (EP10's PR-003). **EP05 adds no spec.** The DoD-10 evidence is the executed manual pass in §5. | Adding a spec would expand the browser suite beyond the approved scope. |
 | **D05-11 (final) — the "Study Stats" card is deliberately dropped.** EP05 ships **no** study-stats surface: "Hours Studied" has no endpoint until EP07's `GET /study-sessions/confirmed-time` (D07-3) and "Tasks Completed" is deliberately not re-added. | Settled and **final** (V-05-2 reconsiders it only if a real study-time endpoint exists). | Not a gap to close — a decision. The page test asserts that no study-stats figure survives. |
 | **A3 — the plain-axios course list inside an RTK Query page.** The dashboard's create dialog's course select is fed by the existing `listCourses()` (the assignments page's pattern), not by a new RTK Query slice. | Recorded, reversible trade-off (D05-1). | Creating a courses slice would be new data-layer work (EP05A's territory) and is not in EP05's scope. |
-| **A6 — the shared form's 404 copy** ("Resource not found — this course may no longer exist." with a "Back to courses" link) is the **shared EP03 component's** copy. | EP03's surface — not modified by EP05. | On the dashboard a create can only 404 for a course the student deleted between the list load and the submit. |
+| **A6 — the shared form's 404 copy** ("Resource not found — this course or assignment may no longer exist." — `apps/web/src/features/assignments/ui/AssignmentForm.tsx:249`; the create-mode variant at `:251` reads "<the API's message> — this course may no longer exist.") is the **shared EP03 component's** copy, shown with its "Back to courses" link. | EP03's surface — not modified by EP05. | On the dashboard a create can only 404 for a course the student deleted between the list load and the submit. |
 | **FU-EP04-01 — the EP04 calendar page's browser-local week range.** | **EP04's** follow-up (its own review unit). | EP05 owns neither the calendar page nor the API contract (D05-3, D05-16). **The combined EP05 review must not absorb it** — EP05's own "today" handling is correct (it selects by the server-echoed `result.today` and never by a client-derived column key). |
 | **EP04's `features/calendar/ui/CalendarEventDetails.tsx:89`** — the same noon-UTC construction for an **event's** civil date (the same exposure at UTC+12 and later). | **EP04's** reviewed surface. | Not corrected here; flagged for the EP04 owner. |
 | **F-EP05A-03 — the known courses flake** (`apps/web/src/features/courses/ui/CourseForm.test.tsx`, 2 cases in the full parallel suite; the file passes in isolation). | The courses feature / EP02. | Pre-existing, intermittent, out of EP05's scope; not chased and not "fixed" (§4, row 5). |

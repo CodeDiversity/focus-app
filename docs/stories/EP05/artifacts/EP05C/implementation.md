@@ -121,6 +121,15 @@ All commands were run from the repository root `/Users/michaelrobert/Desktop/foc
 
 **Findings/deviations summary:** 3 findings — **all closed**, none open; none required an application-code change. **F-EP05C-01** was a defect in the throwaway DoD-10 driver; **F-EP05C-02** qualifies the "single live region" claim for the integrated page (the dashboard's own region is the only one it renders); **F-EP05C-03** is a pre-existing test-hygiene warning shared with the assignments page.
 
+### Correction rounds after the combined parent review
+
+**These are not implementation-phase findings** (the three above are) — they are the review findings this child owns, raised by the **combined EP05 parent review** and closed after it. The reviewer's finding IDs are kept unchanged, and the review report itself was not edited.
+
+| ID | Raised by | Disposition | Closure evidence |
+|---|---|---|---|
+| **R-EP05-01** (**polish**) | The combined EP05 parent review (`../EP05/review.md` §2.1) — the **parent index's** two test counts and its A6 quote. | **Closed — a docs-only correction to the parent index** (`../EP05/implementation.md` §3.1, §3.2, §6 and its §4.2 correction-round record). **This child's own counts were the correct ones** (8 per file — §1 and §4); the parent index recorded 7. | The `it(...)` blocks were counted in the two files themselves — `DashboardQuickActions.test.tsx:22, 36, 44, 53, 61, 74, 86, 96` and `dashboardEmptyStates.test.tsx:36, 57, 90, 106, 121, 134, 146, 153` — giving **8** each; the parent index's per-file counts were corrected and the quoted total (**9 files / 110 tests**) was re-checked and left unchanged. The A6 quote was corrected to the shipped copy ("Resource not found — this course or assignment may no longer exist." — `apps/web/src/features/assignments/ui/AssignmentForm.tsx:249`). **No application code, test, configuration or CI file was changed**, and no application gate needed re-running for a documentation-only correction. |
+| **R-EP05-02** (**polish**) | The combined EP05 parent review (`../EP05/review.md` §2.1) — the house "`Button` inside a `Link`" treatment giving one visual control two tab stops. | **Open — deliberately not fixed in EP05.** The owner is the **shared/house UI owner** (EP10's `shared/ui` and the existing host pages); the treatment is inherited from the prescribed pattern, not introduced by EP05, and the review states that **no EP05 change is required**. | No change was made anywhere in EP05's scope. Recorded here only so the ID's ownership is not mistaken for an EP05 defect. |
+
 ### Deviations from the story's file list / plan text
 
 | ID | Deviation | Why | Impact |
