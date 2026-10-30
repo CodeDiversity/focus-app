@@ -3,34 +3,45 @@ import { validateSync } from 'class-validator';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { RESOURCE_NOT_FOUND, assertAffected } from '../../common/ownership/ownership';
+import { resolveTimeZone, toCivilDate } from '../../common/lib/civil-date';
 import {
   PREFERENCES_BAG_MAX_BYTES,
   STUDY_PREFERENCE_KEYS,
   readStudyPreferences,
   validateStudyPreferences,
 } from '../../domain/study-planning/preferences';
-import type { StudyPreferences } from '../../domain/study-planning/types';
+import { classifyAssignments } from '../../domain/study-planning/remaining-work';
+import { compareAssignments } from '../../domain/study-planning/ordering';
+import type {
+  AssignmentFacts,
+  ClassifiedAssignment,
+  RemainingWorkFlag,
+  StudyPreferences,
+  UnfinishedAssignmentStatus,
+} from '../../domain/study-planning/types';
 import { UpdateStudyPreferencesDto } from './dto/update-study-preferences.dto';
 
 /**
- * Study-plans service (EP06A) — the study-preferences half of the
- * study-planning surface: `GET /study-preferences` and
- * `PUT /study-preferences` over the `studyDefaults` object stored in
- * `User.preferences` (D06-4, D06-14).
+ * Study-plans service (EP06A + EP06B) — the study-planning surface: the
+ * study-preferences half (`GET /study-preferences`, `PUT /study-preferences`
+ * over the `studyDefaults` object stored in `User.preferences`, D06-4,
+ * D06-14) and the remaining-work half (`GET /study-plans/remaining-work`,
+ * AC-E06-02 / AC-E06-09).
  *
- * The shape, the defaults, the bounds, the cross-field rules and the
- * defensive reader live in the **pure domain module**
- * (`domain/study-planning/preferences.ts`); this service only owns the HTTP
- * concerns — the projection, the DTO re-validation and the scoped write.
- * EP06B/EP06D extend this module with the remaining-work read and the plan
- * API.
+ * The shapes, the defaults, the bounds, the cross-field rules, the
+ * defensive reader, the remaining-work classification and the shared
+ * comparator live in the **pure domain module**
+ * (`domain/study-planning/`); this service only owns the HTTP concerns — the
+ * projection, the DTO re-validation, the scoped reads and the scoped write.
+ * EP06D extends this module with the plan API.
  *
  * Ownership (repo convention, `common/ownership/ownership.ts`): the
  * principal's own `User` row is the record — `User.id` **is** the userId (the
  * model has no `userId` column), so the scoped where is `{ id: userId }`.
  * The write goes through a scoped `updateMany` and `assertAffected`, so a
  * vanished row is the same uniform 404 `Resource not found` as a missing
- * one — never a 403, never a distinct message (no existence oracle).
+ * one — never a 403, never a distinct message (no existence oracle). Every
+ * academic query carries the authenticated `userId` in its `where` clause.
  *
  * Validation: the DTO declares the per-field rules for the global
  * `FieldValidationPipe`; the service re-checks them via `validateSync`
@@ -38,6 +49,39 @@ import { UpdateStudyPreferencesDto } from './dto/update-study-preferences.dto';
  * precedent) and owns the cross-field rules, which it applies to the
  * **merged** values.
  */
+
+/**
+ * One row of the remaining-work read (the shared API contract's
+ * `RemainingWorkItem`).
+ *
+ * `userId` is never exposed — the principal is implicit. `dueDate` is the
+ * **profile zone's civil date** (`YYYY-MM-DD | null`, D06-24).
+ * `estimatedMinutes` and `remainingMinutes` are `null` exactly when the
+ * assignment is flagged `MISSING_ESTIMATE`.
+ */
+export type RemainingWorkItem = {
+  assignmentId: string;
+  title: string;
+  courseCode: string | null;
+  dueDate: string | null;
+  estimatedMinutes: number | null;
+  confirmedMinutes: number;
+  remainingMinutes: number | null;
+  status: UnfinishedAssignmentStatus;
+  flagged: RemainingWorkFlag | null;
+};
+
+/** The body of `GET /study-plans/remaining-work`. */
+export type RemainingWorkResponse = {
+  items: RemainingWorkItem[];
+  /**
+   * The student's confirmed minutes that could **not** be attributed to an
+   * assignment (D06-7, seam V-07-3). In state A — today's schema, where
+   * `StudySession` has no `assignmentId` — that is the student's entire
+   * confirmed total.
+   */
+  unattributedConfirmedMinutes: number;
+};
 
 /**
  * The response projection (the `availability` module's `toSlotResponse`
@@ -100,6 +144,26 @@ function providedValues(dto: UpdateStudyPreferencesDto): Partial<StudyPreference
     subset[key] = value;
   }
   return subset;
+}
+
+/**
+ * The remaining-work projection (the `availability` module's
+ * `toSlotResponse` precedent): exactly the documented keys, in the
+ * contract's order. `userId` is never exposed, and neither `priority` nor
+ * `createdAt` — they are the comparator's inputs, not part of the payload.
+ */
+function toRemainingWorkItem(assignment: ClassifiedAssignment): RemainingWorkItem {
+  return {
+    assignmentId: assignment.id,
+    title: assignment.title,
+    courseCode: assignment.courseCode,
+    dueDate: assignment.dueDate,
+    estimatedMinutes: assignment.estimatedMinutes,
+    confirmedMinutes: assignment.confirmedMinutes,
+    remainingMinutes: assignment.remainingMinutes,
+    status: assignment.status,
+    flagged: assignment.flagged,
+  };
 }
 
 @Injectable()
@@ -204,5 +268,124 @@ export class StudyPlansService {
     assertAffected(userId, result.count);
 
     return toStudyPreferencesResponse(merged);
+  }
+
+  /**
+   * GET /study-plans/remaining-work — every **unfinished** assignment with
+   * its estimate, its confirmed study time and what is left of it, plus the
+   * reason an assignment was **flagged** instead of scheduled (AC-E06-02,
+   * AC-E06-09).
+   *
+   * The rules live in the pure domain module: the estimate → minutes
+   * conversion, the unfinished-status filter, the flagging matrix and the
+   * remaining-work arithmetic (`domain/study-planning/remaining-work.ts`).
+   * This method owns the three reads, the **one** civil-date conversion
+   * (D06-24) and the ordering.
+   *
+   * Ordering: the items are sorted by the **shared comparator**
+   * (`domain/study-planning/ordering.ts`, D06-22) — on-time assignments
+   * first (due date ascending), then overdue, then undated; inside a group by
+   * priority descending, then `createdAt` ascending, then `id` ascending. It
+   * is the same comparator the scheduler places with, so the read and the
+   * plan always agree about which work is "next".
+   *
+   * There is no request input to validate (the endpoint takes no body and no
+   * query), so there is no DTO to re-run for non-HTTP callers; the principal
+   * is still received explicitly and never read from the request.
+   *
+   * 200 → `{ items, unattributedConfirmedMinutes }`; 404 → the uniform
+   * `Resource not found` (the principal's row no longer exists); 401 →
+   * unauthenticated (global guard).
+   */
+  async getRemainingWork(userId: string): Promise<RemainingWorkResponse> {
+    // The principal's own row: the profile zone every date is reported in
+    // (D06-24). A missing row is the uniform 404, never a 403.
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { timeZone: true },
+    });
+    if (!user) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+    const timeZone = resolveTimeZone(user.timeZone);
+
+    // The student's own assignments. The status filter is the domain's rule
+    // (one implementation of "unfinished only"), so the query is not filtered
+    // here. `actualHours` is deliberately **not** selected: confirmed time
+    // comes from the session log, never from the denormalized column
+    // (D07-2, AC 4).
+    const assignments = await this.prisma.assignment.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        title: true,
+        course: { select: { code: true } },
+        dueDate: true,
+        estimatedHours: true,
+        status: true,
+        priority: true,
+        createdAt: true,
+      },
+    });
+
+    // The confirmed-time aggregation (D06-6): EP06 owns its own read of the
+    // session log; it does not consume EP07B's `GET
+    // /study-sessions/confirmed-time` (seam V-07-2 stays closed).
+    //
+    // STATE A (today's schema, D06-7): `StudySession` has no `assignmentId`
+    // and no `status`, so a confirmed minute cannot be attributed to an
+    // assignment. The student's total is reported as
+    // `unattributedConfirmedMinutes` and every item's `confirmedMinutes` is
+    // `0`.
+    //
+    // THE STATE-B UPGRADE (when EP07A's migration lands — seam V-07-3, named
+    // here, not a new story and not a blocker):
+    //   1. the `select` becomes
+    //      `{ id: true, durationMinutes: true, assignmentId: true, status: true }`;
+    //   2. only `status === 'COMPLETED'` sessions count as confirmed time (an
+    //      `ACTIVE`/`PAUSED` session is not confirmed time);
+    //   3. the rows are grouped by `assignmentId` into `confirmedByAssignment`
+    //      — a row with a null `assignmentId` (including one whose
+    //      assignment was deleted: EP07A uses `onDelete: SetNull`) stays in
+    //      `unattributedConfirmedMinutes`.
+    // The value it changes is `0` in both states until EP07A creates
+    // sessions, so EP06's behaviour is unchanged today.
+    const sessions = await this.prisma.studySession.findMany({
+      where: { userId },
+      select: { id: true, durationMinutes: true },
+    });
+    const unattributedConfirmedMinutes = sessions.reduce(
+      (sum, session) => sum + session.durationMinutes,
+      0
+    );
+    // State A: no session can be attributed to an assignment, so the map is
+    // empty and every item's `confirmedMinutes` is 0.
+    const confirmedByAssignment = new Map<string, number>();
+
+    // The one civil-date conversion (D06-24): the stored instant becomes the
+    // profile zone's civil date, and the domain stays zone-free.
+    const facts: AssignmentFacts[] = assignments.map((assignment) => ({
+      id: assignment.id,
+      title: assignment.title,
+      courseCode: assignment.course?.code ?? null,
+      dueDate: assignment.dueDate ? toCivilDate(assignment.dueDate, timeZone) : null,
+      estimatedHours: assignment.estimatedHours,
+      status: assignment.status,
+      priority: assignment.priority,
+      createdAt: assignment.createdAt,
+    }));
+
+    const { schedulable, flagged } = classifyAssignments(facts, confirmedByAssignment);
+
+    // The shared comparator (D06-22). "Today" is the server's civil date in
+    // the profile zone — the client never derives a date from the browser's
+    // clock (D06-23).
+    const today = toCivilDate(new Date(), timeZone);
+    const ordered = [...schedulable, ...flagged].sort((a, b) => compareAssignments(a, b, today));
+
+    return {
+      items: ordered.map(toRemainingWorkItem),
+      unattributedConfirmedMinutes,
+    };
   }
 }

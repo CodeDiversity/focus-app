@@ -7,9 +7,10 @@ import { StudyPlansService } from './study-plans.service';
 import { UpdateStudyPreferencesDto } from './dto/update-study-preferences.dto';
 
 /**
- * EP06A unit spec (mocked PrismaService, no database): the study-preferences
- * service semantics for the two routes (`GET /study-preferences`,
- * `PUT /study-preferences`).
+ * EP06A + EP06B unit spec (mocked PrismaService, no database): the
+ * study-preferences service semantics for the two routes
+ * (`GET /study-preferences`, `PUT /study-preferences`) and the
+ * remaining-work read (`GET /study-plans/remaining-work`).
  *
  * - get: a principal-scoped read of the `User.preferences` column, the
  *   **effective** values through the defensive reader, exactly the four
@@ -21,16 +22,29 @@ import { UpdateStudyPreferencesDto } from './dto/update-study-preferences.dto';
  *   cross-field rules applied to the **merged** values; the write as a merge
  *   **into** `preferences.studyDefaults` (the bag's other keys survive); the
  *   scoped write (`{ id: userId }`) with 0 affected rows → the uniform 404.
+ * - remaining work: the two **ownership-scoped** reads (the assignments and
+ *   the `StudySession` aggregation), the civil-date conversion, the items
+ *   built from the classification, the state-A unattributed total, the
+ *   shared comparator's order and the uniform 404.
  */
 describe('StudyPlansService (unit, mocked PrismaService)', () => {
   const userFindUnique = jest.fn();
   const userUpdateMany = jest.fn();
+  const assignmentFindMany = jest.fn();
+  const studySessionFindMany = jest.fn();
 
-  // Partial mock: the service only touches `prisma.user`.
+  // Partial mock: the service touches `prisma.user`, `prisma.assignment` and
+  // `prisma.studySession`.
   const prisma = {
     user: {
       findUnique: userFindUnique,
       updateMany: userUpdateMany,
+    },
+    assignment: {
+      findMany: assignmentFindMany,
+    },
+    studySession: {
+      findMany: studySessionFindMany,
     },
   } as unknown as PrismaService;
 
@@ -339,6 +353,175 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
 
       expect(userUpdateMany).toHaveBeenCalledTimes(1);
       expect(userUpdateMany.mock.calls[0][0].where).toEqual({ id: userId });
+    });
+  });
+
+  // ============ getRemainingWork (GET /study-plans/remaining-work) ============
+
+  describe('getRemainingWork', () => {
+    /** A row as the assignment query returns it. */
+    const assignmentRow = (overrides: Record<string, unknown> = {}) => ({
+      id: 'assignment-1',
+      title: 'Problem set 3',
+      course: { code: 'CS101' },
+      dueDate: new Date('2026-11-01T00:30:00.000Z'),
+      estimatedHours: 3,
+      status: 'PENDING',
+      priority: 'MEDIUM',
+      createdAt: new Date('2026-10-20T12:00:00.000Z'),
+      ...overrides,
+    });
+
+    beforeEach(() => {
+      // A fixed clock: "today" is the server's civil date in the profile
+      // zone, and the comparator's on-time/overdue split depends on it.
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2026-10-30T12:00:00.000Z'));
+      userFindUnique.mockResolvedValue({ timeZone: 'America/New_York' });
+      assignmentFindMany.mockResolvedValue([]);
+      studySessionFindMany.mockResolvedValue([]);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('scopes both reads to the authenticated student', async () => {
+      await service.getRemainingWork(userId);
+
+      expect(assignmentFindMany.mock.calls[0][0].where).toEqual({ userId });
+      expect(studySessionFindMany.mock.calls[0][0].where).toEqual({ userId });
+    });
+
+    it('never selects or reads Assignment.actualHours (D07-2, AC 4)', async () => {
+      assignmentFindMany.mockResolvedValue([assignmentRow({ actualHours: 7 })]);
+
+      const result = await service.getRemainingWork(userId);
+
+      const select = assignmentFindMany.mock.calls[0][0].select;
+      expect(select).not.toHaveProperty('actualHours');
+      expect(Object.keys(select)).not.toContain('actualHours');
+      // The value never reaches the payload either.
+      expect(JSON.stringify(result)).not.toContain('actualHours');
+    });
+
+    it('builds one item per unfinished assignment with exactly the contract keys', async () => {
+      assignmentFindMany.mockResolvedValue([assignmentRow()]);
+
+      const result = await service.getRemainingWork(userId);
+
+      expect(Object.keys(result).sort()).toEqual(['items', 'unattributedConfirmedMinutes']);
+      expect(result.items).toHaveLength(1);
+      expect(Object.keys(result.items[0]).sort()).toEqual([
+        'assignmentId',
+        'confirmedMinutes',
+        'courseCode',
+        'dueDate',
+        'estimatedMinutes',
+        'flagged',
+        'remainingMinutes',
+        'status',
+        'title',
+      ]);
+      expect(result.items[0]).toEqual({
+        assignmentId: 'assignment-1',
+        title: 'Problem set 3',
+        courseCode: 'CS101',
+        dueDate: '2026-10-31',
+        estimatedMinutes: 180,
+        confirmedMinutes: 0,
+        remainingMinutes: 180,
+        status: 'PENDING',
+        flagged: null,
+      });
+    });
+
+    it('never exposes userId in the payload', async () => {
+      assignmentFindMany.mockResolvedValue([assignmentRow()]);
+
+      const result = await service.getRemainingWork(userId);
+
+      expect(JSON.stringify(result)).not.toContain(userId);
+      expect(result.items[0]).not.toHaveProperty('userId');
+    });
+
+    it('converts the stored due date to the profile zone’s civil date (D06-24)', async () => {
+      // 00:30 UTC on 1 November is 31 October in New York.
+      assignmentFindMany.mockResolvedValue([
+        assignmentRow({ dueDate: new Date('2026-11-01T00:30:00.000Z') }),
+      ]);
+
+      const result = await service.getRemainingWork(userId);
+
+      expect(result.items[0].dueDate).toBe('2026-10-31');
+    });
+
+    it('keeps a null due date null and flags the assignment MISSING_DUE_DATE', async () => {
+      assignmentFindMany.mockResolvedValue([assignmentRow({ dueDate: null })]);
+
+      const result = await service.getRemainingWork(userId);
+
+      expect(result.items[0].dueDate).toBeNull();
+      expect(result.items[0].flagged).toBe('MISSING_DUE_DATE');
+      // The estimate survives a missing due date.
+      expect(result.items[0].estimatedMinutes).toBe(180);
+      expect(result.items[0].remainingMinutes).toBe(180);
+    });
+
+    it('flags a missing estimate MISSING_ESTIMATE and nulls its figures', async () => {
+      assignmentFindMany.mockResolvedValue([assignmentRow({ estimatedHours: null })]);
+
+      const result = await service.getRemainingWork(userId);
+
+      expect(result.items[0].flagged).toBe('MISSING_ESTIMATE');
+      expect(result.items[0].estimatedMinutes).toBeNull();
+      expect(result.items[0].remainingMinutes).toBeNull();
+    });
+
+    it('reports the confirmed minutes as unattributed and attributes none (state A, D06-7)', async () => {
+      assignmentFindMany.mockResolvedValue([assignmentRow()]);
+      studySessionFindMany.mockResolvedValue([
+        { id: 'session-1', durationMinutes: 45 },
+        { id: 'session-2', durationMinutes: 30 },
+      ]);
+
+      const result = await service.getRemainingWork(userId);
+
+      expect(result.unattributedConfirmedMinutes).toBe(75);
+      expect(result.items[0].confirmedMinutes).toBe(0);
+      expect(result.items[0].remainingMinutes).toBe(180);
+    });
+
+    it('orders the items with the shared comparator: on-time, then overdue, then undated', async () => {
+      assignmentFindMany.mockResolvedValue([
+        assignmentRow({ id: 'undated', dueDate: null, estimatedHours: null }),
+        assignmentRow({
+          id: 'overdue',
+          dueDate: new Date('2026-10-01T12:00:00.000Z'),
+          estimatedHours: 1,
+        }),
+        assignmentRow({
+          id: 'on-time',
+          dueDate: new Date('2026-11-05T12:00:00.000Z'),
+          estimatedHours: 1,
+        }),
+      ]);
+
+      const result = await service.getRemainingWork(userId);
+
+      expect(result.items.map((item) => item.assignmentId)).toEqual([
+        'on-time',
+        'overdue',
+        'undated',
+      ]);
+    });
+
+    it('404s uniformly when the principal’s row no longer exists', async () => {
+      userFindUnique.mockResolvedValue(null);
+
+      await expect404(service.getRemainingWork(userId));
+      expect(assignmentFindMany).not.toHaveBeenCalled();
+      expect(studySessionFindMany).not.toHaveBeenCalled();
     });
   });
 });

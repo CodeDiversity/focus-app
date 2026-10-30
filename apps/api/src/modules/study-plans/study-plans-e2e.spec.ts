@@ -4,10 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { createIntegrationApp, IntegrationApp } from '../../test/test-http';
 
 /**
- * EP06A e2e spec: the **study-preferences feature as a student journey**,
- * over real HTTP against a real PostgreSQL database (the `test-http` harness
- * — `main.ts` parity: the global `FieldValidationPipe` with
- * `whitelist` + `forbidNonWhitelisted`, the global JWT guard and the
+ * EP06A + EP06B e2e spec: the **study-planning feature as a student
+ * journey**, over real HTTP against a real PostgreSQL database (the
+ * `test-http` harness — `main.ts` parity: the global `FieldValidationPipe`
+ * with `whitelist` + `forbidNonWhitelisted`, the global JWT guard and the
  * `AllExceptionsFilter`).
  *
  * - The journey (one student, ordered): `GET` returns the defaults for a
@@ -19,6 +19,12 @@ import { createIntegrationApp, IntegrationApp } from '../../test/test-http';
  *   written**; a broken cross-field combination on the merged values → 400.
  *   *(AC 4/5, DoD 2/8)*
  * - Error shapes: 401 unauthenticated on both routes.  *(DoD 4/8)*
+ * - The remaining-work read (EP06B): 200 with the `{ items,
+ *   unattributedConfirmedMinutes }` shape; only the **unfinished**
+ *   assignments are listed; the flagged ones carry their reason; the
+ *   confirmed minutes are reported as unattributed (state A, D06-7); the
+ *   items follow the shared comparator (D06-22); 401 unauthenticated.
+ *   *(AC 1–8, DoD 1/3/8)*
  *
  * The `study-plans-data-scoping.spec.ts` sibling pins the cross-student
  * isolation matrix; this spec pins the routes **together** as the feature
@@ -45,7 +51,7 @@ const DEFAULTS = {
   dailyCapMinutes: 240,
 };
 
-describeIntegration('study preferences end-to-end (real database, EP06A)', () => {
+describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', () => {
   const runId = uuidv4().slice(0, 8);
   const uniqueEmail = (label: string): string =>
     `${label}.${runId}.${uuidv4().slice(0, 8)}@studypilot-test.invalid`;
@@ -85,6 +91,12 @@ describeIntegration('study preferences end-to-end (real database, EP06A)', () =>
       .put('/study-preferences')
       .set('Authorization', `Bearer ${session.accessToken}`)
       .send(body);
+  }
+
+  function getRemainingWork(session: Student) {
+    return agent
+      .get('/study-plans/remaining-work')
+      .set('Authorization', `Bearer ${session.accessToken}`);
   }
 
   beforeAll(async () => {
@@ -310,6 +322,186 @@ describeIntegration('study preferences end-to-end (real database, EP06A)', () =>
         .put('/study-preferences')
         .send({ sessionLengthMinutes: 45 })
         .expect(HttpStatus.UNAUTHORIZED);
+    });
+  });
+
+  // ==================== the remaining-work read (EP06B) ====================
+
+  describe('the remaining-work read', () => {
+    /** The seeded assignments, in the order the comparator must report them. */
+    const seeded = {
+      onTime: 'On-time homework',
+      noEstimate: 'Homework without an estimate',
+      laterOnTime: 'Later homework',
+      overdue: 'Overdue essay',
+      noDueDate: 'Homework without a due date',
+    };
+
+    beforeAll(async () => {
+      // A course, so the items carry a course code.
+      const course = await agent
+        .post('/courses')
+        .set('Authorization', `Bearer ${student.accessToken}`)
+        .send({ code: 'CS106', name: 'Remaining work' })
+        .expect(HttpStatus.CREATED);
+
+      const assignment = (data: {
+        title: string;
+        estimatedHours?: number | null;
+        dueDate?: Date | null;
+        status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SUBMITTED' | 'GRADED';
+      }) =>
+        app.prisma.assignment.create({
+          data: {
+            userId: student.id,
+            courseId: course.body.id,
+            title: data.title,
+            estimatedHours: data.estimatedHours === undefined ? 1 : data.estimatedHours,
+            dueDate:
+              data.dueDate === undefined ? new Date('2099-01-01T12:00:00.000Z') : data.dueDate,
+            status: data.status ?? 'PENDING',
+            priority: 'MEDIUM',
+          },
+        });
+
+      // The fixtures: two on-time assignments (one of them without an
+      // estimate), one later on-time assignment, one overdue one and one
+      // without a due date — plus three finished ones that must be absent.
+      await assignment({
+        title: seeded.onTime,
+        estimatedHours: 2.5,
+        dueDate: new Date('2099-01-01T12:00:00.000Z'),
+      });
+      await assignment({
+        title: seeded.noEstimate,
+        estimatedHours: null,
+        dueDate: new Date('2099-06-01T12:00:00.000Z'),
+      });
+      await assignment({
+        title: seeded.laterOnTime,
+        estimatedHours: 1,
+        dueDate: new Date('2099-12-31T12:00:00.000Z'),
+      });
+      await assignment({
+        title: seeded.overdue,
+        estimatedHours: 1,
+        dueDate: new Date('2000-01-01T12:00:00.000Z'),
+        status: 'IN_PROGRESS',
+      });
+      await assignment({ title: seeded.noDueDate, estimatedHours: 3, dueDate: null });
+      await assignment({ title: 'Completed', estimatedHours: 5, status: 'COMPLETED' });
+      await assignment({ title: 'Submitted', estimatedHours: 5, status: 'SUBMITTED' });
+      await assignment({ title: 'Graded', estimatedHours: 5, status: 'GRADED' });
+
+      // A logged study session: state A cannot attribute it to an
+      // assignment, so it lands in the unattributed total (D06-7).
+      await app.prisma.studySession.create({
+        data: {
+          userId: student.id,
+          startTime: new Date('2026-10-28T14:00:00.000Z'),
+          endTime: new Date('2026-10-28T14:45:00.000Z'),
+          durationMinutes: 45,
+        },
+      });
+    }, 60_000);
+
+    it('returns 200 with the { items, unattributedConfirmedMinutes } shape', async () => {
+      const response = await getRemainingWork(student).expect(HttpStatus.OK);
+
+      expect(Object.keys(response.body).sort()).toEqual(['items', 'unattributedConfirmedMinutes']);
+      expect(Array.isArray(response.body.items)).toBe(true);
+      expect(typeof response.body.unattributedConfirmedMinutes).toBe('number');
+    });
+
+    it('lists only the unfinished assignments, with the contract keys', async () => {
+      const response = await getRemainingWork(student).expect(HttpStatus.OK);
+
+      const titles = response.body.items.map((item: { title: string }) => item.title);
+      expect(titles).not.toContain('Completed');
+      expect(titles).not.toContain('Submitted');
+      expect(titles).not.toContain('Graded');
+      expect(titles).toHaveLength(5);
+
+      for (const item of response.body.items) {
+        expect(Object.keys(item).sort()).toEqual([
+          'assignmentId',
+          'confirmedMinutes',
+          'courseCode',
+          'dueDate',
+          'estimatedMinutes',
+          'flagged',
+          'remainingMinutes',
+          'status',
+          'title',
+        ]);
+        expect(['PENDING', 'IN_PROGRESS']).toContain(item.status);
+        expect(item.dueDate === null || /^\d{4}-\d{2}-\d{2}$/.test(item.dueDate)).toBe(true);
+      }
+    });
+
+    it('reports the estimate, the confirmed minutes and what is left', async () => {
+      const response = await getRemainingWork(student).expect(HttpStatus.OK);
+      const onTime = response.body.items.find(
+        (item: { title: string }) => item.title === seeded.onTime
+      );
+
+      expect(onTime).toMatchObject({
+        courseCode: 'CS106',
+        dueDate: '2099-01-01',
+        estimatedMinutes: 150,
+        confirmedMinutes: 0,
+        remainingMinutes: 150,
+        status: 'PENDING',
+        flagged: null,
+      });
+    });
+
+    it('flags the assignments that are missing the estimate or the due date', async () => {
+      const response = await getRemainingWork(student).expect(HttpStatus.OK);
+      const byTitle = Object.fromEntries(
+        response.body.items.map((item: { title: string; flagged: string | null }) => [
+          item.title,
+          item,
+        ])
+      );
+
+      // MISSING_ESTIMATE wins over MISSING_DUE_DATE (D06-25).
+      expect(byTitle[seeded.noEstimate].flagged).toBe('MISSING_ESTIMATE');
+      expect(byTitle[seeded.noEstimate].estimatedMinutes).toBeNull();
+      expect(byTitle[seeded.noEstimate].remainingMinutes).toBeNull();
+
+      // A missing due date keeps the estimate.
+      expect(byTitle[seeded.noDueDate].flagged).toBe('MISSING_DUE_DATE');
+      expect(byTitle[seeded.noDueDate].dueDate).toBeNull();
+      expect(byTitle[seeded.noDueDate].estimatedMinutes).toBe(180);
+      expect(byTitle[seeded.noDueDate].remainingMinutes).toBe(180);
+    });
+
+    it('reports the confirmed minutes as unattributed (state A, D06-7)', async () => {
+      const response = await getRemainingWork(student).expect(HttpStatus.OK);
+
+      expect(response.body.unattributedConfirmedMinutes).toBe(45);
+      for (const item of response.body.items) {
+        expect(item.confirmedMinutes).toBe(0);
+      }
+    });
+
+    it('orders the items with the shared comparator (D06-22)', async () => {
+      const response = await getRemainingWork(student).expect(HttpStatus.OK);
+
+      // On-time first (by due date ascending), then the overdue one, then the
+      // undated one.
+      expect(response.body.items.map((item: { title: string }) => item.title)).toEqual([
+        seeded.onTime,
+        seeded.noEstimate,
+        seeded.laterOnTime,
+        seeded.overdue,
+        seeded.noDueDate,
+      ]);
+    });
+
+    it('No token → 401 (global guard)', async () => {
+      await agent.get('/study-plans/remaining-work').expect(HttpStatus.UNAUTHORIZED);
     });
   });
 });
