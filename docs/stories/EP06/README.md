@@ -664,19 +664,19 @@ scope:
   descendants: [EP06A, EP06B, EP06C, EP06D, EP06E, EP06F, EP06G, EP06H]
   entry: planning
   limits: enclosing parent review unit
-stage: fix
+stage: parent_review
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "9b1ec19"
-  head: "6fd4d14"
+  head: "4a4676f"
 active_dispatch:
-  name: ep06-implementer-12
-  role: implementer
+  name: ep06-parent-reviewer-2
+  role: reviewer
   status: pending
-  pointer: docs/stories/EP06/artifacts/EP06/
+  pointer: docs/stories/EP06/artifacts/EP06/review.md
   session: ""
-  assignment: fix
+  assignment: parent_review
 last_result:
   evidence: "Combined parent review (pass 1) saved at docs/stories/EP06/artifacts/EP06/review.md (reviewer read-only; coordinator committed it as 4d72a21). Verdict FAIL: 1 blocker (R-EP06-01 — the cross-layer E2E suite is missing), 7 should-fix (R-EP06-02, -03, -04, -05, -06, -07, -09) and 4 polish (R-EP06-08, -10, -11, -12) = 12 findings. ACs: 6 fully satisfied, 3 partially satisfied (AC-E06-06, -07, -09, all tracing to R-EP06-01). DoD: 9 PASS / 1 FAIL (item 8 — automated tests) / 1 CANNOT VERIFY (item 10 — integrated review). Item 11 (walkthrough) is N/A on a non-passing verdict. Tests re-run by the reviewer: API 59 suites / 1274 tests passed; web 84 suites / 1005 tests passed; typecheck + lint clean on both. The web full suite is 1024 tests with 2 CourseForm timeouts under load (pre-existing, unrelated). The self-contained E2E stack is not runnable in this runtime, so R-EP06-01 is CANNOT VERIFY at the E2E level."
   findings: "Open findings (owner = implementer unless noted): R-EP06-01 (blocker — write the E2E suite and run the self-contained stack), R-EP06-02 (should-fix — update the ownership convention's header comment to name PlannedSession and studyPlan.userId), R-EP06-03 (should-fix — verify the saved plan's targetMinutes), R-EP06-04 (should-fix — make the WINDOW_ROLLED_OVER banner actionable with a regenerate affordance), R-EP06-05 (should-fix — add the live region for moved sessions), R-EP06-06 (should-fix — the PATCH /users/me data-loss path; needs the user's authorization for the EP01-owned file), R-EP06-07 (should-fix — the Refined: metadata), R-EP06-09 (should-fix — the undo toast), R-EP06-10 (polish — the helpers), R-EP06-11 (polish — the state-B upgrade comment), R-EP06-08 (polish, planner — FU-EP06-01 ownership), R-EP06-12 (polish, planner — parent index commit list). Plus the six open plan-review polish findings PR-023…PR-028 (owner: planner) and F-EP06-07 (the cross-epic data-loss finding, recorded by EP06A and verified by the reviewer)."
