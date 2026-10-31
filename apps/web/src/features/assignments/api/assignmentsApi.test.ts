@@ -68,23 +68,66 @@ describe('assignmentsApi (EP05A)', () => {
   });
 
   it('issues exactly one GET /assignments request with no query parameters', async () => {
-    const request = vi
-      .spyOn(httpClient, 'request')
-      .mockResolvedValue({ data: payload } as AxiosResponse);
+    let captured: InternalAxiosRequestConfig | undefined;
+    let callCount = 0;
+    httpClient.defaults.adapter = async (config) => {
+      captured = config;
+      callCount += 1;
+      return {
+        data: payload,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      } as AxiosResponse;
+    };
 
     const store = makeStore();
     await store.dispatch(assignmentsApi.endpoints.assignments.initiate());
 
-    expect(request).toHaveBeenCalledTimes(1);
-    const config = request.mock.calls[0][0];
-    expect(config.url).toBe('/assignments');
-    expect(config.method).toBe('GET');
-    expect(config.params).toBeUndefined();
-    expect(config.data).toBeUndefined();
+    expect(callCount).toBe(1);
+    expect(captured).toBeDefined();
+    expect(captured!.url).toBe('/assignments');
+    expect(captured!.method).toBe('get');
+    // Entity client sends an empty params object for the unset case; no query string.
+    expect(Object.keys(captured!.params ?? {})).toHaveLength(0);
+    expect(captured!.data).toBeUndefined();
+  });
+
+  it('the dashboard read is served by the entity client: unset params send no query string and `q` is trimmed', async () => {
+    let captured: InternalAxiosRequestConfig | undefined;
+    let callCount = 0;
+    httpClient.defaults.adapter = async (config) => {
+      captured = config;
+      callCount += 1;
+      return {
+        data: payload,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      } as AxiosResponse;
+    };
+
+    const store = makeStore();
+    await store.dispatch(assignmentsApi.endpoints.assignments.initiate());
+
+    expect(callCount).toBe(1);
+    expect(captured).toBeDefined();
+    expect(captured!.url).toBe('/assignments');
+    // The delegated fetch rides the entity client's contract (no second URL/params).
+    expect(Object.keys(captured!.params ?? {})).toHaveLength(0);
   });
 
   it('returns the endpoint’s AssignmentListItem[] unchanged', async () => {
-    vi.spyOn(httpClient, 'request').mockResolvedValue({ data: payload } as AxiosResponse);
+    httpClient.defaults.adapter = async (config) =>
+      ({
+        data: payload,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      }) as AxiosResponse;
 
     const store = makeStore();
     const result = await store.dispatch(assignmentsApi.endpoints.assignments.initiate());
@@ -107,7 +150,14 @@ describe('assignmentsApi (EP05A)', () => {
   });
 
   it('exposes the query states to the sections (the hook takes no argument)', async () => {
-    vi.spyOn(httpClient, 'request').mockResolvedValue({ data: payload } as AxiosResponse);
+    httpClient.defaults.adapter = async (config) =>
+      ({
+        data: payload,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      }) as AxiosResponse;
 
     const store = makeStore();
     const wrapper = ({ children }: { children: ReactNode }) => {

@@ -62,26 +62,43 @@ describe('calendarApi (EP05A)', () => {
   });
 
   it('issues exactly one GET /calendar/events request carrying only from and to', async () => {
-    const request = vi
-      .spyOn(httpClient, 'request')
-      .mockResolvedValue({ data: payload } as AxiosResponse);
+    let captured: InternalAxiosRequestConfig | undefined;
+    let callCount = 0;
+    httpClient.defaults.adapter = async (config) => {
+      captured = config;
+      callCount += 1;
+      return {
+        data: payload,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      } as AxiosResponse;
+    };
 
     const store = makeStore();
     await store.dispatch(
       calendarApi.endpoints.calendarEvents.initiate({ from: '2026-01-13', to: '2026-01-17' })
     );
 
-    expect(request).toHaveBeenCalledTimes(1);
-    const config = request.mock.calls[0][0];
-    expect(config.url).toBe('/calendar/events');
-    expect(config.method).toBe('GET');
-    expect(config.params).toEqual({ from: '2026-01-13', to: '2026-01-17' });
-    expect(Object.keys(config.params ?? {})).toEqual(['from', 'to']);
-    expect(config.data).toBeUndefined();
+    expect(callCount).toBe(1);
+    expect(captured).toBeDefined();
+    expect(captured!.url).toBe('/calendar/events');
+    expect(captured!.method).toBe('get');
+    expect(captured!.params).toEqual({ from: '2026-01-13', to: '2026-01-17' });
+    expect(Object.keys(captured!.params ?? {})).toEqual(['from', 'to']);
+    expect(captured!.data).toBeUndefined();
   });
 
   it('returns the endpoint’s CalendarEventsResult unchanged', async () => {
-    vi.spyOn(httpClient, 'request').mockResolvedValue({ data: payload } as AxiosResponse);
+    httpClient.defaults.adapter = async (config) =>
+      ({
+        data: payload,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      }) as AxiosResponse;
 
     const store = makeStore();
     const result = await store.dispatch(
@@ -95,9 +112,17 @@ describe('calendarApi (EP05A)', () => {
   });
 
   it('keys the cache on from and to, so different ranges do not collide', async () => {
-    const request = vi
-      .spyOn(httpClient, 'request')
-      .mockResolvedValue({ data: payload } as AxiosResponse);
+    let callCount = 0;
+    httpClient.defaults.adapter = async (config) => {
+      callCount += 1;
+      return {
+        data: payload,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      } as AxiosResponse;
+    };
 
     const store = makeStore();
     await store.dispatch(
@@ -107,12 +132,12 @@ describe('calendarApi (EP05A)', () => {
       calendarApi.endpoints.calendarEvents.initiate({ from: '2026-01-12', to: '2026-01-16' })
     );
 
-    expect(request).toHaveBeenCalledTimes(2);
+    expect(callCount).toBe(2);
     const state = store.getState() as Record<string, { queries: Record<string, unknown> }>;
     expect(Object.keys(state[calendarApi.reducerPath].queries)).toHaveLength(2);
   });
 
-  it('surfaces a failed request as the shared { message, code } error shape', async () => {
+  it('a 400 answer surfaces the identical error shape after delegation (`{ message, code: "400" }`)', async () => {
     httpClient.defaults.adapter = async (config) => {
       throw failure(config, 400, 'from must be a valid date');
     };
@@ -125,8 +150,28 @@ describe('calendarApi (EP05A)', () => {
     expect(result.error).toEqual({ message: 'from must be a valid date', code: '400' });
   });
 
+  it('a 404 answer surfaces `code: "404"` and the uniform message', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 404, 'Resource not found');
+    };
+
+    const store = makeStore();
+    const result = await store.dispatch(
+      calendarApi.endpoints.calendarEvents.initiate({ from: '2026-01-13', to: '2026-01-17' })
+    );
+
+    expect(result.error).toEqual({ message: 'Resource not found', code: '404' });
+  });
+
   it('exposes the query states to the sections', async () => {
-    vi.spyOn(httpClient, 'request').mockResolvedValue({ data: payload } as AxiosResponse);
+    httpClient.defaults.adapter = async (config) =>
+      ({
+        data: payload,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      }) as AxiosResponse;
 
     const store = makeStore();
     const wrapper = ({ children }: { children: ReactNode }) => {

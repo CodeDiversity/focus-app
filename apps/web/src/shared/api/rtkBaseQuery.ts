@@ -56,3 +56,32 @@ export const axiosBaseQuery: BaseQueryFn<AxiosBaseQueryArgs, unknown, AxiosBaseQ
     };
   }
 };
+
+/**
+ * Delegating baseQuery for slices that hand the fetch to an entity client (D12C-1).
+ *
+ * The entity module stays the client of record (URL, param builder, payload type,
+ * fetch); this helper is only a caching decorator over it. The error mapping is
+ * byte-equivalent to `axiosBaseQuery` above so the dashboard's error copy and
+ * DoD 4 survive the transport swap: read `failure.response?.status` from the
+ * interceptor's rejection shape and emit `{ message, code: String(status) }`.
+ */
+export function entityBaseQuery<Arg, Result>(
+  fetcher: (arg: Arg) => Promise<Result>
+): BaseQueryFn<Arg, Result, AxiosBaseQueryError> {
+  return async (arg) => {
+    try {
+      const data = await fetcher(arg);
+      return { data };
+    } catch (error: unknown) {
+      const failure = error as { message?: string; response?: { status?: number } };
+      const status = failure.response?.status;
+      return {
+        error: {
+          message: failure.message ?? 'An unexpected error occurred',
+          code: status === undefined ? undefined : String(status),
+        },
+      };
+    }
+  };
+}

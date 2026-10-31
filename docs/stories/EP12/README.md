@@ -3,7 +3,7 @@
 **Epic:** [EP12: Tech Debt Cleanup](../../epics/EP12-tech-debt-cleanup.md) (Jira key: Pending creation)
 **Milestone:** M5 (cross-cutting polish)
 **Epic dependency:** Cross-cutting. EP12A depends on the shipped EP04/EP06 date utilities; EP12B depends on EP10B (shared `Dialog` primitive, reviewed); EP12C depends on the EP04/EP05 pages that consume the calendar/assignment endpoints. No new product behavior.
-**Status:** EP12A and EP12B implemented (2026-10-31); EP12C remains Ready.
+**Status:** EP12A, EP12B and EP12C implemented (2026-10-31); all children awaiting combined EP12 parent review.
 **Jira keys:** Pending creation (no sync authorized for this planning task).
 
 ## Execution queue
@@ -12,9 +12,9 @@
 
 **Artifact root:** `./artifacts/` (stable story ID) — one directory per child: `./artifacts/EP12A/`, `./artifacts/EP12B/`, `./artifacts/EP12C/`.
 
-**Active substory:** EP12B
+**Active substory:** None
 
-**Next substory:** EP12C — implement.
+**Next substory:** None — all EP12 children implemented; combined EP12 parent review next.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -24,7 +24,7 @@
 |---|---|---|---|---|
 | [EP12A](./EP12A-consolidate-timezone-date-conversion.md) | Implemented — awaiting parent review | EP04/EP06 shipped (date utilities exist). D12A-1 settled (user approval): forward + reverse converters in scope. | None — combined EP12 parent review after EP12B/EP12C | [checkpoint](./artifacts/EP12A/checkpoint.md), [implementation](./artifacts/EP12A/implementation.md) |
 | [EP12B](./EP12B-adopt-shared-dialog-primitive.md) | Implemented — awaiting parent review | EP10B shared `Dialog` primitive (reviewed). D12B-1/D12B-2 settled (user approval): `busy` prop approved; passive deltas accepted. | None — combined EP12 parent review after EP12C | [checkpoint](./artifacts/EP12B/checkpoint.md), [implementation](./artifacts/EP12B/implementation.md) |
-| [EP12C](./EP12C-unify-web-api-clients.md) | Ready (refined 2026-10-31) | EP04/EP05 pages exist. D12C-1 settled (user approval): entity owns fetch, RTK delegates. | Implement | None yet |
+| [EP12C](./EP12C-unify-web-api-clients.md) | Implemented — awaiting parent review | EP04/EP05 pages exist. D12C-1 settled (user approval): entity owns fetch, RTK delegates. | None — combined EP12 parent review after all children | [checkpoint](./artifacts/EP12C/checkpoint.md), [implementation](./artifacts/EP12C/implementation.md) |
 
 Sequence: independent (backend EP12A can run in parallel in planning terms; implementation is sequential under one writer). Suggested order: EP12A → EP12B → EP12C.
 
@@ -74,29 +74,29 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 version: 1
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP12
   descendants: [EP12A, EP12B, EP12C]
-  entry: EP12B
+  entry: EP12C
   limits: enclosing parent review unit
-stage: paused
+stage: implement
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: 6b28649
-  head: 12f47d4
+  head: 372bad9
 active_dispatch:
-  name: EP12B
+  name: EP12C
   role: implementer
-  status: returned
-  pointer: docs/stories/EP12/EP12B-adopt-shared-dialog-primitive.md
+  status: pending
+  pointer: docs/stories/EP12/EP12C-unify-web-api-clients.md
   session: ""
-  assignment: "Implement EP12B: adopt shared Dialog primitive across 11 hand-rolled modals (busy prop + 11 migrations)"
+  assignment: "Implement EP12C: unify web API clients per domain (entity owns fetch; RTK slices delegate via entityBaseQuery)"
 last_result:
-  evidence: "EP12B implemented (950dfc1..f23753d). 1090 web tests pass; lint/typecheck/build clean. Busy prop added to Dialog; 11 dialogs migrated."
+  evidence: "EP12A and EP12B implemented (EP12A: checkpoint/implementation; EP12B: 950dfc1..f23753d, 1090 web tests pass). EP12C Ready (refined 2026-10-31)."
   findings: ""
-  scope_note: "Step mode: one task per continuation."
+  scope_note: "Step mode: cleared awaiting_continue pause; reconciled to EP12C Ready. Dispatching implementer."
   cycles: 0
   same_findings: unknown
 gates:
@@ -105,7 +105,7 @@ gates:
   ui: true
   refinement: true
   child_unfinished: false
-  eligible_child_state: EP12B
+  eligible_child_state: Ready
   closeout: false
   integration: false
   all_descendants_implemented: false
@@ -113,7 +113,7 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: unknown
-  judged_at_head: "12f47d4"
+  judged_at_head: "372bad9"
   queue_hash: ""
 writer: none
 session_live: unknown
@@ -122,6 +122,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "EP12B implementer; checkpoint to be created at docs/stories/EP12/artifacts/EP12B/checkpoint.md"
+resume: "EP12C implementer; checkpoint to be created at docs/stories/EP12/artifacts/EP12C/checkpoint.md"
 judgment_attempts: 0
 ```
