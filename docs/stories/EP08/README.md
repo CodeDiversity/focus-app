@@ -318,29 +318,29 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: paused
+stage: ui_refine
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: 86e29fe
+  head: 9f815a6
 active_dispatch:
-  name: EP08E-ui-refine
+  name: EP08E-ui-refine-retry-2
   role: ui-refiner
-  status: none
+  status: pending
   pointer: docs/stories/EP08/EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md
   session: ""
-  assignment: "UI/UX refine EP08E (catch-up preview/edit/confirm/decline, feasibility warnings, locked toggle/affordance, states, a11y, responsive, non-blaming copy)"
+  assignment: "UI/UX refine EP08E in place (preview layout, edit model, feasibility warnings, locked/completed preservation indicators + toggle affordance, confirm/decline copy, states, a11y, responsive, non-blaming copy). User decision 2026-10-31: a minimal ownership-scoped lock-toggle endpoint (PATCH planned-session locked) will be added as a scoped backend note in EP08E; settle toggle UX against real API code. Story carries partial draft edits from interrupted dispatches — consolidate/clean in place, remove deliberation prose."
 last_result:
-  evidence: "UI-refiner dispatch initiated but interrupted before returning a result (session interrupted; no decisions recorded, no files changed, no commit). EP08D completed (Implemented — awaiting parent review); artifact paths saved. Queue updated: EP08D -> Implemented — awaiting parent review; EP08E -> Needs refinement (ui-refiner)."
+  evidence: "Closed EP08E-ui-refine-retry as interrupted-empty (2026-10-31): checkpoint recorded pending at 15:42, but the EP08E story file is unmodified since 15:14 (the pre-dispatch draft), no new commits past 9f815a6, dispatching parent session closed, session ID never recorded — no live session to wait on. Prior step evidence retained: EP08D implementation committed at 9f815a6 (recorded typecheck/lint/tests PASS). Code evidence stands: no API surface persists PlannedSession.locked (only false on create); user decision 2026-10-31 adds a minimal lock-toggle endpoint scoped into EP08E. Route re-walk: ui_needed edge unchanged (EP08E Needs refinement, D08-7) — same target as the closed dispatch."
   findings: ""
-  scope_note: "Step mode interrupted: ui-refiner on EP08E did not return a result. Interrupt preserved; no writer launched for EP08E; no artificial status change. Next step requires /next-step to retry dispatch."
+  scope_note: "Unrelated dirty paths preserved uncommitted: .agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md (foreign typo fixes). EP08E story edit belongs to the ui-refiner retry-2 dispatched this step."
   cycles: 0
   same_findings: unknown
 
@@ -367,6 +367,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "UI-refiner dispatch interrupted (no result, no decision recorded). EP08E remains Needs refinement; retry /next-step for fresh ui-refiner dispatch."
+resume: "ui-refiner retry-2 dispatched on EP08E (foreground, this session) after closing retry-1 as interrupted-empty; step pause to be restored on its return."
 judgment_attempts: 0
 ```
