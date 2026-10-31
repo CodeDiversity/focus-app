@@ -3,7 +3,7 @@
 **Epic:** [EP08: Catch-Up & Recovery](../../epics/EP08-catch-up-and-recovery.md) (Jira STUDY-17)
 **Milestone:** M4 (Catch-up workflow and complete MVP)
 **Epic dependency:** EP06 (Study Planning & Scheduling — complete, parent review passed 2026-10-30) and EP07 (Focus Sessions & Time Tracking — complete, parent review passed 2026-10-30). EP08 reuses the EP06 scheduling engine and the EP07 session log; it adds no new scheduling algorithm.
-**Status:** Breakdown complete (planner). Plan-review gate: **Changes Required** (pass 2, 2026-10-30) — planner correction pass applied (PR-001…PR-011); awaiting independent re-review. Jira keys: Pending creation (no sync authorized for this planning task).
+**Status:** Breakdown complete (planner). Plan-review gate: **Changes Required** (pass 3, 2026-10-30) — planner correction pass applied (PR-001…PR-012); awaiting independent re-review. Jira keys: Pending creation (no sync authorized for this planning task).
 **Jira keys:** Pending creation.
 
 ## Execution queue
@@ -286,7 +286,7 @@ Child implementation completion unblocks the dependent child; only the passing c
 | 6 | Feature-specific risks/counterexamples | Pass | Invariants table above — seven claims with concrete counterexamples: cross-student access, historical-log immutability, deadline non-extension, locked preservation, decline no-op, completed-assignment exclusion, non-blaming copy. |
 | 7 | Dependencies | Pass (with blocker noted) | EP08A → EP08B → EP08C → EP08D → EP08E → EP08F, with the one-way frontend dependencies and the `ui-refiner` gate recorded. EP06/EP07 complete and parent-reviewed. **Implementation blocker (PR-003):** EP08A's per-assignment `confirmedMinutes` depends on the EP06 State-B upgrade (V-08-5); EP08A delivers the total only until that upgrade lands. Option (a) an EP06 follow-up before EP08A is recommended; option (b) recorded here. |
 | 8 | Material decisions | Blocked (provisional) | D08-1, D08-2, D08-3, D08-8 settled. D08-4, D08-6 settled by user decision 2026-10-30 (V-08-1, V-08-3, V-08-4 resolved). D08-5 provisional with verification task V-08-2. D08-7 (UI/UX for EP08D/E) unresolved and is the `ui-refiner`'s to settle. |
-| 9 | Correction log | Pass | First plan of this epic; no plan-review pass yet. The log is initialized with no findings. |
+| 9 | Correction log | Pass | First plan of this epic; plan-review passes 1–3 recorded (PR-001…PR-012). Corrections applied in passes 1 and 2; pass 3 residual (PR-009 partial) corrected in this pass. |
 | 10 | Jira identity | Not applicable | No sync authorized; the epic key is STUDY-17 and all six child keys are `Pending creation`. |
 
 ### Plan correction log
@@ -306,6 +306,7 @@ Child implementation completion unblocks the dependent child; only the passing c
 | PR-009 | 2026-10-30 | Should-fix | `EP08A` sizing (Exclusions/Production files); `EP08C` sizing (Production files, DoD item 9, TR-E08-04); `README.md` DoD row 9 | PR-001's migration-ownership move did not fully propagate: EP08A still excluded "migration" and EP08C still referenced "migration folder"; DoD row 9 and the migration-shape test still pointed at EP08C. | EP08A now owns the migration in sizing (production files + exclusions + TR-E08-01); EP08C sizing/DoD/TR updated to consume it; README DoD row 9 reassigned. | Cross-file comparison: EP08A sizing + EP08C sizing + README DoD row 9 + TR-E08-01/04 now agree on ownership. | Addressed — awaiting re-review |
 | PR-010 | 2026-10-30 | Polish | `EP08C` technical notes (no-conflict confirm test); TR-E08-04 | The no-conflict confirm test was only in technical notes, not in the TR list. | Added "unedited confirm succeeds with no conflicts" to TR-E08-04 (README) and to EP08C's test list. | README TR-E08-04 + EP08C test list updated. | Addressed — awaiting re-review |
 | PR-011 | 2026-10-30 | Polish | `EP08E` technical notes (locked-session toggle affordance) | Stale "if V-08-1 settles" wording after V-08-1 was resolved 2026-10-30. | Reworded to state locked is an explicit toggle (V-08-1 resolved) and the toggle UI lives in EP08E subject to ui-refiner. | EP08E updated. | Addressed — awaiting re-review |
+| PR-012 | 2026-10-30 | Polish | `EP08C` sizing (outcome line); `EP08A` DoD item 9; `README.md` quality-gate row 9 | Quality-gate row 9 claimed "no plan-review pass yet" despite three passes; EP08C sizing outcome still said "+ migration"; EP08A DoD item 9 omitted migration steps/rollback. | Updated row 9 wording; removed "migration" from EP08C sizing outcome; added migration steps/rollback to EP08A DoD item 9. | Cross-file comparison: EP08A DoD + EP08C sizing + README row 9 now consistent. | Addressed — awaiting re-review |
 
 ### Implementation review log
 

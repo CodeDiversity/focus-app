@@ -110,7 +110,7 @@ The catch-up API spine. `POST /study-plans/catch-up/preview` runs the reschedule
 
 ## Sizing
 
-- **Outcome:** one independently verifiable backend outcome (preview + confirm API + migration + tests).
+- **Outcome:** one independently verifiable backend outcome (preview + confirm API + tests). (Migration ownership: EP08A — PR-001.)
 - **Estimate:** 3 requests/tokens.
 - **Model recommendation:** 4 — high complexity (transactional persistence with selective deletion, conflict re-check, migration, cross-entity invariants); careful ownership discipline.
 - **Production files:** `apps/api/src/modules/study-plans/study-plans.service.ts` (extend) or new module; controller. (No migration folder here — the `locked` column is added by EP08A; PR-001.)

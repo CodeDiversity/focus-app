@@ -77,7 +77,7 @@ This story owns the missed-session query, the completed-assignment exclusion, th
 6. Keyboard/accessibility N/A (backend).
 7. Responsive N/A (backend).
 8. Automated tests (TR-E08-01, TR-E08-02).
-9. API documentation (recovery contract in EP08 README — done).
+9. API/migration documentation (recovery contract in EP08 README — done; migration steps + rollback for the additive `locked` column in this story's implementation record — PR-001).
 10. Integrated review — combined EP08 parent review (EP08F + reviewer).
 11. Reviewer walkthrough — reviewer, once for the EP08 parent unit.
 
