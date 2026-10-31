@@ -50,7 +50,7 @@ This story owns the missed-session query, the completed-assignment exclusion, th
 
 ## Tests
 
-- **TR-E08-01** Missed-session identification: past-date + SCHEDULED classification; completed-assignment exclusion; unfinished-assignment inclusion; SKIPPED/RESCHEDULED/IN_PROGRESS/COMPLETED sessions excluded; locked sessions still reported as missed; ownership-scoped query; uniform 404 for missing/foreign principal; empty case.
+- **TR-E08-01** Missed-session identification: past-date + SCHEDULED classification; completed-assignment exclusion; unfinished-assignment inclusion; SKIPPED/RESCHEDULED/IN_PROGRESS/COMPLETED sessions excluded; locked sessions still reported as missed (with `locked: true` in the projection); ownership-scoped query; uniform 404 for missing/foreign principal; empty case; **migration shape and reversibility (additive `locked` column, default false, rollback drops the column)**.
 - **TR-E08-02** Recovery summary: missed-session aggregation; unfinished-work reuse of EP06's classification and ordering (compare against `GET /study-plans/remaining-work`); confirmed-minutes total; empty state; API-boundary loading/error (401, 404).
 - Unit tests beside the module (`*.service.spec.ts`, `*data-scoping.spec.ts`); API e2e in the module folder.
 
@@ -86,12 +86,12 @@ This story owns the missed-session query, the completed-assignment exclusion, th
 - **Outcome:** one independently verifiable backend read-side outcome (missed-session query + recovery summary endpoint + tests).
 - **Estimate:** 2 requests/tokens.
 - **Model recommendation:** 3 — moderate complexity (multi-table join, civil-date boundary, reuse of EP06 classification); ownership and uniform-404 discipline; no novel algorithm.
-- **Production files:** `apps/api/src/modules/study-plans/study-plans.service.ts` (extend) or new `apps/api/src/modules/catch-up/` module; controller/route registration in `apps/api/src/app.module.ts`; DTO if any.
+- **Production files:** `apps/api/src/modules/study-plans/study-plans.service.ts` (extend) or new `apps/api/src/modules/catch-up/` module; controller/route registration in `apps/api/src/app.module.ts`; DTO if any; **migration folder** adding `locked Boolean @default(false)` to `PlannedSession` (owned here, PR-001); `apps/api/prisma/schema.prisma`.
 - **Test files:** `study-plans.service.spec.ts` / `catch-up.service.spec.ts`, `*data-scoping.spec.ts`, `*e2e.spec.ts`.
 - **Minimal start context:** this story file, EP08 README shared contract, EP06 README remaining-work section, `study-plans.service.ts`, `remaining-work.ts`, `ordering.ts`, `ownership.ts`, `civil-date.ts`, `schema.prisma`.
 - **Verification commands:** `npm run test --workspace=apps/api` (unit + data-scoping), `npm run test:e2e --workspace=apps/api` (if applicable), `npm run typecheck --workspace=apps/api`, `npm run lint --workspace=apps/api`.
 - **Dependencies:** EP06, EP07 complete. Blocks EP08B (inputs), EP08C (data gathering), EP08D (UI).
-- **Exclusions:** no UI, no replanning, no writes, no migration, no Jira sync.
+- **Exclusions:** no UI, no replanning, no writes to `StudySession`/`Assignment`/`Task`/`PlannedSession` data, no Jira sync. (The additive `locked` migration on `PlannedSession` is in scope here — PR-001.)
 
 ## Tracker reference
 

@@ -73,7 +73,7 @@ Student-facing catch-up flow: generates a preview of the proposed replan, lets t
   - FSD layers.
 - **Proposed (new):** catch-up feature folder (`features/catch-up/...`) consuming the preview/confirm endpoints; reuse EP06's plan-page components where possible.
 - **UI/UX gaps (to be settled by `ui-refiner`):** layout of the preview vs. current plan; the edit interaction model (reuse EP06's or a simplified one); feasibility-warning presentation; locked/completed preservation indicators; confirm/decline affordances and copy; empty/loading/error states; responsive behavior; keyboard behavior. **Do not implement before the `ui-refiner` pass.**
-- **Locked-session toggle affordance (D08-4):** if the product decision (V-08-1) settles on an explicit toggle, the toggle UI lives here and is subject to the `ui-refiner`.
+- **Locked-session toggle affordance (D08-4):** locked is an explicit student toggle (V-08-1 resolved 2026-10-30); the toggle UI lives here and is subject to the `ui-refiner`.
 
 ## Definition of Done
 

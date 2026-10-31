@@ -3,7 +3,7 @@
 **Epic:** [EP08: Catch-Up & Recovery](../../epics/EP08-catch-up-and-recovery.md) (Jira STUDY-17)
 **Milestone:** M4 (Catch-up workflow and complete MVP)
 **Epic dependency:** EP06 (Study Planning & Scheduling — complete, parent review passed 2026-10-30) and EP07 (Focus Sessions & Time Tracking — complete, parent review passed 2026-10-30). EP08 reuses the EP06 scheduling engine and the EP07 session log; it adds no new scheduling algorithm.
-**Status:** Breakdown complete (planner). Plan-review gate: **Changes Required** (pass 1, 2026-10-30) — planner correction pass applied (PR-001…PR-008); awaiting independent re-review. Jira keys: Pending creation (no sync authorized for this planning task).
+**Status:** Breakdown complete (planner). Plan-review gate: **Changes Required** (pass 2, 2026-10-30) — planner correction pass applied (PR-001…PR-011); awaiting independent re-review. Jira keys: Pending creation (no sync authorized for this planning task).
 **Jira keys:** Pending creation.
 
 ## Execution queue
@@ -84,7 +84,7 @@ The epic defines no test requirements (TR-*); stable TR IDs are assigned here.
 | TR-E08-01 | Missed-session identification tests: the past-date + SCHEDULED classification, the completed-assignment exclusion, the unfinished-assignment inclusion, the ownership-scoped query, the uniform 404, the empty case | EP08A |
 | TR-E08-02 | Recovery-summary tests: the missed-session aggregation, the unfinished-work reuse of EP06's remaining-work classification, the confirmed-minutes total, the non-blaming message presence, the empty/loading/error states at the API boundary | EP08A |
 | TR-E08-03 | Rescheduling engine tests: reuse of `schedule()` (no second algorithm), locked-session preservation (never moved/deleted), completed-session preservation (treated as busy), completed-assignment exclusion, determinism across runs, purity (no writes, no clock, no randomness), deficit/feasibility categories surfaced | EP08B |
-| TR-E08-04 | Catch-up API tests: preview side-effect-free, confirm atomic and preserves completed + locked sessions, conflict re-check on confirm (409) with per-session reasons, malformed-session matrix (400), window-rollover (409 `WINDOW_ROLLED_OVER`), foreign-assignment uniform 404, assignment rows unchanged after confirm (AC-E08-08), decline leaves state unchanged, missed-session list correctness | EP08C |
+| TR-E08-04 | Catch-up API tests: preview side-effect-free, confirm atomic and preserves completed + locked sessions, conflict re-check on confirm (409) with per-session reasons, **unedited confirm succeeds with no conflicts**, malformed-session matrix (400), window-rollover (409 `WINDOW_ROLLED_OVER`), foreign-assignment uniform 404, assignment rows unchanged after confirm (AC-E08-08), decline leaves state unchanged, missed-session list correctness | EP08C |
 | TR-E08-05 | Recovery-summary UI tests: missed sessions list, unfinished-work rows, non-blaming copy, entry point to replan, loading/empty/error states, keyboard operability, narrow-screen layout | EP08D |
 | TR-E08-06 | Catch-up plan UI tests: generate → preview → edit → confirm, decline leaves plan unchanged, feasibility-warning display, locked-session indicator, loading/empty/error states, keyboard operability, narrow-screen layout | EP08E |
 | TR-E08-07 | Cross-layer E2E against the real stack: the full replan journey, decline, locked preservation, feasibility warning, completed-assignment exclusion, saved plan surviving a reload, API and web suites and pre-existing E2E specs staying green | EP08F |
@@ -102,7 +102,7 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 | 6 keyboard accessibility | EP08D, EP08E |
 | 7 responsive layouts | EP08D, EP08E |
 | 8 automated tests | All children (TR-E08-01…07); TR-E08-08 is a recorded manual pass owned by EP08D/EP08E with EP08F collecting the evidence |
-| 9 API/migration documentation | EP08A (recovery contract), EP08C (migration, locked field, catch-up contract), EP08F (parent index) |
+| 9 API/migration documentation | EP08A (recovery contract + migration, locked field), EP08C (catch-up contract), EP08F (parent index) |
 | 10 integrated review | EP08 parent review unit (all six children) |
 | 11 reviewer walkthrough | Reviewer, once for the EP08 parent review unit |
 
@@ -303,6 +303,9 @@ Child implementation completion unblocks the dependent child; only the passing c
 | PR-006 | 2026-10-30 | Polish | `EP08B` technical notes input shape (`busy` + separate `lockedSessions`) | Passing a subset (`lockedSessions`) independently of its superset (`busy`) risks a silent mismatch in `lockedPreserved`. | Removed the separate `lockedSessions` input; locked intervals now carry `locked: true` inside `busy`, so `lockedPreserved` is derived and cannot drift. | EP08B input-shape note + `busy` description updated. | Addressed — awaiting re-review |
 | PR-007 | 2026-10-30 | Polish | `README.md` confirm transaction step 4; `EP08C` AC #4 step 5 | "target hours from placed minutes" left implicit whether `targetHours` is recomputed from submitted sessions or carried over from the preview. | Stated that `targetHours = (sum of submitted session durations on that day) / 60` computed from `dto.sessions` in the transaction (0 for days with no submitted sessions). Updated README step 4 and EP08C AC #4. | README step 4 + EP08C AC #4 now state the recomputation. | Addressed — awaiting re-review |
 | PR-008 | 2026-10-30 | Polish | `EP08A` AC #6; TR-E08-02 | The API's placeholder `message` was not required to pass the non-blaming term check, and EP08D's override testing was unspecified. | Added the requirement that the placeholder pass the non-blaming term check, and that EP08D's client-side override (if any) is tested in EP08D's TR-E08-05. | EP08A AC #6 updated. | Addressed — awaiting re-review |
+| PR-009 | 2026-10-30 | Should-fix | `EP08A` sizing (Exclusions/Production files); `EP08C` sizing (Production files, DoD item 9, TR-E08-04); `README.md` DoD row 9 | PR-001's migration-ownership move did not fully propagate: EP08A still excluded "migration" and EP08C still referenced "migration folder"; DoD row 9 and the migration-shape test still pointed at EP08C. | EP08A now owns the migration in sizing (production files + exclusions + TR-E08-01); EP08C sizing/DoD/TR updated to consume it; README DoD row 9 reassigned. | Cross-file comparison: EP08A sizing + EP08C sizing + README DoD row 9 + TR-E08-01/04 now agree on ownership. | Addressed — awaiting re-review |
+| PR-010 | 2026-10-30 | Polish | `EP08C` technical notes (no-conflict confirm test); TR-E08-04 | The no-conflict confirm test was only in technical notes, not in the TR list. | Added "unedited confirm succeeds with no conflicts" to TR-E08-04 (README) and to EP08C's test list. | README TR-E08-04 + EP08C test list updated. | Addressed — awaiting re-review |
+| PR-011 | 2026-10-30 | Polish | `EP08E` technical notes (locked-session toggle affordance) | Stale "if V-08-1 settles" wording after V-08-1 was resolved 2026-10-30. | Reworded to state locked is an explicit toggle (V-08-1 resolved) and the toggle UI lives in EP08E subject to ui-refiner. | EP08E updated. | Addressed — awaiting re-review |
 
 ### Implementation review log
 

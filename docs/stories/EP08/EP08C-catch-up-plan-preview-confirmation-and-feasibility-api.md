@@ -68,13 +68,14 @@ The catch-up API spine. `POST /study-plans/catch-up/preview` runs the reschedule
 - Preview side-effect-free (row counts unchanged before/after).
 - Confirm atomic and preserves completed + locked sessions (counts + fields).
 - Conflict re-check on confirm (409) with per-session reasons (reuse EP06's reason codes).
+- Unedited confirm succeeds with no conflicts (PR-010).
 - Malformed-session matrix (400).
 - Window rollover (409 `WINDOW_ROLLED_OVER`).
 - Foreign-assignment uniform 404.
 - Assignment rows unchanged after confirm (AC-E08-08).
 - `StudySession` rows unchanged after confirm (AC-E08-03).
 - Missed-session list correctness in the preview.
-- Migration shape and reversibility (if a migration test harness exists; otherwise documented).
+- (Migration shape and reversibility are owned by EP08A — TR-E08-01; PR-001.)
 
 ## Technical notes
 
@@ -103,7 +104,7 @@ The catch-up API spine. `POST /study-plans/catch-up/preview` runs the reschedule
 6. Keyboard/accessibility N/A (backend).
 7. Responsive N/A (backend).
 8. Automated tests (TR-E08-04).
-9. API/migration documentation (migration steps + rollback in implementation record; contract in EP08 README — done).
+9. API documentation (catch-up contract in EP08 README — done; migration steps + rollback live in EP08A's implementation record — PR-001).
 10. Integrated review — combined EP08 parent review.
 11. Reviewer walkthrough — reviewer, once for the EP08 parent unit.
 
@@ -112,7 +113,7 @@ The catch-up API spine. `POST /study-plans/catch-up/preview` runs the reschedule
 - **Outcome:** one independently verifiable backend outcome (preview + confirm API + migration + tests).
 - **Estimate:** 3 requests/tokens.
 - **Model recommendation:** 4 — high complexity (transactional persistence with selective deletion, conflict re-check, migration, cross-entity invariants); careful ownership discipline.
-- **Production files:** `apps/api/src/modules/study-plans/study-plans.service.ts` (extend) or new module; controller; migration folder; `schema.prisma`.
+- **Production files:** `apps/api/src/modules/study-plans/study-plans.service.ts` (extend) or new module; controller. (No migration folder here — the `locked` column is added by EP08A; PR-001.)
 - **Test files:** `*.service.spec.ts`, `*data-scoping.spec.ts`, `*e2e.spec.ts`.
 - **Minimal start context:** this story file, EP08 README, EP06D section of `study-plans.service.ts` (save/getPlan/gatherPlanData), EP08B's replan module, `conflicts.ts`, `ownership.ts`, `schema.prisma`.
 - **Verification commands:** `npm run test --workspace=apps/api`, `npm run test:e2e --workspace=apps/api`, `npm run typecheck --workspace=apps/api`, `npm run lint --workspace=apps/api`, `npx prisma migrate dev` (local).
