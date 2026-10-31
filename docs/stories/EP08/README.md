@@ -318,13 +318,21 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: reconcile
+execution:
+  mode: step
+  awaiting_continue: true
+scope:
+  parent: EP08
+  descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
+  entry: planning
+  limits: enclosing parent review unit
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
@@ -333,14 +341,14 @@ coordinator:
 active_dispatch:
   name: EP08-gate-judge
   role: dod-auditor
-  status: pending
+  status: returned
   pointer: docs/stories/EP08/README.md
   session: ""
   assignment: "EP08 DoD/workflow gate audit (read-only)"
 last_result:
-  evidence: "EP08 breakdown complete; plan-review pass 4 (Plan Ready). No implementation yet. EP06/EP07 complete and parent-reviewed."
-  findings: ""
-  scope_note: "Step mode: reconciling EP08 gates; judge first."
+  evidence: "DoD audit complete. Gates: breakdown true, plan pass (PR-001..PR-012 closed, pass 4 Plan Ready), ui true (requirement tracked), refinement false (EP08A needs technical refiner), child_unfinished false (no active child), integration false, all_descendants false, open_findings false. judged_at_head reconciled to ac5223a. EP08D/E require ui-refiner after EP08C."
+  findings: "Checkpoint staleness reconciled (head ac5223a, judged_at_head set). EP08A is first eligible child (Queued); needs technical refiner before implementation."
+  scope_note: "Step mode: one task per continuation. Judge returned; technical refiner on EP08A next."
   cycles: 0
   same_findings: unknown
 gates:
@@ -348,7 +356,7 @@ gates:
   plan: pass
   ui: true
   refinement: false
-  child_unfinished: true
+  child_unfinished: false
   eligible_child_state: Queued
   closeout: true
   integration: false
@@ -357,7 +365,7 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: not_started
-  judged_at_head: ""
+  judged_at_head: "ac5223a"
   queue_hash: ""
 writer: none
 session_live: unknown
@@ -366,6 +374,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "Judge reconcile; then route per graph."
+resume: "Judge complete; next step is technical refiner on EP08A."
 judgment_attempts: 0
 ```
