@@ -235,8 +235,10 @@ describe('DeleteAssignmentDialog (AC 6, AC 7)', () => {
 
     await validUser.click(deleteButton());
     await waitFor(() => expect(view.onDeleted).toHaveBeenCalledTimes(1));
+    // Simulate the deleted row's trigger leaving the DOM (primitive's restore
+    // to a disconnected element is a no-op).
+    trigger.remove();
     view.unmount();
     expect(trigger).not.toHaveFocus();
-    trigger.remove();
   });
 });

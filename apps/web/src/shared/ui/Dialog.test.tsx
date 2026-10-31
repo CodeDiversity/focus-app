@@ -84,3 +84,45 @@ describe('Dialog', () => {
     expect(screen.getByRole('dialog').className).toContain('max-w-lg');
   });
 });
+
+describe('Dialog busy', () => {
+  it("busy — 'Escape does not invoke onClose while busy, and does after it clears'", async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const { rerender } = render(<Dialog open busy onClose={onClose} title="T" />);
+    await user.keyboard('{Escape}');
+    expect(onClose).not.toHaveBeenCalled();
+    rerender(<Dialog open busy={false} onClose={onClose} title="T" />);
+    await user.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("busy — 'backdrop click does not invoke onClose while busy'", () => {
+    const onClose = vi.fn();
+    render(<Dialog open busy onClose={onClose} title="T" />);
+    const backdrop = document.querySelector('.bg-text\\/50') as HTMLElement;
+    fireEvent.click(backdrop);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("busy — 'holds focus on the dialog container when its focusable children all disable'", () => {
+    const { rerender } = render(
+      <Dialog open busy={false} title="T">
+        <button>Body</button>
+      </Dialog>
+    );
+    rerender(
+      <Dialog open busy title="T">
+        <button disabled>Body</button>
+      </Dialog>
+    );
+    expect(screen.getByRole('dialog')).toHaveFocus();
+  });
+
+  it("'container advertises aria-busy when busy is passed, none otherwise'", () => {
+    const { rerender } = render(<Dialog open busy onClose={() => {}} title="T" />);
+    expect(screen.getByRole('dialog')).toHaveAttribute('aria-busy', 'true');
+    rerender(<Dialog open onClose={() => {}} title="T" />);
+    expect(screen.getByRole('dialog')).not.toHaveAttribute('aria-busy');
+  });
+});

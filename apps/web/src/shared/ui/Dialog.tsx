@@ -12,6 +12,10 @@ export interface DialogProps {
   footer?: ReactNode;
   size?: 'sm' | 'md' | 'lg';
   disableBackdropClose?: boolean;
+  /** When true, Escape and backdrop clicks are inert and focus is held on the
+   *  container (in-flight state). Backwards compatible: omitting behaves as
+   *  the reviewed EP10B primitive. */
+  busy?: boolean;
   className?: string;
 }
 
@@ -33,6 +37,7 @@ export function Dialog({
   footer,
   size = 'md',
   disableBackdropClose = false,
+  busy,
   className,
 }: DialogProps) {
   const [visible, setVisible] = useState(false);
@@ -44,19 +49,31 @@ export function Dialog({
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!open) return;
+      const dialog = dialogRef.current;
       if (e.key === 'Escape') {
         e.stopPropagation();
+        if (busy) {
+          // In-flight: Escape is inert.
+          e.preventDefault();
+          return;
+        }
         onClose();
         return;
       }
       if (e.key !== 'Tab') return;
-      const dialog = dialogRef.current;
       if (!dialog) return;
+      // While busy, hold focus on the container.
+      if (busy) {
+        e.preventDefault();
+        dialog.focus();
+        return;
+      }
       const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
         (el) => !el.hasAttribute('disabled')
       );
       if (focusable.length === 0) {
         e.preventDefault();
+        dialog.focus();
         return;
       }
       const first = focusable[0];
@@ -70,7 +87,7 @@ export function Dialog({
         first.focus();
       }
     },
-    [open, onClose]
+    [open, onClose, busy]
   );
 
   useEffect(() => {
@@ -93,6 +110,13 @@ export function Dialog({
     };
   }, [open, handleKeyDown]);
 
+  // Hold focus on the container while busy (in-flight), including when the
+  // focusable set becomes empty mid-flight.
+  useEffect(() => {
+    if (!open || !busy) return;
+    dialogRef.current?.focus();
+  }, [open, busy]);
+
   if (!open) return null;
 
   return createPortal(
@@ -101,7 +125,8 @@ export function Dialog({
         className="absolute inset-0 bg-text/50 transition-opacity duration-base"
         aria-hidden="true"
         onClick={() => {
-          if (!disableBackdropClose) onClose();
+          if (disableBackdropClose || busy) return;
+          onClose();
         }}
       />
       <div
@@ -110,6 +135,7 @@ export function Dialog({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={description ? descId : undefined}
+        {...(busy !== undefined ? { 'aria-busy': busy } : {})}
         tabIndex={-1}
         className={twMerge(
           clsx(
