@@ -3,7 +3,7 @@
 **Epic:** [EP07: Focus Sessions & Time Tracking](../../epics/EP07-focus-sessions-and-time-tracking.md) (Jira STUDY-13)
 **Milestone:** M3 (Study planning and focus sessions)
 **Epic dependency:** EP03 (Assignment & Task Management) — complete. Integrates with EP06 (Study Planning & Scheduling — not yet broken down).
-**Status:** Planning — breakdown complete (2026-10-29). EP07A–EP07F implemented (awaiting parent review); combined EP07 parent review next.
+**Status:** Reviewed — combined EP07 parent review passed 2026-10-30 (verdict PASS; polish-only findings P-001…P-005). EP07A–EP07F are `Reviewed`. Report: `./artifacts/EP07/review.md`; walkthrough: `./artifacts/EP07/walkthrough.md`.
 **Jira keys:** Pending creation (no sync authorized for this planning task).
 
 ## Execution queue
@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** None — all six children implemented; combined EP07 parent review next.
+**Next substory:** None — all six children `Reviewed`; combined EP07 parent review complete.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (the Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -22,12 +22,12 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP07A](./EP07A-focus-session-persistence-and-lifecycle-api.md) | Implemented — awaiting parent review | EP03 complete (assignments/tasks exist). D07-1…D07-4 settled. Technical refinement captured 2026-10-30. | EP07B implement (unblocked) | `./artifacts/EP07A/` |
-| [EP07B](./EP07B-completion-confirmed-time-and-read-apis.md) | Implemented — awaiting parent review | EP07A implemented (e52abde). Technical refinement captured 2026-10-30. | (done) EP07B: finish + confirmed-time + history APIs | `./artifacts/EP07B/` |
-| [EP07C](./EP07C-start-focus-session-from-an-assignment.md) | Implemented — awaiting parent review | EP07A + EP07B implemented. UI refined 2026-10-30 (D07-5). | EP07D: ui-refiner pass then implement | `./artifacts/EP07C/` |
-| [EP07D](./EP07D-focus-mode-interface-and-timer-controls.md) | Implemented — awaiting parent review | EP07A + EP07B + EP07C implemented. UI refined 2026-10-30 (D07-5). | EP07E: ui-refiner pass then implement | `./artifacts/EP07D/` |
-| [EP07E](./EP07E-completion-confirm-adjust-and-study-history.md) | Implemented — awaiting parent review | EP07A + EP07B + EP07D implemented. UI refined 2026-10-30 (D07-5). | EP07F implement (technical-refine first) | `./artifacts/EP07E/` |
-| [EP07F](./EP07F-cross-layer-e2e-calendar-regression-and-parent-index.md) | Implemented — awaiting parent review | EP07A–EP07E implemented. Technical refinement captured 2026-10-30. | None — combined EP07 parent review next | `./artifacts/EP07F/`, `./artifacts/EP07/` |
+| [EP07A](./EP07A-focus-session-persistence-and-lifecycle-api.md) | Reviewed | EP03 complete (assignments/tasks exist). D07-1…D07-4 settled. Technical refinement captured 2026-10-30. | Reviewed 2026-10-30 — combined EP07 parent review (`./artifacts/EP07/review.md`) | `./artifacts/EP07A/` |
+| [EP07B](./EP07B-completion-confirmed-time-and-read-apis.md) | Reviewed | EP07A implemented (e52abde). Technical refinement captured 2026-10-30. | Reviewed 2026-10-30 — combined EP07 parent review (`./artifacts/EP07/review.md`) | `./artifacts/EP07B/` |
+| [EP07C](./EP07C-start-focus-session-from-an-assignment.md) | Reviewed | EP07A + EP07B implemented. UI refined 2026-10-30 (D07-5). | Reviewed 2026-10-30 — combined EP07 parent review (`./artifacts/EP07/review.md`) | `./artifacts/EP07C/` |
+| [EP07D](./EP07D-focus-mode-interface-and-timer-controls.md) | Reviewed | EP07A + EP07B + EP07C implemented. UI refined 2026-10-30 (D07-5). | Reviewed 2026-10-30 — combined EP07 parent review (`./artifacts/EP07/review.md`) | `./artifacts/EP07D/` |
+| [EP07E](./EP07E-completion-confirm-adjust-and-study-history.md) | Reviewed | EP07A + EP07B + EP07D implemented. UI refined 2026-10-30 (D07-5). | Reviewed 2026-10-30 — combined EP07 parent review (`./artifacts/EP07/review.md`) | `./artifacts/EP07E/` |
+| [EP07F](./EP07F-cross-layer-e2e-calendar-regression-and-parent-index.md) | Reviewed | EP07A–EP07E implemented. Technical refinement captured 2026-10-30. | Reviewed 2026-10-30 — combined EP07 parent review (`./artifacts/EP07/review.md`) | `./artifacts/EP07F/`, `./artifacts/EP07/` |
 
 Sequence (one writer): EP07A → EP07B → EP07C → EP07D → EP07E → EP07F. EP07A and EP07B are the contract/persistence spine; the three frontend children consume it; EP07F verifies the whole stack and owns the parent index.
 
@@ -261,11 +261,11 @@ Both seams are recorded as **provisional**: EP07's own acceptance criteria do no
 
 ## Plan correction log
 
-(First plan of this epic. No plan-review pass yet.)
+(First plan of this epic. No plan-review pass yet. **Combined EP07 implementation review passed 2026-10-30** with polish-only findings P-001…P-005; those are recorded in the Implementation review log below and in [`./artifacts/EP07/review.md`](./artifacts/EP07/review.md). No plan-level corrections were required.)
 
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
-| — | — | — | — | No findings yet. | — | — | — |
+| — | — | — | — | No plan-level findings. | — | — | — |
 
 ## Quality gate (2026-10-29)
 
@@ -286,7 +286,16 @@ Both seams are recorded as **provisional**: EP07's own acceptance criteria do no
 
 ## Implementation review log
 
-(No implementation yet.)
+**Combined EP07 parent review passed 2026-10-30 — verdict PASS** (no open blocker or should-fix; polish-only findings P-001…P-005). Report: [`./artifacts/EP07/review.md`](./artifacts/EP07/review.md); final walkthrough: [`./artifacts/EP07/walkthrough.md`](./artifacts/EP07/walkthrough.md) (both saved and verified, DoD 10/11).
+
+Findings (all polish, accepted):
+- **P-001** — `GET /study-sessions/current` returns an empty body (200) when no session is open rather than JSON `null`; contract names `null`. Clients tolerate both. No functional impact.
+- **P-002** — the open-session check in `start` is a read-then-create sequence (no unique constraint/transaction); a concurrent double-submit could in principle create two open sessions. Only pause/resume/finish transitions are explicitly race-safe. Provisional D07-6; not required by the explicit race-safety list.
+- **P-003** — TR-E07-08 manual accessibility items (screen-reader path, reduced-motion visual verification, full focus-visibility audit at both viewports) were not executed in this environment; automated/component evidence plus code inspection covers the AC-level obligations. User-repeat steps are in the walkthrough.
+- **P-004** — one pre-existing, unrelated API test failure (`study-plans-e2e.spec.ts`, `dailyCapMinutes` vs. merged preferences) outside EP07 scope.
+- **P-005** — a study-session calendar event carries `assignmentId: null`, so the calendar cannot link an in-progress session back to its assignment. Not required by the EP07 contract or ACs.
+
+All six children (EP07A–EP07F) are `Reviewed`. Evidence: API 3 suites/32 study-session tests + 14 calendar tests; web 93 files/1086 tests; Playwright 38 passed (9 study-session + calendar green); typecheck + lint both packages passed (implementer-recorded; reviewer did not re-execute — no shell). The pre-existing `study-plans-e2e.spec.ts` failure is unrelated and remains open outside EP07. The two provisional seams (V-07-1 session-duration default, V-07-2 confirmed-time consumption) remain open by design because EP06 is not broken down. The dashboard "Start Focus Session" quick action stays non-functional by decision (D07-9).
 
 ## Final implementation review unit
 
@@ -294,7 +303,7 @@ One combined review for the EP07 parent — no per-child review gate.
 
 | Parent | In-scope children | Artifact paths | Integration/index owner | Gate |
 |---|---|---|---|---|
-| [EP07](./README.md) | EP07A, EP07B, EP07C, EP07D, EP07E, EP07F | `./artifacts/EP07/` | EP07F (writes `./artifacts/EP07/implementation.md`, including the cross-layer E2E and calendar-regression evidence) | One combined EP07 review after all six children (`review.md` + `walkthrough.md`) |
+| [EP07](./README.md) | EP07A, EP07B, EP07C, EP07D, EP07E, EP07F | `./artifacts/EP07/` | EP07F (writes `./artifacts/EP07/implementation.md`, including the cross-layer E2E and calendar-regression evidence) | One combined EP07 review after all six children — **PASSED 2026-10-30**: [`./artifacts/EP07/review.md`](./artifacts/EP07/review.md) + [`./artifacts/EP07/walkthrough.md`](./artifacts/EP07/walkthrough.md) |
 
 Child implementation completion unblocks the dependent child; only the passing combined review establishes sign-off. EP07C, EP07D and EP07E must complete their `ui-refiner` pass before implementation.
 
@@ -307,7 +316,7 @@ scope:
   descendants: [EP07A, EP07B, EP07C, EP07D, EP07E, EP07F]
   entry: planning
   limits: enclosing parent review unit
-stage: plan
+stage: complete
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
@@ -329,19 +338,19 @@ last_result:
 gates:
   breakdown: true
   plan: draft
-  ui: unknown
-  refinement: false
+  ui: true
+  refinement: true
   child_unfinished: false
-  eligible_child_state: Queued
-  closeout: unknown
-  integration: unknown
-  all_descendants_implemented: false
-  review: absent
+  eligible_child_state: Reviewed
+  closeout: true
+  integration: true
+  all_descendants_implemented: true
+  review: pass
   findings_owner: none
   open_findings: false
-  walkthrough: missing
-  judged_at_head: "535ffa2"
-  queue_hash: "ep07-queue-v1"
+  walkthrough: saved
+  judged_at_head: "116608b"
+  queue_hash: "ep07-queue-reviewed-2026-10-30"
 writer: none
 session_live: unknown
 blocker:
