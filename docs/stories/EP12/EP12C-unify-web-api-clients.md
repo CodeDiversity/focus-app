@@ -6,7 +6,7 @@
 **Parent Story:** [EP12](./README.md)
 **Milestone:** M5
 **Layer:** Frontend
-**Status:** Implemented — awaiting parent review (2026-10-31)
+**Status:** Reviewed (2026-10-31) (implemented 2026-10-31; combined EP12 parent review PASS)
 **Dependencies:** EP04/EP05 pages exist. No blocking dependency on other EP12 children.
 **Jira:** Pending creation
 **Refined:** 2026-10-31

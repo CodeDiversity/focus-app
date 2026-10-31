@@ -6,7 +6,7 @@
 **Parent Story:** [EP12](./README.md)
 **Milestone:** M5
 **Layer:** Backend
-**Status:** Implemented — awaiting parent review (2026-10-31). Artifacts: [checkpoint](./artifacts/EP12A/checkpoint.md) · [implementation record](./artifacts/EP12A/implementation.md)
+**Status:** Reviewed (2026-10-31). Artifacts: [checkpoint](./artifacts/EP12A/checkpoint.md) · [implementation record](./artifacts/EP12A/implementation.md) · [parent review](./artifacts/EP12/review.md) · [walkthrough](./artifacts/EP12/walkthrough.md)
 **Dependencies:** EP04/EP06 shipped (date utilities and their tests exist). No blocking dependency on other EP12 children.
 **Jira:** Pending creation
 **Refined:** 2026-10-31

@@ -1,7 +1,7 @@
 # EP12 combined implementation index
 
 **Parent:** [EP12 — Tech Debt Cleanup](../../README.md)
-**Status:** All three children implemented — combined EP12 parent review next.
+**Status:** All three children reviewed — combined EP12 parent review PASS (2026-10-31).
 **Review unit:** EP12 combined parent review — `./review.md` + `./walkthrough.md` (to be produced by the reviewer).
 **Artifact home:** `docs/stories/EP12/artifacts/EP12/`
 **Written by:** implementer (integration task).

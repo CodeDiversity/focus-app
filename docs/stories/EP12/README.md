@@ -3,7 +3,7 @@
 **Epic:** [EP12: Tech Debt Cleanup](../../epics/EP12-tech-debt-cleanup.md) (Jira key: Pending creation)
 **Milestone:** M5 (cross-cutting polish)
 **Epic dependency:** Cross-cutting. EP12A depends on the shipped EP04/EP06 date utilities; EP12B depends on EP10B (shared `Dialog` primitive, reviewed); EP12C depends on the EP04/EP05 pages that consume the calendar/assignment endpoints. No new product behavior.
-**Status:** EP12A, EP12B and EP12C implemented (2026-10-31); all children awaiting combined EP12 parent review.
+**Status:** EP12A, EP12B and EP12C reviewed (2026-10-31); combined EP12 parent review PASS.
 **Jira keys:** Pending creation (no sync authorized for this planning task).
 
 ## Execution queue
@@ -14,7 +14,7 @@
 
 **Active substory:** None
 
-**Next substory:** None — all EP12 children implemented; combined EP12 parent review next.
+**Next substory:** None — EP12 parent review complete (Reviewed).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -22,9 +22,9 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP12A](./EP12A-consolidate-timezone-date-conversion.md) | Implemented — awaiting parent review | EP04/EP06 shipped (date utilities exist). D12A-1 settled (user approval): forward + reverse converters in scope. | None — combined EP12 parent review after EP12B/EP12C | [checkpoint](./artifacts/EP12A/checkpoint.md), [implementation](./artifacts/EP12A/implementation.md) |
-| [EP12B](./EP12B-adopt-shared-dialog-primitive.md) | Implemented — awaiting parent review | EP10B shared `Dialog` primitive (reviewed). D12B-1/D12B-2 settled (user approval): `busy` prop approved; passive deltas accepted. | None — combined EP12 parent review after EP12C | [checkpoint](./artifacts/EP12B/checkpoint.md), [implementation](./artifacts/EP12B/implementation.md) |
-| [EP12C](./EP12C-unify-web-api-clients.md) | Implemented — awaiting parent review | EP04/EP05 pages exist. D12C-1 settled (user approval): entity owns fetch, RTK delegates. | None — combined EP12 parent review after all children | [checkpoint](./artifacts/EP12C/checkpoint.md), [implementation](./artifacts/EP12C/implementation.md) |
+| [EP12A](./EP12A-consolidate-timezone-date-conversion.md) | Reviewed | EP04/EP06 shipped (date utilities exist). D12A-1 settled (user approval): forward + reverse converters in scope. | None — combined EP12 parent review complete | [checkpoint](./artifacts/EP12A/checkpoint.md), [implementation](./artifacts/EP12A/implementation.md), [review](./artifacts/EP12/review.md), [walkthrough](./artifacts/EP12/walkthrough.md) |
+| [EP12B](./EP12B-adopt-shared-dialog-primitive.md) | Reviewed | EP10B shared `Dialog` primitive (reviewed). D12B-1/D12B-2 settled (user approval): `busy` prop approved; passive deltas accepted. | None — combined EP12 parent review complete | [checkpoint](./artifacts/EP12B/checkpoint.md), [implementation](./artifacts/EP12B/implementation.md), [review](./artifacts/EP12/review.md), [walkthrough](./artifacts/EP12/walkthrough.md) |
+| [EP12C](./EP12C-unify-web-api-clients.md) | Reviewed | EP04/EP05 pages exist. D12C-1 settled (user approval): entity owns fetch, RTK delegates. | None — combined EP12 parent review complete | [checkpoint](./artifacts/EP12C/checkpoint.md), [implementation](./artifacts/EP12C/implementation.md), [review](./artifacts/EP12/review.md), [walkthrough](./artifacts/EP12/walkthrough.md) |
 
 Sequence: independent (backend EP12A can run in parallel in planning terms; implementation is sequential under one writer). Suggested order: EP12A → EP12B → EP12C.
 
@@ -68,6 +68,15 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 - EP12B: refined 2026-10-31 — primitive adoption refactor only; no layout/copy changes beyond the approved EP10-alignment passive deltas (D12B-2: scroll-lock, close animation, `text-h3` title). No ui-refiner pass.
 - EP12C: frontend, no UI changes (transport only) → no ui-refiner pass.
 
+## Correction log (EP12 parent review, 2026-10-31)
+
+Final combined implementation review returned **PASS** with no blocker or should-fix findings. Polish observations recorded (full detail in [`artifacts/EP12/review.md`](./artifacts/EP12/review.md)):
+
+| ID | Severity | Original claim / gap | Disposition | Evidence |
+|---|---|---|---|---|
+| P-001 | Polish | Pointer-click Cancel in migrated dialogs does not restore focus to the trigger (primitive restores only on primitive-initiated close via `closedViaOnCloseRef`). Keyboard cancel (Escape) restores focus and is covered. | Accepted as documented design (success-skip preserve); optional follow-up. | `apps/web/src/shared/ui/Dialog.tsx` (`closedViaOnCloseRef`); `DeleteAssignmentDialog.test.tsx` "returns focus to the trigger element on close". |
+| P-002 | Evidence | Automated gates not re-executed by the reviewer (no shell in review runtime). | Recorded; implementer-recorded green runs cited. | Child implementation records; HEAD `e124c95`. |
+
 ## Autopilot
 
 ```yaml
@@ -80,7 +89,7 @@ scope:
   descendants: [EP12A, EP12B, EP12C]
   entry: EP12C
   limits: enclosing parent review unit
-stage: parent_review
+stage: complete
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
@@ -106,14 +115,14 @@ gates:
   refinement: true
   child_unfinished: false
   eligible_child_state: none
-  closeout: false
+  closeout: true
   integration: true
   all_descendants_implemented: true
-  review: absent
+  review: pass
   findings_owner: none
   open_findings: false
-  walkthrough: unknown
-  judged_at_head: "46f7cae"
+  walkthrough: present
+  judged_at_head: "e124c95"
   queue_hash: ""
 writer: none
 session_live: unknown
