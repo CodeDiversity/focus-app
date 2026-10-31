@@ -318,33 +318,25 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-execution:
-  mode: step
-  awaiting_continue: true
-scope:
-  parent: EP08
-  descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
-  entry: planning
-  limits: enclosing parent review unit
-stage: paused
+stage: implement
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
   head: ac5223a
 active_dispatch:
-  name: EP08A-refine
-  role: refiner
-  status: returned
+  name: EP08A-implement
+  role: implementer
+  status: pending
   pointer: docs/stories/EP08/EP08A-missed-sessions-and-recovery-summary-read-api.md
   session: ""
-  assignment: "Technical refine EP08A"
+  assignment: "Implement EP08A: missed-session identification + recovery summary read API"
 last_result:
   evidence: "EP08A refined (2026-10-31): Status Ready. Backend read-side, no UI, no ui-refiner. Dependencies EP06+EP07 met. No material open questions. Production files and verification recorded in story sizing block."
   findings: ""
