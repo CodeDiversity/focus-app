@@ -135,3 +135,23 @@ export interface RemainingWorkResponse {
   items: RemainingWorkItem[];
   unattributedConfirmedMinutes: number;
 }
+
+// Recovery summary (EP08D). Mirrors the API contract in the EP08 parent README.
+export interface MissedSession {
+  id: string;
+  assignmentId: string;
+  assignmentTitle: string;
+  date: string; // YYYY-MM-DD (civil, profile zone)
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  durationMinutes: number;
+  locked: boolean;
+}
+
+export interface RecoverySummary {
+  missedSessions: MissedSession[];
+  missedCount: number;
+  unfinishedWork: RemainingWorkItem[]; // reuse existing type
+  confirmedMinutes: number;
+  message: string;
+}

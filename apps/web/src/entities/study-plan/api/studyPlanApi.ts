@@ -4,6 +4,7 @@ import type {
   SavedPlan,
   ProposedSessionInput,
   RemainingWorkResponse,
+  RecoverySummary,
 } from '@/entities/study-plan/model/types';
 
 export {
@@ -23,6 +24,8 @@ export {
   type RemainingWorkItem,
   type RemainingWorkResponse,
   type RemainingWorkFlag,
+  type MissedSession,
+  type RecoverySummary,
   CONFLICT_REASON_LABEL,
 } from '@/entities/study-plan/model/types';
 
@@ -56,5 +59,10 @@ export async function listStudyPlan(): Promise<SavedPlan> {
 
 export async function listRemainingWork(): Promise<RemainingWorkResponse> {
   const response = await api.get<RemainingWorkResponse>('/study-plans/remaining-work');
+  return response.data;
+}
+
+export async function getRecoverySummary(): Promise<RecoverySummary> {
+  const response = await api.get<RecoverySummary>('/study-plans/recovery-summary');
   return response.data;
 }
