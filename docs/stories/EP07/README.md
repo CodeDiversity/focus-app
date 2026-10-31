@@ -3,7 +3,7 @@
 **Epic:** [EP07: Focus Sessions & Time Tracking](../../epics/EP07-focus-sessions-and-time-tracking.md) (Jira STUDY-13)
 **Milestone:** M3 (Study planning and focus sessions)
 **Epic dependency:** EP03 (Assignment & Task Management) — complete. Integrates with EP06 (Study Planning & Scheduling — not yet broken down).
-**Status:** Planning — breakdown complete (2026-10-29). EP07A, EP07B, EP07C and EP07D implemented (awaiting parent review); EP07F ready to implement; EP07E is `Needs refinement` pending its `ui-refiner` pass (D07-5).
+**Status:** Planning — breakdown complete (2026-10-29). EP07A–EP07E implemented (awaiting parent review); EP07F queued (technical-refine not yet run).
 **Jira keys:** Pending creation (no sync authorized for this planning task).
 
 ## Execution queue
@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP07E — needs ui-refiner pass (D07-5), then implement.
+**Next substory:** EP07F — Queued; technical-refine (backend/integration) before implement.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (the Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -26,7 +26,7 @@
 | [EP07B](./EP07B-completion-confirmed-time-and-read-apis.md) | Implemented — awaiting parent review | EP07A implemented (e52abde). Technical refinement captured 2026-10-30. | (done) EP07B: finish + confirmed-time + history APIs | `./artifacts/EP07B/` |
 | [EP07C](./EP07C-start-focus-session-from-an-assignment.md) | Implemented — awaiting parent review | EP07A + EP07B implemented. UI refined 2026-10-30 (D07-5). | EP07D: ui-refiner pass then implement | `./artifacts/EP07C/` |
 | [EP07D](./EP07D-focus-mode-interface-and-timer-controls.md) | Implemented — awaiting parent review | EP07A + EP07B + EP07C implemented. UI refined 2026-10-30 (D07-5). | EP07E: ui-refiner pass then implement | `./artifacts/EP07D/` |
-| [EP07E](./EP07E-completion-confirm-adjust-and-study-history.md) | Ready | EP07A + EP07B + EP07D implemented. UI refined 2026-10-30 (D07-5). | Implement EP07E: completion confirm/adjust + study history | `./artifacts/EP07E/` (pending) |
+| [EP07E](./EP07E-completion-confirm-adjust-and-study-history.md) | Implemented — awaiting parent review | EP07A + EP07B + EP07D implemented. UI refined 2026-10-30 (D07-5). | EP07F implement (technical-refine first) | `./artifacts/EP07E/` |
 | [EP07F](./EP07F-cross-layer-e2e-calendar-regression-and-parent-index.md) | Queued | EP07A–EP07E implemented; the EP09 self-contained E2E stack must be runnable. | Implement EP07F: cross-layer E2E + calendar regression + parent index | `./artifacts/EP07F/` (pending) |
 
 Sequence (one writer): EP07A → EP07B → EP07C → EP07D → EP07E → EP07F. EP07A and EP07B are the contract/persistence spine; the three frontend children consume it; EP07F verifies the whole stack and owns the parent index.

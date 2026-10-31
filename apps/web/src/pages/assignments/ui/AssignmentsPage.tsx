@@ -304,13 +304,20 @@ export function AssignmentsPage() {
           Assignments
         </h1>
         {/* Stable focus target for the shared hook's last-row delete fallback. */}
-        <Button
-          data-assignment-focus="add"
-          className="max-sm:min-h-[44px]"
-          onClick={actions.openForm}
-        >
-          Add assignment
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link to="/focus/history">
+            <Button variant="ghost" className="max-sm:min-h-[44px]">
+              Study history
+            </Button>
+          </Link>
+          <Button
+            data-assignment-focus="add"
+            className="max-sm:min-h-[44px]"
+            onClick={actions.openForm}
+          >
+            Add assignment
+          </Button>
+        </div>
       </div>
 
       {/* Filter toolbar: outside the results card (R-125-007) so search,

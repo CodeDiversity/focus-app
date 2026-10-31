@@ -23,6 +23,7 @@ export interface UseFocusSessionResult {
   finish: () => Promise<void>;
   reload: () => Promise<void>;
   clearTransitionError: () => void;
+  applySession: (s: StudySession | null) => void;
 }
 
 export function useFocusSession(): UseFocusSessionResult {
@@ -143,5 +144,6 @@ export function useFocusSession(): UseFocusSessionResult {
     finish,
     reload,
     clearTransitionError,
+    applySession,
   };
 }

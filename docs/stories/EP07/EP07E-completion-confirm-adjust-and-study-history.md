@@ -6,7 +6,7 @@
 **Parent:** [EP07 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Frontend
-**Status:** **Ready** — UI refinement captured 2026-10-30 (D07-5); technical refinement in Technical Notes.
+**Status:** **Implemented — awaiting parent review** — UI refinement captured 2026-10-30 (D07-5); implemented 2026-10-30.
 **Dependencies:** **EP07A** (the current-session read) and **EP07B** (the finish endpoint, the history list and the confirmed-time read). **EP07D** supplies the focus screen this story completes. `ui-refiner` pass required.
 **Jira key:** Pending creation
 **Refined:** 2026-10-30 (ui-refiner pass — UI/UX decisions settled; see Technical Notes → "UI/UX design" and "Decisions". Technical refinement of files/endpoints/DTOs is unchanged; status reconciliation to Ready is the planner/coordinator's.)

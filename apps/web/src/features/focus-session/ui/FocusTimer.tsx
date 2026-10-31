@@ -164,7 +164,10 @@ export function FocusTimer({
           <p className="mt-2 text-sm text-text-muted">
             You can review and adjust this session in your study history.
           </p>
-          <div className="mt-4">
+          <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center">
+            <Link to="/focus/history">
+              <Button variant="primary">View study history</Button>
+            </Link>
             <Link to="/assignments">
               <Button variant="secondary">Back to assignments</Button>
             </Link>

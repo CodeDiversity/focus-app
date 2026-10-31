@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Timer as TimerIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { FocusTimer } from '@/features/focus-session/ui/FocusTimer';
 import { FocusAssignmentPanel } from '@/features/focus-session/ui/FocusAssignmentPanel';
+import { FinishSessionDialog } from '@/features/focus-session/ui/FinishSessionDialog';
 import { useFocusSession } from '@/features/focus-session/model/useFocusSession';
 
 export function FocusPage() {
@@ -18,9 +19,11 @@ export function FocusPage() {
     conflict409,
     pause,
     resume,
-    finish,
     reload,
+    applySession,
   } = useFocusSession();
+
+  const [finishDialogOpen, setFinishDialogOpen] = useState(false);
 
   const emptyActionRef = useRef<HTMLAnchorElement>(null);
 
@@ -86,12 +89,22 @@ export function FocusPage() {
         conflict409={conflict409}
         onPause={() => void pause()}
         onResume={() => void resume()}
-        onFinish={() => void finish()}
+        onFinish={() => setFinishDialogOpen(true)}
         onReload={() => void reload()}
       />
       <div className="max-w-2xl mx-auto px-4 sm:px-6 pb-12">
         <FocusAssignmentPanel assignmentId={session.assignmentId} />
       </div>
+      <FinishSessionDialog
+        session={session}
+        open={finishDialogOpen}
+        onClose={() => setFinishDialogOpen(false)}
+        onFinished={(completed) => {
+          applySession(completed);
+          setFinishDialogOpen(false);
+        }}
+        onReload={() => void reload()}
+      />
     </div>
   );
 }
