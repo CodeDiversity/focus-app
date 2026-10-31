@@ -6,10 +6,10 @@
 **Parent:** [EP07 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Frontend
-**Status:** **Needs refinement** — the `ui-refiner` pass is required before implementation (D07-5).
+**Status:** **Ready** — UI refinement captured 2026-10-30 (D07-5); technical refinement in Technical Notes.
 **Dependencies:** **EP07A** (the current-session read) and **EP07B** (the finish endpoint, the history list and the confirmed-time read). **EP07D** supplies the focus screen this story completes. `ui-refiner` pass required.
 **Jira key:** Pending creation
-**Refined:** — (the `ui-refiner` pass is what settles this story's presentation; this file records the planner's breakdown and the exact gaps)
+**Refined:** 2026-10-30 (ui-refiner pass — UI/UX decisions settled; see Technical Notes → "UI/UX design" and "Decisions". Technical refinement of files/endpoints/DTOs is unchanged; status reconciliation to Ready is the planner/coordinator's.)
 
 ## Summary
 
@@ -58,20 +58,28 @@ Finishing a focus session is a decision, not a button: the student sees the time
 ## Tests to add / update
 
 - `apps/web/src/features/focus-session/ui/FinishSessionDialog.test.tsx` (new):
-  - opens pre-filled with the recorded minutes and the assignment name;
-  - confirming sends one finish request with the confirmed minutes;
+  - opens pre-filled with the recorded minutes (rounded from `session.elapsedSeconds`) and the assignment name;
+  - the recorded-time line shows the server-recorded minutes;
+  - confirming with the unchanged value sends one `POST /study-sessions/:id/finish` with `{ confirmedMinutes }` equal to the recorded minutes;
   - changing the value sends the changed value;
-  - an invalid value (non-integer, negative, above 1440) shows an inline message and sends no request;
-  - cancelling sends no request;
-  - a failed finish shows the server's message and keeps the dialog open;
-  - the confirm control is disabled while the request is in flight.
-- `apps/web/src/pages/focus/ui/FocusPage.test.tsx` (extend) — after a successful finish the completed state shows the confirmed minutes and the way onward to the history; the assignment is not modified.
+  - an invalid value (empty, non-integer, negative, above 1440) shows the inline message "Enter a whole number between 0 and 1440." and sends no request; the confirm control stays disabled;
+  - cancelling (Cancel / Escape / backdrop) sends no request and restores focus to the trigger;
+  - a failed finish (400) maps `errors.confirmedMinutes` onto the field, keeps the dialog open and re-enables confirm; a 5xx shows a `role="alert"` with `getErrorMessage` output;
+  - the confirm control is disabled with `aria-busy` while the request is in flight and a second click/Enter sends no second request;
+  - success closes the dialog and calls `onFinished` with the completed session.
+- `apps/web/src/features/focus-session/ui/FocusTimer.test.tsx` (extend) — the "Finish session" control still renders with its accessible name and is disabled while busy; clicking it calls `onFinish` (which now opens the dialog — the dialog is owned by the page).
+- `apps/web/src/pages/focus/ui/FocusPage.test.tsx` (extend):
+  - after a successful finish the completed state shows the confirmed minutes (`{n} minutes recorded`) and a "View study history" link to `/focus/history` (plus "Back to assignments");
+  - finishing opens the completion dialog and sends no request until confirm; cancelling sends no request and leaves the session running;
+  - the assignment row is not modified (no `updateAssignment` call).
 - `apps/web/src/pages/focus/history/ui/StudyHistoryPage.test.tsx` (new):
-  - renders the loading state, then the sessions newest first with assignment, minutes and time;
-  - renders the empty state with a way to start a session when there are no sessions;
+  - renders the loading skeleton, then sessions newest first with assignment, minutes and time range;
+  - renders the empty state ("No study sessions yet" + "Finish a focus session…" + "Go to assignments" link) when there are no sessions;
   - renders the error state with a retry when the list fails;
   - narrowing to one assignment sends the `assignmentId` filter and shows only that assignment's sessions;
-  - each row shows the confirmed time and the estimate; no cross-assignment remaining total is rendered.
+  - each row shows the session's confirmed minutes, the assignment's accumulated confirmed total, the estimate and a proportion bar + percentage label; no cross-assignment remaining total, ranking or shortfall warning is rendered;
+  - "Load more" appends the next page when `items.length < total`.
+- `apps/web/src/entities/study-session/api/studySessionApi.test.ts` (extend or new) — `finishStudySession(id, n)` posts `{ confirmedMinutes: n }`; `listStudySessions` returns `{ items, total }` and forwards `assignmentId`/`limit`/`offset`; `getConfirmedTime()` returns `{ assignments }` and `getConfirmedTime(id)` returns the single-assignment shape.
 - The existing web suite must stay green.
 
 ## Technical notes
@@ -96,6 +104,96 @@ Finishing a focus session is a decision, not a button: the student sees the time
 5. **The per-assignment total.** `GET /study-sessions/confirmed-time` provides the confirmed minutes per assignment; the history shows that total beside the assignment's `estimatedHours`. The proportion indicator is `confirmedMinutes / (estimatedHours * 60)`, clamped to 100% for the bar and labelled in text (never colour alone). If `estimatedHours` is null, the estimate is shown as "no estimate" and the bar is omitted.
 6. **Do not read `actualHours`.** The list projection carries `actualHours`, but it is never written by any endpoint (D07-2). The history reads the confirmed time from the session log; using `actualHours` would show a permanently empty number.
 7. **Route.** The history route is registered inside the `ProtectedRoute` block next to `/focus`. The route name is provisional (`/focus/history` keeps the surface inside EP07's area rather than adding a top-level entry to the app IA, which EP11 owns) — the `ui-refiner` and EP11's IA may rename it.
+
+### UI/UX design (settled 2026-10-30 by the `ui-refiner` pass)
+
+All decisions below reuse the EP10 primitives and semantic tokens; no ad-hoc colors, spacing, or motion. Component names and placements come from the inspected codebase (EP07D's focus screen, EP07C's start dialog, EP06's `RemainingWorkSection`, EP10's `Dialog`/`Input`/`Button`/`EmptyState`/`Card`/`Badge`).
+
+**Completion dialog — shape, placement and context.**
+- Uses the EP10 `Dialog` primitive (`apps/web/src/shared/ui/Dialog.tsx`), size `sm` (`max-w-sm`), modal, with backdrop close and Escape-to-close. No bespoke modal.
+- Opened by the focus screen's existing "Finish session" control: `FocusTimer` keeps its `onFinish` prop; `FocusPage` now passes `() => setFinishDialogOpen(true)` and renders a single `<FinishSessionDialog>` mount (the EP07C "one dialog mount for the host" pattern). The dialog performs the finish; the control no longer calls the endpoint directly.
+- `title`: "Finish this session". `description`: "Confirm or adjust the time you want to record."
+- Body, top to bottom:
+  1. Assignment context block: assignment title as a strong line; a compact meta line `Due {date} · {estimatedHours}h estimated · Target {planned} min` (estimated hours only if present; planned minutes only if present; due date falls back to "No due date"; no assignment → "No assignment linked to this session.").
+  2. Recorded-time block: label "Recorded time" with the value `{recordedMinutes} min` (`recordedMinutes = Math.round(session.elapsedSeconds / 60)`, the server's unconfirmed elapsed — the client-ticked `displayedElapsed` is never used for the default).
+  3. Adjustment field: `Input` (`type="number"`, `inputMode="numeric"`, `min={0}`, `max={1440}`, `step={1}`) labelled "Minutes to record", pre-filled with `recordedMinutes`, with hint "Between 0 and 1440 minutes." and auto-selecting its value on focus.
+- Footer: Cancel (secondary) left, "Save time" (primary) right, in the primitive's `flex-col-reverse sm:flex-row sm:justify-end` layout.
+- In flight: `disableBackdropClose` is set to `true` and `onClose` becomes a no-op (Escape/backdrop ignored); Cancel and the input are disabled; the confirm `Button` uses `isLoading` (spinner + disabled, `aria-busy`).
+- On success the dialog closes and calls `onFinished(completedSession)`; `FocusPage` updates its session so the completed state renders. No toast.
+
+**Adjustment control and validation.**
+- A single numeric `Input`, not a stepper or +/- buttons. Unit is "minutes" throughout (label + hint); the value stays a raw integer (no "h m" formatting in the field) because the bound is an integer minute count.
+- The common case needs no extra affordance: the field is pre-filled with the recorded value, so confirming unchanged is one click on "Save time". No "use recorded time" checkbox.
+- Client validation (on change and on submit): the value must be an integer in `0–1440`. Empty / non-integer / negative / above 1440 → inline `Input` error "Enter a whole number between 0 and 1440." and the confirm control stays disabled; no request is sent.
+- Server 400: map `errors.confirmedMinutes` (joined with a space when multiple) onto the field. Any other failure (5xx, network, 409) renders a `role="alert"` block above the footer with `getErrorMessage(err)` (409 → "This session changed. Reload to continue." with a "Reload session" affordance that calls the page's reload and closes the dialog). The dialog stays open and confirm re-enables on a recoverable failure.
+
+**Completion copy (final).**
+- Dialog title: "Finish this session".
+- Description: "Confirm or adjust the time you want to record."
+- Recorded-time label: "Recorded time" → "{n} min".
+- Field label: "Minutes to record"; hint: "Between 0 and 1440 minutes."
+- Confirm: "Save time" (idle; spinner + disabled in flight).
+- Cancel: "Cancel".
+- Error alert: sanitized `getErrorMessage` output; 409 adds "Reload to continue."
+- Focus-timer completed state (existing block, updated links): heading "Session complete"; line "{n} minutes recorded"; helper "You can review and adjust this session in your study history."; actions: primary "View study history" (`/focus/history`) and secondary "Back to assignments" (`/assignments`).
+
+**History surface — layout, filtering, pagination.**
+- Route `/focus/history` (provisional, per the parent README), registered inside the `ProtectedRoute` block next to `/focus`. Page file `apps/web/src/pages/focus/history/ui/StudyHistoryPage.tsx`.
+- Shell: `max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12`, matching the assignments page. Header: h1 "Study history" + subtitle "Your completed focus sessions." No header CTA.
+- Reachability: (a) focus screen's completed state — primary "View study history" link; (b) assignments page header — a secondary ghost `Button` "Study history" placed to the left of "Add assignment" (so the primary CTA stays rightmost); (c) direct visit to `/focus/history` for an authenticated student. No top-level nav entry (EP11 owns IA).
+- Filter: a single `Select` labelled "Assignment" with an "All assignments" option (`value=""`), placed in a toolbar row above the results card. The filter is component state (not URL-synced), mirroring the assignments page. Changing it resets pagination to the first page and replaces the list.
+- List: a `Card` with a `divide-y divide-border` list of rows (the `RemainingWorkSection` pattern), newest first in the order the server returns (`startTime` desc). The client does not re-sort.
+- Pagination: 20 rows per page via `limit=20`, `offset`-based "Load more" button shown only when `items.length < total`; disabled while loading more; a count line "Showing {n} of {total} sessions" sits above the button.
+- Loading: three skeleton rows (`h-4 animate-pulse rounded bg-surface-muted motion-reduce:animate-none`) with `aria-busy`. Empty: `EmptyState` with title "No study sessions yet", description "Finish a focus session to see your study history here.", action a "Go to assignments" link button. Error: `role="alert"` block "We could not load your study history. Try again." with a "Try again" button.
+- Each row links its assignment title to the assignment's course detail page when a course is known, otherwise to `/assignments` (same tab).
+
+**History row fields and per-assignment presentation.**
+- Row layout:
+  1. Top line: assignment title (link, truncated) on the left; the session's confirmed minutes (`{n} min` via `formatMinutes`) on the right.
+  2. Course line (muted, only if a course resolves): `{course.code} · {course.name}`.
+  3. Time line (muted): `{date} · {start}–{end}` (date = short month + day via `toLocaleDateString`; times = `toLocaleTimeString` with `hour: '2-digit', minute: '2-digit'`; range uses an en-dash).
+  4. Contribution block (the per-assignment presentation, using the confirmed-time endpoint):
+     - Line: "Confirmed for this assignment: {total}" (left) + "Estimate: {estimate | not set}" (right), muted xs.
+     - When an estimate exists: a progress bar (`role="progressbar"`, `aria-valuenow={pct}`, `aria-valuemin={0}`, `aria-valuemax={100}`, `aria-label="{pct}% of estimate confirmed"`) whose fill width is `min(pct, 100)%`, plus a text line "{pct}% of estimate" (actual pct, not clamped, so over-estimate reads "120% of estimate").
+     - When no estimate: no bar; the estimate side reads "not set" and a `Badge` variant `neutral` size `sm` with text "No estimate" sits beside the total.
+  - `total` comes from the confirmed-time endpoint (`confirmedMinutes` for that assignment, defaulting to 0 when absent); `estimate` comes from the assignment projection (`estimatedHours * 60`, null when `estimatedHours` is null).
+- Scope guardrails: no cross-assignment total, no ranking, no shortfall/deficit warning, no "remaining work" figure. The surface is a record of what was logged. The confirmed-time endpoint is consumed for the per-assignment total only.
+
+**Data flow on the history page.**
+- Three parallel loads on mount: `listStudySessions({ limit: 20, offset: 0 })` (and on filter change / "Load more"), `listAssignments()` (to resolve title/course/estimate; non-fatal — falls back to "Assignment" + no estimate on failure), and `getConfirmedTime()` (to build the per-assignment total map; non-fatal — contribution shows 0 / "Totals unavailable" when it fails).
+- "Load more" calls `listStudySessions` with the next offset and appends to the existing items; the assignment/confirmed-time maps are reused (not refetched).
+- Empty/error states are driven by the sessions list only; a failure of the secondary loads never replaces the list with an error.
+
+**Keyboard behaviour.**
+- Completion dialog: initial focus lands on the "Minutes to record" input (the primitive focuses the first focusable, which is the input; its value is auto-selected); Tab order recorded time → input → Cancel → confirm; Escape cancels (closes) except in flight; focus restores to the "Finish session" button on close (primitive).
+- History: standard tab order through the filter select, rows' links, "Load more" and retry; no custom key handling. Filter select changes the list on change.
+
+**Responsive behaviour.**
+- Completion dialog: primitive is `w-full max-w-sm` with `p-4` outer padding, so at 375px it fills the viewport minus 32px with no horizontal scroll. Input and buttons are ≥44px on mobile via the primitive/Button `max-sm:min-h-[44px]` (Input `md` already bumps to 44 on `max-sm`).
+- History: single column at all widths; rows stack (title/minutes on one line that wraps); no horizontal scroll; "Load more"/retry buttons ≥44px; tap targets on links ≥44px via padding.
+
+**Reduced motion.**
+- Dialog primitive transition keeps its `motion-reduce:transition-none motion-reduce:transform-none` (D10-16); the confirm spinner uses `motion-reduce:animate-none` (already in `Button`). No new animations are introduced.
+- History skeleton uses `motion-reduce:animate-none`; the proportion bar has no width transition. All durations use the EP10 tokens.
+
+### Decisions (settled by the `ui-refiner` pass, 2026-10-30)
+
+- Completion dialog: EP10 `Dialog`, size `sm`, modal; opened by the focus screen's "Finish session" control; backdrop/Escape cancel except in flight.
+- Dialog shows assignment context, the server-recorded minutes ("Recorded time"), and an editable "Minutes to record" field pre-filled with `Math.round(elapsedSeconds / 60)`.
+- Adjustment control: single numeric `Input` (0–1440, integer, `inputMode="numeric"`, auto-select on focus); unit "minutes"; no stepper.
+- Validation: client-side integer 0–1440 with inline message "Enter a whole number between 0 and 1440."; server 400 maps `errors.confirmedMinutes` onto the field; other failures show a `role="alert"`.
+- Confirm label "Save time" (spinner + disabled in flight); Cancel "Cancel"; no in-flight text beyond the spinner.
+- Success closes the dialog and shows the focus timer's completed state: "{n} minutes recorded" + "View study history" (`/focus/history`) and "Back to assignments".
+- History route `/focus/history` (provisional), `max-w-5xl` shell, header "Study history".
+- Assignment filter is a `Select` with "All assignments"; component state only (not URL-synced).
+- List is `Card` + `divide-y` rows, newest first, server order; 20 per page with "Load more".
+- Loading skeleton (3 rows), empty ("No study sessions yet" + CTA to assignments), error with retry.
+- Each row: title (link) + minutes; course line; time range; contribution block using the confirmed-time endpoint (total + estimate + clamped bar + percentage label; "No estimate" badge when no estimate).
+- Scope guardrails: no cross-assignment total, ranking, or shortfall warning.
+- Data flow: parallel `listStudySessions` / `listAssignments` / `getConfirmedTime`; secondary loads are non-fatal.
+- Keyboard: dialog initial focus on input (auto-select); Escape cancels (except in flight); focus restores to trigger; history standard tab order.
+- Responsive: dialog fills 375px with no scroll, ≥44px targets; history single column, no horizontal scroll.
+- Reduced motion: token durations + `motion-reduce` overrides; no new animations; bar has no width transition.
 
 ### Risks / open questions
 
@@ -141,7 +239,9 @@ Jira key: Pending creation. No sync was authorized for this planning task. (If t
 - **Verification:** `pnpm --filter web test -- src/features/focus-session src/pages/focus`; `pnpm --filter web typecheck`; `pnpm --filter web lint`; `pnpm --filter web test` (full suite).
 - **Dependencies / exclusions:** EP07A, EP07B and EP07D implemented; `ui-refiner` pass completed. Excludes starting a session (EP07C), the focus screen and timer (EP07D), the cross-assignment remaining-work view, ranking and deficit warnings (EP06), the dashboard widget (EP05), the session rating and notes, and all backend work.
 
-## UI/UX gaps for the `ui-refiner` (D07-5 — not yet settled)
+## UI/UX decisions (settled 2026-10-30 — D07-5)
+
+All gaps listed below are now settled; the authoritative, implementation-ready detail lives in Technical Notes → "UI/UX design" and "Decisions". This section is retained for traceability against the original gap list.
 
 - **Completion dialog layout.** Modal versus inline panel; what the dialog shows around the number (assignment title, planned duration, a running total); where the recorded value and the editable value sit relative to each other; the dialog's width and placement.
 - **The adjustment control.** A number input versus a stepper versus +/- buttons; the unit ("minutes" vs "min" vs "h m"); whether the value is presented as a duration rather than a raw integer; the affordance for the common case (confirm unchanged) so that adjusting is not accidentally triggered.
