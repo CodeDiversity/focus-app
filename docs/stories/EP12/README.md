@@ -74,18 +74,18 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 version: 1
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP12
   descendants: [EP12A, EP12B, EP12C]
   entry: EP12C
   limits: enclosing parent review unit
-stage: integration
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: 6b28649
-  head: f04ac4b
+  head: 775b9a4
 active_dispatch:
   name: EP12
   role: implementer
@@ -94,9 +94,9 @@ active_dispatch:
   session: ""
   assignment: "Integration: prepare EP12 parent implementation index linking EP12A/B/C"
 last_result:
-  evidence: "EP12C implemented (2fd6264, f04ac4b). 1092 web tests pass; lint/typecheck/build clean. entityBaseQuery added; two slices delegate. All EP12 children implemented."
+  evidence: "EP12 integration complete (775b9a4). Parent implementation index at artifacts/EP12/implementation.md. All three children implemented. Ready for combined parent review."
   findings: ""
-  scope_note: "Step mode: one task per continuation. EP12C complete; combined parent review next."
+  scope_note: "Step mode: one task per continuation. Integration complete; combined parent review next."
   cycles: 0
   same_findings: unknown
 gates:
@@ -113,7 +113,7 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: unknown
-  judged_at_head: "f04ac4b"
+  judged_at_head: "775b9a4"
   queue_hash: ""
 writer: none
 session_live: unknown
@@ -122,6 +122,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "All children implemented; next step is combined EP12 parent review (parent_reviewer)."
+resume: "Integration complete; next step is combined EP12 parent review (parent_reviewer)."
 judgment_attempts: 0
 ```
