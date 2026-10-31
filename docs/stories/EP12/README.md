@@ -83,29 +83,29 @@ Final combined implementation review returned **PASS** with no blocker or should
 version: 1
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP12
   descendants: [EP12A, EP12B, EP12C]
   entry: EP12C
   limits: enclosing parent review unit
-stage: complete
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: 6b28649
-  head: 46f7cae
+  head: dccc80d
 active_dispatch:
   name: EP12-parent-review
   role: reviewer
-  status: pending
+  status: returned
   pointer: docs/stories/EP12/README.md
   session: ""
   assignment: "Combined EP12 parent review (review.md + walkthrough.md)"
 last_result:
-  evidence: "DoD audit complete. Gates: breakdown true, plan pass (no standalone plan-review.md; planning recorded in breakdown), ui true, refinement true, child_unfinished false, integration true, all_descendants true, open_findings false. review absent (no review.md), walkthrough unknown. Judged_at_head reconciled to 46f7cae. EP12B checkpoint stale status noted."
-  findings: "EP12B checkpoint.md still says 'In progress' despite completion; reconciled this step. plan-review.md absent for EP12 (planning via breakdown; recorded as pass)."
-  scope_note: "Step mode: one task per continuation. Judge returned; combined parent review next."
+  evidence: "Combined EP12 parent review PASS (review.md + walkthrough.md saved & verified). Passing sync applied: queue rows Reviewed, status/next updated, correction log added. Docs commit dccc80d. 2 polish observations (P-001, P-002), no blockers."
+  findings: "P-001 polish: pointer-click Cancel focus restore in migrated dialogs (documented design). P-002 evidence: gates not re-executed by reviewer (no shell); implementer-recorded green runs cited."
+  scope_note: "Step mode: one task per continuation. Review returned; next continue reconciles completion."
   cycles: 0
   same_findings: unknown
 gates:
@@ -122,7 +122,7 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: present
-  judged_at_head: "e124c95"
+  judged_at_head: "dccc80d"
   queue_hash: ""
 writer: none
 session_live: unknown
