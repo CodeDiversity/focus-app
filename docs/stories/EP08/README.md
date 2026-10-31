@@ -318,29 +318,29 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: refine
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: 2716c49
+  head: 2a481c7
 active_dispatch:
   name: EP08D-implement
   role: implementer
-  status: pending
+  status: none
   pointer: docs/stories/EP08/EP08D-recovery-summary-and-replanning-entry-point-ui.md
   session: ""
   assignment: "Implement EP08D (recovery summary UI + entry point per refined story)"
 last_result:
-  evidence: ""
+  evidence: "Refiner completed technical refinement of EP08D: set Status Ready, mirrored EP08A recovery-summary contract exactly (MissedSession.locked, RecoverySummary shape), specified entity client/types additions, route wiring to /catch-up (ProtectedRoute), feature/page scaffolding (RecoverySummary, lists/rows), tests per TR-E08-05, preserved ui-refiner decisions. Committed in 2a481c7."
   findings: ""
-  scope_note: "User continuation: cleared deliberate pause. Dispatching technical refiner on EP08D (ui-refined, EP08A implemented)."
+  scope_note: "Step mode: one task completed (technical refiner on EP08D). No implementation started. Queue updated: EP08D Ready, next is implementer on EP08D."
   cycles: 0
   same_findings: unknown
 gates:
@@ -357,7 +357,7 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: not_started
-  judged_at_head: "8a9c543 (reconciled at 2716c49)"
+  judged_at_head: "8a9c543 (reconciled at 2a481c7)"
   queue_hash: ""
 writer: none
 session_live: unknown
@@ -366,6 +366,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "EP08D ready (ui-refined + technically refined). Next actionable: implementer on EP08D."
+resume: "EP08D ready (ui-refined + technically refined). Next action: implementer on EP08D."
 judgment_attempts: 0
 ```
