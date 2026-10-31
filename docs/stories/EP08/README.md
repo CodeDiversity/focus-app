@@ -318,29 +318,29 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: implement
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: cc1241d
+  head: a6d781c
 active_dispatch:
   name: EP08F-implement
   role: implementer
-  status: pending
+  status: completed
   pointer: docs/stories/EP08/EP08F-cross-layer-e2e-and-parent-index.md
-  session: ""
+  session: ses_e6c159ac7ffeOiI87NjZXq2l8z
   assignment: "Implement EP08F (cross-layer Playwright E2E apps/web/e2e/catch-up.spec.ts against the self-contained EP09 stack + EP08 parent implementation index at docs/stories/EP08/artifacts/EP08/implementation.md + TR-E08-08 manual a11y evidence collection) per the story, with checkpoint/resume discipline and the story's AC list. Single sequential writer; scoped commits (exclude foreign dirty paths .agents/skills/autopilot/SKILL.md and .agents/workflow-graph.md, and the README's Autopilot section). Return at the EP08F child boundary — no parent review."
 last_result:
-  evidence: "EP08E-implement COMPLETED (foreground, session ses_e6c3ec2b6ffeR2LnkixG1lvO6k; base 5ed6bc3). Commits: dde6780 backend PATCH lock endpoint (SetSessionLockDto, scoped updateMany → assertAffected → scoped echo / uniform 404, + unit/e2e/data-scoping specs) and checkpoint 1; 646e93f frontend /catch-up/preview surface (CatchUpPreview/CatchUpPreservationCard/CatchUpLockToggle, additive conflicts prop on PlanSessionEditor, preview.ts extraction, 3 client functions, nested routing, 22 new tests) + closeout records + queue row; d9a7738 honest post-commit flake addendum. Records: artifacts/EP08E/implementation.md (AC 1–11 + backend note outcomes, TR-E08-08 manual pass with honest labels) + checkpoint.md (all checkpoints closed). Verification as reported by the implementer on the committed tree: web vitest 1131/1131 (100 files), web tsc+eslint clean; api npm test 897 passed / 443 skipped / 0 failed, tsc+eslint clean. Honest limits (for the reviewer): PATCH e2e + data-scoping describes DATABASE_URL-gated self-skip locally (unit spec pins behavior); one unreproduced single-test failure in one full-suite run (2 subsequent full runs green, 3× targeted 32/32) recorded as load flake; VoiceOver/reduce-motion/320px manual steps documented, not browser-executed (EP08F Playwright is the durable proof). Coordinator verified: commit scope (study-plans module + web catch-up/study-plan paths + EP08E artifacts + README queue hunks only), queue row + Next substory committed by the specialist, Autopilot section untouched by the specialist. Child closeout — NOT independent approval; combined parent review remains."
-  findings: "None mandatory. Implementer deviations recorded in implementation.md (singular/plural count copy adaptation; inline-error toggle per AC 5; EP08D conflict-shape fidelity; lint-pipeline normalization of pre-existing prettier drift) — inputs for the combined parent review. Planner-owned non-blocking open questions unchanged (in-window lock list; plan-page toggle). Reviewer watch-items: the recorded unreproduced load flake and the DATABASE_URL-gated specs."
-  scope_note: "Step continue: deliberate step_pause cleared on explicit user continuation; child_ready edge taken (EP08E Ready, planning gates passed). Implementer node committed itself (precedent honored: scoped, hunk-filtered README hunks; Autopilot section excluded). Writer ownership relinquished (tree clean except foreign paths). Queue committed by the specialist: EP08E → Implemented — awaiting parent review; Next substory → EP08F. Foreign dirty paths preserved uncommitted and untouched: .agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md."
+  evidence: "EP08F-implement COMPLETED (foreground, session ses_e6c159ac7ffeOiI87NjZXq2l8z; base 9c0b222). Commits: 6d06763 apps/web/e2e/catch-up.spec.ts (new, 794 lines, 9 tests: full replan journey missed→preview→edit→confirm→reload with server re-read + immutability, decline = no confirm request + byte-identical plan, locked preservation fields+count, feasibility warnings, completed-assignment exclusion, confirmed-time→recovery summary, EP04 null-endTime calendar regression, 2× 320px keyboard/focus/44px a11y tests); a6d781c closeout records + EP08 parent implementation index + queue/story status. Records: artifacts/EP08F/{checkpoint,implementation}.md; parent index artifacts/EP08/implementation.md (baselines 53de89c, child commits c1d7f95/aff7794/8a9c543/9f815a6/dde6780+646e93f+d9a7738, AC-E08-01…09 traceability, verification snapshot, known gaps). Verification as reported by the implementer on the committed tree: web typecheck + eslint clean; new spec 9/9; full E2E 40 passed with all 9 catch-up tests green; control and focused runs logged. Honest caveats recorded: (1) two PRE-EXISTING deterministic E2E failures — assignments-list.spec.ts:23 and calendar.spec.ts:100, Escape focus-restoration; proven unrelated via full control run with the new spec removed and both failing in isolation; no focus-restore logic exists in the current component tree (likely lost in the SP-109 reorg) — needs its own fix story or a parent-review ruling; (2) study-plans-e2e dailyCapMinutes reported-not-blocking per AC 8; api integration specs self-skip locally without DATABASE_URL; (3) TR-E08-08 VoiceOver + reduced-motion remain documented-not-executed — human pass required at the reviewer walkthrough (autopilot cannot ratify). Coordinator verified: commit scope (spec-only + records/index/queue hunks only), no Autopilot-section hunks in specialist commits, queue row + Next substory committed by the specialist, foreign paths untouched. Child closeout — NOT independent approval; combined parent review remains."
+  findings: "None mandatory at coordination. Reviewer watch-items for the combined review: two pre-existing deterministic focus-restoration E2E failures (ruling or fix-story decision owed — EP08F record §AC 8); EP08E load-flake note; DATABASE_URL-gated self-skipping specs; TR-E08-08 human/browser evidence still owed (human_evidence interrupt applies at final sign-off if unresolved). Planner-owned non-blocking open questions unchanged (in-window lock list; plan-page toggle)."
+  scope_note: "Step continue: deliberate step_pause cleared on explicit user continuation; child_ready edge taken (EP08F Ready per precedent b00271c reconciliation — integration child, refinement gates set, dependencies evidenced). Implementer node committed itself (scoped: spec commit + records commit; hunk-filtered README hunks; Autopilot section excluded — grep-verified zero Autopilot occurrences in specialist README diff). Writer ownership relinquished (tree clean except foreign paths). Queue committed by the specialist: EP08F → Implemented — awaiting parent review; Next substory → None (all six children implemented; combined parent review next). Foreign dirty paths preserved uncommitted and untouched: .agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md."
   cycles: 0
   same_findings: unknown
 
@@ -350,23 +350,23 @@ gates:
   ui: true
   refinement: true
   child_unfinished: false
-  eligible_child_state: "Ready (EP08F integration child; dependencies EP08A–EP08E implemented with on-disk records, verified this continue; no UI/technical gaps — quality gate: ready to implement once dependencies land; precedent b00271c: Queued integration child recorded Ready when gates set and deps landed)"
+  eligible_child_state: "none (all six children Implemented — awaiting parent review; queue rows + on-disk records verified; no eligible child remains)"
   closeout: true
-  integration: false
-  all_descendants_implemented: false
+  integration: "true (reconciled from evidence: catch-up.spec.ts committed 6d06763, full E2E run recorded 40 passed + control runs, parent index artifacts/EP08/implementation.md on disk; independent verification belongs to the combined parent review)"
+  all_descendants_implemented: true
   review: not_started
   findings_owner: none
   open_findings: false
   walkthrough: not_started
-  judged_at_head: "cc1241d"
+  judged_at_head: "a6d781c"
   queue_hash: ""
-writer: implementer (EP08F-implement, dispatched)
+writer: none
 session_live: unknown
 blocker:
   kind: none
   owner: ""
   question: ""
   answer: ""
-resume: "Step continue 2026-10-31: deliberate step_pause cleared on explicit user continuation (edge step_pause → child_ready). Coordinator reconciled: EP08A–E artifacts on disk, EP08E commits (dde6780/646e93f/d9a7738) in HEAD cc1241d, apps/web/e2e/catch-up.spec.ts and artifacts/EP08/ absent (EP08F genuinely outstanding), writer ownership relinquished, tree clean except foreign dirty paths (.agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md — preserved). Dispatching EP08F-implement (pending). After return: record result, restore step pause. After EP08F: combined EP08 parent review (reviewer, review.md + walkthrough.md; carry the EP08E load-flake note, DATABASE_URL-gated specs and TR-E08-08 manual-pass evidence into the review baseline). Planner-owned non-blocking open questions still open."
+resume: "EP08F implemented, verified-as-reported and committed by the specialist (6d06763 + a6d781c); queue row Implemented — awaiting parent review; step pause restored at a6d781c. Writer ownership relinquished; tree clean except foreign paths. All six EP08 children now implemented. Next proposed step (edge parent_review): combined EP08 parent review — one fresh reviewer task producing artifacts/EP08/review.md AND the final user-facing walkthrough.md, covering all six children from baseline 53de89c (per the parent index), carrying in the watch-items: pre-existing focus-restoration E2E failures ruling, load-flake note, DATABASE_URL-gated specs, TR-E08-08 human/browser evidence (manual pass must be honestly labeled; autopilot cannot ratify human evidence). Planner-owned non-blocking open questions still open."
 judgment_attempts: 0
 ```
