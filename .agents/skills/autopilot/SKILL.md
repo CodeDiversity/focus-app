@@ -5,6 +5,22 @@ description: Use when the user requests StudyPilot autopilot through final paren
 
 # StudyPilot Autopilot
 
+## Optional step mode
+
+`/step <parent>` keeps coordination but allows only one foreground
+specialist per explicit user continuation. Judges count too. Record
+`execution: { mode: step, awaiting_continue: false }` before dispatch. After
+the task returns, finish permitted persistence/commits and set
+`execution.awaiting_continue: true`, `stage: paused`. Report the completed task,
+records, and next proposed action, then STOP. Do not refill the allowance by
+editing the checkpoint or perform the next role inline. `/continue`
+(or an explicit `continue` in that same step session) authorizes one more task;
+ordinary questions/status messages do not. A real blocker, scope limit, or live
+writer still takes precedence. Starting step mode while a specialist is live
+means wait for its return, not dispatch a successor. Normal autopilot defaults
+to automatic mode; a step session remains stepped until the user chooses a
+different execution mode explicitly.
+
 Coordinate the existing delivery roles through a passing independent parent
 review. Every specialist task gets a new, isolated context; the repository carries
 progress. Autopilot is a coordinator, never the implementation or review owner.

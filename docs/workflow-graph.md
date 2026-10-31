@@ -17,10 +17,12 @@ flowchart TD
   walkthrough["walkthrough<br/><small>reviewer</small>"]
   handoff["handoff"]
   blocked["blocked"]
+  step_pause["step_pause"]
   complete["complete"]
   reconcile -->|wait_live_session| wait
   reconcile -->|writer_handoff| handoff
   reconcile -->|recorded_blocker| blocked
+  reconcile -->|step_pause| step_pause
   reconcile -->|stagnation_unknown| judge
   reconcile -->|stagnation| blocked
   reconcile -->|breakdown_unknown| judge
@@ -63,6 +65,7 @@ flowchart TD
 | wait_live_session | wait |
 | writer_handoff | handoff |
 | recorded_blocker | blocked |
+| step_pause | step_pause |
 | stagnation_unknown | judge |
 | stagnation | blocked |
 | breakdown_unknown | judge |

@@ -23,6 +23,28 @@ them beside the graph. They must not advance `stage`.
 4. Use a fresh isolated context for every specialist node. `wait` resumes a
    live session; it does not start a second writer.
 
+## Step mode
+
+Automatic mode remains the default. `/step <parent>` enables step
+mode: run one bounded specialist task (including a read-only judge), persist
+its result and permitted closeout, then pause. Do not start the next specialist
+until the user sends `/continue` or explicitly says `continue`.
+Questions and status requests do not grant another step. A continue grants
+one step, not the rest of the parent. It never clears real blockers, grants
+permissions, or permits a second writer. Finish/reconcile an active task before
+applying a new step allowance; do not replace an active specialist.
+
+Record `execution.mode: step` and `execution.awaiting_continue: true` after the
+task returns. At the pause, show the completed task, its records, and the next
+proposed action. A pause is not failure or approval. `stage: paused` is separate
+from `stage: blocked`. Completion is reconciled on the next continue.
+
+The runner uses `run --step` and `continue` for the same behavior. Missing
+execution fields in older checkpoints mean automatic mode. In-session OpenCode
+also enforces one dispatch per explicit user continuation in plugin storage;
+editing a checkpoint cannot refill that allowance. A new session must explicitly
+enter step mode again before continuing a portable step checkpoint.
+
 ## Edge order
 
 | Edge | When | Next |
@@ -30,6 +52,7 @@ them beside the graph. They must not advance `stage`.
 | wait_live_session | Writer is held and that session is still live | wait |
 | writer_handoff | Writer is held or ownership is unknown | handoff |
 | recorded_blocker | An unanswered material, evidence, permission, or handoff blocker is recorded | blocked |
+| step_pause | Step mode has completed its allowed task and awaits the user | step_pause |
 | stagnation_unknown | Two correction cycles and no judgment yet on whether findings are unchanged | judge |
 | stagnation | Two correction cycles with the same mandatory findings and no new evidence | blocked |
 | breakdown_unknown | Breakdown validity is unverified | judge |
@@ -76,6 +99,7 @@ Stop and ask one question. Do not relabel the gate passed.
 | missing_permission | A required permission or external prerequisite is unavailable. Do not auto-approve. |
 | stagnation | Two consecutive correction or re-review cycles made no progress. |
 | missing_judgment | Two read-only judgment passes still left a required gate unknown. |
+| step_pause | The allowed task returned; wait for an explicit user continuation. |
 
 ## Non-edges
 
@@ -97,6 +121,9 @@ verified. If HEAD or the queue changes, those gates return to `unknown`.
 
 ```yaml
 version: 1
+execution:
+  mode: auto
+  awaiting_continue: false
 scope:
   parent: SP-1
   descendants: []
@@ -213,6 +240,10 @@ nodes:
     interrupt: blocked
     fresh_context: false
     commit: none
+  - id: step_pause
+    interrupt: step_pause
+    fresh_context: false
+    commit: none
   - id: complete
     fresh_context: false
     commit: none
@@ -242,6 +273,15 @@ edges:
     interrupt: recorded
     stage: blocked
     question: "A blocker is already recorded. Answer that one question, then resume."
+  - id: step_pause
+    when:
+      all:
+        - { field: execution_mode, eq: step }
+        - { field: awaiting_continue, eq: true }
+    to: step_pause
+    interrupt: step_pause
+    stage: paused
+    question: "Step finished. Inspect the result, then explicitly continue for one more task."
   - id: stagnation_unknown
     when:
       all:
@@ -489,6 +529,7 @@ edges:
     stage: reconcile
     question: "No delivery edge matched. Judge the gates before dispatching a specialist."
 interrupts:
+  - id: step_pause
   - id: handoff
   - id: material_decision
   - id: human_evidence
