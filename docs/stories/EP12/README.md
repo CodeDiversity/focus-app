@@ -74,13 +74,13 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 version: 1
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP12
   descendants: [EP12A, EP12B, EP12C]
   entry: EP12B
   limits: enclosing parent review unit
-stage: reconcile
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
@@ -89,12 +89,12 @@ coordinator:
 active_dispatch:
   name: EP12B
   role: implementer
-  status: pending
+  status: returned
   pointer: docs/stories/EP12/EP12B-adopt-shared-dialog-primitive.md
   session: ""
   assignment: "Implement EP12B: adopt shared Dialog primitive across 11 hand-rolled modals (busy prop + 11 migrations)"
 last_result:
-  evidence: "EP12A implemented (6b28649); EP12B and EP12C Ready (refined 2026-10-31)."
+  evidence: "EP12B implemented (950dfc1..f23753d). 1090 web tests pass; lint/typecheck/build clean. Busy prop added to Dialog; 11 dialogs migrated."
   findings: ""
   scope_note: "Step mode: one task per continuation."
   cycles: 0
