@@ -318,25 +318,25 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: paused
+stage: ui_refine
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
   head: 8a9c543
 active_dispatch:
-  name: EP08C-implement
-  role: implementer
-  status: returned
-  pointer: docs/stories/EP08/EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md
+  name: EP08D-ui-refine
+  role: ui-refiner
+  status: pending
+  pointer: docs/stories/EP08/EP08D-recovery-summary-and-replanning-entry-point-ui.md
   session: ""
-  assignment: "Implement EP08C: catch-up plan preview/confirm/feasibility API"
+  assignment: "UI refine EP08D (recovery summary + replanning entry point)"
 last_result:
   evidence: "EP08C implemented (8a9c543): catch-up preview/confirm API + transactional persistence; typecheck/lint/tests/build green. Artifacts: docs/stories/EP08/artifacts/EP08C/{checkpoint,implementation}.md. Status: Implemented — awaiting parent review."
   findings: ""
