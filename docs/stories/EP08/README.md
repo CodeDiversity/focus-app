@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** [EP08E](./EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md) — `ui-refiner` on EP08E before implementation.
+**Next substory:** [EP08E](./EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md) — `refiner` for EP08E technical refinement before implementation (UI/UX decisions settled 2026-10-31).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -26,7 +26,7 @@
 | [EP08B](./EP08B-deterministic-workload-rescheduling.md) | Implemented — awaiting parent review | EP06 engine (`domain/study-planning/scheduler.ts`, `intervals.ts`, `ordering.ts`) and EP08A's recovery summary (the missed/unfinished inputs). | Combined EP08 parent review after all children | `./artifacts/EP08B/checkpoint.md`, `./artifacts/EP08B/implementation.md` |
 | [EP08C](./EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md) | Implemented — awaiting parent review | EP08A + EP08B implemented. EP06 save/conflict primitives reused. | Combined EP08 parent review after all children | `./artifacts/EP08C/checkpoint.md`, `./artifacts/EP08C/implementation.md` |
 | [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) | Implemented — awaiting parent review | EP08A implemented (the read API). UI decisions settled (ui-refiner); technical refinement complete (refiner). | Combined EP08 parent review after all children | `./artifacts/EP08D/checkpoint.md`, `./artifacts/EP08D/implementation.md` |
-| [EP08E](./EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md) | Needs refinement | EP08C implemented (the preview/confirm API). **`ui-refiner` pass required** (D08-7). | `ui-refiner` on EP08E before implementation. | — |
+| [EP08E](./EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md) | Needs refinement | EP08C implemented (the preview/confirm API — code-verified). UI/UX decisions settled (ui-refiner 2026-10-31; D08-7 closed). Carries a scoped backend note: `PATCH /study-plans/sessions/:sessionId/lock` (user decision 2026-10-31). Open question (non-blocking): contract extension to list current-window SCHEDULED sessions with `{id, locked}` — planner's to decide. | `refiner` on EP08E (technical refinement) before implementation. | Story carries settled UI/UX decisions (commit `5dd603f`). |
 | [EP08F](./EP08F-cross-layer-e2e-and-parent-index.md) | Queued | EP08A–EP08E implemented. | Implement after EP08E (new Playwright spec + parent index). | — |
 
 Sequence (one writer): EP08A → EP08B → EP08C → EP08D → EP08E → EP08F. EP08A is the read-side spine; EP08B is the pure-domain rescheduler; EP08C is the API/persistence spine; the two frontend children consume them; EP08F verifies the whole stack and owns the parent index.
@@ -318,29 +318,29 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: ui_refine
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: 9f815a6
+  head: 5dd603f
 active_dispatch:
   name: EP08E-ui-refine-retry-2
   role: ui-refiner
-  status: pending
+  status: completed
   pointer: docs/stories/EP08/EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md
-  session: ""
+  session: ses_e6c5eb216ffeKDFs5mGn25m3Z1
   assignment: "UI/UX refine EP08E in place (preview layout, edit model, feasibility warnings, locked/completed preservation indicators + toggle affordance, confirm/decline copy, states, a11y, responsive, non-blaming copy). User decision 2026-10-31: a minimal ownership-scoped lock-toggle endpoint (PATCH planned-session locked) will be added as a scoped backend note in EP08E; settle toggle UX against real API code. Story carries partial draft edits from interrupted dispatches — consolidate/clean in place, remove deliberation prose."
 last_result:
-  evidence: "Closed EP08E-ui-refine-retry as interrupted-empty (2026-10-31): checkpoint recorded pending at 15:42, but the EP08E story file is unmodified since 15:14 (the pre-dispatch draft), no new commits past 9f815a6, dispatching parent session closed, session ID never recorded — no live session to wait on. Prior step evidence retained: EP08D implementation committed at 9f815a6 (recorded typecheck/lint/tests PASS). Code evidence stands: no API surface persists PlannedSession.locked (only false on create); user decision 2026-10-31 adds a minimal lock-toggle endpoint scoped into EP08E. Route re-walk: ui_needed edge unchanged (EP08E Needs refinement, D08-7) — same target as the closed dispatch."
-  findings: ""
-  scope_note: "Unrelated dirty paths preserved uncommitted: .agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md (foreign typo fixes). EP08E story edit belongs to the ui-refiner retry-2 dispatched this step."
+  evidence: "EP08E-ui-refine-retry-2 COMPLETED (foreground, session ses_e6c5eb216ffeKDFs5mGn25m3Z1): 14 UI/UX decisions settled in place, each code-anchored (nested /catch-up/preview under CatchUpPage; PlanSessionEditor reuse; preservation cards + aria-pressed lock toggle wired to PATCH /study-plans/sessions/:sessionId/lock {locked:boolean} → 200 {id,locked}, 400/401/uniform-404, ownership via studyPlan.userId; WorkloadWarnings reuse; confirm 'Use this plan' posts exact SaveStudyPlanDto body; decline 'Not now' client-side; 409 conflict + WINDOW_ROLLED_OVER mirrors of PlanPage; states/a11y/responsive/non-blaming copy deck). Deliberation prose removed (grep-verified); stale RTK-Query sizing note corrected to the actual axios entity client. Story explicitly NOT declared Ready. Output committed by coordinator at 5dd603f (ui_refiner node commit: coordinator; precedent b040fce). Boundary verified: only the EP08E story changed; no git run by specialist."
+  findings: "Non-blocking open questions raised for planner/user (recorded in story): (1) locking a current-window SCHEDULED session from the preview needs a small contract extension (list in-window sessions with {id, locked} in CatchUpPreview, or add locked to SavedPlanSession) — PATCH is already generic enough; (2) plan-page lock toggle is an EP06-surface decision, out of EP08E scope. Neither blocks EP08E's stated flow (toggle operates on locked missed sessions; preview/edit/confirm/decline intact)."
+  scope_note: "Closed prior EP08E-ui-refine-retry as interrupted-empty before re-dispatch (story file untouched 15:14→dispatch, no commit, no live session; precedent b829d42). Unrelated dirty paths preserved uncommitted: .agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md (foreign typo fixes). Queue reconciled this step: EP08E row + Next substory now name the refiner pass."
   cycles: 0
   same_findings: unknown
 
@@ -350,7 +350,7 @@ gates:
   ui: true
   refinement: true
   child_unfinished: false
-  eligible_child_state: none
+  eligible_child_state: "Needs refinement (EP08E; UI/UX settled, technical refinement outstanding)"
   closeout: true
   integration: false
   all_descendants_implemented: false
@@ -367,6 +367,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "ui-refiner retry-2 dispatched on EP08E (foreground, this session) after closing retry-1 as interrupted-empty; step pause to be restored on its return."
+resume: "EP08E UI/UX decisions settled and committed (5dd603f). Next proposed step: refiner on EP08E (technical refinement; tech_needed edge — Eligible child Needs refinement, ui settled). Optionally first answer the story's non-blocking open question 1 (in-window lock contract extension) if the user wants it in EP08E scope."
 judgment_attempts: 0
 ```
