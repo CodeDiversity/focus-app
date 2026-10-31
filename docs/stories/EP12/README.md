@@ -83,22 +83,22 @@ Final combined implementation review returned **PASS** with no blocker or should
 version: 1
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP12
   descendants: [EP12A, EP12B, EP12C]
   entry: EP12C
   limits: enclosing parent review unit
-stage: paused
+stage: complete
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: 6b28649
   head: e91fde9
 active_dispatch:
-  name: EP12-p001-fix
-  role: implementer
-  status: returned
+  name: ""
+  role: ""
+  status: none
   pointer: docs/stories/EP12/README.md
   session: ""
   assignment: "Fix P-001: pointer-cancel focus restore in shared Dialog"
