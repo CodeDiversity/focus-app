@@ -27,7 +27,8 @@ import type {
 /** Convert a weekly window list into dated intervals for one civil date. */
 function weeklyToDated(windows: WeeklyWindow[], date: string): DatedInterval[] {
   // The weekday of a civil date is getUTCDay() on its UTC midnight — the
-  // calendar's own `dayOfWeekOf` (`calendar.service.ts:83-85`), Sunday = 0.
+  // same arithmetic as `dayOfWeekOf` in `common/lib/calendar-date.ts`,
+  // Sunday = 0. Kept inline so this module stays zone-free (D06-17).
   const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
   const result: DatedInterval[] = [];
   for (const window of windows) {

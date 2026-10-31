@@ -1,6 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { validateSync } from 'class-validator';
 
+import { addDays, dayOfWeekOf } from '../../common/lib/calendar-date';
+import {
+  resolveTimeZone,
+  toCivilDate,
+  wallClockToInstant,
+  zoneParts,
+} from '../../common/lib/civil-date';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListCalendarEventsQueryDto } from './dto/list-calendar-events-query.dto';
 
@@ -35,100 +42,14 @@ export interface ListResult {
   events: CalendarEvent[];
 }
 
-function isValidTimeZone(tz: string): boolean {
-  try {
-    new Intl.DateTimeFormat('en-US', { timeZone: tz });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function zoneDateParts(date: Date, timeZone: string): { date: string; time: string } {
-  const fmt = new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
-  const parts = fmt.formatToParts(date);
-  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
-  const y = get('year');
-  const m = get('month');
-  const d = get('day');
-  let h = get('hour');
-  if (h === '24') h = '00';
-  const min = get('minute');
-  return { date: `${y}-${m}-${d}`, time: `${h}:${min}` };
-}
-
-function formatToday(timeZone: string): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
-}
-
-function addDays(dateStr: string, n: number): string {
-  const d = new Date(`${dateStr}T00:00:00.000Z`);
-  d.setUTCDate(d.getUTCDate() + n);
-  return d.toISOString().slice(0, 10);
-}
-
-function dayOfWeekOf(dateStr: string): number {
-  return new Date(`${dateStr}T00:00:00.000Z`).getUTCDay();
-}
-
-// Range instants for study session overlap:
+// Range instants for study session overlap. Thin wrappers over the shared
+// wall-clock seam: midnight of `from`, and midnight of the day after `to`.
 function rangeStartInstant(from: string, timeZone: string): Date {
-  // midnight of `from` in zone -> instant
-  const [y, m, d] = from.split('-').map(Number);
-  // Use Intl to find offset
-  return wallToInstant(y, m, d, 0, 0, timeZone);
+  return wallClockToInstant(from, '00:00', timeZone);
 }
 
 function rangeEndInstant(to: string, timeZone: string): Date {
-  const [y, m, d] = to.split('-').map(Number);
-  // end of day = next day midnight
-  const next = new Date(Date.UTC(y, m - 1, d + 1, 0, 0, 0));
-  const ny = next.getUTCFullYear();
-  const nm = next.getUTCMonth() + 1;
-  const nd = next.getUTCDate();
-  return wallToInstant(ny, nm, nd, 0, 0, timeZone);
-}
-
-function wallToInstant(
-  year: number,
-  month: number,
-  day: number,
-  hour: number,
-  minute: number,
-  timeZone: string
-): Date {
-  // Iterative: guess UTC, compute offset, adjust.
-  let guess = Date.UTC(year, month - 1, day, hour, minute, 0);
-  for (let i = 0; i < 3; i++) {
-    const offsetMs = tzOffsetMs(new Date(guess), timeZone);
-    const corrected = Date.UTC(year, month - 1, day, hour, minute, 0) - offsetMs;
-    if (corrected === guess) break;
-    guess = corrected;
-  }
-  return new Date(guess);
-}
-
-function tzOffsetMs(date: Date, timeZone: string): number {
-  // Returns offset in ms: local = UTC + offset => offset = local - UTC.
-  // Use formatToParts with timeZoneName? Instead compute via difference.
-  const utcStr = date.toLocaleString('en-US', { timeZone: 'UTC' });
-  const tzStr = date.toLocaleString('en-US', { timeZone });
-  const utcDate = new Date(utcStr);
-  const tzDate = new Date(tzStr);
-  return tzDate.getTime() - utcDate.getTime();
+  return wallClockToInstant(addDays(to, 1), '00:00', timeZone);
 }
 
 @Injectable()
@@ -183,9 +104,9 @@ export class CalendarService {
       where: { id: userId },
       select: { timeZone: true },
     });
-    const timeZone = user?.timeZone && isValidTimeZone(user.timeZone) ? user.timeZone : 'UTC';
+    const timeZone = resolveTimeZone(user?.timeZone);
 
-    const today = formatToday(timeZone);
+    const today = toCivilDate(new Date(), timeZone);
 
     // Fetch data.
     const courses = await this.prisma.course.findMany({
@@ -273,7 +194,7 @@ export class CalendarService {
     // ASSIGNMENT / EXAM deadlines.
     for (const a of assignments) {
       if (!a.dueDate) continue;
-      const { date, time } = zoneDateParts(a.dueDate, timeZone);
+      const { date, time } = zoneParts(a.dueDate, timeZone);
       if (date < from || date > to) continue;
       const isExam = a.type === 'EXAM';
       events.push({
@@ -296,14 +217,14 @@ export class CalendarService {
 
     // STUDY_SESSION.
     for (const s of sessions) {
-      const start = zoneDateParts(s.startTime, timeZone);
+      const start = zoneParts(s.startTime, timeZone);
       // include if start date within range (already filtered by overlap, but ensure date in range)
       if (start.date < from || start.date > to) {
         // Skip out-of-range start (incl. open sessions whose start is outside the range).
         continue;
       }
       // Null endTime (open session) is emitted with endTime: null (D07-8).
-      const end = s.endTime ? zoneDateParts(s.endTime, timeZone) : null;
+      const end = s.endTime ? zoneParts(s.endTime, timeZone) : null;
       events.push({
         id: `session:${s.id}`,
         type: 'STUDY_SESSION',

@@ -7,6 +7,10 @@
  * (Postgres `DATE`). Internally a calendar date is represented as a
  * UTC-midnight `Date` — the only representation Prisma's `@db.Date`
  * columns accept — and is never exposed as an instant.
+ *
+ * `addDays` and `dayOfWeekOf` are `YYYY-MM-DD` string arithmetic for a
+ * date the caller has already validated. They use UTC midnight only as a
+ * date counter — they are not time-zone conversions.
  */
 
 const CALENDAR_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -35,4 +39,23 @@ export function parseCalendarDate(value: string): Date | null {
  */
 export function formatCalendarDate(date: Date): string {
   return date.toISOString().slice(0, 10);
+}
+
+/**
+ * Add `n` days to a valid `YYYY-MM-DD` string. `n` may be negative or zero.
+ * Month and year boundaries roll in UTC; the result is `YYYY-MM-DD`.
+ */
+export function addDays(dateStr: string, n: number): string {
+  const d = new Date(`${dateStr}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Weekday of a valid `YYYY-MM-DD` string: Sunday = `0` … Saturday = `6`.
+ * `getUTCDay()` on the date's UTC midnight — the same counter the
+ * zone-free scheduler uses inline.
+ */
+export function dayOfWeekOf(dateStr: string): number {
+  return new Date(`${dateStr}T00:00:00.000Z`).getUTCDay();
 }

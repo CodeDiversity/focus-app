@@ -3,7 +3,13 @@ import { validateSync } from 'class-validator';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { RESOURCE_NOT_FOUND, assertAffected } from '../../common/ownership/ownership';
-import { resolveTimeZone, toCivilDate } from '../../common/lib/civil-date';
+import { addDays, dayOfWeekOf } from '../../common/lib/calendar-date';
+import {
+  resolveTimeZone,
+  toCivilDate,
+  wallClockToInstant,
+  zoneParts,
+} from '../../common/lib/civil-date';
 import {
   PREFERENCES_BAG_MAX_BYTES,
   STUDY_PREFERENCE_KEYS,
@@ -236,12 +242,6 @@ export type SavedPlan = {
 // Local helpers.
 // ---------------------------------------------------------------------------
 
-function addDays(dateStr: string, n: number): string {
-  const d = new Date(`${dateStr}T00:00:00.000Z`);
-  d.setUTCDate(d.getUTCDate() + n);
-  return d.toISOString().slice(0, 10);
-}
-
 function hhmmToMinutes(value: string): number {
   const [h, m] = value.split(':').map(Number);
   return h * 60 + m;
@@ -251,57 +251,6 @@ function minutesToHHmm(min: number): string {
   const h = Math.floor(min / 60);
   const m = min % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-}
-
-function formatToday(timeZone: string): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: resolveTimeZone(timeZone),
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
-}
-
-function zoneParts(instant: Date, timeZone: string): { date: string; minutes: number } {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: resolveTimeZone(timeZone),
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).formatToParts(instant);
-  const get = (t: string): string => parts.find((p) => p.type === t)?.value ?? '00';
-  const date = `${get('year')}-${get('month')}-${get('day')}`;
-  let h = get('hour');
-  if (h === '24') h = '00';
-  return { date, minutes: Number(h) * 60 + Number(get('minute')) };
-}
-
-function tzOffsetMs(date: Date, timeZone: string): number {
-  const utcStr = date.toLocaleString('en-US', { timeZone: 'UTC' });
-  const tzStr = date.toLocaleString('en-US', { timeZone });
-  const utcDate = new Date(utcStr);
-  const tzDate = new Date(tzStr);
-  return tzDate.getTime() - utcDate.getTime();
-}
-
-function wallToInstant(dateStr: string, hhmm: string, timeZone: string): Date {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const [hh, mm] = hhmm.split(':').map(Number);
-  let guess = Date.UTC(y, m - 1, d, hh, mm, 0);
-  for (let i = 0; i < 3; i++) {
-    const offsetMs = tzOffsetMs(new Date(guess), timeZone);
-    const corrected = Date.UTC(y, m - 1, d, hh, mm, 0) - offsetMs;
-    if (corrected === guess) break;
-    guess = corrected;
-  }
-  return new Date(guess);
-}
-
-function dayOfWeekOf(dateStr: string): number {
-  return new Date(`${dateStr}T00:00:00.000Z`).getUTCDay();
 }
 
 @Injectable()
@@ -542,7 +491,7 @@ export class StudyPlansService {
     const timeZone = resolveTimeZone(user.timeZone);
     const preferences = readStudyPreferences(user.preferences);
 
-    const today = formatToday(timeZone);
+    const today = toCivilDate(new Date(), timeZone);
     const days: string[] = [];
     for (let i = 0; i < 7; i++) {
       days.push(addDays(today, i));
@@ -613,7 +562,11 @@ export class StudyPlansService {
       .map((s) => {
         const start = zoneParts(s.startTime, timeZone);
         const end = zoneParts(s.endTime, timeZone);
-        return { date: start.date, startMinute: start.minutes, endMinute: end.minutes };
+        return {
+          date: start.date,
+          startMinute: hhmmToMinutes(start.time),
+          endMinute: hhmmToMinutes(end.time),
+        };
       });
 
     const titleById = new Map(assignments.map((a) => [a.id, a.title]));
@@ -831,8 +784,8 @@ export class StudyPlansService {
           data: dto.sessions.map((s) => ({
             studyPlanId: planIdByDate.get(s.date)!,
             assignmentId: s.assignmentId,
-            startTime: wallToInstant(s.date, s.startTime, data.timeZone),
-            endTime: wallToInstant(s.date, s.endTime, data.timeZone),
+            startTime: wallClockToInstant(s.date, s.startTime, data.timeZone),
+            endTime: wallClockToInstant(s.date, s.endTime, data.timeZone),
             durationMinutes: hhmmToMinutes(s.endTime) - hhmmToMinutes(s.startTime),
             status: 'SCHEDULED',
           })),
@@ -890,7 +843,7 @@ export class StudyPlansService {
         effectiveTo = lastDate;
         effectiveFrom = addDays(lastDate, -6);
       } else {
-        const today = formatToday(timeZone);
+        const today = toCivilDate(new Date(), timeZone);
         effectiveFrom = today;
         effectiveTo = addDays(today, 6);
       }
@@ -922,8 +875,8 @@ export class StudyPlansService {
           id: sess.id,
           assignmentId: sess.assignmentId,
           assignmentTitle: sess.assignment?.title ?? '',
-          startTime: minutesToHHmm(start.minutes),
-          endTime: minutesToHHmm(end.minutes),
+          startTime: start.time,
+          endTime: end.time,
           durationMinutes: sess.durationMinutes,
           status: sess.status,
         };

@@ -73,9 +73,9 @@ export type RemainingWorkFlag = 'MISSING_ESTIMATE' | 'MISSING_DUE_DATE';
  *
  * - `dueDate` is the **profile zone's civil date** (`YYYY-MM-DD`), never an
  *   instant (D06-24): the service converts the stored `DateTime` once, with
- *   the calendar's `zoneDateParts` arithmetic, before calling the domain — so
- *   the domain stays zone-free and an assignment due `2026-11-01T00:30:00Z`
- *   is 31 October for a student in `America/New_York`.
+ *   `toCivilDate` / `zoneParts` (`common/lib/civil-date.ts`), before calling
+ *   the domain — so the domain stays zone-free and an assignment due
+ *   `2026-11-01T00:30:00Z` is 31 October for a student in `America/New_York`.
  * - `estimatedHours` is the stored estimate (`null` when the student entered
  *   none); the conversion to minutes is the domain's business.
  * - `confirmedMinutes` is **not** part of the facts: the confirmed time
