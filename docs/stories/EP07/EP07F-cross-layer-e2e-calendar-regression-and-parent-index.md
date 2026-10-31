@@ -6,7 +6,7 @@
 **Parent:** [EP07 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Integration
-**Status:** Ready
+**Status:** Implemented — awaiting parent review
 **Dependencies:** **EP07A, EP07B, EP07C, EP07D and EP07E** implemented. The EP09 self-contained E2E stack (Postgres + API + web on ports 3100/4100) must be runnable.
 **Jira key:** Pending creation
 **Refined:** 2026-10-30 (technical-refine; backend/integration; no `ui-refiner` pass needed)
