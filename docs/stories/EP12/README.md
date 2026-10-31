@@ -74,25 +74,25 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 version: 1
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP12
   descendants: [EP12A, EP12B, EP12C]
   entry: EP12C
   limits: enclosing parent review unit
-stage: paused
+stage: parent_review
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: 6b28649
   head: 46f7cae
 active_dispatch:
-  name: EP12-gate-judge
-  role: dod-auditor
-  status: returned
+  name: EP12-parent-review
+  role: reviewer
+  status: pending
   pointer: docs/stories/EP12/README.md
   session: ""
-  assignment: "EP12 DoD/workflow gate audit (read-only)"
+  assignment: "Combined EP12 parent review (review.md + walkthrough.md)"
 last_result:
   evidence: "DoD audit complete. Gates: breakdown true, plan pass (no standalone plan-review.md; planning recorded in breakdown), ui true, refinement true, child_unfinished false, integration true, all_descendants true, open_findings false. review absent (no review.md), walkthrough unknown. Judged_at_head reconciled to 46f7cae. EP12B checkpoint stale status noted."
   findings: "EP12B checkpoint.md still says 'In progress' despite completion; reconciled this step. plan-review.md absent for EP12 (planning via breakdown; recorded as pass)."
