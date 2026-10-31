@@ -74,29 +74,29 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 version: 1
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP12
   descendants: [EP12A, EP12B, EP12C]
   entry: EP12C
   limits: enclosing parent review unit
-stage: reconcile
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: 6b28649
-  head: 775b9a4
+  head: 46f7cae
 active_dispatch:
   name: EP12-gate-judge
   role: dod-auditor
-  status: pending
+  status: returned
   pointer: docs/stories/EP12/README.md
   session: ""
-  assignment: "Integration: prepare EP12 parent implementation index linking EP12A/B/C"
+  assignment: "EP12 DoD/workflow gate audit (read-only)"
 last_result:
-  evidence: "EP12 integration complete (775b9a4). Parent implementation index at artifacts/EP12/implementation.md. All three children implemented. Ready for combined parent review."
-  findings: ""
-  scope_note: "Step mode: one task per continuation. Integration complete; combined parent review next."
+  evidence: "DoD audit complete. Gates: breakdown true, plan pass (no standalone plan-review.md; planning recorded in breakdown), ui true, refinement true, child_unfinished false, integration true, all_descendants true, open_findings false. review absent (no review.md), walkthrough unknown. Judged_at_head reconciled to 46f7cae. EP12B checkpoint stale status noted."
+  findings: "EP12B checkpoint.md still says 'In progress' despite completion; reconciled this step. plan-review.md absent for EP12 (planning via breakdown; recorded as pass)."
+  scope_note: "Step mode: one task per continuation. Judge returned; combined parent review next."
   cycles: 0
   same_findings: unknown
 gates:
@@ -109,11 +109,11 @@ gates:
   closeout: false
   integration: true
   all_descendants_implemented: true
-  review: unknown
+  review: absent
   findings_owner: none
   open_findings: false
   walkthrough: unknown
-  judged_at_head: "775b9a4"
+  judged_at_head: "46f7cae"
   queue_hash: ""
 writer: none
 session_live: unknown
@@ -122,6 +122,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "Integration complete; next step is combined EP12 parent review (parent_reviewer)."
+resume: "Judge complete; next step is combined EP12 parent review (parent_reviewer)."
 judgment_attempts: 0
 ```

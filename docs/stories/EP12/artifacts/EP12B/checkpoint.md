@@ -1,7 +1,7 @@
 # EP12B Checkpoint
 
 **Story:** EP12B — Adopt shared Dialog primitive across hand-rolled modals
-**Status:** In progress
+**Status:** Implemented — awaiting parent review
 **Baseline:** 05c9e2d
 
 ## Progress
@@ -21,4 +21,4 @@
 
 ## Next action
 
-Implement primitive busy prop and pilot.
+None — implemented; awaiting combined EP12 parent review.
