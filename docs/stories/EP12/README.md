@@ -94,18 +94,18 @@ coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: 6b28649
-  head: dccc80d
+  head: e91fde9
 active_dispatch:
-  name: EP12-parent-review
-  role: reviewer
+  name: EP12-p001-fix
+  role: implementer
   status: returned
   pointer: docs/stories/EP12/README.md
   session: ""
-  assignment: "Combined EP12 parent review (review.md + walkthrough.md)"
+  assignment: "Fix P-001: pointer-cancel focus restore in shared Dialog"
 last_result:
-  evidence: "Combined EP12 parent review PASS (review.md + walkthrough.md saved & verified). Passing sync applied: queue rows Reviewed, status/next updated, correction log added. Docs commit dccc80d. 2 polish observations (P-001, P-002), no blockers."
-  findings: "P-001 polish: pointer-click Cancel focus restore in migrated dialogs (documented design). P-002 evidence: gates not re-executed by reviewer (no shell); implementer-recorded green runs cited."
-  scope_note: "Step mode: one task per continuation. Review returned; next continue reconciles completion."
+  evidence: "P-001 resolved in 6d6109a (+ e91fde9). Dialog click-capture sets closedViaOnCloseRef for non-commit clicks; commit buttons marked data-dialog-commit. Pointer-cancel restores focus; success-skip preserved. Added test. Full suite 1093 pass; lint/typecheck/build green."
+  findings: "P-002 remains an evidence-only observation (gates not re-executed by reviewer); implementer-recorded green runs cited."
+  scope_note: "Step mode: one task per continuation. P-001 fixed post-review; EP12 complete."
   cycles: 0
   same_findings: unknown
 gates:
@@ -122,7 +122,7 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: present
-  judged_at_head: "dccc80d"
+  judged_at_head: "e91fde9"
   queue_hash: ""
 writer: none
 session_live: unknown
@@ -131,6 +131,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "Judge complete; next step is combined EP12 parent review (parent_reviewer)."
+resume: "P-001 resolved; EP12 complete (review PASS + walkthrough verified)."
 judgment_attempts: 0
 ```
