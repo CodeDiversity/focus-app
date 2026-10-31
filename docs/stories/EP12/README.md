@@ -12,9 +12,9 @@
 
 **Artifact root:** `./artifacts/` (stable story ID) — one directory per child: `./artifacts/EP12A/`, `./artifacts/EP12B/`, `./artifacts/EP12C/`.
 
-**Active substory:** None.
+**Active substory:** EP12B
 
-**Next substory:** EP12B — hand to `implementer` (EP12A implemented; EP12C remains Ready; suggested order EP12A → EP12B → EP12C).
+**Next substory:** EP12B — implement (in progress).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -23,7 +23,7 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [EP12A](./EP12A-consolidate-timezone-date-conversion.md) | Implemented — awaiting parent review | EP04/EP06 shipped (date utilities exist). D12A-1 settled (user approval): forward + reverse converters in scope. | None — combined EP12 parent review after EP12B/EP12C | [checkpoint](./artifacts/EP12A/checkpoint.md), [implementation](./artifacts/EP12A/implementation.md) |
-| [EP12B](./EP12B-adopt-shared-dialog-primitive.md) | Ready (refined 2026-10-31) | EP10B shared `Dialog` primitive (reviewed). D12B-1/D12B-2 settled (user approval): `busy` prop approved; passive deltas accepted. | Implement | None yet |
+| [EP12B](./EP12B-adopt-shared-dialog-primitive.md) | In progress | EP10B shared `Dialog` primitive (reviewed). D12B-1/D12B-2 settled (user approval): `busy` prop approved; passive deltas accepted. | Implement | [checkpoint](./artifacts/EP12B/checkpoint.md) (to be created) |
 | [EP12C](./EP12C-unify-web-api-clients.md) | Ready (refined 2026-10-31) | EP04/EP05 pages exist. D12C-1 settled (user approval): entity owns fetch, RTK delegates. | Implement | None yet |
 
 Sequence: independent (backend EP12A can run in parallel in planning terms; implementation is sequential under one writer). Suggested order: EP12A → EP12B → EP12C.
@@ -67,3 +67,61 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 - EP12A: backend-only → no ui-refiner pass.
 - EP12B: refined 2026-10-31 — primitive adoption refactor only; no layout/copy changes beyond the approved EP10-alignment passive deltas (D12B-2: scroll-lock, close animation, `text-h3` title). No ui-refiner pass.
 - EP12C: frontend, no UI changes (transport only) → no ui-refiner pass.
+
+## Autopilot
+
+```yaml
+version: 1
+execution:
+  mode: step
+  awaiting_continue: false
+scope:
+  parent: EP12
+  descendants: [EP12A, EP12B, EP12C]
+  entry: EP12B
+  limits: enclosing parent review unit
+stage: reconcile
+coordinator:
+  workspace: /Users/michaelrobert/Desktop/focus-app
+  branch: main
+  baseline: 6b28649
+  head: 12f47d4
+active_dispatch:
+  name: EP12B
+  role: implementer
+  status: pending
+  pointer: docs/stories/EP12/EP12B-adopt-shared-dialog-primitive.md
+  session: ""
+  assignment: "Implement EP12B: adopt shared Dialog primitive across 11 hand-rolled modals (busy prop + 11 migrations)"
+last_result:
+  evidence: "EP12A implemented (6b28649); EP12B and EP12C Ready (refined 2026-10-31)."
+  findings: ""
+  scope_note: "Step mode: one task per continuation."
+  cycles: 0
+  same_findings: unknown
+gates:
+  breakdown: true
+  plan: pass
+  ui: true
+  refinement: true
+  child_unfinished: false
+  eligible_child_state: EP12B
+  closeout: false
+  integration: false
+  all_descendants_implemented: false
+  review: unknown
+  findings_owner: none
+  open_findings: false
+  walkthrough: unknown
+  judged_at_head: "12f47d4"
+  queue_hash: ""
+writer: none
+session_live: unknown
+blocker:
+  kind: none
+  owner: ""
+  question: ""
+  answer: ""
+resume: "EP12B implementer; checkpoint to be created at docs/stories/EP12/artifacts/EP12B/checkpoint.md"
+judgment_attempts: 0
+```
