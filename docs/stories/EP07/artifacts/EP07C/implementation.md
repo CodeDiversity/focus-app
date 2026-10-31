@@ -43,4 +43,4 @@ Frontend — start a focus session from an assignment: entry points, duration se
 
 ## Commit
 
-- (pending)
+- `65d82a7` — feat(web): EP07C start focus session from an assignment
