@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** None — all six children implemented. Next action: **combined EP08 parent review** (independent reviewer; artifacts go to `./artifacts/EP08/review.md` + `./artifacts/EP08/walkthrough.md`). EP08F implemented 2026-10-31 (records: `./artifacts/EP08F/checkpoint.md`, `./artifacts/EP08F/implementation.md`; parent index `./artifacts/EP08/implementation.md`).
+**Next substory:** None — all six children implemented; parent review pass 1 verdict **FAIL** (`./artifacts/EP08/review.md`). Correction round 1 implemented 2026-10-31: F-01 closed with new API-level specs (20 unit tests executed DB-free + 18 gated tests executed live on a throwaway database + the recovery-surface blame-free test); F-02's false root-cause claim corrected evidence-only; P-01/P-02/P-03 routed to `planner` with behavior pinned by tests; P-05 pinned per the review's closure option; the stray tsconfig tweak reverted (record: `./artifacts/EP08/fix-round-1.md`). Next action: **independent parent re-review of correction round 1**; outstanding owners: user ruling on F-02 (fix vs scoped waiver for the two pre-existing focus-restoration E2E specs) and the F-03 human screen-reader/reduced-motion pass. A side finding with repro steps (4 pre-existing red gated EP06 lock-toggle tests on a live database) is recorded in `fix-round-1.md` for triage.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (Backend/Frontend/Integration labels are scope, not concurrent roles).
 

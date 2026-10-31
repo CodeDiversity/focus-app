@@ -47,6 +47,24 @@ Frontend (closeout commit):
 - Skips are honest: the PATCH e2e + data-scoping describes sit in the repo's `DATABASE_URL`-gated suites and self-skip locally (no DATABASE_URL in this environment). Behavior is pinned locally by the unit spec (scoped where, `data` = `{ locked }` only, uniform 404, 400 field errors). They will execute in any environment with `DATABASE_URL`.
 - Post-commit full web run: one run of 1131 reported a single unnamed failure; the two full runs immediately after were 1131/1131, and three back-to-back targeted runs of the catch-up/catch-up-page/editor files were 32/32 each. The catch-up suites are stable; the single unreproducible full-suite failure is recorded as an unreproduced load flake (pre-existing suite timing sensitivity), flagged honestly for the parent review.
 
+> **P-04 statement (2026-10-31, correction round 1).** The review asked for the
+> flake's file/test name "if it recurs". It has not recurred: since this record,
+> full web runs were green (1131, then 1132 with the EP08 round-1 test added).
+> The unnamed test cannot be named retroactively — no surviving vitest output
+> from that single run exists (the environment's surviving logs are dev-server,
+> agents-kit and Playwright files; none contain the vitest failure line). The
+> event stands as an unreproduced flake with no further triage data; any future
+> recurrence must capture `vitest run` output at the time.
+>
+> **Related note (same date).** The L47 expectation above ("they will execute in
+> any environment with `DATABASE_URL`") was finally exercised in correction round
+> 1 against a throwaway migrated cluster. The EP08E lock-toggle describes in the
+> two gated suites then failed 4 pre-existing tests (`{locked:'yes'|1}` get
+> coerced by the global pipe's `enableImplicitConversion` and 200 instead of 400;
+> a seed cascade follows). Reproduction and disposition live in
+> `../EP08/fix-round-1.md` §"Side finding"; routed for triage, not fixed in that
+> round.
+
 ## TR-E08-08 manual accessibility pass (honest execution labels)
 - Keyboard operability — EXECUTED (automated): "is keyboard operable" test drives Tab through Use-this-plan/Not-now and Enter on editor move + lock toggle.
 - Focus on entry — EXECUTED (automated): heading receives programmatic focus (`document.activeElement` asserted); visible focus styling uses the shared `focus-visible` button/card conventions already shipped on EP06 surfaces — visual ring itself NOT eyeballed in a real browser.

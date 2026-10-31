@@ -91,6 +91,23 @@ specs. A repo-wide grep finds no focus-restore logic (`restoreFocus`/`triggerRef
 commits (`e0bc484`…`8e30bad`) are the plausible point where the behavior was lost.
 **Carry-forward: needs its own fix story or a parent-review decision.**
 
+> **Correction (2026-10-31, correction round 1 — evidence only, per the parent
+> review F-02).** The paragraph's root-cause claim above is factually wrong and
+> is corrected here per the review. Focus-restore logic **does** exist in the
+> current component tree: `apps/web/src/shared/ui/Dialog.tsx` implements it —
+> `restoreFocusRef` (L45), captured on open (`restoreFocusRef.current =
+> document.activeElement`, L101), Escape flags `closedViaOnCloseRef` before
+> `onClose()` (L63), and the close cleanup calls `restoreFocusRef.current?.focus()`
+> (L112–114). The original grep's pattern names simply missed the actual
+> identifier. Both failing assertions exercise this existing path; the plausible
+> cause (review inspection hypothesis, not executed) is that the captured element
+> is **detached by the time of restoration** — the parent re-renders/refetches on
+> close and replaces the trigger node, so `.focus()` on the stale reference is a
+> no-op and focus falls to `document.body`. The triage target is therefore the
+> existing `Dialog` restore path, **not** a re-add of code "lost in SP-109."
+> No code was changed by this correction; fixing the two specs (or a scoped,
+> provenance-recorded waiver) remains the outstanding user/planner decision.
+
 ## TR-E08-08 evidence (aggregated for the combined review)
 
 Executed durable automation (new, runs on every E2E run):

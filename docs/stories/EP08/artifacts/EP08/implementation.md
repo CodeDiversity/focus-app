@@ -56,10 +56,15 @@ data-scoping specs; recorded-time path proven E2E `:612`.
 
 1. **Pre-existing E2E focus-restoration failures** (tree at HEAD `9c0b222`, proven
    unrelated to EP08): `e2e/assignments-list.spec.ts:23` and
-   `e2e/calendar.spec.ts:100` — focus not returned to trigger after Escape; no
-   focus-restore logic exists in the current component tree (likely lost in the
-   SP-109 reorg). Deterministic in isolation. Needs its own fix story or review
-   ruling.
+   `e2e/calendar.spec.ts:100` — focus not returned to trigger after Escape.
+   ~~No focus-restore logic exists in the current component tree (likely lost in
+   the SP-109 reorg).~~ **Corrected 2026-10-31 (correction round 1, review F-02):**
+   focus-restore logic DOES exist — `apps/web/src/shared/ui/Dialog.tsx`
+   (`restoreFocusRef` L45, capture L101, restore L112–114); the plausible cause
+   is restoring a reference detached by a parent re-render, so the triage target
+   is the existing `Dialog` path, not code "lost in SP-109" (see the dated note
+   in the EP08F record). Deterministic in isolation. Needs its own fix story or
+   review ruling.
 2. **`study-plans-e2e.spec.ts` dailyCapMinutes** — carried in story text as
    reported-not-blocking; the api integration specs self-skip locally without
    `DATABASE_URL` and could not be reproduced in this workspace.
