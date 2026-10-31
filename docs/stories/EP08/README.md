@@ -329,18 +329,18 @@ coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: 32c3859
+  head: 86e29fe
 active_dispatch:
-  name: ""
-  role: ""
+  name: EP08E-ui-refine
+  role: ui-refiner
   status: none
-  pointer: ""
+  pointer: docs/stories/EP08/EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md
   session: ""
-  assignment: ""
+  assignment: "UI/UX refine EP08E (catch-up preview/edit/confirm/decline, feasibility warnings, locked toggle/affordance, states, a11y, responsive, non-blaming copy)"
 last_result:
-  evidence: "Implementer completed EP08D: added MissedSession/RecoverySummary types and getRecoverySummary() to entities/study-plan, added /catch-up route in ProtectedRoute, created CatchUpPage, RecoverySummary container, MissedSessionRow/MissedSessionsList, UnfinishedWorkList with locked badge (lucide-react Lock), loading/error/empty states, disabled entry button when empty navigating to /catch-up/preview, component tests (TR-E08-05). typecheck/lint/focused tests PASS. Checkpoint/implementation records saved; queue updated EP08D -> Implemented — awaiting parent review."
+  evidence: "UI-refiner dispatch initiated but interrupted before returning a result (session interrupted; no decisions recorded, no files changed, no commit). EP08D completed (Implemented — awaiting parent review); artifact paths saved. Queue updated: EP08D -> Implemented — awaiting parent review; EP08E -> Needs refinement (ui-refiner)."
   findings: ""
-  scope_note: "Step mode: one task completed (implementer on EP08D). No commit yet (coordinator owns). EP08E still needs ui-refiner pass."
+  scope_note: "Step mode interrupted: ui-refiner on EP08E did not return a result. Interrupt preserved; no writer launched for EP08E; no artificial status change. Next step requires /next-step to retry dispatch."
   cycles: 0
   same_findings: unknown
 
@@ -367,6 +367,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "EP08D implemented; awaiting parent review. Next actionable: EP08E needs ui-refiner pass."
+resume: "UI-refiner dispatch interrupted (no result, no decision recorded). EP08E remains Needs refinement; retry /next-step for fresh ui-refiner dispatch."
 judgment_attempts: 0
 ```
