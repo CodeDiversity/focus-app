@@ -326,25 +326,25 @@ scope:
   limits: enclosing parent review unit
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: paused
+stage: refine
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
   head: ac5223a
 active_dispatch:
-  name: EP08-gate-judge
-  role: dod-auditor
-  status: returned
-  pointer: docs/stories/EP08/README.md
+  name: EP08A-refine
+  role: refiner
+  status: pending
+  pointer: docs/stories/EP08/EP08A-missed-sessions-and-recovery-summary-read-api.md
   session: ""
-  assignment: "EP08 DoD/workflow gate audit (read-only)"
+  assignment: "Technical refine EP08A"
 last_result:
   evidence: "DoD audit complete. Gates: breakdown true, plan pass (PR-001..PR-012 closed, pass 4 Plan Ready), ui true (requirement tracked), refinement false (EP08A needs technical refiner), child_unfinished false (no active child), integration false, all_descendants false, open_findings false. judged_at_head reconciled to ac5223a. EP08D/E require ui-refiner after EP08C."
   findings: "Checkpoint staleness reconciled (head ac5223a, judged_at_head set). EP08A is first eligible child (Queued); needs technical refiner before implementation."
