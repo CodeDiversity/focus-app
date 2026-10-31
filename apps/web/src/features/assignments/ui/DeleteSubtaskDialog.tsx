@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/shared/ui/Button';
+import { Dialog } from '@/shared/ui/Dialog';
 import { apiErrorMessage, extractApiError, getErrorMessage } from '@/shared/lib/errors';
 import { deleteSubtask } from '@/entities/assignment/api/assignmentApi';
 import type { Subtask } from '@/shared/types/academic';
@@ -16,9 +17,6 @@ export interface DeleteSubtaskDialogProps {
   onPendingChange?: (pending: boolean) => void;
 }
 
-const FOCUSABLE_SELECTOR =
-  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
 /**
  * Delete-confirmation dialog for a subtask (SP-120J). Copies the
  * `DeleteAssignmentDialog` trap, initial Cancel focus, Escape, and in-flight
@@ -32,31 +30,16 @@ export function DeleteSubtaskDialog({
   onCancel,
   onPendingChange,
 }: DeleteSubtaskDialogProps) {
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const restoreFocusRef = useRef<HTMLElement | null>(null);
-  const skipRestoreRef = useRef(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    restoreFocusRef.current = document.activeElement as HTMLElement | null;
-    const first = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
-    (first ?? dialogRef.current)?.focus();
-    return () => {
-      const trigger = restoreFocusRef.current;
-      if (!skipRestoreRef.current && trigger?.isConnected) trigger.focus();
-    };
-  }, []);
 
   const handleConfirm = async () => {
     if (isDeleting) return;
     setIsDeleting(true);
     onPendingChange?.(true);
     setError(null);
-    dialogRef.current?.focus();
     try {
       await deleteSubtask(assignmentId, subtask.id);
-      skipRestoreRef.current = true;
       onDeleted();
     } catch (err: unknown) {
       const apiError = extractApiError(err);
@@ -70,89 +53,33 @@ export function DeleteSubtaskDialog({
     }
   };
 
-  useEffect(() => {
-    if (isDeleting) dialogRef.current?.focus();
-  }, [isDeleting]);
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      const dialog = dialogRef.current;
-      if (!dialog) return;
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        event.stopPropagation();
-        if (!isDeleting) onCancel();
-        return;
-      }
-      if (event.key !== 'Tab') return;
-      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-        (el) => !el.hasAttribute('disabled')
-      );
-      const active = document.activeElement;
-      if (focusable.length === 0) {
-        event.preventDefault();
-        dialog.focus();
-        return;
-      }
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const outside = !active || !dialog.contains(active) || active === dialog;
-      if (event.shiftKey && (active === first || outside)) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && (active === last || !active || !dialog.contains(active))) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener('keydown', onKeyDown, true);
-    return () => document.removeEventListener('keydown', onKeyDown, true);
-  }, [isDeleting, onCancel]);
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-text/50"
-        aria-hidden="true"
-        onClick={isDeleting ? undefined : onCancel}
-      />
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="delete-subtask-title"
-        tabIndex={-1}
-        className="card relative w-full max-w-md p-6"
-      >
-        <h2 id="delete-subtask-title" className="text-lg font-semibold text-text">
-          Delete {subtask.title}?
-        </h2>
-        <p className="mt-2 text-sm text-text-muted">This permanently deletes the subtask.</p>
+    <Dialog open onClose={onCancel} title={`Delete ${subtask.title}?`} busy={isDeleting}>
+      <p className="text-sm text-text-muted">This permanently deletes the subtask.</p>
 
-        {error && (
-          <p
-            role="alert"
-            className="mt-4 rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
-          >
-            {error}
-          </p>
-        )}
+      {error && (
+        <p
+          role="alert"
+          className="mt-4 rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
+        >
+          {error}
+        </p>
+      )}
 
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isDeleting}>
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="danger"
-            aria-label={`Delete ${subtask.title}`}
-            isLoading={isDeleting}
-            onClick={() => void handleConfirm()}
-          >
-            Delete
-          </Button>
-        </div>
+      <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isDeleting}>
+          Cancel
+        </Button>
+        <Button
+          type="button"
+          variant="danger"
+          aria-label={`Delete ${subtask.title}`}
+          isLoading={isDeleting}
+          onClick={() => void handleConfirm()}
+        >
+          Delete
+        </Button>
       </div>
-    </div>
+    </Dialog>
   );
 }
