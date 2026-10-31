@@ -45,4 +45,4 @@ Frontend — focus-mode interface and timer controls: `/focus` protected route, 
 
 ## Commit
 
-- (hash recorded after commit)
+- `54f61e94f005d5c3b0e9d23851ac4b33d982c202` — feat(web): EP07D focus-mode interface and timer controls
