@@ -318,38 +318,38 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: implement
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: e8ec636
+  head: 8a9c543
 active_dispatch:
-  name: none
-  role: none
-  status: idle
-  pointer: ""
+  name: EP08C-implement
+  role: implementer
+  status: returned
+  pointer: docs/stories/EP08/EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md
   session: ""
-  assignment: ""
+  assignment: "Implement EP08C: catch-up plan preview/confirm/feasibility API"
 last_result:
-  evidence: "EP08C implemented (2026-10-31): catch-up preview/confirm API + transactional persistence; typecheck/lint/tests/build green. Artifacts: docs/stories/EP08/artifacts/EP08C/{checkpoint,implementation}.md. Status: Implemented — awaiting parent review."
+  evidence: "EP08C implemented (8a9c543): catch-up preview/confirm API + transactional persistence; typecheck/lint/tests/build green. Artifacts: docs/stories/EP08/artifacts/EP08C/{checkpoint,implementation}.md. Status: Implemented — awaiting parent review."
   findings: ""
-  scope_note: "Step mode: one task per continuation. EP08C complete; next eligible child EP08D requires ui-refiner pass before implementation."
+  scope_note: "Step mode: one task per continuation. EP08C complete; EP08D (Needs refinement) requires ui-refiner pass before implementation."
   cycles: 0
   same_findings: unknown
 gates:
   breakdown: true
   plan: pass
   ui: true
-  refinement: true
+  refinement: false
   child_unfinished: false
-  eligible_child_state: Ready
+  eligible_child_state: "Needs refinement"
   closeout: true
   integration: false
   all_descendants_implemented: false
@@ -357,7 +357,7 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: not_started
-  judged_at_head: "eff579d"
+  judged_at_head: "8a9c543"
   queue_hash: ""
 writer: none
 session_live: unknown
@@ -366,6 +366,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "EP08C complete; next step is ui-refiner on EP08D (Needs refinement)."
+resume: "EP08C complete; next step is ui-refiner on EP08D."
 judgment_attempts: 0
 ```
