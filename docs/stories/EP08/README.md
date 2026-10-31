@@ -316,34 +316,37 @@ Child implementation completion unblocks the dependent child; only the passing c
 
 ```yaml
 version: 1
+execution:
+  mode: step
+  awaiting_continue: false
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: planning
+stage: reconcile
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: ""
+  head: ac5223a
 active_dispatch:
-  name: ep08-planner-1
-  role: planner
-  status: returned
+  name: EP08-gate-judge
+  role: dod-auditor
+  status: pending
   pointer: docs/stories/EP08/README.md
   session: ""
-  assignment: plan
+  assignment: "EP08 DoD/workflow gate audit (read-only)"
 last_result:
-  evidence: "Breakdown created: EP08A…EP08F (docs/stories/EP08/). No implementation, no Jira sync (children stay `Pending creation`)."
-  findings: "Verdict Draft: EP08A/EP08B/EP08C/EP08F ready (pending upstream deps); EP08D/EP08E await ui-refiner pass (D08-7). Four provisional decisions (D08-4…D08-6, V-08-1…4)."
-  scope_note: "Planning only — no implementation, no Jira sync. EP06 and EP07 complete and parent-reviewed; EP08 reuses the EP06 engine."
+  evidence: "EP08 breakdown complete; plan-review pass 4 (Plan Ready). No implementation yet. EP06/EP07 complete and parent-reviewed."
+  findings: ""
+  scope_note: "Step mode: reconciling EP08 gates; judge first."
   cycles: 0
   same_findings: unknown
 gates:
   breakdown: true
-  plan: draft
-  ui: false
+  plan: pass
+  ui: true
   refinement: false
   child_unfinished: true
   eligible_child_state: Queued
@@ -355,7 +358,7 @@ gates:
   open_findings: false
   walkthrough: not_started
   judged_at_head: ""
-  queue_hash: "ep08-queue-draft-2026-10-30"
+  queue_hash: ""
 writer: none
 session_live: unknown
 blocker:
@@ -363,6 +366,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: ""
+resume: "Judge reconcile; then route per graph."
 judgment_attempts: 0
 ```
