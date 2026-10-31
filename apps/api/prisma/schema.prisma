@@ -350,6 +350,9 @@ model PlannedSession {
   endTime     DateTime
   durationMinutes Int
   status      PlannedSessionStatus @default(SCHEDULED)
+  // EP08A (PR-001): manually locked sessions are never moved/resized/deleted
+  // by replanning and are treated as busy. Explicit student toggle (D08-4).
+  locked      Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

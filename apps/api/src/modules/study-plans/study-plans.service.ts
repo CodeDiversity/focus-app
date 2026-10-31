@@ -95,6 +95,32 @@ export type RemainingWorkResponse = {
   unattributedConfirmedMinutes: number;
 };
 
+// ---------------------------------------------------------------------------
+// EP08A — recovery summary (missed sessions + unfinished work + confirmed
+// minutes total).
+// ---------------------------------------------------------------------------
+
+/** One missed planned session (derived, never stored). */
+export type MissedSession = {
+  id: string;
+  assignmentId: string;
+  assignmentTitle: string;
+  date: string; // profile zone civil date YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  durationMinutes: number;
+  locked: boolean;
+};
+
+/** The body of `GET /study-plans/recovery-summary`. */
+export type RecoverySummary = {
+  missedSessions: MissedSession[];
+  missedCount: number;
+  unfinishedWork: RemainingWorkItem[];
+  confirmedMinutes: number;
+  message: string;
+};
+
 /**
  * The response projection (the `availability` module's `toSlotResponse`
  * precedent): exactly the four contract keys, in the contract's order.
@@ -473,6 +499,78 @@ export class StudyPlansService {
     return {
       items: ordered.map(toRemainingWorkItem),
       unattributedConfirmedMinutes,
+    };
+  }
+
+  /**
+   * GET /study-plans/recovery-summary — the student's recovery summary
+   * (EP08A): the missed planned sessions, the unfinished work (reusing
+   * EP06's remaining-work classification and ordering) and the total
+   * confirmed study time, plus a neutral, non-blaming message.
+   *
+   * Read-only: no row is written. Ownership-scoped: every query carries the
+   * authenticated `userId`; a missing principal is the uniform 404.
+   *
+   * 200 → `RecoverySummary`; 404 → the uniform `Resource not found`; 401 →
+   * unauthenticated (global guard).
+   */
+  async getRecoverySummary(userId: string): Promise<RecoverySummary> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { timeZone: true },
+    });
+    if (!user) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+    const timeZone = resolveTimeZone(user.timeZone);
+
+    // Civil "today" rendered as a UTC-midnight Date (EP06 convention, D06-24).
+    // Do NOT convert a profile-zone midnight to an instant.
+    const todayCivil = toCivilDate(new Date(), timeZone);
+    const bound = new Date(`${todayCivil}T00:00:00.000Z`);
+
+    const missedRows = await this.prisma.plannedSession.findMany({
+      where: {
+        studyPlan: { userId, date: { lt: bound } },
+        status: 'SCHEDULED',
+        assignment: { status: { in: ['PENDING', 'IN_PROGRESS'] } },
+      },
+      include: {
+        studyPlan: { select: { date: true } },
+        assignment: { select: { id: true, title: true } },
+      },
+      orderBy: [{ studyPlan: { date: 'asc' } }, { startTime: 'asc' }],
+    });
+
+    const missedSessions: MissedSession[] = missedRows.map((row) => {
+      const start = zoneParts(row.startTime, timeZone);
+      const end = zoneParts(row.endTime, timeZone);
+      return {
+        id: row.id,
+        assignmentId: row.assignmentId,
+        assignmentTitle: row.assignment?.title ?? '',
+        date: row.studyPlan.date.toISOString().slice(0, 10),
+        startTime: start.time,
+        endTime: end.time,
+        durationMinutes: row.durationMinutes,
+        locked: row.locked,
+      };
+    });
+
+    // Reuse EP06's remaining-work classification + ordering for the
+    // unfinished-work list, and its confirmed-minutes total from the session
+    // log. Per-assignment confirmedMinutes stays State A (always 0) until the
+    // cross-epic State-B upgrade lands (V-08-5); EP08A does not re-implement
+    // the aggregation.
+    const remaining = await this.getRemainingWork(userId);
+
+    return {
+      missedSessions,
+      missedCount: missedSessions.length,
+      unfinishedWork: remaining.items,
+      confirmedMinutes: remaining.unattributedConfirmedMinutes,
+      message:
+        "Here's where your plan stands. You can create a catch-up plan whenever you're ready.",
     };
   }
 

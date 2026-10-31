@@ -4,7 +4,7 @@
 **Parent epic:** [EP08: Catch-Up & Recovery](../../epics/EP08-catch-up-and-recovery.md) (Jira STUDY-17)
 **Milestone:** M4
 **Layer:** Backend
-**Status:** Queued
+**Status:** Implemented — awaiting parent review
 **Dependencies:** EP06 (complete, parent review passed 2026-10-30) and EP07 (complete, parent review passed 2026-10-30). No UI decisions (D08-7). No `ui-refiner` pass required.
 **Jira key:** Pending creation
 

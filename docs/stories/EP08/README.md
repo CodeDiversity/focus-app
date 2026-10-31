@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** [EP08A](./EP08A-missed-sessions-and-recovery-summary-read-api.md) — implement (backend read-side spine; refined 2026-10-31).
+**Next substory:** [EP08B](./EP08B-deterministic-workload-rescheduling.md) — implement (pure domain rescheduler; EP08A implemented).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -22,7 +22,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP08A](./EP08A-missed-sessions-and-recovery-summary-read-api.md) | Ready (refined 2026-10-31) | EP06 + EP07 complete/reviewed. D08-1…D08-8 recorded below. No UI decisions (D08-7). | Implement | — |
+| [EP08A](./EP08A-missed-sessions-and-recovery-summary-read-api.md) | Implemented — awaiting parent review | EP06 + EP07 complete/reviewed. D08-1…D08-8 recorded below. No UI decisions (D08-7). | Combined EP08 parent review after all children | `./artifacts/EP08A/checkpoint.md`, `./artifacts/EP08A/implementation.md` |
 | [EP08B](./EP08B-deterministic-workload-rescheduling.md) | Queued | EP06 engine (`domain/study-planning/scheduler.ts`, `intervals.ts`, `ordering.ts`) and EP08A's recovery summary (the missed/unfinished inputs). | Implement after EP08A (pure domain module; independently testable). | — |
 | [EP08C](./EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md) | Queued | EP08A + EP08B implemented. EP06 save/conflict primitives reused. | Implement after EP08B (backend API + transactional persistence). | — |
 | [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) | Needs refinement | EP08A implemented (the read API). **`ui-refiner` pass required** (D08-7) — layout, copy/tone (non-blaming), states, a11y, responsive. | `ui-refiner` on EP08D before implementation. | — |
@@ -333,14 +333,14 @@ coordinator:
 active_dispatch:
   name: EP08A-implement
   role: implementer
-  status: pending
+  status: completed
   pointer: docs/stories/EP08/EP08A-missed-sessions-and-recovery-summary-read-api.md
   session: ""
   assignment: "Implement EP08A: missed-session identification + recovery summary read API"
 last_result:
-  evidence: "EP08A refined (2026-10-31): Status Ready. Backend read-side, no UI, no ui-refiner. Dependencies EP06+EP07 met. No material open questions. Production files and verification recorded in story sizing block."
+  evidence: "EP08A implemented (2026-10-31): additive locked migration + GET /study-plans/recovery-summary + tests/typecheck/lint/build green. Artifacts: docs/stories/EP08/artifacts/EP08A/{checkpoint,implementation}.md. Status: Implemented — awaiting parent review."
   findings: ""
-  scope_note: "Step mode: one task per continuation. Refiner returned; EP08A ready to implement."
+  scope_note: "Step mode: one task per continuation. EP08A complete; EP08B is next per queue."
   cycles: 0
   same_findings: unknown
 gates:
@@ -366,6 +366,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "Refiner complete; next step is implementer on EP08A."
+resume: "EP08A implemented; next step is implementer on EP08B (Queued) per queue."
 judgment_attempts: 0
 ```

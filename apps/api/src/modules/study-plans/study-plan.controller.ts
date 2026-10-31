@@ -40,6 +40,18 @@ export class StudyPlanController {
   }
 
   /**
+   * GET /study-plans/recovery-summary — the student's recovery summary
+   * (EP08A): missed planned sessions, unfinished work (EP06 classification
+   * and ordering) and the total confirmed study time, plus a neutral message.
+   * 200 → `RecoverySummary`; 404 → the uniform `Resource not found`; 401 →
+   * unauthenticated (global guard).
+   */
+  @Get('recovery-summary')
+  getRecoverySummary(@CurrentUser() user: AuthenticatedUser) {
+    return this.studyPlansService.getRecoverySummary(user.id);
+  }
+
+  /**
    * POST /study-plans/preview — run the engine over the student's data and
    * return the proposal. Writes nothing.
    */
