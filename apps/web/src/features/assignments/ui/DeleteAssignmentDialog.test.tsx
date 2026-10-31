@@ -223,6 +223,23 @@ describe('DeleteAssignmentDialog (AC 6, AC 7)', () => {
     trigger.remove();
   });
 
+  it('returns focus to the trigger element on pointer cancel', () => {
+    const trigger = document.createElement('button');
+    trigger.textContent = 'Delete trigger';
+    document.body.appendChild(trigger);
+    trigger.focus();
+
+    const view = renderDialog();
+    expect(cancelButton()).toHaveFocus();
+
+    fireEvent.click(cancelButton());
+    expect(view.onCancel).toHaveBeenCalledTimes(1);
+
+    view.unmount();
+    expect(trigger).toHaveFocus();
+    trigger.remove();
+  });
+
   it('does not restore focus to the trigger after a successful delete', async () => {
     const trigger = document.createElement('button');
     trigger.textContent = 'Delete trigger';

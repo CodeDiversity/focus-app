@@ -75,6 +75,7 @@ export function DeleteSubtaskDialog({
           variant="danger"
           aria-label={`Delete ${subtask.title}`}
           isLoading={isDeleting}
+          data-dialog-commit
           onClick={() => void handleConfirm()}
         >
           Delete

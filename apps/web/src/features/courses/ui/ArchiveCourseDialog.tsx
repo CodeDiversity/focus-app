@@ -78,6 +78,7 @@ export function ArchiveCourseDialog({ course, onDone, onCancel }: ArchiveCourseD
           variant="secondary"
           aria-label={isArchiving ? `Archive ${course.name}` : `Restore ${course.name}`}
           isLoading={isWorking}
+          data-dialog-commit
           onClick={() => void handleConfirm()}
         >
           {isArchiving ? 'Archive' : 'Restore'}

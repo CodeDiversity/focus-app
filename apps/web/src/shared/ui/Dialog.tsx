@@ -151,6 +151,11 @@ export function Dialog({
       <div
         ref={dialogRef}
         role="dialog"
+        onClickCapture={(e) => {
+          const target = e.target as HTMLElement | null;
+          if (target && target.closest('[data-dialog-commit]')) return;
+          closedViaOnCloseRef.current = true;
+        }}
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={description ? descId : undefined}

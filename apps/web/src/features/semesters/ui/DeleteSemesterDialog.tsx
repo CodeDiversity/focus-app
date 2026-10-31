@@ -66,6 +66,7 @@ export function DeleteSemesterDialog({ semester, onDeleted, onCancel }: DeleteSe
           variant="danger"
           aria-label={`Delete ${semester.name}`}
           isLoading={isDeleting}
+          data-dialog-commit
           onClick={() => void handleConfirm()}
         >
           Delete

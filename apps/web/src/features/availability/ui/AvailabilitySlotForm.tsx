@@ -351,6 +351,7 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
             type="submit"
             variant="primary"
             isLoading={isSubmitting}
+            data-dialog-commit
             aria-label={slot ? 'Save changes' : 'Create time slot'}
           >
             {slot ? 'Save changes' : 'Create time slot'}

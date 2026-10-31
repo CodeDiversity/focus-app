@@ -246,6 +246,7 @@ export function MeetingForm({ courseId, meeting, onSuccess, onClose }: MeetingFo
             type="submit"
             variant="primary"
             isLoading={isSubmitting}
+            data-dialog-commit
             aria-label={meeting ? 'Save changes' : 'Create meeting'}
           >
             {meeting ? 'Save changes' : 'Create meeting'}

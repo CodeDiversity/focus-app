@@ -147,6 +147,7 @@ export function StartFocusSessionDialog({
           type="button"
           variant="primary"
           isLoading={isStarting}
+          data-dialog-commit
           disabled={isStarting || (!conflict && !isValid)}
           onClick={handleConfirm}
         >

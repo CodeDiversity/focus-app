@@ -227,6 +227,7 @@ export function FinishSessionDialog({
           type="button"
           variant="primary"
           isLoading={isFinishing}
+          data-dialog-commit
           disabled={isFinishing || !isValid}
           aria-busy={isFinishing || undefined}
           onClick={handleConfirm}

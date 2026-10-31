@@ -393,6 +393,7 @@ export function AssignmentForm({
             type="submit"
             variant="primary"
             isLoading={isSubmitting}
+            data-dialog-commit
             className="max-sm:min-h-[44px]"
             aria-label={isEdit ? 'Save changes' : 'Create assignment'}
           >

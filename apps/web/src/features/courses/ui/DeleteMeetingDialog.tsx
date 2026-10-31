@@ -78,6 +78,7 @@ export function DeleteMeetingDialog({
           variant="danger"
           aria-label={`Delete ${label}`}
           isLoading={isDeleting}
+          data-dialog-commit
           onClick={() => void handleConfirm()}
         >
           Delete

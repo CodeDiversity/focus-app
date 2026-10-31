@@ -73,6 +73,7 @@ export function DeleteAvailabilitySlotDialog({
           variant="danger"
           aria-label={`Delete ${formatSlotName(slot)}`}
           isLoading={isDeleting}
+          data-dialog-commit
           onClick={() => void handleConfirm()}
         >
           Delete

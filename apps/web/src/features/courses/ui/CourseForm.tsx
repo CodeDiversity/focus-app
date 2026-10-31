@@ -470,6 +470,7 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
             type="submit"
             variant="primary"
             isLoading={isSubmitting}
+            data-dialog-commit
             aria-label={mode === 'create' ? 'Create course' : 'Save changes'}
           >
             {mode === 'create' ? 'Create course' : 'Save changes'}

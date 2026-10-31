@@ -75,6 +75,7 @@ export function DeleteAssignmentDialog({
           variant="danger"
           aria-label={`Delete ${assignment.title}`}
           isLoading={isDeleting}
+          data-dialog-commit
           onClick={() => void handleConfirm()}
         >
           Delete
