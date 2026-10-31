@@ -87,9 +87,9 @@ coordinator:
   baseline: 6b28649
   head: 775b9a4
 active_dispatch:
-  name: EP12
-  role: implementer
-  status: returned
+  name: EP12-gate-judge
+  role: dod-auditor
+  status: pending
   pointer: docs/stories/EP12/README.md
   session: ""
   assignment: "Integration: prepare EP12 parent implementation index linking EP12A/B/C"
