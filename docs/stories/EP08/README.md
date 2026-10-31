@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) — implement (ready; UI decisions settled by ui-refiner, technical refinement complete by refiner).
+**Next substory:** [EP08E](./EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md) — `ui-refiner` on EP08E before implementation.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -25,7 +25,7 @@
 | [EP08A](./EP08A-missed-sessions-and-recovery-summary-read-api.md) | Implemented — awaiting parent review | EP06 + EP07 complete/reviewed. D08-1…D08-8 recorded below. No UI decisions (D08-7). | Combined EP08 parent review after all children | `./artifacts/EP08A/checkpoint.md`, `./artifacts/EP08A/implementation.md` |
 | [EP08B](./EP08B-deterministic-workload-rescheduling.md) | Implemented — awaiting parent review | EP06 engine (`domain/study-planning/scheduler.ts`, `intervals.ts`, `ordering.ts`) and EP08A's recovery summary (the missed/unfinished inputs). | Combined EP08 parent review after all children | `./artifacts/EP08B/checkpoint.md`, `./artifacts/EP08B/implementation.md` |
 | [EP08C](./EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md) | Implemented — awaiting parent review | EP08A + EP08B implemented. EP06 save/conflict primitives reused. | Combined EP08 parent review after all children | `./artifacts/EP08C/checkpoint.md`, `./artifacts/EP08C/implementation.md` |
-| [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) | Ready | EP08A implemented (the read API). UI decisions settled (ui-refiner); technical refinement complete (refiner). | Implement EP08D | — |
+| [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) | Implemented — awaiting parent review | EP08A implemented (the read API). UI decisions settled (ui-refiner); technical refinement complete (refiner). | Combined EP08 parent review after all children | `./artifacts/EP08D/checkpoint.md`, `./artifacts/EP08D/implementation.md` |
 | [EP08E](./EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md) | Needs refinement | EP08C implemented (the preview/confirm API). **`ui-refiner` pass required** (D08-7). | `ui-refiner` on EP08E before implementation. | — |
 | [EP08F](./EP08F-cross-layer-e2e-and-parent-index.md) | Queued | EP08A–EP08E implemented. | Implement after EP08E (new Playwright spec + parent index). | — |
 
@@ -329,27 +329,28 @@ coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: 2a481c7
+  head: 32c3859
 active_dispatch:
-  name: EP08D-implement
-  role: implementer
+  name: ""
+  role: ""
   status: none
-  pointer: docs/stories/EP08/EP08D-recovery-summary-and-replanning-entry-point-ui.md
+  pointer: ""
   session: ""
-  assignment: "Implement EP08D (recovery summary UI + entry point per refined story)"
+  assignment: ""
 last_result:
-  evidence: "Refiner completed technical refinement of EP08D: set Status Ready, mirrored EP08A recovery-summary contract exactly (MissedSession.locked, RecoverySummary shape), specified entity client/types additions, route wiring to /catch-up (ProtectedRoute), feature/page scaffolding (RecoverySummary, lists/rows), tests per TR-E08-05, preserved ui-refiner decisions. Committed in 2a481c7."
+  evidence: "Implementer completed EP08D: added MissedSession/RecoverySummary types and getRecoverySummary() to entities/study-plan, added /catch-up route in ProtectedRoute, created CatchUpPage, RecoverySummary container, MissedSessionRow/MissedSessionsList, UnfinishedWorkList with locked badge (lucide-react Lock), loading/error/empty states, disabled entry button when empty navigating to /catch-up/preview, component tests (TR-E08-05). typecheck/lint/focused tests PASS. Checkpoint/implementation records saved; queue updated EP08D -> Implemented — awaiting parent review."
   findings: ""
-  scope_note: "Step mode: one task completed (technical refiner on EP08D). No implementation started. Queue updated: EP08D Ready, next is implementer on EP08D."
+  scope_note: "Step mode: one task completed (implementer on EP08D). No commit yet (coordinator owns). EP08E still needs ui-refiner pass."
   cycles: 0
   same_findings: unknown
+
 gates:
   breakdown: true
   plan: pass
   ui: true
   refinement: true
   child_unfinished: false
-  eligible_child_state: Ready
+  eligible_child_state: none
   closeout: true
   integration: false
   all_descendants_implemented: false
@@ -357,7 +358,7 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: not_started
-  judged_at_head: "8a9c543 (reconciled at 2a481c7)"
+  judged_at_head: "2a481c7"
   queue_hash: ""
 writer: none
 session_live: unknown
@@ -366,6 +367,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "EP08D ready (ui-refined + technically refined). Next action: implementer on EP08D."
+resume: "EP08D implemented; awaiting parent review. Next actionable: EP08E needs ui-refiner pass."
 judgment_attempts: 0
 ```
