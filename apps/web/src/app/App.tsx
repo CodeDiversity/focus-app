@@ -7,6 +7,7 @@ import { DashboardPage } from '@/pages/dashboard/ui/DashboardPage';
 import { SemestersPage } from '@/pages/semesters/ui/SemestersPage';
 import { CoursesPage } from '@/pages/courses/ui/CoursesPage';
 import { AssignmentsPage } from '@/pages/assignments/ui/AssignmentsPage';
+import { FocusPage } from '@/pages/focus/ui/FocusPage';
 import { CalendarPage } from '@/pages/calendar/ui/CalendarPage';
 import { AvailabilityPage } from '@/pages/availability/ui/AvailabilityPage';
 import { PlanPage } from '@/pages/plan/ui/PlanPage';
@@ -48,6 +49,8 @@ function App() {
           <Route path="/courses/:id" element={<CourseDetailPage />} />
           {/* SP-122B: assignments list page (search, filters, sort) */}
           <Route path="/assignments" element={<AssignmentsPage />} />
+          {/* EP07D: focus-mode interface and timer controls */}
+          <Route path="/focus" element={<FocusPage />} />
           {/* SP-127B: weekly academic calendar */}
           <Route path="/calendar" element={<CalendarPage />} />
           {/* SP-128B: study availability settings (D404-12: its own
