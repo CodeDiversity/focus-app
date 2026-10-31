@@ -318,25 +318,25 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: paused
+stage: fix
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: 6ef788e
+  head: cef9fb5
 active_dispatch:
-  name: EP08-parent-review
-  role: reviewer
-  status: completed
+  name: EP08-fix-round-1
+  role: implementer
+  status: pending
   pointer: docs/stories/EP08/artifacts/EP08/review.md
-  session: ses_e6bf02963ffeDuDWa2YqdsX8lv
-  assignment: "Combined EP08 parent review — all six children (EP08A–EP08F) against baseline 53de89c..HEAD 6ef788e. Produce artifacts/EP08/review.md AND the final user-facing walkthrough.md (code explanation, correctness evidence, manual test steps/expected results with honest execution labels). On a passing verdict perform the permitted passing-review docs sync; return an explicit Git handoff (do not commit). On a non-passing verdict save the report only and return the deferred-edits Git handoff. Do not fix code; read-only review. Return at the review boundary — no fixes, no closeout."
+  session: ""
+  assignment: "Correction round 1 on the combined EP08 parent review (artifacts/EP08/review.md, FAIL). In scope: F-01 (add the missing TR-E08-01/02/04 API specs for EP08A recovery-summary/missed-session classification and EP08C catch-up preview/confirm, plus the recovery-surface non-blaming copy assertion — the F-01 sub-gap) — the mandatory item; F-02 evidence correction only (repair EP08F's false focus-restore root-cause claim and name the two failing specs; do NOT touch Dialog.tsx or grant a waiver — the user ruling is outstanding); P-04 (name the EP08E flake); P-02/P-03/P-05 assessed against the shared contract with implement-if-contract-clean / else record as planner-owned; P-01 (README contract table) is planner-owned docs — record, do not edit. Also resolve the preserved dirty apps/api/tsconfig.json (re-run typecheck on the clean committed tree, then commit or discard with rationale). Run the api/web suites, typecheck and lint so the re-review has fresh executed evidence. OUT of scope: F-02 fix/waiver, F-03 human a11y evidence, any finding-closure wording (reviewer-owned), the README Autopilot section, and the two foreign dirty .agents paths. Single sequential writer; scoped commits. Return at the correction-round boundary — no re-review, no closeout."
 last_result:
   evidence: "EP08-parent-review COMPLETED (foreground, session ses_e6bf02963ffeDuDWa2YqdsX8lv) — verdict FAIL / Changes Required: 0 blockers, 3 should-fix, 5 polish. Report saved: artifacts/EP08/review.md (39.8KB; coordinator verified on disk). No walkthrough.md and no passing docs sync (correctly gated on a pass). Findings: F-01 (should-fix) TR-E08-01/02/04 API specs do not exist — zero apps/api specs reference recovery-summary/catch-up preview/confirm; EP08A record defers data-scoping proof to the review and EP08C added none; DoD 8 FAIL — coordinator independently verified the absence and the deferral text. F-02 (should-fix) EP08F AC 8 unmet — 40 passed / 2 failed pre-existing focus-restoration specs (assignments-list.spec.ts:23, calendar.spec.ts:100); control runs prove EP08 causality absent but AC 8 exempts only dailyCapMinutes and no user waiver exists; reviewer also corrected EP08F's root-cause claim: Dialog.tsx DOES implement focus restore (restoreFocusRef L45/101/113) — coordinator verified. F-03 (should-fix) TR-E08-08 screen-reader + reduced-motion never executed → CANNOT VERIFY (keyboard/focus-visible/320px durably covered). Polish: P-01 contract table omits PATCH lock endpoint; P-02 locked/completed collisions reported as OVERLAPS_CONFIRMED_SESSION; P-03 getPlan omits locked; P-04 EP08E flake never named; P-05 catchUpConfirm near-duplicates save transaction and is untested. Holds: all nine epic ACs, shared contract, ownership/uniform 404, D08-1…D08-8. Reviewer honesty: execution unavailable in its nested context (no shell) → all automated gates reviewer-CANNOT-VERIFY; implementer results reused with provenance; Git state verified via .git refs (HEAD 1d157fb, code 6ef788e, baseline 53de89c)."
   findings: "OPEN (3 should-fix + 5 polish, owner implementer except F-02/F-03 which need a user ruling). F-01: add TR-E08-01/02/04 API specs (missed-session boundary/filters, recovery-summary, preview side-effect-free, confirm busy-set/exclusion/delete filter/targetHours/assignment-immutability/409s/uniform 404 data scoping) + recovery-surface non-blaming copy assertion. F-02: AC 8 literal green-suite unmet by pre-existing failures — needs user decision: explicit waiver, authorize the small Dialog focus-restore fix inside EP08, or defer to a follow-up story (planner). F-03: human VoiceOver/reduced-motion evidence owed — human_evidence interrupt at final sign-off; autopilot cannot ratify. P-01…P-05: polish fixes in the implementer fix round."
