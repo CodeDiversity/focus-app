@@ -6,7 +6,7 @@
 
 ## Commits
 
-- (pending) refactor(web): unify dashboard API clients via entityBaseQuery (EP12C)
+- 2fd6264 refactor(web): unify dashboard API clients via entityBaseQuery (EP12C)
 
 ## Changed paths
 
