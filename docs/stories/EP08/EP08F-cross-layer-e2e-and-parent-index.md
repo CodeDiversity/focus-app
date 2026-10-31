@@ -4,7 +4,7 @@
 **Parent epic:** [EP08: Catch-Up & Recovery](../../epics/EP08-catch-up-and-recovery.md) (Jira STUDY-17)
 **Milestone:** M4
 **Layer:** Integration
-**Status:** Queued
+**Status:** Implemented — awaiting parent review (combined EP08 review; records: `./artifacts/EP08F/implementation.md`, parent index `./artifacts/EP08/implementation.md`)
 **Dependencies:** EP08A–EP08E implemented. No UI decisions.
 **Jira key:** Pending creation
 

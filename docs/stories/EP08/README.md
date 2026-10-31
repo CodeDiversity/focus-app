@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** [EP08F](./EP08F-cross-layer-e2e-and-parent-index.md) — resume `implementer` (EP08E implemented 2026-10-31 — awaiting parent review; records: `./artifacts/EP08E/checkpoint.md`, `./artifacts/EP08E/implementation.md`).
+**Next substory:** None — all six children implemented. Next action: **combined EP08 parent review** (independent reviewer; artifacts go to `./artifacts/EP08/review.md` + `./artifacts/EP08/walkthrough.md`). EP08F implemented 2026-10-31 (records: `./artifacts/EP08F/checkpoint.md`, `./artifacts/EP08F/implementation.md`; parent index `./artifacts/EP08/implementation.md`).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -27,7 +27,7 @@
 | [EP08C](./EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md) | Implemented — awaiting parent review | EP08A + EP08B implemented. EP06 save/conflict primitives reused. | Combined EP08 parent review after all children | `./artifacts/EP08C/checkpoint.md`, `./artifacts/EP08C/implementation.md` |
 | [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) | Implemented — awaiting parent review | EP08A implemented (the read API). UI decisions settled (ui-refiner); technical refinement complete (refiner). | Combined EP08 parent review after all children | `./artifacts/EP08D/checkpoint.md`, `./artifacts/EP08D/implementation.md` |
 | [EP08E](./EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md) | Implemented — awaiting parent review | EP08C implemented (the preview/confirm API — code-verified). UI/UX decisions settled (ui-refiner 2026-10-31; D08-7 closed); technical refinement complete (refiner 2026-10-31). Scoped backend note delivered: `PATCH /study-plans/sessions/:sessionId/lock` (user decision 2026-10-31). Open questions (non-blocking, planner-owned, unchanged): contract extension to list current-window SCHEDULED sessions with `{id, locked}`; plan-page toggle (EP06 surface). | Combined EP08 parent review after all children | Backend commit `dde6780` + frontend closeout commit; `./artifacts/EP08E/checkpoint.md`, `./artifacts/EP08E/implementation.md`. Story carries settled UI/UX decisions (commit `5dd603f`) + technical refinement (commit `3202c79`). |
-| [EP08F](./EP08F-cross-layer-e2e-and-parent-index.md) | Queued | EP08A–EP08E implemented. | Implement after EP08E (new Playwright spec + parent index). | — |
+| [EP08F](./EP08F-cross-layer-e2e-and-parent-index.md) | Implemented — awaiting parent review | EP08A–EP08E implemented. | Combined EP08 parent review after all children | Spec commit ("test(EP08F)") + records commit; `./artifacts/EP08F/checkpoint.md`, `./artifacts/EP08F/implementation.md`, parent index `./artifacts/EP08/implementation.md`. Full E2E 40 passed; 2 deterministic pre-existing focus-restoration failures proven unrelated by control runs (EP08F record §AC 8). |
 
 Sequence (one writer): EP08A → EP08B → EP08C → EP08D → EP08E → EP08F. EP08A is the read-side spine; EP08B is the pure-domain rescheduler; EP08C is the API/persistence spine; the two frontend children consume them; EP08F verifies the whole stack and owns the parent index.
 
