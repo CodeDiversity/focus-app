@@ -109,17 +109,9 @@ export interface Task {
 }
 
 // Study Session Types
-export interface StudySession {
-  id: string;
-  startTime: string;
-  endTime: string;
-  durationMinutes: number;
-  notes: string | null;
-  isFocusMode: boolean;
-  rating: number | null;
-  createdAt: string;
-  updatedAt: string;
-}
+// The web projection now lives in `@/entities/study-session/model/types`
+// (`StudySession`). The stale interface that mirrored the pre-EP07 schema
+// (required `endTime`) is removed; import the entity type instead.
 
 /**
  * The cross-course assignment list projection (SP-122A, D122-6): the 11

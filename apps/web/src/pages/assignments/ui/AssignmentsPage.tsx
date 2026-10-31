@@ -29,6 +29,8 @@ import { useAssignmentActions } from '@/features/assignments/model/useAssignment
 import type { SubtaskChangeAction } from '@/features/assignments/model/types';
 import { AssignmentDialogs } from '@/features/assignments/ui/AssignmentDialogs';
 import { AssignmentRow } from '@/features/assignments/ui/AssignmentRow';
+import { StartFocusSessionDialog } from '@/features/focus-session/ui/StartFocusSessionDialog';
+import type { StartFocusSessionAssignment } from '@/features/focus-session/ui/StartFocusSessionDialog';
 import {
   STATUS_LABELS,
   PRIORITY_LABELS,
@@ -248,6 +250,10 @@ export function AssignmentsPage() {
 
   // One owner for status, edit/delete dialogs, subtasks, and focus (D124-10).
   // The page only supplies rows, copy, and its own refetch (D124-4).
+  const [startingAssignment, setStartingAssignment] = useState<StartFocusSessionAssignment | null>(
+    null
+  );
+
   const actions = useAssignmentActions({
     items: assignments,
     onChanged: (action: FormAction) => refetchCurrent(ACTION_SENTENCES[action]),
@@ -580,6 +586,14 @@ export function AssignmentsPage() {
                 onToggleExpanded={() => actions.toggleExpanded(a.id)}
                 onOpenEdit={() => actions.openEdit(a)}
                 onOpenDelete={() => actions.openDelete(a)}
+                onStartFocus={() =>
+                  setStartingAssignment({
+                    id: a.id,
+                    title: a.title,
+                    dueDate: a.dueDate,
+                    estimatedHours: a.estimatedHours,
+                  })
+                }
                 onTitleActivate={() => actions.openEdit(a)}
                 onSubtaskChanged={actions.onSubtaskChanged}
                 onSubtaskRefresh={actions.onSubtaskRefresh}
@@ -611,6 +625,11 @@ export function AssignmentsPage() {
         actions={actions}
         courses={courses}
         initialCourseId={courseId || undefined}
+      />
+      <StartFocusSessionDialog
+        assignment={startingAssignment}
+        open={!!startingAssignment}
+        onClose={() => setStartingAssignment(null)}
       />
     </section>
   );

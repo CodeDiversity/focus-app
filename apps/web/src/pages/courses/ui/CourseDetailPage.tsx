@@ -14,6 +14,8 @@ import {
 } from '@/features/assignments/ui/AssignmentsSection';
 import { CourseForm } from '@/features/courses/ui/CourseForm';
 import { ArchiveCourseDialog } from '@/features/courses/ui/ArchiveCourseDialog';
+import { StartFocusSessionDialog } from '@/features/focus-session/ui/StartFocusSessionDialog';
+import type { StartFocusSessionAssignment } from '@/features/focus-session/ui/StartFocusSessionDialog';
 
 /** A detail-fetch failure. `isNotFound` is the uniform 404 (AC 1). */
 interface DetailError {
@@ -61,6 +63,9 @@ export function CourseDetailPage() {
   const [archivingCourse, setArchivingCourse] = useState<CourseDetail | null>(null);
   const [semesters, setSemesters] = useState<SemesterWithCount[]>([]);
   const [statusMessage, setStatusMessage] = useState('');
+  const [startingAssignment, setStartingAssignment] = useState<StartFocusSessionAssignment | null>(
+    null
+  );
 
   const load = useCallback(
     async (options: { background?: boolean } = {}) => {
@@ -359,6 +364,14 @@ export function CourseDetailPage() {
               assignments={course.assignments}
               onAssignmentChanged={handleAssignmentChanged}
               onAssignmentStatusChanged={handleAssignmentStatusChanged}
+              onStartFocus={(a) =>
+                setStartingAssignment({
+                  id: a.id,
+                  title: a.title,
+                  dueDate: a.dueDate,
+                  estimatedHours: a.estimatedHours,
+                })
+              }
               onSubtaskChanged={handleSubtaskChanged}
               onSubtaskRefresh={() => void load({ background: true })}
               // Clear before the request so a repeated subtask sentence announces.
@@ -389,6 +402,12 @@ export function CourseDetailPage() {
           onCancel={() => setArchivingCourse(null)}
         />
       )}
+
+      <StartFocusSessionDialog
+        assignment={startingAssignment}
+        open={!!startingAssignment}
+        onClose={() => setStartingAssignment(null)}
+      />
     </div>
   );
 }

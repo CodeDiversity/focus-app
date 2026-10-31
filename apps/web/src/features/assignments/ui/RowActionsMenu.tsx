@@ -1,14 +1,18 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { clsx } from 'clsx';
-import { MoreHorizontal, SquarePen, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Play, SquarePen, Trash2 } from 'lucide-react';
 
 export interface RowActionsMenuProps {
   assignmentId: string;
   assignmentTitle: string;
   /** Disabled while the row has an in-flight subtask or status request. */
   disabled?: boolean;
+  /** Hide the "Start focus session" item on finished assignments. */
+  finished?: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  /** Opens the start-focus-session dialog for this assignment. */
+  onStartFocus?: () => void;
 }
 
 /**
@@ -24,8 +28,10 @@ export function RowActionsMenu({
   assignmentId,
   assignmentTitle,
   disabled = false,
+  finished = false,
   onEdit,
   onDelete,
+  onStartFocus,
 }: RowActionsMenuProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -123,6 +129,19 @@ export function RowActionsMenu({
           onKeyDown={onMenuKeyDown}
           className="absolute right-0 z-20 mt-1 w-44 rounded-lg border border-border bg-surface py-1 shadow-lg"
         >
+          {!finished && onStartFocus && (
+            <button
+              role="menuitem"
+              type="button"
+              disabled={disabled}
+              aria-label={`Start focus session for ${assignmentTitle}`}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-text hover:bg-surface-muted focus:outline-none focus:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() => runAction(onStartFocus)}
+            >
+              <Play size={14} aria-hidden />
+              Start focus session
+            </button>
+          )}
           <button
             role="menuitem"
             type="button"

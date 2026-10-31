@@ -115,7 +115,7 @@ export function Dialog({
           clsx(
             'relative w-full rounded-lg bg-surface shadow-lg p-6',
             sizeClasses[size],
-            'transition-all duration-base ease-standard',
+            'transition-all duration-base ease-standard motion-reduce:transition-none motion-reduce:transform-none',
             visible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
           ),
           className

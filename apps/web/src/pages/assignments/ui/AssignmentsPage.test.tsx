@@ -353,12 +353,18 @@ describe('AssignmentsPage shared interaction (SP-124B AC 8)', () => {
     await user.click(trigger);
 
     const menu = screen.getByRole('menu');
+    const startItem = screen.getByRole('menuitem', {
+      name: 'Start focus session for Problem Set 4',
+    });
     const editItem = screen.getByRole('menuitem', { name: 'Edit Problem Set 4' });
     const deleteItem = screen.getByRole('menuitem', { name: 'Delete Problem Set 4' });
-    expect(editItem).toHaveFocus();
+    expect(startItem).toHaveFocus();
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
     expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
     expect(trigger).toHaveAttribute('aria-controls', menu.id);
+
+    await user.keyboard('{ArrowDown}');
+    expect(editItem).toHaveFocus();
 
     await user.keyboard('{ArrowDown}');
     expect(deleteItem).toHaveFocus();

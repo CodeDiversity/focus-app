@@ -16,6 +16,8 @@ export interface AssignmentsSectionProps {
   onAssignmentChanged: (action: 'added' | 'updated' | 'deleted') => void;
   onAssignmentStatusChanged?: (status: AssignmentStatus) => void;
   onAssignmentFormOpen?: () => void;
+  /** Open the start-focus-session dialog for the given assignment. */
+  onStartFocus?: (assignment: CourseAssignment) => void;
   /** Subtask success. The page announces and background-refetches. Not assignment copy. */
   onSubtaskChanged: (action: SubtaskChangeAction) => void;
   /** Partial reorder: refetch only, no success sentence. */
@@ -43,6 +45,7 @@ export function AssignmentsSection({
   onAssignmentChanged,
   onAssignmentStatusChanged,
   onAssignmentFormOpen,
+  onStartFocus,
   onSubtaskChanged,
   onSubtaskRefresh,
   onSubtaskPending,
@@ -79,6 +82,7 @@ export function AssignmentsSection({
       onToggleExpanded={() => actions.toggleExpanded(assignment.id)}
       onOpenEdit={() => actions.openEdit(assignment)}
       onOpenDelete={() => actions.openDelete(assignment)}
+      onStartFocus={onStartFocus ? () => onStartFocus(assignment) : undefined}
       onTitleActivate={() => actions.openEdit(assignment)}
       onSubtaskChanged={actions.onSubtaskChanged}
       onSubtaskRefresh={actions.onSubtaskRefresh}

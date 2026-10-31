@@ -3,7 +3,11 @@ import { Link } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { formatDate, getBrowserTimeZone } from '@/shared/lib/datetime';
-import { isOverdueAssignment, isDueSoonAssignment } from '@/entities/assignment/model/status';
+import {
+  isOverdueAssignment,
+  isDueSoonAssignment,
+  isFinishedAssignment,
+} from '@/entities/assignment/model/status';
 import type { AssignmentStatus } from '@/shared/types/academic';
 import type { AssignmentInteractionItem, SubtaskChangeAction } from '../model/types';
 import { RowActionsMenu } from './RowActionsMenu';
@@ -125,6 +129,8 @@ export interface AssignmentRowProps {
   onToggleExpanded: () => void;
   onOpenEdit: () => void;
   onOpenDelete: () => void;
+  /** Open the start-focus-session dialog for this assignment. */
+  onStartFocus?: () => void;
   /** Row-content activation (title / card body) opens the edit dialog. */
   onTitleActivate: () => void;
   onSubtaskChanged: (action: SubtaskChangeAction) => void;
@@ -157,6 +163,7 @@ export function AssignmentRow({
   onToggleExpanded,
   onOpenEdit,
   onOpenDelete,
+  onStartFocus,
   onTitleActivate,
   onSubtaskChanged,
   onSubtaskRefresh,
@@ -285,8 +292,10 @@ export function AssignmentRow({
             assignmentId={assignment.id}
             assignmentTitle={assignment.title}
             disabled={busy}
+            finished={isFinishedAssignment(assignment)}
             onEdit={onOpenEdit}
             onDelete={onOpenDelete}
+            onStartFocus={onStartFocus}
           />
         </div>
       </div>

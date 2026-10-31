@@ -6,7 +6,7 @@
 **Parent:** [EP07 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Frontend
-**Status:** **Ready** — UI refinement captured 2026-10-30 (D07-5); technical refinement in Technical Notes.
+**Status:** **Implemented — awaiting parent review** (2026-10-30).
 **Dependencies:** **EP07A** (the `POST /study-sessions` endpoint) and **EP07B** (the session projection this story consumes). The EP03 frontend surfaces (assignments list, course detail) are implemented. `ui-refiner` pass required.
 **Jira key:** Pending creation
 **Refined:** 2026-10-30 (ui-refiner pass — UI/UX decisions settled; see Technical Notes → "UI/UX design" and "Decisions". Technical refinement of files/endpoints/DTOs is unchanged; status reconciliation to Ready is the planner/coordinator's.)
