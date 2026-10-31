@@ -62,6 +62,25 @@ export class StudyPlanController {
   }
 
   /**
+   * POST /study-plans/catch-up/preview — run the rescheduler over the
+   * student's current data and return a side-effect-free CatchUpPreview.
+   */
+  @Post('catch-up/preview')
+  @HttpCode(200)
+  catchUpPreview(@CurrentUser() user: AuthenticatedUser) {
+    return this.studyPlansService.catchUpPreview(user.id);
+  }
+
+  /**
+   * POST /study-plans/catch-up/confirm — persist the accepted change set
+   * transactionally (conflict re-check, locked/completed preservation).
+   */
+  @Post('catch-up/confirm')
+  catchUpConfirm(@CurrentUser() user: AuthenticatedUser, @Body() dto: SaveStudyPlanDto) {
+    return this.studyPlansService.catchUpConfirm(user.id, dto);
+  }
+
+  /**
    * POST /study-plans — save the edited proposal (atomic, conflict re-check).
    */
   @Post()

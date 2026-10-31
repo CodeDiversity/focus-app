@@ -20,6 +20,8 @@ import { classifyAssignments } from '../../domain/study-planning/remaining-work'
 import { compareAssignments } from '../../domain/study-planning/ordering';
 import { schedule } from '../../domain/study-planning/scheduler';
 import { findConflicts } from '../../domain/study-planning/conflicts';
+import { replan } from '../../domain/study-planning/catch-up';
+import type { ReplanBusyInterval } from '../../domain/study-planning/catch-up';
 import type {
   AssignmentFacts,
   AssignmentStatusValue,
@@ -239,6 +241,12 @@ export type PlanPreview = {
   days: PlanPreviewDay[];
   warnings: PlanPreviewWarning[];
   deferred: { assignmentId: string; minutes: number }[];
+};
+
+export type CatchUpPreview = PlanPreview & {
+  missedSessions: MissedSession[];
+  lockedPreserved: number;
+  completedPreserved: number;
 };
 
 export type SavedPlanSession = {
@@ -743,6 +751,288 @@ export class StudyPlansService {
       warnings,
       deferred,
     };
+  }
+
+  async catchUpPreview(userId: string): Promise<CatchUpPreview> {
+    const data = await this.gatherPlanData(userId);
+
+    // Missed sessions (EP08A logic): SCHEDULED planned sessions in the past
+    // whose assignment is still PENDING/IN_PROGRESS.
+    const bound = new Date(`${data.days[0]}T00:00:00.000Z`);
+    const missedRows = await this.prisma.plannedSession.findMany({
+      where: {
+        studyPlan: { userId, date: { lt: bound } },
+        status: 'SCHEDULED',
+        assignment: { status: { in: ['PENDING', 'IN_PROGRESS'] } },
+      },
+      include: {
+        studyPlan: { select: { date: true } },
+        assignment: { select: { id: true, title: true } },
+      },
+      orderBy: [{ studyPlan: { date: 'asc' } }, { startTime: 'asc' }],
+    });
+    const missedSessions: MissedSession[] = missedRows.map((row) => {
+      const start = zoneParts(row.startTime, data.timeZone);
+      const end = zoneParts(row.endTime, data.timeZone);
+      return {
+        id: row.id,
+        assignmentId: row.assignmentId,
+        assignmentTitle: row.assignment?.title ?? '',
+        date: row.studyPlan.date.toISOString().slice(0, 10),
+        startTime: start.time,
+        endTime: end.time,
+        durationMinutes: row.durationMinutes,
+        locked: row.locked,
+      };
+    });
+
+    // Planned sessions (completed + locked) for the busy set.
+    const plannedSessions = await this.prisma.plannedSession.findMany({
+      where: { studyPlan: { userId } },
+      include: { studyPlan: { select: { date: true } } },
+    });
+    const plannedBusy = plannedSessions
+      .filter((ps) => ps.status === 'COMPLETED' || ps.locked)
+      .map((ps) => {
+        const start = zoneParts(ps.startTime, data.timeZone);
+        const end = zoneParts(ps.endTime, data.timeZone);
+        return {
+          date: start.date,
+          startMinute: hhmmToMinutes(start.time),
+          endMinute: hhmmToMinutes(end.time),
+          completed: ps.status === 'COMPLETED',
+          locked: ps.locked,
+        };
+      });
+
+    const busy = [...data.busy.map((b) => ({ ...b })), ...plannedBusy];
+
+    const output = replan({
+      days: data.days,
+      assignments: data.schedulable,
+      availability: data.available,
+      blocked: data.blocked,
+      classes: data.classes,
+      busy: busy as ReplanBusyInterval[],
+      missedSessions,
+      preferences: data.preferences,
+    });
+
+    const sessionsByDay = new Map<string, PlanPreviewSession[]>();
+    for (const d of data.days) sessionsByDay.set(d, []);
+    for (const s of output.sessions) {
+      const list = sessionsByDay.get(s.date);
+      if (!list) continue;
+      list.push({
+        assignmentId: s.assignmentId,
+        assignmentTitle: s.assignmentTitle,
+        startTime: minutesToHHmm(s.startMinute),
+        endTime: minutesToHHmm(s.endMinute),
+        durationMinutes: s.durationMinutes,
+      });
+    }
+
+    const days = data.days.map((date) => {
+      const sessions = sessionsByDay.get(date) ?? [];
+      const targetMinutes = sessions.reduce((sum, s) => sum + s.durationMinutes, 0);
+      return { date, targetMinutes, sessions };
+    });
+
+    const warnings: PlanPreviewWarning[] = output.results
+      .filter((r) => r.deficitCategory !== null)
+      .map((r) => ({
+        assignmentId: r.assignmentId,
+        assignmentTitle: data.titleById.get(r.assignmentId) ?? '',
+        category: r.deficitCategory as string,
+        minutes: r.deficitMinutes,
+        dueDate: data.dueById.get(r.assignmentId) ?? null,
+      }));
+
+    const deferred = output.results
+      .filter((r) => r.deferredMinutes > 0)
+      .map((r) => ({ assignmentId: r.assignmentId, minutes: r.deferredMinutes }));
+
+    return {
+      from: data.days[0],
+      to: data.days[6],
+      timeZone: data.timeZone,
+      generatedAt: new Date().toISOString(),
+      preferences: toStudyPreferencesResponse(data.preferences),
+      days,
+      warnings,
+      deferred,
+      missedSessions: output.missedSessions,
+      lockedPreserved: output.lockedPreserved,
+      completedPreserved: output.completedPreserved,
+    };
+  }
+
+  async catchUpConfirm(userId: string, dto: SaveStudyPlanDto): Promise<SavedPlan> {
+    const fieldErrors = dtoErrors(dto, new SaveStudyPlanDto());
+    if (fieldErrors) {
+      throwFieldErrors(fieldErrors);
+    }
+
+    const data = await this.gatherPlanData(userId);
+    const todayStr = data.days[0];
+
+    if (dto.to !== addDays(dto.from, 6)) {
+      throwFieldErrors({ to: ['to must be exactly six days after from'] });
+    }
+    const minFrom = addDays(todayStr, -6);
+    if (dto.from < minFrom || dto.from > todayStr) {
+      throw new HttpException(
+        {
+          statusCode: 409,
+          message: 'The plan week has rolled over — generate a new proposal to save it.',
+          error: 'WINDOW_ROLLED_OVER',
+        },
+        409
+      );
+    }
+
+    const sessionErrors: Record<string, string[]> = {};
+    dto.sessions.forEach((s, i) => {
+      if (!s.assignmentId || !s.assignmentId.trim()) {
+        sessionErrors[`sessions.${i}.assignmentId`] = ['assignmentId is required'];
+      }
+      if (s.date < dto.from || s.date > dto.to) {
+        sessionErrors[`sessions.${i}.date`] = ['date must be within the named window'];
+      }
+      const startMin = hhmmToMinutes(s.startTime);
+      const endMin = hhmmToMinutes(s.endTime);
+      if (endMin <= startMin) {
+        sessionErrors[`sessions.${i}.endTime`] = ['endTime must be after startTime'];
+      }
+    });
+    if (Object.keys(sessionErrors).length) {
+      throwFieldErrors(sessionErrors);
+    }
+
+    const uniqueIds = [...new Set(dto.sessions.map((s) => s.assignmentId))];
+    for (const id of uniqueIds) {
+      const a = await this.prisma.assignment.findUnique({
+        where: { id },
+        select: { userId: true },
+      });
+      if (!a || a.userId !== userId) {
+        throw new NotFoundException(RESOURCE_NOT_FOUND);
+      }
+    }
+
+    const affectedDates: string[] = [];
+    let cur = dto.from;
+    while (cur <= dto.to) {
+      affectedDates.push(cur);
+      cur = addDays(cur, 1);
+    }
+
+    const classesDated: DatedInterval[] = [];
+    const blockedDated: DatedInterval[] = [];
+    for (const date of affectedDates) {
+      const dow = dayOfWeekOf(date);
+      for (const w of data.classes) {
+        if (w.dayOfWeek === dow) {
+          classesDated.push({ date, startMinute: w.startMinute, endMinute: w.endMinute });
+        }
+      }
+      for (const w of data.blocked) {
+        if (w.dayOfWeek === dow) {
+          blockedDated.push({ date, startMinute: w.startMinute, endMinute: w.endMinute });
+        }
+      }
+    }
+
+    const preservedPlanned = await this.prisma.plannedSession.findMany({
+      where: { studyPlan: { userId } },
+      include: { studyPlan: { select: { date: true } } },
+    });
+    const preservedBusy: DatedInterval[] = preservedPlanned
+      .filter((ps) => ps.status === 'COMPLETED' || ps.locked)
+      .map((ps) => {
+        const start = zoneParts(ps.startTime, data.timeZone);
+        const end = zoneParts(ps.endTime, data.timeZone);
+        return {
+          date: start.date,
+          startMinute: hhmmToMinutes(start.time),
+          endMinute: hhmmToMinutes(end.time),
+        };
+      });
+
+    const busyDated = [...data.busy, ...preservedBusy].filter(
+      (b) => b.date >= dto.from && b.date <= dto.to
+    );
+
+    const submitted = dto.sessions.map((s) => ({
+      assignmentId: s.assignmentId,
+      date: s.date,
+      startTime: s.startTime,
+      endTime: s.endTime,
+    }));
+    const conflicts = findConflicts(submitted, {
+      classes: classesDated,
+      blocked: blockedDated,
+      busy: busyDated,
+    });
+    if (conflicts.length) {
+      throw new HttpException(
+        {
+          statusCode: 409,
+          message: 'The plan conflicts with your calendar.',
+          error: 'Conflict',
+          conflicts,
+        },
+        409
+      );
+    }
+
+    const sessionsByDay = new Map<string, number>();
+    for (const s of dto.sessions) {
+      const mins = hhmmToMinutes(s.endTime) - hhmmToMinutes(s.startTime);
+      sessionsByDay.set(s.date, (sessionsByDay.get(s.date) ?? 0) + mins);
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      const planIdByDate = new Map<string, string>();
+      for (const date of affectedDates) {
+        const placedMinutes = sessionsByDay.get(date) ?? 0;
+        const targetHours = placedMinutes / 60;
+        const d = new Date(`${date}T00:00:00.000Z`);
+        const plan = await tx.studyPlan.upsert({
+          where: { userId_date: { userId, date: d } },
+          create: { userId, date: d, targetHours },
+          update: { targetHours },
+          select: { id: true },
+        });
+        planIdByDate.set(date, plan.id);
+      }
+
+      const fromDate = new Date(`${dto.from}T00:00:00.000Z`);
+      const toDate = new Date(`${dto.to}T00:00:00.000Z`);
+      await tx.plannedSession.deleteMany({
+        where: {
+          status: 'SCHEDULED',
+          locked: false,
+          studyPlan: { userId, date: { gte: fromDate, lte: toDate } },
+        },
+      });
+
+      if (dto.sessions.length > 0) {
+        await tx.plannedSession.createMany({
+          data: dto.sessions.map((s) => ({
+            studyPlanId: planIdByDate.get(s.date)!,
+            assignmentId: s.assignmentId,
+            startTime: wallClockToInstant(s.date, s.startTime, data.timeZone),
+            endTime: wallClockToInstant(s.date, s.endTime, data.timeZone),
+            durationMinutes: hhmmToMinutes(s.endTime) - hhmmToMinutes(s.startTime),
+            status: 'SCHEDULED',
+            locked: false,
+          })),
+        });
+      }
+    });
+
+    return this.getPlan(userId, dto.from, dto.to);
   }
 
   async save(userId: string, dto: SaveStudyPlanDto): Promise<SavedPlan> {

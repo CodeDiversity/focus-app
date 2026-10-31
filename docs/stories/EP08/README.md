@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** [EP08C](./EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md) — implement (backend API + transactional persistence; EP08A and EP08B implemented).
+**Next substory:** [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) — `ui-refiner` pass required before implementation (EP08C implemented).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -24,7 +24,7 @@
 |---|---|---|---|---|
 | [EP08A](./EP08A-missed-sessions-and-recovery-summary-read-api.md) | Implemented — awaiting parent review | EP06 + EP07 complete/reviewed. D08-1…D08-8 recorded below. No UI decisions (D08-7). | Combined EP08 parent review after all children | `./artifacts/EP08A/checkpoint.md`, `./artifacts/EP08A/implementation.md` |
 | [EP08B](./EP08B-deterministic-workload-rescheduling.md) | Implemented — awaiting parent review | EP06 engine (`domain/study-planning/scheduler.ts`, `intervals.ts`, `ordering.ts`) and EP08A's recovery summary (the missed/unfinished inputs). | Combined EP08 parent review after all children | `./artifacts/EP08B/checkpoint.md`, `./artifacts/EP08B/implementation.md` |
-| [EP08C](./EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md) | Ready (refined 2026-10-31) | EP08A + EP08B implemented. EP06 save/conflict primitives reused. | Implement after EP08B (backend API + transactional persistence). | — |
+| [EP08C](./EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md) | Implemented — awaiting parent review | EP08A + EP08B implemented. EP06 save/conflict primitives reused. | Combined EP08 parent review after all children | `./artifacts/EP08C/checkpoint.md`, `./artifacts/EP08C/implementation.md` |
 | [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) | Needs refinement | EP08A implemented (the read API). **`ui-refiner` pass required** (D08-7) — layout, copy/tone (non-blaming), states, a11y, responsive. | `ui-refiner` on EP08D before implementation. | — |
 | [EP08E](./EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md) | Needs refinement | EP08C implemented (the preview/confirm API). **`ui-refiner` pass required** (D08-7). | `ui-refiner` on EP08E before implementation. | — |
 | [EP08F](./EP08F-cross-layer-e2e-and-parent-index.md) | Queued | EP08A–EP08E implemented. | Implement after EP08E (new Playwright spec + parent index). | — |
@@ -331,16 +331,16 @@ coordinator:
   baseline: ""
   head: e8ec636
 active_dispatch:
-  name: EP08C-implement
-  role: implementer
-  status: pending
-  pointer: docs/stories/EP08/EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md
+  name: none
+  role: none
+  status: idle
+  pointer: ""
   session: ""
-  assignment: "Implement EP08C: catch-up plan preview/confirm/feasibility API"
+  assignment: ""
 last_result:
-  evidence: "EP08B implemented (2026-10-31): pure replan(...) domain module reusing EP06 schedule()/classifyAssignments + 11 unit tests; typecheck/lint/tests/build green. Artifacts: docs/stories/EP08/artifacts/EP08B/{checkpoint,implementation}.md. Status: Implemented — awaiting parent review."
+  evidence: "EP08C implemented (2026-10-31): catch-up preview/confirm API + transactional persistence; typecheck/lint/tests/build green. Artifacts: docs/stories/EP08/artifacts/EP08C/{checkpoint,implementation}.md. Status: Implemented — awaiting parent review."
   findings: ""
-  scope_note: "Step mode: one task per continuation. EP08B complete; EP08C is next per queue (Queued, deps met)."
+  scope_note: "Step mode: one task per continuation. EP08C complete; next eligible child EP08D requires ui-refiner pass before implementation."
   cycles: 0
   same_findings: unknown
 gates:
@@ -357,7 +357,7 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: not_started
-  judged_at_head: "e8ec636"
+  judged_at_head: "eff579d"
   queue_hash: ""
 writer: none
 session_live: unknown
@@ -366,6 +366,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "EP08B complete; next step is implementer on EP08C."
+resume: "EP08C complete; next step is ui-refiner on EP08D (Needs refinement)."
 judgment_attempts: 0
 ```
