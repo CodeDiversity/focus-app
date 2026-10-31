@@ -358,11 +358,11 @@ describe('MeetingForm dialog behavior (D112B-3)', () => {
 
   it('closes on a backdrop click without a request', async () => {
     const user = setupUser();
-    const { onClose, container } = renderForm();
+    const { onClose } = renderForm();
 
     // The backdrop is the dimmed layer behind the card (a sibling of the
     // dialog card — clicking the card itself does not close).
-    const backdrop = container.querySelector('div[aria-hidden="true"]') as Element;
+    const backdrop = document.querySelector('div[aria-hidden="true"]') as Element;
     expect(backdrop).not.toBeNull();
     await user.click(backdrop);
 

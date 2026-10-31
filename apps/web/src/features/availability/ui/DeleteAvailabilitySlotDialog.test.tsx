@@ -107,10 +107,14 @@ describe('DeleteAvailabilitySlotDialog (AC 4, D128B-9)', () => {
     document.body.appendChild(trigger);
     trigger.focus();
 
-    const { unmount } = renderDialog();
+    const { onCancel, unmount } = renderDialog();
 
     // The dialog took focus from the trigger (the safe action holds it)…
     expect(cancelButton()).toHaveFocus();
+
+    // Close via Escape so the primitive restores focus to the trigger.
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+    expect(onCancel).toHaveBeenCalled();
 
     // …and the parent unmounts the dialog after the close: the cleanup
     // returns focus to the trigger that opened it.

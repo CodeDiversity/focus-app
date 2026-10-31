@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 import { Button } from '@/shared/ui/Button';
+import { Dialog } from '@/shared/ui/Dialog';
 import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
 import {
@@ -135,9 +136,6 @@ export type CourseFormProps =
       onClose: () => void;
     };
 
-const FOCUSABLE_SELECTOR =
-  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
 /**
  * Create/edit form for a course (SP-111B, AC 3/4) — a **dialog** (D111B-2):
  * unlike the inline `SemesterForm`, it renders its own overlay and traps
@@ -156,8 +154,6 @@ const FOCUSABLE_SELECTOR =
 export function CourseForm({ mode, course, semesters, onSuccess, onClose }: CourseFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const restoreFocusRef = useRef<HTMLElement | null>(null);
 
   const {
     register,
@@ -221,55 +217,6 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
   // takes focus (the first focusable is the code input) and focus is trapped
   // (Tab/Shift+Tab cycle within; Escape closes); on close focus returns to
   // the trigger that opened the dialog.
-  useEffect(() => {
-    restoreFocusRef.current = document.activeElement as HTMLElement | null;
-    const first = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
-    (first ?? dialogRef.current)?.focus();
-    return () => {
-      restoreFocusRef.current?.focus();
-    };
-  }, []);
-
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (isSubmitting) return; // frozen while the request is in flight
-    if (event.key === 'Escape') {
-      event.stopPropagation();
-      onClose();
-      return;
-    }
-    if (event.key !== 'Tab') return;
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-      (el) => !el.hasAttribute('disabled')
-    );
-    if (focusable.length === 0) {
-      event.preventDefault();
-      return;
-    }
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    const active = document.activeElement;
-    if (event.shiftKey && (active === first || !dialog.contains(active))) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  };
-
-  // Escape/Tab handling is attached imperatively (not as a JSX handler):
-  // focus is trapped inside the dialog, so a keydown listener on the dialog
-  // element sees every key press.
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    dialog.addEventListener('keydown', handleKeyDown);
-    return () => {
-      dialog.removeEventListener('keydown', handleKeyDown);
-    };
-  });
 
   const handleApiError = (err: unknown) => {
     const apiError = extractApiError(err);
@@ -353,197 +300,182 @@ export function CourseForm({ mode, course, semesters, onSuccess, onClose }: Cour
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop: click closes without a request (frozen while submitting). */}
-      <div
-        className="absolute inset-0 bg-text/50"
-        aria-hidden="true"
-        onClick={isSubmitting ? undefined : onClose}
-      />
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="course-form-title"
-        tabIndex={-1}
-        className="card relative max-h-[90vh] w-full max-w-xl overflow-y-auto"
-      >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-          <h2 id="course-form-title" className="text-lg font-semibold text-text">
-            {mode === 'create' ? 'Add a course' : `Edit ${course?.name ?? ''}`}
-          </h2>
+    <Dialog
+      open
+      onClose={onClose}
+      title={mode === 'create' ? 'Add a course' : `Edit ${course?.name ?? ''}`}
+      busy={isSubmitting}
+      className="max-w-xl max-h-[90vh] overflow-y-auto"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Input
+              label="Course code"
+              placeholder="CS101"
+              error={errors.code?.message}
+              disabled={isSubmitting}
+              {...register('code')}
+            />
+            <Input
+              label="Course name"
+              placeholder="Intro to Computer Science"
+              error={errors.name?.message}
+              disabled={isSubmitting}
+              {...register('name')}
+            />
+          </div>
 
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Input
-                label="Course code"
-                placeholder="CS101"
-                error={errors.code?.message}
-                disabled={isSubmitting}
-                {...register('code')}
-              />
-              <Input
-                label="Course name"
-                placeholder="Intro to Computer Science"
-                error={errors.name?.message}
-                disabled={isSubmitting}
-                {...register('name')}
-              />
-            </div>
+          <Select
+            label="Semester"
+            error={errors.semesterId?.message}
+            hint={
+              noSemesterDisabled
+                ? 'You can change the semester, but not remove it here.'
+                : 'Optional — leave as "No semester" if the course is unaffiliated.'
+            }
+            disabled={isSubmitting}
+            {...register('semesterId')}
+          >
+            <option value="" disabled={noSemesterDisabled}>
+              No semester
+            </option>
+            {semesters.map((semester) => (
+              <option key={semester.id} value={semester.id}>
+                {semester.name}
+                {semester.isActive ? ' (active)' : ''}
+              </option>
+            ))}
+          </Select>
 
-            <Select
-              label="Semester"
-              error={errors.semesterId?.message}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Input
+              label="Instructor"
+              placeholder="Ada Lovelace"
+              error={errors.instructor?.message}
+              hint={isEdit ? 'Optional — leave blank to keep the current instructor.' : 'Optional.'}
+              disabled={isSubmitting}
+              {...register('instructor')}
+            />
+            <Input
+              label="Credits"
+              placeholder="4"
+              inputMode="decimal"
+              error={errors.credits?.message}
               hint={
-                noSemesterDisabled
-                  ? 'You can change the semester, but not remove it here.'
-                  : 'Optional — leave as "No semester" if the course is unaffiliated.'
+                isEdit
+                  ? 'Optional (0–30) — leave blank to keep the current value.'
+                  : 'Optional (0–30).'
               }
               disabled={isSubmitting}
-              {...register('semesterId')}
-            >
-              <option value="" disabled={noSemesterDisabled}>
-                No semester
-              </option>
-              {semesters.map((semester) => (
-                <option key={semester.id} value={semester.id}>
-                  {semester.name}
-                  {semester.isActive ? ' (active)' : ''}
-                </option>
-              ))}
-            </Select>
+              {...register('credits')}
+            />
+          </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Input
-                label="Instructor"
-                placeholder="Ada Lovelace"
-                error={errors.instructor?.message}
-                hint={
-                  isEdit ? 'Optional — leave blank to keep the current instructor.' : 'Optional.'
-                }
-                disabled={isSubmitting}
-                {...register('instructor')}
-              />
-              <Input
-                label="Credits"
-                placeholder="4"
-                inputMode="decimal"
-                error={errors.credits?.message}
-                hint={
-                  isEdit
-                    ? 'Optional (0–30) — leave blank to keep the current value.'
-                    : 'Optional (0–30).'
-                }
-                disabled={isSubmitting}
-                {...register('credits')}
-              />
-            </div>
-
-            <div className="w-full">
-              <span id="course-color-label" className="block mb-2 text-sm font-medium text-text">
-                Color
-              </span>
-              {/* The color swatches (F111C-3 — the DoD-10 walk asked for the
+          <div className="w-full">
+            <span id="course-color-label" className="block mb-2 text-sm font-medium text-text">
+              Color
+            </span>
+            {/* The color swatches (F111C-3 — the DoD-10 walk asked for the
                   colors to be visible): a radiogroup of circles, one per
                   preset color; clicking picks it. The registered input is
                   hidden — the swatches drive it via `setValue`. */}
-              <div
-                role="radiogroup"
-                aria-labelledby="course-color-label"
-                className="flex flex-wrap gap-2"
-              >
-                {colorOptions.map((option, index) => {
-                  const checked = option.value === colorValue;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      role="radio"
-                      aria-checked={checked}
-                      aria-label={option.label}
-                      title={option.label}
-                      tabIndex={checked ? 0 : -1}
-                      disabled={isSubmitting}
-                      onClick={() => setValue('color', option.value, { shouldValidate: true })}
-                      onKeyDown={(event) => handleSwatchKeyDown(event, index)}
-                      ref={(el) => {
-                        swatchRefs.current[index] = el;
-                      }}
-                      style={{ backgroundColor: option.value }}
-                      className={clsx(
-                        'h-8 w-8 rounded-full border-2 transition-all duration-150',
-                        'focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2',
-                        checked ? 'border-text' : 'border-transparent',
-                        isSubmitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                      )}
-                    />
-                  );
-                })}
-              </div>
-              <input type="hidden" {...register('color')} />
-              {errors.color?.message && (
-                <p className="mt-1 text-sm text-danger">{errors.color.message}</p>
-              )}
-              <p className="mt-1 text-sm text-text-muted">
-                {isEdit ? 'Pick a different color to change it.' : 'Optional — defaults to indigo.'}
-              </p>
-            </div>
-
-            <div className="w-full">
-              <label
-                htmlFor="course-description"
-                className="block mb-2 text-sm font-medium text-text"
-              >
-                Description
-              </label>
-              <textarea
-                id="course-description"
-                rows={3}
-                aria-invalid={errors.description?.message ? true : undefined}
-                aria-describedby={
-                  errors.description?.message ? 'course-description-error' : undefined
-                }
-                placeholder="Optional notes about the course"
-                className={`w-full px-4 py-2 border rounded-lg bg-surface text-text placeholder-text-muted focus:border-accent focus:ring-2 focus:ring-accent focus:outline-none transition-colors duration-200 ${
-                  errors.description?.message
-                    ? 'border-danger text-danger placeholder-danger/70'
-                    : 'border-border'
-                } ${isSubmitting ? 'opacity-50 cursor-not-allowed bg-surface-muted' : ''}`}
-                disabled={isSubmitting}
-                {...register('description')}
-              />
-              {errors.description?.message && (
-                <p id="course-description-error" className="mt-1 text-sm text-danger">
-                  {errors.description.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {formError && (
-            <p
-              role="alert"
-              className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
+            <div
+              role="radiogroup"
+              aria-labelledby="course-color-label"
+              className="flex flex-wrap gap-2"
             >
-              {formError}
+              {colorOptions.map((option, index) => {
+                const checked = option.value === colorValue;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={checked}
+                    aria-label={option.label}
+                    title={option.label}
+                    tabIndex={checked ? 0 : -1}
+                    disabled={isSubmitting}
+                    onClick={() => setValue('color', option.value, { shouldValidate: true })}
+                    onKeyDown={(event) => handleSwatchKeyDown(event, index)}
+                    ref={(el) => {
+                      swatchRefs.current[index] = el;
+                    }}
+                    style={{ backgroundColor: option.value }}
+                    className={clsx(
+                      'h-8 w-8 rounded-full border-2 transition-all duration-150',
+                      'focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2',
+                      checked ? 'border-text' : 'border-transparent',
+                      isSubmitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                    )}
+                  />
+                );
+              })}
+            </div>
+            <input type="hidden" {...register('color')} />
+            {errors.color?.message && (
+              <p className="mt-1 text-sm text-danger">{errors.color.message}</p>
+            )}
+            <p className="mt-1 text-sm text-text-muted">
+              {isEdit ? 'Pick a different color to change it.' : 'Optional — defaults to indigo.'}
             </p>
-          )}
-
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isSubmitting}
-              aria-label={mode === 'create' ? 'Create course' : 'Save changes'}
-            >
-              {mode === 'create' ? 'Create course' : 'Save changes'}
-            </Button>
           </div>
-        </form>
-      </div>
-    </div>
+
+          <div className="w-full">
+            <label
+              htmlFor="course-description"
+              className="block mb-2 text-sm font-medium text-text"
+            >
+              Description
+            </label>
+            <textarea
+              id="course-description"
+              rows={3}
+              aria-invalid={errors.description?.message ? true : undefined}
+              aria-describedby={
+                errors.description?.message ? 'course-description-error' : undefined
+              }
+              placeholder="Optional notes about the course"
+              className={`w-full px-4 py-2 border rounded-lg bg-surface text-text placeholder-text-muted focus:border-accent focus:ring-2 focus:ring-accent focus:outline-none transition-colors duration-200 ${
+                errors.description?.message
+                  ? 'border-danger text-danger placeholder-danger/70'
+                  : 'border-border'
+              } ${isSubmitting ? 'opacity-50 cursor-not-allowed bg-surface-muted' : ''}`}
+              disabled={isSubmitting}
+              {...register('description')}
+            />
+            {errors.description?.message && (
+              <p id="course-description-error" className="mt-1 text-sm text-danger">
+                {errors.description.message}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {formError && (
+          <p
+            role="alert"
+            className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
+          >
+            {formError}
+          </p>
+        )}
+
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            isLoading={isSubmitting}
+            aria-label={mode === 'create' ? 'Create course' : 'Save changes'}
+          >
+            {mode === 'create' ? 'Create course' : 'Save changes'}
+          </Button>
+        </div>
+      </form>
+    </Dialog>
   );
 }

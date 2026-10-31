@@ -11,6 +11,7 @@ import type { AssignmentType } from '@/shared/types/academic';
 import type { AssignmentInteractionItem } from '../model/types';
 import { apiErrorMessage, extractApiError, getFieldError } from '@/shared/lib/errors';
 import { Button } from '@/shared/ui/Button';
+import { Dialog } from '@/shared/ui/Dialog';
 import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
 
@@ -84,7 +85,6 @@ const ASSIGNMENT_TYPE_LABELS: Record<AssignmentType, string> = {
   QUIZ: 'Quiz',
   EXAM: 'Exam',
 };
-const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export interface AssignmentFormProps {
   /** Fixed course for creation on the course page. Omitted on the cross-course list. */
@@ -124,7 +124,6 @@ export function AssignmentForm({
       : '';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
   const inFlight = useRef(false);
   const {
     register,
@@ -147,19 +146,6 @@ export function AssignmentForm({
   });
 
   useEffect(() => {
-    const trigger = document.activeElement as HTMLElement | null;
-    dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
-    return () => {
-      trigger?.focus();
-    };
-  }, []);
-
-  useEffect(() => {
-    // Disabled controls cannot retain keyboard focus reliably across browsers.
-    if (isSubmitting) dialogRef.current?.focus();
-  }, [isSubmitting]);
-
-  useEffect(() => {
     // The list's course picker resolves after mount; apply its filter prefill
     // once the option exists, and never override a course the student chose.
     if (!showCourseSelect || !initialCourseId) return;
@@ -167,38 +153,6 @@ export function AssignmentForm({
     if (getValues('courseId')) return;
     setValue('courseId', initialCourseId);
   }, [courses, initialCourseId, showCourseSelect, setValue, getValues]);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !isSubmitting) {
-        event.stopPropagation();
-        onClose();
-      }
-      if (event.key !== 'Tab') return;
-      const controls = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-        (el) => !el.hasAttribute('disabled')
-      );
-      const first = controls[0];
-      const last = controls[controls.length - 1];
-      if (!first) {
-        event.preventDefault();
-        dialog.focus();
-      } else if (
-        event.shiftKey &&
-        (document.activeElement === first || document.activeElement === dialog)
-      ) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    dialog.addEventListener('keydown', onKeyDown);
-    return () => dialog.removeEventListener('keydown', onKeyDown);
-  }, [isSubmitting, onClose]);
 
   const onSubmit = async (data: FormData) => {
     if (inFlight.current) return;
@@ -259,205 +213,193 @@ export function AssignmentForm({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-text/50"
-        aria-hidden="true"
-        onClick={isSubmitting ? undefined : onClose}
-      />
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="assignment-form-title"
-        aria-busy={isSubmitting}
-        tabIndex={-1}
-        className="card relative max-h-[90vh] w-full max-w-lg overflow-y-auto"
-      >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-          <h2 id="assignment-form-title" className="text-lg font-semibold text-text">
-            {isEdit ? 'Edit assignment' : 'Add an assignment'}
-          </h2>
-          <div className="space-y-4">
-            <Input
-              label="Title"
-              placeholder="Problem Set 4"
-              required
-              error={errors.title?.message}
+    <Dialog
+      open
+      onClose={onClose}
+      title={isEdit ? 'Edit assignment' : 'Add an assignment'}
+      busy={isSubmitting}
+      className="max-w-lg max-h-[90vh] overflow-y-auto"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        <div className="space-y-4">
+          <Input
+            label="Title"
+            placeholder="Problem Set 4"
+            required
+            error={errors.title?.message}
+            disabled={isSubmitting}
+            className="max-sm:min-h-[44px]"
+            {...register('title')}
+          />
+          {/* Cross-course create only (SP-124C): the course page keeps its fixed id. */}
+          {showCourseSelect && (
+            <Select
+              label="Course"
+              hint="Optional — choose a course or leave unassigned."
+              error={errors.courseId?.message}
               disabled={isSubmitting}
               className="max-sm:min-h-[44px]"
-              {...register('title')}
+              {...register('courseId')}
+            >
+              <option value="">No course</option>
+              {courses.map((course) => (
+                <option key={course.id} value={course.id}>
+                  {course.code} {course.name}
+                </option>
+              ))}
+            </Select>
+          )}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Input
+              label="Due date"
+              type="date"
+              hint={
+                isEdit
+                  ? 'Optional — leave blank to keep the current due date.'
+                  : 'Optional — leave blank for no due date.'
+              }
+              error={errors.dueDate?.message}
+              disabled={isSubmitting}
+              className="max-sm:min-h-[44px]"
+              {...register('dueDate')}
             />
-            {/* Cross-course create only (SP-124C): the course page keeps its fixed id. */}
-            {showCourseSelect && (
-              <Select
-                label="Course"
-                hint="Optional — choose a course or leave unassigned."
-                error={errors.courseId?.message}
-                disabled={isSubmitting}
-                className="max-sm:min-h-[44px]"
-                {...register('courseId')}
-              >
-                <option value="">No course</option>
-                {courses.map((course) => (
-                  <option key={course.id} value={course.id}>
-                    {course.code} {course.name}
-                  </option>
-                ))}
-              </Select>
-            )}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Input
-                label="Due date"
-                type="date"
-                hint={
-                  isEdit
-                    ? 'Optional — leave blank to keep the current due date.'
-                    : 'Optional — leave blank for no due date.'
-                }
-                error={errors.dueDate?.message}
-                disabled={isSubmitting}
-                className="max-sm:min-h-[44px]"
-                {...register('dueDate')}
-              />
-              <Input
-                label="Estimated duration (hours)"
-                type="number"
-                step="any"
-                hint={isEdit ? 'Optional — leave blank to keep the current duration.' : 'Optional'}
-                error={errors.estimatedHours?.message}
-                disabled={isSubmitting}
-                className="max-sm:min-h-[44px]"
-                {...register('estimatedHours')}
-              />
-            </div>
-            {/*
-             * The classification row (SP-115, refined 2026-10-25): scholarship
-             * first, then how the student classifies work — type left of
-             * priority. Tab order is the DOM order, so the existing trap
-             * needs no change.
-             */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Select
-                label="Type"
-                hint={
-                  isEdit && assignment?.type
-                    ? 'Pick a different value to change the type.'
-                    : 'Optional.'
-                }
-                error={errors.type?.message}
-                disabled={isSubmitting}
-                className="max-sm:min-h-[44px]"
-                {...register('type')}
-              >
-                {/* "No type" names the resulting unset state — it is never a
+            <Input
+              label="Estimated duration (hours)"
+              type="number"
+              step="any"
+              hint={isEdit ? 'Optional — leave blank to keep the current duration.' : 'Optional'}
+              error={errors.estimatedHours?.message}
+              disabled={isSubmitting}
+              className="max-sm:min-h-[44px]"
+              {...register('estimatedHours')}
+            />
+          </div>
+          {/*
+           * The classification row (SP-115, refined 2026-10-25): scholarship
+           * first, then how the student classifies work — type left of
+           * priority. Tab order is the DOM order, so the existing trap
+           * needs no change.
+           */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Select
+              label="Type"
+              hint={
+                isEdit && assignment?.type
+                  ? 'Pick a different value to change the type.'
+                  : 'Optional.'
+              }
+              error={errors.type?.message}
+              disabled={isSubmitting}
+              className="max-sm:min-h-[44px]"
+              {...register('type')}
+            >
+              {/* "No type" names the resulting unset state — it is never a
                     clear affordance: the API has no null-clear (D115-3), so
                     the option is absent when a type is already stored. */}
-                {(!isEdit || assignment?.type === null) && <option value="">No type</option>}
-                {ASSIGNMENT_TYPES.map((value) => (
-                  <option key={value} value={value}>
-                    {ASSIGNMENT_TYPE_LABELS[value]}
-                  </option>
-                ))}
-              </Select>
-              <Select
-                label="Priority"
-                hint={
-                  isEdit
-                    ? 'Pick a different value to change the priority.'
-                    : 'Optional — defaults to Medium'
-                }
-                error={errors.priority?.message}
-                disabled={isSubmitting}
-                className="max-sm:min-h-[44px]"
-                {...register('priority')}
-              >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-                <option value="URGENT">Urgent</option>
-              </Select>
-            </div>
-            <div className="w-full">
-              <label
-                htmlFor="assignment-description"
-                className="block mb-2 text-sm font-medium text-text"
-              >
-                Description
-              </label>
-              <textarea
-                id="assignment-description"
-                rows={3}
-                maxLength={2000}
-                aria-invalid={errors.description?.message ? true : undefined}
-                aria-describedby={
-                  errors.description?.message
-                    ? 'assignment-description-error'
-                    : 'assignment-description-hint'
-                }
-                placeholder="Optional notes or instructions"
-                className={clsx(
-                  'w-full px-4 py-2 border rounded-lg bg-surface text-text placeholder-text-muted',
-                  'max-sm:min-h-[44px]',
-                  'focus:border-accent focus:ring-2 focus:ring-accent focus:outline-none transition-colors duration-200',
-                  errors.description?.message
-                    ? 'border-danger text-danger placeholder-danger/70'
-                    : 'border-border',
-                  isSubmitting && 'opacity-50 cursor-not-allowed bg-surface-muted'
-                )}
-                disabled={isSubmitting}
-                {...register('description')}
-              />
-              {errors.description?.message && (
-                <p id="assignment-description-error" className="mt-1 text-sm text-danger">
-                  {errors.description.message}
-                </p>
-              )}
-              {!errors.description?.message && (
-                <p id="assignment-description-hint" className="mt-1 text-sm text-text-muted">
-                  {isEdit
-                    ? 'Optional — up to 2000 characters. Leave blank to clear.'
-                    : 'Optional — up to 2000 characters.'}
-                </p>
-              )}
-            </div>
-          </div>
-          {formError && (
-            <div
-              role="alert"
-              className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
-            >
-              <p>{formError}</p>
-              <Link
-                to="/courses"
-                className="mt-2 inline-block font-medium text-accent hover:underline"
-              >
-                Back to courses
-              </Link>
-            </div>
-          )}
-          <div className="flex flex-col-reverse gap-3 border-t border-border pt-4 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="secondary"
-              className="max-sm:min-h-[44px]"
-              onClick={onClose}
+              {(!isEdit || assignment?.type === null) && <option value="">No type</option>}
+              {ASSIGNMENT_TYPES.map((value) => (
+                <option key={value} value={value}>
+                  {ASSIGNMENT_TYPE_LABELS[value]}
+                </option>
+              ))}
+            </Select>
+            <Select
+              label="Priority"
+              hint={
+                isEdit
+                  ? 'Pick a different value to change the priority.'
+                  : 'Optional — defaults to Medium'
+              }
+              error={errors.priority?.message}
               disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isSubmitting}
               className="max-sm:min-h-[44px]"
-              aria-label={isEdit ? 'Save changes' : 'Create assignment'}
+              {...register('priority')}
             >
-              {isEdit ? 'Save changes' : 'Create assignment'}
-            </Button>
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+              <option value="URGENT">Urgent</option>
+            </Select>
           </div>
-        </form>
-      </div>
-    </div>
+          <div className="w-full">
+            <label
+              htmlFor="assignment-description"
+              className="block mb-2 text-sm font-medium text-text"
+            >
+              Description
+            </label>
+            <textarea
+              id="assignment-description"
+              rows={3}
+              maxLength={2000}
+              aria-invalid={errors.description?.message ? true : undefined}
+              aria-describedby={
+                errors.description?.message
+                  ? 'assignment-description-error'
+                  : 'assignment-description-hint'
+              }
+              placeholder="Optional notes or instructions"
+              className={clsx(
+                'w-full px-4 py-2 border rounded-lg bg-surface text-text placeholder-text-muted',
+                'max-sm:min-h-[44px]',
+                'focus:border-accent focus:ring-2 focus:ring-accent focus:outline-none transition-colors duration-200',
+                errors.description?.message
+                  ? 'border-danger text-danger placeholder-danger/70'
+                  : 'border-border',
+                isSubmitting && 'opacity-50 cursor-not-allowed bg-surface-muted'
+              )}
+              disabled={isSubmitting}
+              {...register('description')}
+            />
+            {errors.description?.message && (
+              <p id="assignment-description-error" className="mt-1 text-sm text-danger">
+                {errors.description.message}
+              </p>
+            )}
+            {!errors.description?.message && (
+              <p id="assignment-description-hint" className="mt-1 text-sm text-text-muted">
+                {isEdit
+                  ? 'Optional — up to 2000 characters. Leave blank to clear.'
+                  : 'Optional — up to 2000 characters.'}
+              </p>
+            )}
+          </div>
+        </div>
+        {formError && (
+          <div
+            role="alert"
+            className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
+          >
+            <p>{formError}</p>
+            <Link
+              to="/courses"
+              className="mt-2 inline-block font-medium text-accent hover:underline"
+            >
+              Back to courses
+            </Link>
+          </div>
+        )}
+        <div className="flex flex-col-reverse gap-3 border-t border-border pt-4 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="secondary"
+            className="max-sm:min-h-[44px]"
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            isLoading={isSubmitting}
+            className="max-sm:min-h-[44px]"
+            aria-label={isEdit ? 'Save changes' : 'Create assignment'}
+          >
+            {isEdit ? 'Save changes' : 'Create assignment'}
+          </Button>
+        </div>
+      </form>
+    </Dialog>
   );
 }

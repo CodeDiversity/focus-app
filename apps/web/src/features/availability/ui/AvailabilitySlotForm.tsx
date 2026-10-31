@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import toast from 'react-hot-toast';
 import { Ban, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
+import { Dialog } from '@/shared/ui/Dialog';
 import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
 import {
@@ -103,9 +104,6 @@ export interface AvailabilitySlotFormProps {
   onClose: (options?: { requestRefetch?: boolean }) => void;
 }
 
-const FOCUSABLE_SELECTOR =
-  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
 /**
  * The kind radio pair's choices (D128B-6): labels one word more explicit
  * than the calendar badges so the setting's meaning survives without the
@@ -145,8 +143,6 @@ const KIND_OPTIONS = [
 export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilitySlotFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<{ message: string; isNotFound: boolean } | null>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const restoreFocusRef = useRef<HTMLElement | null>(null);
 
   const {
     register,
@@ -177,60 +173,6 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
     if (isSubmitting) return; // frozen while the request is in flight (D128B-5)
     closeRef.current(notFoundRef.current ? { requestRefetch: true } : undefined);
   };
-
-  // Focus management (the MeetingForm/DeleteSemesterDialog pattern): on open
-  // the dialog takes focus (the first focusable is the kind radio pair) and
-  // focus is trapped (Tab/Shift+Tab cycle within; Escape closes); on close
-  // focus returns to the trigger that opened the dialog.
-  useEffect(() => {
-    restoreFocusRef.current = document.activeElement as HTMLElement | null;
-    const first = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
-    (first ?? dialogRef.current)?.focus();
-    return () => {
-      restoreFocusRef.current?.focus();
-    };
-  }, []);
-
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (isSubmitting) return; // frozen while the request is in flight
-    if (event.key === 'Escape') {
-      event.stopPropagation();
-      requestClose();
-      return;
-    }
-    if (event.key !== 'Tab') return;
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-      (el) => !el.hasAttribute('disabled')
-    );
-    if (focusable.length === 0) {
-      event.preventDefault();
-      return;
-    }
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    const active = document.activeElement;
-    if (event.shiftKey && (active === first || !dialog.contains(active))) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  };
-
-  // Escape/Tab handling is attached imperatively (not as a JSX handler):
-  // focus is trapped inside the dialog, so a keydown listener on the dialog
-  // element sees every key press.
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    dialog.addEventListener('keydown', handleKeyDown);
-    return () => {
-      dialog.removeEventListener('keydown', handleKeyDown);
-    };
-  });
 
   const handleApiError = (err: unknown) => {
     const apiError = extractApiError(err);
@@ -296,136 +238,125 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop: click closes without a request (frozen while submitting). */}
-      <div className="absolute inset-0 bg-text/50" aria-hidden="true" onClick={requestClose} />
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="slot-form-title"
-        tabIndex={-1}
-        className="card relative max-h-[90vh] w-full max-w-md overflow-y-auto overflow-x-hidden p-6"
-      >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-          <h2 id="slot-form-title" className="text-lg font-semibold text-text">
-            {slot ? `Edit ${formatSlotName(slot)}` : 'Add a time slot'}
-          </h2>
-
-          <div className="space-y-4">
-            {/* Kind (D128B-6): a labeled radiogroup of two segmented cards;
+    <Dialog
+      open
+      onClose={requestClose}
+      title={slot ? `Edit ${formatSlotName(slot)}` : 'Add a time slot'}
+      busy={isSubmitting}
+      className="max-w-md max-h-[90vh] overflow-y-auto overflow-x-hidden"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        <div className="space-y-4">
+          {/* Kind (D128B-6): a labeled radiogroup of two segmented cards;
                 native radios — one tabstop into the group, arrow keys move
                 the selection (AC 8), and the checked radio is the create-mode
                 default "Available window". `aria-label` keeps the radio's
                 name exactly the option label (the caption stays visual). */}
-            <div>
-              <span id="slot-kind-label" className="mb-2 block text-sm font-medium text-text">
-                Kind
-              </span>
-              <div
-                role="radiogroup"
-                aria-labelledby="slot-kind-label"
-                className="grid grid-cols-1 gap-2 sm:grid-cols-2"
-              >
-                {KIND_OPTIONS.map((option) => {
-                  const Icon = option.icon;
-                  const checked = selectedKind === option.value;
-                  return (
-                    <label
-                      key={option.value}
-                      className={clsx(
-                        'flex cursor-pointer items-start gap-2 rounded-lg border p-3 transition-colors duration-150',
-                        'focus-within:outline-none focus-within:ring-2 focus-within:ring-accent',
-                        checked
-                          ? 'border-accent bg-accent/10'
-                          : 'border-border bg-surface hover:border-border-strong',
-                        isSubmitting && 'opacity-50 cursor-not-allowed'
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        value={option.value}
-                        aria-label={option.label}
-                        checked={selectedKind === option.value}
-                        // Explicit size + resets: the global base rule
-                        // `input { @apply w-full px-4 py-2 border … }`
-                        // (index.css) would otherwise stretch this radio to
-                        // the full card width (F-B-6: the text beside it
-                        // collapsed and the card content overflowed).
-                        className="mt-1 h-4 w-4 shrink-0 p-0 border-0 bg-transparent"
-                        disabled={isSubmitting}
-                        {...register('kind')}
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-1.5 text-sm font-medium text-text">
-                          <Icon aria-hidden size={14} className="shrink-0 text-text-muted" />
-                          {option.label}
-                        </span>
-                        <span className="mt-0.5 block text-xs text-text-muted">
-                          {option.caption}
-                        </span>
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-
-            <Select
-              label="Day"
-              error={errors.dayOfWeek?.message}
-              disabled={isSubmitting}
-              {...register('dayOfWeek', { valueAsNumber: true })}
-            >
-              {WEEKDAY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Input
-                label="Start time"
-                type="time"
-                error={errors.startTime?.message}
-                disabled={isSubmitting}
-                {...register('startTime')}
-              />
-              <Input
-                label="End time"
-                type="time"
-                error={errors.endTime?.message}
-                disabled={isSubmitting}
-                {...register('endTime')}
-              />
-            </div>
-          </div>
-
-          {formError && (
+          <div>
+            <span id="slot-kind-label" className="mb-2 block text-sm font-medium text-text">
+              Kind
+            </span>
             <div
-              role="alert"
-              className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
+              role="radiogroup"
+              aria-labelledby="slot-kind-label"
+              className="grid grid-cols-1 gap-2 sm:grid-cols-2"
             >
-              <p>{formError.message}</p>
+              {KIND_OPTIONS.map((option) => {
+                const Icon = option.icon;
+                const checked = selectedKind === option.value;
+                return (
+                  <label
+                    key={option.value}
+                    className={clsx(
+                      'flex cursor-pointer items-start gap-2 rounded-lg border p-3 transition-colors duration-150',
+                      'focus-within:outline-none focus-within:ring-2 focus-within:ring-accent',
+                      checked
+                        ? 'border-accent bg-accent/10'
+                        : 'border-border bg-surface hover:border-border-strong',
+                      isSubmitting && 'opacity-50 cursor-not-allowed'
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      value={option.value}
+                      aria-label={option.label}
+                      checked={selectedKind === option.value}
+                      // Explicit size + resets: the global base rule
+                      // `input { @apply w-full px-4 py-2 border … }`
+                      // (index.css) would otherwise stretch this radio to
+                      // the full card width (F-B-6: the text beside it
+                      // collapsed and the card content overflowed).
+                      className="mt-1 h-4 w-4 shrink-0 p-0 border-0 bg-transparent"
+                      disabled={isSubmitting}
+                      {...register('kind')}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center gap-1.5 text-sm font-medium text-text">
+                        <Icon aria-hidden size={14} className="shrink-0 text-text-muted" />
+                        {option.label}
+                      </span>
+                      <span className="mt-0.5 block text-xs text-text-muted">{option.caption}</span>
+                    </span>
+                  </label>
+                );
+              })}
             </div>
-          )}
-
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" onClick={requestClose} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isSubmitting}
-              aria-label={slot ? 'Save changes' : 'Create time slot'}
-            >
-              {slot ? 'Save changes' : 'Create time slot'}
-            </Button>
           </div>
-        </form>
-      </div>
-    </div>
+
+          <Select
+            label="Day"
+            error={errors.dayOfWeek?.message}
+            disabled={isSubmitting}
+            {...register('dayOfWeek', { valueAsNumber: true })}
+          >
+            {WEEKDAY_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Select>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Input
+              label="Start time"
+              type="time"
+              error={errors.startTime?.message}
+              disabled={isSubmitting}
+              {...register('startTime')}
+            />
+            <Input
+              label="End time"
+              type="time"
+              error={errors.endTime?.message}
+              disabled={isSubmitting}
+              {...register('endTime')}
+            />
+          </div>
+        </div>
+
+        {formError && (
+          <div
+            role="alert"
+            className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
+          >
+            <p>{formError.message}</p>
+          </div>
+        )}
+
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button type="button" variant="outline" onClick={requestClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            isLoading={isSubmitting}
+            aria-label={slot ? 'Save changes' : 'Create time slot'}
+          >
+            {slot ? 'Save changes' : 'Create time slot'}
+          </Button>
+        </div>
+      </form>
+    </Dialog>
   );
 }

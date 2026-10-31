@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { Button } from '@/shared/ui/Button';
+import { Dialog } from '@/shared/ui/Dialog';
 import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
 import {
@@ -88,9 +89,6 @@ export interface MeetingFormProps {
   onClose: () => void;
 }
 
-const FOCUSABLE_SELECTOR =
-  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
 /**
  * Add/edit form for a recurring class meeting (SP-112B, AC 3) — a **dialog**
  * (D112B-3, the `CourseForm` pattern): focus trap, Escape closes, focus
@@ -108,8 +106,6 @@ const FOCUSABLE_SELECTOR =
 export function MeetingForm({ courseId, meeting, onSuccess, onClose }: MeetingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<{ message: string; isNotFound: boolean } | null>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const restoreFocusRef = useRef<HTMLElement | null>(null);
 
   const {
     register,
@@ -123,60 +119,6 @@ export function MeetingForm({ courseId, meeting, onSuccess, onClose }: MeetingFo
       startTime: meeting?.startTime ?? '',
       endTime: meeting?.endTime ?? '',
     },
-  });
-
-  // Focus management (the CourseForm/DeleteSemesterDialog pattern): on open
-  // the dialog takes focus (the first focusable is the day select) and focus
-  // is trapped (Tab/Shift+Tab cycle within; Escape closes); on close focus
-  // returns to the trigger that opened the dialog.
-  useEffect(() => {
-    restoreFocusRef.current = document.activeElement as HTMLElement | null;
-    const first = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
-    (first ?? dialogRef.current)?.focus();
-    return () => {
-      restoreFocusRef.current?.focus();
-    };
-  }, []);
-
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (isSubmitting) return; // frozen while the request is in flight
-    if (event.key === 'Escape') {
-      event.stopPropagation();
-      onClose();
-      return;
-    }
-    if (event.key !== 'Tab') return;
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-      (el) => !el.hasAttribute('disabled')
-    );
-    if (focusable.length === 0) {
-      event.preventDefault();
-      return;
-    }
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    const active = document.activeElement;
-    if (event.shiftKey && (active === first || !dialog.contains(active))) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  };
-
-  // Escape/Tab handling is attached imperatively (not as a JSX handler):
-  // focus is trapped inside the dialog, so a keydown listener on the dialog
-  // element sees every key press.
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    dialog.addEventListener('keydown', handleKeyDown);
-    return () => {
-      dialog.removeEventListener('keydown', handleKeyDown);
-    };
   });
 
   const handleApiError = (err: unknown) => {
@@ -239,90 +181,77 @@ export function MeetingForm({ courseId, meeting, onSuccess, onClose }: MeetingFo
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop: click closes without a request (frozen while submitting). */}
-      <div
-        className="absolute inset-0 bg-text/50"
-        aria-hidden="true"
-        onClick={isSubmitting ? undefined : onClose}
-      />
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="meeting-form-title"
-        tabIndex={-1}
-        className="card relative max-h-[90vh] w-full max-w-md overflow-y-auto"
-      >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-          <h2 id="meeting-form-title" className="text-lg font-semibold text-text">
-            {meeting ? `Edit ${formatMeetingLabel(meeting)}` : 'Add a meeting'}
-          </h2>
+    <Dialog
+      open
+      onClose={onClose}
+      title={meeting ? `Edit ${formatMeetingLabel(meeting)}` : 'Add a meeting'}
+      busy={isSubmitting}
+      className="max-w-md max-h-[90vh] overflow-y-auto"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        <div className="space-y-4">
+          <Select
+            label="Day"
+            error={errors.dayOfWeek?.message}
+            disabled={isSubmitting}
+            {...register('dayOfWeek', { valueAsNumber: true })}
+          >
+            {WEEKDAY_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Select>
 
-          <div className="space-y-4">
-            <Select
-              label="Day"
-              error={errors.dayOfWeek?.message}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Input
+              label="Start time"
+              type="time"
+              error={errors.startTime?.message}
               disabled={isSubmitting}
-              {...register('dayOfWeek', { valueAsNumber: true })}
-            >
-              {WEEKDAY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Input
-                label="Start time"
-                type="time"
-                error={errors.startTime?.message}
-                disabled={isSubmitting}
-                {...register('startTime')}
-              />
-              <Input
-                label="End time"
-                type="time"
-                error={errors.endTime?.message}
-                disabled={isSubmitting}
-                {...register('endTime')}
-              />
-            </div>
+              {...register('startTime')}
+            />
+            <Input
+              label="End time"
+              type="time"
+              error={errors.endTime?.message}
+              disabled={isSubmitting}
+              {...register('endTime')}
+            />
           </div>
+        </div>
 
-          {formError && (
-            <div
-              role="alert"
-              className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
-            >
-              <p>{formError.message}</p>
-              {formError.isNotFound && (
-                <Link
-                  to="/courses"
-                  className="mt-2 inline-block font-medium text-accent hover:underline"
-                >
-                  Back to courses
-                </Link>
-              )}
-            </div>
-          )}
-
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isSubmitting}
-              aria-label={meeting ? 'Save changes' : 'Create meeting'}
-            >
-              {meeting ? 'Save changes' : 'Create meeting'}
-            </Button>
+        {formError && (
+          <div
+            role="alert"
+            className="rounded-lg border border-danger/30 bg-danger/10 p-3 text-sm text-danger"
+          >
+            <p>{formError.message}</p>
+            {formError.isNotFound && (
+              <Link
+                to="/courses"
+                className="mt-2 inline-block font-medium text-accent hover:underline"
+              >
+                Back to courses
+              </Link>
+            )}
           </div>
-        </form>
-      </div>
-    </div>
+        )}
+
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            isLoading={isSubmitting}
+            aria-label={meeting ? 'Save changes' : 'Create meeting'}
+          >
+            {meeting ? 'Save changes' : 'Create meeting'}
+          </Button>
+        </div>
+      </form>
+    </Dialog>
   );
 }
