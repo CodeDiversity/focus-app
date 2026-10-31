@@ -69,10 +69,9 @@ The deterministic rescheduler for catch-up. It does **not** create a second sche
   - `apps/api/src/domain/study-planning/conflicts.ts` (`findConflicts`).
   - `apps/api/src/domain/study-planning/types.ts`.
 - **Proposed (new):** `apps/api/src/domain/study-planning/catch-up.ts` (or `replan.ts`) exporting `replan(input)` and `ReplanInput`/`ReplanOutput` types, plus `catch-up.spec.ts`. The module lives inside `domain/study-planning/` so the "no Nest, no Prisma, no clock, no randomness" boundary stays visible in the import graph (EP06 convention).
-- **Input shape (proposed):** `{ days: string[]; assignments: SchedulableAssignment[]; availability, blocked, classes: WeeklyWindow[]; busy: DatedInterval[];  // confirmed + completed + locked sessions, already dated
-    lockedSessions: DatedInterval[]; // subset, for counting/reporting
+- **Input shape (proposed):** `{ days: string[]; assignments: SchedulableAssignment[]; availability, blocked, classes: WeeklyWindow[]; busy: DatedInterval[];  // confirmed + completed + locked sessions, already dated; locked intervals are tagged (`locked: true`) so `lockedPreserved` is derived from `busy` rather than passed separately
     missedSessions: MissedSession[]; preferences: StudyPreferences }`.
-  - `busy` is the union of confirmed `StudySession`s, completed `PlannedSession`s and locked `PlannedSession`s; `lockedSessions` is passed separately only so the output can report `lockedPreserved`.
+  - `busy` is the union of confirmed `StudySession`s, completed `PlannedSession`s and locked `PlannedSession`s; locked intervals carry `locked: true` so `lockedPreserved` is computed from `busy` and cannot drift from it (PR-006). No separate `lockedSessions` input.
 - **Output shape (proposed):** `{ sessions: PlannedSessionProposal[]; results: SchedulerResult[]; (deficit categories); missedSessions; lockedPreserved; completedPreserved }`.
 - **Replan does not recompute missed sessions** — EP08A owns that. It receives them.
 - **Window:** uses the caller-supplied `days` (EP08C supplies the 7-day window per D08-6; provisional).

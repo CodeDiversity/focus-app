@@ -10,12 +10,12 @@
 
 ## Summary
 
-The catch-up API spine. `POST /study-plans/catch-up/preview` runs the rescheduler (EP08B) over the student's current data and returns a side-effect-free `CatchUpPreview` (proposed sessions + missed sessions + feasibility warnings + locked/completed preservation counts). `POST /study-plans/catch-up/confirm` persists the accepted change set transactionally, preserving completed, in-progress, skipped, rescheduled and locked sessions, re-checking conflicts on save, and never touching `StudySession`, `Assignment` or `Task`. Declining is client-side (no call). This story also owns the `locked` migration on `PlannedSession` (D08-4, provisional).
+The catch-up API spine. `POST /study-plans/catch-up/preview` runs the rescheduler (EP08B) over the student's current data and returns a side-effect-free `CatchUpPreview` (proposed sessions + missed sessions + feasibility warnings + locked/completed preservation counts). `POST /study-plans/catch-up/confirm` persists the accepted change set transactionally, preserving completed, in-progress, skipped, rescheduled and locked sessions, re-checking conflicts on save, and never touching `StudySession`, `Assignment` or `Task`. Declining is client-side (no call). This story consumes the `locked` column added by EP08A's migration (D08-4, settled 2026-10-30); it does not add the column. EP08A owns the migration (PR-001).
 
 ## Scope
 
 **In scope:**
-- `locked Boolean @default(false)` migration on `PlannedSession` (additive, reversible).
+- Consumes the `locked` column added by EP08A's migration (additive, reversible, `@default(false)`); no new migration in this story (PR-001).
 - `POST /study-plans/catch-up/preview` (side-effect-free).
 - `POST /study-plans/catch-up/confirm` (transactional, conflict re-check, locked/completed preservation).
 - Conflict re-check reusing EP06's `findConflicts` + `overlaps`.
@@ -50,9 +50,9 @@ The catch-up API spine. `POST /study-plans/catch-up/preview` runs the reschedule
 3. Feasibility warnings reuse EP06's categories (`NO_AVAILABLE_TIME`, `INSUFFICIENT_TIME_BEFORE_DEADLINE`, `OVERDUE`) and shape.
 4. `POST /study-plans/catch-up/confirm` with a valid body returns 201 with a `SavedPlan` and, inside one transaction:
    - validates the window (same rules as EP06D save, including `to === from + 6` and `WINDOW_ROLLED_OVER`);
-   - re-runs the conflict check using EP06's `findConflicts`; on conflict returns 409 with a `conflicts` array using the same reason codes and precedence;
+   - re-runs the conflict check using EP06's `findConflicts` with busy set = confirmed `StudySession`s + completed `PlannedSession`s + locked `PlannedSession`s + the *other submitted* sessions (SCHEDULED non-locked sessions being replaced are excluded — PR-002); on conflict returns 409 with a `conflicts` array using the same reason codes and precedence;
    - deletes only `PlannedSession` rows with `status === 'SCHEDULED' && locked === false` within `[from, to]`;
-   - upserts `StudyPlan` rows per day (target hours from placed minutes);
+   - upserts `StudyPlan` rows per day with `targetHours = (sum of submitted session durations on that day) / 60` computed from `dto.sessions` in the transaction (days with no submitted sessions get `targetHours = 0`) — not carried over from the preview (PR-007);
    - inserts the submitted proposed sessions with `status: 'SCHEDULED'`, `locked: false`;
    - never writes `StudySession`, `Assignment` or `Task`.
 5. After confirm, completed, in-progress, skipped, rescheduled and locked `PlannedSession`s in the window are unchanged (counts and fields).
@@ -85,11 +85,11 @@ The catch-up API spine. `POST /study-plans/catch-up/preview` runs the reschedule
   - `apps/api/prisma/schema.prisma` — `PlannedSession`, `StudyPlan`.
   - `apps/api/src/common/ownership/ownership.ts`.
 - **Proposed (new/changed):**
-  - Migration: add `locked Boolean @default(false)` to `PlannedSession` (one migration folder, additive; document in implementation record).
+  - No new migration in this story: consumes the `locked` column added by EP08A (PR-001); document consumption in implementation record.
   - `StudyPlansService` methods `catchUpPreview(userId)` and `catchUpConfirm(userId, dto)`, reusing `gatherPlanData` (possibly refactored to be reusable) and `replan(...)`.
   - Controller routes `POST /study-plans/catch-up/preview` and `POST /study-plans/catch-up/confirm` (or a dedicated controller — implementation detail; contract is the path).
   - `gatherPlanData` must also collect `PlannedSession` rows (with `locked`) for the busy set and `StudySession` confirmed minutes; reuse EP06's pattern.
-- **Conflict re-check:** reuse the exact EP06D call site pattern (`findConflicts(submitted, { classes, blocked, busy })`) with the same dated-interval construction; only the busy set changes (adds completed + locked planned sessions).
+- **Conflict re-check:** reuse the exact EP06D call site pattern (`findConflicts(submitted, { classes, blocked, busy })`) with the same dated-interval construction; busy set = confirmed `StudySession`s + completed `PlannedSession`s + locked `PlannedSession`s + the *other submitted* sessions; SCHEDULED non-locked sessions being replaced are excluded (PR-002). Add a test asserting an unedited confirm succeeds with no conflicts.
 - **No new scheduling algorithm:** placement comes from EP08B's `replan`, which calls EP06's `schedule`.
 - **Civil-date discipline:** same as EP06D (profile zone, `zoneParts`, `wallToInstant`).
 

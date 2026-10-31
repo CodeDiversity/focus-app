@@ -3,7 +3,7 @@
 **Epic:** [EP08: Catch-Up & Recovery](../../epics/EP08-catch-up-and-recovery.md) (Jira STUDY-17)
 **Milestone:** M4 (Catch-up workflow and complete MVP)
 **Epic dependency:** EP06 (Study Planning & Scheduling — complete, parent review passed 2026-10-30) and EP07 (Focus Sessions & Time Tracking — complete, parent review passed 2026-10-30). EP08 reuses the EP06 scheduling engine and the EP07 session log; it adds no new scheduling algorithm.
-**Status:** Breakdown complete (planner). Plan-review gate: **not yet run** (no `plan-review.md`). Jira keys: Pending creation (no sync authorized for this planning task).
+**Status:** Breakdown complete (planner). Plan-review gate: **Changes Required** (pass 1, 2026-10-30) — planner correction pass applied (PR-001…PR-008); awaiting independent re-review. Jira keys: Pending creation (no sync authorized for this planning task).
 **Jira keys:** Pending creation.
 
 ## Execution queue
@@ -110,7 +110,7 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 
 This is the seam between EP08A/EP08B/EP08C (which implement it) and EP08D/EP08E (which consume it) and EP08F (which verifies it end to end). Field names, bounds and status codes below are the stable part; the presentation is settled by the `ui-refiner` pass (D08-7).
 
-### Data model (EP08C — extends `PlannedSession` in place, D08-4)
+### Data model (EP08A owns the additive migration; EP08C consumes it — D08-4, settled 2026-10-30)
 
 One additive migration: `PlannedSession` gains a `locked` flag. No new table; no change to `StudySession` (historical logs stay untouched — AC-E08-03).
 
@@ -129,7 +129,7 @@ model PlannedSession {
 ### Missed session (derived, not stored)
 
 A `PlannedSession` is **missed** when all of the following hold:
-- its `StudyPlan.date` (civil, profile zone) is strictly before today's civil date in the profile zone;
+- its `StudyPlan.date` (stored as UTC midnight of the civil date string, EP06 convention) is strictly before `new Date(`${formatToday(timeZone)}T00:00:00.000Z`)` — the civil "today" rendered as a UTC-midnight `Date`. Do **not** convert a profile-zone midnight to an instant (that shifts the boundary for non-UTC profiles).
 - its `status === 'SCHEDULED'` (not `COMPLETED`, `SKIPPED`, `RESCHEDULED` or `IN_PROGRESS`);
 - its linked `Assignment.status` is `PENDING` or `IN_PROGRESS` (a `COMPLETED` assignment's planned sessions are **not** missed work — AC-E08-01).
 
@@ -208,9 +208,9 @@ The engine stays pure; `replan` is pure too (no writes, no clock, no randomness 
 
 On confirm, inside one Prisma transaction:
 1. Validate the window (same rules as EP06D save, including `WINDOW_ROLLED_OVER`).
-2. Run the conflict re-check using EP06's `findConflicts` (same helper).
+2. Run the conflict re-check using EP06's `findConflicts` (same helper), with the busy set = confirmed `StudySession`s + completed `PlannedSession`s + locked `PlannedSession`s + the *other submitted* sessions. **Excluded from busy:** the SCHEDULED non-locked `PlannedSession`s in `[from, to]` that are being replaced — including them would make every unedited confirm return 409. (PR-002)
 3. Delete only `PlannedSession` rows whose `status === 'SCHEDULED'` **and** `locked === false` within `[from, to]`. Completed, in-progress, skipped, rescheduled and locked rows are preserved.
-4. Upsert `StudyPlan` rows for each day (target hours from placed minutes).
+4. Upsert `StudyPlan` rows per day, with `targetHours = (sum of submitted session durations on that day) / 60` computed from `dto.sessions` in the transaction — not carried over from the preview. Days with no submitted sessions get `targetHours = 0`. (PR-007)
 5. Insert the submitted proposed sessions with `status: 'SCHEDULED'`, `locked: false`.
 6. Never touch `StudySession`, `Assignment`, `Task` or any historical log (AC-E08-03, AC-E08-08).
 
@@ -224,7 +224,7 @@ The conflict re-check attributes reasons with EP06's `overlaps` primitive in the
 | D08-2 | **Replanning is a proposed change set.** Preview is side-effect-free; confirm persists transactionally; decline persists nothing. | Epic Technical Notes (settled). |
 | D08-3 | **Completed work and historical study logs are never touched.** Confirm writes only `StudyPlan`/`PlannedSession` rows; `StudySession`, `Assignment`, `Task` are read-only in EP08. | Epic AC (settled). |
 | D08-4 | **Manually locked sessions are preserved** — settled 2026-10-30. Add `locked Boolean @default(false)` to `PlannedSession`; locked sessions are never moved/deleted and are treated as busy. **Locked is an explicit student toggle** (not derived from `IN_PROGRESS`/`COMPLETED` status) — V-08-1 resolved by user decision 2026-10-30. The toggle affordance is a UI decision and must be settled by the `ui-refiner` (EP08E) before implementation. | User decision 2026-10-30 accepting the planner's recommendation (explicit toggle). |
-| D08-5 | **Missed session definition** — provisional. A `PlannedSession` is missed when its civil date < today, status `SCHEDULED`, and its assignment is `PENDING`/`IN_PROGRESS`. Verification task V-08-2 to confirm the date boundary (strictly before today vs. end of the session's day) and the assignment-status filter. | Planner-recorded provisional definition; derived from AC-E08-01. |
+| D08-5 | **Missed session definition** — provisional (date boundary only). A `PlannedSession` is missed when its civil date < today, status `SCHEDULED`, and its assignment is `PENDING`/`IN_PROGRESS` (assignment-status filter settled by reuse of EP06's `isUnfinishedStatus`; PR-005). Verification task V-08-2 confirms the date boundary only. | Planner-recorded provisional definition; derived from AC-E08-01. |
 | D08-6 | **Catch-up window = next 7 days starting today** (same as EP06) — settled 2026-10-30 (V-08-3 resolved by user decision accepting the planner's recommendation). Work that cannot fit before its deadline is reported via the engine's deficit categories. | User decision 2026-10-30 accepting the planner's recommendation (7 days for consistency with EP06). |
 | D08-7 | **EP08D and EP08E are `Needs refinement`.** Recovery-summary layout, the "behind" messaging tone (neutral, non-blaming, no punitive copy), the replanning entry point, the catch-up preview/edit/confirm/decline interaction model, feasibility-warning presentation, empty/loading/error states, copy, responsive behavior and keyboard behavior are deliberately undecided; the `ui-refiner` records them before implementation. EP08A, EP08B, EP08C and EP08F are backend/domain/integration work and need no `ui-refiner` pass. | Planner skill UI/UX handoff rule. |
 | D08-8 | **No blame or punitive messaging.** All user-facing copy in the recovery and catch-up surfaces must be neutral/encouraging; no "you missed", "you failed", "overdue" shaming. The `RecoverySummary.message` and warning copy are subject to the `ui-refiner`. | Epic description (settled product requirement). |
@@ -232,7 +232,7 @@ The conflict re-check attributes reasons with EP06's `overlaps` primitive in the
 ### Verification tasks
 
 - **V-08-1:** Resolved 2026-10-30 by user decision — "locked" is an explicit student toggle (not derived from status). (D08-4)
-- **V-08-2:** Confirm the missed-session date boundary and assignment-status filter. (D08-5)
+- **V-08-2:** Confirm the missed-session date boundary (strictly before today vs. end of the session's day). The assignment-status filter is settled by reuse of EP06's `isUnfinishedStatus` (PENDING/IN_PROGRESS only; COMPLETED/SUBMITTED/GRADED excluded) — not an open product decision (PR-005).
 - **V-08-3:** Resolved 2026-10-30 by user decision — catch-up horizon = 7 days (consistent with EP06). (D08-6)
 - **V-08-4:** Resolved 2026-10-30 by user decision — decline is client-side (no server-side audit record). (settled)
 - **V-08-5:** When EP08 lands, ensure EP06's `gatherPlanData`/`getRemainingWork` confirmed-time aggregation is upgraded to the State-B shape (EP07 sessions) if not already — EP06's provisional seam V-07-2. EP08 reuses the same confirmed-time source. (cross-epic)
@@ -274,7 +274,7 @@ Child implementation completion unblocks the dependent child; only the passing c
 
 ### Quality gate (planner)
 
-**Verdict: Draft** — the breakdown is complete and internally consistent, but EP08D and EP08E are `Needs refinement` (D08-7) and one verification task (V-08-2) is open. EP08A, EP08B, EP08C and EP08F carry no UI decisions and are ready to implement once upstream dependencies land. D08-4, D08-6 and V-08-1/V-08-3/V-08-4 were settled by user decision 2026-10-30. No implementation blocker exists beyond refinement: EP06 and EP07 are complete and parent-reviewed; the EP06 engine is the reuse target.
+**Verdict: Draft** — the breakdown is complete and internally consistent, but EP08D and EP08E are `Needs refinement` (D08-7) and one verification task (V-08-2) is open. EP08A, EP08B, EP08C and EP08F carry no UI decisions and are ready to implement once upstream dependencies land. D08-4, D08-6 and V-08-1/V-08-3/V-08-4 were settled by user decision 2026-10-30. Implementation blocker (PR-003): EP08A's per-assignment `confirmedMinutes` depends on the EP06 State-B upgrade (V-08-5); EP08A delivers the total only until that upgrade lands. EP06 and EP07 are complete and parent-reviewed; the EP06 engine is the reuse target.
 
 | # | Check | Result | Reference |
 |---|---|---|---|
@@ -284,18 +284,25 @@ Child implementation completion unblocks the dependent child; only the passing c
 | 4 | Contract consistency | Pass | One shared API/data contract section (endpoints, shapes, missed-session definition, engine reuse, confirm transaction, migration). EP08A/B/C implement, EP08D/E consume, EP08F verifies. |
 | 5 | Code paths inspected | Pass | Code baseline section above (schema, EP06 engine + service, EP07 session log, ownership helpers, frontend routes, E2E stack, design system). Unverified items disclosed (ui-refiner decisions, V-08-1…4, browser rendering). |
 | 6 | Feature-specific risks/counterexamples | Pass | Invariants table above — seven claims with concrete counterexamples: cross-student access, historical-log immutability, deadline non-extension, locked preservation, decline no-op, completed-assignment exclusion, non-blaming copy. |
-| 7 | Dependencies | Pass | EP08A → EP08B → EP08C → EP08D → EP08E → EP08F, with the one-way frontend dependencies and the `ui-refiner` gate recorded. EP06/EP07 complete and parent-reviewed. |
+| 7 | Dependencies | Pass (with blocker noted) | EP08A → EP08B → EP08C → EP08D → EP08E → EP08F, with the one-way frontend dependencies and the `ui-refiner` gate recorded. EP06/EP07 complete and parent-reviewed. **Implementation blocker (PR-003):** EP08A's per-assignment `confirmedMinutes` depends on the EP06 State-B upgrade (V-08-5); EP08A delivers the total only until that upgrade lands. Option (a) an EP06 follow-up before EP08A is recommended; option (b) recorded here. |
 | 8 | Material decisions | Blocked (provisional) | D08-1, D08-2, D08-3, D08-8 settled. D08-4, D08-6 settled by user decision 2026-10-30 (V-08-1, V-08-3, V-08-4 resolved). D08-5 provisional with verification task V-08-2. D08-7 (UI/UX for EP08D/E) unresolved and is the `ui-refiner`'s to settle. |
 | 9 | Correction log | Pass | First plan of this epic; no plan-review pass yet. The log is initialized with no findings. |
 | 10 | Jira identity | Not applicable | No sync authorized; the epic key is STUDY-17 and all six child keys are `Pending creation`. |
 
 ### Plan correction log
 
-(First plan of this epic. No plan-review pass yet.)
+(First plan of this epic. Plan-review pass 1 (2026-10-30) returned `Changes Required` with findings PR-001…PR-008; the corrections below are the planner's pass. See `plan-review.md` for the reviewer's original findings and dispositions.)
 
 | ID | Date | Severity | Original location | Original finding | Correction | Verification | Status |
 |---|---|---|---|---|---|---|---|
-| — | — | — | — | No plan-level findings. | — | — | — |
+| PR-001 | 2026-10-30 | Should-fix | `README.md` shared contract `MissedSession` shape (`locked`); `EP08A` technical notes ("No new migration in this story"); `EP08C` scope (owns the migration) | `MissedSession` promises `locked`, but EP08A claimed migration-independence and could not select the column before EP08C's migration landed. | Moved the additive `locked` migration into EP08A (PR-001); EP08C consumes the column. Updated contract heading, EP08A scope/out-of-scope/technical notes, EP08C summary/scope/technical notes. | Cross-file comparison: README data-model heading + EP08A "Migration owned here" note + EP08C "Consumes the `locked` column" note now agree; dependency order stays EP08A → EP08C. | Addressed — awaiting re-review |
+| PR-002 | 2026-10-30 | Should-fix | `README.md` confirm transaction step 2; `EP08C` AC #4, technical notes "Conflict re-check" | Busy set described as "adds completed + locked" without stating that the replaced SCHEDULED non-locked sessions are excluded, so an implementer could include all planned sessions and make every confirm return 409. | Stated the complete busy set (confirmed `StudySession`s + completed `PlannedSession`s + locked `PlannedSession`s + the *other submitted* sessions) and the explicit exclusion of replaced SCHEDULED non-locked sessions in README step 2 and EP08C AC #4. Added a no-conflict confirm test note. | README step 2 + EP08C AC #4 now name the complete busy set and the exclusion; unedited-confirm case noted. | Addressed — awaiting re-review |
+| PR-003 | 2026-10-30 | Should-fix | `README.md` V-08-5; `EP08A` AC #5; `README.md` quality gate row 7 | V-08-5 (EP06 State-B upgrade) is an unacknowledged implementation blocker; quality gate denied any blocker. | Recorded V-08-5 as an implementation blocker (option (b)): EP08A delivers the total `confirmedMinutes` only; per-assignment `confirmedMinutes` stays State A until the upgrade lands. Updated EP08A AC #5 and quality-gate row 7 + verdict line. | EP08A AC #5 + README quality gate row 7 + verdict line now state the blocker and the deferred semantics. | Addressed — awaiting re-review |
+| PR-004 | 2026-10-30 | Should-fix | `EP08A` technical notes ("Today's midnight is computed in the profile zone then converted to a UTC instant"); `README.md` missed-session definition | Wording invited converting a profile-zone midnight to a UTC instant, shifting the missed-session boundary for non-UTC profiles. | Rewrote the hint to EP06's convention: bound is `new Date(`${formatToday(timeZone)}T00:00:00.000Z`)` (civil date string rendered as UTC midnight); no zone conversion. Updated README missed-session definition and EP08A AC #2. | README missed-session definition + EP08A AC #2 + technical note now use the UTC-midnight-of-civil-date bound. | Addressed — awaiting re-review |
+| PR-005 | 2026-10-30 | Polish | `README.md` D08-5, V-08-2; `EP08A` AC #2 | V-08-2 implied the assignment-status filter was an open product decision, but it is settled by reuse of EP06's `isUnfinishedStatus`. | Narrowed V-08-2 to the date boundary only; recorded the status filter as settled by reuse in D08-5 and V-08-2. | README D08-5 + V-08-2 + EP08A AC #2 reflect the narrowed scope. | Addressed — awaiting re-review |
+| PR-006 | 2026-10-30 | Polish | `EP08B` technical notes input shape (`busy` + separate `lockedSessions`) | Passing a subset (`lockedSessions`) independently of its superset (`busy`) risks a silent mismatch in `lockedPreserved`. | Removed the separate `lockedSessions` input; locked intervals now carry `locked: true` inside `busy`, so `lockedPreserved` is derived and cannot drift. | EP08B input-shape note + `busy` description updated. | Addressed — awaiting re-review |
+| PR-007 | 2026-10-30 | Polish | `README.md` confirm transaction step 4; `EP08C` AC #4 step 5 | "target hours from placed minutes" left implicit whether `targetHours` is recomputed from submitted sessions or carried over from the preview. | Stated that `targetHours = (sum of submitted session durations on that day) / 60` computed from `dto.sessions` in the transaction (0 for days with no submitted sessions). Updated README step 4 and EP08C AC #4. | README step 4 + EP08C AC #4 now state the recomputation. | Addressed — awaiting re-review |
+| PR-008 | 2026-10-30 | Polish | `EP08A` AC #6; TR-E08-02 | The API's placeholder `message` was not required to pass the non-blaming term check, and EP08D's override testing was unspecified. | Added the requirement that the placeholder pass the non-blaming term check, and that EP08D's client-side override (if any) is tested in EP08D's TR-E08-05. | EP08A AC #6 updated. | Addressed — awaiting re-review |
 
 ### Implementation review log
 

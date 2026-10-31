@@ -27,7 +27,7 @@ This story owns the missed-session query, the completed-assignment exclusion, th
 - Replanning / rescheduling (EP08B/C).
 - Any UI (EP08D/E).
 - Any write to `StudySession`, `Assignment`, `Task` or `PlannedSession` (read-only story).
-- Persisting a "locked" flag change (EP08C owns the migration).
+- No write to `StudySession`, `Assignment`, `Task` or `PlannedSession` data beyond the additive `locked` migration owned here (PR-001); the toggle value itself is written by EP08C.
 
 ## Source requirement references
 
@@ -39,11 +39,11 @@ This story owns the missed-session query, the completed-assignment exclusion, th
 ## Acceptance criteria
 
 1. `GET /study-plans/recovery-summary` returns 200 with a `RecoverySummary` for the authenticated student.
-2. A `PlannedSession` is included in `missedSessions` iff: its `StudyPlan.date` (civil, profile zone) is strictly before today's civil date in the profile zone; its `status === 'SCHEDULED'`; and its linked `Assignment.status` is `PENDING` or `IN_PROGRESS`.
+2. A `PlannedSession` is included in `missedSessions` iff: its `StudyPlan.date` (stored as UTC midnight of the civil date string, EP06 convention) is strictly before `new Date(`${formatToday(timeZone)}T00:00:00.000Z`)` (the civil "today" rendered as a UTC-midnight `Date` — do **not** convert a profile-zone midnight to an instant); its `status === 'SCHEDULED'`; and its linked `Assignment.status` is `PENDING` or `IN_PROGRESS`.
 3. A planned session linked to a `COMPLETED` assignment is **never** included in `missedSessions` and does not contribute to `missedCount` (AC-E08-01).
 4. `unfinishedWork` reuses EP06's remaining-work classification and ordering (same items and order as `GET /study-plans/remaining-work`), so the two views never disagree about what is "next".
-5. `confirmedMinutes` is the total confirmed minutes from the student's `StudySession` log (same source as EP06's `unattributedConfirmedMinutes` aggregation, including the State-A/State-B handling recorded in EP06D).
-6. `message` is a neutral, non-blaming string (exact copy settled by the `ui-refiner` for EP08D; the API may ship a placeholder neutral string that EP08D can override client-side — provisional, V-08-4-adjacent).
+5. `confirmedMinutes` (top-level on `RecoverySummary`) is the **total** confirmed minutes from the student's `StudySession` log (same source as EP06's `unattributedConfirmedMinutes` aggregation). Per-assignment `confirmedMinutes` on `RemainingWorkItem` follows EP06's current State-A aggregation (always `0`) until the cross-epic State-B upgrade lands (V-08-5); EP08A does not re-implement the aggregation and does not block on it. EP08A is not blocked by V-08-5 for the total, but per-assignment confirmed time is deferred to that upgrade.
+6. `message` is a neutral, non-blaming string. The API may ship a placeholder neutral string that EP08D can override client-side, but the placeholder itself must pass the same non-blaming term check (no "you missed"/"you failed"/"overdue" shaming). EP08D's client-side override (if the `ui-refiner` settles one) is tested in EP08D's TR-E08-05. (V-08-4 settled: decline is client-side.)
 7. The query is scoped to the authenticated student; a missing or foreign record returns the uniform 404 `Resource not found` (no 403, no existence oracle).
 8. The endpoint is read-only: no `StudySession`, `Assignment`, `Task` or `PlannedSession` row is written.
 9. An empty result (no missed sessions, no unfinished work) returns 200 with empty arrays and `missedCount: 0`, not an error.
@@ -62,9 +62,9 @@ This story owns the missed-session query, the completed-assignment exclusion, th
   - `apps/api/prisma/schema.prisma` — `PlannedSession`, `StudyPlan`, `StudySession`, `Assignment.status`.
   - `apps/api/src/common/ownership/ownership.ts` — `ownedWhere`/`assertOwned`/`assertAffected`, `RESOURCE_NOT_FOUND`.
   - `apps/api/src/common/lib/civil-date.ts` — `toCivilDate`, `resolveTimeZone`.
-- **Proposed (new):** `getRecoverySummary(userId)` method on `StudyPlansService` (or a sibling `CatchUpService` registered in the same module — implementation detail; the contract is the endpoint). Query: `prisma.plannedSession.findMany({ where: { studyPlan: { userId, date: { lt: todayMidnight } }, status: 'SCHEDULED', assignment: { status: { in: ['PENDING', 'IN_PROGRESS'] } } }, include: { studyPlan, assignment } })`. Today's midnight is computed in the profile zone then converted to a UTC instant for the Prisma comparison (same as EP06's `formatToday`).
-- **Confirmed minutes:** reuse the EP06 State-A/State-B read of `StudySession` (durationMinutes, status filter when State B). Do not introduce a second aggregation.
-- **No new migration** in this story; the `locked` flag migration belongs to EP08C. This story reads `locked` only if present (default false) — but since the column may not exist yet, EP08A must land before or with EP08C's migration. Sequencing: EP08A before EP08C (per queue). EP08A's missed-session query does not reference `locked`, so it is migration-independent.
+- **Proposed (new):** `getRecoverySummary(userId)` method on `StudyPlansService` (or a sibling `CatchUpService` registered in the same module — implementation detail; the contract is the endpoint). Query: `prisma.plannedSession.findMany({ where: { studyPlan: { userId, date: { lt: new Date(`${formatToday(timeZone)}T00:00:00.000Z`) } }, status: 'SCHEDULED', assignment: { status: { in: ['PENDING', 'IN_PROGRESS'] } } }, include: { studyPlan, assignment } })`. The bound is the civil "today" rendered as a UTC-midnight `Date` (EP06 convention) — do **not** convert a profile-zone midnight to an instant. Same as EP06's `formatToday` returning a civil date string then `new Date(`${date}T00:00:00.000Z`)`.
+- **Confirmed minutes:** total from the session log (same source as EP06's `unattributedConfirmedMinutes`). Per-assignment `confirmedMinutes` on `RemainingWorkItem` stays State A (always 0) until the cross-epic State-B upgrade lands (V-08-5); EP08A does not re-implement the aggregation. Do not introduce a second aggregation.
+- **Migration owned here (PR-001):** EP08A adds the additive `locked Boolean @default(false)` column to `PlannedSession` (reversible; backfill = default). EP08C consumes the column (confirm writes / toggle) and does not re-add it. EP08A's missed-session query selects `locked` so `MissedSession.locked` is populated from the first release. Sequencing stays EP08A → EP08C.
 - **Civil-date discipline (D06-24):** dates are civil in the profile zone; the weekday/date boundary uses `getUTCDay()` on UTC midnight (the calendar's `dayOfWeekOf`). No browser clock.
 
 ## Definition of Done
