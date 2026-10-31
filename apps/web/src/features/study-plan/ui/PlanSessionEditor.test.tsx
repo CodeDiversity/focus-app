@@ -63,4 +63,46 @@ describe('PlanSessionEditor', () => {
     await user.click(screen.getByRole('button', { name: /move earlier/i }));
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  // ============ additive EP08E cases: the optional `conflicts` prop ============
+
+  it('marks the row whose sessionIndex matches with border-danger and the textual reason', () => {
+    const twoRows: ProposedSession[] = [
+      sessions[0],
+      { ...sessions[0], assignmentId: 'a-2', assignmentTitle: 'Reading', startTime: '14:00' },
+    ];
+    const { container } = render(
+      <PlanSessionEditor
+        sessions={twoRows}
+        days={days}
+        onChange={() => {}}
+        conflicts={[
+          {
+            sessionIndex: 1,
+            date: '2026-10-30',
+            startTime: '14:00',
+            reason: 'OVERLAPS_CLASS',
+          },
+        ]}
+      />
+    );
+    const rows = container.querySelectorAll('article');
+    expect(rows).toHaveLength(2);
+    // Only the matching row is marked — border-danger pairs with the textual
+    // reason (never color alone).
+    expect(rows[1].className).toContain('border-danger');
+    expect(rows[0].className).not.toContain('border-danger');
+    expect(rows[1]).toHaveTextContent(/overlaps a class/i);
+    expect(rows[1].getAttribute('data-conflicted')).toBe('true');
+    expect(rows[0].getAttribute('data-conflicted')).toBeNull();
+  });
+
+  it('markup is unchanged when the conflicts prop is absent', () => {
+    const { container } = render(
+      <PlanSessionEditor sessions={sessions} days={days} onChange={() => {}} />
+    );
+    const row = container.querySelector('article');
+    expect(row?.className).toBe('mb-3 rounded-md border border-border bg-surface p-3');
+    expect(row?.getAttribute('data-conflicted')).toBeNull();
+  });
 });

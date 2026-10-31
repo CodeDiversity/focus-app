@@ -13,6 +13,8 @@ import { CalendarPage } from '@/pages/calendar/ui/CalendarPage';
 import { AvailabilityPage } from '@/pages/availability/ui/AvailabilityPage';
 import { PlanPage } from '@/pages/plan/ui/PlanPage';
 import { CatchUpPage } from '@/pages/catch-up/ui/CatchUpPage';
+import { RecoverySummary } from '@/features/recovery/ui/RecoverySummary';
+import { CatchUpPreview } from '@/features/catch-up/ui/CatchUpPreview';
 import { CourseDetailPage } from '@/pages/courses/ui/CourseDetailPage';
 import { ProfilePage } from '@/pages/profile/ui/ProfilePage';
 import { OnboardingPage } from '@/pages/onboarding/ui/OnboardingPage';
@@ -62,8 +64,13 @@ function App() {
               standard Layout like the other pages) */}
           <Route path="/availability" element={<AvailabilityPage />} />
           <Route path="/plan" element={<PlanPage />} />
-          {/* EP08D: recovery summary and replanning entry point */}
-          <Route path="/catch-up" element={<CatchUpPage />} />
+          {/* EP08D: recovery summary and replanning entry point; EP08E nests
+              the catch-up preview/edit/confirm/decline surface under it
+              (decision 1/2 — deep-linking /catch-up/preview self-fetches). */}
+          <Route path="/catch-up" element={<CatchUpPage />}>
+            <Route index element={<RecoverySummary />} />
+            <Route path="preview" element={<CatchUpPreview />} />
+          </Route>
           <Route path="/profile" element={<ProfilePage />} />
           {/* SP-107C: onboarding wizard (D107-3: inside ProtectedRoute,
               rendered within the standard Layout like all existing pages) */}

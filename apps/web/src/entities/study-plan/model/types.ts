@@ -155,3 +155,18 @@ export interface RecoverySummary {
   confirmedMinutes: number;
   message: string;
 }
+
+// Catch-up preview (EP08E). Mirrors the exported service types at
+// apps/api/src/modules/study-plans/study-plans.service.ts (CatchUpPreview)
+// and the PATCH /study-plans/sessions/:sessionId/lock response.
+export interface CatchUpPreview extends PlanPreview {
+  missedSessions: MissedSession[];
+  lockedPreserved: number;
+  completedPreserved: number;
+}
+
+/** The lock-toggle response — exactly the two keys. */
+export interface PlannedSessionLock {
+  id: string;
+  locked: boolean;
+}

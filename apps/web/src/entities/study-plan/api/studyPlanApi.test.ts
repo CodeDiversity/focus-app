@@ -2,7 +2,14 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import httpClient from '@/shared/api/httpClient';
 import { tokenStore } from '@/shared/api/tokenStore';
-import { previewStudyPlan, saveStudyPlan, listStudyPlan } from './studyPlanApi';
+import {
+  previewStudyPlan,
+  saveStudyPlan,
+  listStudyPlan,
+  previewCatchUp,
+  confirmCatchUpPlan,
+  setPlannedSessionLock,
+} from './studyPlanApi';
 
 const originalAdapter = httpClient.defaults.adapter;
 
@@ -165,5 +172,102 @@ describe('studyPlanApi.listStudyPlan', () => {
     expect(seen?.url).toBe('/study-plans');
     expect(seen?.method).toBe('get');
     expect(seen?.params).toBeUndefined();
+  });
+});
+
+/** The catch-up preview body: the plan shape plus the three catch-up keys. */
+const catchUpPreview = {
+  ...preview,
+  missedSessions: [
+    {
+      id: 'ps-1',
+      assignmentId: 'a-1',
+      assignmentTitle: 'Essay',
+      date: '2026-10-29',
+      startTime: '09:00',
+      endTime: '10:00',
+      durationMinutes: 60,
+      locked: true,
+    },
+  ],
+  lockedPreserved: 1,
+  completedPreserved: 2,
+};
+
+describe('studyPlanApi.previewCatchUp', () => {
+  beforeEach(() => tokenStore.clearToken());
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+    vi.restoreAllMocks();
+  });
+
+  it('POSTs /study-plans/catch-up/preview and returns the proposal', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seen = config;
+      return ok(config, catchUpPreview, 200);
+    };
+    await expect(previewCatchUp()).resolves.toEqual(catchUpPreview);
+    expect(seen?.url).toBe('/study-plans/catch-up/preview');
+    expect(seen?.method).toBe('post');
+  });
+});
+
+describe('studyPlanApi.confirmCatchUpPlan', () => {
+  beforeEach(() => tokenStore.clearToken());
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+    vi.restoreAllMocks();
+  });
+
+  it('POSTs /study-plans/catch-up/confirm with the exact { from, to, sessions } body', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seen = config;
+      return ok(config, saved, 201);
+    };
+    const sessions = [
+      { assignmentId: 'a-1', date: '2026-10-30', startTime: '09:00', endTime: '10:00' },
+    ];
+    await expect(confirmCatchUpPlan('2026-10-30', '2026-11-05', sessions)).resolves.toEqual(saved);
+    expect(seen?.url).toBe('/study-plans/catch-up/confirm');
+    expect(seen?.method).toBe('post');
+    expect(JSON.parse(seen!.data as string)).toEqual({
+      from: '2026-10-30',
+      to: '2026-11-05',
+      sessions,
+    });
+  });
+});
+
+describe('studyPlanApi.setPlannedSessionLock', () => {
+  beforeEach(() => tokenStore.clearToken());
+  afterEach(() => {
+    httpClient.defaults.adapter = originalAdapter;
+    vi.restoreAllMocks();
+  });
+
+  it('PATCHes /study-plans/sessions/:id/lock with { locked } and returns { id, locked }', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    httpClient.defaults.adapter = async (config) => {
+      seen = config;
+      return ok(config, { id: 'ps-1', locked: true }, 200);
+    };
+    await expect(setPlannedSessionLock('ps-1', true)).resolves.toEqual({
+      id: 'ps-1',
+      locked: true,
+    });
+    expect(seen?.url).toBe('/study-plans/sessions/ps-1/lock');
+    expect(seen?.method).toBe('patch');
+    expect(JSON.parse(seen!.data as string)).toEqual({ locked: true });
+  });
+
+  it('propagates errors unchanged', async () => {
+    httpClient.defaults.adapter = async (config) => {
+      throw failure(config, 404, { statusCode: 404, message: 'Resource not found' });
+    };
+    await expect(setPlannedSessionLock('ps-404', false)).rejects.toMatchObject({
+      response: { status: 404, data: { statusCode: 404, message: 'Resource not found' } },
+    });
   });
 });

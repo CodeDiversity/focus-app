@@ -4,12 +4,19 @@ import toast from 'react-hot-toast';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
-import type { ProposedSession } from '@/entities/study-plan/model/types';
+import type { ProposedSession, PlanConflict } from '@/entities/study-plan/model/types';
+import { CONFLICT_REASON_LABEL } from '@/entities/study-plan/model/types';
 
 export interface PlanSessionEditorProps {
   sessions: ProposedSession[];
   days: string[];
   onChange: (sessions: ProposedSession[]) => void;
+  /**
+   * 409 confirm conflicts to mark (EP08E, decision 11): rows whose
+   * `sessionIndex` matches the row index get `border-danger` plus the
+   * textual reason. Absent/empty keeps the markup byte-identical (EP06).
+   */
+  conflicts?: PlanConflict[];
   /** Optional extra class names. */
   className?: string;
 }
@@ -27,7 +34,13 @@ function clampTime(v: string): string {
   return v;
 }
 
-export function PlanSessionEditor({ sessions, days, onChange, className }: PlanSessionEditorProps) {
+export function PlanSessionEditor({
+  sessions,
+  days,
+  onChange,
+  conflicts,
+  className,
+}: PlanSessionEditorProps) {
   const dayOptions = days.map((d) => ({ value: d, label: d }));
   const [announcement, setAnnouncement] = useState('');
 
@@ -110,112 +123,126 @@ export function PlanSessionEditor({ sessions, days, onChange, className }: PlanS
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {announcement}
       </div>
-      {sessions.map((s, i) => (
-        <article
-          key={`${s.assignmentId}-${i}-${s.date}`}
-          aria-label={`${s.assignmentTitle}, ${s.startTime} to ${s.endTime}`}
-          className="mb-3 rounded-md border border-border bg-surface p-3"
-        >
-          <p className="font-medium text-text">{s.assignmentTitle}</p>
-          <p className="text-xs text-text-muted">
-            {s.startTime} – {s.endTime} ({s.durationMinutes} min)
-          </p>
+      {sessions.map((s, i) => {
+        const rowConflicts = (conflicts ?? []).filter((c) => c.sessionIndex === i);
+        return (
+          <article
+            key={`${s.assignmentId}-${i}-${s.date}`}
+            aria-label={`${s.assignmentTitle}, ${s.startTime} to ${s.endTime}`}
+            className={`mb-3 rounded-md border ${
+              rowConflicts.length > 0 ? 'border-danger' : 'border-border'
+            } bg-surface p-3`}
+            data-conflicted={rowConflicts.length > 0 || undefined}
+          >
+            <p className="font-medium text-text">{s.assignmentTitle}</p>
+            <p className="text-xs text-text-muted">
+              {s.startTime} – {s.endTime} ({s.durationMinutes} min)
+            </p>
 
-          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <Select
-              label="Day"
-              value={s.date}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                updateAt(i, { date: e.target.value })
-              }
-              aria-label="Day"
-            >
-              {dayOptions.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </Select>
-            <Input
-              label="Start time"
-              type="time"
-              value={s.startTime}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                const v = clampTime(e.target.value);
-                const mins = minutesOf(v);
-                const dur = minutesOf(s.endTime) - minutesOf(s.startTime);
-                const newEnd = mins + dur;
-                if (newEnd > 24 * 60) return;
-                const pad = (n: number) =>
-                  String(Math.floor(n / 60)).padStart(2, '0') +
-                  ':' +
-                  String(n % 60).padStart(2, '0');
-                updateAt(i, { startTime: v, endTime: pad(newEnd) });
-              }}
-              aria-label="Start time"
-            />
-            <Input
-              label="End time"
-              type="time"
-              value={s.endTime}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                const v = clampTime(e.target.value);
-                if (minutesOf(v) <= minutesOf(s.startTime)) return;
-                updateAt(i, { endTime: v, durationMinutes: minutesOf(v) - minutesOf(s.startTime) });
-              }}
-              aria-label="End time"
-            />
-          </div>
+            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <Select
+                label="Day"
+                value={s.date}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  updateAt(i, { date: e.target.value })
+                }
+                aria-label="Day"
+              >
+                {dayOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </Select>
+              <Input
+                label="Start time"
+                type="time"
+                value={s.startTime}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const v = clampTime(e.target.value);
+                  const mins = minutesOf(v);
+                  const dur = minutesOf(s.endTime) - minutesOf(s.startTime);
+                  const newEnd = mins + dur;
+                  if (newEnd > 24 * 60) return;
+                  const pad = (n: number) =>
+                    String(Math.floor(n / 60)).padStart(2, '0') +
+                    ':' +
+                    String(n % 60).padStart(2, '0');
+                  updateAt(i, { startTime: v, endTime: pad(newEnd) });
+                }}
+                aria-label="Start time"
+              />
+              <Input
+                label="End time"
+                type="time"
+                value={s.endTime}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const v = clampTime(e.target.value);
+                  if (minutesOf(v) <= minutesOf(s.startTime)) return;
+                  updateAt(i, {
+                    endTime: v,
+                    durationMinutes: minutesOf(v) - minutesOf(s.startTime),
+                  });
+                }}
+                aria-label="End time"
+              />
+            </div>
 
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => moveBy(i, -15)}
-              aria-label="Move earlier 15 minutes"
-            >
-              Move earlier
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => moveBy(i, 15)}
-              aria-label="Move later 15 minutes"
-            >
-              Move later
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => resizeBy(i, -15)}
-              aria-label="Shorten 15 minutes"
-            >
-              Shorten
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => resizeBy(i, 15)}
-              aria-label="Lengthen 15 minutes"
-            >
-              Lengthen
-            </Button>
-            <Button
-              type="button"
-              variant="danger"
-              size="sm"
-              onClick={() => removeAt(i)}
-              aria-label="Delete session"
-            >
-              Delete
-            </Button>
-          </div>
-        </article>
-      ))}
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => moveBy(i, -15)}
+                aria-label="Move earlier 15 minutes"
+              >
+                Move earlier
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => moveBy(i, 15)}
+                aria-label="Move later 15 minutes"
+              >
+                Move later
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => resizeBy(i, -15)}
+                aria-label="Shorten 15 minutes"
+              >
+                Shorten
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => resizeBy(i, 15)}
+                aria-label="Lengthen 15 minutes"
+              >
+                Lengthen
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                size="sm"
+                onClick={() => removeAt(i)}
+                aria-label="Delete session"
+              >
+                Delete
+              </Button>
+            </div>
+            {rowConflicts.length > 0 ? (
+              <p className="mt-2 text-xs text-danger">
+                {rowConflicts.map((c) => CONFLICT_REASON_LABEL[c.reason] ?? c.reason).join(' · ')}
+              </p>
+            ) : null}
+          </article>
+        );
+      })}
     </div>
   );
 }

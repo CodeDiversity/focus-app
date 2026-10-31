@@ -5,6 +5,8 @@ import type {
   ProposedSessionInput,
   RemainingWorkResponse,
   RecoverySummary,
+  CatchUpPreview,
+  PlannedSessionLock,
 } from '@/entities/study-plan/model/types';
 
 export {
@@ -26,6 +28,8 @@ export {
   type RemainingWorkFlag,
   type MissedSession,
   type RecoverySummary,
+  type CatchUpPreview,
+  type PlannedSessionLock,
   CONFLICT_REASON_LABEL,
 } from '@/entities/study-plan/model/types';
 
@@ -64,5 +68,46 @@ export async function listRemainingWork(): Promise<RemainingWorkResponse> {
 
 export async function getRecoverySummary(): Promise<RecoverySummary> {
   const response = await api.get<RecoverySummary>('/study-plans/recovery-summary');
+  return response.data;
+}
+
+/**
+ * `POST /study-plans/catch-up/preview` → `CatchUpPreview` (EP08C; writes
+ * nothing — declining is simply not calling confirm).
+ */
+export async function previewCatchUp(): Promise<CatchUpPreview> {
+  const response = await api.post<CatchUpPreview>('/study-plans/catch-up/preview');
+  return response.data;
+}
+
+/**
+ * `POST /study-plans/catch-up/confirm` → `SavedPlan` (EP08C; atomic, same
+ * four-field body as `saveStudyPlan` — D06-23/D08 contract). 400 field
+ * errors, 409 conflicts, 409 `WINDOW_ROLLED_OVER`, 401.
+ */
+export async function confirmCatchUpPlan(
+  from: string,
+  to: string,
+  sessions: ProposedSessionInput[]
+): Promise<SavedPlan> {
+  const response = await api.post<SavedPlan>('/study-plans/catch-up/confirm', {
+    from,
+    to,
+    sessions,
+  });
+  return response.data;
+}
+
+/**
+ * `PATCH /study-plans/sessions/:sessionId/lock` → `{ id, locked }` (EP08E
+ * note; the explicit lock toggle, D08-4). Errors ride through unchanged.
+ */
+export async function setPlannedSessionLock(
+  sessionId: string,
+  locked: boolean
+): Promise<PlannedSessionLock> {
+  const response = await api.patch<PlannedSessionLock>(`/study-plans/sessions/${sessionId}/lock`, {
+    locked,
+  });
   return response.data;
 }

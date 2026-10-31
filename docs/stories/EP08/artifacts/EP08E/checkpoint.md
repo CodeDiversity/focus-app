@@ -1,5 +1,5 @@
 # EP08E checkpoint
-Updated: 2026-10-31 (afternoon, local)
+Updated: 2026-10-31 (evening, local) — CHILD COMPLETE
 Execution state: docs/stories/EP08/README.md execution queue — EP08E row
 Story: docs/stories/EP08/EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md
 Review unit: EP08 parent (docs/stories/EP08/README.md); combined review after EP08F
@@ -7,29 +7,28 @@ Role / scope: implementer; EP08E = catch-up preview/edit/confirm/decline UI + sc
 
 ## Repository state
 - Workspace / branch: /Users/michaelrobert/Desktop/focus-app, `main`
-- HEAD at last update: 5ed6bc3
-- Saved work: checkpoint 1 (PATCH endpoint + 3 backend spec additions + README In-progress fields + this checkpoint) — committed with this increment; its hash is returned in the closeout handoff (git log: "feat(EP08E): lock-toggle PATCH endpoint")
-- Other work to preserve (NEVER stage/commit/revert): `.agents/skills/autopilot/SKILL.md`, `.agents/workflow-graph.md`, and the coordinator's uncommitted `### Autopilot`-section hunk in `docs/stories/EP08/README.md` (dispatch record). Stage only own README hunks (queue/execution fields, all above the Autopilot section).
+- HEAD at last update: 5ed6bc3; own backend commit `dde6780` (PATCH endpoint + backend specs + queue In-progress fields). Frontend increment committed with this closeout (hash in closeout handoff).
+- Other work to preserve (NEVER stage/commit/revert): `.agents/skills/autopilot/SKILL.md`, `.agents/workflow-graph.md`, and the coordinator's uncommitted `### Autopilot`-section hunk in `docs/stories/EP08/README.md` (dispatch record, starts ~line 318). Own README hunks staged via hunk-filtered patch only.
 
 ## Progress
 - [x] Reads: story contract, queue, skills (implementer/backend/frontend), checkpoints contract, closeout contract, DoD, FSD rules
 - [x] Code anchors re-verified (controller has no Patch/Param; service conventions; spec conventions; PlanPage/PlanSessionEditor/RecoverySummary/entity client/tests; Button/Badge/EmptyState/Card)
-- [x] Checkpoint 1 complete: `dto/set-session-lock.dto.ts` (`SetSessionLockDto` @IsBoolean); controller `@Patch('sessions/:sessionId/lock') @HttpCode(200)` (adds Patch+Param imports); service `setSessionLock` (dtoErrors re-check → scoped `updateMany { id, studyPlan: { userId } }` data `{ locked }` only → `assertAffected` → scoped `findMany` select `{ id, locked }` echo / uniform 404). Specs added: unit describe (3 cases) in `study-plans.service.spec.ts` (PASS 30/30 local, 2 DB-gated suites skipped: no DATABASE_URL); e2e + data-scoping describes added (self-skip locally — will be green-flagged only where DATABASE_URL exists; logic pinned by the unit spec). api typecheck + eslint pass.
-- [ ] Checkpoint 2: `preview.ts` extraction, entity types + 3 client functions, route nesting + CatchUpPage layout, CatchUpPreview surface (fetch/edit/confirm/decline/states/conflicts/rollover)
-- [ ] Checkpoint 3: preservation card + lock toggle, a11y/responsive, remaining tests, TR-E08-08 manual pass record, implementation.md, queue closeout
-- Current step: checkpoint 2 — extract `features/study-plan/lib/preview.ts` from `PlanPage.tsx:25-49` (PlanPage.test.tsx is the regression guard)
+- [x] Checkpoint 1 complete (committed `dde6780`): `dto/set-session-lock.dto.ts` (`SetSessionLockDto` @IsBoolean); controller `@Patch('sessions/:sessionId/lock') @HttpCode(200)`; service `setSessionLock` (dtoErrors re-check → scoped `updateMany { id, studyPlan: { userId } }` data `{ locked }` only → `assertAffected` → scoped `findMany` select `{ id, locked }` echo / uniform 404). Unit describe (3 cases) PASS; e2e + data-scoping describes added (self-skip locally — DATABASE_URL absent; logic pinned by the unit spec).
+- [x] Checkpoint 2 complete: `features/study-plan/lib/preview.ts` extracted (`flattenPreview`/`projectSessions`, PlanPage import swapped, PlanPage.test.tsx regression guard green); entity types `CatchUpPreview`/`PlannedSessionLock` + adapter re-export; client `previewCatchUp`/`confirmCatchUpPlan`/`setPlannedSessionLock`; nested routing (`App.tsx` `/catch-up` index→RecoverySummary, `preview`→CatchUpPreview; `CatchUpPage` → Outlet layout, `aria-labelledby` moved to RecoverySummary); `CatchUpPreview` surface (fetch/edit/confirm/decline/states/conflicts/rollover/count sync).
+- [x] Checkpoint 3 complete: `CatchUpPreservationCard` (counts + read-only locked cards + toggle slot), `CatchUpLockToggle` (aria-pressed optimistic button, inline role=alert error on failure, sr-only live status), `PlanSessionEditor` additive `conflicts` prop (byte-identical markup when absent), all 6 frontend test files, full verification, TR-E08-08 manual-pass record and `implementation.md` written, queue closed out.
+- Current step: none — child implemented; awaiting combined parent review after EP08F.
 
 ## Decisions and dependencies
-- Settled: 24 ui-refiner decisions + copy (5dd603f); refiner technical spec (3202c79) — story "Seams and wiring" is the wiring contract; follow exactly.
-- Tests: 6 frontend vitest files; PATCH specs across the 3 existing backend spec files (no new spec file). DATABASE_URL-gated specs self-skip locally — record honestly. Use valid uuids in tests (malformed uuid 500s repo-wide — out of scope).
-- EP08C shipped NO preview/confirm API tests — do not look for them.
-- `WorkloadWarnings`: render only while preview loaded; do NOT pass `errorMessage`.
-- `sessionIndex` maps to `edited` array order at confirm time; do not re-key.
+- Settled: 24 ui-refiner decisions + copy (5dd603f); refiner technical spec (3202c79) — story "Seams and wiring" followed.
+- Confirmed against code: 409 conflict handling follows the existing EP08D client shape (`response.data = { error, conflicts: [{ sessionIndex, date, startTime, reason }] }`); `sessionIndex` maps to `edited` array order at confirm time — not re-keyed. Lock-toggle failure is an inline `role="alert"` error per AC 5 (not a toast).
+- EP08C shipped NO preview/confirm API tests — none looked for; EP08F Playwright remains the cross-layer proof.
+- `WorkloadWarnings`: rendered only while preview loaded; `errorMessage` NOT passed.
+- Out of scope (planner-owned open questions, unchanged): in-window SCHEDULED `{id, locked}` list extension; plan-page lock toggle.
 
-## Verification
-- Not yet run. Planned: `npx jest src/modules/study-plans` (cwd apps/api), `npm run typecheck --workspace=apps/api`, then web suites (`npm run test --workspace=apps/web`, typecheck, lint), final full api test run.
+## Verification (all re-run on final tree)
+- API (cwd apps/api): `npx jest src/modules/study-plans` → 30 passed / 36 skipped (2 DATABASE_URL-gated suites self-skip locally); full `npm test` → 897 passed / 443 skipped / 0 failed (41 suites); `tsc --noEmit` clean; `npx eslint src/modules/study-plans --max-warnings 0` clean.
+- Web (cwd apps/web): `npx vitest run` → 1131 passed / 100 files; `tsc --noEmit` clean; `npx eslint src --max-warnings 0` clean; zero "not wrapped in act" warnings in catch-up suites.
 
 ## Resume next
-1. Create `apps/api/src/modules/study-plans/dto/set-session-lock.dto.ts` (`SetSessionLockDto`, `@IsBoolean`), then controller `@Patch('sessions/:sessionId/lock')` + service `setSessionLock` per story §"Scoped backend note".
-2. `npx jest src/modules/study-plans/study-plans.service.spec` (cwd apps/api) — new describe green.
-- Read next: story file "Scoped backend note" + "Seams and wiring"; `study-plans.service.ts:145-165` (dtoErrors/throwFieldErrors); `ownership.ts`.
+- Nothing to resume for EP08E. Next writer: EP08F implementer (Playwright E2E + parent index). Combined parent review after EP08F.
+- Read next (for anyone): `docs/stories/EP08/artifacts/EP08E/implementation.md` for AC-by-AC outcomes and honest execution labels.

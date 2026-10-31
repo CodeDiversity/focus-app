@@ -12,41 +12,15 @@ import type {
   SavedPlan,
   ProposedSession,
   PlanConflict,
-  ProposedSessionInput,
 } from '@/entities/study-plan/model/types';
 import { CONFLICT_REASON_LABEL } from '@/entities/study-plan/model/types';
+import { flattenPreview, projectSessions } from '@/features/study-plan/lib/preview';
 import { PlanWeek } from '@/features/study-plan/ui/PlanWeek';
 import { PlanSessionEditor } from '@/features/study-plan/ui/PlanSessionEditor';
 import { RemainingWorkSection } from '@/features/study-plan/ui/RemainingWorkSection';
 import { WorkloadWarnings } from '@/features/study-plan/ui/WorkloadWarnings';
 
 type Mode = 'initial' | 'generating' | 'preview' | 'saved';
-
-function flattenPreview(p: PlanPreview): ProposedSession[] {
-  const out: ProposedSession[] = [];
-  for (const day of p.days) {
-    for (const s of day.sessions) {
-      out.push({
-        assignmentId: s.assignmentId,
-        assignmentTitle: s.assignmentTitle,
-        date: day.date,
-        startTime: s.startTime,
-        endTime: s.endTime,
-        durationMinutes: s.durationMinutes,
-      });
-    }
-  }
-  return out;
-}
-
-function projectSessions(sessions: ProposedSession[]): ProposedSessionInput[] {
-  return sessions.map((s) => ({
-    assignmentId: s.assignmentId,
-    date: s.date,
-    startTime: s.startTime,
-    endTime: s.endTime,
-  }));
-}
 
 function hasSessions(plan: SavedPlan | null): boolean {
   return !!plan && plan.days.some((d) => d.sessions.length > 0);
