@@ -74,13 +74,13 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 version: 1
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP12
   descendants: [EP12A, EP12B, EP12C]
   entry: EP12C
   limits: enclosing parent review unit
-stage: paused
+stage: reconcile
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
