@@ -318,25 +318,25 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: paused
+stage: implement
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: d9a7738
+  head: cc1241d
 active_dispatch:
-  name: EP08E-implement
+  name: EP08F-implement
   role: implementer
-  status: completed
-  pointer: docs/stories/EP08/EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md
-  session: ses_e6c3ec2b6ffeR2LnkixG1lvO6k
-  assignment: "Implement EP08E (catch-up preview/edit/confirm/decline UI + scoped PATCH /study-plans/sessions/:sessionId/lock endpoint) per the refined story, with checkpoint/resume discipline and the story's test map. Single sequential writer; scoped commits (exclude foreign dirty paths and the README's Autopilot section). Return at the EP08E child boundary — no EP08F, no review."
+  status: pending
+  pointer: docs/stories/EP08/EP08F-cross-layer-e2e-and-parent-index.md
+  session: ""
+  assignment: "Implement EP08F (cross-layer Playwright E2E apps/web/e2e/catch-up.spec.ts against the self-contained EP09 stack + EP08 parent implementation index at docs/stories/EP08/artifacts/EP08/implementation.md + TR-E08-08 manual a11y evidence collection) per the story, with checkpoint/resume discipline and the story's AC list. Single sequential writer; scoped commits (exclude foreign dirty paths .agents/skills/autopilot/SKILL.md and .agents/workflow-graph.md, and the README's Autopilot section). Return at the EP08F child boundary — no parent review."
 last_result:
   evidence: "EP08E-implement COMPLETED (foreground, session ses_e6c3ec2b6ffeR2LnkixG1lvO6k; base 5ed6bc3). Commits: dde6780 backend PATCH lock endpoint (SetSessionLockDto, scoped updateMany → assertAffected → scoped echo / uniform 404, + unit/e2e/data-scoping specs) and checkpoint 1; 646e93f frontend /catch-up/preview surface (CatchUpPreview/CatchUpPreservationCard/CatchUpLockToggle, additive conflicts prop on PlanSessionEditor, preview.ts extraction, 3 client functions, nested routing, 22 new tests) + closeout records + queue row; d9a7738 honest post-commit flake addendum. Records: artifacts/EP08E/implementation.md (AC 1–11 + backend note outcomes, TR-E08-08 manual pass with honest labels) + checkpoint.md (all checkpoints closed). Verification as reported by the implementer on the committed tree: web vitest 1131/1131 (100 files), web tsc+eslint clean; api npm test 897 passed / 443 skipped / 0 failed, tsc+eslint clean. Honest limits (for the reviewer): PATCH e2e + data-scoping describes DATABASE_URL-gated self-skip locally (unit spec pins behavior); one unreproduced single-test failure in one full-suite run (2 subsequent full runs green, 3× targeted 32/32) recorded as load flake; VoiceOver/reduce-motion/320px manual steps documented, not browser-executed (EP08F Playwright is the durable proof). Coordinator verified: commit scope (study-plans module + web catch-up/study-plan paths + EP08E artifacts + README queue hunks only), queue row + Next substory committed by the specialist, Autopilot section untouched by the specialist. Child closeout — NOT independent approval; combined parent review remains."
   findings: "None mandatory. Implementer deviations recorded in implementation.md (singular/plural count copy adaptation; inline-error toggle per AC 5; EP08D conflict-shape fidelity; lint-pipeline normalization of pre-existing prettier drift) — inputs for the combined parent review. Planner-owned non-blocking open questions unchanged (in-window lock list; plan-page toggle). Reviewer watch-items: the recorded unreproduced load flake and the DATABASE_URL-gated specs."
@@ -350,7 +350,7 @@ gates:
   ui: true
   refinement: true
   child_unfinished: false
-  eligible_child_state: "Queued (EP08F; dependencies EP08A–EP08E now met — implement next)"
+  eligible_child_state: "Ready (EP08F integration child; dependencies EP08A–EP08E implemented with on-disk records, verified this continue; no UI/technical gaps — quality gate: ready to implement once dependencies land; precedent b00271c: Queued integration child recorded Ready when gates set and deps landed)"
   closeout: true
   integration: false
   all_descendants_implemented: false
@@ -358,15 +358,15 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: not_started
-  judged_at_head: "2a481c7"
+  judged_at_head: "cc1241d"
   queue_hash: ""
-writer: none
+writer: implementer (EP08F-implement, dispatched)
 session_live: unknown
 blocker:
   kind: none
   owner: ""
   question: ""
   answer: ""
-resume: "EP08E implemented, verified and committed by the specialist (dde6780 + 646e93f + d9a7738); queue row Implemented — awaiting parent review; step pause restored. Writer ownership relinquished; tree clean except foreign paths. Next proposed step: implementer on EP08F (Playwright cross-layer E2E apps/web/e2e/catch-up.spec.ts against the EP09 stack + the EP08 parent implementation index artifacts/EP08/implementation.md) — EP08A–E dependencies met. After EP08F: combined EP08 parent review (reviewer, review.md + walkthrough.md; carry the recorded load-flake note, DATABASE_URL-gated specs and TR-E08-08 manual-pass evidence into the review baseline). Planner-owned non-blocking open questions still open."
+resume: "Step continue 2026-10-31: deliberate step_pause cleared on explicit user continuation (edge step_pause → child_ready). Coordinator reconciled: EP08A–E artifacts on disk, EP08E commits (dde6780/646e93f/d9a7738) in HEAD cc1241d, apps/web/e2e/catch-up.spec.ts and artifacts/EP08/ absent (EP08F genuinely outstanding), writer ownership relinquished, tree clean except foreign dirty paths (.agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md — preserved). Dispatching EP08F-implement (pending). After return: record result, restore step pause. After EP08F: combined EP08 parent review (reviewer, review.md + walkthrough.md; carry the EP08E load-flake note, DATABASE_URL-gated specs and TR-E08-08 manual-pass evidence into the review baseline). Planner-owned non-blocking open questions still open."
 judgment_attempts: 0
 ```
