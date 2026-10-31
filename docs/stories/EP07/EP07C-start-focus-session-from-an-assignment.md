@@ -6,10 +6,10 @@
 **Parent:** [EP07 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Frontend
-**Status:** **Needs refinement** — the `ui-refiner` pass is required before implementation (D07-5).
+**Status:** **Ready** — UI refinement captured 2026-10-30 (D07-5); technical refinement in Technical Notes.
 **Dependencies:** **EP07A** (the `POST /study-sessions` endpoint) and **EP07B** (the session projection this story consumes). The EP03 frontend surfaces (assignments list, course detail) are implemented. `ui-refiner` pass required.
 **Jira key:** Pending creation
-**Refined:** — (the `ui-refiner` pass is what settles this story's presentation; this file records the planner's breakdown and the exact gaps)
+**Refined:** 2026-10-30 (ui-refiner pass — UI/UX decisions settled; see Technical Notes → "UI/UX design" and "Decisions". Technical refinement of files/endpoints/DTOs is unchanged; status reconciliation to Ready is the planner/coordinator's.)
 
 ## Summary
 
@@ -90,6 +90,122 @@ The student picks an assignment and starts a focus session on it. Each assignmen
 4. **Duplicate-submit guard.** Disable the confirm control while the request is in flight and ignore repeat activations — the repo's `Dialog` already handles Escape and backdrop close; the confirm path needs its own guard.
 5. **Navigation.** On success the app navigates to the focus route (path owned by EP07D). Until EP07D lands, the catch-all route in `apps/web/src/app/App.tsx:63` redirects to `/` — an accepted inter-commit transient inside the EP07 implementation sequence, gated by the combined EP07 review (see *Dependencies / exclusions*).
 
+### UI/UX design (settled 2026-10-30 by the `ui-refiner` pass)
+
+All decisions below reuse the EP10 primitives and semantic tokens; no ad-hoc colors, spacing, or motion. Component names and placements come from the inspected codebase.
+
+**Entry point — placement and affordance.**
+- Lives **inside the existing `RowActionsMenu`** (`apps/web/src/features/assignments/ui/RowActionsMenu.tsx`) as a third menu item, above Edit/Delete. No visible button is added; row density and the current compact layout are preserved.
+- Icon: `Play` from `lucide-react` (already a dependency), size 14, `aria-hidden`, paired with the text label "Start focus session".
+- Menu item order: **Start focus session** → Edit → Delete. The start item is first because it is the primary forward action on an unfinished assignment; Edit/Delete remain secondary.
+- Accessible name: `Start focus session for ${assignmentTitle}` (matches the row's existing `aria-label={`Edit ${assignmentTitle}`}` / `Delete` pattern).
+- **Hidden on completed assignments.** The menu item is not rendered when `assignment.status === 'COMPLETED'` (and likewise `SUBMITTED`/`GRADED` — i.e. any finished status via `isFinishedAssignment`). A finished assignment cannot be studied again in this MVP; the row's overflow menu then shows only Edit/Delete. This keeps the action scoped to work that still has remaining time.
+- The menu item is disabled while the row is `busy` (in-flight status/subtask request), exactly like the trigger already is (`disabled={busy}`), so a row-level mutation in flight blocks starting a session.
+- Keyboard/focus: inherits `RowActionsMenu`'s model — opening focuses the first item (now "Start focus session"), ArrowUp/Down cycles, Escape closes and restores the trigger, activating returns focus to the trigger before the callback so the dialog can capture it as its restoration target (`runAction`).
+
+**Dialog — shape and context.**
+- Uses the EP10 `Dialog` primitive (`apps/web/src/shared/ui/Dialog.tsx`), size `sm` (`max-w-sm`), modal, with backdrop close and Escape-to-close (the primitive's behavior). No bespoke modal.
+- `title`: `Start a focus session`. `description`: `Choose how long you want to focus on this assignment.`
+- Body shows an assignment context block (not the heading alone): the assignment title as a strong line, then a compact meta line `Due {date} · {estimatedHours}h estimated` (estimated hours rendered only when `estimatedHours != null`; due date falls back to "No due date"). This gives the student the cue to pick a duration.
+- Footer: Cancel (secondary/outline) on the left, "Start focus session" (primary, `isLoading` while in flight) on the right, in the primitive's `flex-col-reverse sm:flex-row sm:justify-end` layout so Cancel sits above on mobile.
+- The dialog is mounted once per owning page (assignments page and course-detail page), driven by a single `startingAssignment` state (`AssignmentInteractionItem | null` / the row's assignment) — the same "one dialog mount for the host" pattern as `AssignmentDialogs`. The row's menu item calls `onStartFocus(assignment)`; the page sets `startingAssignment` and renders `<StartFocusSessionDialog assignment={startingAssignment} open={!!startingAssignment} onClose={...} />`.
+
+**Duration control.**
+- Three preset chips (25 / 50 / 90 minutes) rendered as `Button` (variant `secondary` when unselected, `primary` when selected) plus a numeric `Input` (`type="number"`, `min={5}`, `max={480}`, `step={5}`) for any custom value. Chips and input are mutually consistent: clicking a chip sets the input value; typing a value that equals a preset highlights that chip; typing any other in-range value leaves no chip highlighted.
+- The input's `aria-label` is "Duration in minutes"; a visible label "Duration" sits above; a hint line reads "Between 5 and 480 minutes."
+- Client-side validation: the value must be an integer in 5–480. Out of range or non-integer → inline `Input` error ("Duration must be between 5 and 480 minutes.") and the confirm control stays disabled. No request is sent.
+- The resolved default is marked, not explained: the preset chip matching the default carries a small "Your default" caption (text, not color-only) beneath it; if the default is a custom value, the input is pre-filled and no chip is highlighted, with the hint line reading "Your default: {n} minutes." instead. The fallback default (no preference) is worded as "Your default: 25 minutes." without naming EP06, so the student is never told about the provisional seam.
+
+**Default duration resolution (provisional V-07-1).**
+- Helper `resolveDefaultSessionMinutes(user)` in `apps/web/src/features/focus-session/model/resolveDefaultSessionMinutes.ts` reads `user.preferences?.studyDefaults`.
+- Accepted shape: `studyDefaults` must be a plain object whose `sessionMinutes` (the key EP07 reads today) is a finite number in 5–480. Any other shape — missing key, wrong key, non-number, `NaN`/`Infinity`, out of range, non-object `studyDefaults`, or a null/undefined preferences bag — falls back to EP07's own default of **25 minutes**.
+- The key name `sessionMinutes` and the fallback 25 are recorded here as provisional; if EP06 later chooses a different key, only the helper changes. The helper is pure and unit-tested for: preference present & well-formed, preference absent, preference malformed (each malformed variant).
+
+**States.**
+- In-flight: confirm `Button` uses `isLoading` (spinner + disabled) and `aria-busy`; Cancel is disabled; backdrop close and Escape are ignored (the primitive's `disableBackdropClose` is set to `true` while in flight, and the dialog's keydown handler ignores Escape). The input and preset chips are disabled while in flight.
+- Error: a `role="alert"` block below the input shows `getErrorMessage(err)` (or the API message), with the 409 special-cased: when `extractApiError(err)?.statusCode === 409`, the message is the API's verbatim "A focus session is already in progress." plus a secondary text line "Finish your open session first, then start a new one." and the confirm button's label changes to "View current session"; activating it closes the dialog and navigates to the focus route (`/focus`, owned by EP07D — until then it falls through to the catch-all, the accepted inter-commit transient). For any other failure the message is the sanitized error and a retry is the re-clicked confirm (button re-enables).
+- Success: the dialog closes and the app navigates to the focus route; no toast and no list refetch (the session is not part of the assignment list). Dismissing or failing leaves the list/course-detail exactly as it was.
+- No empty state is reachable: the action is always assignment-scoped, so the dialog is never opened without an assignment.
+
+**Duplicate-submit guard.**
+- Confirm handler early-returns when `isStarting` is true; the control is disabled via `isLoading`. A second click/Enter sends no second request. Matches the `ArchiveCourseDialog` pattern.
+
+**Navigation.**
+- On success: `navigate('/focus')` (path owned by EP07D). Until EP07D lands this falls through to the catch-all redirect to `/` — the accepted inter-commit transient, gated by the combined EP07 review. EP07C is explicitly not releasable on its own.
+- 409 "View current session" uses the same `navigate('/focus')`.
+
+**Keyboard behaviour.**
+- Initial focus: the first preset chip (or the input if no presets match) — the primitive focuses the first focusable, which is the first preset chip; chips are ordered 25, 50, 90 before the input, so focus lands on 25. Acceptable and announced by the chip's label.
+- Escape closes (restores focus to the triggering menu's trigger, then to the row), except while in flight.
+- Tab order: assignment context (non-interactive) → preset chips → duration input → Cancel → confirm. Focus trap provided by the primitive.
+- Focus restoration: on close, the primitive restores focus to the element that had focus when the dialog opened (the overflow trigger), which is already the established row pattern.
+
+**Responsive behaviour.**
+- Dialog: the primitive is `w-full max-w-sm` with `p-4` outer padding, so at 375px it fills the viewport minus 32px with no horizontal scroll. Footer stacks vertically (`flex-col-reverse`) on mobile, so Cancel and confirm are full-width and ≥44px (Button's `max-sm:min-h-[44px]`).
+- Preset chips wrap (`flex flex-wrap gap-2`) and each is ≥44px tall on mobile (Button `sm` plus `max-sm:min-h-[44px]`).
+- The overflow menu item already meets ≥44px via the menu's `py-2` + the page-level `max-sm:[&_button]:min-h-[44px]` rule on list containers; the course-detail list applies the same rule.
+
+**Reduced motion.**
+- The primitive's open/close uses `transition-all duration-base ease-standard` with `opacity-0 scale-95` → `opacity-100 scale-100`. Respect `prefers-reduced-motion`: apply `motion-reduce:transition-none motion-reduce:transform-none` (or rely on the token's reduced-motion variant) so the dialog appears without animation. The spinner uses `motion-reduce:animate-none` (already in Button). No other animations are introduced.
+
+**Copy (final).**
+- Menu item: "Start focus session" (icon `Play`).
+- Dialog title: "Start a focus session".
+- Dialog description: "Choose how long you want to focus on this assignment."
+- Context meta: "Due {date} · {n}h estimated" (estimated hours only if present).
+- Field label: "Duration"; hint: "Between 5 and 480 minutes." / "Your default: {n} minutes."
+- Preset caption: "Your default" (under the matching chip).
+- Confirm: "Start focus session" (idle) / "Starting…" (in flight, via `isLoading`) / "View current session" (409).
+- Cancel: "Cancel".
+- Error alert: sanitized message; 409 adds "Finish your open session first, then start a new one."
+
+**Tests to add / update** (refined from the story's list; framework: Vitest + Testing Library, matching `DeleteAssignmentDialog.test.tsx`):
+- `StartFocusSessionDialog.test.tsx`:
+  - renders assignment title, due date, estimated hours and the resolved default duration (preference present);
+  - resolves default from preference when present & well-formed; falls back to 25 when absent; falls back when malformed (each malformed variant);
+  - preset chip click sets the value and highlights the chip; typing a custom value clears chip highlight;
+  - out-of-range / non-integer duration shows inline error and keeps confirm disabled; no request sent;
+  - confirm sends exactly one `POST /study-sessions` with `{ assignmentId, plannedMinutes }`;
+  - confirm disabled + `aria-busy` while in flight; a second click/Enter sends no second request;
+  - failed request renders an actionable error alert and keeps the dialog open; confirm re-enables;
+  - 409 renders the verbatim message + "Finish your open session first…" and switches confirm to "View current session", which navigates to `/focus`;
+  - dismissing (Cancel / Escape / backdrop) sends no request and restores focus to the trigger;
+  - success closes the dialog and navigates to `/focus`.
+- `RowActionsMenu.test.tsx` (extend): renders "Start focus session" item with accessible name `Start focus session for {title}`; item absent on completed assignments; item disabled when `disabled`; keyboard cycle includes it first; activating calls `onStartFocus` and returns focus to the trigger.
+- `AssignmentsPage.test.tsx` / `CourseDetailPage.test.tsx` (extend): entry point present on both surfaces; selecting it opens the dialog for that assignment; the flow ends in a navigation to `/focus`.
+- `resolveDefaultSessionMinutes.test.ts` (new, co-located in `model/`): pure helper cases.
+- Reduced-motion / responsive are covered by the existing primitive tests and the manual a11y pass (TR-E07-08); no new automated assertions required beyond the primitive's own.
+
+**New/modified files (UI scope only — no application code written by this pass):**
+- `apps/web/src/features/focus-session/ui/StartFocusSessionDialog.tsx` (new) — uses `Dialog`, `Button`, `Input`.
+- `apps/web/src/features/focus-session/model/resolveDefaultSessionMinutes.ts` (new) — pure helper.
+- `apps/web/src/features/focus-session/model/useStartFocusSession.ts` (new, recommended) — owns `isStarting`, the submit handler, error state, and the `navigate('/focus')` call; keeps the dialog presentational. Owning the navigation in a hook (rather than the dialog) matches the page-level ownership used for `useAssignmentActions`.
+- `apps/web/src/features/assignments/ui/RowActionsMenu.tsx` (modify — add the item + `onStartFocus` prop).
+- `apps/web/src/features/assignments/ui/AssignmentRow.tsx` (modify — thread `onStartFocus`).
+- `apps/web/src/pages/assignments/ui/AssignmentsPage.tsx` and `apps/web/src/pages/courses/ui/CourseDetailPage.tsx` (modify — `startingAssignment` state + dialog mount).
+- `apps/web/src/shared/types/academic.ts` — replace the stale `StudySession` interface with a pointer to the new entity type (per technical notes).
+
+### Decisions (settled by the `ui-refiner` pass, 2026-10-30)
+
+- Entry-point placement: inside the existing `RowActionsMenu` as a third item above Edit/Delete; no visible button. (row density preserved; matches the established overflow pattern)
+- Entry-point affordance: `Play` icon + text "Start focus session"; accessible name `Start focus session for {title}`.
+- Entry-point visibility: hidden on finished assignments (`COMPLETED`/`SUBMITTED`/`GRADED`); menu then shows only Edit/Delete.
+- Dialog: EP10 `Dialog` primitive, size `sm`, modal; backdrop close + Escape except while in flight. Title "Start a focus session".
+- Dialog context: assignment title + due date + estimated hours (compact meta line); estimated hours only if present.
+- Duration control: three preset chips (25/50/90) plus a numeric input (5–480, step 5); chips and input stay in sync; inline validation.
+- Default duration: `resolveDefaultSessionMinutes(user)` reads `preferences.studyDefaults.sessionMinutes`; fallback 25. Provisional key/fallback (V-07-1).
+- Default presentation: matching preset chip carries a "Your default" caption; custom default shows "Your default: {n} minutes." hint. Fallback default is not attributed to EP06.
+- Confirm label: "Start focus session" (idle) / "Starting…" (in flight) / "View current session" (409).
+- Cancel label: "Cancel".
+- 409 handling: verbatim API message + "Finish your open session first, then start a new one." + confirm becomes "View current session" → navigates to `/focus`.
+- Other failure: sanitized `getErrorMessage` in a `role="alert"` block; retry by re-clicking confirm.
+- Duplicate-submit guard: early-return when `isStarting`; control disabled via `isLoading`; backdrop/Escape ignored in flight.
+- Navigation: `navigate('/focus')` on success and on the 409 affordance; accepted inter-commit transient until EP07D.
+- Keyboard: initial focus first preset chip; Tab order context → chips → input → Cancel → confirm; focus trap from primitive; Escape closes except in flight; focus restored to the overflow trigger.
+- Responsive: dialog full-width `max-w-sm` with no horizontal scroll at 375px; footer/chips stack and are ≥44px on mobile.
+- Reduced motion: primitive transition gets `motion-reduce` overrides; spinner uses `motion-reduce:animate-none`; no new animations.
+- TaskId selection UI: remains out of scope for EP07C (settled with EP07D); this story sends only `assignmentId` + `plannedMinutes`.
+
 ### Risks / open questions
 
 - **The navigation target is EP07D's route.** This story is therefore **not releasable on its own**; it needs EP07D for the destination screen. The transient between the two commits is acceptable because the whole epic ships behind one combined review, but it must not be presented as a standalone release.
@@ -135,7 +251,9 @@ Jira key: Pending creation. No sync was authorized for this planning task. (If t
 - **Verification:** `pnpm --filter web test -- src/features/focus-session src/features/assignments src/pages/assignments src/pages/courses`; `pnpm --filter web typecheck`; `pnpm --filter web lint`; `pnpm --filter web test` (full suite).
 - **Dependencies / exclusions:** EP07A and EP07B implemented; `ui-refiner` pass completed. Excludes the focus-mode screen and timer controls (EP07D), completion confirm/adjust and history (EP07E), the dashboard quick action (D07-9), the `taskId` selection UI (settled with EP07D), and all backend work. **Not releasable on its own** — the destination focus route and page land with EP07D; the combined EP07 review is the release gate.
 
-## UI/UX gaps for the `ui-refiner` (D07-5 — not yet settled)
+## UI/UX decisions (settled 2026-10-30 — D07-5)
+
+All gaps listed below are now settled; the authoritative, implementation-ready detail lives in Technical Notes → "UI/UX design" and "Decisions". This section is retained for traceability against the original gap list.
 
 - **Entry-point placement.** Where the "Start focus session" action lives on the assignment row: inside the existing overflow menu, as a visible control beside the status control, or both (visible on wide screens, in the menu on narrow screens). The row already carries a status control, an overflow menu and a subtask disclosure.
 - **Entry-point affordance and iconography.** Icon + text versus icon-only; the icon set (lucide-react is already a dependency); the label wording ("Start focus session" vs "Focus" vs "Study now"); whether the action appears on completed assignments.
