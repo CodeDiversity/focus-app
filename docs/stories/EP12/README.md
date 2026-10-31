@@ -3,7 +3,7 @@
 **Epic:** [EP12: Tech Debt Cleanup](../../epics/EP12-tech-debt-cleanup.md) (Jira key: Pending creation)
 **Milestone:** M5 (cross-cutting polish)
 **Epic dependency:** Cross-cutting. EP12A depends on the shipped EP04/EP06 date utilities; EP12B depends on EP10B (shared `Dialog` primitive, reviewed); EP12C depends on the EP04/EP05 pages that consume the calendar/assignment endpoints. No new product behavior.
-**Status:** EP12A implemented (2026-10-31); EP12B and EP12C remain Ready.
+**Status:** EP12A and EP12B implemented (2026-10-31); EP12C remains Ready.
 **Jira keys:** Pending creation (no sync authorized for this planning task).
 
 ## Execution queue
@@ -14,7 +14,7 @@
 
 **Active substory:** EP12B
 
-**Next substory:** EP12B — implement (in progress).
+**Next substory:** EP12C — implement.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -23,7 +23,7 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [EP12A](./EP12A-consolidate-timezone-date-conversion.md) | Implemented — awaiting parent review | EP04/EP06 shipped (date utilities exist). D12A-1 settled (user approval): forward + reverse converters in scope. | None — combined EP12 parent review after EP12B/EP12C | [checkpoint](./artifacts/EP12A/checkpoint.md), [implementation](./artifacts/EP12A/implementation.md) |
-| [EP12B](./EP12B-adopt-shared-dialog-primitive.md) | In progress | EP10B shared `Dialog` primitive (reviewed). D12B-1/D12B-2 settled (user approval): `busy` prop approved; passive deltas accepted. | Implement | [checkpoint](./artifacts/EP12B/checkpoint.md) (to be created) |
+| [EP12B](./EP12B-adopt-shared-dialog-primitive.md) | Implemented — awaiting parent review | EP10B shared `Dialog` primitive (reviewed). D12B-1/D12B-2 settled (user approval): `busy` prop approved; passive deltas accepted. | None — combined EP12 parent review after EP12C | [checkpoint](./artifacts/EP12B/checkpoint.md), [implementation](./artifacts/EP12B/implementation.md) |
 | [EP12C](./EP12C-unify-web-api-clients.md) | Ready (refined 2026-10-31) | EP04/EP05 pages exist. D12C-1 settled (user approval): entity owns fetch, RTK delegates. | Implement | None yet |
 
 Sequence: independent (backend EP12A can run in parallel in planning terms; implementation is sequential under one writer). Suggested order: EP12A → EP12B → EP12C.
