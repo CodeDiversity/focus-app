@@ -115,4 +115,48 @@ describe('RecoverySummary', () => {
     await user.click(screen.getByRole('button', { name: /try again/i }));
     await waitFor(() => expect(mocked).toHaveBeenCalledTimes(2));
   });
+
+  it('copy contains no blaming terms', async () => {
+    mocked.mockResolvedValue({
+      missedSessions: [
+        {
+          id: 'ps-1',
+          assignmentId: 'a-1',
+          assignmentTitle: 'Essay',
+          date: '2026-10-29',
+          startTime: '09:00',
+          endTime: '10:00',
+          durationMinutes: 60,
+          locked: false,
+        },
+      ],
+      missedCount: 1,
+      unfinishedWork: [
+        {
+          assignmentId: 'a-2',
+          title: 'Reading',
+          courseCode: 'HIST',
+          dueDate: '2026-11-02',
+          estimatedMinutes: 60,
+          confirmedMinutes: 10,
+          remainingMinutes: 50,
+          status: 'PENDING',
+          flagged: null,
+        },
+      ],
+      confirmedMinutes: 10,
+      message: 'You have some work to catch up on.',
+    });
+    const { container } = renderSummary();
+    await waitFor(() => expect(screen.getByText('Essay')).toBeInTheDocument());
+    const text = container.textContent ?? '';
+    // D08-8/PR-008: the summary surface names what is outstanding and never
+    // shames — the same term list CatchUpPreview.test.tsx pins, applied to
+    // the whole rendered surface (component copy + the server message).
+    expect(text).not.toMatch(/you missed/i);
+    expect(text).not.toMatch(/you(’'ve| have|'?ve)? failed/i);
+    expect(text).not.toMatch(/you'(re| are) behind/i);
+    expect(text).not.toMatch(/punitive/i);
+    expect(text).not.toMatch(/shame/i);
+  });
 });
