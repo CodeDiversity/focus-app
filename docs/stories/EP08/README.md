@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** [EP08B](./EP08B-deterministic-workload-rescheduling.md) — implement (pure domain rescheduler; EP08A implemented).
+**Next substory:** [EP08C](./EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md) — implement (backend API + transactional persistence; EP08A and EP08B implemented).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -23,7 +23,7 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [EP08A](./EP08A-missed-sessions-and-recovery-summary-read-api.md) | Implemented — awaiting parent review | EP06 + EP07 complete/reviewed. D08-1…D08-8 recorded below. No UI decisions (D08-7). | Combined EP08 parent review after all children | `./artifacts/EP08A/checkpoint.md`, `./artifacts/EP08A/implementation.md` |
-| [EP08B](./EP08B-deterministic-workload-rescheduling.md) | Ready (refined 2026-10-31) | EP06 engine (`domain/study-planning/scheduler.ts`, `intervals.ts`, `ordering.ts`) and EP08A's recovery summary (the missed/unfinished inputs). | Implement after EP08A (pure domain module; independently testable). | — |
+| [EP08B](./EP08B-deterministic-workload-rescheduling.md) | Implemented — awaiting parent review | EP06 engine (`domain/study-planning/scheduler.ts`, `intervals.ts`, `ordering.ts`) and EP08A's recovery summary (the missed/unfinished inputs). | Combined EP08 parent review after all children | `./artifacts/EP08B/checkpoint.md`, `./artifacts/EP08B/implementation.md` |
 | [EP08C](./EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md) | Queued | EP08A + EP08B implemented. EP06 save/conflict primitives reused. | Implement after EP08B (backend API + transactional persistence). | — |
 | [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) | Needs refinement | EP08A implemented (the read API). **`ui-refiner` pass required** (D08-7) — layout, copy/tone (non-blaming), states, a11y, responsive. | `ui-refiner` on EP08D before implementation. | — |
 | [EP08E](./EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md) | Needs refinement | EP08C implemented (the preview/confirm API). **`ui-refiner` pass required** (D08-7). | `ui-refiner` on EP08E before implementation. | — |
@@ -329,18 +329,18 @@ coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: c1d7f95
+  head: b00271c
 active_dispatch:
-  name: EP08B-implement
-  role: implementer
-  status: pending
+  name: none
+  role: ""
+  status: completed
   pointer: docs/stories/EP08/EP08B-deterministic-workload-rescheduling.md
   session: ""
-  assignment: "Implement EP08B: deterministic workload rescheduling (pure domain)"
+  assignment: ""
 last_result:
-  evidence: "EP08A implemented (2026-10-31): additive locked migration + GET /study-plans/recovery-summary + tests/typecheck/lint/build green. Artifacts: docs/stories/EP08/artifacts/EP08A/{checkpoint,implementation}.md. Status: Implemented — awaiting parent review."
+  evidence: "EP08B implemented (2026-10-31): pure replan(...) domain module reusing EP06 schedule()/classifyAssignments + 11 unit tests; typecheck/lint/tests/build green. Artifacts: docs/stories/EP08/artifacts/EP08B/{checkpoint,implementation}.md. Status: Implemented — awaiting parent review."
   findings: ""
-  scope_note: "Step mode: one task per continuation. EP08A complete; EP08B is next per queue."
+  scope_note: "Step mode: one task per continuation. EP08B complete; EP08C is next per queue (Queued, deps met)."
   cycles: 0
   same_findings: unknown
 gates:
@@ -366,6 +366,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "EP08A implemented; next step is implementer on EP08B (Queued) per queue."
+resume: "EP08B implemented; next step is implementer on EP08C (Queued) per queue."
 judgment_attempts: 0
 ```
