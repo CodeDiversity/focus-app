@@ -45,6 +45,7 @@ Frontend (closeout commit):
 - Apps/api (cwd apps/api): `npx jest src/modules/study-plans` → 30 passed / 36 skipped; full `npm test` → 897 passed / 443 skipped / 0 failed (41 suites); `tsc --noEmit` clean; `npx eslint src/modules/study-plans --max-warnings 0` clean.
 - Apps/web (cwd apps/web): `npx vitest run` → 1131 passed / 100 files; `tsc --noEmit` clean; `npx eslint src --max-warnings 0` clean; no React "not wrapped in act" warnings in the catch-up suites.
 - Skips are honest: the PATCH e2e + data-scoping describes sit in the repo's `DATABASE_URL`-gated suites and self-skip locally (no DATABASE_URL in this environment). Behavior is pinned locally by the unit spec (scoped where, `data` = `{ locked }` only, uniform 404, 400 field errors). They will execute in any environment with `DATABASE_URL`.
+- Post-commit full web run: one run of 1131 reported a single unnamed failure; the two full runs immediately after were 1131/1131, and three back-to-back targeted runs of the catch-up/catch-up-page/editor files were 32/32 each. The catch-up suites are stable; the single unreproducible full-suite failure is recorded as an unreproduced load flake (pre-existing suite timing sensitivity), flagged honestly for the parent review.
 
 ## TR-E08-08 manual accessibility pass (honest execution labels)
 - Keyboard operability — EXECUTED (automated): "is keyboard operable" test drives Tab through Use-this-plan/Not-now and Enter on editor move + lock toggle.
