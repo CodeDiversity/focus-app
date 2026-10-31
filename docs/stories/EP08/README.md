@@ -329,18 +329,18 @@ coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: 3202c79
+  head: d9a7738
 active_dispatch:
-  name: EP08E-tech-refine
-  role: refiner
+  name: EP08E-implement
+  role: implementer
   status: completed
   pointer: docs/stories/EP08/EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md
-  session: ses_e6c4c70f2ffe2RRFAuck0nWdoM
-  assignment: "Technical refinement of EP08E in place (wiring, DTO details, PATCH lock-endpoint spec grounding, test plan) so the story is implementation-ready. UI/UX decisions settled by ui-refiner (5dd603f) are kept, not relitigated. Write boundary: the EP08E story file only. No README/artifact/code writes, no git. Story file: docs/stories/EP08/EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md"
+  session: ses_e6c3ec2b6ffeR2LnkixG1lvO6k
+  assignment: "Implement EP08E (catch-up preview/edit/confirm/decline UI + scoped PATCH /study-plans/sessions/:sessionId/lock endpoint) per the refined story, with checkpoint/resume discipline and the story's test map. Single sequential writer; scoped commits (exclude foreign dirty paths and the README's Autopilot section). Return at the EP08E child boundary — no EP08F, no review."
 last_result:
-  evidence: "EP08E-tech-refine COMPLETED (foreground, session ses_e6c4c70f2ffe2RRFAuck0nWdoM): technical refinement of the EP08E story in place — every AC grounded against actual code (exact files/helpers/DTOs verified, paths returned); PATCH /study-plans/sessions/:sessionId/lock fully specified (dto/SetSessionLockDto @IsBoolean; service setSessionLock with scoped updateMany { id, studyPlan: { userId } } + assertAffected + scoped findMany echo {id, locked}; 400/401/uniform-404; status-agnostic semantics); new Seams-and-wiring subsection (App.tsx nesting, CatchUpPage layout/aria fix, preview.ts extraction, client functions, error-handling table); test map rewritten to concrete files/cases (6 frontend files; PATCH specs across the 3 existing backend spec files). Factual correction: save() omits locked (schema default), not 'sets locked:false at line 1029' (that is catchUpConfirm). All 24 ui-refiner UI/UX decisions and copy preserved. Boundary verified: only the EP08E story file changed; no git run. Readiness verdict: Ready for implementer. Output committed by coordinator at 3202c79 (refiner node commit: coordinator)."
-  findings: "Refiner-open (non-blocking, planner-owned, unchanged): (1) in-window SCHEDULED lock list extension ({id, locked} in CatchUpPreview or SavedPlanSession.locked) — planner's shared-contract call; PATCH already generic. (2) plan-page lock toggle — EP06 surface, out of EP08E scope. Informational: malformed-uuid params 500 repo-wide (tech debt, no EP08E action). Honest note carried into the story: EP08C shipped NO preview/confirm API tests; EP08E implementer must not look for them."
-  scope_note: "Step continue: deliberate step_pause cleared on explicit user continuation; tech_needed edge taken (EP08E Needs refinement, ui settled). Queue reconciled this step: EP08E row Needs refinement → Ready with refinement evidence; Next substory → implementer. Foreign dirty paths preserved uncommitted and untouched: .agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md. No writer dispatched this step; writer remains none."
+  evidence: "EP08E-implement COMPLETED (foreground, session ses_e6c3ec2b6ffeR2LnkixG1lvO6k; base 5ed6bc3). Commits: dde6780 backend PATCH lock endpoint (SetSessionLockDto, scoped updateMany → assertAffected → scoped echo / uniform 404, + unit/e2e/data-scoping specs) and checkpoint 1; 646e93f frontend /catch-up/preview surface (CatchUpPreview/CatchUpPreservationCard/CatchUpLockToggle, additive conflicts prop on PlanSessionEditor, preview.ts extraction, 3 client functions, nested routing, 22 new tests) + closeout records + queue row; d9a7738 honest post-commit flake addendum. Records: artifacts/EP08E/implementation.md (AC 1–11 + backend note outcomes, TR-E08-08 manual pass with honest labels) + checkpoint.md (all checkpoints closed). Verification as reported by the implementer on the committed tree: web vitest 1131/1131 (100 files), web tsc+eslint clean; api npm test 897 passed / 443 skipped / 0 failed, tsc+eslint clean. Honest limits (for the reviewer): PATCH e2e + data-scoping describes DATABASE_URL-gated self-skip locally (unit spec pins behavior); one unreproduced single-test failure in one full-suite run (2 subsequent full runs green, 3× targeted 32/32) recorded as load flake; VoiceOver/reduce-motion/320px manual steps documented, not browser-executed (EP08F Playwright is the durable proof). Coordinator verified: commit scope (study-plans module + web catch-up/study-plan paths + EP08E artifacts + README queue hunks only), queue row + Next substory committed by the specialist, Autopilot section untouched by the specialist. Child closeout — NOT independent approval; combined parent review remains."
+  findings: "None mandatory. Implementer deviations recorded in implementation.md (singular/plural count copy adaptation; inline-error toggle per AC 5; EP08D conflict-shape fidelity; lint-pipeline normalization of pre-existing prettier drift) — inputs for the combined parent review. Planner-owned non-blocking open questions unchanged (in-window lock list; plan-page toggle). Reviewer watch-items: the recorded unreproduced load flake and the DATABASE_URL-gated specs."
+  scope_note: "Step continue: deliberate step_pause cleared on explicit user continuation; child_ready edge taken (EP08E Ready, planning gates passed). Implementer node committed itself (precedent honored: scoped, hunk-filtered README hunks; Autopilot section excluded). Writer ownership relinquished (tree clean except foreign paths). Queue committed by the specialist: EP08E → Implemented — awaiting parent review; Next substory → EP08F. Foreign dirty paths preserved uncommitted and untouched: .agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md."
   cycles: 0
   same_findings: unknown
 
@@ -350,7 +350,7 @@ gates:
   ui: true
   refinement: true
   child_unfinished: false
-  eligible_child_state: "Ready (EP08E; implementation next)"
+  eligible_child_state: "Queued (EP08F; dependencies EP08A–EP08E now met — implement next)"
   closeout: true
   integration: false
   all_descendants_implemented: false
@@ -367,6 +367,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "EP08E technical refinement complete and committed (3202c79); queue row reconciled to Ready; step pause restored. Next proposed step: implementer on EP08E (child_ready edge — planning gates passed, eligible child Ready; suggested checkpoint 1 = PATCH lock endpoint + its three backend specs, then the frontend preview/edit/confirm/decline surface per the story). Planner-owned non-blocking open questions stay open (in-window lock list; plan-page toggle) — they do not block EP08E's shipped flow. Foreign dirty paths (.agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md) still uncommitted, untouched."
+resume: "EP08E implemented, verified and committed by the specialist (dde6780 + 646e93f + d9a7738); queue row Implemented — awaiting parent review; step pause restored. Writer ownership relinquished; tree clean except foreign paths. Next proposed step: implementer on EP08F (Playwright cross-layer E2E apps/web/e2e/catch-up.spec.ts against the EP09 stack + the EP08 parent implementation index artifacts/EP08/implementation.md) — EP08A–E dependencies met. After EP08F: combined EP08 parent review (reviewer, review.md + walkthrough.md; carry the recorded load-flake note, DATABASE_URL-gated specs and TR-E08-08 manual-pass evidence into the review baseline). Planner-owned non-blocking open questions still open."
 judgment_attempts: 0
 ```
