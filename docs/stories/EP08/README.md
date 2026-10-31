@@ -318,13 +318,13 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: parent_review
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
@@ -333,14 +333,14 @@ coordinator:
 active_dispatch:
   name: EP08-parent-review
   role: reviewer
-  status: pending
-  pointer: docs/stories/EP08/README.md
-  session: ""
+  status: completed
+  pointer: docs/stories/EP08/artifacts/EP08/review.md
+  session: ses_e6bf02963ffeDuDWa2YqdsX8lv
   assignment: "Combined EP08 parent review — all six children (EP08A–EP08F) against baseline 53de89c..HEAD 6ef788e. Produce artifacts/EP08/review.md AND the final user-facing walkthrough.md (code explanation, correctness evidence, manual test steps/expected results with honest execution labels). On a passing verdict perform the permitted passing-review docs sync; return an explicit Git handoff (do not commit). On a non-passing verdict save the report only and return the deferred-edits Git handoff. Do not fix code; read-only review. Return at the review boundary — no fixes, no closeout."
 last_result:
-  evidence: "EP08F-implement COMPLETED (foreground, session ses_e6c159ac7ffeOiI87NjZXq2l8z; base 9c0b222). Commits: 6d06763 apps/web/e2e/catch-up.spec.ts (new, 794 lines, 9 tests: full replan journey missed→preview→edit→confirm→reload with server re-read + immutability, decline = no confirm request + byte-identical plan, locked preservation fields+count, feasibility warnings, completed-assignment exclusion, confirmed-time→recovery summary, EP04 null-endTime calendar regression, 2× 320px keyboard/focus/44px a11y tests); a6d781c closeout records + EP08 parent implementation index + queue/story status. Records: artifacts/EP08F/{checkpoint,implementation}.md; parent index artifacts/EP08/implementation.md (baselines 53de89c, child commits c1d7f95/aff7794/8a9c543/9f815a6/dde6780+646e93f+d9a7738, AC-E08-01…09 traceability, verification snapshot, known gaps). Verification as reported by the implementer on the committed tree: web typecheck + eslint clean; new spec 9/9; full E2E 40 passed with all 9 catch-up tests green; control and focused runs logged. Honest caveats recorded: (1) two PRE-EXISTING deterministic E2E failures — assignments-list.spec.ts:23 and calendar.spec.ts:100, Escape focus-restoration; proven unrelated via full control run with the new spec removed and both failing in isolation; no focus-restore logic exists in the current component tree (likely lost in the SP-109 reorg) — needs its own fix story or a parent-review ruling; (2) study-plans-e2e dailyCapMinutes reported-not-blocking per AC 8; api integration specs self-skip locally without DATABASE_URL; (3) TR-E08-08 VoiceOver + reduced-motion remain documented-not-executed — human pass required at the reviewer walkthrough (autopilot cannot ratify). Coordinator verified: commit scope (spec-only + records/index/queue hunks only), no Autopilot-section hunks in specialist commits, queue row + Next substory committed by the specialist, foreign paths untouched. Child closeout — NOT independent approval; combined parent review remains."
-  findings: "None mandatory at coordination. Reviewer watch-items for the combined review: two pre-existing deterministic focus-restoration E2E failures (ruling or fix-story decision owed — EP08F record §AC 8); EP08E load-flake note; DATABASE_URL-gated self-skipping specs; TR-E08-08 human/browser evidence still owed (human_evidence interrupt applies at final sign-off if unresolved). Planner-owned non-blocking open questions unchanged (in-window lock list; plan-page toggle)."
-  scope_note: "Step continue: deliberate step_pause cleared on explicit user continuation; child_ready edge taken (EP08F Ready per precedent b00271c reconciliation — integration child, refinement gates set, dependencies evidenced). Implementer node committed itself (scoped: spec commit + records commit; hunk-filtered README hunks; Autopilot section excluded — grep-verified zero Autopilot occurrences in specialist README diff). Writer ownership relinquished (tree clean except foreign paths). Queue committed by the specialist: EP08F → Implemented — awaiting parent review; Next substory → None (all six children implemented; combined parent review next). Foreign dirty paths preserved uncommitted and untouched: .agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md."
+  evidence: "EP08-parent-review COMPLETED (foreground, session ses_e6bf02963ffeDuDWa2YqdsX8lv) — verdict FAIL / Changes Required: 0 blockers, 3 should-fix, 5 polish. Report saved: artifacts/EP08/review.md (39.8KB; coordinator verified on disk). No walkthrough.md and no passing docs sync (correctly gated on a pass). Findings: F-01 (should-fix) TR-E08-01/02/04 API specs do not exist — zero apps/api specs reference recovery-summary/catch-up preview/confirm; EP08A record defers data-scoping proof to the review and EP08C added none; DoD 8 FAIL — coordinator independently verified the absence and the deferral text. F-02 (should-fix) EP08F AC 8 unmet — 40 passed / 2 failed pre-existing focus-restoration specs (assignments-list.spec.ts:23, calendar.spec.ts:100); control runs prove EP08 causality absent but AC 8 exempts only dailyCapMinutes and no user waiver exists; reviewer also corrected EP08F's root-cause claim: Dialog.tsx DOES implement focus restore (restoreFocusRef L45/101/113) — coordinator verified. F-03 (should-fix) TR-E08-08 screen-reader + reduced-motion never executed → CANNOT VERIFY (keyboard/focus-visible/320px durably covered). Polish: P-01 contract table omits PATCH lock endpoint; P-02 locked/completed collisions reported as OVERLAPS_CONFIRMED_SESSION; P-03 getPlan omits locked; P-04 EP08E flake never named; P-05 catchUpConfirm near-duplicates save transaction and is untested. Holds: all nine epic ACs, shared contract, ownership/uniform 404, D08-1…D08-8. Reviewer honesty: execution unavailable in its nested context (no shell) → all automated gates reviewer-CANNOT-VERIFY; implementer results reused with provenance; Git state verified via .git refs (HEAD 1d157fb, code 6ef788e, baseline 53de89c)."
+  findings: "OPEN (3 should-fix + 5 polish, owner implementer except F-02/F-03 which need a user ruling). F-01: add TR-E08-01/02/04 API specs (missed-session boundary/filters, recovery-summary, preview side-effect-free, confirm busy-set/exclusion/delete filter/targetHours/assignment-immutability/409s/uniform 404 data scoping) + recovery-surface non-blaming copy assertion. F-02: AC 8 literal green-suite unmet by pre-existing failures — needs user decision: explicit waiver, authorize the small Dialog focus-restore fix inside EP08, or defer to a follow-up story (planner). F-03: human VoiceOver/reduced-motion evidence owed — human_evidence interrupt at final sign-off; autopilot cannot ratify. P-01…P-05: polish fixes in the implementer fix round."
+  scope_note: "Step continue 2026-10-31: deliberate step_pause cleared; parent_review edge taken; reviewer dispatched and returned FAIL. Reviewer did not commit (Git handoff: artifacts/EP08/review.md); coordinator committed the report. Non-passing verdict → reviewer saved the report only and deferred all queue/status edits per skill; no walkthrough created. Foreign dirty paths preserved untouched: .agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md."
   cycles: 0
   same_findings: unknown
 
@@ -350,23 +350,23 @@ gates:
   ui: true
   refinement: true
   child_unfinished: false
-  eligible_child_state: "none (all six children Implemented — awaiting parent review; queue rows + on-disk records verified; no eligible child remains)"
+  eligible_child_state: "none (all six children Implemented — awaiting parent review; no eligible child remains)"
   closeout: true
-  integration: "true (reconciled from evidence: catch-up.spec.ts committed 6d06763, full E2E run recorded 40 passed + control runs, parent index artifacts/EP08/implementation.md on disk; independent verification belongs to the combined parent review)"
+  integration: "true (evidence: catch-up.spec.ts 6d06763 + recorded 40-pass E2E + parent index on disk; combined review exercised it and did not overturn it)"
   all_descendants_implemented: true
-  review: not_started
-  findings_owner: none
-  open_findings: false
+  review: fail
+  findings_owner: implementer
+  open_findings: true
   walkthrough: not_started
-  judged_at_head: "a6d781c"
+  judged_at_head: "6ef788e"
   queue_hash: ""
-writer: reviewer (EP08-parent-review, dispatched)
+writer: none
 session_live: unknown
 blocker:
   kind: none
   owner: ""
   question: ""
   answer: ""
-resume: "Step continue 2026-10-31: deliberate step_pause cleared on explicit user continuation; parent_review edge taken (planning pass, all_descendants_implemented true, integration true, open_findings false, review not_started). Coordinator reconciled at 6ef788e: tree clean except foreign dirty paths (.agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md — preserved), artifacts/EP08/ has only implementation.md (review + walkthrough genuinely absent). Dispatching EP08-parent-review (pending) — combined review of all six children from baseline 53de89c. Watch-items handed to the reviewer: pre-existing focus-restoration E2E failures (ruling/fix-story decision), EP08E load-flake note, DATABASE_URL-gated specs, TR-E08-08 human/browser evidence (human_evidence interrupt applies if the final sign-off requires evidence the reviewer cannot obtain). After return: verify saved report/walkthrough, commit coordinator-side per graph, restore step pause. Planner-owned non-blocking open questions still open."
+resume: "Combined EP08 parent review returned FAIL at 6ef788e (report committed; no walkthrough on fail; queue rows untouched per non-passing rule). Step pause restored. Next proposed step (edge fix_implementer): implementer correction round on F-01 (add the missing TR-E08-01/02/04 API specs + non-blaming copy assertion) and P-01…P-05, plus correct EP08F's Dialog root-cause claim; F-02 (AC 8 pre-existing focus-restoration failures) and F-03 (human VoiceOver/reduced-motion evidence) require a USER RULING before an unqualified pass is possible — options: explicit waiver, authorize the small Dialog fix inside EP08, or defer to a follow-up story; human a11y evidence must be obtained by the user at the walkthrough. Do not waive on the user's behalf; after fixes, a fresh reviewer re-review is required. Planner-owned non-blocking open questions still open."
 judgment_attempts: 0
 ```
