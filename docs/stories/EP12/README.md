@@ -74,25 +74,25 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 version: 1
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP12
   descendants: [EP12A, EP12B, EP12C]
   entry: EP12C
   limits: enclosing parent review unit
-stage: paused
+stage: integration
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: 6b28649
   head: f04ac4b
 active_dispatch:
-  name: EP12C
+  name: EP12
   role: implementer
-  status: returned
-  pointer: docs/stories/EP12/EP12C-unify-web-api-clients.md
+  status: pending
+  pointer: docs/stories/EP12/README.md
   session: ""
-  assignment: "Implement EP12C: unify web API clients per domain (entity owns fetch; RTK slices delegate via entityBaseQuery)"
+  assignment: "Integration: prepare EP12 parent implementation index linking EP12A/B/C"
 last_result:
   evidence: "EP12C implemented (2fd6264, f04ac4b). 1092 web tests pass; lint/typecheck/build clean. entityBaseQuery added; two slices delegate. All EP12 children implemented."
   findings: ""
