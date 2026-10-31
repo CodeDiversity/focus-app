@@ -42,4 +42,4 @@ Frontend — completion confirm/adjust dialog and study-history surface: `/focus
 
 ## Commit
 
-- (to be filled at commit)
+- `ffc1b930f940c0d724d3dc6adc1380771d9ec95f` — feat(web): EP07E completion confirm/adjust + study history
