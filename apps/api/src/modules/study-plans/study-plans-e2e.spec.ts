@@ -504,4 +504,89 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
       await agent.get('/study-plans/remaining-work').expect(HttpStatus.UNAUTHORIZED);
     });
   });
+
+  // ==================== the lock toggle (EP08E PATCH endpoint note) ====================
+
+  describe('the lock toggle (PATCH /study-plans/sessions/:id/lock)', () => {
+    /** Seed one planned session for the student (direct writes: fixtures). */
+    async function seedPlannedSession(session: Student) {
+      const assignment = await app.prisma.assignment.create({
+        data: {
+          userId: session.id,
+          title: 'Lock target',
+          estimatedHours: 1,
+          dueDate: new Date('2099-01-01T12:00:00.000Z'),
+          status: 'PENDING',
+          priority: 'MEDIUM',
+        },
+      });
+      const plan = await app.prisma.studyPlan.create({
+        data: { userId: session.id, date: new Date('2026-10-31T00:00:00.000Z'), targetHours: 1 },
+      });
+      return app.prisma.plannedSession.create({
+        data: {
+          studyPlanId: plan.id,
+          assignmentId: assignment.id,
+          startTime: new Date('2026-10-31T14:00:00.000Z'),
+          endTime: new Date('2026-10-31T15:00:00.000Z'),
+          durationMinutes: 60,
+        },
+      });
+    }
+
+    const patchLock = (session: Student, sessionId: string, body: Record<string, unknown>) =>
+      agent
+        .patch(`/study-plans/sessions/${sessionId}/lock`)
+        .set('Authorization', `Bearer ${session.accessToken}`)
+        .send(body);
+
+    it('no token → 401 (global guard)', async () => {
+      await agent
+        .patch('/study-plans/sessions/3f6f2a7c-9d0e-4b8a-9c5f-1e2d3c4b5a69/lock')
+        .send({ locked: true })
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('a missing, non-boolean or unknown-field body → 400 with the field-level errors map, nothing written', async () => {
+      const seeded = await seedPlannedSession(student);
+
+      // Global FieldValidationPipe (whitelist + forbidNonWhitelisted, D106-6).
+      const cases: Array<[Record<string, unknown>, string]> = [
+        [{}, 'locked'],
+        [{ locked: 'yes' }, 'locked'],
+        [{ locked: 1 }, 'locked'],
+        [{ locked: true, extra: 'field' }, 'extra'],
+      ];
+      for (const [body, field] of cases) {
+        const response = await patchLock(student, seeded.id, body).expect(HttpStatus.BAD_REQUEST);
+        expect(response.body.errors).toHaveProperty(field);
+        expect(Array.isArray(response.body.errors[field])).toBe(true);
+      }
+
+      // Nothing was written: the row is still unlocked.
+      const stored = await app.prisma.plannedSession.findUnique({
+        where: { id: seeded.id },
+        select: { locked: true },
+      });
+      expect(stored?.locked).toBe(false);
+    });
+
+    it('the happy path flips the flag and returns exactly { id, locked }', async () => {
+      const seeded = await seedPlannedSession(student);
+
+      const response = await patchLock(student, seeded.id, { locked: true }).expect(HttpStatus.OK);
+      expect(Object.keys(response.body).sort()).toEqual(['id', 'locked']);
+      expect(response.body).toEqual({ id: seeded.id, locked: true });
+
+      const stored = await app.prisma.plannedSession.findUnique({
+        where: { id: seeded.id },
+        select: { locked: true },
+      });
+      expect(stored?.locked).toBe(true);
+
+      // And it flips back.
+      const back = await patchLock(student, seeded.id, { locked: false }).expect(HttpStatus.OK);
+      expect(back.body).toEqual({ id: seeded.id, locked: false });
+    });
+  });
 });

@@ -1,7 +1,8 @@
-import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 
 import { StudyPlansService } from './study-plans.service';
 import { SaveStudyPlanDto } from './dto/save-study-plan.dto';
+import { SetSessionLockDto } from './dto/set-session-lock.dto';
 import { ListStudyPlansQueryDto } from './dto/list-study-plans-query.dto';
 import { AuthenticatedUser } from '../../common/types';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -78,6 +79,26 @@ export class StudyPlanController {
   @Post('catch-up/confirm')
   catchUpConfirm(@CurrentUser() user: AuthenticatedUser, @Body() dto: SaveStudyPlanDto) {
     return this.studyPlansService.catchUpConfirm(user.id, dto);
+  }
+
+  /**
+   * PATCH /study-plans/sessions/:sessionId/lock — the student's explicit
+   * lock toggle for one planned session (EP08E, D08-4). Sets only `locked`;
+   * status-agnostic on purpose (the scheduling effect lives in confirm,
+   * which preserves locked rows). `:sessionId` is the `PlannedSession.id` —
+   * the only planned-session id the client ever sees.
+   * 200 → exactly `{ id, locked }`; 400 field errors on the body; 404 →
+   * the uniform `Resource not found` (missing or foreign, never 403);
+   * 401 → unauthenticated (global guard).
+   */
+  @Patch('sessions/:sessionId/lock')
+  @HttpCode(200)
+  setSessionLock(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('sessionId') sessionId: string,
+    @Body() dto: SetSessionLockDto
+  ) {
+    return this.studyPlansService.setSessionLock(user.id, sessionId, dto);
   }
 
   /**

@@ -34,6 +34,7 @@ import type {
 } from '../../domain/study-planning/types';
 import { UpdateStudyPreferencesDto } from './dto/update-study-preferences.dto';
 import { SaveStudyPlanDto } from './dto/save-study-plan.dto';
+import { SetSessionLockDto } from './dto/set-session-lock.dto';
 
 /**
  * Study-plans service (EP06A + EP06B) — the study-planning surface: the
@@ -247,6 +248,15 @@ export type CatchUpPreview = PlanPreview & {
   missedSessions: MissedSession[];
   lockedPreserved: number;
   completedPreserved: number;
+};
+
+/**
+ * The body of `PATCH /study-plans/sessions/:sessionId/lock` (EP08E): exactly
+ * the two keys, `userId` never exposed.
+ */
+export type PlannedSessionLock = {
+  id: string;
+  locked: boolean;
 };
 
 export type SavedPlanSession = {
@@ -1033,6 +1043,51 @@ export class StudyPlansService {
     });
 
     return this.getPlan(userId, dto.from, dto.to);
+  }
+
+  /**
+   * The student's explicit lock toggle (EP08E, D08-4/V-08-1) behind
+   * `PATCH /study-plans/sessions/:sessionId/lock`.
+   *
+   * Ownership (repo convention): `PlannedSession` has no `userId` column —
+   * the scoped `where` carries the authenticated `userId` **through the
+   * parent** (`studyPlan.userId`), the count goes through `assertAffected`,
+   * and a missing or foreign id is the same uniform 404 `Resource not found`
+   * — never a 403, never a distinct message (no existence oracle).
+   *
+   * Semantics: sets only `locked` — never `status`, times, or any
+   * `StudySession`/`Assignment`/`Task` row. Status-agnostic on purpose:
+   * confirm only deletes `SCHEDULED && !locked` rows, so locking a
+   * non-SCHEDULED row persists without a scheduling effect, and the preview
+   * only surfaces SCHEDULED rows for toggling anyway.
+   */
+  async setSessionLock(
+    userId: string,
+    sessionId: string,
+    dto: SetSessionLockDto
+  ): Promise<PlannedSessionLock> {
+    const fieldErrors = dtoErrors(dto, new SetSessionLockDto());
+    if (fieldErrors) {
+      throwFieldErrors(fieldErrors);
+    }
+
+    const updated = await this.prisma.plannedSession.updateMany({
+      where: { id: sessionId, studyPlan: { userId } },
+      data: { locked: dto.locked },
+    });
+    assertAffected(userId, updated.count);
+
+    // Scoped echo read: `findMany` (relation filters are only allowed on the
+    // non-unique finders); the `select` keeps the body at exactly the two
+    // contract keys.
+    const rows = await this.prisma.plannedSession.findMany({
+      where: { id: sessionId, studyPlan: { userId } },
+      select: { id: true, locked: true },
+    });
+    if (rows.length === 0) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+    return rows[0];
   }
 
   async save(userId: string, dto: SaveStudyPlanDto): Promise<SavedPlan> {

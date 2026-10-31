@@ -301,4 +301,100 @@ describeIntegration('study preferences data scoping (integration, real database)
       await agent.get('/study-plans/remaining-work').expect(HttpStatus.UNAUTHORIZED);
     });
   });
+
+  // ============ the lock toggle (EP08E PATCH /study-plans/sessions/:id/lock) ============
+
+  describe('the lock toggle is scoped to the owning student', () => {
+    /** Seed one planned session for a student (direct writes: the fixture). */
+    async function seedPlannedSession(student: Student) {
+      const assignment = await seedAssignment(student, { title: `${student.id} lock target` });
+      const plan = await app.prisma.studyPlan.create({
+        data: { userId: student.id, date: new Date('2026-10-30T00:00:00.000Z'), targetHours: 1 },
+      });
+      return app.prisma.plannedSession.create({
+        data: {
+          studyPlanId: plan.id,
+          assignmentId: assignment.id,
+          startTime: new Date('2026-10-30T14:00:00.000Z'),
+          endTime: new Date('2026-10-30T15:00:00.000Z'),
+          durationMinutes: 60,
+        },
+      });
+    }
+
+    const patchLock = (session: Student, sessionId: string, body: Record<string, unknown>) =>
+      agent
+        .patch(`/study-plans/sessions/${sessionId}/lock`)
+        .set('Authorization', `Bearer ${session.accessToken}`)
+        .send(body);
+
+    /** Every stored column except `locked` — the toggle must touch nothing else. */
+    const columnsExceptLocked = (row: {
+      id: string;
+      studyPlanId: string;
+      assignmentId: string;
+      startTime: Date;
+      endTime: Date;
+      durationMinutes: number;
+      status: string;
+      createdAt: Date;
+    }) => ({
+      id: row.id,
+      studyPlanId: row.studyPlanId,
+      assignmentId: row.assignmentId,
+      startTime: row.startTime,
+      endTime: row.endTime,
+      durationMinutes: row.durationMinutes,
+      status: row.status,
+      createdAt: row.createdAt,
+    });
+
+    it('A’s PATCH flips only the locked column on A’s row — every other column is field-for-field unchanged', async () => {
+      const seeded = await seedPlannedSession(studentA);
+      const before = await app.prisma.plannedSession.findUniqueOrThrow({
+        where: { id: seeded.id },
+      });
+
+      const response = await patchLock(studentA, seeded.id, { locked: true }).expect(HttpStatus.OK);
+      expect(response.body).toEqual({ id: seeded.id, locked: true });
+
+      const after = await app.prisma.plannedSession.findUniqueOrThrow({ where: { id: seeded.id } });
+      expect(after.locked).toBe(true);
+      // Every other column survives unchanged (updatedAt is @updatedAt — it
+      // legitimately moves; everything else is pinned field for field).
+      expect(columnsExceptLocked(after)).toEqual(columnsExceptLocked(before));
+    });
+
+    it('B PATCHing A’s session → the uniform 404, A’s row untouched', async () => {
+      const seeded = await seedPlannedSession(studentA);
+
+      const response = await patchLock(studentB, seeded.id, { locked: true }).expect(
+        HttpStatus.NOT_FOUND
+      );
+      // Generic message — never 403, never a distinct message (no existence
+      // oracle).
+      expect(response.body.message).toBe('Resource not found');
+
+      const stored = await app.prisma.plannedSession.findUniqueOrThrow({
+        where: { id: seeded.id },
+      });
+      expect(stored.locked).toBe(false);
+    });
+
+    it('a valid-uuid nonexistent id → the identical 404 status and message', async () => {
+      // A syntactically valid uuid: malformed uuids 500 through Prisma on
+      // every id route in the repo (out of scope here).
+      const response = await patchLock(studentB, uuidv4(), { locked: true }).expect(
+        HttpStatus.NOT_FOUND
+      );
+      expect(response.body.message).toBe('Resource not found');
+    });
+
+    it('no token → 401 on the lock toggle (global guard)', async () => {
+      await agent
+        .patch('/study-plans/sessions/3f6f2a7c-9d0e-4b8a-9c5f-1e2d3c4b5a69/lock')
+        .send({ locked: true })
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+  });
 });

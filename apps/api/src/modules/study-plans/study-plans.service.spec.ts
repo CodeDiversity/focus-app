@@ -32,9 +32,11 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
   const userUpdateMany = jest.fn();
   const assignmentFindMany = jest.fn();
   const studySessionFindMany = jest.fn();
+  const plannedSessionUpdateMany = jest.fn();
+  const plannedSessionFindMany = jest.fn();
 
-  // Partial mock: the service touches `prisma.user`, `prisma.assignment` and
-  // `prisma.studySession`.
+  // Partial mock: the service touches `prisma.user`, `prisma.assignment`,
+  // `prisma.studySession` and `prisma.plannedSession`.
   const prisma = {
     user: {
       findUnique: userFindUnique,
@@ -45,6 +47,10 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
     },
     studySession: {
       findMany: studySessionFindMany,
+    },
+    plannedSession: {
+      updateMany: plannedSessionUpdateMany,
+      findMany: plannedSessionFindMany,
     },
   } as unknown as PrismaService;
 
@@ -522,6 +528,71 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
       await expect404(service.getRemainingWork(userId));
       expect(assignmentFindMany).not.toHaveBeenCalled();
       expect(studySessionFindMany).not.toHaveBeenCalled();
+    });
+  });
+
+  // ========== setSessionLock (PATCH /study-plans/sessions/:id/lock, EP08E) ==========
+
+  describe('setSessionLock (PATCH /study-plans/sessions/:id/lock)', () => {
+    // A syntactically valid uuid: a malformed one would reach Prisma as a
+    // 500 repo-wide (the same as every other id route — not this endpoint's
+    // behavior to pin here).
+    const sessionId = '3f6f2a7c-9d0e-4b8a-9c5f-1e2d3c4b5a69';
+
+    it('flips `locked` on the caller’s own session and returns exactly { id, locked }', async () => {
+      plannedSessionUpdateMany.mockResolvedValue({ count: 1 });
+      plannedSessionFindMany.mockResolvedValue([{ id: sessionId, locked: true }]);
+
+      const result = await service.setSessionLock(userId, sessionId, { locked: true });
+
+      expect(plannedSessionUpdateMany).toHaveBeenCalledTimes(1);
+      const write = plannedSessionUpdateMany.mock.calls[0][0];
+      // Scoped through the parent relation (PlannedSession has no userId).
+      expect(write.where).toEqual({ id: sessionId, studyPlan: { userId } });
+      // `data` carries ONLY the lock flag — never status, times or anything else.
+      expect(write.data).toEqual({ locked: true });
+      expect(Object.keys(write.data)).toEqual(['locked']);
+
+      // The echo read is scoped the same way, and selects exactly two keys.
+      const read = plannedSessionFindMany.mock.calls[0][0];
+      expect(read.where).toEqual({ id: sessionId, studyPlan: { userId } });
+      expect(read.select).toEqual({ id: true, locked: true });
+
+      expect(result).toEqual({ id: sessionId, locked: true });
+      expect(Object.keys(result).sort()).toEqual(['id', 'locked']);
+    });
+
+    it('missing or foreign session id → the uniform 404, nothing else written', async () => {
+      // updateMany is scoped by id + parent userId: a missing row and a row
+      // owned by another student both come back as count 0 — the same answer.
+      plannedSessionUpdateMany.mockResolvedValue({ count: 0 });
+
+      await expect404(service.setSessionLock(userId, sessionId, { locked: true }));
+
+      // No echo read, and no other write touched anything.
+      expect(plannedSessionFindMany).not.toHaveBeenCalled();
+      expect(userUpdateMany).not.toHaveBeenCalled();
+      expect(userFindUnique).not.toHaveBeenCalled();
+      expect(assignmentFindMany).not.toHaveBeenCalled();
+      expect(studySessionFindMany).not.toHaveBeenCalled();
+    });
+
+    it('non-boolean or missing `locked` → 400 field error with nothing written', async () => {
+      // The service-side dtoErrors re-check (defense in depth for non-HTTP
+      // callers); over HTTP the global FieldValidationPipe rejects first.
+      const missing = await expect400With(
+        service.setSessionLock(userId, sessionId, {} as never),
+        'locked'
+      );
+      expect(missing).toBeDefined();
+
+      await expect400With(
+        service.setSessionLock(userId, sessionId, { locked: 'yes' } as never),
+        'locked'
+      );
+
+      expect(plannedSessionUpdateMany).not.toHaveBeenCalled();
+      expect(plannedSessionFindMany).not.toHaveBeenCalled();
     });
   });
 });
