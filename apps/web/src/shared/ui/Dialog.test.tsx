@@ -111,12 +111,12 @@ describe('Dialog busy', () => {
 
   it("busy — 'holds focus on the dialog container when its focusable children all disable'", () => {
     const { rerender } = render(
-      <Dialog open busy={false} title="T">
+      <Dialog open busy={false} onClose={() => {}} title="T">
         <button>Body</button>
       </Dialog>
     );
     rerender(
-      <Dialog open busy title="T">
+      <Dialog open busy onClose={() => {}} title="T">
         <button disabled>Body</button>
       </Dialog>
     );
