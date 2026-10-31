@@ -318,25 +318,25 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: paused
+stage: implement
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
   head: c1d7f95
 active_dispatch:
-  name: EP08A-implement
+  name: EP08B-implement
   role: implementer
-  status: completed
-  pointer: docs/stories/EP08/EP08A-missed-sessions-and-recovery-summary-read-api.md
+  status: pending
+  pointer: docs/stories/EP08/EP08B-deterministic-workload-rescheduling.md
   session: ""
-  assignment: "Implement EP08A: missed-session identification + recovery summary read API"
+  assignment: "Implement EP08B: deterministic workload rescheduling (pure domain)"
 last_result:
   evidence: "EP08A implemented (2026-10-31): additive locked migration + GET /study-plans/recovery-summary + tests/typecheck/lint/build green. Artifacts: docs/stories/EP08/artifacts/EP08A/{checkpoint,implementation}.md. Status: Implemented — awaiting parent review."
   findings: ""

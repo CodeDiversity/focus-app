@@ -4,7 +4,7 @@
 **Parent epic:** [EP08: Catch-Up & Recovery](../../epics/EP08-catch-up-and-recovery.md) (Jira STUDY-17)
 **Milestone:** M4
 **Layer:** Backend (pure domain module)
-**Status:** Queued
+**Status:** Ready (refined 2026-10-31)
 **Dependencies:** EP08A implemented (missed/unfinished inputs); EP06 engine available (`domain/study-planning/`). No UI decisions.
 **Jira key:** Pending creation
 
