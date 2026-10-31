@@ -329,18 +329,18 @@ coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: 8a9c543
+  head: efffe12
 active_dispatch:
   name: EP08D-refine
   role: refiner
-  status: pending
+  status: none
   pointer: docs/stories/EP08/EP08D-recovery-summary-and-replanning-entry-point-ui.md
   session: ""
   assignment: "Technical refine EP08D (entity client/types, route wiring, component scaffolding)"
 last_result:
-  evidence: "EP08D ui-refined (2026-10-31): UI/UX decisions settled — dedicated /catch-up route, feature folder features/recovery/, hierarchy (header → message banner → missed sessions → unfinished work + confirmed total), empty copy 'You're all caught up.', locked Badge, loading skeletons, error role=alert, WCAG 2.2 AA keyboard/focus, responsive stacking. Non-blaming copy (D08-8) enforced. Technical refinement still needed (entity client/types, route wiring, component scaffolding)."
+  evidence: ""
   findings: ""
-  scope_note: "Step mode: one task per continuation. UI-refiner returned; technical refiner on EP08D next."
+  scope_note: "Refiner dispatch attempted after the user's explicit continuation (awaiting_continue cleared, checkpoint saved with status: pending); host step-mode runtime rejected the spawn — plugin-storage allowance not refilled ('editing a checkpoint cannot refill that allowance'). Dispatch NOT started; no writer launched. Handoff prompt prepared (tech refine of EP08D against EP08A contract, write boundary = EP08D story only)."
   cycles: 0
   same_findings: unknown
 gates:
@@ -357,7 +357,7 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: not_started
-  judged_at_head: "8a9c543"
+  judged_at_head: "8a9c543 (reconciled at efffe12)"
   queue_hash: ""
 writer: none
 session_live: unknown
@@ -366,6 +366,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "UI-refiner complete; next step is technical refiner on EP08D."
+resume: "Queued: technical refiner on EP08D (ui-refiner output committed at b040fce). Pre-dispatch checkpoint saved; host step runtime requires an explicit /next-step allowance in plugin storage before the spawn succeeds."
 judgment_attempts: 0
 ```
