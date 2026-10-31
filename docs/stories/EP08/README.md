@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) — `ui-refiner` pass required before implementation (EP08C implemented).
+**Next substory:** [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) — technical refine (UI decisions settled; entity client/types/route wiring/component scaffolding remain).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -318,13 +318,13 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: ui_refine
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
@@ -333,14 +333,14 @@ coordinator:
 active_dispatch:
   name: EP08D-ui-refine
   role: ui-refiner
-  status: pending
+  status: returned
   pointer: docs/stories/EP08/EP08D-recovery-summary-and-replanning-entry-point-ui.md
   session: ""
   assignment: "UI refine EP08D (recovery summary + replanning entry point)"
 last_result:
-  evidence: "EP08C implemented (8a9c543): catch-up preview/confirm API + transactional persistence; typecheck/lint/tests/build green. Artifacts: docs/stories/EP08/artifacts/EP08C/{checkpoint,implementation}.md. Status: Implemented — awaiting parent review."
+  evidence: "EP08D ui-refined (2026-10-31): UI/UX decisions settled — dedicated /catch-up route, feature folder features/recovery/, hierarchy (header → message banner → missed sessions → unfinished work + confirmed total), empty copy 'You're all caught up.', locked Badge, loading skeletons, error role=alert, WCAG 2.2 AA keyboard/focus, responsive stacking. Non-blaming copy (D08-8) enforced. Technical refinement still needed (entity client/types, route wiring, component scaffolding)."
   findings: ""
-  scope_note: "Step mode: one task per continuation. EP08C complete; EP08D (Needs refinement) requires ui-refiner pass before implementation."
+  scope_note: "Step mode: one task per continuation. UI-refiner returned; technical refiner on EP08D next."
   cycles: 0
   same_findings: unknown
 gates:
@@ -366,6 +366,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "EP08C complete; next step is ui-refiner on EP08D."
+resume: "UI-refiner complete; next step is technical refiner on EP08D."
 judgment_attempts: 0
 ```
