@@ -66,14 +66,18 @@ describe('Dialog', () => {
     expect(document.activeElement).toBeTruthy();
   });
 
-  it('restores focus to trigger on close/unmount', () => {
+  it('restores focus to trigger on close/unmount', async () => {
     const trigger = document.createElement('button');
     trigger.textContent = 'trigger';
     document.body.appendChild(trigger);
     trigger.focus();
 
-    const { unmount } = render(<Dialog open onClose={() => {}} title="T" />);
+    const onClose = vi.fn();
+    const { unmount } = render(<Dialog open onClose={onClose} title="T" />);
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+    // Close via Escape so the primitive restores focus to the trigger.
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+    expect(onClose).toHaveBeenCalled();
     unmount();
     expect(trigger).toHaveFocus();
     trigger.remove();

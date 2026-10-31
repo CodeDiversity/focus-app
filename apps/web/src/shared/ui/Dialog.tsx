@@ -43,6 +43,9 @@ export function Dialog({
   const [visible, setVisible] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const busyRef = useRef(busy);
+  busyRef.current = busy;
+  const closedViaOnCloseRef = useRef(false);
   const titleId = useId();
   const descId = useId();
 
@@ -57,6 +60,7 @@ export function Dialog({
           e.preventDefault();
           return;
         }
+        closedViaOnCloseRef.current = true;
         onClose();
         return;
       }
@@ -90,12 +94,13 @@ export function Dialog({
     [open, onClose, busy]
   );
 
+  // Open/focus/scroll-lock effect — depends only on `open` so that an unstable
+  // `onClose` (recreated each render) does not re-run it and reset focus.
   useEffect(() => {
     if (!open) return;
     restoreFocusRef.current = document.activeElement as HTMLElement | null;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    document.addEventListener('keydown', handleKeyDown);
     const first = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
     (first ?? dialogRef.current)?.focus();
     const raf = requestAnimationFrame(() => {
@@ -103,10 +108,23 @@ export function Dialog({
     });
     return () => {
       cancelAnimationFrame(raf);
-      document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = prevOverflow;
-      restoreFocusRef.current?.focus();
+      if (closedViaOnCloseRef.current) {
+        restoreFocusRef.current?.focus();
+      }
+      closedViaOnCloseRef.current = false;
       setVisible(false);
+    };
+  }, [open]);
+
+  // Keydown (Escape + Tab trap) listener — updates when `handleKeyDown`
+  // identity changes (e.g. onClose/busy) without re-running focus/scroll
+  // logic above.
+  useEffect(() => {
+    if (!open) return;
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [open, handleKeyDown]);
 
@@ -126,6 +144,7 @@ export function Dialog({
         aria-hidden="true"
         onClick={() => {
           if (disableBackdropClose || busy) return;
+          closedViaOnCloseRef.current = true;
           onClose();
         }}
       />
