@@ -74,29 +74,29 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 version: 1
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP12
   descendants: [EP12A, EP12B, EP12C]
   entry: EP12C
   limits: enclosing parent review unit
-stage: implement
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: 6b28649
-  head: 372bad9
+  head: f04ac4b
 active_dispatch:
   name: EP12C
   role: implementer
-  status: pending
+  status: returned
   pointer: docs/stories/EP12/EP12C-unify-web-api-clients.md
   session: ""
   assignment: "Implement EP12C: unify web API clients per domain (entity owns fetch; RTK slices delegate via entityBaseQuery)"
 last_result:
-  evidence: "EP12A and EP12B implemented (EP12A: checkpoint/implementation; EP12B: 950dfc1..f23753d, 1090 web tests pass). EP12C Ready (refined 2026-10-31)."
+  evidence: "EP12C implemented (2fd6264, f04ac4b). 1092 web tests pass; lint/typecheck/build clean. entityBaseQuery added; two slices delegate. All EP12 children implemented."
   findings: ""
-  scope_note: "Step mode: cleared awaiting_continue pause; reconciled to EP12C Ready. Dispatching implementer."
+  scope_note: "Step mode: one task per continuation. EP12C complete; combined parent review next."
   cycles: 0
   same_findings: unknown
 gates:
@@ -105,15 +105,15 @@ gates:
   ui: true
   refinement: true
   child_unfinished: false
-  eligible_child_state: Ready
+  eligible_child_state: none
   closeout: false
   integration: false
-  all_descendants_implemented: false
+  all_descendants_implemented: true
   review: unknown
   findings_owner: none
   open_findings: false
   walkthrough: unknown
-  judged_at_head: "372bad9"
+  judged_at_head: "f04ac4b"
   queue_hash: ""
 writer: none
 session_live: unknown
@@ -122,6 +122,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "EP12C implementer; checkpoint to be created at docs/stories/EP12/artifacts/EP12C/checkpoint.md"
+resume: "All children implemented; next step is combined EP12 parent review (parent_reviewer)."
 judgment_attempts: 0
 ```
