@@ -6,10 +6,10 @@
 **Parent:** [EP07 breakdown](./README.md)
 **Milestone:** M3
 **Layer:** Frontend
-**Status:** **Needs refinement** — the `ui-refiner` pass is required before implementation (D07-5).
+**Status:** **Ready** — UI refinement captured 2026-10-30 (D07-5); technical refinement in Technical Notes.
 **Dependencies:** **EP07A** (start/pause/resume/current endpoints) and **EP07B** (the projection). **EP07C** supplies the navigation into this route (the `/focus` route and page land here). `ui-refiner` pass required.
 **Jira key:** Pending creation
-**Refined:** — (the `ui-refiner` pass is what settles this story's presentation; this file records the planner's breakdown and the exact gaps)
+**Refined:** 2026-10-30 (ui-refiner pass — UI/UX decisions settled; see Technical Notes → "UI/UX design" and "Decisions". Technical refinement of files/endpoints/DTOs is unchanged; status reconciliation to Ready is the planner/coordinator's.)
 
 ## Summary
 
@@ -92,10 +92,111 @@ A dedicated focus route gives the student a quiet screen with the running timer,
 1. **The elapsed-time anchor.** Keep the server's `elapsedSeconds` and the instant the response arrived. The displayed value is `elapsedSeconds + (now - responseInstant)`; a local interval (roughly once a second) only re-renders the display. Every server response replaces both values, so drift is corrected on each pause/resume/finish/reload. The interval is cleared when the session is paused or the page is unmounted. **The client never posts an elapsed value** — the pause/resume/finish requests carry no timing payload at all.
 2. **The recovery read.** On mount, call `GET /study-sessions/current` **once**. If it returns a session, render it; if it returns `null`, render the empty state. No other request may be issued on mount — in particular no finish request (AC-E07-06). A test asserts the mock client recorded exactly one call.
 3. **Status → control mapping.** `ACTIVE` → the pause control is enabled and the finish control is enabled; `PAUSED` → the resume control is enabled and the finish control is enabled; `COMPLETED` → the screen shows the completed state (the history and the completion confirm/adjust are EP07E's, so the focus screen's completed state is a simple, non-editable summary that links onward). The mapping lives in one pure function so it can be unit-tested.
-4. **In-flight guard.** While a pause/resume request is in flight, the affected control is disabled and the other control is not; a second activation is ignored. A failed transition re-reads the authoritative state from the error path (or simply re-enables the control and shows the message) — the `ui-refiner` decides whether a silent re-read or a message-led recovery is presented.
+4. **In-flight guard.** While a pause/resume/finish request is in flight, the affected control uses `isLoading` (disabled + `aria-busy`) and the other control is also disabled to prevent concurrent transitions; a second activation is ignored (early-return guard). A failed transition is **message-led**: the control re-enables and an inline `role="alert"` shows `getErrorMessage(err)`; on a 409 ("session changed") the block additionally offers a "Reload session" button that re-runs the recovery read and re-anchors, rather than a silent re-read or a full page reload.
 5. **The assignment panel.** Fetch `GET /assignments` once when a session has an `assignmentId`; select the row with that id; render its `title` and its `subtasks`. Finished subtasks are distinguished by text/label, never by colour alone. If the assignment id no longer resolves (for example the assignment was deleted and the link was nulled by `onDelete: SetNull`), render the empty variant rather than an error.
 6. **The live region.** A single `aria-live="polite"` status element carries the session state ("Focus session running", "Focus session paused"). The ticking digits are **not** in a live region — announcing every second is hostile to screen-reader users. The digits are plain text with an accessible label that names the elapsed time for assistive technology.
 7. **Reduced motion and responsive.** Use the EP10 token durations only; do not add an animation library. At narrow widths the assignment/subtask panel stacks below the timer; every interactive target keeps ≥44px.
+
+### UI/UX design (settled 2026-10-30 by the `ui-refiner` pass)
+
+All decisions below reuse the EP10 primitives and semantic tokens; no ad-hoc colors, spacing, or motion. Component names and placements come from the inspected codebase. The authoritative, implementation-ready detail lives here; the bottom "UI/UX decisions" section is retained for traceability against the original gap list.
+
+**Shell and distraction reduction.**
+- The route stays inside the standard `ProtectedRoute` + `Layout` (baseline). The standard app header/nav remain visible for consistency, skip-link and keyboard access; distraction reduction is achieved by *content*, not by hiding the shell: the page shows only the timer, the controls, and the linked assignment with its subtasks. No dashboard widgets, no other assignments, no deadlines, no stats, no ambient/motion effects, no sound.
+- The page is a single centered column (`max-w-2xl mx-auto`) on `bg-background`, with a small "Focus session" `Badge` (variant secondary) at the top of the content as the mode cue, then the timer, then the controls, then the assignment panel. Nothing else.
+- No new route shell and no full-bleed variant: the shell stays EP10's.
+
+**Timer presentation.**
+- Large elapsed display in `MM:SS` (or `H:MM:SS` once elapsed ≥ 3600s), rendered as plain text in a display-weight element (`text-display`/`text-6xl sm:text-7xl font-semibold tabular-nums text-text`). The digits are **not** in a live region; they carry `aria-label={`Elapsed time ${formatted}`}` so AT can name them on demand.
+- A secondary line beneath: when `plannedMinutes` is set, `{elapsedMinutes} of {plannedMinutes} min` (e.g. "12 of 50 min"); when exceeded, the same line reads "Target reached — {elapsedMinutes} min" and switches to the `warning` color (text + wording, never color alone). When `plannedMinutes` is null, the line reads "No target set".
+- A thin progress bar (`h-1.5 rounded-full bg-surface-muted` track, `bg-accent` fill, `bg-warning` when exceeded) sits below the secondary line, filled to `min(elapsed/planned, 1)` (capped at 100%); hidden entirely when `plannedMinutes` is null. Width transition uses `transition-all duration-base motion-reduce:transition-none`.
+- Ticking: a `setInterval` of ~1000ms re-renders the display from the anchor (`elapsedSeconds + (now - responseInstant)`); cleared on pause, on unmount, and when the session is absent/completed. No `requestAnimationFrame` loop and no animation library.
+- The anchor is replaced on every server response (pause/resume/finish/reload) — per implementation note 1.
+
+**Controls — placement, labels, affordance.**
+- Layout: a single row below the timer, centered, `flex flex-col sm:flex-row gap-3`, each button `min-w-[160px]` and ≥44px. Order: **Pause/Resume** (left/primary) then **Finish session** (right). On mobile they stack full-width.
+- Pause/Resume is one button whose label and icon follow status: `ACTIVE` → `Pause` (icon `Pause`); `PAUSED` → `Resume` (icon `Play`). Variant `primary`, size `lg`.
+- Finish session: variant `outline` with danger coloring (`border-danger text-danger hover:bg-danger/10`) so it reads as terminal without being a solid alarm; icon `Square` (stop). Label "Finish session".
+- Disabled states: the affected control uses `isLoading` (spinner + disabled + `aria-busy`) while its request is in flight; the *other* control stays enabled per the in-flight guard, **except** Finish is also disabled while a pause/resume is in flight (and Pause/Resume disabled while Finish is in flight) to prevent concurrent transitions. A second activation is ignored (early-return guard).
+- Failed transition: an inline `role="alert"` block beneath the controls shows `getErrorMessage(err)`; the control re-enables. On a 409 ("session changed"), the block additionally offers a "Reload session" button that re-runs the recovery read (`GET /study-sessions/current`) and re-anchors, rather than a full page reload. Other failures are retried by re-clicking the control.
+- Completed state (after a successful finish): the controls are replaced by a non-editable summary card — "Session complete", "{durationMinutes} minutes recorded", and a "Back to assignments" `Button` (variant secondary) linking to `/assignments`. A muted note reads "You can review and adjust this session in your study history." (EP07E owns that surface; this is a forward link only, no navigation forced).
+
+**Assignment & subtasks panel.**
+- A `Card` (variant `outlined`, padding `md`) below the controls, titled "Assignment and subtasks" (`h2`). When the session has an `assignmentId`, the panel resolves the assignment from the one-time `GET /assignments` fetch and shows:
+  - Assignment title (strong) + a compact meta line `Due {date} · {estimatedHours}h estimated` (estimated hours only if present; due date falls back to "No due date"; course name shown as a small muted prefix when present).
+  - A subtask list: each row shows an icon (`CheckCircle2` for completed, `Circle` for pending) + `aria-hidden`, the title, and a text status ("Done" / "To do") — never color alone. Completed rows use `line-through text-text-muted`; pending rows use `text-text`.
+  - A count line above the list: "Subtasks · {done} of {total} done" (or "No subtasks" when empty).
+  - The list is scrollable independently when it exceeds `max-h-48` (`overflow-y-auto`) so the timer stays in view; the panel itself does not scroll the page.
+- Read-only: no checkboxes, no mutation. Subtask editing stays on the assignment surfaces (EP03).
+- Empty variant (no assignment / unresolvable id): inside the same card, an `EmptyState` with title "No assignment linked to this session", description "This session isn't tied to an assignment." and no action (the timer still works). No broken panel, no error.
+- Loading (while the assignment list resolves): a small "Loading assignment…" line with `aria-busy="true"` inside the card; the timer and controls remain usable.
+
+**Empty / loading / error states.**
+- Loading the current session: a centered spinner + "Loading your session…" with `aria-busy="true"` on the main region; no write is issued.
+- No open session: an `EmptyState` (icon `Timer` from lucide) with title "No focus session in progress", description "Start a session from an assignment to begin focusing.", and action `<Button as a Link to="/assignments">Go to assignments</Button>`.
+- Transition error: as above (inline `role="alert"`).
+
+**Live region and announcements.**
+- A single `aria-live="polite"` `aria-atomic="true"` element (visually hidden via `sr-only`) carries the status text: "Focus session running" / "Focus session paused" / "Focus session complete". It is updated only when `status` changes (a `useEffect` keyed on `status`), never on a timer tick.
+- The ticking digits are plain text with an `aria-label` naming the elapsed time; they are never in a live region.
+
+**Keyboard behaviour.**
+- Initial focus on load: when a session exists, focus moves to the primary control (Pause/Resume) after the recovery read resolves, so the timer is immediately operable; when no session, focus moves to the EmptyState's "Go to assignments" action. (Focus management via a ref + `useEffect` on the resolved state.)
+- Tab order: "Focus session" badge (not focusable) → timer (not focusable, but its control is) → primary control → Finish → assignment panel content (read-only, no focusable elements unless a link is present) → "Back to assignments" (completed state).
+- Escape: no-op in focus mode itself (no modal to close); Escape must not navigate away or end the session. (Dialogs introduced by EP07E handle their own Escape.)
+- Focus restoration on leaving the screen is handled by the browser/router; no custom restoration beyond the standard.
+
+**Responsive behaviour (375px).**
+- Single column throughout; no horizontal scroll. Timer font scales `text-5xl sm:text-7xl`. Progress bar and secondary line are full width. Controls stack full-width on mobile (`flex-col sm:flex-row`) with ≥44px (Button's `max-sm:min-h-[44px]`). Assignment panel stacks below the controls; its subtask list scrolls internally (`max-h-48`) so the panel never forces page-level horizontal scroll.
+- Tap targets: all buttons use size `lg` (or `md` with `max-sm:min-h-[44px]`), meeting ≥44px.
+
+**Reduced motion.**
+- Only token transitions: progress-bar width (`duration-base`), and none else. The Dialog primitive's reduced-motion overrides are inherited if a dialog is added later. The spinner uses `motion-reduce:animate-none` (already in Button). No new animations and no animation library. `prefers-reduced-motion` zeroes durations via the global rule plus the explicit `motion-reduce:` classes above.
+
+**Copy (final).**
+- Page title (document): "Focus session — StudyPilot".
+- In-page heading: "Focus session" (h1).
+- Mode badge: "Focus".
+- Status text (live region): "Focus session running" / "Focus session paused" / "Focus session complete".
+- Timer secondary: "{n} of {m} min" / "Target reached — {n} min" / "No target set".
+- Subtask count: "Subtasks · {done} of {total} done" / "No subtasks".
+- Subtask status text: "Done" / "To do".
+- Controls: "Pause", "Resume", "Finish session".
+- Transition error: `getErrorMessage(err)`; 409 adds "Your session changed. Reload to continue." with a "Reload session" button.
+- Empty (no session): title "No focus session in progress", description "Start a session from an assignment to begin focusing.", action "Go to assignments".
+- Empty (no assignment): title "No assignment linked to this session", description "This session isn't tied to an assignment."
+- Completed summary: "Session complete", "{n} minutes recorded", note "You can review and adjust this session in your study history.", action "Back to assignments".
+- Loading: "Loading your session…" / "Loading assignment…".
+
+**Task selection.**
+- Remains out of scope: this screen sends no `taskId` and offers no subtask picker; the subtask list is read-only (settled with EP07C). No mutation surface is added to focus mode.
+
+**Tests to add / update (refined from the story's list; framework: Vitest + Testing Library, matching the EP07C pattern):**
+- `apps/web/src/pages/focus/ui/FocusPage.test.tsx`:
+  - an `ACTIVE` session is restored as running and the screen issues **no** write request on mount (mock client recorded only the `current` call);
+  - a `PAUSED` session is restored as paused with the primary control showing "Resume";
+  - no session renders the empty state with "Go to assignments", and sends no write;
+  - the assignment title and its subtasks render, with completed subtasks distinguishable (icon + strikethrough + "Done");
+  - a session without an assignment renders the in-panel empty variant;
+  - a failed pause shows an actionable message and the control returns to the session's real state; a 409 offers "Reload session" which re-runs the recovery read;
+  - the elapsed display matches the server's `elapsedSeconds` right after a response and advances afterwards;
+  - the live region text is "Focus session running/paused/complete" and updates only on status change, not on a tick;
+  - keyboard: initial focus lands on the primary control (session present) / the EmptyState action (no session); Tab reaches every control; Escape is a no-op.
+- `apps/web/src/features/focus-session/ui/FocusTimer.test.tsx`:
+  - renders the elapsed time in `MM:SS` (and `H:MM:SS` at ≥1h);
+  - exposes the status in a polite live region and updates it on a state change, not on every tick;
+  - the progress bar is hidden when `plannedMinutes` is null and capped at 100% when exceeded;
+  - the pause/resume/finish controls are real buttons with accessible names and are disabled while a request is in flight.
+- `apps/web/src/features/focus-session/ui/FocusAssignmentPanel.test.tsx`:
+  - renders the assignment title, meta line and the subtask list, distinguishing unfinished from finished ones;
+  - renders the empty variant when there is no assignment;
+  - renders "Loading assignment…" while the list resolves.
+- `apps/web/src/features/focus-session/model/useFocusSession.test.ts`:
+  - the anchor/re-anchor logic (a server response replaces the local offset);
+  - the recovery mapping (`ACTIVE` → running, `PAUSED` → paused);
+  - the in-flight guard that prevents a double submit;
+  - the tick interval is cleared on pause and on unmount.
+- Responsive/reduced-motion are covered by the existing primitive tests and the manual a11y pass (TR-E07-08); no new automated assertions beyond the primitive's own.
 
 ### Risks / open questions
 
@@ -141,16 +242,20 @@ Jira key: Pending creation. No sync was authorized for this planning task. (If t
 - **Verification:** `pnpm --filter web test -- src/pages/focus src/features/focus-session`; `pnpm --filter web typecheck`; `pnpm --filter web lint`; `pnpm --filter web test` (full suite).
 - **Dependencies / exclusions:** EP07A, EP07B and EP07C implemented; `ui-refiner` pass completed. Excludes starting a session (EP07C), completion confirm/adjust and the history surface (EP07E), subtask mutation, all backend work, and EP06's surfaces.
 
-## UI/UX gaps for the `ui-refiner` (D07-5 — not yet settled)
+## UI/UX decisions (settled 2026-10-30 — D07-5)
 
-- **Focus-mode layout and information hierarchy.** What the screen shows and in what order: the timer, the assignment, the subtasks, the controls. Whether the standard app header/navigation stays visible (maximum distraction reduction) or the focus screen is a full-bleed surface.
-- **Timer presentation.** The time format (`25:00` vs `25 min` vs `1h 05m`), the digit size and weight, whether the target/planned duration is shown alongside ("25 / 50 min"), what happens visually when the target is exceeded, and whether a progress ring or bar is used.
-- **Distraction reduction.** What is deliberately hidden (nav, other assignments, deadlines, stats), whether ambient or motion effects exist at all, and how the screen signals that it is a focus mode.
-- **Control placement and labelling.** Pause / resume / finish placement and labels; whether finish is a destructive-looking action; icon usage (lucide-react) and whether controls are icon + text or text only; the destructive "finish" affordance's distance from the timer.
-- **Subtask visibility.** Whether the subtask list is a panel, a disclosure or a compact strip; how unfinished versus finished subtasks are distinguished (never colour alone); whether the subtask list is scrollable independently; whether subtasks are interactive (see the story's scope note) or read-only.
-- **Empty states.** The "no session in progress" state (copy and the way back to the assignments list), the "session without an assignment" variant, and the loading state while the current session is read.
-- **Error and recovery copy.** The wording for a failed pause/resume, and whether the student is offered a retry, a re-read, or both.
-- **Announcement behaviour.** The exact live-region wording for running/paused/completed, and confirmation that the ticking digits are not announced.
-- **Keyboard behaviour.** Initial focus on load, the tab order between the timer, the panel and the controls, Escape's meaning inside focus mode (close the screen? nothing?), and focus restoration when leaving the focus screen.
-- **Responsive behaviour.** The 375px layout (timer size, panel stacking, control row wrapping), whether the controls become a sticky bottom bar on phones, and the no-horizontal-scroll guarantee.
-- **Reduced motion.** Which transitions (if any) exist and that they use the EP10 token durations (D10-16).
+All gaps listed below are now settled; the authoritative, implementation-ready detail lives in Technical Notes → "UI/UX design" and "Decisions". This section is retained for traceability against the original gap list.
+
+- **Focus-mode layout and information hierarchy.** Single centered column inside the standard `Layout`/header: mode badge → timer → controls → assignment panel. Standard shell retained; distraction reduction by content only.
+- **Timer presentation.** `MM:SS`/`H:MM:SS` display; secondary "{n} of {m} min" / "Target reached" / "No target set"; thin capped progress bar (hidden when no target); 1s re-render from the server anchor.
+- **Distraction reduction.** No nav hiding, no other assignments/deadlines/stats, no ambient or motion effects, no sound; "Focus" badge signals the mode.
+- **Control placement and labelling.** Pause/Resume (primary, icon+text) then Finish session (outline, danger coloring) in a centered row that stacks on mobile; Finish is visually distinct and non-adjacent via spacing; icons from lucide-react.
+- **Subtask visibility.** Read-only panel (`Card` outlined) with independently scrollable list (`max-h-48`); finished vs unfinished distinguished by icon + strikethrough + muted text + "Done"/"To do" text — never color alone; subtasks are read-only (no mutation).
+- **Empty states.** No session: `EmptyState` + "Go to assignments"; no assignment: in-panel `EmptyState` variant; loading: spinner + "Loading your session…"/"Loading assignment…".
+- **Error and recovery copy.** Failed transition: inline `role="alert"` with `getErrorMessage(err)`; 409 adds "Your session changed. Reload to continue." + "Reload session" button; other failures retried by re-clicking.
+- **Announcement behaviour.** Single `aria-live="polite"` `aria-atomic` element updated only on status change ("Focus session running/paused/complete"); ticking digits are plain text with an `aria-label`, never announced.
+- **Keyboard behaviour.** Initial focus moves to the primary control (session present) or the EmptyState action (no session); tab order badge→timer→primary→finish→panel→back link; Escape is a no-op in focus mode; no custom focus restoration beyond the router.
+- **Responsive behaviour.** 375px single column, no horizontal scroll, timer `text-5xl sm:text-7xl`, controls stack full-width, panel subtask list scrolls internally, all targets ≥44px. No sticky bottom bar.
+- **Reduced motion.** Token transitions only (progress-bar width); `motion-reduce:` overrides; spinner `motion-reduce:animate-none`; no animation library. `prefers-reduced-motion` zeroes durations via the global rule.
+- **Completed state.** Non-editable summary ("Session complete", "{n} minutes recorded", history note, "Back to assignments") — EP07E owns adjust/history.
+- **Task selection.** Out of scope: no `taskId` picker; subtasks read-only (settled with EP07C).

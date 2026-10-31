@@ -25,7 +25,7 @@
 | [EP07A](./EP07A-focus-session-persistence-and-lifecycle-api.md) | Implemented — awaiting parent review | EP03 complete (assignments/tasks exist). D07-1…D07-4 settled. Technical refinement captured 2026-10-30. | EP07B implement (unblocked) | `./artifacts/EP07A/` |
 | [EP07B](./EP07B-completion-confirmed-time-and-read-apis.md) | Implemented — awaiting parent review | EP07A implemented (e52abde). Technical refinement captured 2026-10-30. | (done) EP07B: finish + confirmed-time + history APIs | `./artifacts/EP07B/` |
 | [EP07C](./EP07C-start-focus-session-from-an-assignment.md) | Implemented — awaiting parent review | EP07A + EP07B implemented. UI refined 2026-10-30 (D07-5). | EP07D: ui-refiner pass then implement | `./artifacts/EP07C/` |
-| [EP07D](./EP07D-focus-mode-interface-and-timer-controls.md) | Needs refinement | EP07A + EP07B + EP07C implemented (EP07C navigates into this route). `ui-refiner` pass required (D07-5). | `ui-refiner` pass on EP07D, then implement | `./artifacts/EP07D/` (pending) |
+| [EP07D](./EP07D-focus-mode-interface-and-timer-controls.md) | Ready | EP07A + EP07B + EP07C implemented. UI refined 2026-10-30 (D07-5). | Implement EP07D: focus-mode interface & timer controls | `./artifacts/EP07D/` (pending) |
 | [EP07E](./EP07E-completion-confirm-adjust-and-study-history.md) | Needs refinement | EP07A + EP07B + EP07D implemented. `ui-refiner` pass required (D07-5). | `ui-refiner` pass on EP07E, then implement | `./artifacts/EP07E/` (pending) |
 | [EP07F](./EP07F-cross-layer-e2e-calendar-regression-and-parent-index.md) | Queued | EP07A–EP07E implemented; the EP09 self-contained E2E stack must be runnable. | Implement EP07F: cross-layer E2E + calendar regression + parent index | `./artifacts/EP07F/` (pending) |
 
