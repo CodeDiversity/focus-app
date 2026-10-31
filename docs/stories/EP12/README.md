@@ -89,7 +89,7 @@ coordinator:
 active_dispatch:
   name: EP12
   role: implementer
-  status: pending
+  status: returned
   pointer: docs/stories/EP12/README.md
   session: ""
   assignment: "Integration: prepare EP12 parent implementation index linking EP12A/B/C"
@@ -107,7 +107,7 @@ gates:
   child_unfinished: false
   eligible_child_state: none
   closeout: false
-  integration: false
+  integration: true
   all_descendants_implemented: true
   review: unknown
   findings_owner: none
