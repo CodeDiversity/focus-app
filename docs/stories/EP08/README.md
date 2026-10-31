@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) — technical refine (UI decisions settled; entity client/types/route wiring/component scaffolding remain).
+**Next substory:** [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) — implement (ready; UI decisions settled by ui-refiner, technical refinement complete by refiner).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -25,7 +25,7 @@
 | [EP08A](./EP08A-missed-sessions-and-recovery-summary-read-api.md) | Implemented — awaiting parent review | EP06 + EP07 complete/reviewed. D08-1…D08-8 recorded below. No UI decisions (D08-7). | Combined EP08 parent review after all children | `./artifacts/EP08A/checkpoint.md`, `./artifacts/EP08A/implementation.md` |
 | [EP08B](./EP08B-deterministic-workload-rescheduling.md) | Implemented — awaiting parent review | EP06 engine (`domain/study-planning/scheduler.ts`, `intervals.ts`, `ordering.ts`) and EP08A's recovery summary (the missed/unfinished inputs). | Combined EP08 parent review after all children | `./artifacts/EP08B/checkpoint.md`, `./artifacts/EP08B/implementation.md` |
 | [EP08C](./EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md) | Implemented — awaiting parent review | EP08A + EP08B implemented. EP06 save/conflict primitives reused. | Combined EP08 parent review after all children | `./artifacts/EP08C/checkpoint.md`, `./artifacts/EP08C/implementation.md` |
-| [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) | Needs refinement | EP08A implemented (the read API). **`ui-refiner` pass required** (D08-7) — layout, copy/tone (non-blaming), states, a11y, responsive. | `ui-refiner` on EP08D before implementation. | — |
+| [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) | Ready | EP08A implemented (the read API). UI decisions settled (ui-refiner); technical refinement complete (refiner). | Implement EP08D | — |
 | [EP08E](./EP08E-catch-up-plan-preview-edit-confirm-and-decline-ui.md) | Needs refinement | EP08C implemented (the preview/confirm API). **`ui-refiner` pass required** (D08-7). | `ui-refiner` on EP08E before implementation. | — |
 | [EP08F](./EP08F-cross-layer-e2e-and-parent-index.md) | Queued | EP08A–EP08E implemented. | Implement after EP08E (new Playwright spec + parent index). | — |
 
@@ -318,38 +318,38 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: paused
+stage: refine
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: efffe12
+  head: 2716c49
 active_dispatch:
-  name: EP08D-refine
-  role: refiner
-  status: none
+  name: EP08D-implement
+  role: implementer
+  status: pending
   pointer: docs/stories/EP08/EP08D-recovery-summary-and-replanning-entry-point-ui.md
   session: ""
-  assignment: "Technical refine EP08D (entity client/types, route wiring, component scaffolding)"
+  assignment: "Implement EP08D (recovery summary UI + entry point per refined story)"
 last_result:
   evidence: ""
   findings: ""
-  scope_note: "Refiner dispatch attempted after the user's explicit continuation (awaiting_continue cleared, checkpoint saved with status: pending); host step-mode runtime rejected the spawn — plugin-storage allowance not refilled ('editing a checkpoint cannot refill that allowance'). Dispatch NOT started; no writer launched. Handoff prompt prepared (tech refine of EP08D against EP08A contract, write boundary = EP08D story only)."
+  scope_note: "User continuation: cleared deliberate pause. Dispatching technical refiner on EP08D (ui-refined, EP08A implemented)."
   cycles: 0
   same_findings: unknown
 gates:
   breakdown: true
   plan: pass
   ui: true
-  refinement: false
+  refinement: true
   child_unfinished: false
-  eligible_child_state: "Needs refinement"
+  eligible_child_state: Ready
   closeout: true
   integration: false
   all_descendants_implemented: false
@@ -357,7 +357,7 @@ gates:
   findings_owner: none
   open_findings: false
   walkthrough: not_started
-  judged_at_head: "8a9c543 (reconciled at efffe12)"
+  judged_at_head: "8a9c543 (reconciled at 2716c49)"
   queue_hash: ""
 writer: none
 session_live: unknown
@@ -366,6 +366,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "Queued: technical refiner on EP08D (ui-refiner output committed at b040fce). Pre-dispatch checkpoint saved; host step runtime requires an explicit /next-step allowance in plugin storage before the spawn succeeds."
+resume: "EP08D ready (ui-refined + technically refined). Next actionable: implementer on EP08D."
 judgment_attempts: 0
 ```

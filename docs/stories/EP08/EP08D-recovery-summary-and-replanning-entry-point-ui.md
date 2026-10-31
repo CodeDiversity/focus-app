@@ -4,9 +4,9 @@
 **Parent epic:** [EP08: Catch-Up & Recovery](../../epics/EP08-catch-up-and-recovery.md) (Jira STUDY-17)
 **Milestone:** M4
 **Layer:** Frontend
-**Status:** Needs refinement
-**Refined:** 2026-10-31 (ui-refiner)
-**Dependencies:** EP08A implemented (read API). **`ui-refiner` pass required** (D08-7) before implementation.
+**Status:** Ready
+**Refined:** 2026-10-31 (ui-refiner, 2026-10-31) / Technical refined: 2026-10-31
+**Dependencies:** EP08A implemented (read API) — verified (see evidence below). **`ui-refiner` pass completed** (D08-7, 2026-10-31). No open UI/UX decisions.
 **Jira key:** Pending creation
 
 ## Summary
@@ -48,35 +48,84 @@ Student-facing recovery summary: shows missed planned sessions and unfinished wo
 
 ## Tests (TR-E08-05)
 
-- Missed sessions list rendering: one row per `MissedSession` with date, assignment title, time range, `formatMinutes(durationMinutes)`, and a "Locked" badge when `locked`.
-- Unfinished-work rows + remaining-hours formatting + flagged marker (MISSING_ESTIMATE / MISSING_DUE_DATE), reusing EP06's row shape/order.
-- Confirmed-minutes total line renders when `confirmedMinutes > 0`.
-- Non-blaming copy present; shaming terms absent (`failed`, `overdue`, `you missed`, `behind` as blame) — assert the API `message` renders and no shaming term appears.
-- Entry point navigation into the catch-up flow: clicking "Create catch-up plan" calls `navigate('/catch-up/preview')` (or the route EP08E settles — see Decisions).
-- Loading state: skeletons with `aria-busy`, no empty-state flash.
-- Empty state: "You're all caught up." with description "No missed sessions or unfinished work."
-- Error state: `role="alert"` with fallback message and "Try again" that re-runs the read.
-- Keyboard operability: header button is focusable and activates on Enter/Space.
-- Narrow-screen layout: header stacks and button becomes full-width below `sm`.
+- **MissedSessionsList/MissedSessionRow**: one row per `MissedSession` with date (`<time>`), assignment title, time range `{startTime} – {endTime}`, `formatMinutes(durationMinutes)`, and neutral "Locked" badge with `Lock` icon when `locked`. Locked badge has text (not color-only). Tooltip on truncated title.
+- **UnfinishedWorkList**: rows reuse EP06 shape/order (title, courseCode, due date, estimate/confirmed/remaining, flagged badge). MISSING_ESTIMATE/MISSING_DUE_DATE badges render correctly. "Confirmed" and "Left" labels formatted via `formatMinutes`.
+- **Confirmed-minutes total**: "X minutes studied so far" renders when `confirmedMinutes > 0`, placed above unfinished work list; omitted when 0.
+- **Message banner**: API `message` renders verbatim in muted Card; omitted in empty state. Assert non-blaming copy; shaming terms absent (`failed`, `overdue`, `you missed`, `behind` as blame).
+- **Entry point navigation**: clicking "Create catch-up plan" calls `navigate('/catch-up/preview')`. Button disabled with `aria-disabled="true"` when empty (no missed sessions and no unfinished work).
+- **Loading state**: skeletons with `aria-busy="true"`, `motion-reduce:animate-none`; no empty-state flash while loading.
+- **Empty state**: "You're all caught up." with description "No missed sessions or unfinished work." (via `EmptyState`); header button remains rendered but disabled.
+- **Error state**: `role="alert"` card with danger styling, fallback message "We could not load your recovery summary. Try again." or from `getErrorMessage`, "Try again" button re-runs `getRecoverySummary()`.
+- **Keyboard operability**: header button is focusable and activates on Enter/Space (native button). Focus rings visible via shared classes.
+- **Accessibility**: section `aria-labelledby="catch-up-heading"`, lists use `<ul>/<li>`, locked badge has text, `aria-busy` on loading sections.
+- **Narrow-screen layout**: header stacks (`flex-col-reverse` on mobile), button full-width on mobile, wraps on narrow screens.
 
 ## Technical notes
 
 - **Inspected code paths (verified):**
   - `apps/web/src/pages/plan/ui/PlanPage.tsx` (existing plan surface to mirror layout, loading/error patterns).
-  - `apps/web/src/features/study-plan/ui/RemainingWorkSection.tsx` (row shape/order to reuse).
-  - `apps/web/src/entities/study-plan/api/studyPlanApi.ts` and `model/types.ts` (client precedent).
+  - `apps/web/src/features/study-plan/ui/RemainingWorkSection.tsx` (row shape/order to reuse; uses `RemainingWorkItem` from entity types).
+  - `apps/web/src/entities/study-plan/api/studyPlanApi.ts` and `model/types.ts` (client precedent; `RemainingWorkItem`/`RemainingWorkResponse` already exist).
   - `apps/web/src/shared/ui/*` (design-system primitives: `Button`, `Badge`, `Card`, `EmptyState`).
-  - `apps/web/src/app/App.tsx` (routes).
+  - `apps/web/src/app/App.tsx` (routes, ProtectedRoute usage).
+  - `apps/api/src/modules/study-plans/study-plans.service.ts` (EP08A implementation — verified `MissedSession`, `RecoverySummary` types; `getRecoverySummary` returns shape as specified).
+  - `apps/api/src/modules/study-plans/study-plan.controller.ts` (route registered `GET /study-plans/recovery-summary`).
   - FSD layers (`apps/web/src/features`, `entities`, `pages`).
 
-- **Proposed (new):**
-  - Route: `apps/web/src/app/App.tsx` → `<Route path="/catch-up" element={<CatchUpPage />} />` inside `ProtectedRoute`.
-  - Page: `apps/web/src/pages/catch-up/ui/CatchUpPage.tsx` (+ test) — thin wrapper rendering `<RecoverySummary />` inside the standard `max-w-5xl` container, mirroring `PlanPage`.
-  - Feature: `apps/web/src/features/recovery/ui/RecoverySummary.tsx` (+ test) — fetches `getRecoverySummary()`, owns loading/empty/error state, renders the neutral message, missed-sessions list, unfinished-work list, confirmed total, and the entry-point button.
-  - Feature: `apps/web/src/features/recovery/ui/MissedSessionsList.tsx` and `MissedSessionRow.tsx` — presentational; locked rows render a neutral `Badge` ("Locked") with a `Lock` icon from `lucide-react`.
-  - Feature: `apps/web/src/features/recovery/ui/UnfinishedWorkList.tsx` — presentational list over `RemainingWorkItem[]` mirroring `RemainingWorkSection` row markup/order (title, course code, due date, estimate, confirmed, remaining, flagged badge). Does not re-fetch. If a shared `RemainingWorkRow` can be extracted from `RemainingWorkSection` without behavior change, prefer extraction; otherwise duplicate markup is acceptable.
-  - Entity: `apps/web/src/entities/study-plan/api/studyPlanApi.ts` → add `getRecoverySummary(): Promise<RecoverySummary>` calling `GET /study-plans/recovery-summary`.
-  - Entity: `apps/web/src/entities/study-plan/model/types.ts` → add `MissedSession` and `RecoverySummary` interfaces mirroring the backend contract (`missedSessions`, `missedCount`, `unfinishedWork: RemainingWorkItem[]`, `confirmedMinutes`, `message`).
+- **Backend contract mirror (verified against EP08A):**
+  - Endpoint: `GET /study-plans/recovery-summary` (relative to API root; called via `/api` proxy). Auth required; ownership-scoped; uniform 404 `Resource not found`.
+  - `MissedSession` (from `apps/api/src/modules/study-plans/study-plans.service.ts:105-115`): `{ id, assignmentId, assignmentTitle, date: "YYYY-MM-DD", startTime: "HH:mm", endTime: "HH:mm", durationMinutes: number, locked: boolean }` (never exposes `userId`).
+  - `RecoverySummary` (from `apps/api/src/modules/study-plans/study-plans.service.ts:117-124`): `{ missedSessions: MissedSession[], missedCount: number, unfinishedWork: RemainingWorkItem[], confirmedMinutes: number, message: string }`. `unfinishedWork` reuses EP06 `RemainingWorkItem[]` (via `getRemainingWork`); `confirmedMinutes` is `remaining.unattributedConfirmedMinutes` (State A total until EP06 State-B upgrade; per PR-003). Message is neutral placeholder.
+  - Missed-session query (service:540-566): `studyPlan: { userId, date: { lt: bound } }` with `bound = new Date(\`\${todayCivil}T00:00:00.000Z\`)` (civil date as UTC midnight, no zone conversion), `status: 'SCHEDULED'`, `assignment: { status: { in: ['PENDING', 'IN_PROGRESS'] } }`. Ordered by `studyPlan.date asc`, `startTime asc`. Locked sessions are included if they meet criteria (locked does not change missed-ness).
+
+- **Entity client/types (exact to implement):**
+  - `apps/web/src/entities/study-plan/model/types.ts` — add:
+    ```ts
+    export interface MissedSession {
+      id: string;
+      assignmentId: string;
+      assignmentTitle: string;
+      date: string; // YYYY-MM-DD (civil, profile zone)
+      startTime: string; // HH:mm
+      endTime: string; // HH:mm
+      durationMinutes: number;
+      locked: boolean;
+    }
+
+    export interface RecoverySummary {
+      missedSessions: MissedSession[];
+      missedCount: number;
+      unfinishedWork: RemainingWorkItem[]; // reuse existing type
+      confirmedMinutes: number;
+      message: string;
+    }
+    ```
+    (Mirror field names/order as appropriate; `unfinishedWork` must use the existing `RemainingWorkItem` type to avoid duplication.)
+  - `apps/web/src/entities/study-plan/api/studyPlanApi.ts` — add export types `MissedSession`, `RecoverySummary` in the re-exports block; add:
+    ```ts
+    export async function getRecoverySummary(): Promise<RecoverySummary> {
+      const response = await api.get<RecoverySummary>('/study-plans/recovery-summary');
+      return response.data;
+    }
+    ```
+    Follow existing pattern (plain axios via `api`, no RTK Query unless project convention changes; current pattern is plain functions).
+
+- **Route wiring:**
+  - `apps/web/src/app/App.tsx` — import `CatchUpPage` from `@/pages/catch-up/ui/CatchUpPage` and add route inside the ProtectedRoute block: `<Route path="/catch-up" element={<CatchUpPage />} />`. Place near `/plan` or in logical order (no special routing constraints). Must remain inside `ProtectedRoute` (same as `/plan`).
+
+- **Component scaffolding (new files):**
+  - Page: `apps/web/src/pages/catch-up/ui/CatchUpPage.tsx` (+ test `CatchUpPage.test.tsx`) — thin wrapper rendering `<RecoverySummary />` inside `max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12`, mirroring `PlanPage` structure (section with aria-labelledby, header). Title "Catch up".
+  - Feature: `apps/web/src/features/recovery/ui/RecoverySummary.tsx` (+ test `RecoverySummary.test.tsx`) — fetches via `getRecoverySummary()` on mount, manages `isLoading`/`error`/`data` state. Renders header (title + subtitle + primary button), message banner (muted Card, API `message` verbatim, omitted in empty state), "Missed sessions" list, "Unfinished work" list with confirmed-minutes total above it when `> 0`, empty state when no missed sessions and no unfinished work. Entry button: "Create catch-up plan" — primary, right side on `sm+`, full-width on mobile, disabled with `aria-disabled="true"` when empty (both arrays empty). On click `navigate('/catch-up/preview')` (flag for EP08E to confirm route if different; current ui-refiner decision says `/catch-up/preview`).
+  - Feature: `apps/web/src/features/recovery/ui/MissedSessionsList.tsx` (+ test) and `MissedSessionRow.tsx` (+ test) — presentational. Row shows date in `<time dateTime={date}>{date}</time>`, time range `{startTime} – {endTime}`, duration via `formatMinutes(durationMinutes)` (import from `@/features/study-plan/lib/formatMinutes` like RemainingWorkSection), assignment title truncated with `title` tooltip. Locked rows get neutral `Badge` with `Lock` icon from `lucide-react` and text "Locked" (text, not color-only).
+  - Feature: `apps/web/src/features/recovery/ui/UnfinishedWorkList.tsx` (+ test) — presentational over `RemainingWorkItem[]`, mirrors `RemainingWorkSection` row markup/order (title, course code, due date, estimate/confirmed/remaining, flagged badge). Prefer reusing logic; duplicate markup acceptable if extraction would change behavior. Confirmed-minutes total "X minutes studied so far" rendered by parent when `confirmedMinutes > 0`.
+
+- **Utilities/patterns:**
+  - Use `getErrorMessage(err)` for error messages (like PlanPage/RemainingWorkSection).
+  - Use existing primitives: `Button`, `Badge`, `Card`, `EmptyState` from `@/shared/ui/*`.
+  - Icons: `lucide-react` (already used in project).
+  - Formatting: `formatMinutes` from `@/features/study-plan/lib/formatMinutes`.
+  - Navigation: `useNavigate()` from `react-router-dom`.
+  - States: skeletons with `aria-busy="true"`, `motion-reduce:animate-none`; error with `role="alert"`; lists use `<ul>/<li>`; section has `aria-labelledby`.
 
 - **UI/UX decisions (settled by `ui-refiner`, 2026-10-31):**
   - **Surface placement:** dedicated protected route `/catch-up` (not a section on `/plan`), keeping the weekly plan page focused. Page title "Catch up".
