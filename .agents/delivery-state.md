@@ -77,7 +77,7 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
 ## Role-specific updates
 
 - **Autopilot:** coordinates the explicitly authorized parent using fresh
-  specialist contexts and the [autopilot skill](skills/studypilot-autopilot/SKILL.md).
+  specialist contexts and the [autopilot skill](skills/autopilot/SKILL.md).
   Owns its README run record, scoped execution/status reconciliation,
   refiner/reviewer output commits and permitted verbatim reviewer fallback.
   Planning, implementation evidence and independent verdicts remain with their

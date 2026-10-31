@@ -1,11 +1,11 @@
 ---
-name: studypilot-frontend
+name: frontend
 description: Frontend technical guidance for the single StudyPilot implementer when changing React components, RTK Query data flows, forms and validation, or UI state handling.
 ---
 
 # StudyPilot Frontend Guidance
 
-Supporting guidance for the single [implementer](../studypilot-implementer/SKILL.md).
+Supporting guidance for the single [implementer](../implementer/SKILL.md).
 Follow that skill's execution/ownership rules. Loading this skill does not create
 a separate frontend implementation role.
 

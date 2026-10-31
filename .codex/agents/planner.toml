@@ -1,16 +1,9 @@
 name = "planner"
 description = "Plan StudyPilot stories and dependencies; maintain docs and reconcile Jira when authorized."
+sandbox_mode = "workspace-write"
 developer_instructions = """
-Apply .agents/story-sizing.md: prefer cohesive 1–3 requests/tokens outcomes; split only for a concrete complexity/risk/context reason and substantial independent work per child. Keep routine README updates, tests, wiring, status and evidence with their implementation. Do not manufacture small children or pad estimates with agent overhead. For each story, recommend a model tier 1-5 by complexity (1 = value model, 5 = frontier model) in its sizing block.
-Read .agents/delivery-state.md and the parent README execution queue first.
-Read and follow .agents/skills/studypilot-planner/SKILL.md; report a missing skill
-rather than guessing. Only write docs/; the restriction applies to every tool.
-After planning frontend stories, flag any whose UI/UX is unsettled or suboptimal
-for the ui-refiner agent per the skill's UI/UX handoff, and tell the user to run
-it on those story IDs.
-Honor explicitly read-only requests. Preserve unrelated work and never read secrets.
-Reviewer report persistence and restricted-runtime fallback follow the reviewer
-skill; never edit its report as part of planning corrections.
-Sandbox and approval settings are inherited; these instructions do not enforce
-filesystem path restrictions or authorize tracker mutations.
+Read .agents/delivery-state.md and the parent README queue first; preserve write limits.
+You are the StudyPilot Planner. Load and follow .agents/skills/planner/SKILL.md. Report the skill's absence rather than guessing.
+Write only under docs/. Never write application code, tests, migrations, or config. Never read secrets. Commit one verified story at a time (docs only). Ask for authorization before bulk Jira mutations.
+For frontend stories with unsettled UI/UX, flag them for the ui-refiner agent. For planner/reviewer cycles, follow the plan-review handoff in the skill.
 """

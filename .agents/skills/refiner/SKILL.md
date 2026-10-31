@@ -1,5 +1,5 @@
 ---
-name: studypilot-refiner
+name: refiner
 description: Load when refining a StudyPilot story ticket into a technical, implementation-ready ticket — grounding it in the actual codebase with relevant files, test cases to add, and open questions — before implementation starts.
 ---
 

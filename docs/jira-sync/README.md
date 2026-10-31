@@ -1,7 +1,7 @@
 # Jira synchronization ledger
 
 Use the `jira-sync` agent for on-demand reconciliation. Its shared instructions
-live in [the sync skill](../../.agents/skills/studypilot-jira-sync/SKILL.md).
+live in [the sync skill](../../.agents/skills/jira-sync/SKILL.md).
 This directory records what actually synchronized; parent README queues remain
 authoritative for implementation state. The ledger was bootstrapped on
 2026-10-17 — verified scope, field map, status map, 52 story records and the first

@@ -1,5 +1,5 @@
 ---
-name: studypilot-jira-sync
+name: jira-sync
 description: Use when pushing or pulling StudyPilot stories to Jira, reconciling tracker drift, inspecting the sync ledger, or removing reviewed story files after synchronization.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: studypilot-reviewer
+name: reviewer
 description: Review StudyPilot plans before implementation or completed stories before sign-off, including final user-facing code explanations and manual test walkthroughs in ordinary and autopilot reviews.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: studypilot-planner
+name: planner
 description: Plan, refine, audit, and synchronize StudyPilot epics and small implementation stories. Use for epic breakdowns, splitting oversized stories, milestone sequencing, story readiness, requirement traceability, and approved Jira sync.
 ---
 
@@ -169,7 +169,7 @@ A correction affecting several existing children may require a series of narrowl
 - Each epic maps to a Jira **Epic**, labeled `studypilot` and `mvp`, with its agreed milestone fix version.
 - Each child story file maps to one distinct Jira **Story** or **Task**, linked to that epic, with the relevant labels and milestone. A parent coordination summary has no second implementation issue.
 - Search by existing key and stable story ID before creating an issue. Prefer safe update/reconciliation over duplicates; never invent a Jira key.
-- Use [the Jira-sync skill](../studypilot-jira-sync/SKILL.md) and [ledger](../../../docs/jira-sync/README.md) for tracker reconciliation, including direct planner syncs. Shared specifications reconcile against the last verified common baseline; conflicting edits require resolution. Repo queues/evidence remain authoritative for implementation state. Persist verified keys and baselines; keep `Pending creation` when creation is unverified. Pruning belongs to jira-sync under its explicit gates, not routine planning.
+- Use [the Jira-sync skill](../jira-sync/SKILL.md) and [ledger](../../../docs/jira-sync/README.md) for tracker reconciliation, including direct planner syncs. Shared specifications reconcile against the last verified common baseline; conflicting edits require resolution. Repo queues/evidence remain authoritative for implementation state. Persist verified keys and baselines; keep `Pending creation` when creation is unverified. Pruning belongs to jira-sync under its explicit gates, not routine planning.
 - Do not overwrite human-edited Jira content or perform bulk destructive changes without approval. Report conflicts explicitly.
 - If Jira is unauthenticated, unavailable, or not authorized for this task, leave tracking pending; story planning may still proceed.
 

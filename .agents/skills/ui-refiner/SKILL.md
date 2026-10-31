@@ -1,5 +1,5 @@
 ---
-name: studypilot-ui-refiner
+name: ui-refiner
 description: Load when refining the UI/UX of a StudyPilot frontend story — deciding layout, component choice, states, accessibility, responsive behavior and copy that the ticket leaves ambiguous or suboptimal — before implementation starts.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: studypilot-autopilot
+name: autopilot
 description: Use when the user requests StudyPilot autopilot through final parent approval, including entry at planning, refinement, a specific substory, integration, review, or review fixes. Ordinary single-role or single-child requests retain their original scope.
 ---
 
