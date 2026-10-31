@@ -74,7 +74,7 @@ Final combined implementation review returned **PASS** with no blocker or should
 
 | ID | Severity | Original claim / gap | Disposition | Evidence |
 |---|---|---|---|---|
-| P-001 | Polish | Pointer-click Cancel in migrated dialogs does not restore focus to the trigger (primitive restores only on primitive-initiated close via `closedViaOnCloseRef`). Keyboard cancel (Escape) restores focus and is covered. | **Resolved** (commit pending) — Dialog now tracks close via click-capture: non-commit clicks set `closedViaOnCloseRef`, commit buttons marked `data-dialog-commit`. Pointer-cancel restores focus; success-skip preserved. Added test "returns focus to the trigger element on pointer cancel". | `apps/web/src/shared/ui/Dialog.tsx` (`onClickCapture` + `closedViaOnCloseRef`); `DeleteAssignmentDialog.test.tsx`. |
+| P-001 | Polish | Pointer-click Cancel in migrated dialogs does not restore focus to the trigger (primitive restores only on primitive-initiated close via `closedViaOnCloseRef`). Keyboard cancel (Escape) restores focus and is covered. | **Resolved** in `6d6109a` — Dialog now tracks close via click-capture: non-commit clicks set `closedViaOnCloseRef`, commit buttons marked `data-dialog-commit`. Pointer-cancel restores focus; success-skip preserved. Added test "returns focus to the trigger element on pointer cancel". | `apps/web/src/shared/ui/Dialog.tsx` (`onClickCapture` + `closedViaOnCloseRef`); `DeleteAssignmentDialog.test.tsx`. |
 | P-002 | Evidence | Automated gates not re-executed by the reviewer (no shell in review runtime). | Recorded; implementer-recorded green runs cited. | Child implementation records; HEAD `e124c95`. |
 
 ## Autopilot
