@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** [EP08A](./EP08A-missed-sessions-and-recovery-summary-read-api.md) — refine/implement (backend read-side spine; no UI decisions; no `ui-refiner` pass required).
+**Next substory:** [EP08A](./EP08A-missed-sessions-and-recovery-summary-read-api.md) — implement (backend read-side spine; refined 2026-10-31).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (Backend/Frontend/Integration labels are scope, not concurrent roles).
 
@@ -22,7 +22,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP08A](./EP08A-missed-sessions-and-recovery-summary-read-api.md) | Queued | EP06 + EP07 complete/reviewed. D08-1…D08-8 recorded below. No UI decisions (D08-7). | Refine then implement (backend read-side spine). | — |
+| [EP08A](./EP08A-missed-sessions-and-recovery-summary-read-api.md) | Ready (refined 2026-10-31) | EP06 + EP07 complete/reviewed. D08-1…D08-8 recorded below. No UI decisions (D08-7). | Implement | — |
 | [EP08B](./EP08B-deterministic-workload-rescheduling.md) | Queued | EP06 engine (`domain/study-planning/scheduler.ts`, `intervals.ts`, `ordering.ts`) and EP08A's recovery summary (the missed/unfinished inputs). | Implement after EP08A (pure domain module; independently testable). | — |
 | [EP08C](./EP08C-catch-up-plan-preview-confirmation-and-feasibility-api.md) | Queued | EP08A + EP08B implemented. EP06 save/conflict primitives reused. | Implement after EP08B (backend API + transactional persistence). | — |
 | [EP08D](./EP08D-recovery-summary-and-replanning-entry-point-ui.md) | Needs refinement | EP08A implemented (the read API). **`ui-refiner` pass required** (D08-7) — layout, copy/tone (non-blaming), states, a11y, responsive. | `ui-refiner` on EP08D before implementation. | — |
@@ -326,13 +326,13 @@ scope:
   limits: enclosing parent review unit
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: refine
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
@@ -341,23 +341,23 @@ coordinator:
 active_dispatch:
   name: EP08A-refine
   role: refiner
-  status: pending
+  status: returned
   pointer: docs/stories/EP08/EP08A-missed-sessions-and-recovery-summary-read-api.md
   session: ""
   assignment: "Technical refine EP08A"
 last_result:
-  evidence: "DoD audit complete. Gates: breakdown true, plan pass (PR-001..PR-012 closed, pass 4 Plan Ready), ui true (requirement tracked), refinement false (EP08A needs technical refiner), child_unfinished false (no active child), integration false, all_descendants false, open_findings false. judged_at_head reconciled to ac5223a. EP08D/E require ui-refiner after EP08C."
-  findings: "Checkpoint staleness reconciled (head ac5223a, judged_at_head set). EP08A is first eligible child (Queued); needs technical refiner before implementation."
-  scope_note: "Step mode: one task per continuation. Judge returned; technical refiner on EP08A next."
+  evidence: "EP08A refined (2026-10-31): Status Ready. Backend read-side, no UI, no ui-refiner. Dependencies EP06+EP07 met. No material open questions. Production files and verification recorded in story sizing block."
+  findings: ""
+  scope_note: "Step mode: one task per continuation. Refiner returned; EP08A ready to implement."
   cycles: 0
   same_findings: unknown
 gates:
   breakdown: true
   plan: pass
   ui: true
-  refinement: false
+  refinement: true
   child_unfinished: false
-  eligible_child_state: Queued
+  eligible_child_state: Ready
   closeout: true
   integration: false
   all_descendants_implemented: false
@@ -374,6 +374,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "Judge complete; next step is technical refiner on EP08A."
+resume: "Refiner complete; next step is implementer on EP08A."
 judgment_attempts: 0
 ```
