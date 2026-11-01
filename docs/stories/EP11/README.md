@@ -12,9 +12,9 @@
 
 **Artifact root:** `./artifacts/` (stable story ID) — one directory per child: `./artifacts/EP11A/`, `./artifacts/EP11B/`, plus `./artifacts/EP11/` for the combined parent review.
 
-**Active substory:** None.
+**Active substory:** EP11B — `In progress` (implementer, single sequential writer, started 2026-11-01).
 
-**Next substory:** EP11B — `Ready`; implement the grouped mobile drawer + Account section (consumes EP11A's `navGroups`).
+**Next substory:** EP11B — resume implementation (grouped mobile drawer + Account section consuming `navGroups`); checkpoint `./artifacts/EP11B/checkpoint.md`.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (frontend only; the labels are scope, not concurrent roles).
 
@@ -23,7 +23,7 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [EP11A](./EP11A-desktop-grouped-navigation-and-account-menu.md) | Implemented — awaiting parent review | EP10C implemented & parent-reviewed (`410c343` + EP10 review PASS). UI refined (2026-10-29) and technical-refined (2026-10-29). | No action; combined EP11 parent review after EP11B. | [checkpoint](./artifacts/EP11A/checkpoint.md) · [implementation](./artifacts/EP11A/implementation.md) |
-| [EP11B](./EP11B-mobile-drawer-grouped-sections.md) | Ready | EP11A implemented (`b7ae794`, `1aec0ea`) — shared `navGroups` contract available. UI refined and technical-refined (2026-10-29); Status `Ready`. | Implement EP11B: grouped mobile drawer sections + Account section, consuming `navGroups`. | `./artifacts/EP11B/` (pending) |
+| [EP11B](./EP11B-mobile-drawer-grouped-sections.md) | In progress | EP11A implemented (`b7ae794`, `1aec0ea`) — shared `navGroups` contract available. UI refined and technical-refined (2026-10-29); plan-review pass 2 `Plan Ready`. | Implementing: grouped mobile drawer sections + Account section, consuming `navGroups` (incl. ratified `Plan` entry). | [checkpoint](./artifacts/EP11B/checkpoint.md) · implementation record pending |
 
 Sequence (one writer): EP11A → EP11B. EP11A defines the shared `navGroups`/`accountMenuItems` structure consumed by EP11B.
 
