@@ -180,55 +180,60 @@ Child implementation completion unblocks the dependent child; only the passing c
 
 ## Autopilot
 
+Run: 2026-10-31 — user request "finish up 11b and the parent review" authorizes the EP11 parent review unit through final approval. Reconcile note: EP11A's implementation closeout is verified against Git (`b7ae794` + `1aec0ea`, records under `./artifacts/EP11A/`); refinement passes for both children verified (`3853aaa`, `957cbec`, `698ab00`). Reconcile also verified no independent whole-plan review exists for this epic (no `plan-review.md`; quality gate `Draft` is planner-owned and its sole block D11-3 is closed) → graph edge `plan_not_ready` dispatches the whole-plan review before EP11B implementation, per the partial-delivery rule (review the full plan and remaining-work impacts; EP11A is treated as implemented, not unimplemented). Unrelated dirty paths `.agents/skills/autopilot/SKILL.md` and `.agents/workflow-graph.md` belong to another contributor — never staged by this run.
+
 ```yaml
 version: 1
+execution:
+  mode: auto
+  awaiting_continue: false
 scope:
   parent: EP11
   descendants: [EP11A, EP11B]
-  entry: ""
+  entry: "implement EP11B + combined parent review"
   limits: enclosing parent review unit
-stage: plan
+stage: plan_review
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
-  baseline: ""
-  head: "957cbec"
+  baseline: "3853aaa"  # before EP11A's first included change (b7ae794)
+  head: "37b5a43"
 active_dispatch:
-  name: EP11B technical-refine
-  role: none
-  status: complete
-  pointer: docs/stories/EP11/EP11B-mobile-drawer-grouped-sections.md
+  name: EP11-plan-review-1
+  role: reviewer
+  status: pending
+  pointer: docs/stories/EP11/plan-review.md
   session: ""
-  assignment: technical_refine
+  assignment: plan_review
 last_result:
-  evidence: "EP11A implemented (b7ae794 + 1aec0ea): navGroups.ts, desktop grouped dropdowns, avatar account menu; header 22/22, web 842/842, typecheck/lint green. Mobile drawer unchanged; EP11B not started."
-  findings: "Implementer findings F-A-1..F-A-3 fixed (focus-effect dep, lint tabindex, 4 page/banner test updates)."
-  scope_note: "New epic: ADHD-friendly nav redesign. User decisions: new epic EP11; grouped sections; icons+text; account menu for Profile/Availability/verify/Logout. Frontend only."
+  evidence: "EP11A implemented (b7ae794 + 1aec0ea): navGroups.ts, desktop grouped dropdowns, avatar account menu; header 22/22, web 842/842, typecheck/lint green. Mobile drawer unchanged; EP11B not started. Technical-refine passes: EP11A (3853aaa), EP11B (957cbec); queue updated 698ab00."
+  findings: "None open. Implementer findings F-A-1..F-A-3 closed in b7ae794."
+  scope_note: "ADHD-friendly nav redesign; frontend only; user decisions D11-4..D11-6. Entry hint EP11B+parent review; prerequisite plan review dispatched first (missing plan approval)."
   cycles: 0
   same_findings: unknown
 gates:
-  breakdown: unknown
-  plan: unknown
-  ui: unknown
-  refinement: unknown
-  child_unfinished: unknown
-  eligible_child_state: unknown
+  breakdown: verified_valid  # quality gate 2026-10-29 checks 1-9 pass; sized; AC/TR coverage complete
+  plan: missing              # no independent plan-review.md; planner quality gate verdict Draft (block D11-3 since closed)
+  ui: resolved               # ui-refiner passes for EP11A and EP11B recorded 2026-10-29
+  refinement: resolved       # technical-refine passes for both children (3853aaa, 957cbec)
+  child_unfinished: false    # no active child; EP11A closeout verified
+  eligible_child_state: Ready  # EP11B
   closeout: unknown
-  integration: unknown
-  all_descendants_implemented: unknown
-  review: unknown
+  integration: unknown       # EP11B owns the combined index (artifacts/EP11/implementation.md)
+  all_descendants_implemented: false
+  review: absent             # combined parent review not yet run
   findings_owner: unknown
   open_findings: unknown
   walkthrough: unknown
-  judged_at_head: ""
-  queue_hash: ""
+  judged_at_head: "37b5a43"
+  queue_hash: "09bf162bcdd3d2ca"
 writer: none
-session_live: unknown
+session_live: false
 blocker:
   kind: none
   owner: ""
   question: ""
   answer: ""
-resume: ""
+resume: "If interrupted: read this section + the Execution queue above. Active dispatch EP11-plan-review-1 (reviewer, plan_review) — verify whether docs/stories/EP11/plan-review.md exists before any successor dispatch; writer ownership is none; next edge after a passing plan review is child_ready → implementer EP11B."
 judgment_attempts: 0
 ```
