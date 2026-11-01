@@ -195,28 +195,28 @@ scope:
   descendants: [EP11A, EP11B]
   entry: "implement EP11B + combined parent review"
   limits: enclosing parent review unit
-stage: plan
+stage: plan_review
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "3853aaa"  # before EP11A's first included change (b7ae794)
-  head: "4163f67"
+  head: "60aa37f"
 active_dispatch:
-  name: EP11-plan-fix-1
-  role: planner
+  name: EP11-plan-review-2
+  role: reviewer
   status: pending
-  pointer: docs/stories/EP11/plan-review.md  # PR-001/PR-002 closure targets README + EP11B story
+  pointer: docs/stories/EP11/plan-review.md  # pass 2 appended; verify PR-001/PR-002 closure at 60aa37f
   session: ""
-  assignment: plan_correction
+  assignment: plan_review
 last_result:
-  evidence: "EP11-plan-review-1 (reviewer, ses_e6acf29e5ffeEZQFC9HeRmR65b) returned verdict Changes Required; report saved by reviewer, committed by coordinator (4163f67). Coordinator independently verified the PR-001 core claim in code: navGroups.ts:84 includes {id:'plan',to:'/plan'} in the Planning group while Header.tsx:418 legacy drawer navLinks lack /plan (desktop/mobile drift). Plan-review pass 1 is the epic's first independent plan review."
-  findings: "PR-001 should-fix (planner): ratify EP06F's Plan//plan entry into README shared contract + EP11B baseline/test matrix (focusable count) + epic D11-4/Scope note. PR-002 should-fix (planner): stale README Status line, quality-gate row 8 Blocked→Pass w/ provenance, D11-8 provisional→resolved, correction-log entries. PR-003/004/005 polish (coordinator annotation; parent-review manual case; dated suite count — gate = green at current HEAD)."
-  scope_note: "ADHD-friendly nav redesign; frontend only; user decisions D11-4..D11-6. Entry hint EP11B+parent review; prerequisite plan review dispatched first (missing plan approval). Plan findings open → planner correction pass, then plan re-review pass 2."
+  evidence: "EP11-plan-fix-1 (planner, ses_e6ac46467ffeVm2PpGGTzr7Yuy) corrected PR-001/PR-002 docs-only; runtime had no shell — coordinator verified the working tree and committed the 3 authorized docs paths (60aa37f). Planner also grounded one report deviation (authorizing criterion is EP06F AC 1 + scope item 2, not AC 2) and reconciled adjacent same-class staleness. Coordinator re-verified: README contract/D11-4/D11-8/status line/quality-gate row 8/correction log; EP11B baseline + test case 1 Plan assertion + 13-focusable count + drift-rule wording."
+  findings: "PR-001/PR-002: Fixed in plan — Addressed, awaiting re-review (pass 2) — only the reviewer closes. PR-003 (annotate EP11A checkpoint stale line), PR-004 (parent-review manual outside-click case), PR-005 (suite-count gate = green at current HEAD) remain open polish with their owners; non-blocking."
+  scope_note: "ADHD-friendly nav redesign; frontend only; user decisions D11-4..D11-6. Entry hint EP11B+parent review; prerequisite plan review dispatched first (missing plan approval). On pass-2 Plan Ready: child_ready → implementer EP11B."
   cycles: 1
   same_findings: unknown
 gates:
   breakdown: verified_valid  # quality gate 2026-10-29 checks 1-9 pass; sized; AC/TR coverage complete
-  plan: findings_open        # pass 1 Changes Required (PR-001/PR-002 should-fix); PR-003..005 polish deferred to their owners
+  plan: findings_awaiting_rereview  # pass 1 Changes Required; PR-001/PR-002 corrections committed 60aa37f
   ui: resolved               # ui-refiner passes for EP11A and EP11B recorded 2026-10-29
   refinement: resolved       # technical-refine passes for both children (3853aaa, 957cbec)
   child_unfinished: false    # no active child; EP11A closeout verified
@@ -228,8 +228,8 @@ gates:
   findings_owner: unknown
   open_findings: unknown
   walkthrough: unknown
-  judged_at_head: "4163f67"  # queue unchanged since reconcile (hash matches)
-  queue_hash: "09bf162bcdd3d2ca"
+  judged_at_head: "60aa37f"  # queue child rows unchanged since reconcile; adjacent stale queue-note reconciled per PR-002
+  queue_hash: "fb00e75bf41a6e9e"
 writer: none
 session_live: false
 blocker:
@@ -237,6 +237,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "If interrupted: read this section + the Execution queue above + docs/stories/EP11/plan-review.md (pass 1, Changes Required). Active dispatch EP11-plan-fix-1 (planner, plan_correction for PR-001/PR-002) — verify whether the planner's docs changes exist before any successor dispatch; writer ownership is none; after corrections land: plan re-review pass 2 (reviewer); on Plan Ready → child_ready → implementer EP11B."
+resume: "If interrupted: read this section + the Execution queue above + docs/stories/EP11/plan-review.md (pass 1 Changes Required; PR-001/PR-002 corrections committed at 60aa37f). Active dispatch EP11-plan-review-2 (reviewer, plan_review pass 2) — verify whether a pass-2 section was appended to plan-review.md before any successor dispatch; writer ownership is none; on Plan Ready → child_ready → implementer EP11B."
 judgment_attempts: 0
 ```
