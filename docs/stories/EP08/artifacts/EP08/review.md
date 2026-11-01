@@ -506,3 +506,278 @@ closes F-01…F-03):**
 4. Polish P-01…P-05 at the owners' discretion.
 5. Re-dispatch the reviewer for the final parent review; only a passing pass
    writes the walkthrough, syncs the queue, and marks EP08 `Reviewed`.
+
+---
+
+---
+
+# EP08 Parent Implementation Review — Pass 2 (re-review of correction round 1)
+
+**Review date:** 2026-10-31
+**Pass:** implementation review pass 2 (combined parent review unit — independent re-review of correction round 1)
+**Reviewer:** `reviewer` role — independent, read-only re-review (fresh context EP08-rereview-2)
+**Verdict:** **FAIL — Changes Required (not yet passing).** F-01 is **closed**; F-02 is **closed** by a user-ruled scoped waiver (dated 2026-10-31, source recorded); the one remaining should-fix is **F-03** — the TR-E08-08 human screen-reader + reduced-motion pass is still unexecuted (`CANNOT VERIFY`). Everything above this line is pass-1 content, preserved verbatim; this section is the pass-2 record.
+
+## 15. Reviewed state and scope (pass 2)
+
+| Item | Value |
+|---|---|
+| Round-1 base | `a075ee3` — `chore(EP08): clear pause; dispatch implementer on EP08 fix round 1` |
+| Round-1 code commit | `9007dee` — `test(EP08): correction round 1 — API-level specs for TR-E08-01/02/04 (review F-01)` |
+| Round-1 records commit | `48d79a0` — `docs(EP08): correction round 1 records — F-01 executed, F-02 evidence corrected, polish dispositions` |
+| Current HEAD | `d99724d` — `chore(EP08): clear step pause; record F-02 waiver ruling; dispatch EP08-rereview-2 (reviewer)` (coordinator bookkeeping only, after `59f8ffc` which closed the implement dispatch) |
+| Reviewed code state | `48d79a0` (identical code content at `d99724d`) |
+| Branch | `main` |
+| Working tree | NOT independently verified — no `git status` capability (see §16). Pass-1's foreign dirty paths (`.agents/skills/autopilot/SKILL.md`, `.agents/workflow-graph.md`) remain coordinator-flagged; `apps/api/tsconfig.json` was reverted by the implementer (recorded, `fix-round-1.md` §tsconfig disposition) and is clean per that record — reviewer-verified only by reading the committed file's HEAD content into context (no `dist-test` exclusion present). |
+
+Git history verified independently by reading `.git/HEAD`, `.git/logs/HEAD`
+(L315–324): the four round-1 commits above all appear, each child of the
+previous. Commit-hunk scope (that `9007dee` touched only the four spec files and
+`48d79a0` only the records) was NOT re-verified by reading the diffs — no
+`git show` capability; for `9007dee` the reflog message matches, and all four
+spec files were read in full from the committed tree.
+
+**Pass-2 reviewed paths (read in full unless noted):**
+
+- `apps/api/src/modules/study-plans/study-plans-recovery-catch-up.service.spec.ts` (**new, 918 lines, 20 tests**)
+- `apps/api/src/modules/study-plans/study-plans-catch-up-e2e.spec.ts` (**new, 856 lines, 13 gated tests**)
+- `apps/api/src/modules/study-plans/study-plans-catch-up-data-scoping.spec.ts` (**new, 380 lines, 5 gated tests**)
+- `apps/web/src/features/recovery/ui/RecoverySummary.test.tsx` (new blame-free test, L119–161)
+- `docs/stories/EP08/artifacts/EP08/fix-round-1.md` (new, 162 lines)
+- `docs/stories/EP08/artifacts/EP08/checkpoint.md` (fix-round-1, CLOSED OUT)
+- `docs/stories/EP08/artifacts/EP08/implementation.md` (parent index, §Known gaps #1 corrected)
+- `docs/stories/EP08/artifacts/EP08F/implementation.md` (dated correction note L94–109)
+- `docs/stories/EP08/artifacts/EP08E/implementation.md` (P-04 statement L50–66 + side-finding note)
+- `docs/stories/EP08/README.md` (queue state, contract table — P-01)
+- `apps/api/src/main.ts` (L20, `enableImplicitConversion` — side finding), spot-checked per §17
+- Spot-checked per §17: `apps/api/src/domain/study-planning/conflicts.ts`, `study-plans.service.ts` (`SavedPlanSession`), `apps/web/src/shared/ui/Dialog.tsx`, motion-reduce classes on the recovery/catch-up surfaces
+
+## 16. Execution capability and evidence provenance (pass 2)
+
+Same runtime limits as pass 1, re-probed, not assumed:
+
+- **No direct shell.** The top-level tool set contains no `shell`; the Code Mode catalog has no shell tool (per repo AGENTS.md guidance it is not gated behind Code Mode — but it is not present in this session's tool list at all).
+- **Nested delegation refused.** A bounded command-helper probe returned `Subagent depth limit reached (1)` — identical to pass 1's result.
+- **Consequence:** no automated gate is reviewer-executed in pass 2 either. Every execution result below is **implementer-recorded evidence** from `fix-round-1.md` / `checkpoint.md`, reused per the skill's evidence-reuse rule because the tested code (the four spec files) is unchanged since those runs (`9007dee` is the same content this reviewer read; nothing after `48d79a0` touched code).
+- **What pass 2 added beyond the records:** static verification of the claims the records make — the files exist on the committed tree, their per-file test counts match the recorded numbers exactly, and every enumerated case in pass-1's F-01 closure condition maps to a concrete test.
+
+## 17. Reconciliation of the round-1 evidence (claim-by-claim)
+
+| Recorded claim | Independent pass-2 check | Result |
+|---|---|---|
+| 20 unit tests, executed DB-free | Counted statically: `getRecoverySummary` 7 (`:265–412`) + `catchUpPreview` 4 (`:432–518`) + `catchUpConfirm` 8 (`:554–863`) + `save` twin 1 (`:870–917`) = **20**; header and mock architecture confirm `DATABASE_URL`-free design (mocked `PrismaService`) | Matches |
+| 18 gated tests, executed LIVE on a throwaway migrated Postgres cluster | Counted statically: e2e spec 3+2+7+1 = **13** (`:353–432`, `:447–493`, `:560–764`, `:770–855`) + scoping spec **5** (`:255–380`) = **18**; both are `describeIntegration = DATABASE_URL ? describe : describe.skip` (`:48` / `:30`) — the live-run claim itself is implementer-recorded (throwaway initdb cluster, `prisma migrate deploy`, then cluster stopped/deleted — `checkpoint.md` §Decisions), not reviewer-executed | Counts match; live execution is recorded evidence, honestly labeled as such |
+| F-01 sub-gap: recovery-surface blame-free assertion | `RecoverySummary.test.tsx:119–161` — new test "copy contains no blaming terms" applies the same five-term list as `CatchUpPreview.test.tsx:390` to the whole rendered surface (component copy + server message) | Present |
+| F-02 evidence-only correction | `EP08F/implementation.md:94–109` dated correction note corrects the false root-cause claim, names `Dialog.tsx:45/63/101/112–114`, attrs the detached-reference hypothesis, and names both failing specs; parent index `§Known gaps #1` struck through the old claim with the same correction; `Dialog.tsx` re-checked on the current tree — the restore path is intact exactly as cited (L45/L48/L63/L101/L112–115). `Dialog.tsx` hunk-scope of the round-1 commits not diff-verified (no `git show`), but the file content matches pass 1 exactly | Corrected; specs still red per recorded runs (waived below) |
+| P-01 unchanged (planner-owned) | README shared-contract endpoint table still has exactly four rows (L142–147); no `PATCH …/lock` row | Still open — planner |
+| P-02 unchanged (planner-owned), now pinned | `conflicts.ts:96–104` maps locked/completed planned collisions to `OVERLAPS_CONFIRMED_SESSION` (four closed codes, `:23–24`); pinned by the new unit test (`service spec:659–707`) and the live 409 reason matrix (`e2e:770–855`) | Still open — planner; behavior cannot drift silently anymore |
+| P-03 unchanged (planner-owned), now pinned | `SavedPlanSession` (`study-plans.service.ts:262–270`) still has no `locked` key; the e2e "P-03 pin" (`e2e:648–674`) asserts the exact seven-key shape through a real `GET /study-plans` | Still open — planner; pinned |
+| P-04 recorded statement | `EP08E/implementation.md:50–57` — flake cannot be named retroactively (no surviving vitest output); recurrence-capture note recorded | Recorded honestly; stands as unreproduced flake |
+| P-05 closed by pin | Unit spec's `save` describe (`:870–917`) pins the EP06 unfiltered delete and the no-`locked`-key insert, making save↔confirm drift a test failure — the review's second closure option | Closure option exercised as offered |
+| Live-DB side finding (4 pre-existing red gated EP06 lock-toggle tests) | Mechanism confirmed on the tree: `apps/api/src/main.ts:20` `enableImplicitConversion: true` (D106-6) coerces `{locked:'yes'|1}` to booleans before `@IsBoolean`; EP08E record adds the related note (L59–66). Reproduc commands and the seed cascade are recorded in `fix-round-1.md` §Side finding | Recorded, routed for triage — NOT fixed in round 1 (scope discipline). Executor-owned triage: product-vs-test adjudication on implicit conversion contract-wide |
+
+## 18. Finding dispositions
+
+### F-01 — CLOSED (tests exist, recorded green, coverage verified)
+
+Closed on the basis of: **(a)** file existence and full-passage verification of
+all three API specs plus the UI assertion on the committed tree; **(b)** exact
+static test-count match with the recorded runs (20 + 18, zero discrepancy);
+**(c)** implementer-executed runs recorded with command, environment and result
+(`fix-round-1.md` §Executed evidence: unit 20/20 DB-free; gated 18/18 LIVE on a
+deleted-afterwards throwaway cluster; `npm test` 917/461/0; web 1132; tsc/lint
+clean). Every case in pass-1's closure condition now maps to a named test:
+
+| Closure-condition case | Unit spec | Live e2e / scoping spec |
+|---|---|---|
+| Missed boundary (civil-date `<` UTC midnight, no zone conversion — the PR-004 counterexample) | `:265–291` (exact `where` deep-equal + bound instant) | seeded rows classified against the DB `:353–417` |
+| SCHEDULED inclusion / unfinished inclusion / COMPLETED exclusion | `:265–291` (in-filter), `:275–279` | completed-assignment + `COMPLETED` rows excluded `:364–375`; `COMPLETED`/`RESCHEDULED` absent from the preview `:497–502` |
+| Locked-missed still reported | `:322–368` (`locked: true` row projected) | `:384–388` (locked missed row in payload) |
+| Ownership-scoped query | `:275–277`, `:405–412` (no `userId` in payload) | scoping `:255–283`, `:356–380` |
+| Uniform 404 + empty case | `:293–302` (reads nothing else), `:512–518`, `:841–863` (foreign vs missing, no oracle) | deleted-principal guard `:419–432`; identical-404-bodies `:726–754`, `:285–314` |
+| Recovery-summary aggregation / remaining-work reuse / `confirmedMinutes` | `:304–320`, `:370–389` (same items + same total, no second implementation) | `:396–403` |
+| Non-blaming message (API) | `:391–403` (PR-008 term list) | `:406–412` |
+| Blame-free recovery surface (TR-E08-05 sub-gap) | — | `RecoverySummary.test.tsx:119–161` |
+| Preview side-effect-free | `:432–441` (every write-method + `$transaction` named) | row-count snapshot `:483–493` |
+| Confirm atomic; `SCHEDULED && !locked` delete; `locked:false` insert; `targetHours` recomputed (PR-007) | `:554–636` (delta-equal delete filter — the unfiltered-delete counterexample fails here) | happy path + field-for-field locked/completed preservation + table snapshots `:560–627` |
+| PR-002 replaced-session busy exclusion (unedited confirm never 409s) | `:638–657` | resubmit against the previous write `:629–646` |
+| 409 reason matrix (per-session, shared precedence) | `:659–707`, `:729–773` | full matrix over seeded ClassMeeting/blocked/locked/completed rows `:770–855` |
+| Malformed-session matrix (400 field-level, real pipe key shape) | `:775–807` (DTO built as `plainToInstance` with `enableImplicitConversion` — the HTTP shape) | through the real global pipe `:688–724` |
+| `WINDOW_ROLLED_OVER` | `:809–839` incl. the today−6 tolerance edge | `:676–686` + snapshots |
+| Decline leaves state unchanged (server half) | preview no-write pinned (above); no-decline-route | no `catch-up/decline` route `:756–764`; preview row-counts as decline-safety `:483–493` |
+| Assignment rows unchanged (AC-E08-08) | `:623–631` (no `Assignment`/`StudySession`/`Task` write reached) | live table snapshots `:615–627`, `:847–853` |
+| Save/confirm drift (P-05) | `:870–917` | — |
+
+**Residual, honestly labeled:** reviewer-executed re-running of these suites
+remains `CANNOT VERIFY` (no execution capability, §16), and the gated suites
+still self-skip in any environment without `DATABASE_URL` — both recorded
+explicitly by the implementer. The finding F-01 (missing tests) is nonetheless
+closed: the tests exist, their content pins every enumerated case, and the
+recorded execution is fresh and consistent with the tree. A later re-review may
+re-run them unchanged per the evidence-reuse rule.
+
+### F-02 — CLOSED (user-ruled scoped waiver + corrected record)
+
+**User ruling, granted 2026-10-31** (recorded verbatim source: parent README
+`## Autopilot` checkpoint `blocker.answer` and the EP08-rereview-2 dispatch
+assignment; the ruling was made by the parent's owner, not by autopilot):
+
+> option (b) — an explicit scoped waiver for these two pre-existing
+> focus-restoration specs so EP08 sign-off proceeds; the repair lands in a
+> separate follow-up story.
+
+**Waiver scope (exact, as I record it):** exactly two pre-existing E2E tests —
+`apps/web/e2e/assignments-list.spec.ts:23` and `apps/web/e2e/calendar.spec.ts:100`
+(SP-129A phone-agenda) — proven non-causal for EP08 by control runs (EP08F
+record §Suite baseline evidence, reproduced twice and without the new spec).
+**The waiver waives nothing else in EP08F AC 8:** AC 8's other requirements (all
+other pre-existing suites green; the `dailyCapMinutes` item is exempted by AC 8
+itself and additionally did not reproduce on the live round-1 run —
+`fix-round-1.md` §Side finding) remain satisfied on the recorded runs; the new
+`catch-up.spec.ts` 9/9 green requirement is untouched.
+
+**Record correction (pass-1 secondary defect):** verified fixed in both
+locations (§17 row 4). The triage target is now recorded truthfully as the
+existing `Dialog.tsx` restore path.
+
+**Conditions riding on the waiver (outstanding, planner-owned):** the waiver's
+own text conditions EP08 sign-off proceeding *while* the repair lands in a
+**separate follow-up story**. That story does not exist yet — its creation is
+recorded here as an outstanding planner action and a follow-up gate, not a new
+EP08 implementation gap. It is bookkeeping inside the disposition the user
+granted; it does not reopen F-02.
+
+### F-03 — STILL OPEN (`CANNOT VERIFY` / should-fix) — verdict-blocking
+
+**Observed state (unchanged since pass 1):** no recorded human pass exists for
+(1) a screen-reader (VoiceOver) traversal of `/catch-up` → preview → edit →
+confirm, and (2) reduced-motion behavior on the recovery/catch-up surfaces.
+`fix-round-1.md` §F-03 states this plainly; no human evidence was fabricated or
+ratified this pass. A user-scoped waiver for F-03 does **not** exist.
+
+**What does hold (statically verified this pass):**
+
+- Announcements/alerts: `RecoverySummary.tsx:96` (`role="alert"` error card),
+  `CatchUpPreview.tsx:159/187/233` (409 banner, error cards), `CatchUpLockToggle.tsx:69/76–80`
+  (`aria-pressed` toggle + sr-only `role="status" aria-live="polite"` change
+  report), unit-tested in `CatchUpLockToggle.test.tsx:40/65` and asserted in the
+  live E2E lock-toggle path.
+- Reduced-motion code support: both swept skeleton states carry
+  `motion-reduce:animate-none` (`RecoverySummary.tsx:73/86`,
+  `CatchUpPreview.tsx:177`); no EP08 animation fork was added. This is
+  *code support*, not observed behavior — the human observation is still owed.
+- Keyboard / focus-visibility / narrow-screen gates remain satisfied on the
+  recorded Playwright + vitest evidence (pass 1 §3.2 F-03, unchanged by round 1).
+
+**Why this prevents a passing verdict (the stop reason, explicit):** TR-E08-08
+(readme §Requirement and test traceability L91) and EP08F AC 10 (story L51)
+require a *recorded manual accessibility pass* including the screen-reader path
+and reduced motion, DoD 6/8 target WCAG 2.2 AA. Under the severity contract an
+unmet mandatory manual gate is a should-fix and required evidence that cannot be
+verified stays `CANNOT VERIFY` — "CANNOT VERIFY prevents an unqualified pass; a
+passing final review cannot rest on pending user actions." This agent can only
+verify statically what this pass has verified; the actual observation is
+irreducibly human. No recorded source for examining it away exists: the user
+waiver of 2026-10-31 scopes F-02's two E2E specs only.
+
+**Closure condition (unchanged from pass 1):** a recorded human pass — date,
+environment, OS/browser, what was observed — covering the VoiceOver traversal
+announcement order and focus behavior on the recovery and catch-up surfaces, and
+the reduced-motion observation (accepting "no meaningful motion" for surfaces
+whose only animation is `motion-reduce:animate-none`-gated skeletons). Any
+defect found is fixed and re-reviewed.
+
+## 19. Updated requirement and DoD statuses (delta from pass 1)
+
+| Item | Pass 1 | Pass 2 | Basis |
+|---|---|---|---|
+| TR-E08-01 | FAIL | **Satisfied (recorded)** | Unit + live tests (§18 F-01 table); execution implementer-recorded |
+| TR-E08-02 | FAIL | **Satisfied (recorded)** | Same |
+| TR-E08-04 | FAIL | **Satisfied (recorded)** | Same |
+| TR-E08-05 | Partially satisfied | **Satisfied (recorded)** | Blame-free assertion `RecoverySummary.test.tsx:119–161` completes the list |
+| DoD 8 (business rules have automated tests) | FAIL | **PASS (recorded)** | §18; reviewer-executed run still `CANNOT VERIFY` with no shell |
+| DoD 9 (API docs) incl. P-01 | PASS w/ consistency items | PASS (P-01 still open — planner polish) | §17 |
+| TR-E08-07 | Partially satisfied (`F-02`) | **Satisfied** — AC 8's red clause waived by the user ruling; the rest of TR-E08-07 was already green | §18 F-02 |
+| TR-E08-08 | Partially satisfied / `CANNOT VERIFY` | **Still open** | §18 F-03 |
+| EP08F AC 8 | Unmet | **Satisfied** (two red tests under user-ruled scoped waiver, dated, scope recorded) | §18 F-02 |
+| EP08F AC 10 | Partially met | **Partially met** (F-03) | §18 F-03 |
+
+Epic ACs AC-E08-01…09 and the shared-contract table (pass 1 §4/§6) are unchanged
+by round 1 and stand as pass-1 recorded.
+
+## 20. Planner-owned triage notes (unchanged ownership — recorded, not fixed)
+
+Still planner-owned after this review; the exact content of P-01/P-02/P-03 and
+the side finding sits in pass-1 §3.3 and §17 above:
+
+1. **P-01** — add the `PATCH /study-plans/sessions/:sessionId/lock` row to the README's shared-contract endpoint table (README L142–147).
+2. **P-02** — contract-surface question: either a fifth `ConflictReason` code for locked/completed planned collisions, or record the `OVERLAPS_CONFIRMED_SESSION` mapping as intended. Behavior is now pinned either way (unit + live tests).
+3. **P-03** — the already-open SavedPlan `locked` extension question (EP08E row); shape now pinned by the P-03 pin (e2e `:648–674`).
+4. **Live-DB side finding** — 4 pre-existing red gated EP06 lock-toggle tests (`{locked:'yes'|1}` coerced by `enableImplicitConversion` at `apps/api/src/main.ts:20` → 200 instead of 400; seed cascade after). Executor-owned product-vs-test adjudication; reproduction in `fix-round-1.md` §Side finding. NOT fixed and not waived — recorded for triage; it does not gate EP08 EP08F AC 8 (those are runtime API 400s pre-existing in the EP06 suites, proven reproducible with zero EP08 round-1 files).
+5. **F-02 waiver condition** — planner creates the follow-up story for the two focus-restoration E2E repairs (waiver condition, §18).
+
+## 21. Verification performed by this reviewer (pass 2)
+
+- **Executed:** nothing. No shell (tool absent); nested delegation refused
+  (`Subagent depth limit reached (1)`, probed once). All automated results
+  remain implementer-recorded with the provenance labels of §16, never presented
+  as reviewer-executed.
+- **Read/verified statically:** Git HEAD + reflog (round-1 commits confirmed);
+  all four new spec files in full (with the case→test mapping table of §18);
+  the RecoverySummary blame-free test; the EP08F + parent index + EP08E record
+  corrections; `fix-round-1.md`; the fix-round checkpoint; `Dialog.tsx`
+  (restore path intact); `conflicts.ts`, `SavedPlanSession`, `main.ts:20`,
+  motion-reduce classes; the README contract table (P-01 absent); the shared DoD
+  (`docs/epics/README.md` L29–55); EP08F story AC 8/10 wording.
+- **Not performed:** any mutation, test run, format/fix command, commit, or read
+  of `.env*`/secret files. Working-tree dirtiness beyond the coordinator's
+  flags was not verifiable without a shell.
+
+## 22. Pass-2 verdict and stop reason
+
+**FAIL — not yet sign-off-able.** Stop reason (explicit): **F-03** — the
+TR-E08-08 human screen-reader + reduced-motion pass is still unexecuted, so
+EP08F AC 10 and the manual portion of TR-E08-08 are `CANNOT VERIFY`, and the
+severity contract keeps unverified required evidence out of a passing verdict.
+A single bounded user action closes it: execute and record the human pass (or
+record a user-ruled waiver, which no source on record grants). F-01 and F-02 are
+closed on verified, dated evidence; no other should-fix or blocker remains.
+Nothing in this pass reopened pass-1 scope: no new code change occurred
+(tests + records only), the four counterexample pins of pass 1 now fail closed
+in tests, and the standing implementation evidence otherwise held.
+
+Once F-03 closes: the re-reviewing pass writes `walkthrough.md` (with F-03's
+human steps honestly labeled — executed user evidence, not reviewer-executed),
+applies the passing docs sync, and commits; EP08A…EP08F then move to `Reviewed`.
+
+## 23. Git handoff and deferred edits (pass 2 — non-passing verdict)
+
+This review **committed nothing**. The report above (this §15–§23 appended to
+pass-1 content, saved verbatim) is written to
+`docs/stories/EP08/artifacts/EP08/review.md` and is the only reviewer write.
+
+**Deferred edits (coordinator-owned on this non-passing verdict):**
+
+1. **Commit the report:** `git add docs/stories/EP08/artifacts/EP08/review.md`
+   (pass-1 section unchanged + this append; no other file).
+2. **README §Implementation review log** (currently "(Not yet implemented.)"):
+   add the pass-2 correction-log rows — F-01 closed (with the §18 closure
+   evidence), F-02 closed by user ruling 2026-10-31 option (b) with recorded
+   provenance and exact scope (decision provenance per the passing-sync rule,
+   recorded in the log although the verdict is non-passing so the facts are not
+   lost), F-03 open-until-human-evidence, P-04 recorded, P-05 closed-by-pin,
+   side finding routed.
+3. **Queue fields (README Execution queue):** `Next substory` → the concrete
+   next action: user F-03 human pass, then re-dispatch the reviewer (single
+   remaining gate); rows stay `Implemented — awaiting parent review` (pass-1
+   status wording) with the pass-2 verdict noted in the row narrative; NOT
+   `Reviewed` (no passing verdict).
+4. **Parent status line (README L6):** remain stale — the passing pass will
+   refresh; record the pass-2 verdict only in queue/log terms.
+5. **walkthrough.md** — deferred to the passing pass (not written now).
+6. **Follow-up gates:** user F-03 pass; planner follow-up story for the two
+   focus-restoration E2E specs; planner triage of P-01/P-02/P-03 + live-DB side
+   finding (all separate from this review unit's closeout).
+
+Never stage: `.agents/skills/autopilot/SKILL.md`, `.agents/workflow-graph.md`
+(foreign), and the README's `## Autopilot` section (coordinator-owned).
