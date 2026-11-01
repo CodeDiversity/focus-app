@@ -143,3 +143,88 @@ CANNOT VERIFY in this pass (with reason and route):
 
 ---
 *Reviewer Git handoff:* exactly one changed path — `docs/stories/EP11/plan-review.md` (new file). Nothing staged, nothing committed by the reviewer; the coordinator commits this report. No other file was created, modified, or deleted by this review.
+
+---
+
+# EP11 Plan Review — Pass 2 (re-review of PR-001/PR-002 closure)
+
+**Review:** Pass 2 — independent re-review of the planner correction pass against the actual tree; the pass-1 report above is preserved verbatim (the correction-log dispositions were treated as unverified claims, per the reviewer skill).
+**Date:** 2026-11-01
+**Reviewer:** independent plan reviewer (fresh context, autopilot-dispatched `EP11-plan-review-2`, stage `plan_review`)
+**Reviewed at:** HEAD `29a71dd` on `main` (`docs(…)` = `chore(EP11): close EP11-plan-fix-1 (corrections committed 60aa37f); dispatch EP11-plan-review-2`). Working tree; the only dirty paths per the coordinator handoff are `.agents/skills/autopilot/SKILL.md` and `.agents/workflow-graph.md` — another contributor's work, not inspected, not attributed to this review. The delta since the correction commit `60aa37f` is checkpoint-only docs per the handoff; all plan-review facts below were nonetheless re-read at the current tree.
+**Commit chain verified via raw `.git/HEAD`, `.git/refs/heads/main`, `.git/logs/HEAD` (read-only):** `7ac3828` (pass-1 dispatch) → `4163f67` (pass-1 report, Changes Required) → `3157a01` (close pass 1; dispatch `EP11-plan-fix-1`) → `60aa37f` (correction pass, "planner; persisted by coordinator") → `29a71dd` (HEAD; dispatch pass 2). `refs/heads/main` = `29a71dd…`. Provenance, not blob-level proof (no shell in this session).
+
+## Verdict: **Plan Ready**
+
+Both planner-owned should-fix findings (PR-001, PR-002) are **closed** — independently verified at HEAD `29a71dd`, not on the planner's disposition lines. The shared nav contract, epic, and EP11B story now consistently state Planning = Calendar/Availability/**Plan** with honest EP06F provenance; EP11B's test matrix, focus-trap arithmetic, and drift rule match the actual contract; the planning records match the verified queue and carry no false review claims. No blocker and no should-fix remains. PR-003/PR-004/PR-005 stay open polish with their original owners (non-blocking, unchanged); one new polish observation (PR-006) is recorded. The plan is fit for the remaining work: EP11B implementation (queue row `Ready`, one sequential implementer), then the one combined EP11 parent review.
+
+## Prior findings — dispositions with fresh evidence
+
+| ID | Pass-1 severity | Disposition | Fresh evidence (verified this pass at `29a71dd`) |
+|---|---|---|---|
+| PR-001 | Should-fix | **Closed** | Details below — all six correction elements verified in the tree |
+| PR-002 | Should-fix | **Closed** | Details below — status line, quality-gate row 8, D11-8, adjacent staleness all reconciled honestly |
+| PR-003 | Polish | **Still open (as routed — non-blocking)** | `artifacts/EP11A/checkpoint.md:39` still reads "`Needs refinement`" — correct: it is a historical record awaiting the coordinator's *annotation*, and its untouched state confirms the correction pass did not rewrite EP11A artifacts |
+| PR-004 | Polish | **Still open (as routed — non-blocking)** | Owed as an explicit negative case in the parent review's manual keyboard pass; `Header.tsx:405-444` region re-spotted unchanged (implementation fidelity was already judged correct in pass 1) |
+| PR-005 | Polish | **Still open (as routed — non-blocking)** | `EP11B-*.md:104` keeps the dated "67 files / 842 tests at EP11A" baseline; the implementer gates on "full web suite green at current HEAD" at EP11B time |
+
+### PR-001 closure evidence (verified against the tree, not the planner's claims)
+
+- **Code (re-inspected this pass):** `apps/web/src/widgets/header/ui/navGroups.ts:76-86` — Planning group with Calendar `:80`, Availability `:83`, **Plan `:84`** (`{ id: 'plan', label: 'Plan', icon: CalendarCheck, to: '/plan' }`); `Header.tsx:418-431` — legacy drawer `navLinks` flat list (Home, Dashboard, Semesters, Courses, Assignments, Calendar, Availability, Profile) still **lacks** `/plan`, with the EP11B marker at `:416-417`; `Header.tsx:433` + `:176-177` — desktop renders from `getNavGroups` (`desktop-nav-{id}` data-driven), so the desktop Planning dropdown includes `Plan`; `App.tsx:66` — `/plan` route exists.
+- **README:** shared nav contract `:100` now ratifies Planning = Calendar/Availability/Plan, explicitly "ratified contract, not drift", citing EP06F story scope item 2 + AC 1 (`EP06/EP06F-*.md:23,:54`), the implementation record (`:19,:26`), the EP06 parent review reviewed-paths list, EP06 README `:504`, and `navGroups.ts:84`. D11-4 `:121` ratifies the same. **All citations independently re-verified:** EP06F story `:23` *is* scope item 2 (the nav entry in the shared `Planning` group, "edited additively") and `:54` *is* AC 1 (`/plan` appears once in the shared nav, both surfaces show it); EP06F AC 2 (`:55`) is the page-generation criterion — confirming both that pass 1's "AC 2" was wrong and that the corrected docs cite the **verified pair**. `EP06/artifacts/EP06F/implementation.md:19` (`navGroups.ts` modified — `Plan` entry) and `:26` (`Header.test.tsx` dependent assertion) verified; `EP06/artifacts/EP06/review.md:9` lists `navGroups.ts` among reviewed paths, `:14` **PASS**, `:5` dated 2026-10-30; `EP06/README.md:504` carries the quoted "EP11's shared file… edited additively" ratification.
+- **Epic:** Scope `:25` and D11-4 `:66` both record Planning (Calendar/Availability/**Plan**) with provenance including "EP06F story scope item 2 + AC 1; EP06 parent review PASS 2026-10-30" and "expected contract content, not drift".
+- **EP11B story:** baseline header `:108` keeps the dated 2026-10-29 inspection and adds a reconciliation note to `3157a01` — the original inspection was **not rewritten** (correct handling); `:112` baseline includes `Plan` with the `navGroups.ts:84` citation and "consuming it is expected behavior, not drift"; `:125` routes bullet adds `/plan` (`App.tsx:66`); test case 1 `:70` asserts the `Plan` link (`href="/plan"`) inside the Planning region; focus-trap note `:240` says **13** authenticated focusables — the enumeration (close, Home, Dashboard, Semesters, Courses, Assignments, Calendar, Availability, Plan, Profile, Availability, Verify email, Logout) matches this reviewer's independent recount of the grouped-drawer DOM order, and the 12-verified variant is right too; drift rule `:33` + risk `:236` now make consuming the ratified `Plan` explicitly expected (stop-and-flag only for *new* fields/edits); new risk `:237` records the live one-surface drift (`Header.tsx:418-431` lacks `/plan`) and that the grouped render restores parity; ordering `:208` and copy `:216` bullets include `Plan`.
+- **History preserved:** `artifacts/EP11A/implementation.md:13` still says "Planning → Calendar/Availability" — truthful at `b7ae794` and correctly left verbatim (forward reconciliation only).
+- **Note (not material):** the correction-log PR-001 row (`README.md:148`) exceeds this reviewer's 2000-character per-line read limit; its visible portion already contains the scope-item-2 + AC-1 pairing and the honest disclosure of the report's "AC 2" deviation ("the verified author…"). The three fully readable docs citations (README `:100`, epic D11-4, EP11B `:112`) each carry the verified pair, so the closure does not depend on the unread tail.
+
+### PR-002 closure evidence
+
+- **Status line `README.md:6`:** matches the execution queue (refinement closed; EP11A `Implemented — awaiting parent review`; EP11B `Ready`; combined parent review pending) and states the pass-1 verdict honestly (Changes Required; corrections landed; pass 2 pending) — **no false claim of a passing plan review anywhere in the tree** (this pass-2 section is the first such record).
+- **Quality-gate row 8 `README.md:166`:** flipped Blocked → Pass with commit-level refinement provenance and pass-1 verification, explicitly noting pass-2 pending. Honest.
+- **D11-8 resolved keep-both:** README `:125` and epic `:70` record the resolution with dates and story citations. Cited authorities verified: EP11A story `:155-156` ("keep in both — Planning primary, account menu secondary") and `:362`; EP11B story `:217` ("appears twice by design"). One citation slip: the registers cite `EP11B-*.md:217,:275`, but the D11-8-referencing bullet in the settled list is `:276` (`:275` is the grouping-labels bullet) — immaterial, folded into PR-006.
+- **Adjacent same-class staleness:** queue note `:30` and both D11-3 register rows (README `:120`, epic `:65`) reconciled to the closed state with provenance.
+- **Correction log `:144-151`:** entries exist for PR-001/PR-002 with honest dispositions ("only a passing re-review (pass 2) establishes reviewer closure"), the PR-003…PR-005 non-planner-owner routing is explicit, and the planner disclosed the pass-1 report's AC-2 citation error rather than papering over it.
+- **Boundary check:** queue child rows `:23-28`, the Autopilot section `:184-241`, and the EP11A artifacts (`checkpoint.md:39`, `implementation.md:13`) read at HEAD are consistent with "untouched by the correction pass". `git show 60aa37f --stat` itself is **CANNOT VERIFY** here (no shell/blob unpacking); commit identity/order is reflog-verified and per-commit file lists rest on the coordinator's recorded three authorized docs paths (`60aa37f` = README + EP11B story + epic), which every readable artifact corroborates.
+
+## New finding
+
+| ID | Severity | Owner | Location | Summary |
+|---|---|---|---|---|
+| PR-006 | Polish | planner/coordinator (docs-only, optional) | `README.md:167` (quality-gate row 9); `README.md:125` + epic `:70` (D11-8 citations) | Row 9 still reads "First plan; no findings yet. Log initialized." — true for the 2026-10-29 snapshot and contradicted only by the (accurate, adjacent) correction log; carry a dated reconciliation note like row 8's. Fold in: repair the D11-8 citation `EP11B-*.md:217,:275` → `:217,:276` in both registers. No operative status is wrong; polish per the severity contract, non-blocking |
+
+## Planning-coverage delta since pass 1
+
+The pass-1 AC/TR ownership map, DoD applicability rulings, sizing assessment, decision-register assessment, dependency/sequencing check, and security review all stand — none was disturbed by the correction pass (it touched only the three docs paths). Checklist rows that failed in pass 1 now pass on verified evidence: **#4 contract consistency → Pass** (contract/epic/story agree with `navGroups.ts`; `Plan` asserted in test case 1; the live one-surface drift is documented with its automatic fix in EP11B's scope), **#8 material decisions → Pass** (D11-3/D11-8 recorded closed with provenance; D11-4 amended honestly), **#9 correction-log completeness → Pass** (entries present with honest dispositions; residual row-9 staleness is PR-006 polish). No implementation dependency blocker for EP11B exists or was introduced.
+
+## Verification record (pass 2)
+
+Reviewer-executed inspection (this pass, at `29a71dd` working tree): `navGroups.ts` (full), `Header.tsx:400-444` + data-driven-render grep, `App.tsx:55-74`, EP11 README (full incl. queue, contract, decisions, correction log, quality gate, Autopilot), EP11A + EP11B stories (full), epic (full), `artifacts/EP11A/checkpoint.md:33-40` + `implementation.md:8-19`, EP06F story `:15-64`, EP06F implementation record `:14-31`, EP06 review.md (header + verdict + reviewed paths), EP06 README `:500-507`, shared DoD `docs/epics/README.md:29-48`, raw `.git/HEAD` + `refs/heads/main` + `logs/HEAD`. No secrets read.
+
+Implementer/coordinator-recorded (provenance preserved, never presented as reviewer-executed): EP11A and EP06F automated-suite results; the coordinator's `60aa37f` verification/commit act.
+
+CANNOT VERIFY (with reason and route):
+- `git show 60aa37f --stat` / `--name-only` and any per-commit blob diff; working-tree dirt (`git status` unavailable — no shell tool in this session). Commit *identity/order* verified from raw refs+reflog; *file-set* claims for `60aa37f` corroborated only by HEAD-state consistency + coordinator records.
+- The unread tail of `README.md:148` beyond the 2000-char line-read limit (see PR-001 note; closure does not depend on it).
+- Re-running vitest/typecheck/lint: no shell; no relevant source change since the recorded runs (header/nav code re-read this pass matches pass-1 inspection). The **combined parent review must run** the header suite + full web suite + typecheck + lint at its own baseline and report actual output.
+
+## Owed downstream (for the record — unchanged obligations made explicit)
+
+1. **TR-E11-03/04:** *executed* manual accessibility evidence at the combined EP11 parent review — keyboard-only traversal of both dropdowns + account menu + drawer; screen-reader spot check of menu semantics and the duplicate `Availability` naming; emulated `prefers-reduced-motion`; 320–375px narrow-viewport check; D11-9 44px-row/focus-ring visual confirmation. Plan intent does not satisfy these.
+2. **DoD 10** (integrated review) and **DoD 11** (reviewer-owned `walkthrough.md`) at the combined parent review — `artifacts/EP11/review.md` + `artifacts/EP11/walkthrough.md`; DoD 10 cannot pass on inspection alone.
+3. **PR-003** coordinator annotation of `artifacts/EP11A/checkpoint.md:39` (annotate, never rewrite); **PR-004** explicit outside-click focus negative case in the parent review's manual keyboard pass; **PR-005** EP11B implementer gates on the full web suite green at current HEAD (the 842 count is history); **PR-006** optional docs polish.
+4. EP11B implementation itself remains responsible for its new automated cases (including the `Plan` assertion) — planned obligations, correctly not yet in existence.
+
+## Passing-review docs sync (per skill) — applied within dispatch limits
+
+This pass applies the restricted sync the coordinator authorized: (1) this pass-2 report appended to `plan-review.md` with pass 1 preserved verbatim; (2) README status/report-link line `:6` and quality-gate verdict line `:155` + row-8 pass-2 wording `:166` updated to record the verified `Plan Ready` verdict. Everything else is **deferred to the coordinator verbatim** (below). No Git mutation by the reviewer; the coordinator commits.
+
+**Coordinator verbatim deferred edits (authorized passing-sync remainder — apply as-is):**
+1. `README.md:148` PR-001 row Status: `| Fixed in plan — Addressed, awaiting re-review (pass 2). |` → `| Closed — verified at plan-review pass 2 (Plan Ready, 2026-11-01, at HEAD 29a71dd); see ./plan-review.md pass-2 section. |`
+2. `README.md:149` PR-002 row Status: `| Fixed in plan — Addressed, awaiting re-review (pass 2). |` → `| Closed — verified at plan-review pass 2 (Plan Ready, 2026-11-01, at HEAD 29a71dd); see ./plan-review.md pass-2 section. |`
+3. PR-006 (optional polish): `README.md:167` row 9 → append `*(reconciled 2026-11-01: correction log now records PR-001/PR-002 — closed at pass 2 — plus polish PR-003…PR-006 with owners.)*`; repair `EP11B-*.md:217,:275` → `:217,:276` in README `:125` and epic `:70`.
+4. Autopilot checkpoint reconciliation (coordinator-owned section): close `EP11-plan-review-2` with the Plan Ready verdict and advance the stage to `child_ready` → implementer EP11B.
+
+**Handoff:** verdict **Plan Ready** for the remaining work. Next concrete actionable row per the queue: **EP11B implementation** (`Ready`; consume `navGroups` as-is including the ratified `Plan`; gate the full suite at current HEAD), then the single combined EP11 parent review carrying the TR-E11-03/04 executed evidence and DoD 10/11.
+
+---
+*Reviewer Git handoff (pass 2):* exactly one changed path — `docs/stories/EP11/plan-review.md` (pass-2 section appended; pass 1 unchanged above it). The only other files the reviewer touched are the three authorized passing-sync lines in `docs/stories/EP11/README.md` (`:6`, `:155`, `:166`). Nothing staged, nothing committed; the coordinator commits and applies the deferred verbatim edits above.
