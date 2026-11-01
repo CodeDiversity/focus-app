@@ -334,30 +334,30 @@ tasks `Reviewed` with the verified final `./artifacts/EP08/walkthrough.md`.)
 version: 1
 execution:
   mode: step
-  awaiting_continue: false
+  awaiting_continue: true
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: parent_review
+stage: paused
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: c2107e1
+  head: d31ccfc
 active_dispatch:
   name: EP08-rereview-3
   role: reviewer
-  status: pending
-  pointer: docs/stories/EP08/artifacts/EP08/review.md
-  session: ""
+  status: completed
+  pointer: docs/stories/EP08/artifacts/EP08/walkthrough.md
+  session: ses_e6ae524a4ffe2qweMuOIFsCPb5
   assignment: "Independent review pass 3 (fresh context) of the combined EP08 parent review unit (all six children). Facts you must reconcile yourself (do not trust status lines): review pass 1 (FAIL) and pass 2 (FAIL strictly on F-03) are preserved in ./artifacts/EP08/review.md (committed at 284d3ef); the reviewed code state is unchanged since 48d79a0 — everything after it is coordinator bookkeeping (50d35ca, c2107e1 record the run history; 2e3f637 added the pass-2 implementation review log rows, which YOU must verify for accuracy). Dispositions on record, dated 2026-10-31, ruled by the parent's owner (USER RULINGS — recorded verbatim in the README Autopilot checkpoint blocker.answer entries; not autopilot self-waivers): (1) F-02 — explicit scoped waiver for exactly apps/web/e2e/assignments-list.spec.ts:23 and apps/web/e2e/calendar.spec.ts:100, with a separate planner-owned follow-up story as the waiver's own condition; (2) F-03 — explicit waiver of the human VoiceOver + reduced-motion pass, so EP08 sign-off proceeds with the statically verified a11y code support standing in; residual ownership of an actual human a11y observation rides on the user, default-recordable by the planner as a separate follow-up item. Your task: independently verify what pass 2 verified still holds (the F-01 test files, the waiver record corrections, the pass-2 implementation-review log rows), record the F-02 and F-03 dispositions in a new pass-3 section with their provenance (scope, dates, ruling sources), and produce the verdict. Weight the waivers exactly as recorded: they close those findings for EP08 sign-off and waive nothing else. Planner-owned non-blocking items (P-01/P-02/P-03, the F-02 follow-up story, the F-03 residual a11y ownership) and the executor-owned live-DB side finding must be recorded as outstanding follow-ups, not as verdict blockers. On a PASS: prepare, save and VERIFY ./artifacts/EP08/walkthrough.md (code explanation, correctness evidence after correction rounds, manual test steps + expected results for every applicable workflow, with honest execution labels — steps that did not execute because they are waived by the user rulings must be labeled WAIVED-BY-USER-RULING, never 'executed' or 'passed by observation'), then apply your skill's passing-review docs sync (README correction-log pass-3 rows, verdict-dependent queue fields — EP08A…EP08F rows to Reviewed, parent status line refresh, Next substory → None/complete) and make ONE scoped commit of your review artifacts + that docs sync. On a NON-passing verdict: save the report only, no commit, no queue edits, and return the explicit Git handoff. Never stage or edit: the README ## Autopilot section (coordinator-owned), .agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md. Reviewer write limits apply."
 last_result:
-  evidence: "EP08-rereview-2 COMPLETED (foreground, session ses_e6aeeb570fferVvswJQQaZQyuA; reviewed code state 48d79a0 at dispatch HEAD d99724d). VERDICT PASS 2 (2026-10-31): FAIL — Changes Required, explicit stop reason. F-01 CLOSED (report §18): the three new API specs (918/856/380 lines) + RecoverySummary blame-free test verified on the committed tree in full; per-file test counts match the recorded runs exactly (20 unit + 18 gated = 38); every pass-1 closure-condition case maps to a named test (PR-002 replaced-session exclusion, 409 reason matrix, WINDOW_ROLLED_OVER, foreign-vs-missing identical 404, no-decline-route, save/confirm drift pins); TR-E08-01/02/04/05 now Satisfied (recorded), DoD 8 PASS (recorded); execution stays implementer-recorded (reviewer-executed re-run CANNOT VERIFY — no shell in its runtime; nested delegation refused: Subagent depth limit reached (1), re-probed). F-02 CLOSED by the user-ruled scoped waiver of 2026-10-31 (report §18: exact scope = the two named specs only; EP08F AC 8 marked Satisfied under the dated waiver; record correction verified in both locations; Dialog.tsx restore path intact; the follow-up story is a planner-owned CONDITION of the waiver, not a new EP08 gap). F-03 STILL OPEN and is the pass-2 stop reason (report §22): the TR-E08-08 / EP08F AC 10 human VoiceOver traversal of /catch-up → preview → edit → confirm and the reduced-motion observation are unexecuted (CANNOT VERIFY) — code support statically verified (role=alert paths, aria-pressed + sr-only aria-live lock toggle, motion-reduce:animate-none skeletons), observation irreducibly human, no waiver exists on record. P-01/P-02/P-03 confirmed still open, planner-owned, now test-pinned (cannot drift silently). Live-DB side finding (4 pre-existing red gated EP06 lock-toggle tests via main.ts:20 enableImplicitConversion) confirmed pre-existing with zero EP08 round-1 files and routed for executor triage — not fixed, not waived, does not gate EP08's AC 8."
-  findings: "After pass 2: F-01 closed, F-02 closed (user waiver 2026-10-31, exact scope recorded). OPEN: F-03 (user/human — the single verdict-blocking should-fix; closure = a recorded human pass with date, OS/browser, VoiceOver announcement order and focus behavior over /catch-up → preview → edit → confirm, plus the reduced-motion observation, or an explicit user-ruled waiver with follow-up ownership); P-01/P-02/P-03 (planner, non-blocking, test-pinned); the waiver's follow-up story (planner); the live-DB side finding (executor triage, non-gating). walkthrough.md and the passing docs sync are deferred to the passing pass."
-  scope_note: "Step continue 2026-10-31: step_pause cleared; recorded_blocker was the first matching edge, so the F-02 question went to the user first — answer (b) explicit scoped waiver, recorded verbatim in blocker.answer and in the EP08-rereview-2 dispatch assignment — then ONE specialist ran: reviewer re-review pass 2 (EP08-rereview-2) in a fresh context. Non-passing verdict → reviewer saved the report only; coordinator performed the deferred edits per the reviewer's §23 Git handoff, committed separately: 284d3ef (review.md report only), 2e3f637 (README queue Next-substory + pass-2 implementation review log rows F-01/F-02/F-03/P-04/P-05/side-finding). walkthrough.md NOT written (passing pass only); no queue row moved to Reviewed (no passing verdict); parent status line left intentionally stale per the handoff. Foreign dirty .agents paths (.agents/skills/autopilot/SKILL.md, .agents/workflow-graph.md) never staged. No walkthrough verification claimed."
-  cycles: 2
+  evidence: "EP08-rereview-3 COMPLETED (foreground, session ses_e6ae524a4ffe2qweMuOIFsCPb5; HEAD 08b69f8 - coordinator bookkeeping only over the unchanged reviewed code state 48d79a0). VERDICT PASS 3 (2026-10-31): the combined EP08 parent review unit PASSES. Independently verified this pass (static reads): reflog shows no code-change commit after 48d79a0; the four F-01 spec files exist with exactly the recorded test counts (20/13/5 it-blocks = 20 unit + 18 gated) and line lengths (918/856/380), case-to-test spot-checks at the section-18 anchors; F-02 record corrections (EP08F note L94-109, parent index, Dialog.tsx restore path intact); F-03 waiver record verbatim on disk (commit c2107e1) and the a11y code support re-verified (role=alert x4, aria-pressed + sr-only aria-live, motion-reduce:animate-none x3); pass-2 README log rows (2e3f637) cross-checked accurate. Recorded (implementer-executed, honestly labeled): 20/20 unit DB-free, 18/18 gated live on the throwaway cluster, E2E 40 passed / same 2 pre-existing failures x2 + control runs, 9/9 new spec. CANNOT VERIFY: reviewer-executed re-runs (no shell; nested delegation refused - Subagent depth limit reached (1)), gated suites self-skip without DATABASE_URL, working-tree dirtiness. Dispositions (review section 26, exact provenance): F-02 closed by user-ruled scoped waiver 2026-10-31 (two named E2E tests only; planner follow-up story = the waiver's own outstanding condition); F-03 closed by the explicit user waiver of the human VoiceOver + reduced-motion observation only (keyboard/focus/narrow-screen portions NOT waived). PASSING docs sync applied by the reviewer and verified by coordinator re-read: README status line -> PASS - Reviewed; Next substory -> None - complete with follow-up roster; all six rows EP08A..EP08F -> Reviewed; pass-3 implementation-review log rows; the Autopilot section untouched by the reviewer."
+  findings: "FINAL: no verdict-blocking findings. F-01 implementation-verified; F-02/F-03 closed under dated user-ruled waivers recorded verbatim. Outstanding non-blocking follow-ups (outside this review unit's closeout, recorded in the README roster): planner - P-01 contract-table PATCH lock row, P-02/P-03 contract-surface questions (test-pinned), the F-02 waiver's follow-up story, optionally recording the F-03 residual human a11y observation ownership; executor - live-DB side finding (main.ts:20 implicit conversion, product-vs-test adjudication); implementer - P-04 flake-name capture on recurrence."
+  scope_note: "Step continue 2026-10-31 (second): step_pause cleared; no blocker was unanswered (F-02 + F-03 user waivers recorded in the current session), so ONE specialist ran: reviewer pass 3 (EP08-rereview-3, fresh context). PASS verdict -> per the reviewer's explicit Git handoff (its runtime has no shell/git; nested delegation refused), the coordinator performed the permitted reviewer-output commit: d31ccfc - review.md sections 24-29 append + new walkthrough.md + passing docs sync, touching only docs/stories/EP08/**; the Autopilot section untouched by that commit. Coordinator then independently verified: walkthrough.md exists (291 lines) with honest labels (RECORDED-EVIDENCE / Not executed - user test instructions / WAIVED-BY-USER-RULING / Not applicable), status line + Next substory + all six queue rows ride on the pass-3 verdict. Foreign dirty .agents paths never staged. The parent review unit is one reconciliation from complete; no further specialization is owed inside EP08."
+  cycles: 3
   same_findings: false
 
 gates:
@@ -366,23 +366,23 @@ gates:
   ui: true
   refinement: true
   child_unfinished: false
-  eligible_child_state: "none (all six children Implemented — awaiting parent review)"
+  eligible_child_state: "none (all six children Reviewed — EP08 parent review pass 3, 2026-10-31)"
   closeout: true
-  integration: "true (evidence: catch-up.spec.ts 6d06763 + recorded 40-pass E2E + parent index on disk; passes 1–2 did not overturn it)"
+  integration: "true (evidence: catch-up.spec.ts 6d06763 + recorded 40-pass E2E + parent index on disk; passes 1–3 did not overturn it)"
   all_descendants_implemented: true
-  review: fail
-  findings_owner: "user (F-03 human evidence — the sole verdict blocker); planner (P-01/P-02/P-03 + the waiver follow-up story, non-blocking); executor (live-DB side finding triage, non-gating); reviewer (pass-3 verdict)"
-  open_findings: true
-  walkthrough: missing
-  judged_at_head: "2e3f637"
+  review: pass
+  findings_owner: "none blocking - follow-up roster recorded in the README: planner (P-01/P-02/P-03, F-02 waiver follow-up story, F-03 residual ownership note), executor (live-DB side finding), implementer (P-04 flake capture)"
+  open_findings: false
+  walkthrough: verified
+  judged_at_head: "d31ccfc"
   queue_hash: ""
 writer: none
 session_live: unknown
 blocker:
   kind: none
-  owner: user
-  question: "F-03 (the single pass-2 verdict blocker): the TR-E08-08 / EP08F AC 10 human screen-reader + reduced-motion pass is unexecuted. Record a human pass — date, OS/browser, VoiceOver announcement order and focus behavior across /catch-up → preview → edit → confirm on the recovery/catch-up surfaces, plus the reduced-motion observation (\"no meaningful motion\" is acceptable where the only animation is motion-reduce:animate-none-gated skeletons) — or rule an explicit user waiver with follow-up ownership, like F-02. Autopilot cannot ratify human evidence."
-  answer: "ANSWERED 2026-10-31 — explicit waiver granted by the user for F-03's human screen-reader (VoiceOver) + reduced-motion pass, so EP08 sign-off proceeds with the statically verified a11y code support standing in for the human observation; residual ownership of an actual human a11y observation rides on the user and may be recorded by the planner as a follow-up item (default, mirroring the F-02 ruling: a separate follow-up story owned by the planner). Waiver scope is EXACTLY the F-03 human pass; it waives nothing else and must be recorded verbatim by the pass-3 reviewer in the review report with the ruling's date and provenance."
-resume: "Review pass 2 (EP08-rereview-2) returned FAIL strictly on F-03; F-01/F-02 are closed and no other should-fix/blocker remains, and the user then RULED F-03 CLOSED BY EXPLICIT WAIVER (2026-10-31, verbatim in blocker.answer — no further user material decision is pending). Next step: dispatch ONE fresh reviewer pass (pass 3) to produce the verdict; on a pass it writes and verifies artifacts/EP08/walkthrough.md (honest labels: human steps that did not execute are recorded as waived by the user ruling, not as executed), applies the passing-review docs sync (correction-log/queue/parent status line; EP08A…EP08F to Reviewed) and makes its scoped commit; then the coordinator's final closeout. Planner-owned non-blocking items (P-01/P-02/P-03 triage, the F-02 waiver follow-up story, optionally recording the F-03 residual a11y observation ownership) and the executor-owned live-DB side finding ride outside this review unit's closeout. Foreign .agents paths never staged."
+  owner: ""
+  question: ""
+  answer: ""
+resume: "EP08 parent review unit is complete on evidence: review pass, walkthrough saved and verified, passing docs sync applied and committed (d31ccfc), all six children Reviewed, no verdict-blocking findings. The remaining graph action is the complete-edge reconciliation (no specialist owed inside EP08); a judge may reconcile closeout_complete -> true and stage: complete on the next continue. Planner-owned non-blocking follow-ups (P-01/P-02/P-03 triage, the F-02 waiver's follow-up story, optional F-03 residual a11y ownership record) and the executor-owned live-DB side finding must be taken up in their own authorized workflows - the follow-up roster is recorded in the README Next-substory. Foreign .agents paths never staged; Jira sync remains unauthorized."
 judgment_attempts: 0
 ```
