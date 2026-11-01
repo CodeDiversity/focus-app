@@ -6,7 +6,7 @@
 **Parent:** [EP11 breakdown](./README.md)
 **Milestone:** M5
 **Layer:** Frontend
-**Status:** In progress (implementer started 2026-11-01; checkpoint `./artifacts/EP11B/checkpoint.md`)
+**Status:** Implemented — awaiting parent review (2026-11-01; code `8b7cd6a`; record `./artifacts/EP11B/implementation.md`; combined index `./artifacts/EP11/implementation.md`)
 **Dependencies:** EP11A — **implemented and committed** (`b7ae794` feature, `1aec0ea` story-status docs; HEAD `a169743`). EP11A delivered `apps/web/src/widgets/header/ui/navGroups.ts` and the desktop consumption; the mobile drawer was intentionally left on the legacy flat `navLinks` list with a `// EP11B: replace with grouped rendering` marker. `ui-refiner` pass completed 2026-10-29 (D11-3).
 **Jira key:** Pending creation
 **Refined:** 2026-10-29 (ui-refiner pass — mobile grouping labels/ordering, account section placement + identity row, icon size/spacing, collapsibility, drawer header, active highlighting, copy, tap targets, reduced motion settled); 2026-10-29 (technical-refine — EP11A baseline verified in code, exact drawer edits, shared-contract consumption, test matrix against the existing 22-case suite, risks)
