@@ -192,28 +192,28 @@ scope:
   descendants: [EP11A, EP11B]
   entry: "implement EP11B + combined parent review"
   limits: enclosing parent review unit
-stage: plan_review
+stage: plan
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "3853aaa"  # before EP11A's first included change (b7ae794)
-  head: "37b5a43"
+  head: "4163f67"
 active_dispatch:
-  name: EP11-plan-review-1
-  role: reviewer
+  name: EP11-plan-fix-1
+  role: planner
   status: pending
-  pointer: docs/stories/EP11/plan-review.md
+  pointer: docs/stories/EP11/plan-review.md  # PR-001/PR-002 closure targets README + EP11B story
   session: ""
-  assignment: plan_review
+  assignment: plan_correction
 last_result:
-  evidence: "EP11A implemented (b7ae794 + 1aec0ea): navGroups.ts, desktop grouped dropdowns, avatar account menu; header 22/22, web 842/842, typecheck/lint green. Mobile drawer unchanged; EP11B not started. Technical-refine passes: EP11A (3853aaa), EP11B (957cbec); queue updated 698ab00."
-  findings: "None open. Implementer findings F-A-1..F-A-3 closed in b7ae794."
-  scope_note: "ADHD-friendly nav redesign; frontend only; user decisions D11-4..D11-6. Entry hint EP11B+parent review; prerequisite plan review dispatched first (missing plan approval)."
-  cycles: 0
+  evidence: "EP11-plan-review-1 (reviewer, ses_e6acf29e5ffeEZQFC9HeRmR65b) returned verdict Changes Required; report saved by reviewer, committed by coordinator (4163f67). Coordinator independently verified the PR-001 core claim in code: navGroups.ts:84 includes {id:'plan',to:'/plan'} in the Planning group while Header.tsx:418 legacy drawer navLinks lack /plan (desktop/mobile drift). Plan-review pass 1 is the epic's first independent plan review."
+  findings: "PR-001 should-fix (planner): ratify EP06F's Plan//plan entry into README shared contract + EP11B baseline/test matrix (focusable count) + epic D11-4/Scope note. PR-002 should-fix (planner): stale README Status line, quality-gate row 8 Blocked→Pass w/ provenance, D11-8 provisional→resolved, correction-log entries. PR-003/004/005 polish (coordinator annotation; parent-review manual case; dated suite count — gate = green at current HEAD)."
+  scope_note: "ADHD-friendly nav redesign; frontend only; user decisions D11-4..D11-6. Entry hint EP11B+parent review; prerequisite plan review dispatched first (missing plan approval). Plan findings open → planner correction pass, then plan re-review pass 2."
+  cycles: 1
   same_findings: unknown
 gates:
   breakdown: verified_valid  # quality gate 2026-10-29 checks 1-9 pass; sized; AC/TR coverage complete
-  plan: missing              # no independent plan-review.md; planner quality gate verdict Draft (block D11-3 since closed)
+  plan: findings_open        # pass 1 Changes Required (PR-001/PR-002 should-fix); PR-003..005 polish deferred to their owners
   ui: resolved               # ui-refiner passes for EP11A and EP11B recorded 2026-10-29
   refinement: resolved       # technical-refine passes for both children (3853aaa, 957cbec)
   child_unfinished: false    # no active child; EP11A closeout verified
@@ -225,7 +225,7 @@ gates:
   findings_owner: unknown
   open_findings: unknown
   walkthrough: unknown
-  judged_at_head: "37b5a43"
+  judged_at_head: "4163f67"  # queue unchanged since reconcile (hash matches)
   queue_hash: "09bf162bcdd3d2ca"
 writer: none
 session_live: false
@@ -234,6 +234,6 @@ blocker:
   owner: ""
   question: ""
   answer: ""
-resume: "If interrupted: read this section + the Execution queue above. Active dispatch EP11-plan-review-1 (reviewer, plan_review) — verify whether docs/stories/EP11/plan-review.md exists before any successor dispatch; writer ownership is none; next edge after a passing plan review is child_ready → implementer EP11B."
+resume: "If interrupted: read this section + the Execution queue above + docs/stories/EP11/plan-review.md (pass 1, Changes Required). Active dispatch EP11-plan-fix-1 (planner, plan_correction for PR-001/PR-002) — verify whether the planner's docs changes exist before any successor dispatch; writer ownership is none; after corrections land: plan re-review pass 2 (reviewer); on Plan Ready → child_ready → implementer EP11B."
 judgment_attempts: 0
 ```
