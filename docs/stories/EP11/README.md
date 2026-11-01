@@ -14,7 +14,7 @@
 
 **Active substory:** None.
 
-**Next substory:** Combined EP11 parent review — reviewer (entry: implement → review); both children implemented (`EP11A b7ae794`/`1aec0ea`, `EP11B 8b7cd6a`); artifacts `./artifacts/EP11/review.md` + `./artifacts/EP11/walkthrough.md`; parent index `./artifacts/EP11/implementation.md`.
+**Next substory:** Combined EP11 parent review — **human-evidence pass next**. Parent review pass 1 (2026-11-01, reviewer, HEAD `90e3741`) returned **FAIL** on one blocking finding **F-EP11-01** (missing executed human/browser evidence: TR-E11-03/04, DoD 10, D11-9, PR-004); all code-verifiable scope passed. Both children remain `Implemented — awaiting parent review`. **Owner: user** — execute `./artifacts/EP11/review.md` §8 (12 manual workflows; §8.9 is the PR-004 negative case) and record date/environment/observed per step, **or** issue a dated scoped waiver ruling. Then re-dispatch the reviewer for pass 2 (closes F-EP11-01, saves `walkthrough.md`, applies the passing docs sync). Artifacts: `./artifacts/EP11/review.md` · index `./artifacts/EP11/implementation.md`.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (frontend only; the labels are scope, not concurrent roles).
 
@@ -169,7 +169,7 @@ PR-003/PR-004/PR-005 (polish) are **not planner-owned** and were not edited here
 
 ## Implementation review log
 
-(No implementation yet.)
+**Pass 1 — combined EP11 parent review (2026-11-01, reviewer; HEAD `90e3741`):** verdict **FAIL — Changes Required**. Report `./artifacts/EP11/review.md` (committed `d2113dd`). Code-verifiable scope **all pass** (AC-E11-01…08, TR-E11-01/02, contract integrity, D11-4…D11-9, desktop regression, 30-test assertions verified case-by-case). One **blocking human-evidence** finding **F-EP11-01** (owner: **user**): TR-E11-03 executed manual a11y review, TR-E11-04 reduced-motion emulation, DoD 10 integrated review, D11-9 live 44px/focus-ring, PR-004 outside-click negative case — no browser/AT in the reviewer runtime and no executed evidence in any record; the reviewer cannot grant a waiver and none exists. Closure vehicle: a human executes report §8 (12 manual workflows, incl. §8.9 PR-004) and records date/environment/observed per step, **or** the user issues a dated, exactly-scoped waiver ruling (EP08 pass-3 form). Then a fresh **pass-2** reviewer closes F-EP11-01, saves `walkthrough.md`, and applies the passing docs sync. `walkthrough.md` correctly **not** written (non-passing verdict → report only). Authorized-helper runs (coordinator session, `90e3741`, not reviewer-executed): header 30/30; web 100 files/1140 tests; typecheck 0; lint 0. PR-005 closed (green-at-HEAD), PR-006 closed `acb4aec`, PR-003 still owed (coordinator — annotate `artifacts/EP11A/checkpoint.md:39`, never rewrite). Queue rows stay `Implemented — awaiting parent review` until the passing pass.
 
 ## Final implementation review unit
 
@@ -195,24 +195,24 @@ scope:
   descendants: [EP11A, EP11B]
   entry: "implement EP11B + combined parent review"
   limits: enclosing parent review unit
-stage: parent_review
+stage: blocked
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "3853aaa"  # before EP11A's first included change (b7ae794)
-  head: "90e3741"
+  head: "d2113dd"
 active_dispatch:
   name: EP11-parent-review-1
   role: reviewer
-  status: pending
-  pointer: docs/stories/EP11/artifacts/EP11/review.md  # + walkthrough.md on a final review
-  session: ""
+  status: returned
+  pointer: docs/stories/EP11/artifacts/EP11/review.md
+  session: ses_e6a993999ffe8Ku3fqnm6Ef7i7
   assignment: parent_review
 last_result:
-  evidence: "EP11B-implement (implementer, ses_e6aaafdbcffeBhTZzcCQlxY0s8) complete: b9f0385 (claim) → 8b7cd6a (feat: Header.tsx + Header.test.tsx only) → 90e3741 (records + combined parent index). Coordinator re-verified at HEAD: header 30/30; FULL web suite 100 files/1140 tests green; typecheck + lint exit 0; nav-surface history 3853aaa..HEAD == exactly {b7ae794, 2e35061 (ratified EP06F), 8b7cd6a} matching the parent index; unit scope frontend-only (EP11 commits touch only apps/web/src/widgets/header/ui + EP11 docs). Writer ownership relinquished; working tree holds only the two foreign dirty paths."
-  findings: "Implementer findings F-B-1/F-B-2 closed (prettier fix + hook verification, info-level). No open mandatory findings. Polish owners unchanged: PR-003 coordinator (EP11A checkpoint annotation — at closeout), PR-004 parent review (manual outside-click case in walkthrough), PR-005 CLOSED (1140-test gate green at HEAD), PR-006 CLOSED at acb4aec."
-  scope_note: "ADHD-friendly nav redesign; frontend only; user decisions D11-4..D11-6; Plan//plan consumption ratified (PR-001). Combined parent review now dispatching: review.md + walkthrough.md (DoD 10/11); TR-E11-03/04 human/browser evidence is an honest-label gate the reviewer must rule on — autopilot cannot ratify it."
-  cycles: 0
+  evidence: "EP11-parent-review-1 returned FAIL — Changes Required (report saved by reviewer, committed by coordinator d2113dd; 162 lines). Code-verifiable scope ALL PASS (AC-E11-01..08, TR-E11-01/02, contract, decisions, regression, 30 assertions verified case-by-case). One blocking human-evidence finding F-EP11-01 (owner user); walkthrough.md correctly deferred to the passing pass. Coordinator authorized-helper runs at 90e3741 (labeled, not reviewer-executed): header 30/30, web 100 files/1140, typecheck 0, lint 0. Coordinator reconciled deferred edits: Implementation review log pass-1 entry, Next substory → user §8 pass, PR-003 checkpoint annotation (added)."
+  findings: "F-EP11-01 should-fix BLOCKING (user): executed human/browser evidence for TR-E11-03 (manual a11y), TR-E11-04 (reduced motion), DoD 10 (integrated review), D11-9 (44px/focus-ring visual), PR-004 (outside-click negative case) — reviewer §8 lists 12 executable workflows with expected results. Closure: user executes §8 + records results, OR dated scoped waiver ruling; then fresh pass-2 reviewer (closes finding, saves walkthrough.md, applies passing sync). PR-003 CLOSED by annotation 2026-11-01."
+  scope_note: "Autopilot cannot ratify human evidence, invent a waiver, or weaken DoD. Graph interrupt: human_evidence. All remaining unit work: (1) user §8 pass or ruling, (2) reviewer pass 2 + walkthrough, (3) coordinator final commit/closeout. No code findings — no implementer round needed."
+  cycles: 1
   same_findings: unknown
 gates:
   breakdown: verified_valid  # quality gate 2026-10-29 checks 1-9 pass; sized; AC/TR coverage complete
@@ -224,19 +224,19 @@ gates:
   closeout: verified         # EP11A (b7ae794+1aec0ea+records) and EP11B (8b7cd6a+90e3741+records); coordinator re-verified suite/typecheck/lint at HEAD 90e3741
   integration: complete      # combined parent index artifacts/EP11/implementation.md maps 3853aaa→8b7cd6a incl. the ratified EP06F amendment + nav regression verification
   all_descendants_implemented: true
-  review: absent             # combined parent review now dispatching
-  findings_owner: unknown
-  open_findings: false       # no open mandatory findings; PR-004 is a manual-pass walkthrough step, PR-003 closeout polish
-  walkthrough: unknown
-  judged_at_head: "90e3741"  # implementer closeout updated queue rows; verified against table
+  review: fail  # pass 1 FAIL on F-EP11-01 (human evidence only); code scope passed
+  findings_owner: user  # F-EP11-01 closure vehicle is a user §8 pass or a user waiver ruling
+  open_findings: true  # F-EP11-01 (blocking, human evidence); no code findings
+  walkthrough: unknown  # correctly not written on a non-passing verdict; lands at pass 2
+  judged_at_head: "d2113dd"  # queue child rows unchanged; only Next-substory/review-log prose edited
   queue_hash: "69a64bf8e5e0a7d7"
-writer: none  # implementer relinquished ownership at 90e3741
+writer: none  # implementer relinquished ownership at 90e3741; reviewer never holds writer
 session_live: false
 blocker:
-  kind: none
-  owner: ""
-  question: ""
+  kind: human_evidence
+  owner: user
+  question: "EP11 code passed the combined review; only the mandatory human/browser evidence remains (report §8, 12 workflows incl. keyboard-only nav, screen-reader spot check, reduced-motion emulation, 320–375px, §8.9 outside-click). Will you EXECUTE the §8 manual pass and report results (then I dispatch pass 2 to close + produce the walkthrough), or issue a dated waiver ruling for the human-evidence items (which pass 2 records), or defer the manual pass as an outstanding user obligation like SP-122/123 (which keeps the verdict FAIL/qualified and blocks `Reviewed`)?"
   answer: ""
-resume: "If interrupted: read this section + the Execution queue above + docs/stories/EP11/artifacts/EP11/implementation.md (combined index). Active dispatch EP11-parent-review-1 (reviewer, parent_review) — check whether docs/stories/EP11/artifacts/EP11/review.md (and walkthrough.md) exist before any successor dispatch; writer ownership is none. Both children implemented + parent-reviewed pending. If the review passes, verify the reviewer's saved review.md + walkthrough.md before Reviewed; TR-E11-03/04 executed manual a11y/reduced-motion evidence and PR-004 outside-click negative case are DoD-10 obligations the parent review must obtain from the user (autopilot cannot ratify human evidence)."
+resume: "On resume: reconcile the checkpoint blocker above against reality first. If the user executed §8 → spawn a fresh reviewer (parent_review pass 2) with the recorded §8 results and the pass-1 report, instructing closure of F-EP11-01, walkthrough.md, and the passing docs sync (queue → Reviewed, Status line, Active/Next substory). If the user issued a dated waiver ruling → same pass-2 dispatch, ruling recorded verbatim (EP08 pass-3 form) with residual human-observation labels honest. If deferred → record the outstanding obligation and leave the unit at FAIL/qualified; do NOT mark Reviewed. Never stage .agents/skills/autopilot/SKILL.md or .agents/workflow-graph.md (foreign dirty paths)."
 judgment_attempts: 0
 ```

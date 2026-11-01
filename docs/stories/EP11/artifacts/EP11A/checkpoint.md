@@ -37,4 +37,5 @@ Result record: [implementation.md](./implementation.md)
 ## Resume next
 1. None for EP11A. Combined EP11 parent review only after EP11B is implemented.
 2. Next child EP11B (`Needs refinement`) requires readiness work before implementation; it was not started here.
+   - *(Coordinator annotation 2026-11-01, plan-review PR-003 — line above is a verbatim historical record, not rewritten: EP11B's ui-refiner + technical-refine passes landed 2026-10-29 (`957cbec`/`698ab00`), it was implemented at `8b7cd6a`, and it is now `Implemented — awaiting parent review`.)*
 - Read next: `implementation.md`; EP11A story test/AC sections only if the reviewer raises findings.
