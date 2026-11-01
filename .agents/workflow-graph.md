@@ -28,7 +28,7 @@ them beside the graph. They must not advance `stage`.
 Automatic mode remains the default. `/step <parent>` enables step
 mode: run one bounded specialist task (including a read-only judge), persist
 its result and permitted closeout, then pause. Do not start the next specialist
-until the user sends `/continue` or explicitly says `continue`.
+until the user sends `/next-step` or explicitly says `continue`.
 Questions and status requests do not grant another step. A continue grants
 one step, not the rest of the parent. It never clears real blockers, grants
 permissions, or permits a second writer. Finish/reconcile an active task before

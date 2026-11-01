@@ -13,7 +13,7 @@ specialist per explicit user continuation. Judges count too. Record
 the task returns, finish permitted persistence/commits and set
 `execution.awaiting_continue: true`, `stage: paused`. Report the completed task,
 records, and next proposed action, then STOP. Do not refill the allowance by
-editing the checkpoint or perform the next role inline. `/continue`
+editing the checkpoint or perform the next role inline. `/next-step`
 (or an explicit `continue` in that same step session) authorizes one more task;
 ordinary questions/status messages do not. A real blocker, scope limit, or live
 writer still takes precedence. Starting step mode while a specialist is live
