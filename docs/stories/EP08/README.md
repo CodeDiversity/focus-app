@@ -318,22 +318,25 @@ Child implementation completion unblocks the dependent child; only the passing c
 version: 1
 execution:
   mode: step
-  awaiting_continue: true
+  awaiting_continue: false
 scope:
   parent: EP08
   descendants: [EP08A, EP08B, EP08C, EP08D, EP08E, EP08F]
   entry: planning
   limits: enclosing parent review unit
-stage: paused
+stage: parent_review
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: ""
-  head: 48d79a0
+  head: 59f8ffc
 active_dispatch:
-  name: EP08-fix-round-1
-  role: implementer
-  status: completed
+  name: EP08-rereview-2
+  role: reviewer
+  status: pending
+  pointer: docs/stories/EP08/artifacts/EP08/review.md
+  session: ""
+  assignment: "Independent re-review (fresh context) of correction round 1 for the combined EP08 parent review unit (all six children, review pass 1 verdict FAIL at ./artifacts/EP08/review.md). Verify F-01's closure evidence on the committed tree (9007dee specs + 48d79a0 records; 20 unit tests executed DB-free + 18 gated tests executed live per artifacts/EP08/fix-round-1.md), save the report at ./artifacts/EP08/review.md (new pass section), and produce the verdict. USER RULING (F-02, granted 2026-10-31, verbatim): option (b) — an explicit scoped waiver for the two PRE-EXISTING focus-restoration E2E failures (apps/web/e2e/assignments-list.spec.ts:23 and calendar.spec.ts:100, proven deterministic and unrelated by control runs in fix-round-1.md) so EP08 sign-off proceeds; the repair lands in a separate follow-up story. Record this disposition in the report with the waiver's scope and date; it is a user-authorized scoped waiver, not an autopilot self-waiver, and it does not touch AC-8's other requirements. F-03 (human screen-reader + reduced-motion pass) remains owed to the USER: do not fabricate or ratify human evidence; verify the EP06 screen-reader/reduced-motion implementation statically, label any human step honestly, and if the missing human evidence prevents an unqualified pass verdict, return the verdict your skill dictates with the stop reason stated. P-01/P-02/P-03 and the live-DB implicit-conversion side finding stay planner-owned triage notes (record, do not fix). On a PASSING verdict per your skill: prepare, save and verify ./artifacts/EP08/walkthrough.md (honest execution labels for everything not machine-executed), apply the passing-review docs sync (correction-log entries, verdict-dependent queue fields, stale parent status line) and the scoped commit of your artifacts; on a NON-passing verdict: save the report only and return the Git handoff for deferred edits. Reviewer write limits apply; never edit the Autopilot section."
   pointer: docs/stories/EP08/artifacts/EP08/fix-round-1.md
   session: ses_e6bcc097dffeUPt7ZGkCCYNrGx
   assignment: "Correction round 1 on the combined EP08 parent review (artifacts/EP08/review.md, FAIL). In scope: F-01 (add the missing TR-E08-01/02/04 API specs for EP08A recovery-summary/missed-session classification and EP08C catch-up preview/confirm, plus the recovery-surface non-blaming copy assertion — the F-01 sub-gap) — the mandatory item; F-02 evidence correction only (repair EP08F's false focus-restore root-cause claim and name the two failing specs; do NOT touch Dialog.tsx or grant a waiver — the user ruling is outstanding); P-04 (name the EP08E flake); P-02/P-03/P-05 assessed against the shared contract with implement-if-contract-clean / else record as planner-owned; P-01 (README contract table) is planner-owned docs — record, do not edit. Also resolve the preserved dirty apps/api/tsconfig.json (re-run typecheck on the clean committed tree, then commit or discard with rationale). Run the api/web suites, typecheck and lint so the re-review has fresh executed evidence. OUT of scope: F-02 fix/waiver, F-03 human a11y evidence, any finding-closure wording (reviewer-owned), the README Autopilot section, and the two foreign dirty .agents paths. Single sequential writer; scoped commits. Return at the correction-round boundary — no re-review, no closeout."
@@ -363,10 +366,10 @@ gates:
 writer: none
 session_live: unknown
 blocker:
-  kind: material_decision
+  kind: none
   owner: user
   question: "F-02: AC 8 (all pre-existing suites green) is unmet by two deterministic PRE-EXISTING focus-restoration E2E failures (apps/web/e2e/assignments-list.spec.ts:23 and calendar.spec.ts:100) proven unrelated to EP08 by control runs. How should they be dispositioned — (a) authorize a small scoped fix to the existing Dialog focus-restore path inside EP08, (b) an explicit scoped waiver for these two pre-existing specs so EP08 sign-off proceeds with a separate follow-up story, or (c) defer them to a follow-up story opened by the planner?"
-  answer: ""
+  answer: "ANSWERED 2026-10-31 — (b) an explicit scoped waiver for these two pre-existing focus-restoration specs so EP08 sign-off proceeds; the repair lands in a separate follow-up story (waiver wording recorded in the EP08-rereview-2 dispatch assignment)."
 resume: "Correction round 1 implemented, verified with fresh executed evidence and committed (9007dee + 48d79a0); step pause restored; tree clean except foreign paths; writer ownership relinquished; tsconfig watch-item closed (reverted with rationale). Edge recorded_blocker now matches: the pause is cleared only by an explicit continue AND the F-02 material decision is unanswered, so the next action is the user's one-question ruling above (autopilot will not waive AC 8 or the F-03 human evidence). After the ruling: optionally a planner pass for P-01/P-02/P-03 + the live-DB side finding (contract surface), then ONE fresh reviewer re-review of correction round 1 producing the verdict and — on a pass — the final artifacts/EP08/walkthrough.md (with the user-executed screen-reader/reduced-motion steps honestly labeled). F-03 human a11y evidence remains owed for an unqualified pass. Planner-owned non-blocking open questions still open."
 judgment_attempts: 0
 ```
