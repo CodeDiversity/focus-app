@@ -195,48 +195,48 @@ scope:
   descendants: [EP11A, EP11B]
   entry: "implement EP11B + combined parent review"
   limits: enclosing parent review unit
-stage: implement
+stage: parent_review
 coordinator:
   workspace: /Users/michaelrobert/Desktop/focus-app
   branch: main
   baseline: "3853aaa"  # before EP11A's first included change (b7ae794)
-  head: "acb4aec"
+  head: "90e3741"
 active_dispatch:
-  name: EP11B-implement
-  role: implementer
+  name: EP11-parent-review-1
+  role: reviewer
   status: pending
-  pointer: docs/stories/EP11/EP11B-mobile-drawer-grouped-sections.md
+  pointer: docs/stories/EP11/artifacts/EP11/review.md  # + walkthrough.md on a final review
   session: ""
-  assignment: complete_child
+  assignment: parent_review
 last_result:
-  evidence: "EP11-plan-review-2 (reviewer, ses_e6ab6266dffercJAqEKRvXDXG3) verdict Plan Ready; pass-2 section appended to plan-review.md (pass 1 verbatim); PR-001/PR-002 independently verified closed at 29a71dd. Reviewer applied the 3 authorized passing-sync lines; coordinator persisted the deferred verbatim edits (correction-log closures, row-9 note, PR-006 citation repair) and committed report+sync (acb4aec). Planner's earlier deviation disclosure (EP06F authority = AC 1 + scope item 2) confirmed accurate by pass 2."
-  findings: "Plan findings closed. Open polish with their owners (non-blocking): PR-003 coordinator (annotate EP11A checkpoint stale line — do at closeout), PR-004 parent review (manual outside-click focus-restore case), PR-005 EP11B implementer (full-suite gate = green at current HEAD, not the dated 1005 count), PR-006 docs polish (row-9 note + citation applied at acb4aec)."
-  scope_note: "ADHD-friendly nav redesign; frontend only; user decisions D11-4..D11-6. Entry hint EP11B+parent review; plan-review prerequisite completed (pass 2 Plan Ready). EP11B consumes navGroups as-is incl. ratified Plan; owns combined parent index artifacts/EP11/implementation.md."
-  cycles: 1
+  evidence: "EP11B-implement (implementer, ses_e6aaafdbcffeBhTZzcCQlxY0s8) complete: b9f0385 (claim) → 8b7cd6a (feat: Header.tsx + Header.test.tsx only) → 90e3741 (records + combined parent index). Coordinator re-verified at HEAD: header 30/30; FULL web suite 100 files/1140 tests green; typecheck + lint exit 0; nav-surface history 3853aaa..HEAD == exactly {b7ae794, 2e35061 (ratified EP06F), 8b7cd6a} matching the parent index; unit scope frontend-only (EP11 commits touch only apps/web/src/widgets/header/ui + EP11 docs). Writer ownership relinquished; working tree holds only the two foreign dirty paths."
+  findings: "Implementer findings F-B-1/F-B-2 closed (prettier fix + hook verification, info-level). No open mandatory findings. Polish owners unchanged: PR-003 coordinator (EP11A checkpoint annotation — at closeout), PR-004 parent review (manual outside-click case in walkthrough), PR-005 CLOSED (1140-test gate green at HEAD), PR-006 CLOSED at acb4aec."
+  scope_note: "ADHD-friendly nav redesign; frontend only; user decisions D11-4..D11-6; Plan//plan consumption ratified (PR-001). Combined parent review now dispatching: review.md + walkthrough.md (DoD 10/11); TR-E11-03/04 human/browser evidence is an honest-label gate the reviewer must rule on — autopilot cannot ratify it."
+  cycles: 0
   same_findings: unknown
 gates:
   breakdown: verified_valid  # quality gate 2026-10-29 checks 1-9 pass; sized; AC/TR coverage complete
   plan: pass  # plan-review pass 2 Plan Ready at 29a71dd, committed acb4aec
   ui: resolved               # ui-refiner passes for EP11A and EP11B recorded 2026-10-29
   refinement: resolved       # technical-refine passes for both children (3853aaa, 957cbec)
-  child_unfinished: false    # no active child; EP11A closeout verified
-  eligible_child_state: Ready  # EP11B
-  closeout: unknown
-  integration: unknown       # EP11B owns the combined index (artifacts/EP11/implementation.md)
-  all_descendants_implemented: false
-  review: absent             # combined parent review not yet run
+  child_unfinished: false    # both children implemented with verified closeout
+  eligible_child_state: none   # no unimplemented child remains
+  closeout: verified         # EP11A (b7ae794+1aec0ea+records) and EP11B (8b7cd6a+90e3741+records); coordinator re-verified suite/typecheck/lint at HEAD 90e3741
+  integration: complete      # combined parent index artifacts/EP11/implementation.md maps 3853aaa→8b7cd6a incl. the ratified EP06F amendment + nav regression verification
+  all_descendants_implemented: true
+  review: absent             # combined parent review now dispatching
   findings_owner: unknown
-  open_findings: unknown
+  open_findings: false       # no open mandatory findings; PR-004 is a manual-pass walkthrough step, PR-003 closeout polish
   walkthrough: unknown
-  judged_at_head: "acb4aec"  # queue rows unchanged since reconcile
-  queue_hash: "fb00e75bf41a6e9e"
-writer: implementer (EP11B-implement, dispatched)
-session_live: unknown
+  judged_at_head: "90e3741"  # implementer closeout updated queue rows; verified against table
+  queue_hash: "69a64bf8e5e0a7d7"
+writer: none  # implementer relinquished ownership at 90e3741
+session_live: false
 blocker:
   kind: none
   owner: ""
   question: ""
   answer: ""
-resume: "If interrupted: read this section + the Execution queue above. Active dispatch EP11B-implement (implementer, complete_child) — check `git status`/recent commits and docs/stories/EP11/artifacts/EP11B/checkpoint.md for an active writer before any successor dispatch; unknown ownership = handoff, not a new writer. After EP11B closeout + combined index (artifacts/EP11/implementation.md): combined parent review (reviewer; review.md + walkthrough.md; TR-E11-03/04 executed evidence + DoD 10/11)."
+resume: "If interrupted: read this section + the Execution queue above + docs/stories/EP11/artifacts/EP11/implementation.md (combined index). Active dispatch EP11-parent-review-1 (reviewer, parent_review) — check whether docs/stories/EP11/artifacts/EP11/review.md (and walkthrough.md) exist before any successor dispatch; writer ownership is none. Both children implemented + parent-reviewed pending. If the review passes, verify the reviewer's saved review.md + walkthrough.md before Reviewed; TR-E11-03/04 executed manual a11y/reduced-motion evidence and PR-004 outside-click negative case are DoD-10 obligations the parent review must obtain from the user (autopilot cannot ratify human evidence)."
 judgment_attempts: 0
 ```
