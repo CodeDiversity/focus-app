@@ -30,7 +30,7 @@ Adapt the existing EP10C mobile drawer to the grouped information architecture d
 ### Out of scope
 
 - Desktop dropdowns/account menu (EP11A — already implemented; do not modify its markup or behavior).
-- Changes to `navGroups.ts` data/types (consume as-is; report drift instead of editing the contract in this story).
+- Changes to `navGroups.ts` data/types (consume as-is — **as-is includes the ratified EP06F `Plan` (`/plan`) entry in the Planning group**; rendering it is expected contract consumption, not drift, and needs no flag; report or flag only *new* fields/edits beyond the current ratified data, instead of editing the contract in this story).
 - Token definitions/primitives (EP10A/EP10B) and shell baseline (EP10C).
 - Backend/API changes (D11-2).
 - New routes.
@@ -67,7 +67,7 @@ Cases to add:
 1. `renders grouped sections, headings, single links and the Account section for an authenticated user`
    - Open drawer; assert headings `Academics`, `Planning`, `Account` via `getByRole('heading', { level: 2, name })`.
    - Assert single links `Home` (`href="/"`) and `Dashboard` (`href="/dashboard"`) directly in the dialog.
-   - Assert `Semesters`/`Courses`/`Assignments` inside the Academics region and `Calendar`/`Availability` inside the Planning region with the expected `href`s.
+   - Assert `Semesters`/`Courses`/`Assignments` inside the Academics region and `Calendar`/`Availability`/`Plan` inside the Planning region with the expected `href`s — including the `Plan` link (`href="/plan"`, the ratified EP06F contract entry; plan-review PR-001).
    - Assert the `Profile` link (`/profile`) and the `Logout` button inside the Account region; `Verify email` (`/verify-email`) present for the unverified `sessionUser`.
 2. `renders Home and auth buttons with no grouped or Account sections when unauthenticated`
    - Open drawer; assert `Home` link; `within(dialog).getByRole('button', { name: 'Login' })` and `Get Started`.
@@ -105,11 +105,11 @@ Verification:
 
 ## Technical notes
 
-### Verified baseline (inspected 2026-10-29 at HEAD `a169743`, EP11A merged)
+### Verified baseline (inspected 2026-10-29 at HEAD `a169743`, EP11A merged; reconciled 2026-11-01 to HEAD `3157a01` — the ratified EP06F `Plan` entry landed 2026-10-30, after the original inspection; plan-review PR-001)
 
 - `apps/web/src/widgets/header/ui/navGroups.ts` **exists** and already exports everything this story needs:
   - types `NavItem` (`id`, `label`, `icon: LucideIcon`, `to`), `NavSection` (`id`, `label`, `icon`, optional `to`, optional `items`), `AccountMenuItem` (`id`, `label`, `icon`, optional `to`, optional `action: 'logout'`, optional `requiresUnverified`);
-  - data `authenticatedNavGroups` (Home → `/`, Dashboard → `/dashboard`, Academics → Semesters/Courses/Assignments, Planning → Calendar/Availability), `unauthenticatedNavGroups` (Home only), `getNavGroups(isAuthenticated)`, `accountMenuItems` (Profile → `/profile`, Availability → `/availability`, Verify email → `/verify-email` with `requiresUnverified`, Logout `action: 'logout'`).
+  - data `authenticatedNavGroups` (Home → `/`, Dashboard → `/dashboard`, Academics → Semesters/Courses/Assignments, Planning → Calendar/Availability/**Plan**), `unauthenticatedNavGroups` (Home only), `getNavGroups(isAuthenticated)`, `accountMenuItems` (Profile → `/profile`, Availability → `/availability`, Verify email → `/verify-email` with `requiresUnverified`, Logout `action: 'logout'`). The `Plan` entry (`{ id: 'plan', label: 'Plan', icon: CalendarCheck, to: '/plan' }`, `navGroups.ts:84`) was ratified by EP06F (story scope item 2 + AC 1; EP06 parent review PASS 2026-10-30) — consuming it is expected behavior, not drift.
   - Invariant documented in-file: a `NavSection` is either a single link (`to`) or a group (`items`), never both. Mobile must branch on the presence of `items`.
 - `apps/web/src/widgets/header/ui/Header.tsx` already imports `accountMenuItems, getNavGroups, type AccountMenuItem, type NavItem, type NavSection` from `./navGroups`, and already computes:
   - `const navGroups = getNavGroups(isAuthenticated);` (desktop consumption);
@@ -122,7 +122,7 @@ Verification:
 - `apps/web/tsconfig.json` sets `strict`, `noUnusedLocals`, `noUnusedParameters` — dead code is a typecheck failure, not a warning.
 - `Button` (`apps/web/src/shared/ui/Button.tsx`) only guarantees 44px via `max-sm:min-h-[44px]` (i.e. < 640px), while the drawer is visible to < 768px. Do not rely on `Button` for drawer row height.
 - Global reduced motion is handled in `apps/web/src/index.css` (`@media (prefers-reduced-motion: reduce)` zeroing transition durations). No new component-level guards.
-- Routes are unchanged (`App.tsx`): `/`, `/dashboard`, `/semesters`, `/courses`, `/courses/:id`, `/assignments`, `/calendar`, `/availability`, `/profile`, `/verify-email`. `Layout.tsx` and the skip link are untouched.
+- Routes are unchanged (`App.tsx`): `/`, `/dashboard`, `/semesters`, `/courses`, `/courses/:id`, `/assignments`, `/calendar`, `/availability`, `/plan`, `/profile`, `/verify-email` (`/plan` was added by EP06F on 2026-10-30 — `App.tsx:66` — after the original 2026-10-29 inspection; reconciled per plan-review PR-001). `Layout.tsx` and the skip link are untouched.
 
 ### Exact edits — `apps/web/src/widgets/header/ui/Header.tsx`
 
@@ -205,7 +205,7 @@ Reference sketch (structure only — not verbatim production code):
 
 ### Settled UI decisions (ui-refiner, 2026-10-29) — carried forward
 
-- **Ordering:** Home (single link), Dashboard (single link), Academics section (heading + Semesters/Courses/Assignments), Planning section (heading + Calendar/Availability), divider, Account section (identity row + Profile/Availability/Verify email when unverified/Logout). Dashboard stays standalone and is not folded into a section. Sections always expanded; no accordion and no expand/collapse animation.
+- **Ordering:** Home (single link), Dashboard (single link), Academics section (heading + Semesters/Courses/Assignments), Planning section (heading + Calendar/Availability/Plan — `Plan` from the ratified EP06F contract entry), divider, Account section (identity row + Profile/Availability/Verify email when unverified/Logout). Dashboard stays standalone and is not folded into a section. Sections always expanded; no accordion and no expand/collapse animation.
 - **Headings:** labels only — not links, not focusable, no `aria-expanded`/`aria-haspopup`; `<h2>`; `text-xs font-semibold uppercase tracking-wide text-text-muted`, `mt-3 mb-1 px-2` for nav groups.
 - **Account section:** bottom region, separated by `border-t border-border` (`mt-4 pt-4`); visible "Account" heading; identity row (`flex items-center gap-3`, circular initials avatar `w-8 h-8 rounded-full bg-accent text-white`, "Signed in as {name}" truncated `text-sm text-text-muted`, `User` fallback); divider before the items; divider before Logout — mirrors the desktop account menu.
 - **Rows:** icon `h-5 w-5` (`aria-hidden`), `gap-3`, `min-h-[44px]`, `px-2`, `w-full`, `rounded-md`; hover `bg-surface-muted`; active `text-accent font-semibold`; focus ring `focus-visible:ring-2 ring-focus-ring ring-offset-2`. Tap targets ≥44px (D11-9).
@@ -213,7 +213,7 @@ Reference sketch (structure only — not verbatim production code):
 - **Drawer header:** unchanged "Menu" + close button (`X`, `aria-label="Close menu"`); identity lives only in the Account section.
 - **Unauthenticated:** Home + Login/Get Started below the divider; no grouped sections/Account/identity.
 - **Reduced motion:** no section animation; existing drawer transitions use token durations (`duration-base ease-standard`, hover `duration-fast`); global media query handles reduction; no new animation library or guards.
-- **Copy:** headings "Academics"/"Planning"/"Account"; links "Home"/"Dashboard"/"Semesters"/"Courses"/"Assignments"/"Calendar"/"Availability"; account "Profile"/"Availability"/"Verify email"/"Logout"; "Signed in as {name}"; "Menu"; "Close menu"; "Login"/"Get Started". No empty states (Verify email is the only conditional item).
+- **Copy:** headings "Academics"/"Planning"/"Account"; links "Home"/"Dashboard"/"Semesters"/"Courses"/"Assignments"/"Calendar"/"Availability"/"Plan" ("Plan" comes from the ratified EP06F contract label, not new ui-refiner copy); account "Profile"/"Availability"/"Verify email"/"Logout"; "Signed in as {name}"; "Menu"; "Close menu"; "Login"/"Get Started". No empty states (Verify email is the only conditional item).
 - **Availability appears twice by design** (Planning canonical + Account shortcut, D11-8); do not deduplicate in this story.
 
 ### Decisions (technical-refine, 2026-10-29)
@@ -233,10 +233,11 @@ Reference sketch (structure only — not verbatim production code):
 
 ### Risks / open questions (none blocking)
 
-- **Shared contract drift:** if the implementer needs a new field (e.g. a per-item mobile label), that is a contract change owned by EP11A/planner — stop and flag rather than editing `navGroups.ts` here.
+- **Shared contract drift:** the contract's ratified content is exactly what `navGroups.ts` exports today — Planning = Calendar/Availability/**Plan** (the `Plan` entry was added 2026-10-30 by EP06F and passed the EP06 parent review; see the shared nav contract in the parent README). Consuming it as-is, including `Plan`, is **expected behavior, not drift — do not stop and report it**. The stop-and-flag rule applies only if the implementer needs a *new* field (e.g. a per-item mobile label) or an edit beyond the current ratified data — that is a contract change owned by EP11A/planner; flag rather than editing `navGroups.ts` here.
+- **Live one-surface drift today (pre-EP11B):** the legacy drawer `navLinks` list (`Header.tsx:418-431`) currently omits `/plan` while the desktop Planning dropdown includes it — the README's "no link may exist in one surface but not the other" rule is violated at HEAD (plan-review PR-001). EP11B's data-driven grouped rendering removes `navLinks` and renders `Plan` from the shared contract, **automatically restoring one-surface parity**; the merged outcome therefore contains a drawer `Plan` link that this story's pre-correction text never listed. Expected, not scope creep.
 - **Duplicate accessible names** (`Availability` ×2, "Close menu" ×2 while open) are accepted per D11-8/EP10C; a screen reader hears Availability twice. If that becomes undesirable, it is a planner-level decision, not an EP11B edit.
 - **`<h2>` heading order** inside the dialog starts at level 2 (nav headings), while the legacy drawer header is a `<span>`. This matches the settled ui-refiner decision; no `h1` is introduced in the drawer.
-- **Focus trap order:** the trap's `FOCUSABLE_SELECTOR` now covers 11–12 focusables (drawer close, Home, Dashboard, section items, account items, Logout); the first is the drawer close button and the last is Logout (authenticated) or Get Started (unauthenticated). Do not reorder the drawer header or account section in a way that leaves an unfocusable last element.
+- **Focus trap order:** the trap's `FOCUSABLE_SELECTOR` now covers **13** authenticated focusables with the ratified contract (drawer close, Home, Dashboard, Semesters, Courses, Assignments, Calendar, Availability, **Plan**, Profile, Availability, Verify email, Logout — the old "11–12" count predated the EP06F `Plan` entry; plan-review PR-001); **12** once the email is verified (no Verify email link). The first is the drawer close button and the last is Logout (authenticated) or Get Started (unauthenticated). Do not reorder the drawer header or account section in a way that leaves an unfocusable last element.
 - **`aria-controls="mobile-nav"`** points at an element that only exists while open (pre-existing EP10C behavior). Not changed here; do not "fix" it as part of this story.
 - **Desktop regression guard:** the desktop render path must remain behaviorally identical; the 17 EP11A desktop cases in the same file are the guard. Reusing the same `navGroups` const does not mutate it.
 - **No manual browser/screen-reader evidence** is produced by this story; TR-E11-03/04 remain part of the combined EP11 parent review.
