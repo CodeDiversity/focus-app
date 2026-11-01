@@ -781,3 +781,162 @@ pass-1 content, saved verbatim) is written to
 
 Never stage: `.agents/skills/autopilot/SKILL.md`, `.agents/workflow-graph.md`
 (foreign), and the README's `## Autopilot` section (coordinator-owned).
+
+---
+
+# EP08 Parent Implementation Review — Pass 3 (verdict pass)
+
+**Review date:** 2026-10-31
+**Pass:** implementation review pass 3 (combined parent review unit — independent verdict pass)
+**Reviewer:** `reviewer` role — independent, read-only re-review (fresh context EP08-rereview-3)
+**Verdict: PASS.** EP08 meets the shared DoD and all nine epic acceptance criteria,
+with **F-01 closed** (pass 2, re-verified this pass), **F-02 closed** by the
+user-ruled scoped waiver of 2026-10-31, and **F-03 closed** by the explicit
+user-ruled waiver of 2026-10-31 (verbatim on disk). No open blocker or
+should-fix remains. The surviving items below are planner-owned, executor-owned
+or user-owned **non-blocking follow-ups** — none gates the EP08 verdict.
+
+## 24. Reviewed state and scope (pass 3)
+
+| Item | Value |
+|---|---|
+| Reviewed code state | `48d79a0` (round-1 records commit) — **unchanged since pass 2** |
+| Current HEAD | `08b69f8` — `chore(EP08): dispatch EP08-rereview-3 (reviewer pass 3; blockers answered by user waivers)` |
+| Branch | `main` (`.git/HEAD` → `refs/heads/main` → `08b69f8d…` verified by direct read) |
+| Commits after the reviewed code state | `59f8ffc`, `d99724d` (F-02 waiver ruling record), `284d3ef` (pass-2 report), `2e3f637` (README queue/log rows), `50d35ca`, `c2107e1` (run history + F-03 waiver ruling), `08b69f8` (this dispatch) — all coordinator bookkeeping per the reflog messages; **no code-change commit appears after `48d79a0`**. Hunk-level scope of each was not diff-verified (no `git show` capability — the same honest limitation as pass 2). |
+| Working tree | NOT independently verified — no `git status` capability (probe below). The coordinator's flags remain: foreign dirty paths `.agents/skills/autopilot/SKILL.md`, `.agents/workflow-graph.md` never staged. |
+| Report path | This file, `docs/stories/EP08/artifacts/EP08/review.md` (§24–§29 appended; §1–§23 content preserved verbatim) |
+
+**Execution capability (re-probed, not assumed):** no `shell` tool in this
+runtime (direct tool list has none; the Code Mode catalog has no shell or git
+tool — `search()` returned zero matches for "git"/"commit"); nested delegation
+refused once again (`Subagent depth limit reached (1)`). Consequence unchanged:
+no automated gate is reviewer-executed in pass 3; every executed result below is
+**implementer-recorded** evidence, reused per the evidence-reuse rule because
+the tested code is byte-identical since those runs (no code commit after
+`48d79a0`).
+
+## 25. Independent re-verification of the pass-2 core
+
+This pass re-verified statically, from the committed tree, the core that pass 2
+verified — without deferring to its status lines:
+
+| Pass-2 claim | Pass-3 independent check | Result |
+|---|---|---|
+| `study-plans-recovery-catch-up.service.spec.ts` — 918 lines, 20 unit tests | File exists; `it(` count **exactly 20** (getRecoverySummary 7 at :265/:293/:304/:322/:370/:391/:405; preview 4 at :432/:443/:456/:512; confirm 8 at :554/:638/:659/:707/:729/:775/:809/:841; save twin 1 at :871); file ends at line 918 exactly | **Matches** |
+| `study-plans-catch-up-e2e.spec.ts` — 856 lines, 13 gated tests | File exists; `it(` count **exactly 13** (:353/:419/:434/:447/:483/:560/:629/:648/:676/:688/:726/:756/:770); gated via `describeIntegration` (:67); file ends at line 856 exactly | **Matches** |
+| `study-plans-catch-up-data-scoping.spec.ts` — 380 lines, 5 gated tests | File exists; `it(` count **exactly 5** (:255/:273/:285/:316/:356); gated via `describeIntegration` (:42); ends at line 380 exactly. Line contents at the echoed ends match the recorded evidence (B's plan read excludes A's ids at :370–379) | **Matches** |
+| Case→test mapping (§18 table) | Spot-checked the cited anchors: unit :265 (exact-classification where), :638 (PR-002 unedited-resubmit), :659 (409 matrix incl. P-02 pin), :775 (400 matrix), :809 (`WINDOW_ROLLED_OVER`), :841 (foreign/missing 404), :870–917 (save twin pin — body read: unfiltered delete, no-`locked`-key insert, both asymmetry pins fail on drift); e2e :419 (deleted-principal guard), :483 (row-count decline-safety), :629 (resubmit never 409s), :648 (P-03 SavedPlan shape pin), :676 (rollover), :688 (400 through the real pipe), :726 (identical 404 bodies), :756 (no decline route), :770 (full conflict matrix; body read ends :845–855 with the locked-fixture snapshot); scoping :255–380 (cross-student isolation); `RecoverySummary.test.tsx` blame-free test at **:119** ("copy contains no blaming terms") | **All confirmed** |
+| Per-file test counts match the recorded runs exactly (20 + 18) | 20 (unit) + 13 (e2e) + 5 (scoping) = **38 = 20 unit + 18 gated**, zero discrepancy with `fix-round-1.md` §Executed evidence | **Matches** |
+| F-02 record corrections in both locations | `EP08F/implementation.md` dated correction note present (L94–109), attributes `Dialog.tsx` L45/L63/L101/L112–114 and the detached-reference hypothesis; parent index §Known gaps #1 carries the strikethrough + dated correction; `Dialog.tsx` restore path re-verified intact on the tree (:45 `restoreFocusRef`, :48/:63 path, :101 capture, :112–115 restore) | **Matches** |
+| Pass-2 README implementation-review log rows (2e3f637) | Rows F-01 (closed), F-02 (closed — waiver), F-03 (open at pass 2), P-04 (recorded), P-05 (closed-by-pin), side finding (routed) cross-checked against the pass-2 report §17/§18 — every claim in the rows is backed by the report | **Accurate** |
+| F-01 live-run claim (18/18 LIVE on a throwaway cluster) | Implementer-recorded evidence only (`fix-round-1.md` §Executed evidence: 20/20 DB-free; 18/18 live; `npm test` 917/461/0; web 1132; tsc+lint clean). Not reviewer-executed and not re-executed — code unchanged, reused with provenance | **Recorded — honestly labeled** |
+| P-01 still open | README shared-contract endpoint table still exactly four rows (`recovery-summary`, `preview`, `confirm`, `GET /study-plans`); no `PATCH …/lock` row | Still open — planner, non-blocking |
+| P-02 still open (pinned) | `conflicts.ts` :101–102 maps planned-session busy hits to `OVERLAPS_CONFIRMED_SESSION` (four-code closed map :22–24); pinned by the unit (:659) and live (:770) tests | Still open — planner, non-blocking, test-pinned |
+| P-03 still open (pinned) | `study-plans.service.ts:262–270` `SavedPlanSession` read: exactly seven keys, no `locked`; pinned by e2e :648 | Still open — planner, non-blocking, test-pinned |
+| Side finding mechanism | `apps/api/src/main.ts:20` `enableImplicitConversion: true` re-confirmed on the tree; repro/seed cascade recorded in `fix-round-1.md` §Side finding | Still routed — executor triage, non-blocking |
+| A11y code support (F-03 stand-in) | `role="alert"`: `RecoverySummary.tsx:96`, `CatchUpPreview.tsx:159/187/233`; `CatchUpLockToggle.tsx:69` `aria-pressed` + :76 sr-only `role="status" aria-live="polite" aria-atomic`; `motion-reduce:animate-none` on both `RecoverySummary.tsx` skeletons (:73/:86) and `CatchUpPreview.tsx:177` | **Matches** |
+| Shared DoD | `docs/epics/README.md` L29–55 re-read — 11 conditions; EP08F AC 8 wording (story L49) and the manual-pass wording (:57) re-read | Unchanged |
+
+## 26. F-02 and F-03 dispositions (pass 3 — exact provenance)
+
+Both rulings are **user authorizations recorded durably in the parent's run
+record** (not autopilot self-waivers; the reviewer cannot grant waivers). They
+are weighted exactly as recorded: each closes its finding for EP08 sign-off and
+waives nothing beyond its stated scope.
+
+### F-02 — CLOSED (user-ruled scoped waiver; unchanged since pass 2)
+
+| Field | Value |
+|---|---|
+| Ruling owner | The parent's owner (user) — recorded by the coordinator in the run record |
+| Ruling date | 2026-10-31 |
+| Ruling substance | Option (b) — an explicit scoped waiver for exactly the two pre-existing focus-restoration E2E tests so EP08 sign-off proceeds; the repair lands in a separate follow-up story |
+| Verbatim sources on disk | Run-record commit `d99724d` ("record F-02 waiver ruling", reflog-verified); README `## Autopilot` `scope_note` ("answer (b) explicit scoped waiver, recorded verbatim in blocker.answer and in the EP08-rereview-2 dispatch assignment"); the pass-2 dispatch assignment; verbatim quote preserved in pass-2 §18; implementation-review log row (README L318) |
+| Waiver scope (exact) | `apps/web/e2e/assignments-list.spec.ts:23` and `apps/web/e2e/calendar.spec.ts:100` (SP-129A phone-agenda) — proven non-causal for EP08 by the recorded control runs (EP08F record: reproduced twice, and with `catch-up.spec.ts` removed) |
+| Does **not** waive | All other EP08F AC 8 requirements (pre-existing suites other than the two named staying green; the `dailyCapMinutes` item remains exempt by AC 8's own text and additionally did not reproduce live in round 1 — `fix-round-1.md` §Side finding); the new `catch-up.spec.ts` 9/9-green requirement (recorded green) |
+| Conditional follow-up (waiver's own condition) | A separate **planner-owned follow-up story** for the two focus-restoration repairs — creation still outstanding; recorded as a non-blocking planner action, not a new EP08 gap. Triage target honestly recorded: the existing `Dialog.tsx` restore path (detached-reference hypothesis), not code "lost in SP-109" |
+| Status | **Closed** — pass 2 verified the scope and record corrections; pass 3 re-verified the corrections on the tree and the ruling's durable records |
+
+### F-03 — CLOSED (explicit user waiver; the pass-2 stop reason)
+
+| Field | Value |
+|---|---|
+| Ruling owner | The user (parent's owner) — recorded verbatim in the README `## Autopilot` checkpoint `blocker.answer` |
+| Ruling date | 2026-10-31 (committed `c2107e1`: "record F-03 explicit waiver ruling (user, 2026-10-31)") |
+| Ruling substance (verbatim on disk, README `blocker.answer`) | "explicit waiver granted by the user for F-03's human screen-reader (VoiceOver) + reduced-motion pass, so EP08 sign-off proceeds with the statically verified a11y code support standing in for the human observation; residual ownership of an actual human a11y observation rides on the user and may be recorded by the planner as a follow-up item (default, mirroring the F-02 ruling: a separate follow-up story owned by the planner). Waiver scope is EXACTLY the F-03 human pass; it waives nothing else and must be recorded verbatim by the pass-3 reviewer in the review report with the ruling's date and provenance." |
+| Waiver scope (exact) | The human VoiceOver screen-reader traversal of `/catch-up` → preview → edit → confirm and the reduced-motion observation — the manual observation only, as TR-E08-08/EP08F AC 10 require it |
+| Does **not** waive | The keyboard, focus-visibility and narrow-screen portions of TR-E08-08/DoD 6/7 — those retain their durable, recorded automation evidence (`catch-up.spec.ts:682`, `:731`, `CatchUpPreview.test.tsx:356`, `CatchUpLockToggle.test.tsx`); nothing else in the DoD |
+| What stands in for the waived observation | The statically verified a11y code support, re-verified this pass (§25): `role="alert"` error paths, `aria-pressed` + sr-only `aria-live` lock toggle, `motion-reduce:animate-none` on all swept skeletons — plus the executed keyboard/narrow-screen automation. This is **code support + recorded automation**, not observed screen-reader/motion behavior |
+| Residual (non-blocking) | Ownership of an actual human a11y observation rides on the user (default: planner may record it as a separate follow-up item, mirroring the F-02 pattern) |
+| Status | **Closed** for EP08 sign-off by the dated waiver, with the residual follow-up recorded here and in `walkthrough.md` |
+
+## 27. Updated requirement and DoD statuses (pass 3 — final)
+
+| Item | Pass 2 | Pass 3 (final) | Basis |
+|---|---|---|---|
+| TR-E08-01 / 02 / 04 | Satisfied (recorded) | **Satisfied (recorded)** — re-verified files/counts/mapping this pass | §25 |
+| TR-E08-03 | Satisfied (recorded, pass 1) | **Satisfied (recorded)** — untouched by rounds 1+ | Pass 1 §5 |
+| TR-E08-05 | Satisfied (recorded) | **Satisfied (recorded)** | §25 (blame-free test at `RecoverySummary.test.tsx:119`) |
+| TR-E08-06 | Satisfied (recorded, pass 1) | **Satisfied (recorded)** — untouched | Pass 1 §5 |
+| TR-E08-07 | Satisfied (AC 8 clause waived) | **Satisfied** — waiver stands as ruled | §26 F-02 |
+| TR-E08-08 | Partially satisfied / `CANNOT VERIFY` | **Satisfied under the dated user waiver, with the explicit residual follow-up** — keyboard/focus/narrow-screen evidence recorded; screen-reader + motion waived (user, 2026-10-31); a11y code support statically verified twice | §26 F-03 |
+| EP08F AC 8 | Satisfied (waiver) | **Satisfied (waiver, scope unchanged)** | §26 F-02 |
+| EP08F AC 10 | Partially met | **Met under the dated user waiver + verified code support; residual human observation follow-up recorded** | §26 F-03 |
+| Epic ACs AC-E08-01…09 | Unchanged by rounds 1+ | **All satisfied** (inspection + recorded E2E; per pass 1 §4) | Pass 1 §4 |
+| Shared API/data contract | Unchanged | **Conforms** (P-01 contract-table row remains open — planner) | Pass 1 §6, §25 |
+| DoD 1–7, 9, 10 | PASS per pass 1/2 | **PASS (recorded/inspection provenance per pass 1 §10)** | Pass 1/2 |
+| DoD 8 | PASS (recorded) | **PASS (recorded)** — reviewer-executed rerun still `CANNOT VERIFY` (no execution capability), gated specs self-skip without `DATABASE_URL` — both honestly labeled here and in `walkthrough.md` | §25 |
+| DoD 11 (reviewer walkthrough) | Pending | **Met this pass** — `walkthrough.md` written and verified beside this report before the sync | This § |
+
+## 28. Non-blocking outstanding follow-ups (recorded, not verdict blockers)
+
+| Item | Owner | Disposition |
+|---|---|---|
+| P-01 — add the `PATCH /study-plans/sessions/:sessionId/lock` row to the README shared-contract endpoint table | `planner` | Open (verified still open §25) |
+| P-02 — contract-surface question: fifth `ConflictReason` code for locked/completed planned collisions vs the recorded `OVERLAPS_CONFIRMED_SESSION` mapping | `planner` (contract) / `implementer` (copy) | Open; behavior test-pinned (unit :659, live :770) |
+| P-03 — SavedPlan `locked` extension question (plan-page toggle) | `planner` | Open; shape pinned by e2e :648 + unit twin |
+| F-02 waiver condition — separate follow-up story for the two focus-restoration E2E specs (`assignments-list.spec.ts:23`, `calendar.spec.ts:100`; triage target `Dialog.tsx` restore path per the corrected record) | `planner` | Outstanding bookkeeping inside the granted waiver — not an EP08 gap |
+| F-03 residual — an actual human a11y observation (VoiceOver + reduced motion), if the user or planner wants one recorded | user / `planner` (default: follow-up item) | Outstanding residual of the granted waiver — not an EP08 gap |
+| Live-DB side finding — 4 pre-existing red gated EP06 lock-toggle tests (`{locked:'yes'\|1}` coerced by `enableImplicitConversion`, `main.ts:20` → 200 instead of 400; seed cascade) | executor (product-vs-test adjudication) | Routed (fix-round-1.md §Side finding); pre-existing, zero EP08 round-1 files; **does not gate EP08** |
+| P-04 — unreproduced web flake (recorded honestly; capture on recurrence) | `implementer` | Standing as recorded (pass 2) |
+| P-05 | — | Closed by pin (pass 2, re-verified §25) |
+
+## 29. Pass-3 verdict, document gate and Git handoff
+
+**Verdict: PASS.** Against the current requirements: F-01 closed and re-verified;
+F-02 and F-03 closed by dated user waivers with exact recorded scopes under the
+severity contract ("a user-approved waiver must have a recorded source and exact
+scope"); no open blocker or should-fix remains; the surviving planner/executor
+items are non-blocking (§28).
+
+**Final document gate:** `walkthrough.md` was prepared, saved and verified at
+`docs/stories/EP08/artifacts/EP08/walkthrough.md` beside this report, covering
+every applicable workflow with honest execution labels (machine-verified
+evidence labeled recorded with provenance; the waived VoiceOver +
+reduced-motion observation labeled `WAIVED-BY-USER-RULING`; gated suites that
+self-skip without `DATABASE_URL` and all implementer-run suites labeled
+`RECORDED-EVIDENCE`, never "executed by this review").
+
+**Reviewer-executed vs recorded:** this review executed nothing (§24); every
+test run cited is implementer-recorded with provenance, and re-running remains
+available to any future environment per the evidence-reuse rule (code unchanged
+since `48d79a0`).
+
+**Git handoff for the scoped commit (the one reviewer write this runtime
+cannot perform):** no `shell`/git tool exists in this runtime and nested
+delegation is refused, so the single scoped commit of the passing-review
+artifacts and docs sync is handed to the coordinator, exactly:
+
+```
+git add docs/stories/EP08/
+git commit -m "docs(EP08): parent review pass 3 verdict PASS — F-02/F-03 user waivers recorded; walkthrough + passing docs sync (reviewer)"
+```
+
+Touches only `docs/stories/EP08/**` (this report, `walkthrough.md`, README
+passing-sync). **Never stage:** `.agents/skills/autopilot/SKILL.md`,
+`.agents/workflow-graph.md`, any `.env*`/secret file, or anything outside
+`docs/stories/EP08/`. Never edit the README `## Autopilot` section
+(coordinator-owned). Both documents above were saved and re-read before this
+handoff; the README sync (§27 queue fields, correction-log rows, parent status
+line) was applied by this reviewer and is re-readable from disk.
