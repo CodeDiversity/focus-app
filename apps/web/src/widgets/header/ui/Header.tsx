@@ -28,15 +28,12 @@ const MENU_ITEM_SELECTOR = '[role="menuitem"]';
 
 type DesktopMenu = 'academics' | 'planning' | 'account';
 
-interface NavLinkItem {
-  to: string;
-  label: string;
-}
-
 function navLinkClass(isActive: boolean, mobile: boolean) {
   return clsx(
-    'inline-flex items-center gap-2 transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
-    mobile ? 'min-h-[44px] px-2 w-full' : 'py-1 border-b-2',
+    'inline-flex items-center transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
+    mobile
+      ? 'min-h-[44px] w-full gap-3 rounded-md px-2 hover:bg-surface-muted'
+      : 'gap-2 py-1 border-b-2',
     isActive
       ? 'text-accent font-semibold border-accent'
       : 'text-text-muted hover:text-text border-transparent'
@@ -413,23 +410,7 @@ export function Header() {
   const hamburgerRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
 
-  // EP11B: replace with grouped rendering from `navGroups`; the desktop header
-  // already consumes the shared contract, the drawer keeps the legacy flat list.
-  const navLinks: NavLinkItem[] = [
-    { to: '/', label: 'Home' },
-    ...(isAuthenticated
-      ? [
-          { to: '/dashboard', label: 'Dashboard' },
-          { to: '/semesters', label: 'Semesters' },
-          { to: '/courses', label: 'Courses' },
-          { to: '/assignments', label: 'Assignments' },
-          { to: '/calendar', label: 'Calendar' },
-          { to: '/availability', label: 'Availability' },
-          { to: '/profile', label: 'Profile' },
-        ]
-      : []),
-  ];
-
+  // Single source for both surfaces (desktop nav + mobile drawer), EP11B.
   const navGroups = getNavGroups(isAuthenticated);
 
   // Close the drawer and any desktop menu on route change.
@@ -489,7 +470,6 @@ export function Header() {
 
   const name = user?.name || user?.email?.split('@')[0] || '';
   const initials = (user?.name?.trim()[0] || user?.email?.split('@')[0]?.[0] || '').toUpperCase();
-  const showVerify = isAuthenticated && !user?.emailVerifiedAt;
   const visibleAccountItems = accountMenuItems.filter(
     (item) => !item.requiresUnverified || !user?.emailVerifiedAt
   );
@@ -628,57 +608,138 @@ export function Header() {
                 </Button>
               </div>
               <nav aria-label="Primary" className="flex flex-col gap-1">
-                {navLinks.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end
-                    onClick={() => setOpen(false)}
-                    className={({ isActive }) => navLinkClass(isActive, true)}
-                  >
-                    {item.label}
-                  </NavLink>
-                ))}
-              </nav>
-              <div className="mt-4 flex flex-col gap-3 border-t border-border pt-4">
-                {isAuthenticated ? (
-                  <>
-                    <span className="text-sm text-text-muted">Hi, {name}</span>
-                    {showVerify && (
-                      <Link
-                        to="/verify-email"
+                {navGroups.map((section) => {
+                  const SectionIcon = section.icon;
+                  if (!section.items) {
+                    return (
+                      <NavLink
+                        key={section.id}
+                        to={section.to ?? '/'}
+                        end
                         onClick={() => setOpen(false)}
-                        className="text-sm text-accent hover:text-accent-hover underline"
+                        className={({ isActive }) => navLinkClass(isActive, true)}
                       >
-                        Verify email
-                      </Link>
-                    )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setOpen(false);
-                        void logout();
-                      }}
+                        <SectionIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                        {section.label}
+                      </NavLink>
+                    );
+                  }
+                  const headingId = `mobile-nav-${section.id}-heading`;
+                  return (
+                    <section
+                      key={section.id}
+                      aria-labelledby={headingId}
+                      className="flex flex-col gap-1"
                     >
-                      Logout
+                      <h2
+                        id={headingId}
+                        className="mt-3 mb-1 px-2 text-xs font-semibold uppercase tracking-wide text-text-muted"
+                      >
+                        {section.label}
+                      </h2>
+                      {section.items.map((item) => {
+                        const ItemIcon = item.icon;
+                        return (
+                          <NavLink
+                            key={item.id}
+                            to={item.to}
+                            end
+                            onClick={() => setOpen(false)}
+                            className={({ isActive }) => navLinkClass(isActive, true)}
+                          >
+                            <ItemIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                            {item.label}
+                          </NavLink>
+                        );
+                      })}
+                    </section>
+                  );
+                })}
+              </nav>
+              {isAuthenticated && (
+                <section
+                  aria-labelledby="mobile-nav-account-heading"
+                  className="mt-4 flex flex-col gap-1 border-t border-border pt-4"
+                >
+                  <h2
+                    id="mobile-nav-account-heading"
+                    className="mb-1 px-2 text-xs font-semibold uppercase tracking-wide text-text-muted"
+                  >
+                    Account
+                  </h2>
+                  <div className="flex items-center gap-3 px-2 py-1">
+                    <span
+                      aria-hidden="true"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white"
+                    >
+                      {initials || <User className="h-4 w-4" />}
+                    </span>
+                    <span className="truncate text-sm text-text-muted">Signed in as {name}</span>
+                  </div>
+                  <div role="separator" className="my-1 border-t border-border" />
+                  {visibleAccountItems.map((item) => {
+                    const ItemIcon = item.icon;
+                    if (item.action === 'logout') {
+                      return (
+                        <Fragment key={item.id}>
+                          <div role="separator" className="my-1 border-t border-border" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpen(false);
+                              void logout();
+                            }}
+                            className={navLinkClass(false, true)}
+                          >
+                            <ItemIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                            {item.label}
+                          </button>
+                        </Fragment>
+                      );
+                    }
+                    if (item.id === 'verify-email') {
+                      // Action-ish destination, not a persistent tab: plain Link.
+                      return (
+                        <Link
+                          key={item.id}
+                          to={item.to ?? '/'}
+                          onClick={() => setOpen(false)}
+                          className={navLinkClass(false, true)}
+                        >
+                          <ItemIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                          {item.label}
+                        </Link>
+                      );
+                    }
+                    return (
+                      <NavLink
+                        key={item.id}
+                        to={item.to ?? '/'}
+                        end
+                        onClick={() => setOpen(false)}
+                        className={({ isActive }) => navLinkClass(isActive, true)}
+                      >
+                        <ItemIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                        {item.label}
+                      </NavLink>
+                    );
+                  })}
+                </section>
+              )}
+              {!isAuthenticated && (
+                <div className="mt-4 flex flex-col gap-3 border-t border-border pt-4">
+                  <Link to="/login" onClick={() => setOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full">
+                      Login
                     </Button>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/login" onClick={() => setOpen(false)}>
-                      <Button variant="outline" size="sm" className="w-full">
-                        Login
-                      </Button>
-                    </Link>
-                    <Link to="/register" onClick={() => setOpen(false)}>
-                      <Button variant="primary" size="sm" className="w-full">
-                        Get Started
-                      </Button>
-                    </Link>
-                  </>
-                )}
-              </div>
+                  </Link>
+                  <Link to="/register" onClick={() => setOpen(false)}>
+                    <Button variant="primary" size="sm" className="w-full">
+                      Get Started
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -378,6 +378,7 @@ describe('Header mobile drawer', () => {
 
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog', { name: 'Primary navigation' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open menu' })).toHaveFocus();
   });
 
   it('closes the drawer when a nav link is clicked', async () => {
@@ -388,10 +389,9 @@ describe('Header mobile drawer', () => {
     const dialog = screen.getByRole('dialog', { name: 'Primary navigation' });
     expect(dialog).toBeInTheDocument();
 
-    // Click a link inside the drawer
-    const dashboardLinks = screen.getAllByRole('link', { name: 'Dashboard' });
-    const drawerLink = dashboardLinks.find((l) => dialog.contains(l))!;
-    await user.click(drawerLink);
+    // Click a link inside the drawer (scoped: the CSS-hidden desktop nav also
+    // renders a Dashboard link in jsdom).
+    await user.click(within(dialog).getByRole('link', { name: 'Dashboard' }));
     expect(screen.queryByRole('dialog', { name: 'Primary navigation' })).not.toBeInTheDocument();
   });
 
@@ -415,5 +415,226 @@ describe('Header mobile drawer', () => {
     const dialog = screen.getByRole('dialog', { name: 'Primary navigation' });
     expect(within(dialog).getByRole('button', { name: 'Login' })).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
+  });
+});
+
+describe('Header mobile drawer grouped sections (EP11B)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // The desktop nav is only CSS-hidden in jsdom, so every drawer assertion is
+  // scoped to the dialog (or a named region within it).
+  function getDrawer() {
+    return screen.getByRole('dialog', { name: 'Primary navigation' });
+  }
+
+  it('renders grouped sections, headings, single links and the Account section for an authenticated user', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+
+    const dialog = getDrawer();
+    // Responsiveness is class-only in jsdom (no media-query evaluation).
+    expect(dialog.parentElement).toHaveClass('md:hidden');
+
+    expect(
+      within(dialog).getByRole('heading', { level: 2, name: 'Academics' })
+    ).toBeInTheDocument();
+    expect(within(dialog).getByRole('heading', { level: 2, name: 'Planning' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('heading', { level: 2, name: 'Account' })).toBeInTheDocument();
+
+    // Single links render directly in the drawer.
+    expect(within(dialog).getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
+    expect(within(dialog).getByRole('link', { name: 'Dashboard' })).toHaveAttribute(
+      'href',
+      '/dashboard'
+    );
+
+    const academics = within(dialog).getByRole('region', { name: 'Academics' });
+    expect(within(academics).getByRole('link', { name: 'Semesters' })).toHaveAttribute(
+      'href',
+      '/semesters'
+    );
+    expect(within(academics).getByRole('link', { name: 'Courses' })).toHaveAttribute(
+      'href',
+      '/courses'
+    );
+    expect(within(academics).getByRole('link', { name: 'Assignments' })).toHaveAttribute(
+      'href',
+      '/assignments'
+    );
+
+    const planning = within(dialog).getByRole('region', { name: 'Planning' });
+    expect(within(planning).getByRole('link', { name: 'Calendar' })).toHaveAttribute(
+      'href',
+      '/calendar'
+    );
+    expect(within(planning).getByRole('link', { name: 'Availability' })).toHaveAttribute(
+      'href',
+      '/availability'
+    );
+    // Ratified EP06F contract entry (plan-review PR-001); drawer/desktop parity.
+    expect(within(planning).getByRole('link', { name: 'Plan' })).toHaveAttribute('href', '/plan');
+
+    const account = within(dialog).getByRole('region', { name: 'Account' });
+    expect(within(account).getByRole('link', { name: 'Profile' })).toHaveAttribute(
+      'href',
+      '/profile'
+    );
+    expect(within(account).getByRole('link', { name: 'Verify email' })).toHaveAttribute(
+      'href',
+      '/verify-email'
+    );
+    expect(within(account).getByRole('button', { name: 'Logout' })).toBeInTheDocument();
+  });
+
+  it('renders Home and auth buttons with no grouped or Account sections when unauthenticated', async () => {
+    const user = setupUser();
+    renderHeader('/', { isAuthenticated: false, user: null });
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+
+    const dialog = getDrawer();
+    expect(within(dialog).getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
+    expect(within(dialog).getByRole('button', { name: 'Login' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
+
+    for (const label of ['Academics', 'Planning', 'Account']) {
+      expect(
+        within(dialog).queryByRole('heading', { level: 2, name: label })
+      ).not.toBeInTheDocument();
+    }
+    expect(within(dialog).queryByRole('region', { name: 'Account' })).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/Signed in as/)).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Logout' })).not.toBeInTheDocument();
+  });
+
+  it('shows Verify email only for an unverified user', async () => {
+    const user = setupUser();
+    const { unmount } = renderAuthenticated('/dashboard');
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    const account = within(getDrawer()).getByRole('region', { name: 'Account' });
+    expect(within(account).getByRole('link', { name: 'Verify email' })).toHaveAttribute(
+      'href',
+      '/verify-email'
+    );
+
+    unmount();
+    renderAuthenticated('/dashboard', {
+      ...sessionUser,
+      emailVerifiedAt: '2026-01-01T00:00:00.000Z',
+    });
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    const verifiedAccount = within(getDrawer()).getByRole('region', { name: 'Account' });
+    expect(
+      within(verifiedAccount).queryByRole('link', { name: 'Verify email' })
+    ).not.toBeInTheDocument();
+    expect(within(verifiedAccount).getByRole('link', { name: 'Profile' })).toBeInTheDocument();
+    expect(within(verifiedAccount).getByRole('button', { name: 'Logout' })).toBeInTheDocument();
+  });
+
+  it('shows the identity row with avatar initials and name', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+
+    const account = within(getDrawer()).getByRole('region', { name: 'Account' });
+    expect(within(account).getByText('Signed in as Ada Lovelace')).toBeInTheDocument();
+    const avatar = within(account).getByText('A');
+    expect(avatar).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('marks the active drawer item with aria-current and keeps nested routes off the parent', async () => {
+    const user = setupUser();
+    const { unmount } = renderAuthenticated('/semesters');
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+
+    let dialog = getDrawer();
+    const semesters = within(dialog).getByRole('link', { name: 'Semesters' });
+    expect(semesters).toHaveAttribute('aria-current', 'page');
+    expect(semesters).toHaveClass('text-accent');
+    expect(within(dialog).getByRole('link', { name: 'Dashboard' })).not.toHaveAttribute(
+      'aria-current'
+    );
+    expect(within(dialog).getByRole('link', { name: 'Courses' })).not.toHaveAttribute(
+      'aria-current'
+    );
+
+    // Settled D10-13 behavior: every drawer item uses `NavLink end`, so a
+    // nested detail route marks nothing (and headings have no active state).
+    unmount();
+    renderAuthenticated('/courses/abc');
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    dialog = getDrawer();
+    expect(within(dialog).getByRole('link', { name: 'Courses' })).not.toHaveAttribute(
+      'aria-current'
+    );
+    expect(dialog.querySelectorAll('[aria-current="page"]')).toHaveLength(0);
+  });
+
+  it('keeps account actions out of the primary list and headings non-interactive', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+
+    const dialog = getDrawer();
+    const nav = within(dialog).getByRole('navigation', { name: 'Primary' });
+
+    expect(within(nav).queryByRole('link', { name: 'Profile' })).not.toBeInTheDocument();
+    expect(within(nav).queryByRole('link', { name: 'Verify email' })).not.toBeInTheDocument();
+    expect(within(nav).getAllByRole('link', { name: 'Availability' })).toHaveLength(1);
+    // D11-8 duplicate pair asserted deliberately: Planning canonical + Account shortcut.
+    expect(within(dialog).getAllByRole('link', { name: 'Availability' })).toHaveLength(2);
+
+    // No dropdown triggers in the drawer; headings are labels only.
+    expect(
+      within(dialog).queryByRole('button', { name: 'Academics menu' })
+    ).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Planning menu' })).not.toBeInTheDocument();
+    for (const label of ['Academics', 'Planning', 'Account']) {
+      const heading = within(dialog).getByRole('heading', { level: 2, name: label });
+      expect(heading).not.toHaveAttribute('aria-expanded');
+      expect(heading).not.toHaveAttribute('aria-haspopup');
+    }
+  });
+
+  it('applies 44px rows and 20px aria-hidden icons in the drawer', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+
+    const dialog = getDrawer();
+    const dashboard = within(dialog).getByRole('link', { name: 'Dashboard' });
+    expect(dashboard).toHaveClass('min-h-[44px]');
+    const dashboardIcon = dashboard.querySelector('svg') as SVGSVGElement;
+    expect(dashboardIcon).toHaveClass('h-5', 'w-5');
+    expect(dashboardIcon).toHaveAttribute('aria-hidden', 'true');
+
+    const account = within(dialog).getByRole('region', { name: 'Account' });
+    const logout = within(account).getByRole('button', { name: 'Logout' });
+    expect(logout).toHaveClass('min-h-[44px]');
+    const logoutIcon = logout.querySelector('svg') as SVGSVGElement;
+    expect(logoutIcon).toHaveClass('h-5', 'w-5');
+    expect(logoutIcon).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('traps focus inside the drawer after the grouped sections were added', async () => {
+    const user = setupUser();
+    renderAuthenticated('/dashboard');
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+
+    const dialog = getDrawer();
+    // Trap order guard (story risk note): close, Home, Dashboard, Academics ×3,
+    // Planning ×3 (incl. Plan), Profile, Availability, Verify email, Logout.
+    const focusables = dialog.querySelectorAll(
+      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+    );
+    expect(focusables).toHaveLength(13);
+    const logout = within(dialog).getByRole('button', { name: 'Logout' });
+    expect(focusables[focusables.length - 1]).toBe(logout);
+
+    logout.focus();
+    await user.tab();
+    expect(within(dialog).getByRole('button', { name: 'Close menu' })).toHaveFocus();
   });
 });
