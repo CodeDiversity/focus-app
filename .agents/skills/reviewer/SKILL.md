@@ -1,262 +1,83 @@
 ---
 name: reviewer
-description: Review StudyPilot plans before implementation or completed stories before sign-off, including final user-facing code explanations and manual test walkthroughs in ordinary and autopilot reviews.
+description: Review a StudyPilot plan before implementation (when required) or a completed parent review unit before sign-off; independent, read-only except for the report and the passing-verdict sync.
 ---
 
-# StudyPilot Review Agent
+# Reviewer
 
-## Graph node
+Mandatory reads: `.agents/core.md`, this file, the queue, the parent index or
+breakdown README, the DoD. On demand: [plan-review.md](plan-review.md) (plan
+mode), [passing-sync.md](passing-sync.md) (verdict handling, fallback, static
+audit), [review-cadence](../../review-cadence.md), [planning-checklist](../../planning-checklist.md).
+Assignments: `plan_review`, `parent_review`, `dod-auditor` (static audit, writes
+nothing). Fresh session per dispatch; one mode per dispatch.
 
-The reviewer role serves three graph nodes in [workflow-graph.md](../../workflow-graph.md):
-`plan_reviewer` (`plan_review`), `parent_reviewer` (`parent_review`), and
-`walkthrough` (`walkthrough`). Each dispatch is a fresh session and one mode.
-Save only the documents that mode owns. Do not commit. Return the shared
-closeout fields plus any verbatim fallback path and body. A static DoD audit
-is not one of these nodes and writes nothing.
+Read-only for code, tests, migrations, stories, plans. Your own writes are:
+the report at its mode's path; on a passing verdict the docs sync in
+[passing-sync.md](passing-sync.md) and its scoped commit. Never run fix/format
+commands, install dependencies, or mutate Git otherwise. Never read secrets; a
+committed secret is a blocker finding cited by location only.
 
-Apply [delivery state](../../delivery-state.md) in both review modes. Read the
-parent execution queue and resolve its canonical evidence/report paths. Verify
-status claims independently; never move artifacts or require a
-legacy `docs/artifacts/` location when the group records a colocated artifact root.
+## Implementation review (`parent_review`)
 
-The review itself is read-only for code, tests, migrations, story tickets and plans; never read secrets. The reviewer's own writes are exactly the following:
+Start from the implementer's parent index (inventory, per-child diff ranges,
+test commands). Verify independently — the index is a map, not evidence. Then,
+child by child in queue order, writing a running report:
 
-1. **Always, both modes:** save the full verbatim report at the mode-specific path below, replacing only the latest report on re-review; earlier committed reports remain in Git history.
-2. **Final implementation review:** produce the user-facing `<artifact-root>/<review-unit-id>/walkthrough.md` under [Final user walkthrough](#final-user-walkthrough), after correction rounds and before completion. This is reviewer-owned, not an implementer deliverable.
-3. **Only on a passing verdict:** the docs sync in [Passing-review docs sync](#passing-review-docs-sync) — correction-log entries, verdict-dependent queue fields, and a stale parent status line — **and the scoped commit of `review.md`, `walkthrough.md`, and the queue/status updates to Git**.
+- Each AC (`<STORY>-AC<n>`): satisfied / partially / unverified, with file:line.
+- DoD items as PASS / FAIL / CANNOT VERIFY with evidence appropriate to each: executed tests for business rules and explicit test obligations; code inspection plus tests for validation, ownership, errors; interaction/browser evidence for UI states, keyboard, responsive; docs inspection for API/migration docs; recorded integrated verification for DoD-10; this report's final section for DoD-11.
+- Ownership scoping on every academic-data query and endpoint; uniform 404.
+- Run the tests that cover changed business rules when permitted; report actual output. If you cannot, CANNOT VERIFY — never assume.
+- Cross-child behavior and the original parent ACs.
+- Out-of-MVP features flagged.
 
-On a non-passing verdict save the report only; do not publish a final walkthrough or run the docs sync. If tools or permissions prevent saving final outputs, return the full Markdown for each report/walkthrough, its exact target path, and an explicit list of deferred passing-sync edits. The coordinating parent may persist these within its own write authority, verbatim for both documents; otherwise leave a concrete handoff. Never bypass runtime restrictions, broaden another role's write scope, or claim pending writes succeeded. This is the canonical restricted-runtime fallback for both agent frameworks. Auditors never save or sync. Until the final report and walkthrough are both saved and verified, completion and `Reviewed` remain pending even when substantive review has passed.
+Findings: `R-<UNIT>-<nn>`, stable across rounds, each with requirement/source,
+observed gap, severity, owner, concrete closure condition. Group by shared
+cause and owner; keep every affected child/path.
 
-## Static audit mode
-
-When invoked as `dod-auditor`, inspect the queue, relevant story/epic, shared DoD,
-implementation evidence and code. Return findings and the DoD checklist with
-file/line references. Do not execute or delegate tests, save a report, sync docs
-or approve execution-dependent gates; mark those CANNOT VERIFY. Skip the plan
-review, persistence and passing-sync procedures below.
-
-## Choose the review mode
-
-- **Plan review:** the request concerns planning, story breakdowns, readiness, or unimplemented stories. Follow the plan-review section below. An implementation summary and passing feature tests are not prerequisites for reviewing a plan.
-- **Implementation review:** the request concerns completed application work. Follow the implementation-review section below.
-
-## Plan review (before implementation)
-
-Read the source epic, shared DoD, parent summary, every child, breakdown README, decisions, correction log, and any previous `plan-review.md`. Inspect relevant application code independently; treat planner claims and correction statuses as unverified. Apply [shared planning validation](../../planning-checklist.md); do not load planner authoring procedures.
-
-- Verify original AC/test coverage, justified backend/frontend boundaries, substantive story size, integration ownership, dependency status, shared contracts, and all applicable DoD obligations.
-- Verify all implementation layers have one sequential `implementer` owner. Backend/frontend child separation is scope granularity, not a mandate for separate writers. Flag plans that require concurrent implementation agents in one workspace.
-- Apply [story sizing](../../story-sizing.md): inspect actual substantive work and the rationale for each split. Flag both oversized scope and trivial children (README/status/evidence-only or routine verification) as planning findings. Separate testability, file counts or layer labels alone never require splitting. Require substantial independent outcomes before proposing children; preserve atomic security invariants and use checkpoints for cohesive multi-window work. Include sizing evidence in the planning-coverage summary.
-- Cohesive tasks may span fresh windows using [checkpoint-based execution](../../checkpoint-execution.md). Verify their milestone/resume plan; do not reject solely for crossing context windows. Checkpoints are not passing implementation evidence or a substitute for `implementation.md` and actual tests.
-- Challenge security/consistency claims with concrete request interleavings and failure paths. Compare numbered operations against prose, including lock order, login/refresh races, browser state, and which component can perform each action. Verify policy-approval provenance and relative links. Apply feature-specific checks only when relevant.
-- Distinguish a sound planned mechanism and future test obligation from an implemented or proven guarantee. Do not fail an unimplemented story merely because its planned tests do not exist yet.
-- Save a self-contained Markdown report at `<breakdown-directory>/plan-review.md` (SP-105: `docs/stories/EP01/SP-105/plan-review.md`). Include review date, pass number, reviewed commit or `working tree`, reviewed paths, scope, and limitations.
-- Include a prioritized findings table and details. Each finding has a stable ID (`R-<UNIT>-<nn>`, e.g. `R-EP13-01`, per [ID conventions](../../id-conventions.md)), severity, original claim/gap, file/section/line, concrete consequence or counterexample, suggested correction, and acceptance condition for closure. On re-review retain IDs for persistent findings, list prior findings as resolved/still open/unverified with fresh evidence, and assign new IDs without reusing old ones.
-- Include a requirement/DoD planning-coverage summary and a verdict: `Plan Ready`, `Changes Required`, or `Needs Decision`; report implementation dependency blockers separately. The verdict requires independent evidence, not the planner's readiness table. End with a compact handoff listing findings the planner must address and decisions needing the user.
-
-Save the returned Markdown verbatim, replacing only the latest `plan-review.md` on re-review; earlier reports remain in Git history when committed. The planner reads this report and leaves it unchanged; corrections it records await independent re-review. On a `Plan Ready` verdict perform the [Passing-review docs sync](#passing-review-docs-sync); on `Changes Required` or `Needs Decision` save the report only and defer the sync.
-
-## Implementation review (completed work)
-
-- Apply [review cadence](../../review-cadence.md). Default to one review of the complete parent after all substories and required integration work are implemented. Read the parent implementation index and every linked child implementation record, verify the complete inventory and combined Git scope, and report premature readiness or missing evidence without approving. Individual child review reports are not required. Only perform an early/individual review when explicitly requested; it does not replace the final parent review.
-- For a group review, apply the checks below to the parent and every child, attribute findings/AC results to child IDs, and return one combined report at the parent's artifact path. Do not limit inspection to the final child's diff or initiate separate reviews for each child. An unsplit story retains its existing standalone review flow.
-- Read the story's epic in `docs/epics/`, the shared Definition of Done in `docs/epics/README.md`, and the story's implementation summary at the parent README-resolved `<artifact-root>/<story-id>/implementation.md` before reviewing. The implementation summary is the implementer's record of what was built; verify its claims against the actual code rather than trusting it. A missing summary is a review gap, and a FAIL for the documentation condition when the story changed the API or schema.
-- Check each acceptance criterion explicitly, cited as `<STORY>-AC<n>`. Report each as satisfied, partially satisfied, or unverified, with file and line references. Findings use `R-<UNIT>-<nn>` IDs.
-- Audit every DoD condition from `docs/epics/README.md` as a PASS / FAIL / CANNOT VERIFY checklist with file and line evidence. Use evidence appropriate to the condition: executed automated tests for business rules and explicit automated-test obligations; code inspection plus relevant tests for validation, ownership and error behavior; interaction/browser evidence for UI states, keyboard and responsive behavior; documentation inspection for API/migration docs; recorded integrated-environment verification for item 10; and the final reviewer-owned walkthrough for item 11 as described below. Missing required behavior or tests is FAIL; unavailable execution or insufficient evidence is CANNOT VERIFY. A documentation or integrated-review condition does not require an artificial automated test. Do not relax any explicit story test requirement. Pay particular attention to: academic data scoped to the authenticated student, loading/empty/error states, keyboard accessibility, and documented API changes and migrations.
-- Run the automated tests that cover the changed business rules when execution is available and permitted, and report actual output, not assumptions. If you cannot run them, report CANNOT VERIFY rather than assuming they pass.
-- Verify data scoping: every query and endpoint touching academic data must be constrained to the authenticated student.
-- Flag AI features, syllabus parsing, LMS integrations, grade calculations, flashcards, or native mobile work as out of scope for the MVP.
-- Write findings as a prioritized list: blockers, should-fix, and optional polish. Suggest concrete fixes but do not apply them.
-- Save the full Markdown report yourself at the parent README-resolved `<artifact-root>/<parent-story-id>/review.md` (colocated artifact root; reuse a legacy root only when the group's README explicitly records one; conventions in `docs/artifacts/README.md`). Include the review date and state reviewed (commit hash, or `working tree`). On re-review, move the previous pass verbatim to `review-round-<n>.md` beside it and write the new pass as `review.md`; never append passes into one growing report. At the final passing implementation review, prepare and verify the [Final user walkthrough](#final-user-walkthrough), save both documents, then perform the [Passing-review docs sync](#passing-review-docs-sync). On a non-passing verdict save the report only and defer the sync.
-- Finish with a one-line verdict: the story meets the DoD and acceptance criteria, or the list of conditions it fails.
-- Be direct about gaps. Do not approve work you have not verified.
-
-## Final user walkthrough
-
-This is the last completion gate for **every final implementation review**, both
-ordinary and autopilot. A standalone story is its own review unit; a split parent
-gets one walkthrough covering every child and integration workflow. Plan-only
-reviews, interim child reviews and static audits do not generate one or mark
-the parent complete. Auditors may flag a missing/stale final document but remain
-fully read-only. Do not require an implementer to supply this reviewer-owned
-document before the initial review.
-
-Once the implementation, required manual evidence and all mandatory findings
-have passed independent verification, write a **separate new document** at the
-same resolved directory as the final `review.md`, named `walkthrough.md`.
-On later final re-reviews refresh that document to the final reviewed scope;
-preserve earlier versions through the coordinator's scoped commits. An old
-walkthrough cannot establish completion for changed code or reopened scope.
-
-Write for the user, explaining the finished result rather than repeating the
-findings report or the implementer's change log. Include:
-
-1. **What changed:** user-visible/system workflows and the complete review-unit
-   scope, with links to the relevant stories and final review.
-2. **How the code works:** the request/UI/data flow, key changed files/symbols,
-   important choices and relevant validation/ownership/error behavior. Scale to
-   the feature; a docs/config story explains its actual configuration/workflow.
-3. **Why it is correct:** connect the original ACs and applicable DoD to code
-   invariants, actual automated/integrated/manual evidence, and closure of
-   mandatory findings across review rounds. Cite records and tested Git state;
-   distinguish inspection from executed verification, and retain material
-   limitations. Explain the evidence, not a claim of mathematical proof.
-4. **Manual test workflows:** for each workflow that needs manual testing,
-   provide safe prerequisites/setup, numbered actions, exact observable expected
-   results and relevant negative/edge cases (such as validation, errors,
-   ownership, keyboard or responsive behavior). Use disposable/local test data;
-   never include secrets or authorize shared-system mutations. Name any needed
-   permission. For workflows with no applicable manual check, state
-   `Not applicable` with a concrete reason rather than omit coverage.
-5. **Execution status:** label each manual workflow `Executed` with date,
-   environment and evidence/provenance, `Not executed — user test instructions`,
-   or `Not applicable` with reason. Steps are instructions, not test results.
-   An optional user repeat may remain unexecuted; any AC/DoD-required manual
-   gate must already have real evidence before a passing final review.
-
-Verify the walkthrough covers the final code and every applicable workflow,
-links to the final review/evidence, and labels pending user checks honestly.
-Then save the final report with its walkthrough link and the explicit final
-document gate result; **only after both documents are saved and verified** may
-passing sync mark `Reviewed`/complete. Substantive findings must be closed
-before writing this final explanation; writing it cannot close an implementation
-gap or replace required manual execution. If preparation reveals such a gap,
-return a non-passing report and route the correction, then finish the walkthrough
-after re-review. Do not manufacture a walkthrough merely to claim completion.
-
-For restricted-runtime fallback, return both exact documents and paths plus
-`completion pending persistence`; defer completion/status sync. The coordinator
-persists the walkthrough and report verbatim, verifies the saved contents and
-reviewed scope, then applies only the authorized deferred passing sync. If
-persistence/content verification is still blocked, completion remains pending.
-**On a passing verdict, the reviewer commits `review.md`, `walkthrough.md`, and the passing-review docs sync (queue/status updates, correction log, parent status line). On a non-passing verdict, the reviewer returns the explicit Git handoff for deferred edits.** Include both paths and the coordinator Git handoff in the closeout. This procedure also applies when no autopilot is involved.
-
-## Severity and verdict contract
-
-Classify against the current requirements, not the effort to fix the issue or
-a previous review's severity precedent:
-
-| Severity | Required classification |
+| Severity | Means |
 | --- | --- |
-| Blocker | Security exposure, data loss/corruption, or a critical broken flow that prevents safe acceptance. |
-| Should-fix | Any unmet explicit AC, applicable DoD condition, required deliverable or mandatory workflow obligation; missing implementation evidence or inaccurate review-scope/completion claims. This includes documentation-only requirements. |
-| Polish | An optional improvement with no unmet mandatory obligation and no effect on the ability to verify the review scope. |
+| Blocker | Security exposure, data loss/corruption, critical broken flow. |
+| Should-fix | Any unmet explicit AC, DoD item, required record or deliverable; inaccurate scope/completion claims. Documentation-only requirements included. |
+| Polish | Optional; no unmet mandatory obligation. |
 
-Green tests, unchanged runtime behavior, a small fix, redundant documentation
-elsewhere, or a historical polish classification cannot downgrade an explicit
-requirement. A user-approved waiver must have a recorded source and exact scope;
-the reviewer cannot grant one. Required evidence that cannot be verified stays
-CANNOT VERIFY and prevents an unqualified pass.
+Green tests, small fix size, or a past polish classification never downgrade an
+explicit requirement. You cannot grant waivers; a user waiver needs a recorded
+source and exact scope. Required evidence you cannot verify stays CANNOT VERIFY
+and blocks an unqualified pass.
 
-For each finding record: requirement/source, observed gap, severity rationale,
-owner, and concrete closure condition. Examples: an AC requiring preserved
-comments with a missing comment is should-fix; a missing required child
-implementation record/checkpoint is should-fix; stale required completion
-status or a scope index omitting a child is should-fix. Optional wording cleanup
-with accurate status and complete evidence is polish.
+**Report** at `<artifact-root>/<parent-id>/review.md`: date, pass number,
+reviewed commit (or `working tree`), scope, prioritized findings table +
+details, AC and DoD tables, verdict, and the final section:
 
-Keep findings grouped by shared cause and fix owner when one correction closes
-them together; preserve each affected child/path and requirement in the details.
-Keep prior finding IDs stable on re-review rather than renumbering history.
+### How to verify by hand
 
-Decide the verdict before passing-review docs sync. That sync may record the
-verified verdict and update review-dependent status; it cannot supply missing
-implementation deliverables, repair an implementer's AC, or justify passing
-because it will close a required finding. On a non-passing verdict, save the
-report only and hand required fixes to their owner. Close a finding only after
-the correction is persisted and independently verified, citing its actual Git
-state (commit or explicit working-tree paths); a planned sync is not closure.
+For each applicable workflow: safe prerequisites, numbered actions, exact
+expected results, relevant negative/edge cases (validation, errors, ownership,
+keyboard, responsive). Label each `Executed — <date, env, evidence>`, `Not
+executed — user instructions`, or `Not applicable — <reason>`. Instructions
+are not results; any AC/DoD-required manual gate needs real evidence before a
+pass. Use disposable local data; no secrets, no shared-system mutations.
 
-## Passing-review docs sync
+On re-review: move the previous `review.md` verbatim to `review-round-<n>.md`,
+cover changed children plus cross-child behavior, keep finding IDs, list prior
+findings resolved / still open / unverified with fresh evidence.
 
-A verdict **passes** when a plan review returns `Plan Ready`, or an
-implementation review finds the story meets the DoD and acceptance criteria
-with **no open blocker or should-fix finding**; polish-only findings still
-pass. Any non-passing verdict (`Changes Required`, `Needs Decision`, open
-blocker/should-fix) defers the docs sync below until a passing pass; **the
-report is always saved before sync, in every mode and for every verdict.**
+**Verdict** (one line): passes when no blocker or should-fix remains open;
+otherwise list the failing conditions. Then follow [passing-sync.md](passing-sync.md).
+Close a finding only against persisted, independently verified correction with
+its Git state cited.
 
-On a passing verdict, after saving the report and, for final implementation
-review, the verified walkthrough, perform the docs-only sync in the same delivery
-home, **commit `review.md`, `walkthrough.md`, and all queue/status/correction-log updates to Git**, then report exactly which files you wrote. Defer completion sync when
-either final document still needs persistence:
+## Plan review (`plan_review`)
 
-1. **Correction log (breakdown README):** record each finding by stable ID with
-   its original claim, consequence, disposition/closure evidence, and a
-   reference to the report — including entries an earlier pass omitted
-   (back-fill them clearly marked as dispositions of that pass; never fabricate
-   verification you did not perform).
-2. **Execution queue:** update the verdict-dependent fields — status line, the
-   reviewed children's states (after the passing final parent review,
-   `Implemented — awaiting parent review` rows become `Reviewed`), 
-   `Active substory`/`Next substory` pointing to the next concrete actionable
-   work (fix pass, refinement, next queued child, or `None` with a reason), and
-   links to the saved report and final walkthrough when applicable. Do not override dependency or user gates you did
-   not verify; record them as gates with provenance.
-3. **Parent status line:** refresh a stale coordination-record status so it
-   matches the verdict and the queue.
-4. **Decision provenance:** record user decisions that closed findings (with
-   date and substance) inside the same correction-log entries.
+Only when [planning-checklist](../../planning-checklist.md#when-a-plan-review-is-required)
+requires it or the user asks. Follow [plan-review.md](plan-review.md).
 
-Never write outside this scope: story tickets' requirements/ACs, plans, any
-code or test file, migrations, another story's docs, or the reviewer report's
-content. The sync is bookkeeping of verified results, not new verification; a
-planner/implementer may still act on queue rows reserved to them.
+## Evidence discipline
 
-## Running commands
-
-### Evidence reuse and report completion
-
-For each required gate, record the command, working directory, tested commit
-or dirty state, exit code and concise result. Preserve these fields in the
-checkpoint/compaction handoff, with evidence paths when available. Distinguish
-reviewer-executed results (including an authorized helper's results) from
-implementer-provided evidence. A summary retains that provenance; it is not a
-new execution. Never invent missing output or claim reconstructed text is verbatim.
-
-After compaction, check HEAD and relevant dirty paths once, then reuse recorded
-results whose tested code/configuration is unchanged. If full output was not
-preserved, say so and report the recorded concise result. Missing raw output,
-per-file test lines, timestamps, or a previous report's formatting are not
-reasons to rerun a successful gate. Do not repeat completed code searches or
-expand a helper's scope merely to make the report more detailed.
-
-Rerun verification only for changed relevant code/configuration, a failed gate,
-or a specific missing fact required to decide an AC/DoD condition. Name that
-trigger and run only the affected check. Missing execution/provenance fields
-are an evidence gap: retrieve the existing record first; if still insufficient,
-mark the affected condition CANNOT VERIFY or run its bounded check when allowed.
-Runtime restrictions remain binding; missing shell access does not itself
-authorize delegation or repeating previously executed checks.
-
-Once every AC/DoD condition has an evidence-backed disposition (including FAIL
-or CANNOT VERIFY), finish the report. Resolve missing line citations with one
-batched, bounded read. Classify findings against current requirements once;
-prior reports cannot waive an unmet requirement. Reopen a decision only for
-new evidence or a named rule conflict. Complete the final walkthrough gate when
-applicable, save the report, perform the authorized verdict-dependent sync, and
-return the task closeout. If persistence is blocked, return the full report,
-final walkthrough when applicable, and exact deferred writes using the fallback above.
-A non-passing verdict completes the review task and assigns follow-up work.
-
-Check execution capability early. Run relevant gates independently when permitted;
-record command, working directory, exit code and concise result, linking detailed
-logs only when needed. Do not paste full successful output into every report.
-Never mutate Git state, install dependencies, change code, run fix/format commands or read secrets
-as part of review. If shell is unavailable and delegation is authorized, a bounded
-command helper may execute the exact gates under the same restrictions and return
-results; disclose delegation. Do not spawn helpers merely to repeat available tests.
-If execution is blocked, mark the gate CANNOT VERIFY and distinguish recorded
-implementer evidence from reviewer-executed evidence. Required unverified gates
-prevent an unqualified passing verdict. Static auditors do not run or delegate tests.
-
-## Security rules
-
-- Never read, display, quote, or write to `.env`, `.env.*`, credential, key, token, or secret-manager files. Even read-only review does not include secrets.
-- A committed secret (in source, config, migrations, seeds, or logs) is a blocker-severity finding: flag the file and line without reproducing the value.
-
-## Framework note
-
-Only report/final-walkthrough persistence and passing-verdict sync may write files. Use the
-restricted-runtime fallback above when unavailable. The DoD auditor reads only,
-returns its static audit, and marks execution-dependent checks CANNOT VERIFY.
+Record command, cwd, tested commit/dirty state, exit code, concise result for
+every gate; distinguish reviewer-executed from implementer-provided evidence.
+Reuse recorded results for unchanged code; rerun only for changed code, a
+failed gate or a named missing fact. Finish the report once every AC/DoD item
+has an evidence-backed disposition; do not loop on a hypothetical verdict. End
+with the closeout fields.

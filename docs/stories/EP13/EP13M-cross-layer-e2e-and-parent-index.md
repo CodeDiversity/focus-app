@@ -8,7 +8,13 @@
 **Dependencies:** EP13A–EP13N implemented — the whole epic, including EP13H2 (fix story) and EP13N (preference controls). **D13-4 is resolved (option b), so the flex journeys are in scope unconditionally.**
 **Reviewed:** 2026-11-15 — dependencies de-conditionalised, the manual a11y pass promoted from "collected" to "performed" (see *Review note*).
 
-## Summary
+## Plan at a glance
+
+- **What this changes:** a new Playwright suite `apps/web/e2e/adaptive-scheduling.spec.ts` on the EP09 stack covering the multi-day journeys (work → plan shrinks; miss a day → rolls forward; one-tap start; flex journey; momentum), the recorded manual a11y pass for all new surfaces (TR-E13-14), and the parent implementation index for the combined review.
+- **Why it improves it:** the epic's promises are multi-day, multi-surface behaviors no unit test can prove; this is the only place they are demonstrated end to end (product). The index gives the reviewer per-child diff ranges and test commands, so the final review starts from a map instead of rediscovery (code).
+- **Decisions needing you:** none ▲ open.
+- **How to change this plan:** edit a Ruling cell in the Decisions table below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
+
 
 The epic's promises are multi-day, multi-surface behaviors no unit test can
 prove: do the work and the plan shrinks; miss a day and the plan quietly
@@ -105,9 +111,11 @@ never from a hard-coded calendar week.
 
 ### Decisions
 
-| ID | Decision | Rationale |
-|---|---|---|
-| — | None recorded yet. Rows here are `D-M<n>`; one that refines or overrides a register row ends with `(refines D13-<n>)` / `(overrides D13-<n>)` and the planner back-references it in the register ([ID conventions](../../../.agents/id-conventions.md)). | |
+| ID | Options considered | Recommended | Ruling |
+|---|---|---|---|
+| — | None recorded yet; proposed at refinement. | | Proposed |
+
+Rows are `D-M<n>`; one that refines or overrides a register row says `(refines D13-<n>)` / `(overrides D13-<n>)`. ▲ = material: the implementer stops and asks if still `Proposed`; other rows become `Ratified by default` at implementation start.
 
 ## Definition of Done
 

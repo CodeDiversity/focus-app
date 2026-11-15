@@ -1,42 +1,30 @@
-# Delivery queue and colocated artifacts
+# Delivery state
 
-All roles use the parent story folder as the delivery home. Read its README's
-**Execution queue** before choosing work or resolving artifact paths. This is
-the current execution record; old planning gates and historical reviews are not
-the queue. Verify claims against code, Git and implementation evidence on resume.
-
-## One home per feature
+Every feature has one delivery home. Read its README's **Execution queue**
+before choosing work or resolving artifact paths; verify claims against code
+and Git on resume.
 
 ```text
 docs/stories/<epic>/<parent>/
-  README.md                  # execution queue, decisions, traceability
-  <parent>.md                # parent coordination summary
-  <child>.md                 # one file per substory
-  plan-review.md             # latest whole-plan review
+  README.md        # at-a-glance, execution queue, AC/TR ownership, live decisions  (≤ 3,500 words)
+  contracts.md     # shared data/API contracts, invariants, inspected code baseline (large epics)
+  history.md       # plan correction log, quality-gate table, superseded decisions, plan-review history
+  <child>.md       # one file per story
+  plan-review.md   # latest plan review, when one was required
   artifacts/
-    <parent-story-id>/        # parent checkpoint, final implementation index/review
-    <child-story-id>/         # child checkpoint and implementation record
+    efficiency.md              # one row per dispatch
+    <parent-id>/implementation.md, review.md, review-round-<n>.md
+    <child-id>/implementation.md  (+ checkpoint.md only for multi-window tasks)
 ```
 
-Use stable story IDs for new artifact subdirectories. The README records **Delivery home**, **Artifact
-root**, **Parent artifacts**, **Active substory**, **Next substory**, and the queue.
-Use actual paths from that record, not hardcoded `docs/artifacts/` paths. A
-standalone story gets its own story folder with the same convention.
-
-Existing unmigrated features may explicitly record a legacy artifact root. Reuse
-that location until an authorized migration; never create a duplicate new record.
-When migrating, move records, repair live links, and leave a legacy directory
-README pointing to the new home. Preserve reviewer report contents and historical
-claims verbatim; old paths quoted as evidence remain historical. Do not invent
-new implementation/review evidence as part of organization.
-
-If an older group has no queue/path record, hand initialization to the planner
-before choosing its next task. Reconstruct progress from evidence; absence of
-a new-format README never means all existing work should be started over.
+Use stable story IDs for directories. Older features may record a legacy
+artifact root; reuse it, never duplicate.
 
 ## Execution queue contract
 
-The README has one row per child, in intended sequential order:
+The README records **Delivery home**, **Artifact root**, **Active substory**
+(at most one), **Next substory** (exactly one ID + action, or `None` + reason),
+and one row per child in intended order:
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
@@ -44,75 +32,16 @@ The README has one row per child, in intended sequential order:
 States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
 `Implemented — awaiting parent review`, `Reviewed`.
 
-- `Ready` means the story is refined/sized, decisions/contracts are settled and
-  implementation prerequisites have evidence. Tests required to complete the
-  story remain its responsibility; no child reviewer approval is required.
-- `Needs refinement` can be the next actionable story, but is not ready to code.
-- The **Evidence / artifacts** cell holds artifact links and a one-line verdict
-  (for example `green 2026-11-15; open: F-EP13I-01`). Test counts, deviations
-  and finding narratives live only in the child's `implementation.md`.
-- Set **Active substory** to at most one ID. **Next substory** names exactly one
-  actionable ID and action (refine, implement, resume, or fix), or `None` with a
-  reason (all blocked, complete, or final parent review next). If a task is active,
-  name that task for resume rather than silently starting another writer.
-- Dependencies must be met, not merely earlier alphabetically. An implemented
-  child can unblock another without formal review. Keep feature-level release
-  blockers distinct from blockers on the next child's actual implementation.
-- Parent/group authorization lets the implementer select the first eligible row
-  in documented order. A request for one child does not authorize every sibling.
-  If the requested child is blocked, explain its blocker and the suggested next
-  action rather than skipping the dependency or starting unauthorized work.
-- An explicit autopilot request authorizes the enclosing parent review unit
-  through final approval, including remaining descendants, integration and
-  mandatory corrections, subject to user limits. A named child/stage is an
-  entry hint; reconcile prerequisites and existing progress first. Autopilot
-  dispatches each bounded specialist task in a new isolated context and records
-  scope, stage, and handoffs in the README's Autopilot checkpoint. The checkpoint
-  schema is the graph contract in [workflow-graph.md](workflow-graph.md). That
-  section links to this queue and existing evidence; it is not a second execution
-  queue. The YAML fence in that graph is the only router. Normal
-  single-child requests keep the preceding scope rule.
-- If code/artifacts disagree with the queue, reconcile and record the evidence
-  before proceeding. Missing evidence is unverified, not done. No new mandatory
-  user approval is introduced for routine status reconciliation.
+- `Ready` = refined, sized, ▲ decisions ruled, prerequisites evidenced.
+- Dependencies must actually be met; an implemented child can unblock another without review.
+- Evidence cell = artifact links + one-line verdict (`green 2026-11-15; open: F-EP13I-01`). Nothing else.
+- Code/artifacts disagreeing with the queue → reconcile and record before proceeding. Missing evidence is unverified, not done.
+- A request for one child does not authorize siblings; a parent request lets the implementer take eligible rows in order.
 
-## Role-specific updates
+## Who updates what
 
-- **Autopilot:** coordinates the explicitly authorized parent using fresh
-  specialist contexts and the [autopilot skill](skills/autopilot/SKILL.md).
-  Owns its README run record, scoped execution/status reconciliation,
-  refiner/reviewer output commits and permitted verbatim reviewer fallback.
-  Planning, implementation evidence and independent verdicts remain with their
-  specialist owners; one implementation writer transfers ownership per task.
-- **Planner:** owns folder layout, queue initialization/order/dependencies, story
-  breakdown and refinement readiness. Uses implementation evidence to reconcile
-  existing progress; does not fabricate tests/reviewer sign-off.
-- **Implementer:** owns code and artifacts. Narrow exception to its planning-doc
-  restriction: update only the README's execution fields/table and active child's
-  `Status`/artifact pointers at start, checkpoint handoff, completion, or blocker.
-  Record evidence, recompute the next actionable row, and link to the checkpoint
-  for unfinished progress. Do not change ACs, dependencies, decisions or planning
-  review logs.
-  Parent checkpoint task fields link back to this queue instead of becoming
-  a competing task list. Coordinate handoff before transferring the single writer.
-- **Refiner:** reads the queue, writes only the given unimplemented story
-  (technical grounding, plus UI/UX decisions for frontend stories), and returns
-  its readiness/dependency result for planner/coordinator reconciliation. It
-  cannot edit README, create artifacts or mark other stories ready.
-- **Reviewer:** reads the queue and colocated evidence independently; never
-  moves files. The review is read-only and its only own writes are the saved
-  report, final implementation walkthrough, plus on a passing verdict the reviewer skill's passing-review docs
-  sync: finding/correction-log entries, verdict-dependent queue fields
-  (including `Reviewed` after the passing final parent review and saved/verified
-  final `walkthrough.md`) and a stale
-  parent status line. Non-passing verdicts save the report only and defer
-  those edits. One final combined parent review after every child and
-  integration task is implemented; gaps are findings, not status edits.
-- **DoD auditor:** reads queue and evidence and returns the audit; writes
-  nothing.
-- **Coordinating parent:** the reviewer saves its own report at the resolved
-  path, using its skill's restricted-runtime fallback when needed; the parent
-  reconciles queue/status edits the reviewer deferred on a
-  non-passing verdict. Only a passing final parent review with both report and
-  user walkthrough saved and verified allows `Reviewed`;
-  child self-checks never do.
+- **Planner:** layout, queue initialization/order/dependencies, contracts, decisions, `history.md`.
+- **Refiner:** only its story file; returns readiness for the planner/session to record.
+- **Implementer:** execution fields, its row, the active child's Status/artifact pointers; never ACs, dependencies or decisions.
+- **Reviewer:** on a passing verdict only — `Reviewed` states, status line, `history.md` correction entries, report links; then commits. Non-passing: saves the report, nothing else.
+- **Live session:** commits refiner output; reconciles deferred edits; runs `queue-lint`.

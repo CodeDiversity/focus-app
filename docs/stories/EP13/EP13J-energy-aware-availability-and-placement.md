@@ -9,7 +9,13 @@
 **Dependencies:** EP13F implemented (placement v2 is the insertion point); EP13G implemented (the anchor partition reads placement output, so energy must not disturb it). D13-10 provisional (V-13-5).
 **Reviewed:** 2026-11-15 — ACs revised against shipped EP13F/EP13G behaviour (see *Review note*).
 
-## Summary
+## Plan at a glance
+
+- **What this changes:** an additive `AvailabilitySlot.energy` (HIGH/NORMAL/LOW, default NORMAL) migration, an energy preference inside placement v2 (demanding work → HIGH windows, light → LOW, existing tie-breaks otherwise), and the energy field in the availability dialog and calendar rendering.
+- **Why it improves it:** demanding work lands when the student actually has the energy for it instead of at 23:00 Thursday (product). The heuristic is deterministic, additive and survives interval merging, so EP13G's anchor partition is undisturbed (code).
+- **Decisions needing you:** ▲ D13-10 (the "demanding work" heuristic, V-13-5) is provisional at epic level; D-J rows to be proposed at refinement.
+- **How to change this plan:** edit a Ruling cell in the Decisions table below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
+
 
 ADHD energy is not uniform across the day; the scheduler currently treats
 09:00 Monday and 23:00 Thursday as equal. This story lets students tag
@@ -111,9 +117,11 @@ need their own determinism assertions.
 
 ### Decisions
 
-| ID | Decision | Rationale |
-|---|---|---|
-| — | None recorded yet. Rows here are `D-J<n>`; one that refines or overrides a register row ends with `(refines D13-<n>)` / `(overrides D13-<n>)` and the planner back-references it in the register ([ID conventions](../../../.agents/id-conventions.md)). | |
+| ID | Options considered | Recommended | Ruling |
+|---|---|---|---|
+| — | None recorded yet; proposed at refinement. | | Proposed |
+
+Rows are `D-J<n>`; one that refines or overrides a register row says `(refines D13-<n>)` / `(overrides D13-<n>)`. ▲ = material: the implementer stops and asks if still `Proposed`; other rows become `Ratified by default` at implementation start.
 
 ## Definition of Done
 
@@ -122,7 +130,7 @@ need their own determinism assertions.
 4. Actionable validation errors. 5. Existing dialog states suffice (tested).
 6. Keyboard on the new field. 7. Existing responsive dialog behavior.
 8. Automated tests (TR-E13-09). 9. Migration + contract documented.
-10–11. Combined EP13 parent review / reviewer walkthrough.
+10–11. Combined EP13 parent review / its "How to verify by hand" section.
 
 ## Sizing
 

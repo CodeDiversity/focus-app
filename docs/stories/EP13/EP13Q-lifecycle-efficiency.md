@@ -4,7 +4,7 @@
 **Epic:** [EP13](../../epics/EP13-adaptive-scheduling-for-adhd.md) (process story; delivery home only, outside the EP13 application review unit — D13-19)
 **Milestone:** M6
 **Layer:** Documentation / process (no application code)
-**Status:** Ready — planning finalized 2026-11-15 (user rulings recorded below); implement next
+**Status:** Implemented — awaiting review (2026-11-15; record: `./artifacts/EP13Q/implementation.md`)
 **Dependencies:** EP13P implemented (a9afe4d…7f089a5). None on application children.
 **Created:** 2026-11-15 (user-requested efficiency review)
 
@@ -181,20 +181,20 @@ still `Proposed`.
 
 | ID | Stage | Options considered | Recommended | Why | Ruling |
 |---|---|---|---|---|---|
-| D-Q4 | Epic intake | (a) free-form epic; (b) epic template with problem statement + measurable outcome + explicit non-goals | **(b)** | Downstream ACs trace to a stated outcome; cheap to add; prevents scope drift at the source | Proposed |
+| D-Q4 | Epic intake | (a) free-form epic; (b) epic template with problem statement + measurable outcome + explicit non-goals | **(b)** | Downstream ACs trace to a stated outcome; cheap to add; prevents scope drift at the source | Ratified by default, 2026-11-15 |
 | D-Q5 ▲ | Story description | (a) summary only (today); (b) every story opens with two mandatory lines — **What this changes** (observable behavior/files) and **Why it improves it** (product/user quality and code quality, both when both apply) | **(b)** | Shared understanding at a glance; reviewers verify against the "why", not just the ACs; costs two lines | **Ratified (user, 2026-11-15)** — "why" covers product/user quality and code quality, both when both apply |
 | D-Q6 ▲ | AC authorship | (a) agents write ACs, user discovers them at review; (b) agents write ACs **plus** a Decisions table (Options / Recommended / Ruling) for every material choice, with the default-ratification rule above | **(b)** | Keeps agent speed, restores user authority; the override is a one-cell edit, not a rewrite | **Ratified (user, 2026-11-15)** — applies to every story; un-ruled rows auto-ratify as recommended at implementation start, ▲ rows still stop and ask |
-| D-Q7 | Plan review | (a) always (today, honored in breach); (b) conditional — migration, security invariant, > 8 children, or user request; (c) never, quality-gate table only | **(b)** | Matches observed practice; keeps the gate where risk lives (= AC 6) | Proposed |
-| D-Q8 | Refinement batching | (a) one refiner dispatch per child (today); (b) one dispatch may refine up to 3 Ready siblings that share a surface/contract, still sequential questions | **(b)** | Protocol re-read is the dominant cost; EP13I+EP13K share the dashboard surface and would have been one pass | Proposed |
-| D-Q9 | Dispatch handoff | (a) specialist re-reads all protocol files (today); (b) coordinator's handoff inlines the 5–10 relevant rule lines and the specialist reads only its skill + story + queue | **(b)** | This is the 22k→4k token lever beyond AC 1; the .opencode defs already describe inlining | Proposed |
-| D-Q10 | Gate checking | (a) judge dispatches (today); (b) deterministic checks inline by the live session (= AC 2); (c) also add a 30-line `queue-lint` script (states, links, qualified IDs, evidence-cell shape) run at closeout | **(c)** | The script catches the EP13P class of drift (broken links, stale letters) for free at every closeout | Proposed |
+| D-Q7 | Plan review | (a) always (today, honored in breach); (b) conditional — migration, security invariant, > 8 children, or user request; (c) never, quality-gate table only | **(b)** | Matches observed practice; keeps the gate where risk lives (= AC 6) | Ratified by default, 2026-11-15 |
+| D-Q8 | Refinement batching | (a) one refiner dispatch per child (today); (b) one dispatch may refine up to 3 Ready siblings that share a surface/contract, still sequential questions | **(b)** | Protocol re-read is the dominant cost; EP13I+EP13K share the dashboard surface and would have been one pass | Ratified by default, 2026-11-15 |
+| D-Q9 | Dispatch handoff | (a) specialist re-reads all protocol files (today); (b) coordinator's handoff inlines the 5–10 relevant rule lines and the specialist reads only its skill + story + queue | **(b)** | This is the 22k→4k token lever beyond AC 1; the .opencode defs already describe inlining | Ratified by default, 2026-11-15 |
+| D-Q10 | Gate checking | (a) judge dispatches (today); (b) deterministic checks inline by the live session (= AC 2); (c) also add a 30-line `queue-lint` script (states, links, qualified IDs, evidence-cell shape) run at closeout | **(c)** | The script catches the EP13P class of drift (broken links, stale letters) for free at every closeout | Ratified by default, 2026-11-15 |
 | D-Q11 ▲ | Autopilot | (a) keep as is; (b) keep but slim; (c) retire in-session autopilot for this repo, keep the edge table as the manual playbook | (b) | Unattended runs may matter later; slimming keeps the option at low carrying cost. (c) saves the most words if you never use it | **Overridden: (c) retire autopilot (user, 2026-11-15)** — the live session is the coordinator; AC 2 rewritten accordingly |
-| D-Q12 | Implementation session | (a) strictly one child per fresh session (today); (b) one session may continue into the next Ready child when context remains, same single writer, checkpoint between | **(b)** | Protocol re-read per child is the cost; the single-writer invariant is untouched; checkpoint preserves resumability | Proposed |
-| D-Q13 | Commit cadence | (a) separate docs/status commit after the code commit (today, ~2 per child); (b) one commit per child with code + records + queue row | **(b)** | Halves commit ceremony; the child is the atomic unit of review anyway; fix stories keep their own commits | Proposed |
-| D-Q14 | Review input | (a) reviewer rediscovers scope from the index (today); (b) implementer's parent index must include the per-child diff ranges and test-command list so the reviewer starts from them (still verifying independently) | **(b)** | Removes the most expensive reviewer phase (re-derivation) without weakening independence | Proposed |
-| D-Q15 | Review output | (a) separate walkthrough.md + dispatch (today); (b) "How to verify by hand" as a final review.md section (= AC 5) | **(b)** | One dispatch and one document fewer per parent | Proposed |
-| D-Q16 | Model routing | (a) recommendation recorded, never used (today); (b) routing table in core.md: refiner/judge/queue-lint/doc corrections → small model; implementer/reviewer → default; drop the per-story 1–5 score | **(b)** | Turns a dead field into real savings; per-story scores duplicated what the role already implies | Proposed |
-| D-Q17 | Measurement | (a) none (today, despite the mandate); (b) one line per dispatch in efficiency.md (= AC 8); (c) also a monthly prune/review of the protocol against the data | **(b)**, revisit (c) after two children | Data before more process | Proposed |
+| D-Q12 | Implementation session | (a) strictly one child per fresh session (today); (b) one session may continue into the next Ready child when context remains, same single writer, checkpoint between | **(b)** | Protocol re-read per child is the cost; the single-writer invariant is untouched; checkpoint preserves resumability | Ratified by default, 2026-11-15 |
+| D-Q13 | Commit cadence | (a) separate docs/status commit after the code commit (today, ~2 per child); (b) one commit per child with code + records + queue row | **(b)** | Halves commit ceremony; the child is the atomic unit of review anyway; fix stories keep their own commits | Ratified by default, 2026-11-15 |
+| D-Q14 | Review input | (a) reviewer rediscovers scope from the index (today); (b) implementer's parent index must include the per-child diff ranges and test-command list so the reviewer starts from them (still verifying independently) | **(b)** | Removes the most expensive reviewer phase (re-derivation) without weakening independence | Ratified by default, 2026-11-15 |
+| D-Q15 | Review output | (a) separate walkthrough.md + dispatch (today); (b) "How to verify by hand" as a final review.md section (= AC 5) | **(b)** | One dispatch and one document fewer per parent | Ratified by default, 2026-11-15 |
+| D-Q16 | Model routing | (a) recommendation recorded, never used (today); (b) routing table in core.md: refiner/judge/queue-lint/doc corrections → small model; implementer/reviewer → default; drop the per-story 1–5 score | **(b)** | Turns a dead field into real savings; per-story scores duplicated what the role already implies | Ratified by default, 2026-11-15 |
+| D-Q17 | Measurement | (a) none (today, despite the mandate); (b) one line per dispatch in efficiency.md (= AC 8); (c) also a monthly prune/review of the protocol against the data | **(b)**, revisit (c) after two children | Data before more process | Ratified by default, 2026-11-15 |
 
 Considered and **not** recommended (recorded so they aren't re-litigated):
 parallel implementation writers (merge cost > gain, single-user repo);
@@ -315,7 +315,12 @@ them); deleting the graph (it is the only complete spec of the lifecycle).
 - Implementation convention for this story: because it edits the protocol the
   implementing session itself follows, finish AC 11/13 and commit before
   touching anything else, then re-read `core.md` once.
-- **Decisions:** D-Q1 keep single writer (confirms AGENTS.md); D-Q2 keep one
+### Decisions
+
+The full table (`ID | Options considered | Recommended | Ruling`) is the
+flow walkthrough above. Summary:
+
+- D-Q1 keep single writer (confirms AGENTS.md); D-Q2 keep one
   combined final review (confirms review-cadence); D-Q3 ▲ walkthrough becomes
   a review section (overrides DoD-11 wording — planner updates
   `docs/epics/README.md` item 11; material, so it needs your ruling or
@@ -328,7 +333,7 @@ them); deleting the graph (it is the only complete spec of the lifecycle).
   per-dispatch fixed read, autopilot and judge dispatches gone, a measurement
   log in place, and every story carrying the shared-understanding block and
   decision table.
-- **Actual at closeout:** (to be filled)
+- **Actual at closeout:** 1 live session, 0 dispatches, ~45 tool calls; tokens n/a (not exposed). Corpus 22,585 → 9,040 words; implementer mandatory protocol read 16,643 → 2,122 words.
 - **Model recommendation:** 3 — editing is mechanical but the consolidation
   must not drop a safety rule; a mid-tier model with the checklist above.
   (This field is replaced by the routing table once AC 8 lands.)

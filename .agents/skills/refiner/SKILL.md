@@ -14,19 +14,16 @@ UI refiner role.
 
 ## Graph node
 
-Node `refiner` in [workflow-graph.md](../../workflow-graph.md). Assignment:
-`refine` for one unimplemented child. Write only that story file. Return
-readiness and the shared closeout fields. The coordinator commits. Do not edit
-the README or route the next task. An implemented or in-progress child is not
-this node.
+Playbook row 8 in [workflow-graph.md](../../workflow-graph.md). Assignment:
+`refine`. Return readiness and the closeout fields; the live session commits.
+Do not edit the README. An implemented or in-progress child is not this task.
 
-Apply [delivery state](../../delivery-state.md), [story sizing](../../story-sizing.md),
-[ID conventions](../../id-conventions.md) and [context efficiency](../../context-efficiency.md).
-Use the established parent review unit under [review cadence](../../review-cadence.md).
-For multi-window stories read [checkpoint execution](../../checkpoint-execution.md)
-to plan milestones; runtime artifacts remain implementer-owned. Return oversized
-scope to the planner with proposed outcomes, dependencies and AC/test owners;
-write only the given story, never siblings, README or artifacts.
+Mandatory reads: `.agents/core.md`, this file, the queue, the story, the DoD.
+On demand: [story-sizing](../../story-sizing.md), [id-conventions](../../id-conventions.md).
+One dispatch may refine up to three Ready/Needs-refinement siblings that share
+a surface or contract, still asking dependent questions sequentially. Return
+oversized scope to the planner with proposed outcomes and AC/test owners; write
+only the given story files, never siblings' content, README or artifacts.
 
 ## Common rules
 
@@ -56,10 +53,14 @@ write only the given story, never siblings, README or artifacts.
 - Label everything per [ID conventions](../../id-conventions.md): child ACs are
   numbered and cited as `<STORY>-AC<n>`; story decisions are `D-<story suffix><n>`
   and name the epic decision they refine or override; tests are named per AC.
-- Record each settled decision under the **Decisions** subsection of Technical
-  notes, one line per question and answer, so later agents can rely on it. A
-  story decision that changes an epic-level decision is flagged in the returned
-  result for the planner to reflect in the register.
+- Record every material choice in the **Decisions** table (`ID | Options
+  considered | Recommended | Ruling`). Fill Options and Recommended; leave
+  Ruling `Proposed` unless the user rules in-session; mark ▲ for security,
+  persisted data, public contract or user-visible workflow. A story decision
+  that changes an epic decision says `refines/overrides D<nn>-<n>`; flag it in
+  the returned result for the planner's register back-reference.
+- Keep or add the **Plan at a glance** block (core.md) and update it to match
+  the refined ACs; the returned result repeats it verbatim.
 - Add an explicit out-of-scope list so implementers do not drift.
 - AI features, syllabus parsing, LMS integrations, grade calculations,
   flashcards, and native mobile apps are out of scope. Flag a story whose
@@ -102,18 +103,8 @@ views for the same feature. Settle, with the user where material:
 - Test cases to add: named component, accessibility, and responsive tests per
   acceptance criterion.
 
-## Security rules
+## Security and framework note
 
-- Never read, display, quote, or write to `.env`, `.env.*`, credential, key,
-  token, or secret-manager files. If a task needs a credential value, tell the
-  user to set it themselves.
-- Secrets never go into story files or docs — describe mechanisms ("SMTP
-  credentials via environment configuration"), never values.
-- If you encounter an exposed secret, flag its location without reproducing the value.
-
-## Framework note
-
-This is a write-restricted role. Whatever agent framework runs these
-instructions, restrict its write access to `docs/stories/` if the framework
-supports permission scoping; treat the restriction above as binding regardless
-of enforcement.
+Security rules are in `.agents/core.md` and bind here. This is a write-restricted
+role: restrict writes to `docs/stories/` where the runtime supports scoping;
+treat the restriction as binding regardless.

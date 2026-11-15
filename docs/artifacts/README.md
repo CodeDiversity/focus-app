@@ -1,83 +1,26 @@
 # Story records and legacy artifacts
 
-Keep each feature's plan, execution queue and artifacts in one delivery folder.
-Follow [delivery state](../../.agents/delivery-state.md); the parent README records
-the canonical paths. This directory remains the index for unmigrated historical
-records, not the default destination for new implementation artifacts.
-
-## Canonical layout
-
-```text
-docs/stories/<epic>/<parent>/
-├── README.md                         # active/next substory, execution queue
-├── <parent>.md                       # coordination summary
-├── <child>.md                        # one file per implementation slice
-├── plan-review.md                    # latest complete-plan review
-└── artifacts/
-    ├── <parent-story-id>/
-    │   ├── checkpoint.md
-    │   ├── implementation.md         # final child/evidence index
-    │   ├── review.md                 # one combined formal implementation review
-    │   └── walkthrough.md            # reviewer code explanation + manual tests
-    └── <child-story-id>/
-        ├── checkpoint.md
-        └── implementation.md
-```
-
-Use stable story IDs for new artifact folders.
-Read the parent's recorded paths before creating anything. Unmigrated features
-can explicitly retain `docs/artifacts/<existing-id>/` until an authorized move.
-Do not duplicate records or rename directories.
+Each feature keeps plan, queue and records in one delivery home; see
+[delivery state](../../.agents/delivery-state.md) for the layout. This
+directory is the index for unmigrated historical records only.
 
 ## Records and ownership
 
-- **checkpoint.md:** implementer-owned progress and resume state. Follow
-  [checkpoint execution](../../.agents/checkpoint-execution.md). Link back to the
-  parent queue for task ordering; verify Git state when resuming in any agent.
-- **implementation.md:** implementer-owned actual behavior, changes, commands,
-  results and remaining obligations. Reuse the same file across layer changes
-  and contexts. The parent record indexes every child and the combined Git scope.
-- **review.md:** the independent reviewer's report, saved by the reviewer.
-  Restricted runtimes use the reviewer skill's parent-persistence fallback.
-  Implementers never edit it. One final review covers
-  the entire parent after all children and required integration work finish;
-  see [review cadence](../../.agents/review-cadence.md). Explicit interim reports
-  are preserved as historical records, not required for each child.
-- **plan-review.md:** reviewer-owned whole-plan report, saved beside the plan by
-  the reviewer, with the same restricted-runtime fallback. Planner corrections
-  go in the README log, never in this report.
-  Later reviewer passes replace the latest report; committed history remains.
-- **walkthrough.md:** reviewer-owned final user document saved beside the final
-  implementation `review.md`, once per complete review unit. Explains the code,
-  correctness evidence after all mandatory corrections, and manual test steps
-  with expected results for each applicable workflow. Distinguishes executed
-  evidence, unexecuted user instructions and justified non-applicable checks.
-  Required before `Reviewed`/complete in both ordinary and autopilot reviews;
-  plan-only reviews and static audits do not create it. The reviewer verifies
-  and saves it before completion sync; the coordinator commits it and handles
-  permitted verbatim fallback persistence. Regenerate for a changed final scope,
-  preserving prior committed versions. See the
-  [final walkthrough gate](../../.agents/skills/reviewer/SKILL.md#final-user-walkthrough).
-- **review-round-<n>.md:** when a review unit needs more than one pass, each
-  earlier pass is kept verbatim in its own round file and `review.md` holds only
-  the latest verdict. Do not append passes to one growing report.
+- **implementation.md** (implementer): completed behavior, AC-by-AC outcome, verification, findings. The only home for test counts. The parent record is the review index: inventory, per-child diff ranges, test commands, AC/TR/DoD ownership.
+- **checkpoint.md** (implementer): only for multi-window or handed-off tasks; closed to a pointer at completion. See [checkpoint execution](../../.agents/checkpoint-execution.md).
+- **review.md** (reviewer): one combined report per parent review unit, ending with **How to verify by hand**. Earlier passes live verbatim in `review-round-<n>.md`. See [review cadence](../../.agents/review-cadence.md).
+- **plan-review.md** (reviewer): whole-plan report, only when a plan review was required.
+- **history.md** (planner): correction log, quality-gate table, superseded decisions.
+- **efficiency.md**: one row per dispatch ([measurement](../../.agents/context-efficiency.md)).
 
-Label every AC, decision and finding per [ID conventions](../../.agents/id-conventions.md).
-Historical `docs/jira-sync/` records are read-only; there is no tracker-sync role.
-
-Only the planner owns scope/dependency/decision changes. The implementer may
-update the README execution fields/table and active child status/artifact pointers
-as the narrow exception in delivery state. Refiners still write only their given
-story; reviewers write only their report, final walkthrough and passing-verdict scoped sync; auditors write
-nothing. Deferred persistence never grants another role broader write authority.
-Record final review outcome only from actual independent reviewer evidence.
+Historical `walkthrough.md` files (pre-2026-11-15) remain where they are; new
+reviews put that content inside `review.md`. Labels follow
+[ID conventions](../../.agents/id-conventions.md). `docs/jira-sync/` is a
+read-only historical ledger.
 
 ## Migrated delivery homes
 
-- [SP-105 — Password Reset](../stories/EP01/SP-105/README.md): A/B records moved to
-  its `artifacts/` folder. Old A/B directories contain navigation only. Reviewer
-  report bodies and historical path references remain unchanged.
+- [SP-105 — Password Reset](../stories/EP01/SP-105/README.md): A/B records moved to its `artifacts/` folder; old directories hold navigation only.
 
-Other existing directories here remain legacy records. A move preserves report
-contents and repairs live links; it does not imply fresh implementation, tests,
-review approval, or tracker synchronization.
+Other directories here are legacy records; a move preserves report contents
+and repairs live links and implies no new verification or approval.

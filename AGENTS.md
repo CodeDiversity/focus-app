@@ -1,103 +1,31 @@
 # StudyPilot repo agents
 
-Use the requested custom role in `.codex/agents/` when supported; `.vibe/agents/`
-provides the same roles for Vibe, and `.opencode/agents/` for OpenCode.
-Otherwise read its definition and shared skill.
-Role availability does not require delegation.
+Read [`.agents/core.md`](.agents/core.md) first — it is the only mandatory
+protocol file. Then load your role skill from the table there, the parent
+story README's execution queue, the active story, and the shared DoD in
+[`docs/epics/README.md`](docs/epics/README.md#definition-of-done).
 
-Resolve ownership once, then act. A role identifies the permitted writes; it
-does not require asking another agent to perform work already within that scope.
-Routine status/evidence updates and scoped commits are part of finishing the
-task. Use the [responsibility routing rule](.agents/context-efficiency.md#resolve-responsibility-once)
-for a genuine boundary: perform permitted work, route one concrete outstanding
-action when delegation is authorized, and continue independent work. Do not
-repeatedly debate ownership, bounce the same action between roles, or ask the
-user to arbitrate routine bookkeeping.
+Roles: **planner** (docs only), **refiner** (one story; technical + UI/UX in one
+pass), **implementer** (one sequential writer for all layers), **reviewer**
+(report; passing-verdict sync; static audit on request). The live chat session
+coordinates; there is no autopilot, judge or tracker-sync role. Runtime role
+definitions live in `.codex/agents/` (source); `.vibe/` and `.opencode/` are
+derived copies.
 
-| Role | Shared skill | Write boundary |
-| --- | --- | --- |
-| autopilot | `.agents/skills/autopilot/SKILL.md` | Scoped coordination/status and run record; refiner/reviewer output commits; permitted verbatim review fallback |
-| implementer | `.agents/skills/implementer/SKILL.md` | Code, tests, implementation/checkpoint artifacts; scoped execution-status updates |
-| planner | `.agents/skills/planner/SKILL.md` | Only `docs/` |
-| refiner | `.agents/skills/refiner/SKILL.md` | Only the given unimplemented story (technical grounding; plus UI/UX decisions for frontend stories) |
-| reviewer | `.agents/skills/reviewer/SKILL.md` | Report; final user walkthrough; passing verdict's scoped docs sync; **scoped commit of review artifacts and queue/status updates on passing verdict** |
-| dod-auditor | `.agents/skills/reviewer/SKILL.md` (static audit) | None |
+Reference (load the section you need):
 
-Supporting guidance (not roles): `.agents/skills/backend/SKILL.md` and
-`.agents/skills/frontend/SKILL.md`, loaded by the implementer per layer.
-There is no tracker-sync role; `docs/jira-sync/` is a historical ledger only.
+- [Playbook](.agents/workflow-graph.md) — the lifecycle edge table: who acts next and the check that decides it.
+- [Delivery state](.agents/delivery-state.md) — queue contract, delivery-home layout, README/history split.
+- [Story sizing](.agents/story-sizing.md) — slice size, sizing block, when to split.
+- [Planning checklist](.agents/planning-checklist.md) — quality gate; when a plan review is required.
+- [Checkpoint execution](.agents/checkpoint-execution.md) — multi-window tasks and resume.
+- [Review cadence](.agents/review-cadence.md) — one combined final review per parent.
+- [Measurement](.agents/context-efficiency.md) — `efficiency.md` schema and evidence reuse.
+- [ID conventions](.agents/id-conventions.md) · [Artifact conventions](docs/artifacts/README.md).
 
-An explicit autopilot invocation authorizes sequential delegation through the
-enclosing parent review unit, including remaining children, integration, fixes
-and independent review, subject to explicit user limits. Every specialist task
-must start in a new isolated context (Codex: `fork_turns = "none"`); never reuse
-finished agents across children or review rounds. If isolated dispatch is
-unavailable, persist a concrete fresh-session handoff rather than run roles
-inline. Ordinary single-child requests retain their scope. Gate selection is the
-[workflow graph](.agents/workflow-graph.md); the autopilot skill executes it and
-does not define a second router.
-
-One active implementer owns all layers sequentially in a shared workspace.
-Legacy backend/frontend agent requests route to implementer; load their technical
-skills only for affected layers. Coordinate a checkpoint handoff before another
-implementation session takes over. Preserve other contributors' work.
-
-For story work, read [delivery state](.agents/delivery-state.md) and the parent
-README's execution queue first. Load the requested role's skill, relevant epic,
-active story, shared DoD in `docs/epics/README.md`, and relevant contracts.
-Use section-level reads; expand when dependencies or evidence require it.
-
-Canonical workflow rules live in:
-
-- [Story sizing](.agents/story-sizing.md): planning, refinement and scope assessment.
-- [Checkpoint execution](.agents/checkpoint-execution.md): implementation/resume.
-- [Review cadence](.agents/review-cadence.md): review unit and final gate.
-- [Context and efficiency](.agents/context-efficiency.md): reads, handoffs and measurement.
-- [Workflow graph](.agents/workflow-graph.md): the only delivery router, checkpoint schema, and interrupts.
-- [ID conventions](.agents/id-conventions.md): every label family (ACs, TRs, decisions, findings, steps) and the re-letter policy.
-- [Artifact conventions](docs/artifacts/README.md): layout and records.
-
-Follow role write limits with every tool, including shell. Reviewer persistence
-and restricted-runtime fallback are defined in its skill; an auditor stays
-fully read-only. Never treat implementation completion as independent approval.
-Before marking a review unit `Reviewed`/complete, the reviewer must also prepare
-and verify its separate final `walkthrough.md`: code explanation, correctness
-evidence after correction rounds, and manual test steps/expected results for
-every applicable workflow, with honest execution labels. Both the final report
-and walkthrough must be saved first. This applies to ordinary reviews as well
-as autopilot; plan-only reviews and static audits do not create this document.
-
-Before returning a task, follow the [closeout contract](.agents/context-efficiency.md#task-closeout-contract):
-persist the role-authorized status/evidence, commit scoped writes when the role
-may mutate Git, and return status, artifact paths, commit hashes, verification
-and remaining work. **On a passing final implementation review, the reviewer commits the final `review.md`, `walkthrough.md`, and the passing-review docs sync (queue/status updates, correction log, parent status line).** On a non-passing verdict the reviewer saves the report only and returns the explicit Git handoff for deferred edits. The coordinator owns deferred status edits and commits only for non-passing verdicts; do not leave their ownership implicit or make the reviewer reconstruct progress.
-
-Never read, display, search inside, or write credential or secret files, including
-`.env` and `.env.*`. Flag exposed secrets by location without reproducing values.
-Existing authorization boundaries for trackers, shared databases, deployment and
-destructive actions remain in force.
-
-## Ownership scoping
-
-Every Prisma query for a student's academic data must include the authenticated student's `userId` in its `where` clause — use the helpers in `apps/api/src/common/ownership/ownership.ts` (`ownedWhere` for single-record where-clauses, `assertOwned` for fetched records, `assertAffected` for `updateMany`/`deleteMany` counts), and read the principal with `@CurrentUser()` (never `@Req()`/`@Request()` in controllers; the global `APP_GUARD` already 401s unauthenticated routes). Access that is not owned — the record missing, or owned by another student — returns the same uniform 404 with the generic message `Resource not found`. Never answer with a 403 or a distinct message: that reveals another student's records exist (an existence oracle). The canonical in-code copy of this convention is the header comment in `apps/api/src/common/ownership/ownership.ts`.
-
-## Shell access for agents
-
-The shell is a **direct top-level tool** (`shell`), available to every role without
-any special setup — it is not gated behind Code Mode. Do not look for it in the
-Code Mode (`execute`) catalog: `search()` there never lists it, and calling
-`tools.shell(...)` inside `execute` fails with `UnknownTool`, which can wrongly
-suggest this runtime has no shell at all. If a task seems blocked on "no terminal",
-check your direct tool list before routing work to a helper or declaring the gate
-unexecutable.
-
-Pass the repo or workspace path via the `workdir` parameter instead of `cd`-ing in
-the command string, and keep background/long-running commands explicit. Role write
-limits apply to every shell invocation exactly as to file writes: run only the
-commands your role is authorized to run (e.g. a reviewer runs read-only checks and
-never mutating Git or fix/format commands; an implementer commits only its scoped
-paths). Never read, display, or grep credential or secret files from the shell,
-including `.env` and `.env.*`.
+Role write limits apply to every tool including the shell. Never read or write
+secret files. Implementation completion is never approval; only a passing final
+reviewer report is.
 
 <!-- BEGIN:turborepo-agent-rules -->
 

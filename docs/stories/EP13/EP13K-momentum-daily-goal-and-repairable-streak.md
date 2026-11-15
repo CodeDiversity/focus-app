@@ -8,7 +8,13 @@
 **Dependencies:** EP07 session log (done); EP13D (dashboard placement); EP13I (the what-now card now carries the micro-start — momentum shares that surface); **EP13N implemented** (its named-choice control pattern is what the two goal preferences must use — D13-15). D13-11 provisional.
 **Reviewed:** 2026-11-15 — ACs revised so this story does not re-introduce the control pattern EP13N exists to remove (see *Review note*).
 
-## Summary
+## Plan at a glance
+
+- **What this changes:** a `GET /study-sessions/momentum` aggregate (minutes today vs `dailyGoalMinutes`, study-days this week vs `weeklyGoalDays`, streak of goal-met weeks) and a dashboard momentum display with a reduced-motion-safe celebration on finishing a focus session; two new preference keys using EP13N's named-choice control.
+- **Why it improves it:** showing up is rewarded and a missed day never resets anything — hard streaks punish exactly these students (product). Aggregation is one pure function over the EP07 session log; no compliance percentage exists anywhere to leak (code).
+- **Decisions needing you:** none yet — this story is `Needs refinement`; the refiner pass proposes D-K rows (goal defaults, celebration form, streak semantics) for your ruling before implementation.
+- **How to change this plan:** edit a Ruling cell in the Decisions table below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
+
 
 Reward showing up, never plan compliance. A `GET /study-sessions/momentum`
 endpoint aggregates the session log into: confirmed minutes today vs a modest
@@ -116,9 +122,11 @@ is feedback *about* showing up — it belongs after the thing it rewards.
 
 ### Decisions
 
-| ID | Decision | Rationale |
-|---|---|---|
-| — | None recorded yet. Rows here are `D-K<n>`; one that refines or overrides a register row ends with `(refines D13-<n>)` / `(overrides D13-<n>)` and the planner back-references it in the register ([ID conventions](../../../.agents/id-conventions.md)). | |
+| ID | Options considered | Recommended | Ruling |
+|---|---|---|---|
+| — | None recorded yet; proposed at refinement. | | Proposed |
+
+Rows are `D-K<n>`; one that refines or overrides a register row says `(refines D13-<n>)` / `(overrides D13-<n>)`. ▲ = material: the implementer stops and asks if still `Proposed`; other rows become `Ratified by default` at implementation start.
 
 ## Definition of Done
 
@@ -127,7 +135,7 @@ is feedback *about* showing up — it belongs after the thing it rewards.
 4. Actionable errors. 5. States. 6. Keyboard + announcements.
 7. Responsive. 8. Automated tests (TR-E13-11).
 9. Endpoint + preference keys documented.
-10–11. Combined EP13 parent review / reviewer walkthrough.
+10–11. Combined EP13 parent review / its "How to verify by hand" section.
 
 ## Sizing
 
