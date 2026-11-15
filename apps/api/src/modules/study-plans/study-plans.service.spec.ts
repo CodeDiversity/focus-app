@@ -23,15 +23,18 @@ import { UpdateStudyPreferencesDto } from './dto/update-study-preferences.dto';
  *   **into** `preferences.studyDefaults` (the bag's other keys survive); the
  *   scoped write (`{ id: userId }`) with 0 affected rows → the uniform 404.
  * - remaining work: the two **ownership-scoped** reads (the assignments and
- *   the `StudySession` aggregation), the civil-date conversion, the items
- *   built from the classification, the state-A unattributed total, the
- *   shared comparator's order and the uniform 404.
+ *   the `StudySession` `groupBy` aggregation — State B since EP13A: only
+ *   `COMPLETED` sessions count, attributed per assignment, null
+ *   `assignmentId` stays unattributed), the civil-date conversion, the items
+ *   built from the classification, the shared comparator's order and the
+ *   uniform 404.
  */
 describe('StudyPlansService (unit, mocked PrismaService)', () => {
   const userFindUnique = jest.fn();
   const userUpdateMany = jest.fn();
   const assignmentFindMany = jest.fn();
   const studySessionFindMany = jest.fn();
+  const studySessionGroupBy = jest.fn();
   const plannedSessionUpdateMany = jest.fn();
   const plannedSessionFindMany = jest.fn();
 
@@ -47,6 +50,7 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
     },
     studySession: {
       findMany: studySessionFindMany,
+      groupBy: studySessionGroupBy,
     },
     plannedSession: {
       updateMany: plannedSessionUpdateMany,
@@ -385,18 +389,20 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
       jest.setSystemTime(new Date('2026-10-30T12:00:00.000Z'));
       userFindUnique.mockResolvedValue({ timeZone: 'America/New_York' });
       assignmentFindMany.mockResolvedValue([]);
-      studySessionFindMany.mockResolvedValue([]);
+      studySessionGroupBy.mockResolvedValue([]);
     });
 
     afterEach(() => {
       jest.useRealTimers();
     });
 
-    it('scopes both reads to the authenticated student', async () => {
+    it('scopes both reads to the authenticated student; only COMPLETED sessions count (EP13A)', async () => {
       await service.getRemainingWork(userId);
 
       expect(assignmentFindMany.mock.calls[0][0].where).toEqual({ userId });
-      expect(studySessionFindMany.mock.calls[0][0].where).toEqual({ userId });
+      const aggregation = studySessionGroupBy.mock.calls[0][0];
+      expect(aggregation.where).toEqual({ userId, status: 'COMPLETED' });
+      expect(aggregation.by).toEqual(['assignmentId']);
     });
 
     it('never selects or reads Assignment.actualHours (D07-2, AC 4)', async () => {
@@ -484,18 +490,32 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
       expect(result.items[0].remainingMinutes).toBeNull();
     });
 
-    it('reports the confirmed minutes as unattributed and attributes none (state A, D06-7)', async () => {
+    it('attributes confirmed minutes per assignment and keeps null-assignment minutes unattributed (State B, EP13A)', async () => {
       assignmentFindMany.mockResolvedValue([assignmentRow()]);
-      studySessionFindMany.mockResolvedValue([
-        { id: 'session-1', durationMinutes: 45 },
-        { id: 'session-2', durationMinutes: 30 },
+      studySessionGroupBy.mockResolvedValue([
+        { assignmentId: 'assignment-1', _sum: { durationMinutes: 45 } },
+        { assignmentId: null, _sum: { durationMinutes: 30 } },
       ]);
 
       const result = await service.getRemainingWork(userId);
 
-      expect(result.unattributedConfirmedMinutes).toBe(75);
-      expect(result.items[0].confirmedMinutes).toBe(0);
-      expect(result.items[0].remainingMinutes).toBe(180);
+      expect(result.unattributedConfirmedMinutes).toBe(30);
+      expect(result.items[0].confirmedMinutes).toBe(45);
+      expect(result.items[0].remainingMinutes).toBe(135);
+    });
+
+    it('clamps remaining work at zero and still reports the finished item (AC-E13-05)', async () => {
+      assignmentFindMany.mockResolvedValue([assignmentRow()]);
+      studySessionGroupBy.mockResolvedValue([
+        { assignmentId: 'assignment-1', _sum: { durationMinutes: 200 } },
+      ]);
+
+      const result = await service.getRemainingWork(userId);
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].confirmedMinutes).toBe(200);
+      expect(result.items[0].remainingMinutes).toBe(0);
+      expect(result.unattributedConfirmedMinutes).toBe(0);
     });
 
     it('orders the items with the shared comparator: on-time, then overdue, then undated', async () => {
@@ -527,7 +547,7 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
 
       await expect404(service.getRemainingWork(userId));
       expect(assignmentFindMany).not.toHaveBeenCalled();
-      expect(studySessionFindMany).not.toHaveBeenCalled();
+      expect(studySessionGroupBy).not.toHaveBeenCalled();
     });
   });
 

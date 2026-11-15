@@ -13,7 +13,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP13D, EP13E, EP13H, EP13J, EP13K — `ui-refiner` pass (UI/UX decisions deliberately undecided, D13-14); implementation entry is **EP13A — implement** (backend, no UI decisions, all dependencies met).
+**Next substory:** EP13B — implement (EP13A implemented 2026-11-14; its confirmed-time attribution shape is in place). The `ui-refiner` passes for EP13D/E/H/J/K (D13-14) can run in parallel with backend work. Open evidence item riding to the parent review: EP13A's gated live-DB suites updated but not executed (F-EP13A-03).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (layer labels are scope, not concurrent roles).
 
@@ -21,7 +21,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP13A](./EP13A-plan-generation-counts-reality.md) | Ready | EP06/EP07 complete. No UI decisions. | Implement | — |
+| [EP13A](./EP13A-plan-generation-counts-reality.md) | Implemented — awaiting parent review | EP06/EP07 complete. No UI decisions. | None (unblocks EP13B/C/F/L) | `./artifacts/EP13A/implementation.md`, `./artifacts/EP13A/checkpoint.md`; unit/lint/typecheck green 2026-11-14; gated live suites updated, not executed (F-EP13A-03) |
 | [EP13B](./EP13B-planned-actual-link-and-lifecycle.md) | Ready | EP13A implemented (confirmed-time attribution shape). D13-3 provisional. | Implement after EP13A | — |
 | [EP13C](./EP13C-rolling-reconciliation-and-auto-forgiveness.md) | Ready | EP13A + EP13B implemented. D13-2 provisional (V-13-2). | Implement after EP13B | — |
 | [EP13D](./EP13D-plan-visibility-and-one-tap-start.md) | Needs refinement | EP13B (start-from-planned API) + EP13C (today read API). **ui-refiner pass required** (D13-14). | ui-refiner, then implement | — |

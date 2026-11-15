@@ -118,7 +118,11 @@ describeIntegration('study preferences data scoping (integration, real database)
     });
   }
 
-  /** Seed one study session for a student (direct write: the fixture). */
+  /**
+   * Seed one study session for a student (direct write: the fixture).
+   * `COMPLETED` because only completed sessions are confirmed time (State B,
+   * EP13A); without an `assignmentId` the minutes stay unattributed.
+   */
   async function seedSession(student: Student, durationMinutes: number) {
     return app.prisma.studySession.create({
       data: {
@@ -126,6 +130,7 @@ describeIntegration('study preferences data scoping (integration, real database)
         startTime: new Date('2026-10-28T14:00:00.000Z'),
         endTime: new Date('2026-10-28T15:00:00.000Z'),
         durationMinutes,
+        status: 'COMPLETED',
       },
     });
   }

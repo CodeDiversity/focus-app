@@ -61,6 +61,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
   const availabilitySlotFindMany = jest.fn();
   const courseFindMany = jest.fn();
   const studySessionFindMany = jest.fn();
+  const studySessionGroupBy = jest.fn();
   const studySessionCreate = jest.fn();
   const studySessionUpdate = jest.fn();
   const studySessionUpdateMany = jest.fn();
@@ -97,6 +98,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
     course: { findMany: courseFindMany },
     studySession: {
       findMany: studySessionFindMany,
+      groupBy: studySessionGroupBy,
       create: studySessionCreate,
       update: studySessionUpdate,
       updateMany: studySessionUpdateMany,
@@ -142,6 +144,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
     availabilitySlotFindMany.mockResolvedValue([]);
     courseFindMany.mockResolvedValue([]);
     studySessionFindMany.mockResolvedValue([]);
+    studySessionGroupBy.mockResolvedValue([]);
     plannedSessionFindMany.mockResolvedValue([]);
     studyPlanFindFirst.mockResolvedValue(null);
     studyPlanFindMany.mockResolvedValue([]);
@@ -298,6 +301,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
       expect(plannedSessionFindMany).not.toHaveBeenCalled();
       expect(assignmentFindMany).not.toHaveBeenCalled();
       expect(studySessionFindMany).not.toHaveBeenCalled();
+      expect(studySessionGroupBy).not.toHaveBeenCalled();
       expectNoWrites();
     });
 
@@ -367,24 +371,29 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
       });
     });
 
-    it('reuses getRemainingWork for unfinished work and the confirmed-minutes total (TR-E08-02)', async () => {
+    it('reuses the remaining-work computation; confirmedMinutes is the TOTAL confirmed time (TR-E08-02, State B since EP13A)', async () => {
       assignmentFindMany.mockResolvedValue([assignmentRow()]);
-      studySessionFindMany.mockResolvedValue([
-        { id: 'session-1', durationMinutes: 45 },
-        { id: 'session-2', durationMinutes: 30 },
+      studySessionGroupBy.mockResolvedValue([
+        { assignmentId: 'a-1', _sum: { durationMinutes: 45 } },
+        { assignmentId: null, _sum: { durationMinutes: 30 } },
       ]);
 
       const direct = await service.getRemainingWork(userId);
       const summary = await service.getRecoverySummary(userId);
 
-      // Same items, same order, same total — no second implementation.
+      // Same items, same order — no second implementation. The summary's
+      // total is attributed + unattributed (the EP08 contract's "total
+      // confirmed minutes"); the remaining-work payload reports only the
+      // unattributed remainder.
       expect(summary.unfinishedWork).toEqual(direct.items);
-      expect(summary.confirmedMinutes).toBe(direct.unattributedConfirmedMinutes);
+      expect(direct.unattributedConfirmedMinutes).toBe(30);
       expect(summary.confirmedMinutes).toBe(75);
       expect(summary.unfinishedWork).toHaveLength(1);
       expect(summary.unfinishedWork[0]).toMatchObject({
         assignmentId: 'a-1',
         title: 'Problem set 3',
+        confirmedMinutes: 45,
+        remainingMinutes: 75,
       });
     });
 
@@ -445,7 +454,11 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
 
       await service.catchUpPreview(userId);
 
-      const missedQuery = plannedSessionFindMany.mock.calls[0][0];
+      // Since EP13A `gatherPlanData` issues the all-planned busy read first;
+      // pick the missed query by its status filter rather than by index.
+      const missedQuery = plannedSessionFindMany.mock.calls
+        .map((call) => call[0])
+        .find((args) => args?.where?.status === 'SCHEDULED');
       expect(missedQuery.where).toEqual({
         studyPlan: { userId, date: { lt: new Date('2026-10-30T00:00:00.000Z') } },
         status: 'SCHEDULED',
@@ -864,11 +877,11 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
   });
 
   // =========================================================================
-  // P-05 drift pin — the save() twin of the same transaction
+  // Save↔confirm convergence pin — EP13A resolved the P-05 drift by design
   // =========================================================================
 
-  describe('save (EP06D) — the twin write path pinned against confirm drift (P-05)', () => {
-    it('save() deletes WITHOUT the SCHEDULED/locked filter and inserts WITHOUT a locked key — the two paths differ only where the contract says they must', async () => {
+  describe('save (EP06D + EP13A) — the twin write path now pinned IDENTICAL to confirm', () => {
+    it('save() deletes with the same SCHEDULED/locked:false filter and inserts locked:false — locked and completed sessions survive a normal save (AC-E13-02)', async () => {
       userFindUnique.mockResolvedValue({ timeZone: 'UTC', preferences: null });
       assignmentFindMany.mockResolvedValue([assignmentRow()]);
 
@@ -894,8 +907,13 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
 
       expect(transaction).toHaveBeenCalledTimes(1);
       const del = txPlannedSessionDeleteMany.mock.calls[0][0].where;
-      // EP06 save replaces EVERY row of the window — no status/locked filter.
+      // EP13A: save preserves locked and completed rows — the selective
+      // delete is byte-identical to EP08C's confirm (the P-05 drift pin's
+      // asymmetry was the EP06 defect this closes; both paths are now pinned
+      // to the SAME shape, so new drift still fails a test).
       expect(del).toEqual({
+        status: 'SCHEDULED',
+        locked: false,
         studyPlan: {
           userId,
           date: {
@@ -904,15 +922,57 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
           },
         },
       });
-      expect(del).not.toHaveProperty('status');
-      expect(del).not.toHaveProperty('locked');
 
       const inserted = txPlannedSessionCreateMany.mock.calls[0][0].data;
       expect(inserted[0].status).toBe('SCHEDULED');
-      // EP06 save never touches the lock flag (EP08 confirm pins
-      // `locked: false` — that asymmetry is the contract; both pins fail if
-      // either path drifts toward the other).
-      expect(inserted[0]).not.toHaveProperty('locked');
+      expect(inserted[0].locked).toBe(false);
+    });
+
+    it('save() busy set includes locked/completed planned rows (409) but never the replaced SCHEDULED non-locked rows (no self-conflict) — AC-E13-02', async () => {
+      userFindUnique.mockResolvedValue({ timeZone: 'UTC', preferences: null });
+      assignmentFindMany.mockResolvedValue([assignmentRow()]);
+
+      const saveDto = (startTime: string, endTime: string) =>
+        plainToInstance(
+          SaveStudyPlanDto,
+          {
+            from: '2026-10-30',
+            to: '2026-11-05',
+            sessions: [{ assignmentId: 'a-1', date: '2026-10-31', startTime, endTime }],
+          },
+          { enableImplicitConversion: true }
+        );
+
+      // A locked row in the window collides with the submitted slot → 409.
+      plannedSessionFindMany.mockResolvedValue([
+        plannedRow({
+          id: 'ps-locked',
+          locked: true,
+          studyPlan: { date: new Date('2026-10-31T00:00:00.000Z') },
+          startTime: new Date('2026-10-31T14:00:00.000Z'),
+          endTime: new Date('2026-10-31T15:00:00.000Z'),
+        }),
+      ]);
+      const body = await expect409(service.save(userId, saveDto('14:30', '15:30')));
+      expect((body.conflicts as Array<{ reason: string }>)[0].reason).toBe(
+        'OVERLAPS_CONFIRMED_SESSION'
+      );
+
+      // The same slot held by a replaced (SCHEDULED, non-locked) row is NOT
+      // busy — an unedited re-save never conflicts with itself (PR-002 rule,
+      // now shared by both write paths).
+      plannedSessionFindMany.mockResolvedValue([
+        plannedRow({
+          id: 'ps-replaced',
+          studyPlan: { date: new Date('2026-10-31T00:00:00.000Z') },
+          startTime: new Date('2026-10-31T14:00:00.000Z'),
+          endTime: new Date('2026-10-31T15:00:00.000Z'),
+        }),
+      ]);
+      await expect(service.save(userId, saveDto('14:00', '15:00'))).resolves.toMatchObject({
+        from: '2026-10-30',
+        to: '2026-11-05',
+      });
     });
   });
 });

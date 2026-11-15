@@ -367,7 +367,7 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
       // The fixtures: two on-time assignments (one of them without an
       // estimate), one later on-time assignment, one overdue one and one
       // without a due date — plus three finished ones that must be absent.
-      await assignment({
+      const onTimeRow = await assignment({
         title: seeded.onTime,
         estimatedHours: 2.5,
         dueDate: new Date('2099-01-01T12:00:00.000Z'),
@@ -393,14 +393,35 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
       await assignment({ title: 'Submitted', estimatedHours: 5, status: 'SUBMITTED' });
       await assignment({ title: 'Graded', estimatedHours: 5, status: 'GRADED' });
 
-      // A logged study session: state A cannot attribute it to an
-      // assignment, so it lands in the unattributed total (D06-7).
+      // The logged study sessions (State B since EP13A): a COMPLETED session
+      // without an assignment lands in the unattributed total; a COMPLETED
+      // session WITH an assignment is attributed to it; an unfinished
+      // (ACTIVE) session is never confirmed time, whatever its minutes say.
       await app.prisma.studySession.create({
         data: {
           userId: student.id,
           startTime: new Date('2026-10-28T14:00:00.000Z'),
           endTime: new Date('2026-10-28T14:45:00.000Z'),
           durationMinutes: 45,
+          status: 'COMPLETED',
+        },
+      });
+      await app.prisma.studySession.create({
+        data: {
+          userId: student.id,
+          assignmentId: onTimeRow.id,
+          startTime: new Date('2026-10-28T15:00:00.000Z'),
+          endTime: new Date('2026-10-28T15:30:00.000Z'),
+          durationMinutes: 30,
+          status: 'COMPLETED',
+        },
+      });
+      await app.prisma.studySession.create({
+        data: {
+          userId: student.id,
+          startTime: new Date('2026-10-29T14:00:00.000Z'),
+          durationMinutes: 999,
+          status: 'ACTIVE',
         },
       });
     }, 60_000);
@@ -449,8 +470,8 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
         courseCode: 'CS106',
         dueDate: '2099-01-01',
         estimatedMinutes: 150,
-        confirmedMinutes: 0,
-        remainingMinutes: 150,
+        confirmedMinutes: 30,
+        remainingMinutes: 120,
         status: 'PENDING',
         flagged: null,
       });
@@ -477,12 +498,14 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
       expect(byTitle[seeded.noDueDate].remainingMinutes).toBe(180);
     });
 
-    it('reports the confirmed minutes as unattributed (state A, D06-7)', async () => {
+    it('attributes COMPLETED minutes per assignment; the rest stay unattributed; ACTIVE never counts (State B, EP13A)', async () => {
       const response = await getRemainingWork(student).expect(HttpStatus.OK);
 
+      // The 45-minute completed session has no assignment → unattributed.
+      // The 999-minute ACTIVE session is not confirmed time at all.
       expect(response.body.unattributedConfirmedMinutes).toBe(45);
       for (const item of response.body.items) {
-        expect(item.confirmedMinutes).toBe(0);
+        expect(item.confirmedMinutes).toBe(item.title === seeded.onTime ? 30 : 0);
       }
     });
 

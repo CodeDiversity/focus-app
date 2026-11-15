@@ -91,9 +91,10 @@ export type RemainingWorkResponse = {
   items: RemainingWorkItem[];
   /**
    * The student's confirmed minutes that could **not** be attributed to an
-   * assignment (D06-7, seam V-07-3). In state A — today's schema, where
-   * `StudySession` has no `assignmentId` — that is the student's entire
-   * confirmed total.
+   * assignment (D06-7). Since EP13A (the State-B upgrade of seam V-07-3)
+   * attributed minutes live on each item's `confirmedMinutes`; this figure is
+   * the remainder — task-only sessions and sessions whose assignment was
+   * deleted (`onDelete: SetNull`).
    */
   unattributedConfirmedMinutes: number;
 };
@@ -302,6 +303,40 @@ export class StudyPlansService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
+   * EP13A — the one confirmed-time aggregation (closes the State-A seam,
+   * V-07-3 / V-08-5): confirmed minutes are the `COMPLETED` session-log rows,
+   * summed per assignment. Rows without an `assignmentId` (task-only
+   * sessions, sessions whose assignment was deleted — EP07A uses
+   * `onDelete: SetNull`) stay unattributed and never reduce an assignment's
+   * remaining work (V-13-1). Every planning read shares this helper; there is
+   * no second read path (AC-E13-01).
+   */
+  private async confirmedTimeByAssignment(userId: string): Promise<{
+    byAssignment: Map<string, number>;
+    unattributedMinutes: number;
+    totalMinutes: number;
+  }> {
+    const groups = await this.prisma.studySession.groupBy({
+      by: ['assignmentId'],
+      where: { userId, status: 'COMPLETED' },
+      _sum: { durationMinutes: true },
+    });
+    const byAssignment = new Map<string, number>();
+    let unattributedMinutes = 0;
+    let totalMinutes = 0;
+    for (const group of groups) {
+      const minutes = group._sum.durationMinutes ?? 0;
+      totalMinutes += minutes;
+      if (group.assignmentId === null) {
+        unattributedMinutes += minutes;
+      } else {
+        byAssignment.set(group.assignmentId, minutes);
+      }
+    }
+    return { byAssignment, unattributedMinutes, totalMinutes };
+  }
+
+  /**
    * GET /study-preferences — the student's **effective** study defaults: the
    * stored values with the per-field defaults filled in for any missing or
    * invalid field, then the documented repair order (the defensive reader,
@@ -429,6 +464,19 @@ export class StudyPlansService {
    * unauthenticated (global guard).
    */
   async getRemainingWork(userId: string): Promise<RemainingWorkResponse> {
+    const { items, unattributedConfirmedMinutes } = await this.remainingWorkInternal(userId);
+    return { items, unattributedConfirmedMinutes };
+  }
+
+  /**
+   * The shared remaining-work computation behind `getRemainingWork` and the
+   * recovery summary. Returns the public response plus the student's **total**
+   * confirmed minutes (attributed + unattributed), which the recovery summary
+   * reports but the remaining-work contract does not expose (EP13A).
+   */
+  private async remainingWorkInternal(
+    userId: string
+  ): Promise<RemainingWorkResponse & { totalConfirmedMinutes: number }> {
     // The principal's own row: the profile zone every date is reported in
     // (D06-24). A missing row is the uniform 404, never a 403.
     const user = await this.prisma.user.findUnique({
@@ -463,35 +511,13 @@ export class StudyPlansService {
     // session log; it does not consume EP07B's `GET
     // /study-sessions/confirmed-time` (seam V-07-2 stays closed).
     //
-    // STATE A (today's schema, D06-7): `StudySession` has no `assignmentId`
-    // and no `status`, so a confirmed minute cannot be attributed to an
-    // assignment. The student's total is reported as
-    // `unattributedConfirmedMinutes` and every item's `confirmedMinutes` is
-    // `0`.
-    //
-    // THE STATE-B UPGRADE (when EP07A's migration lands — seam V-07-3, named
-    // here, not a new story and not a blocker):
-    //   1. the `select` becomes
-    //      `{ id: true, durationMinutes: true, assignmentId: true, status: true }`;
-    //   2. only `status === 'COMPLETED'` sessions count as confirmed time (an
-    //      `ACTIVE`/`PAUSED` session is not confirmed time);
-    //   3. the rows are grouped by `assignmentId` into `confirmedByAssignment`
-    //      — a row with a null `assignmentId` (including one whose
-    //      assignment was deleted: EP07A uses `onDelete: SetNull`) stays in
-    //      `unattributedConfirmedMinutes`.
-    // The value it changes is `0` in both states until EP07A creates
-    // sessions, so EP06's behaviour is unchanged today.
-    const sessions = await this.prisma.studySession.findMany({
-      where: { userId },
-      select: { id: true, durationMinutes: true },
-    });
-    const unattributedConfirmedMinutes = sessions.reduce(
-      (sum, session) => sum + session.durationMinutes,
-      0
-    );
-    // State A: no session can be attributed to an assignment, so the map is
-    // empty and every item's `confirmedMinutes` is 0.
-    const confirmedByAssignment = new Map<string, number>();
+    // STATE B (EP13A — the documented V-07-3 upgrade, implemented): only
+    // `COMPLETED` sessions count as confirmed time, summed per assignment;
+    // a row with a null `assignmentId` (task-only, or the assignment was
+    // deleted — `onDelete: SetNull`) stays in `unattributedConfirmedMinutes`.
+    const confirmedTime = await this.confirmedTimeByAssignment(userId);
+    const unattributedConfirmedMinutes = confirmedTime.unattributedMinutes;
+    const confirmedByAssignment = confirmedTime.byAssignment;
 
     // The one civil-date conversion (D06-24): the stored instant becomes the
     // profile zone's civil date, and the domain stays zone-free.
@@ -517,6 +543,7 @@ export class StudyPlansService {
     return {
       items: ordered.map(toRemainingWorkItem),
       unattributedConfirmedMinutes,
+      totalConfirmedMinutes: confirmedTime.totalMinutes,
     };
   }
 
@@ -576,17 +603,17 @@ export class StudyPlansService {
     });
 
     // Reuse EP06's remaining-work classification + ordering for the
-    // unfinished-work list, and its confirmed-minutes total from the session
-    // log. Per-assignment confirmedMinutes stays State A (always 0) until the
-    // cross-epic State-B upgrade lands (V-08-5); EP08A does not re-implement
-    // the aggregation.
-    const remaining = await this.getRemainingWork(userId);
+    // unfinished-work list. Since EP13A (V-08-5 closed) per-assignment
+    // `confirmedMinutes` is real, and the summary's `confirmedMinutes` is the
+    // **total** confirmed study time (attributed + unattributed), per the
+    // EP08 contract; EP08A does not re-implement the aggregation.
+    const remaining = await this.remainingWorkInternal(userId);
 
     return {
       missedSessions,
       missedCount: missedSessions.length,
       unfinishedWork: remaining.items,
-      confirmedMinutes: remaining.unattributedConfirmedMinutes,
+      confirmedMinutes: remaining.totalConfirmedMinutes,
       message:
         "Here's where your plan stands. You can create a catch-up plan whenever you're ready.",
     };
@@ -638,6 +665,34 @@ export class StudyPlansService {
       where: { userId, endTime: { not: null } },
     });
 
+    // EP13A (AC-E13-01): confirmed study time is attributed per assignment
+    // (State B) and feeds the classification below, so work already done is
+    // never scheduled again.
+    const confirmedTime = await this.confirmedTimeByAssignment(userId);
+
+    // EP13A (AC-E13-02): one read of the planned sessions serves every
+    // planning path. Preserved rows (completed or locked) become busy
+    // intervals for the engine and for save/confirm conflict checks — a kept
+    // commitment can never be double-booked. The `completed`/`locked` tags
+    // ride into `replan`, which derives its preserved counts from them.
+    const plannedRows = await this.prisma.plannedSession.findMany({
+      where: { studyPlan: { userId } },
+      include: { studyPlan: { select: { date: true } } },
+    });
+    const plannedBusy: ReplanBusyInterval[] = plannedRows
+      .filter((ps) => ps.status === 'COMPLETED' || ps.locked)
+      .map((ps) => {
+        const start = zoneParts(ps.startTime, timeZone);
+        const end = zoneParts(ps.endTime, timeZone);
+        return {
+          date: start.date,
+          startMinute: hhmmToMinutes(start.time),
+          endMinute: hhmmToMinutes(end.time),
+          completed: ps.status === 'COMPLETED',
+          locked: ps.locked,
+        };
+      });
+
     const facts: AssignmentFacts[] = assignments.map((a) => ({
       id: a.id,
       title: a.title,
@@ -649,8 +704,34 @@ export class StudyPlansService {
       createdAt: a.createdAt,
     }));
 
-    const confirmedByAssignment = new Map<string, number>();
-    const { schedulable } = classifyAssignments(facts, confirmedByAssignment);
+    const { schedulable: classified } = classifyAssignments(facts, confirmedTime.byAssignment);
+
+    // EP13A (AC-E13-02): minutes held by locked, future, still-SCHEDULED
+    // sessions are kept commitments — subtract them from the work handed to
+    // the engine so locked time is never scheduled twice. Past locked rows
+    // subtract nothing: that commitment was not kept, so the work remains.
+    const lockedFutureByAssignment = new Map<string, number>();
+    for (const ps of plannedRows) {
+      if (ps.status !== 'SCHEDULED' || !ps.locked) continue;
+      if (ps.studyPlan.date.toISOString().slice(0, 10) < today) continue;
+      lockedFutureByAssignment.set(
+        ps.assignmentId,
+        (lockedFutureByAssignment.get(ps.assignmentId) ?? 0) + ps.durationMinutes
+      );
+    }
+    // Zero-remaining assignments are effectively complete (AC-E13-05): they
+    // stay in the remaining-work read with `remainingMinutes: 0`, but they are
+    // not engine input — the engine marks every overdue assignment `OVERDUE`
+    // even with nothing left to place (scheduler.ts), which would surface a
+    // spurious warning for finished work.
+    const schedulable = classified
+      .map((a) => {
+        const lockedMinutes = lockedFutureByAssignment.get(a.id) ?? 0;
+        return lockedMinutes > 0
+          ? { ...a, remainingMinutes: Math.max(0, a.remainingMinutes - lockedMinutes) }
+          : a;
+      })
+      .filter((a) => a.remainingMinutes > 0);
 
     const available: WeeklyWindow[] = [];
     const blocked: WeeklyWindow[] = [];
@@ -673,17 +754,22 @@ export class StudyPlansService {
         });
       }
     }
-    const busy: DatedInterval[] = sessions
-      .filter((s): s is typeof s & { endTime: Date } => s.endTime !== null)
-      .map((s) => {
-        const start = zoneParts(s.startTime, timeZone);
-        const end = zoneParts(s.endTime, timeZone);
-        return {
-          date: start.date,
-          startMinute: hhmmToMinutes(start.time),
-          endMinute: hhmmToMinutes(end.time),
-        };
-      });
+    // Confirmed study sessions stay untagged (they count towards neither
+    // preserved total); preserved planned sessions carry their tags (EP13A).
+    const busy: ReplanBusyInterval[] = [
+      ...sessions
+        .filter((s): s is typeof s & { endTime: Date } => s.endTime !== null)
+        .map((s) => {
+          const start = zoneParts(s.startTime, timeZone);
+          const end = zoneParts(s.endTime, timeZone);
+          return {
+            date: start.date,
+            startMinute: hhmmToMinutes(start.time),
+            endMinute: hhmmToMinutes(end.time),
+          };
+        }),
+      ...plannedBusy,
+    ];
 
     const titleById = new Map(assignments.map((a) => [a.id, a.title]));
     const dueById = new Map(
@@ -796,34 +882,16 @@ export class StudyPlansService {
       };
     });
 
-    // Planned sessions (completed + locked) for the busy set.
-    const plannedSessions = await this.prisma.plannedSession.findMany({
-      where: { studyPlan: { userId } },
-      include: { studyPlan: { select: { date: true } } },
-    });
-    const plannedBusy = plannedSessions
-      .filter((ps) => ps.status === 'COMPLETED' || ps.locked)
-      .map((ps) => {
-        const start = zoneParts(ps.startTime, data.timeZone);
-        const end = zoneParts(ps.endTime, data.timeZone);
-        return {
-          date: start.date,
-          startMinute: hhmmToMinutes(start.time),
-          endMinute: hhmmToMinutes(end.time),
-          completed: ps.status === 'COMPLETED',
-          locked: ps.locked,
-        };
-      });
-
-    const busy = [...data.busy.map((b) => ({ ...b })), ...plannedBusy];
-
+    // The busy set (confirmed sessions + tagged completed/locked planned
+    // rows) is gathered once in `gatherPlanData` (EP13A); `replan` derives
+    // `lockedPreserved`/`completedPreserved` from the tags.
     const output = replan({
       days: data.days,
       assignments: data.schedulable,
       availability: data.available,
       blocked: data.blocked,
       classes: data.classes,
-      busy: busy as ReplanBusyInterval[],
+      busy: data.busy,
       missedSessions,
       preferences: data.preferences,
     });
@@ -953,25 +1021,11 @@ export class StudyPlansService {
       }
     }
 
-    const preservedPlanned = await this.prisma.plannedSession.findMany({
-      where: { studyPlan: { userId } },
-      include: { studyPlan: { select: { date: true } } },
-    });
-    const preservedBusy: DatedInterval[] = preservedPlanned
-      .filter((ps) => ps.status === 'COMPLETED' || ps.locked)
-      .map((ps) => {
-        const start = zoneParts(ps.startTime, data.timeZone);
-        const end = zoneParts(ps.endTime, data.timeZone);
-        return {
-          date: start.date,
-          startMinute: hhmmToMinutes(start.time),
-          endMinute: hhmmToMinutes(end.time),
-        };
-      });
-
-    const busyDated = [...data.busy, ...preservedBusy].filter(
-      (b) => b.date >= dto.from && b.date <= dto.to
-    );
+    // `data.busy` already contains the preserved (completed/locked) planned
+    // rows as busy intervals — gathered once in `gatherPlanData` (EP13A). The
+    // replaced SCHEDULED non-locked rows are excluded by construction
+    // (PR-002), so an unedited confirm never conflicts with itself.
+    const busyDated = data.busy.filter((b) => b.date >= dto.from && b.date <= dto.to);
 
     const submitted = dto.sessions.map((s) => ({
       assignmentId: s.assignmentId,
@@ -1218,8 +1272,15 @@ export class StudyPlansService {
 
       const fromDate = new Date(`${dto.from}T00:00:00.000Z`);
       const toDate = new Date(`${dto.to}T00:00:00.000Z`);
+      // EP13A (AC-E13-02): save preserves locked and completed sessions —
+      // only `SCHEDULED && !locked` rows are replaced, the same selective
+      // delete as EP08C's catch-up confirm (no save↔confirm drift).
       await tx.plannedSession.deleteMany({
-        where: { studyPlan: { userId, date: { gte: fromDate, lte: toDate } } },
+        where: {
+          status: 'SCHEDULED',
+          locked: false,
+          studyPlan: { userId, date: { gte: fromDate, lte: toDate } },
+        },
       });
 
       if (dto.sessions.length > 0) {
@@ -1231,6 +1292,7 @@ export class StudyPlansService {
             endTime: wallClockToInstant(s.date, s.endTime, data.timeZone),
             durationMinutes: hhmmToMinutes(s.endTime) - hhmmToMinutes(s.startTime),
             status: 'SCHEDULED',
+            locked: false,
           })),
         });
       }
