@@ -7,7 +7,6 @@
 **Status:** Implemented — awaiting parent review (2026-11-14; record `./artifacts/EP13D/implementation.md`)
 **Refined:** 2026-11-14 (ui-refiner)
 **Dependencies:** EP13B (`POST /study-sessions/from-planned/:id`), EP13C (`GET /study-plans/today`) — both implemented.
-**Jira key:** Pending creation
 
 ## Summary
 
@@ -186,6 +185,3 @@ Vitest + React Testing Library, colocated `*.test.tsx` (repo convention):
 - **Dependencies:** EP13B, EP13C (both implemented). Blocks EP13I, EP13K.
 - **Exclusions:** nav/recovery reframing (EP13E), micro-start (EP13I), momentum (EP13K).
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).

@@ -1,9 +1,9 @@
 # EP13 Story Breakdown — Adaptive Scheduling for ADHD
 
-**Epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md) (Jira: Pending creation)
+**Epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md)
 **Milestone:** M6 (release 1.1; user-approved 2026-11-14, D13-12)
 **Epic dependency:** EP06, EP07, EP08 (all complete and parent-reviewed). EP13 extends the EP06 engine in place — no second scheduler, no AI (D13-1). Uses EP12A's civil-date helpers (`apps/api/src/common/lib/civil-date.ts`).
-**Status:** Breakdown complete (planner, 2026-11-14). Quality gate: **Plan Ready**. D13-4 (flex-session model) ruled option (b) 2026-11-15 and implemented by EP13G/EP13H; D13-8 keeps reminders/notifications out of scope pending a capability decision. Plan review: not yet run. Plan correction pass 2026-11-15 (EP13P-AC4; see Plan correction log). Jira keys: Pending creation (no sync authorized).
+**Status:** Breakdown complete (planner, 2026-11-14). Quality gate: **Plan Ready**. D13-4 (flex-session model) ruled option (b) 2026-11-15 and implemented by EP13G/EP13H; D13-8 keeps reminders/notifications out of scope pending a capability decision. Plan review: not yet run. Plan correction pass 2026-11-15 (EP13P-AC4; see Plan correction log). No tracker sync (user decision 2026-11-15).
 
 ## Execution queue
 
@@ -31,10 +31,10 @@
 | [EP13H](./EP13H-flexible-sessions-ui.md) | Implemented — awaiting parent review | EP13G implemented; D13-4 ruled option (b). UI/UX settled (D-H1…D-H12, commit e272f4d). | None | `./artifacts/EP13H/implementation.md`, `./artifacts/EP13H/checkpoint.md`; web 1179 passed + api 1015 passed, lint/typecheck/format clean 2026-11-15; 8 pre-existing CalendarPage failures inherited not absorbed (F-EP13H-04); manual a11y pass open (F-EP13H-01, third instance); flex-initiation counterweight routed to EP13I/K ui-refiners (F-EP13H-02) |
 | [EP13H2](./EP13H2-flex-details-and-calendar-suite-repair.md) | Implemented — awaiting parent review | EP13H implemented. Fix story (user decision 2026-11-15): F-EP13H-03 + the CalendarPage suite. | None | `./artifacts/EP13H2/implementation.md`; **web 1189 passed, 0 failed** (first fully green run since 2026-11-14 — root cause: clock-dependent suite with date-frozen fixtures, test-only repair); closes F-EP13D-01/F-EP13E-02/F-EP13H-03/F-EP13H-04 |
 | [EP13I](./EP13I-micro-start-and-hyperfocus-absorption.md) | Implemented — awaiting parent review | EP13B + EP13D + EP13H implemented. UI/UX settled (D-I1…D-I9, commit 06ee759); V-13-6 resolved as D-I8. | None | `./artifacts/EP13I/implementation.md`, `./artifacts/EP13I/checkpoint.md`; api 1028 passed + **web 1200 passed, 0 failed**, lint/typecheck/format clean 2026-11-15; gated journeys CI-executed (F-EP13I-03); manual a11y pass open (F-EP13I-01, fourth instance); absorbed rows COMPLETED without a row link — schema limit, planner to ratify V-13-6 (D-I8) |
-| [EP13L](./EP13L-deterministic-estimate-calibration.md) | Ready | EP13A + EP13F + EP13G implemented. D13-7 provisional. AC-5 added 2026-11-15 (calibrated work drives the EP13G anchor partition). | **Implement next** (1st of the remaining five) | — |
+| [EP13L](./EP13L-deterministic-estimate-calibration.md) | Ready | EP13A + EP13F + EP13G implemented. D13-7 provisional. EP13L-AC5 added 2026-11-15 (calibrated work drives the EP13G anchor partition). | **Implement next** (1st of the remaining five) | — |
 | [EP13N](./EP13N-adhd-aligned-preference-controls.md) | Ready | EP13F implemented. Design settled in-story (D13-15). **Moved ahead of EP13K 2026-11-15 (D13-17)** so the named-choice control exists before EP13K adds two more goal preferences. | Implement after EP13L | — |
-| [EP13K](./EP13K-momentum-daily-goal-and-repairable-streak.md) | Needs refinement | EP07 session log (done); EP13D + EP13I (shared dashboard surface); **EP13N implemented** (control pattern, D13-15). D13-11 provisional. **ui-refiner pass required** (D13-14). | ui-refiner, then implement (after EP13N) | — |
-| [EP13J](./EP13J-energy-aware-availability-and-placement.md) | Ready | EP13F + EP13G implemented. D13-10 provisional (V-13-5). AC-3/AC-5 revised 2026-11-15 (anchor-inclusive identity; energy must survive interval merging). | Implement after EP13K — last feature child (D13-17) | — |
+| [EP13K](./EP13K-momentum-daily-goal-and-repairable-streak.md) | Needs refinement | EP07 session log (done); EP13D + EP13I (shared dashboard surface); **EP13N implemented** (control pattern, D13-15). D13-11 provisional. **refiner pass required** (D13-14). | refiner pass, then implement (after EP13N) | — |
+| [EP13J](./EP13J-energy-aware-availability-and-placement.md) | Ready | EP13F + EP13G implemented. D13-10 provisional (V-13-5). EP13J-AC3/EP13J-AC5 revised 2026-11-15 (anchor-inclusive identity; energy must survive interval merging). | Implement after EP13K — last feature child (D13-17) | — |
 | [EP13M](./EP13M-cross-layer-e2e-and-parent-index.md) | Queued | EP13A–EP13N implemented. D13-4 resolved, so the flex journeys are unconditional. | Implement last; **performs the combined manual a11y pass** (TR-E13-14 for EP13D/E/H/I/K) | — |
 | [EP13P](./EP13P-agent-lifecycle-and-record-clarity.md) | Queued | None (docs/process only; outside the EP13 application review unit, D13-18). ACs 1–3 need user-granted writes outside `docs/`. | Any time; does not block EP13L–EP13M | Audit evidence recorded in the story itself |
 
@@ -46,23 +46,23 @@ Why this order: A/B/C are the backend spine — the plan cannot "react to realit
 
 ## Stories
 
-| Story | Epic proposed story | Layer | Jira |
-|---|---|---|---|
-| [EP13A](./EP13A-plan-generation-counts-reality.md) | 1. Make plan generation count reality | Backend | Pending creation |
-| [EP13B](./EP13B-planned-actual-link-and-lifecycle.md) | 2. Link planned sessions to focus sessions | Backend | Pending creation |
-| [EP13C](./EP13C-rolling-reconciliation-and-auto-forgiveness.md) | 3. Roll unfinished past sessions forward | Backend | Pending creation |
-| [EP13D](./EP13D-plan-visibility-and-one-tap-start.md) | 4. Surface the plan: calendar, dashboard, one-tap start | Frontend | Pending creation |
-| [EP13E](./EP13E-fresh-start-reframing-and-navigation.md) | 3./4. frontend half: fresh-start framing, recovery demotion, navigation | Frontend | Pending creation |
-| [EP13F](./EP13F-adhd-aware-placement-engine-v2.md) | 5. Placement rework: breaks, density, interleaving, min/max | Backend (pure domain) | Pending creation |
-| [EP13G](./EP13G-flexible-day-anchored-sessions-api.md) | 6. Flexible day-anchored sessions (model + engine + API) | Backend | Pending creation |
-| [EP13H](./EP13H-flexible-sessions-ui.md) | 6. Flexible day-anchored sessions (UI) | Frontend | Pending creation |
-| [EP13I](./EP13I-micro-start-and-hyperfocus-absorption.md) | 8. Micro-start and hyperfocus absorption (re-lettered from EP13J, D13-16) | Frontend (+ small API) | Pending creation |
-| [EP13J](./EP13J-energy-aware-availability-and-placement.md) | 7. Energy-tagged availability and placement (re-lettered from EP13I, D13-16) | Backend + Frontend | Pending creation |
-| [EP13K](./EP13K-momentum-daily-goal-and-repairable-streak.md) | 9. Momentum feedback | Backend + Frontend | Pending creation |
-| [EP13L](./EP13L-deterministic-estimate-calibration.md) | 10. Deterministic estimate calibration | Backend (+ small frontend annotation) | Pending creation |
-| [EP13M](./EP13M-cross-layer-e2e-and-parent-index.md) | 11. Cross-layer end-to-end verification + parent index | Integration | Pending creation |
-| [EP13N](./EP13N-adhd-aligned-preference-controls.md) | — (correction story, user decision 2026-11-15: reshape EP13F's two preference fields for ADHD users; see D13-15) | Frontend | Pending creation |
-| [EP13P](./EP13P-agent-lifecycle-and-record-clarity.md) | — (process story, user decision 2026-11-15: agent-lifecycle audit and record/label clarity plan; see D13-18. Letter O skipped to avoid O/0 ambiguity) | Documentation / process | Pending creation |
+| Story | Epic proposed story | Layer |
+|---|---|---|
+| [EP13A](./EP13A-plan-generation-counts-reality.md) | 1. Make plan generation count reality | Backend |
+| [EP13B](./EP13B-planned-actual-link-and-lifecycle.md) | 2. Link planned sessions to focus sessions | Backend |
+| [EP13C](./EP13C-rolling-reconciliation-and-auto-forgiveness.md) | 3. Roll unfinished past sessions forward | Backend |
+| [EP13D](./EP13D-plan-visibility-and-one-tap-start.md) | 4. Surface the plan: calendar, dashboard, one-tap start | Frontend |
+| [EP13E](./EP13E-fresh-start-reframing-and-navigation.md) | 3./4. frontend half: fresh-start framing, recovery demotion, navigation | Frontend |
+| [EP13F](./EP13F-adhd-aware-placement-engine-v2.md) | 5. Placement rework: breaks, density, interleaving, min/max | Backend (pure domain) |
+| [EP13G](./EP13G-flexible-day-anchored-sessions-api.md) | 6. Flexible day-anchored sessions (model + engine + API) | Backend |
+| [EP13H](./EP13H-flexible-sessions-ui.md) | 6. Flexible day-anchored sessions (UI) | Frontend |
+| [EP13I](./EP13I-micro-start-and-hyperfocus-absorption.md) | 8. Micro-start and hyperfocus absorption (re-lettered from EP13J, D13-16) | Frontend (+ small API) |
+| [EP13J](./EP13J-energy-aware-availability-and-placement.md) | 7. Energy-tagged availability and placement (re-lettered from EP13I, D13-16) | Backend + Frontend |
+| [EP13K](./EP13K-momentum-daily-goal-and-repairable-streak.md) | 9. Momentum feedback | Backend + Frontend |
+| [EP13L](./EP13L-deterministic-estimate-calibration.md) | 10. Deterministic estimate calibration | Backend (+ small frontend annotation) |
+| [EP13M](./EP13M-cross-layer-e2e-and-parent-index.md) | 11. Cross-layer end-to-end verification + parent index | Integration |
+| [EP13N](./EP13N-adhd-aligned-preference-controls.md) | — (correction story, user decision 2026-11-15: reshape EP13F's two preference fields for ADHD users; see D13-15) | Frontend |
+| [EP13P](./EP13P-agent-lifecycle-and-record-clarity.md) | — (process story, user decision 2026-11-15: agent-lifecycle audit and record/label clarity plan; see D13-18. Letter O skipped to avoid O/0 ambiguity) | Documentation / process |
 
 **Why EP13F is its own pure-domain child** (like EP06C/EP08B): breaks, density cap, interleaving and min/max enforcement are placement-algorithm invariants that must be unit-tested deterministically without HTTP or persistence; folding them into a service story would bury the determinism/purity contract.
 
@@ -130,7 +130,7 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 
 ## Shared contracts
 
-Field names and semantics below are the stable seam; presentation belongs to the `ui-refiner` (D13-14). All date work uses EP12A's civil-date helpers; the engine stays in "civil date + minute of day".
+Field names and semantics below are the stable seam; presentation belongs to the `refiner` pass (D13-14). All date work uses EP12A's civil-date helpers; the engine stays in "civil date + minute of day".
 
 ### Data model (additive migrations; owner in parentheses)
 
@@ -164,7 +164,7 @@ Preferences bag (`preferences.studyDefaults`, EP06 contract in `domain/study-pla
 - `SCHEDULED` → `IN_PROGRESS`: a linked focus session starts from the planned session.
 - `IN_PROGRESS`/`SCHEDULED` → `COMPLETED`: a linked focus session finishes with ≥1 confirmed minute (D13-3 provisional).
 - `SCHEDULED` → `RESCHEDULED`: the daily reconciliation rolls an unstarted past session forward (D13-2 provisional; the row is preserved — history is never deleted).
-- `SKIPPED`: reserved for an explicit student dismissal (EP13D "not doing this one" affordance, if the ui-refiner keeps it).
+- `SKIPPED`: reserved for an explicit student dismissal (the EP13D "not doing this one" affordance was not shipped — D-D5).
 - Reconciliation and lifecycle transitions never write `StudySession`, `Assignment` or `Task` (extends AC-E08-03).
 
 ### Reconciliation (EP13C)
@@ -207,8 +207,8 @@ Existing endpoints keep their shapes; `POST /study-plans/preview` and the saved-
 | D13-11 | Streak = study days per Monday-start week vs `weeklyGoalDays` (default 3); a missed day never resets within-week progress; the long streak counts consecutive goal-met weeks. No consecutive-day streaks. | Provisional. |
 | D13-12 | EP13 approved as post-MVP milestone M6, release 1.1; large changes to EP06 scheduling behavior authorized. | User decision 2026-11-14 (this request). |
 | D13-13 | Absorption: the next `SCHEDULED` planned session of the same assignment on the same civil day is marked `COMPLETED` and linked to the running session; the running session's `plannedMinutes` grows by its duration. | Provisional (V-13-6). **Refined by D-I8** (EP13I, 2026-11-15): no row-level link to the absorbed row — `plannedSessionId` is single-valued — the COMPLETED flip in the same transaction is the audit trail. V-13-6 resolved. |
-| D13-14 | EP13D, EP13E, EP13H, EP13I, EP13K are `Needs refinement` until their `ui-refiner` pass settles layout, copy, affordances, states, keyboard and responsive behavior. | Planner skill UI/UX handoff rule. |
-| D13-15 | **EP13N added** (initially after EP13M; re-sequenced before EP13K by D13-17): EP13F's `densityPercent` numeric input is replaced by three named choices (Relaxed 60 / Balanced 80 / Packed 100, plus an honest Custom for non-preset values); `breakMinutes` stays numeric. Stored contract unchanged. Rationale documented in the story: a ratio of an unmeasured quantity is an executive-function trap, and the percent is the engine's vocabulary, not the student's. | **User decision 2026-11-15** (raised from the EP13F implementation note). |
+| D13-14 | EP13D, EP13E, EP13H, EP13I, EP13K are `Needs refinement` until their `refiner` pass (UI/UX section) settles layout, copy, affordances, states, keyboard and responsive behavior. | Planner skill UI/UX handoff rule. EP13D/E/H/I passes done (D-D1…13, D-E1…15, D-H1…12, D-I1…9); EP13K pending. |
+| D13-15 | **EP13N added** (initially after EP13M; re-sequenced before EP13K by D13-17): EP13F's `densityPercent` numeric input is replaced by three named choices (Relaxed 60 / Balanced 80 / Packed 100, plus an honest Custom for non-preset values); `breakMinutes` stays numeric. Stored contract unchanged. Rationale documented in the story: a ratio of an unmeasured quantity is an executive-function trap, and the percent is the engine's vocabulary, not the student's. | **User decision 2026-11-15** (raised from the EP13F implementation note). Refined by D-N1/D-N2 (EP13N). |
 | D13-16 | **EP13I ⇄ EP13J re-letter**: micro-start/hyperfocus absorption is now EP13I and energy-aware placement is EP13J, so the queue's letters match the new priority — F-EP13H-02's finding that day-anchored (flex) sessions remove the clock as an initiation cue, so the counterweight (micro-start) must land before placement gets smarter. Artifacts and story text dated before 2026-11-15 use the old lettering; historical records are preserved verbatim. | **User decision 2026-11-15.** |
 | D13-17 | **Remaining five re-sequenced: EP13L → EP13N → EP13K → EP13J → EP13M** (letters unchanged — they are stable IDs now referenced by commits and artifact paths; the queue row order carries execution order per the delivery-state contract). Why: EP13N's named-choice control must exist **before** EP13K adds two more goal preferences, or the same ADHD-hostile numeric input ships twice and is fixed twice; EP13L completes the "plans count reality" spine (A→F→L) and is purely additive; EP13J (energy) is the most speculative child (V-13-5 heuristic unvalidated) so it runs last among the feature children, where a descope would cost least. | **User-requested review, 2026-11-15.** |
 | D13-18 | **EP13P added** (process story): agent-lifecycle audit and record/label clarity plan, hosted in EP13 because its evidence comes from EP13 delivery. It is **outside the EP13 final implementation review unit**; its sign-off is a plan-style review of the edited documents. Letter O skipped (O/0 ambiguity). | **User-requested review, 2026-11-15.** |
@@ -230,7 +230,7 @@ Existing endpoints keep their shapes; `POST /study-plans/preview` and the saved-
 - `apps/web/src/features/focus-session/model/resolveDefaultSessionMinutes.ts`: reads `studyDefaults.sessionMinutes` — a key EP06 never writes (contract key is `sessionLengthMinutes`), so the saved preference is ignored (V-07-1 re-check outcome; fixed by EP13D).
 - `apps/web/src/pages/calendar/` + `calendar.service.ts`: no PLANNED_SESSION event type (EP06's V-05-1 still open; EP13D closes it).
 - `apps/web/src/widgets/header/ui/navGroups.ts`: no nav entry for `/focus` or `/catch-up` (EP13E).
-- Unverified (disclosed): exact RTK Query slice layout for study plans/dashboard (explored at summary level, not line level); ui-refiner outcomes for D13-14 surfaces; browser rendering (no screenshots).
+- Unverified (disclosed): exact RTK Query slice layout for study plans/dashboard (explored at summary level, not line level); the EP13K refiner outcome (D13-14); browser rendering (no screenshots).
 
 ### Security / privacy / accessibility invariants
 
@@ -267,7 +267,7 @@ Child implementation completion unblocks dependents; only the passing combined r
 | 7 | Dependency mapping | Pass | Queue order + per-row dependencies (D13-17); D13-4 ruled and implemented; the remaining refiner gate (EP13K) named. |
 | 8 | Material decisions | Pass (one standing out-of-scope item) | D13-4 ruled (b) 2026-11-15; D13-8 (notifications capability) recorded as out of scope, a decision is needed only to ever add it. All other decisions settled or provisional with verification tasks. |
 | 9 | Correction log | Pass | First plan of this epic; log initialized empty below. |
-| 10 | Jira identity | Not applicable | No sync authorized; all keys Pending creation. |
+| 10 | Identifier consistency | Pass | Per `.agents/id-conventions.md` (2026-11-15): qualified child ACs in queue cells and the unimplemented stories (EP13J/K/L/M/N), register in numeric order with override back-references (D13-13 ← D-I8, D13-15 ← D-N1/D-N2), no typed counts. No tracker keys (no sync, user decision 2026-11-15). |
 
 ### Plan correction log
 

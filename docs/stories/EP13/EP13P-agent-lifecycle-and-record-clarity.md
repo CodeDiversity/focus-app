@@ -6,7 +6,6 @@
 **Layer:** Documentation / process (no application code)
 **Status:** Queued
 **Dependencies:** None on application children. Can run any time; it does not block and is not blocked by EP13L–EP13M.
-**Jira key:** Pending creation
 **Created:** 2026-11-15 (user-requested lifecycle review)
 
 ## Summary
@@ -33,7 +32,7 @@ sign-off is a plan-style review of the edited documents.
 | dod-auditor | Keep | The `judge` node is the graph's most-used edge target; read-only reconciliation is cheap and prevents gate drift. |
 | refiner + ui-refiner | **Merge into one `refiner`** | The two skills are ~80 % identical text; only the question checklist differs. Keep the UI/UX checklist as a section the refiner loads for frontend stories — the same supporting-skill pattern the implementer already uses for backend/frontend guidance. Saves one full dispatch (fresh context, closeout, commit) per frontend child and removes two graph edges (`ui_unknown`/`ui_needed` fold into the technical-refinement gate with a UI flag). |
 | backend / frontend skills | Keep as-is | Already supporting guidance, not agents. |
-| jira-sync | **Park (keep the skill, drop from active docs)** | Every key in the repo is `Pending creation`; no sync has ever been authorized. Until Jira is real, the role is dead weight in AGENTS.md, delivery-state and the planner skill. One pointer line suffices. |
+| jira-sync | **Park (keep the skill, drop from active docs)** — superseded 2026-11-15: user decision removed jira-sync entirely (record EP13P-AC3) | Every key in the repo is `Pending creation`; no sync has ever been authorized. Until Jira is real, the role is dead weight in AGENTS.md, delivery-state and the planner skill. One pointer line suffices. |
 
 ### B. Broken and drifted references (mechanical fixes)
 
@@ -124,7 +123,7 @@ review is one 942-line file holding three passes with continuous numbering.
   their labels, listed as known legacy forms in the conventions doc.
 - No Jira mutation; no change to review cadence, write boundaries or the
   one-writer rule.
-- Workflow-graph changes beyond the refiner-merge edge collapse (AC 3).
+- Workflow-graph changes beyond the refiner-merge edge collapse (EP13P-AC3).
 
 ## Tests / verification
 
@@ -132,7 +131,7 @@ review is one 942-line file holding three passes with continuous numbering.
   grep for `studypilot-` — zero hits outside historical records — and for the
   dead `EP13I-energy-aware` filename).
 - Cross-check: README children counts, review-unit row, DoD map and decision
-  register agree with the actual story files after AC 4.
+  register agree with the actual story files after EP13P-AC4.
 - Plan-style reviewer pass over the edited documents (this story's sign-off;
   not part of the EP13 application review unit).
 
@@ -140,12 +139,12 @@ review is one 942-line file holding three passes with continuous numbering.
 
 - **Write boundaries:** `.agents/`, `AGENTS.md`, `CLAUDE.md` and the
   `.codex/.vibe/.opencode` role definitions sit outside the planner's `docs/`
-  boundary. Executing ACs 1–3 therefore needs either the user directly or an
-  explicit user-granted exception for the session doing the work; ACs 4–6 are
+  boundary. Executing EP13P-AC1–AC3 therefore needs either the user directly or an
+  explicit user-granted exception for the session doing the work; EP13P-AC4–AC6 are
   ordinary planner-scope `docs/` edits.
-- Sequencing inside the story: AC 2 (mechanical fixes) first, AC 1 (conventions)
-  second, AC 4 (fallout repair, applying the new conventions) third, AC 3 and
-  AC 5–6 last.
+- Sequencing inside the story: EP13P-AC2 (mechanical fixes) first, EP13P-AC1
+  (conventions) second, EP13P-AC4 (fallout repair, applying the new conventions)
+  third, EP13P-AC3 and EP13P-AC5–AC6 last.
 
 ## Sizing block
 

@@ -7,7 +7,6 @@
 **Status:** Implemented — awaiting parent review (2026-11-15; record `./artifacts/EP13H/implementation.md`)
 **Refined:** 2026-11-15 (ui-refiner)
 **Dependencies:** EP13G implemented (D13-4 ruled option (b)); EP13D/EP13E surfaces shipped.
-**Jira key:** Pending creation
 
 ## Summary
 
@@ -177,6 +176,3 @@ Vitest + React Testing Library, colocated (repo convention):
 - **Dependencies:** EP13G. Blocks nothing (EP13M journeys reference it if landed).
 - **Exclusions:** engine/API semantics (EP13G); micro-start (EP13J).
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).

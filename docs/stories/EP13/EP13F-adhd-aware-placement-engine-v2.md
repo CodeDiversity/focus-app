@@ -6,7 +6,6 @@
 **Layer:** Backend (pure domain module)
 **Status:** Implemented — awaiting parent review (2026-11-15; record `./artifacts/EP13F/implementation.md`)
 **Dependencies:** EP13A implemented (corrected remaining-work inputs). No UI decisions.
-**Jira key:** Pending creation
 
 ## Summary
 
@@ -111,6 +110,3 @@ with defensive-reader fallback.
 - **Dependencies:** EP13A. Blocks EP13G, EP13J.
 - **Exclusions:** flex anchors, energy ordering, calibration, UI beyond the two form fields.
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).

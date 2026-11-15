@@ -7,7 +7,6 @@
 **Status:** Implemented — awaiting parent review (2026-11-15; record `./artifacts/EP13H2/implementation.md`)
 **Dependencies:** EP13H implemented.
 **Provenance:** User decision 2026-11-15: close EP13H's two small open findings before EP13I, as evidence for the parent review.
-**Jira key:** Pending creation
 
 ## Why this story exists
 
@@ -64,6 +63,3 @@ extended test). 8. Automated tests. 9. N/A.
 - **Verification:** `pnpm --filter @studypilot/web test`, lint, typecheck.
 - **Dependencies:** EP13H. Blocks nothing; unblocks honest full-suite claims for every later story.
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).

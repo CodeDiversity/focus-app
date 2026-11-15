@@ -7,7 +7,6 @@
 **Status:** Ready
 **Dependencies:** EP13A implemented (calibration applies where confirmed time is attributed); EP13F + EP13G implemented (calibrated remaining work feeds placement v2's budgets and the flex/fixed partition — see *Review note*). D13-7 provisional.
 **Reviewed:** 2026-11-15 — one AC added for the EP13G interaction.
-**Jira key:** Pending creation
 
 ## Summary
 
@@ -77,7 +76,7 @@ arithmetic over the student's own records.
   unwritten (field-for-field); identity when uncalibrated.
 - Payload annotations present/absent correctly; ownership scoping of the
   history query.
-- EP13G interaction (AC-5): anchor partition under calibration, determinism,
+- EP13G interaction (EP13L-AC5): anchor partition under calibration, determinism,
   and the no-silent-loss assertion.
 - Frontend annotation rendering + copy assertion.
 
@@ -103,8 +102,14 @@ student's estimates by 1.6 therefore does more than make plans longer — it
 **converts flex sessions into fixed ones** wherever the extra work removes
 the slack. That is correct behaviour (the deadline really did get tighter),
 but it is a visible, surprising change that a reviewer could read as an
-EP13G regression, so AC-5 makes it an asserted, intentional outcome rather
+EP13G regression, so EP13L-AC5 makes it an asserted, intentional outcome rather
 than an emergent one.
+
+### Decisions
+
+| ID | Decision | Rationale |
+|---|---|---|
+| — | None recorded yet. Rows here are `D-L<n>`; one that refines or overrides a register row ends with `(refines D13-<n>)` / `(overrides D13-<n>)` and the planner back-references it in the register ([ID conventions](../../../.agents/id-conventions.md)). | |
 
 ## Definition of Done
 
@@ -128,6 +133,3 @@ than an emergent one.
 - **Dependencies:** EP13A. Blocks nothing.
 - **Exclusions:** manual multiplier editing, per-course calibration, learning.
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).

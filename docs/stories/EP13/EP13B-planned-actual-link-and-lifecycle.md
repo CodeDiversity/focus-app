@@ -6,7 +6,6 @@
 **Layer:** Backend
 **Status:** Implemented — awaiting parent review (2026-11-14; record `./artifacts/EP13B/implementation.md`)
 **Dependencies:** EP13A implemented. D13-3 provisional. No UI decisions.
-**Jira key:** Pending creation
 
 ## Summary
 
@@ -107,6 +106,3 @@ working unchanged and never touch planned rows.
 - **Dependencies:** EP13A. Blocks EP13C, EP13D, EP13I.
 - **Exclusions:** rollover (EP13C), UI (EP13D), absorption endpoint (EP13I).
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).

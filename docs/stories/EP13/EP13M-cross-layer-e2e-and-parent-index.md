@@ -7,7 +7,6 @@
 **Status:** Queued
 **Dependencies:** EP13A–EP13N implemented — the whole epic, including EP13H2 (fix story) and EP13N (preference controls). **D13-4 is resolved (option b), so the flex journeys are in scope unconditionally.**
 **Reviewed:** 2026-11-15 — dependencies de-conditionalised, the manual a11y pass promoted from "collected" to "performed" (see *Review note*).
-**Jira key:** Pending creation
 
 ## Summary
 
@@ -50,7 +49,7 @@ and the recorded manual a11y passes (TR-E13-14) for the combined review.
 ## Source requirement references
 
 - Epic AC-E13-01…14 (cross-layer proof where marked in the ownership table).
-- Shared DoD 1, 3, 8, 9, 10. TR-E13-13; TR-E13-14 (collection).
+- Shared DoD 1, 3, 8, 9, 10. TR-E13-13; TR-E13-14 (the combined manual pass is performed and recorded here — EP13M-AC3).
 
 ## Acceptance criteria
 
@@ -87,7 +86,7 @@ architecture assertions (redirects, nav entries, no count-led surface).
 ### Review note (2026-11-15)
 
 Two changes. First, the D13-4 conditional is gone: the ruling landed and
-EP13G/EP13H shipped, so the flex journeys are ordinary scope and AC-4 no
+EP13G/EP13H shipped, so the flex journeys are ordinary scope and EP13M-AC4 no
 longer offers an N/A escape.
 
 Second, and more important: **the manual accessibility pass is now this
@@ -104,10 +103,16 @@ is exactly what broke `CalendarPage` for four stories (EP13H2's diagnosis).
 Dated fixtures here must be derived from the suite's own controlled "today",
 never from a hard-coded calendar week.
 
+### Decisions
+
+| ID | Decision | Rationale |
+|---|---|---|
+| — | None recorded yet. Rows here are `D-M<n>`; one that refines or overrides a register row ends with `(refines D13-<n>)` / `(overrides D13-<n>)` and the planner back-references it in the register ([ID conventions](../../../.agents/id-conventions.md)). | |
+
 ## Definition of Done
 
 1. Functional criteria pass. 2. N/A. 3. Fixtures scoped per test user.
-4. N/A. 5–7. N/A (verification story; a11y evidence collected, not created).
+4. N/A. 5–7. N/A as new UI (verification story); the TR-E13-14 combined manual a11y pass is performed and recorded here (EP13M-AC3).
 8. Automated E2E (TR-E13-13). 9. Parent index.
 10–11. This story readies the combined EP13 parent review; the reviewer owns
    the walkthrough.
@@ -124,6 +129,3 @@ never from a hard-coded calendar week.
 - **Dependencies:** EP13A–EP13L. Final child before the combined review.
 - **Exclusions:** new behavior; unrelated pre-existing failures.
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).

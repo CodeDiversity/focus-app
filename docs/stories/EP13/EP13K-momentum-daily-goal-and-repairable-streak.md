@@ -4,10 +4,9 @@
 **Parent epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md)
 **Milestone:** M6
 **Layer:** Backend + Frontend (one cohesive outcome; split would manufacture children)
-**Status:** Needs refinement (ui-refiner required, D13-14)
+**Status:** Needs refinement (refiner pass required, D13-14)
 **Dependencies:** EP07 session log (done); EP13D (dashboard placement); EP13I (the what-now card now carries the micro-start — momentum shares that surface); **EP13N implemented** (its named-choice control pattern is what the two goal preferences must use — D13-15). D13-11 provisional.
 **Reviewed:** 2026-11-15 — ACs revised so this story does not re-introduce the control pattern EP13N exists to remove (see *Review note*).
-**Jira key:** Pending creation
 
 ## Summary
 
@@ -52,7 +51,7 @@ app serves. No surface anywhere shows a plan-compliance percentage (D13-9).
 2. Repairability holds by construction: within a week, any combination of
    study days ≥ `weeklyGoalDays` meets the goal regardless of which days;
    the weekly streak increments on goal-met weeks and simply pauses (not
-   zeroes history display) on a missed week — presentation per ui-refiner,
+   zeroes history display) on a missed week — presentation per the refiner pass,
    math per D13-11.
 3. Goals are editable preferences with validation and defensive-reader
    fallback; defaults are modest (60 min / 3 days). **The controls follow
@@ -71,7 +70,7 @@ app serves. No surface anywhere shows a plan-compliance percentage (D13-9).
    ratio graphically, but no number ending in `%` is rendered. Asserted by
    test.
 6. **Momentum never displaces initiation.** On the dashboard the what-now
-   card stays the first meaningful content (D-D1, EP13E AC-1): momentum
+   card stays the first meaningful content (D-D1, EP13E-AC1): momentum
    renders after it, and a test pins the DOM order. A student who opens the
    dashboard sees what to do before how they are doing.
 
@@ -85,7 +84,7 @@ app serves. No surface anywhere shows a plan-compliance percentage (D13-9).
   round-trip (incl. the `Custom (n min)` case EP13N defines).
 - Dashboard display states (no data, goal met, in progress); celebration
   reduced-motion branch; copy assertions (no `%` anywhere); DOM-order test
-  for AC-6.
+  for EP13K-AC6.
 
 ## Technical notes
 
@@ -96,24 +95,30 @@ app serves. No surface anywhere shows a plan-compliance percentage (D13-9).
   `features/momentum/` (FSD); celebration hooked into the existing finish
   flow. The two preference keys ride the same bag/validator machinery as
   EP13F's keys (coordinate the shared `preferences.ts` diff in queue order).
-- **UI/UX gaps for the ui-refiner (D13-14):** daily indicator form (ring?
+- **UI/UX gaps for the refiner pass (D13-14):** daily indicator form (ring?
   bar?), weekly presentation, streak display and its paused-week framing,
   celebration treatment, dashboard placement **below** the what-now card
-  (AC-6 fixes the constraint; the refiner chooses the exact slot).
+  (EP13K-AC6 fixes the constraint; the refiner chooses the exact slot).
 
 ### Review note (2026-11-15)
 
 This story was written before EP13N existed. As drafted it would have added
 **two more raw numeric preference inputs** to the very form EP13N is
-correcting — the same mistake, shipped twice, then fixed twice. AC-3 now
+correcting — the same mistake, shipped twice, then fixed twice. EP13K-AC3 now
 requires EP13N's pattern and the queue runs EP13N first, so the control is
 built once and reused.
 
-The second revision is AC-6. EP13D/EP13E spent two stories making "what
+The second revision is EP13K-AC6. EP13D/EP13E spent two stories making "what
 now" the first thing a student sees, and EP13I just put the micro-start
 beside it. A momentum ring at the top of the dashboard would quietly undo
 that: the student would land on a scoreboard instead of an action. Momentum
 is feedback *about* showing up — it belongs after the thing it rewards.
+
+### Decisions
+
+| ID | Decision | Rationale |
+|---|---|---|
+| — | None recorded yet. Rows here are `D-K<n>`; one that refines or overrides a register row ends with `(refines D13-<n>)` / `(overrides D13-<n>)` and the planner back-references it in the register ([ID conventions](../../../.agents/id-conventions.md)). | |
 
 ## Definition of Done
 
@@ -131,11 +136,8 @@ is feedback *about* showing up — it belongs after the thing it rewards.
 - **Model recommendation:** 3 — careful date math but settled semantics; risk contained by the streak matrix tests.
 - **Production files:** study-sessions module (endpoint), `preferences.ts` (+ form), `features/momentum/*` (new), finish-dialog hook.
 - **Test files:** momentum service spec, preferences spec (extend), momentum component tests.
-- **Minimal start context:** this story + ui-refiner record, EP13 README D13-11, `preferences.ts`, EP07 aggregation precedent, EP13D dashboard layout record.
+- **Minimal start context:** this story + its refiner record, EP13 README D13-11, `preferences.ts`, EP07 aggregation precedent, EP13D dashboard layout record.
 - **Verification:** `pnpm --filter @studypilot/api test`, `pnpm --filter @studypilot/web test`, lint, typecheck.
-- **Dependencies:** EP13D (placement), ui-refiner. Blocks nothing.
+- **Dependencies:** EP13D (placement), EP13I, EP13N; refiner pass. Blocks nothing.
 - **Exclusions:** badges/social, notifications, recap emails.
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).

@@ -8,7 +8,6 @@
 **Status:** Ready
 **Dependencies:** EP13F implemented (placement v2 is the insertion point); EP13G implemented (the anchor partition reads placement output, so energy must not disturb it). D13-10 provisional (V-13-5).
 **Reviewed:** 2026-11-15 — ACs revised against shipped EP13F/EP13G behaviour (see *Review note*).
-**Jira key:** Pending creation
 
 ## Summary
 
@@ -31,7 +30,7 @@ the tag.
   used when needed).
 - Availability CRUD (DTO/validation) + dialog field + calendar tag rendering.
 - Tests (TR-E13-09); the small UI follows the existing availability dialog
-  pattern (specified here; no ui-refiner gate — D13-14 lists this story as
+  pattern (specified here; no refiner gate — D13-14 lists this story as
   exempt).
 
 **Out of scope:**
@@ -95,11 +94,11 @@ unchanged will silently lose the tag exactly in the case the feature exists
 for.
 
 The implementer must therefore either (a) make the merge energy-aware
-(merge only across equal levels — AC-5's wording), or (b) carry energy as a
+(merge only across equal levels — EP13J-AC5's wording), or (b) carry energy as a
 parallel map and re-derive each candidate gap's level by intersection. (a)
 is the smaller change and keeps one interval algebra; (b) avoids touching a
 helper EP06D's save-time re-check also calls — **the choice is the
-implementer's, but the behaviour in AC-5 is not.**
+implementer's, but the behaviour in EP13J-AC5 is not.**
 
 Second interaction, from EP13F/EP13G as shipped: placement v2 scans a day's
 gaps **earliest-first** and stops at the first that fits, and EP13G's pin
@@ -107,8 +106,14 @@ decision is computed *after* placement from each assignment's horizon
 capacity. Energy preference reorders the scan; it must not (i) reorder the
 day's *critical* work (feasibility still beats preference, EP13F rule 3),
 (ii) change the per-day budget (rule 2), or (iii) change which assignments
-pin. AC-3's byte-identity test covers the all-NORMAL case; the energy cases
+pin. EP13J-AC3's byte-identity test covers the all-NORMAL case; the energy cases
 need their own determinism assertions.
+
+### Decisions
+
+| ID | Decision | Rationale |
+|---|---|---|
+| — | None recorded yet. Rows here are `D-J<n>`; one that refines or overrides a register row ends with `(refines D13-<n>)` / `(overrides D13-<n>)` and the planner back-references it in the register ([ID conventions](../../../.agents/id-conventions.md)). | |
 
 ## Definition of Done
 
@@ -131,6 +136,3 @@ need their own determinism assertions.
 - **Dependencies:** EP13F. Blocks nothing.
 - **Exclusions:** energy learning, per-date overrides, onboarding.
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).

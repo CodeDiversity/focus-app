@@ -6,7 +6,6 @@
 **Layer:** Backend
 **Status:** Implemented — awaiting parent review (2026-11-14; record `./artifacts/EP13A/implementation.md`)
 **Dependencies:** EP06/EP07 complete. No UI decisions. First in the EP13 queue.
-**Jira key:** Pending creation
 
 ## Summary
 
@@ -123,6 +122,3 @@ correct.
 - **Dependencies:** none inside EP13. Blocks EP13B/C/F/L.
 - **Exclusions:** link/lifecycle (EP13B), rollover (EP13C), placement rules (EP13F), calibration (EP13L).
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).

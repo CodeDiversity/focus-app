@@ -8,7 +8,6 @@
 **Status:** Implemented — awaiting parent review (2026-11-15; record `./artifacts/EP13I/implementation.md`)
 **Refined:** 2026-11-15 (ui-refiner)
 **Dependencies:** EP13B + EP13D implemented (start paths); EP13H implemented (flex sessions are the initiation gap this closes, F-EP13H-02). D13-13 provisional (V-13-6).
-**Jira key:** Pending creation
 
 ## Summary
 
@@ -140,6 +139,3 @@ all (D13-9): running long is working, not failing.
 - **Dependencies:** EP13B, EP13D, EP13H. Blocks nothing.
 - **Exclusions:** reminders/sounds, momentum, timer mechanics, energy.
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).

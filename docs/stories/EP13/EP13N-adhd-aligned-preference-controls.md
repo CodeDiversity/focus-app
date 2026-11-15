@@ -6,9 +6,8 @@
 **Layer:** Frontend (form presentation only — the stored contract and the API are unchanged)
 **Status:** Ready (design settled in this story — it exists *because of* the design finding, so the refinement is the story)
 **Dependencies:** EP13F implemented (the two keys and the form fields exist).
-**Re-sequenced:** 2026-11-15 (D13-17) — moved from after EP13M to **before EP13K**: EP13K adds two more goal preferences, and the named-choice control this story builds is what those must use (EP13K AC-3). Building the pattern first means it is implemented once, not shipped raw and corrected twice.
+**Re-sequenced:** 2026-11-15 (D13-17) — moved from after EP13M to **before EP13K**: EP13K adds two more goal preferences, and the named-choice control this story builds is what those must use (EP13K-AC3). Building the pattern first means it is implemented once, not shipped raw and corrected twice.
 **Provenance:** User decision 2026-11-15 (D13-15), raised from the EP13F implementation review note and F-EP13F-04's broader concern: a preference lever that quietly makes the app harsher.
-**Jira key:** Pending creation
 
 ## Why this story exists (the problem, documented)
 
@@ -89,8 +88,8 @@ existing levers are asked.
 
 | ID | Decision | Why |
 |---|---|---|
-| D-N1 | Density = radio group: **Relaxed** "Plenty of breathing room — about 60% of your free time." / **Balanced** "Steady but not crowded — about 80%." (default) / **Packed** "Use nearly all your free time — 100%." | Recognition over arithmetic: three named lifestyles replace a ratio estimate. The percent appears only inside the description, as a translation, never as the thing to choose. |
-| D-N2 | Non-preset values render as a pre-selected **Custom (n%)** radio that disappears once a preset is chosen and saved. | Honesty: a stored 73 must not silently become 80 on the next unrelated save. The student sees what is set and may keep it forever. |
+| D-N1 (refines D13-15) | Density = radio group: **Relaxed** "Plenty of breathing room — about 60% of your free time." / **Balanced** "Steady but not crowded — about 80%." (default) / **Packed** "Use nearly all your free time — 100%." | Recognition over arithmetic: three named lifestyles replace a ratio estimate. The percent appears only inside the description, as a translation, never as the thing to choose. |
+| D-N2 (refines D13-15) | Non-preset values render as a pre-selected **Custom (n%)** radio that disappears once a preset is chosen and saved. | Honesty: a stored 73 must not silently become 80 on the next unrelated save. The student sees what is set and may keep it forever. |
 | D-N3 | `breakMinutes` stays a numeric field; label **"Break between sessions (minutes)"**, hint `0–60`. | Concrete and intuitive; a preset would remove real control without removing any cognitive load. |
 | D-N4 | Both levers stay visible (no "Advanced" disclosure). | The disclosure idea was mooted when the hard field was the percent input; with it gone, hiding one concrete number and one three-way choice would cost discoverability for no relief. |
 | D-N5 | Radios are a native `fieldset`/`legend` + `input[type=radio]` group styled as cards, reusing the repo's focus-ring utilities; selection is marked by border + check icon + text, not colour alone. | EP11 a11y conventions (D11-5's non-colour-only rule) with zero new primitives. |
@@ -126,6 +125,3 @@ existing levers are asked.
 - **Dependencies:** EP13F. **Blocks EP13K** (its goal controls reuse this pattern, D13-17); EP13M indexes it.
 - **Exclusions:** warning-contract changes (F-EP13F-01/-04), API/schema.
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).

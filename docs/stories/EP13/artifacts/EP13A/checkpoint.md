@@ -25,4 +25,4 @@ unfinished work remains in this story.
 
 ## Resume next
 Nothing to resume here. Next queue action: EP13B — implement (and the
-ui-refiner passes for EP13D/E/H/J/K can run in parallel).
+refiner passes for EP13D/E/H/I/K can run in parallel — I/J per D13-16).

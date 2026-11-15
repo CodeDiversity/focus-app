@@ -48,6 +48,6 @@ Role / scope: implementer; backend only — model, engine partition, conflict se
 
 ## Resume next
 1. Nothing for EP13G. The queue's next actionable rows are EP13H (needs its
-   `ui-refiner` pass first, D13-14), EP13I or EP13L.
+   `refiner` pass first, D13-14), EP13I or EP13L.
 2. `pnpm --filter @studypilot/api test` re-confirms the engine/service suites.
 - Read next: `../../README.md` execution queue, `../../EP13H-flexible-sessions-ui.md`.

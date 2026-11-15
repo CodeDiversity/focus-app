@@ -6,7 +6,6 @@
 **Layer:** Backend
 **Status:** Implemented — awaiting parent review (2026-11-14; record `./artifacts/EP13C/implementation.md`)
 **Dependencies:** EP13A + EP13B implemented. D13-2 provisional (V-13-2).
-**Jira key:** Pending creation
 
 ## Summary
 
@@ -111,6 +110,3 @@ read-time only.
 - **Dependencies:** EP13A, EP13B. Blocks EP13D, EP13E.
 - **Exclusions:** UI, flex rollover (EP13G), job-based scheduling (D13-8).
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).

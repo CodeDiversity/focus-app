@@ -30,4 +30,4 @@ runs, deviations (6, each with rationale) and findings (F-EP13C-01/02) are in
 
 ## Resume next
 Nothing to resume here. Next queue action: EP13F — implement (backend, Ready),
-or EP13D once its ui-refiner pass lands.
+or EP13D once its refiner pass lands.

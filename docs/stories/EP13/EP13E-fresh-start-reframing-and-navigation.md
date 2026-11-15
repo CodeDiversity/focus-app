@@ -7,7 +7,6 @@
 **Status:** Implemented — awaiting parent review (2026-11-15; record `./artifacts/EP13E/implementation.md`)
 **Refined:** 2026-11-15 (ui-refiner)
 **Dependencies:** EP13C implemented (reshaped recovery contract, self-healing reads). EP13D implemented (`TodayPlanCard`, `todayPlanApi` — reused here).
-**Jira key:** Pending creation
 
 ## Summary
 
@@ -206,6 +205,3 @@ Vitest + React Testing Library, colocated `*.test.tsx` (repo convention):
 - **Dependencies:** EP13C, EP13D (both implemented).
 - **Exclusions:** what-now card internals (EP13D), momentum (EP13K).
 
-## Tracker reference
-
-Jira key: Pending creation (no sync authorized).
