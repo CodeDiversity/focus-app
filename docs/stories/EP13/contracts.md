@@ -53,7 +53,7 @@ Runs lazily and idempotently at the start of every plan read/preview/save and th
 | `POST /study-sessions/:id/absorb-next` | EP13I | Absorb the next planned session of the same assignment into the running session (D13-13) | 200 | 401; 404 uniform; 409 no-candidate |
 | `GET /study-sessions/momentum` | EP13K | Minutes today, daily goal, week's study-day count, weekly goal, streak of goal-met weeks | 200 | 401 |
 
-Existing endpoints keep their shapes; `POST /study-plans/preview` and the saved-plan read gain `calibration` annotations (EP13L: `{ assignmentType, multiplier, samples }[]`) and per-session `anchor`/`windowHint` fields (EP13G).
+Existing endpoints keep their shapes; `POST /study-plans/preview` and the remaining-work payload gain `calibration` annotations (EP13L: `{ assignmentType, multiplier, samples }[]`; the saved-plan read carries no calibrated value and is not annotated — F-EP13L-01, C-EP13-10) and per-session `anchor`/`windowHint` fields (EP13G).
 
 ## Placement v2 (EP13F — engine rules, all deterministic)
 
