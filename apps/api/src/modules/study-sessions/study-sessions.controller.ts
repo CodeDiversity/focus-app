@@ -15,6 +15,20 @@ export class StudySessionsController {
     return this.studySessionsService.start(user.id, dto);
   }
 
+  /**
+   * EP13B — start a focus session from a planned session (one step). The
+   * literal `from-planned` prefix is declared before the `:id/...` routes so
+   * the intent is obvious at a glance; the patterns cannot collide either
+   * way (those routes require a literal second segment).
+   */
+  @Post('from-planned/:plannedSessionId')
+  startFromPlanned(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('plannedSessionId') plannedSessionId: string
+  ) {
+    return this.studySessionsService.startFromPlanned(user.id, plannedSessionId);
+  }
+
   @Post(':id/pause')
   @HttpCode(HttpStatus.OK)
   pause(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {

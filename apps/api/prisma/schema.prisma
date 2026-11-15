@@ -284,6 +284,12 @@ model StudySession {
   assignment  Assignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
   taskId      String?
   task        Task?       @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  // EP13B: the planned session this focus session executes, when it was
+  // started from the plan. Null for sessions started from an assignment
+  // (EP07's original path). SetNull so deleting a planned session never
+  // deletes the student's study history.
+  plannedSessionId String?
+  plannedSession   PlannedSession? @relation(fields: [plannedSessionId], references: [id], onDelete: SetNull)
   startTime   DateTime
   endTime     DateTime?
   status      StudySessionStatus @default(ACTIVE)
@@ -299,6 +305,7 @@ model StudySession {
 
   @@index([userId, status])
   @@index([userId, startTime])
+  @@index([plannedSessionId])
   @@map("study_sessions")
 }
 
@@ -355,6 +362,8 @@ model PlannedSession {
   locked      Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  // EP13B: the actual focus sessions started from this planned session.
+  studySessions StudySession[]
 
   @@index([studyPlanId])
   @@index([assignmentId])

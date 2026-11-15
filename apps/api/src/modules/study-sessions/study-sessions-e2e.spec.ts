@@ -14,6 +14,7 @@ const SESSION_KEYS = [
   'id',
   'notes',
   'plannedMinutes',
+  'plannedSessionId',
   'startTime',
   'status',
   'taskId',
@@ -53,7 +54,7 @@ describeIntegration('Study sessions lifecycle end-to-end (integration, real data
     expect(res.text).toBe('');
   });
 
-  it('starts a session with the 12-key projection', async () => {
+  it('starts a session with the 13-key projection', async () => {
     const res = await agent
       .post('/study-sessions')
       .set('Authorization', `Bearer ${student.token}`)

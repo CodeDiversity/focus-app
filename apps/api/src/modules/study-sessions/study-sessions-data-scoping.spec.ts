@@ -14,6 +14,7 @@ const SESSION_KEYS = [
   'id',
   'notes',
   'plannedMinutes',
+  'plannedSessionId',
   'startTime',
   'status',
   'taskId',

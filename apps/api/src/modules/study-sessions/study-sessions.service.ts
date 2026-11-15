@@ -5,9 +5,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { validateSync } from 'class-validator';
-import { StudySession, StudySessionStatus } from '../../generated/prisma/client';
+import {
+  PlannedSessionStatus,
+  StudySession,
+  StudySessionStatus,
+} from '../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { RESOURCE_NOT_FOUND, ownedWhere } from '../../common/ownership/ownership';
+import { resolveTimeZone, toCivilDate } from '../../common/lib/civil-date';
 import { StartStudySessionDto } from './dto/start-study-session.dto';
 import { FinishStudySessionDto } from './dto/finish-study-session.dto';
 import { ListStudySessionsQueryDto } from './dto/list-study-sessions-query.dto';
@@ -18,6 +23,9 @@ function toStudySessionResponse(row: StudySessionRow) {
     id: row.id,
     assignmentId: row.assignmentId,
     taskId: row.taskId,
+    // EP13B: the planned session this focus session executes, or null when it
+    // was started from an assignment (EP07's original path).
+    plannedSessionId: row.plannedSessionId,
     status: row.status,
     startTime: row.startTime.toISOString(),
     endTime: row.endTime ? row.endTime.toISOString() : null,
@@ -130,6 +138,127 @@ export class StudySessionsService {
       },
     });
     return toStudySessionResponse(row);
+  }
+
+  /**
+   * EP13B — `POST /study-sessions/from-planned/:plannedSessionId`: start a
+   * focus session **from the plan** in one step (AC-E13-03).
+   *
+   * The created session carries the planned row's `assignmentId`, defaults
+   * `plannedMinutes` to its `durationMinutes`, and is linked by
+   * `plannedSessionId`; the planned row moves `SCHEDULED → IN_PROGRESS`.
+   * Both writes happen in **one transaction**, and EP07's one-open-session
+   * guard runs inside it — so a rejected start can never leave a planned row
+   * stuck `IN_PROGRESS`.
+   *
+   * Ownership (repo convention): `PlannedSession` has no `userId` column, so
+   * the scoped `where` carries the authenticated `userId` through the parent
+   * (`studyPlan.userId`); a missing or foreign id is the same uniform 404
+   * `Resource not found` — never a 403, never a distinct message.
+   *
+   * Startable only on **today's** plan (profile zone, D06-24): an earlier day
+   * is EP13C's rollover business, a later day is not yet due. Startable only
+   * from `SCHEDULED` or `IN_PROGRESS` (re-entering the same planned row);
+   * `COMPLETED`, `SKIPPED` and `RESCHEDULED` each answer 409 with their own
+   * actionable reason.
+   *
+   * 201 → the active session; 404 → uniform; 409 → open session / not today /
+   * not startable; 401 → unauthenticated (global guard).
+   */
+  async startFromPlanned(userId: string, plannedSessionId: string) {
+    const planned = await this.prisma.plannedSession.findFirst({
+      where: { id: plannedSessionId, studyPlan: { userId } },
+      select: {
+        id: true,
+        assignmentId: true,
+        durationMinutes: true,
+        status: true,
+        studyPlan: { select: { date: true } },
+      },
+    });
+    if (!planned) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { timeZone: true },
+    });
+    if (!user) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+    const timeZone = resolveTimeZone(user.timeZone);
+
+    // The plan row's civil date, compared with the server's civil "today" in
+    // the profile zone. `StudyPlan.date` is stored as UTC midnight of the
+    // civil date (EP06 convention), so the date part is read directly — never
+    // by converting a profile-zone midnight to an instant.
+    const plannedDate = planned.studyPlan.date.toISOString().slice(0, 10);
+    const today = toCivilDate(new Date(), timeZone);
+    if (plannedDate !== today) {
+      throw new ConflictException(
+        plannedDate < today
+          ? 'That session was planned for an earlier day. Generate a fresh plan to pick this work up today.'
+          : 'That session is planned for a later day.'
+      );
+    }
+
+    if (planned.status === PlannedSessionStatus.COMPLETED) {
+      throw new ConflictException('That planned session is already finished.');
+    }
+    if (
+      planned.status !== PlannedSessionStatus.SCHEDULED &&
+      planned.status !== PlannedSessionStatus.IN_PROGRESS
+    ) {
+      throw new ConflictException('That session is no longer part of today’s plan.');
+    }
+
+    const now = new Date();
+    const created = await this.prisma.$transaction(async (tx) => {
+      // The open-session invariant (D07-6-A), re-checked inside the
+      // transaction so the planned row and the session always agree.
+      const open = await tx.studySession.findFirst({
+        where: {
+          userId,
+          status: { in: [StudySessionStatus.ACTIVE, StudySessionStatus.PAUSED] },
+        },
+        select: { id: true },
+      });
+      if (open) {
+        throw new ConflictException('A focus session is already in progress.');
+      }
+
+      const session = await tx.studySession.create({
+        data: {
+          userId,
+          assignmentId: planned.assignmentId,
+          taskId: null,
+          plannedSessionId: planned.id,
+          startTime: now,
+          endTime: null,
+          status: StudySessionStatus.ACTIVE,
+          elapsedSeconds: 0,
+          durationMinutes: 0,
+          plannedMinutes: planned.durationMinutes,
+          resumedAt: now,
+        },
+      });
+
+      // Conditional: only a SCHEDULED row moves to IN_PROGRESS, so
+      // re-entering an already IN_PROGRESS planned row is a no-op.
+      await tx.plannedSession.updateMany({
+        where: {
+          id: planned.id,
+          studyPlan: { userId },
+          status: PlannedSessionStatus.SCHEDULED,
+        },
+        data: { status: PlannedSessionStatus.IN_PROGRESS },
+      });
+
+      return session;
+    });
+
+    return toStudySessionResponse(created);
   }
 
   async pause(userId: string, id: string) {
@@ -265,22 +394,68 @@ export class StudySessionsService {
     const confirmed =
       dto?.confirmedMinutes != null ? dto.confirmedMinutes : Math.round(newElapsed / 60);
 
-    const result = await this.prisma.studySession.updateMany({
-      where: {
-        id,
-        userId,
-        status: row.status,
-      },
-      data: {
-        status: StudySessionStatus.COMPLETED,
-        endTime: now,
-        durationMinutes: confirmed,
-        elapsedSeconds: newElapsed,
-        resumedAt: null,
-      },
-    });
-    if (result.count === 0) {
-      throw new ConflictException('The session changed; reload and try again.');
+    const finishWhere = { id, userId, status: row.status };
+    const finishData = {
+      status: StudySessionStatus.COMPLETED,
+      endTime: now,
+      durationMinutes: confirmed,
+      elapsedSeconds: newElapsed,
+      resumedAt: null,
+    };
+
+    // EP13B (AC-E13-03): a session started from the plan carries its planned
+    // row forward — ≥ 1 confirmed minute completes it, 0 minutes hands it
+    // back as SCHEDULED. Both writes run in one transaction.
+    //
+    // A session with no link (EP07's original path) keeps exactly the
+    // statements it always ran: no transaction, and no planned row is ever
+    // touched.
+    // Falsy covers both `null` (an unlinked row) and `undefined` (a caller
+    // that selected a narrower row shape) — both mean "no planned row".
+    const plannedSessionId = row.plannedSessionId;
+    if (!plannedSessionId) {
+      const result = await this.prisma.studySession.updateMany({
+        where: finishWhere,
+        data: finishData,
+      });
+      if (result.count === 0) {
+        throw new ConflictException('The session changed; reload and try again.');
+      }
+    } else {
+      await this.prisma.$transaction(async (tx) => {
+        const result = await tx.studySession.updateMany({
+          where: finishWhere,
+          data: finishData,
+        });
+        if (result.count === 0) {
+          throw new ConflictException('The session changed; reload and try again.');
+        }
+
+        if (confirmed >= 1) {
+          // D13-3: the first qualifying finish completes the planned row;
+          // later linked finishes match no row and are silent no-ops.
+          await tx.plannedSession.updateMany({
+            where: {
+              id: plannedSessionId,
+              studyPlan: { userId },
+              status: {
+                in: [PlannedSessionStatus.SCHEDULED, PlannedSessionStatus.IN_PROGRESS],
+              },
+            },
+            data: { status: PlannedSessionStatus.COMPLETED },
+          });
+        } else {
+          // Nothing was confirmed: the plan keeps the work as still to do.
+          await tx.plannedSession.updateMany({
+            where: {
+              id: plannedSessionId,
+              studyPlan: { userId },
+              status: PlannedSessionStatus.IN_PROGRESS,
+            },
+            data: { status: PlannedSessionStatus.SCHEDULED },
+          });
+        }
+      });
     }
 
     const updated = await this.prisma.studySession.findFirst({
