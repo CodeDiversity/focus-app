@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { Loader2 } from 'lucide-react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
+import { clsx } from 'clsx';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
 import { Card } from '@/shared/ui/Card';
@@ -78,6 +79,22 @@ const DEFAULTS: FormValues = {
   densityPercent: 80,
 };
 
+// EP13N (D-N1, D13-15): the density lever is asked as three named presets
+// that write the integer the contract already stores. The percent appears
+// only inside the description, as a translation, never as the thing to
+// choose. Copy is fixed by the story's Design decisions table.
+const DENSITY_PRESETS: ReadonlyArray<{ value: number; label: string; description: string }> = [
+  {
+    value: 60,
+    label: 'Relaxed',
+    description: 'Plenty of breathing room — about 60% of your free time.',
+  },
+  { value: 80, label: 'Balanced', description: 'Steady but not crowded — about 80%.' },
+  { value: 100, label: 'Packed', description: 'Use nearly all your free time — 100%.' },
+];
+
+const isDensityPreset = (value: number) => DENSITY_PRESETS.some((p) => p.value === value);
+
 const FIELD_NAMES = [
   'sessionLengthMinutes',
   'minSessionMinutes',
@@ -94,30 +111,48 @@ export function StudyPreferencesForm() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
+  // EP13N (D-N2): a stored value that is none of the presets is shown
+  // honestly as a pre-selected "Custom (n%)" option. It is derived from the
+  // last server state (load or save), so it disappears only once a preset
+  // has actually been saved — never snapped silently.
+  const [customDensity, setCustomDensity] = useState<number | null>(null);
+  const idBase = useId();
 
   const {
     register,
     handleSubmit,
     reset,
     setError,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(studyPreferencesSchema),
     defaultValues: DEFAULTS,
   });
 
+  const densityPercent = watch('densityPercent');
+
+  const applyServerState = useCallback(
+    (data: FormValues) => {
+      reset(data);
+      setCustomDensity(isDensityPreset(data.densityPercent) ? null : data.densityPercent);
+    },
+    [reset]
+  );
+
   const load = useCallback(async () => {
     setIsLoading(true);
     setLoadError(null);
     try {
       const data = await getStudyPreferences();
-      reset(data);
+      applyServerState(data);
     } catch (err) {
       setLoadError(getErrorMessage(err) || 'We could not load your study preferences. Try again.');
     } finally {
       setIsLoading(false);
     }
-  }, [reset]);
+  }, [applyServerState]);
 
   useEffect(() => {
     void load();
@@ -128,7 +163,7 @@ export function StudyPreferencesForm() {
     setStatusMessage('');
     try {
       const saved = await putStudyPreferences(data);
-      reset(saved);
+      applyServerState(saved);
       setStatusMessage('Study preferences saved.');
     } catch (err) {
       const apiError = extractApiError(err);
@@ -153,6 +188,18 @@ export function StudyPreferencesForm() {
       setIsSaving(false);
     }
   };
+
+  const densityOptions =
+    customDensity === null
+      ? DENSITY_PRESETS
+      : [
+          ...DENSITY_PRESETS,
+          {
+            value: customDensity,
+            label: `Custom (${customDensity}%)`,
+            description: 'What is saved right now. Pick a named option to change it.',
+          },
+        ];
 
   if (isLoading) {
     return (
@@ -255,14 +302,16 @@ export function StudyPreferencesForm() {
           </div>
         </fieldset>
 
-        {/* EP13F (D13-5): the two levers of placement v2. */}
+        {/* EP13F (D13-5): the two levers of placement v2. EP13N (D13-15):
+            the fill level is a named choice, the break stays a number (D-N3);
+            both visible (D-N4); native fieldset/legend + radios as cards (D-N5). */}
         <fieldset className="space-y-4">
           <legend className="text-sm font-medium text-text">How your days are filled</legend>
           <p className="text-sm text-text-muted">
-            Breaks keep sessions from running into each other, and the fill level leaves part of
-            your free time unplanned.
+            A break is the gap the plan leaves between one study session and the next. The fill
+            level decides how much of your free time gets planned and how much stays open.
           </p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="sm:max-w-xs">
             <Input
               label="Break between sessions (minutes)"
               type="number"
@@ -275,19 +324,76 @@ export function StudyPreferencesForm() {
               disabled={isSaving}
               {...register('breakMinutes', { valueAsNumber: true })}
             />
-            <Input
-              label="Fill up to (% of free time)"
-              type="number"
-              min={50}
-              max={100}
-              step={1}
-              inputMode="numeric"
-              hint="50–100"
-              error={errors.densityPercent?.message}
-              disabled={isSaving}
-              {...register('densityPercent', { valueAsNumber: true })}
-            />
           </div>
+          <fieldset
+            className="space-y-2"
+            aria-describedby={errors.densityPercent ? `${idBase}-density-error` : undefined}
+          >
+            <legend className="mb-2 block text-body-sm font-medium text-text">Fill level</legend>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {densityOptions.map((option) => {
+                const checked = densityPercent === option.value;
+                const optionId = `${idBase}-density-${option.value}`;
+                return (
+                  <label
+                    key={option.value}
+                    className={clsx(
+                      'flex cursor-pointer items-start gap-2 rounded-lg border p-3 transition-colors duration-base',
+                      'focus-within:outline-none focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
+                      checked
+                        ? 'border-accent bg-accent/10'
+                        : 'border-border bg-surface hover:border-border-strong',
+                      isSaving && 'cursor-not-allowed opacity-50'
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="densityPercent"
+                      value={option.value}
+                      checked={checked}
+                      onChange={() =>
+                        setValue('densityPercent', option.value, {
+                          shouldDirty: true,
+                          shouldValidate: Boolean(errors.densityPercent),
+                        })
+                      }
+                      aria-labelledby={`${optionId}-label`}
+                      aria-describedby={`${optionId}-desc`}
+                      // Explicit size + resets: the global base rule
+                      // `input { @apply w-full … }` (index.css) would
+                      // otherwise stretch this radio to the card width.
+                      className="mt-1 h-4 w-4 shrink-0 border-0 bg-transparent p-0"
+                      disabled={isSaving}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center justify-between gap-2">
+                        <span id={`${optionId}-label`} className="text-sm font-medium text-text">
+                          {option.label}
+                        </span>
+                        {checked && (
+                          <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-accent">
+                            <CheckCircle2 aria-hidden size={14} data-icon="selected" />
+                            Selected
+                          </span>
+                        )}
+                      </span>
+                      <span
+                        id={`${optionId}-desc`}
+                        className="mt-0.5 block text-xs text-text-muted"
+                      >
+                        {option.description}
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            {errors.densityPercent?.message && (
+              <p id={`${idBase}-density-error`} className="text-body-sm text-danger">
+                {errors.densityPercent.message}
+              </p>
+            )}
+          </fieldset>
         </fieldset>
 
         {/* Always present so outcomes are announced (AC-3, D128B-12). */}
