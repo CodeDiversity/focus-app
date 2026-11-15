@@ -13,7 +13,7 @@
 
 - **What this changes:** a new pure module `domain/study-planning/calibration.ts` plus wiring in `study-plans.service.ts`: per-assignment-type multipliers (median of confirmed ÷ estimated over finished assignments, ≥3 samples, clamped 0.5–3.0) scale remaining-work estimates before placement; preview and remaining-work payloads gain a `calibration` annotation; one neutral explanatory line in the plan preview UI.
 - **Why it improves it:** students whose estimates run systematically short stop getting plans that are impossible by construction, and they are told why in one plain, non-judgemental sentence (product). The engine stays pure and deterministic; no `Assignment` row is ever written; a student without history sees zero change (code).
-- **Decisions needing you:** ▲ D-L1 (where the multiplier is applied) and ▲ D-L4 (student-facing copy) are Proposed with recommendations; the rest auto-ratify.
+- **Decisions needing you:** none — D-L1 and D-L4 ratified by the user 2026-11-15; D-L2/3/5 ratify by default at implementation start.
 - **How to change this plan:** edit a Ruling cell in the Decisions table below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 
@@ -116,10 +116,10 @@ than an emergent one.
 
 | ID | Options considered | Recommended | Why | Ruling |
 |---|---|---|---|---|
-| D-L1 ▲ (refines D13-7) | (a) multiply the estimate **before** EP13A subtracts confirmed minutes (`est×m − confirmed`); (b) multiply the remainder after subtraction (`(est − confirmed)×m`) | **(a)** | Confirmed minutes are real and must not be inflated; (b) would re-scale work already done. Material: changes plan math for every calibrated student. | Proposed |
+| D-L1 ▲ (refines D13-7) | (a) multiply the estimate **before** EP13A subtracts confirmed minutes (`est×m − confirmed`); (b) multiply the remainder after subtraction (`(est − confirmed)×m`) | **(a)** | Confirmed minutes are real and must not be inflated; (b) would re-scale work already done. Material: changes plan math for every calibrated student. | **Ratified (user, 2026-11-15)** |
 | D-L2 | Sample source: (a) `StudySession` confirmed minutes (EP13A attribution); (b) self-reported `Assignment.actualHours` | **(a)** | EP06 already ignores `actualHours` as unreliable; EP13A made confirmed minutes authoritative. | Proposed |
 | D-L3 | Fallback when a type has < 3 samples: (a) overall median across types; (b) 1.0 until the type has 3 | **(a)**, itself gated at ≥ 3 overall samples | A student with 3 finished essays and 1 problem set still benefits; (b) is simpler but delays value. | Proposed |
-| D-L4 ▲ | Annotation copy: (a) "Your papers usually take about 1.6× your estimate, so we planned for that."; (b) numeric badge "×1.6" with tooltip only; (c) no student-facing copy, annotation in payload only | **(a)** | D13-9 wants the app on the student's side and explainable (AC-E13-13); (b) is terse but opaque; (c) fails the epic AC. Material: user-visible wording. | Proposed |
+| D-L4 ▲ | Annotation copy: (a) "Your papers usually take about 1.6× your estimate, so we planned for that."; (b) numeric badge "×1.6" with tooltip only; (c) no student-facing copy, annotation in payload only | **(a)** | D13-9 wants the app on the student's side and explainable (AC-E13-13); (b) is terse but opaque; (c) fails the epic AC. Material: user-visible wording. | **Ratified (user, 2026-11-15)** |
 | D-L5 | Where the multiplier is computed: (a) once per plan read inside `gatherPlanData` alongside the EP13A confirmed map; (b) a cached per-student value persisted on save | **(a)** | Pure function of history, cheap (one grouped query); persistence would add a write path and staleness for no measured need. | Proposed |
 
 Rows are `D-L<n>`; one that refines or overrides a register row says `(refines D13-<n>)` / `(overrides D13-<n>)`. ▲ = material: the implementer stops and asks if still `Proposed`; other rows become `Ratified by default` at implementation start.
