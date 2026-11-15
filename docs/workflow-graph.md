@@ -10,7 +10,6 @@ flowchart TD
   judge["judge<br/><small>dod-auditor</small>"]
   planner["planner<br/><small>planner</small>"]
   plan_reviewer["plan_reviewer<br/><small>reviewer</small>"]
-  ui_refiner["ui_refiner<br/><small>ui-refiner</small>"]
   refiner["refiner<br/><small>refiner</small>"]
   implementer["implementer<br/><small>implementer</small>"]
   parent_reviewer["parent_reviewer<br/><small>reviewer</small>"]
@@ -35,10 +34,8 @@ flowchart TD
   reconcile -->|child_unfinished_unknown| judge
   reconcile -->|child_unfinished| implementer
   reconcile -->|child_blocked| blocked
-  reconcile -->|ui_unknown| judge
-  reconcile -->|ui_needed| ui_refiner
-  reconcile -->|tech_unknown| judge
-  reconcile -->|tech_needed| refiner
+  reconcile -->|refine_unknown| judge
+  reconcile -->|refine_needed| refiner
   reconcile -->|refinement_unresolved| judge
   reconcile -->|child_ready| implementer
   reconcile -->|descendants_unknown| judge
@@ -78,10 +75,8 @@ flowchart TD
 | child_unfinished_unknown | judge |
 | child_unfinished | implementer |
 | child_blocked | blocked |
-| ui_unknown | judge |
-| ui_needed | ui_refiner |
-| tech_unknown | judge |
-| tech_needed | refiner |
+| refine_unknown | judge |
+| refine_needed | refiner |
 | refinement_unresolved | judge |
 | child_ready | implementer |
 | descendants_unknown | judge |

@@ -16,14 +16,16 @@ user to arbitrate routine bookkeeping.
 
 | Role | Shared skill | Write boundary |
 | --- | --- | --- |
-| autopilot | `.agents/skills/studypilot-autopilot/SKILL.md` | Scoped coordination/status and run record; refiner/reviewer output commits; permitted verbatim review fallback |
-| implementer | `.agents/skills/studypilot-implementer/SKILL.md` | Code, tests, implementation/checkpoint artifacts; scoped execution-status updates |
-| planner | `.agents/skills/studypilot-planner/SKILL.md` | Only `docs/` |
-| jira-sync | `.agents/skills/studypilot-jira-sync/SKILL.md` | Sync ledger; scoped story specs/navigation and epic tracker metadata |
-| refiner | `.agents/skills/studypilot-refiner/SKILL.md` | Only the given unimplemented story |
-| ui-refiner | `.agents/skills/studypilot-ui-refiner/SKILL.md` | Only the given unimplemented frontend story |
-| reviewer | `.agents/skills/studypilot-reviewer/SKILL.md` | Report; final user walkthrough; passing verdict's scoped docs sync; **scoped commit of review artifacts and queue/status updates on passing verdict** |
-| dod-auditor | `.agents/skills/studypilot-reviewer/SKILL.md` (static audit) | None |
+| autopilot | `.agents/skills/autopilot/SKILL.md` | Scoped coordination/status and run record; refiner/reviewer output commits; permitted verbatim review fallback |
+| implementer | `.agents/skills/implementer/SKILL.md` | Code, tests, implementation/checkpoint artifacts; scoped execution-status updates |
+| planner | `.agents/skills/planner/SKILL.md` | Only `docs/` |
+| refiner | `.agents/skills/refiner/SKILL.md` | Only the given unimplemented story (technical grounding; plus UI/UX decisions for frontend stories) |
+| reviewer | `.agents/skills/reviewer/SKILL.md` | Report; final user walkthrough; passing verdict's scoped docs sync; **scoped commit of review artifacts and queue/status updates on passing verdict** |
+| dod-auditor | `.agents/skills/reviewer/SKILL.md` (static audit) | None |
+
+Supporting guidance (not roles): `.agents/skills/backend/SKILL.md` and
+`.agents/skills/frontend/SKILL.md`, loaded by the implementer per layer.
+There is no tracker-sync role; `docs/jira-sync/` is a historical ledger only.
 
 An explicit autopilot invocation authorizes sequential delegation through the
 enclosing parent review unit, including remaining children, integration, fixes
@@ -52,6 +54,7 @@ Canonical workflow rules live in:
 - [Review cadence](.agents/review-cadence.md): review unit and final gate.
 - [Context and efficiency](.agents/context-efficiency.md): reads, handoffs and measurement.
 - [Workflow graph](.agents/workflow-graph.md): the only delivery router, checkpoint schema, and interrupts.
+- [ID conventions](.agents/id-conventions.md): every label family (ACs, TRs, decisions, findings, steps) and the re-letter policy.
 - [Artifact conventions](docs/artifacts/README.md): layout and records.
 
 Follow role write limits with every tool, including shell. Reviewer persistence
@@ -77,15 +80,6 @@ destructive actions remain in force.
 ## Ownership scoping
 
 Every Prisma query for a student's academic data must include the authenticated student's `userId` in its `where` clause — use the helpers in `apps/api/src/common/ownership/ownership.ts` (`ownedWhere` for single-record where-clauses, `assertOwned` for fetched records, `assertAffected` for `updateMany`/`deleteMany` counts), and read the principal with `@CurrentUser()` (never `@Req()`/`@Request()` in controllers; the global `APP_GUARD` already 401s unauthenticated routes). Access that is not owned — the record missing, or owned by another student — returns the same uniform 404 with the generic message `Resource not found`. Never answer with a 403 or a distinct message: that reveals another student's records exist (an existence oracle). The canonical in-code copy of this convention is the header comment in `apps/api/src/common/ownership/ownership.ts`.
-
-## Jira synchronization
-
-Use `jira-sync` for bidirectional story reconciliation and the durable
-[ledger](docs/jira-sync/README.md). Preview is the default; explicit sync modes
-retain existing tracker authorization boundaries. The ledger tracks sync identity
-and baselines, not implementation state. Explicit prune may remove verified
-completed specifications after the final review gate; keep parent queues,
-traceability, contracts and artifacts. Preserve tombstones to prevent re-import.
 
 ## Shell access for agents
 

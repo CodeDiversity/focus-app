@@ -10,8 +10,8 @@ The README execution queue remains the child list. The `## Autopilot` section
 is this run's checkpoint, not a second queue. An entry hint is recorded state.
 It is not a jump. Every run starts at reconcile.
 
-Jira sync and the DoD auditor are not nodes. An explicit user request may run
-them beside the graph. They must not advance `stage`.
+The DoD auditor is the `judge` node only; a standalone audit may run beside the
+graph on explicit user request and must not advance `stage`.
 
 ## How to execute one step
 
@@ -65,11 +65,9 @@ enter step mode again before continuing a portable step checkpoint.
 | child_unfinished_unknown | Closeout of the active child is unverified | judge |
 | child_unfinished | Active child is unfinished or closeout is incomplete | implementer |
 | child_blocked | First eligible child is blocked and no independent later child is eligible | blocked |
-| ui_unknown | Unimplemented child may still need UI/UX decisions | judge |
-| ui_needed | Frontend child is unimplemented and UI/UX decisions are unsettled | ui_refiner |
-| tech_unknown | Unimplemented child may still need technical refinement | judge |
-| tech_needed | Child needs technical refinement | refiner |
-| refinement_unresolved | Child is queued or needs refinement, but neither refinement flag is set | judge |
+| refine_unknown | Unimplemented child may still need refinement (technical and, for frontend, UI/UX) | judge |
+| refine_needed | Child needs refinement | refiner |
+| refinement_unresolved | Child is queued or needs refinement, but the refinement flag is not set | judge |
 | child_ready | Planning gates passed and the eligible child is Ready | implementer |
 | descendants_unknown | Descendant completion is unverified | judge |
 | descendants_incomplete | Some descendant is not implemented and no eligible child was selected | judge |
@@ -105,9 +103,8 @@ Stop and ask one question. Do not relabel the gate passed.
 
 - No parallel implementers, and no worktree created to get around that.
 - No automatic child review and no automatic DoD audit.
-- No Jira sync unless the user explicitly authorizes that separate workflow.
 - No advance into the next parent or epic.
-- An implemented child never returns to the refiner or UI refiner.
+- An implemented child never returns to the refiner.
 - An entry hint does not skip an earlier unmet prerequisite.
 - Refining a child does not restart whole-plan review unless acceptance
   criteria, contracts, scope, or dependencies changed.
@@ -151,7 +148,6 @@ last_result:
 gates:
   breakdown: unknown
   plan: unknown
-  ui: unknown
   refinement: unknown
   child_unfinished: unknown
   eligible_child_state: unknown
@@ -183,7 +179,6 @@ scope: parent_review_unit
 checkpoint: readme_autopilot_section
 queue: readme_execution_queue
 non_nodes:
-  - jira-sync
   - dod-auditor
 nodes:
   - id: wait
@@ -207,11 +202,6 @@ nodes:
     fresh_context: true
     commit: coordinator
     writes: ["plan-review.md"]
-  - id: ui_refiner
-    role: ui-refiner
-    fresh_context: true
-    commit: coordinator
-    writes: ["docs/stories/**/*.md"]
   - id: refiner
     role: refiner
     fresh_context: true
@@ -357,39 +347,22 @@ edges:
     interrupt: material_decision
     stage: blocked
     question: "The first eligible child is blocked. Ask the one recorded question. Do not skip it for a dependent sibling."
-  - id: ui_unknown
+  - id: refine_unknown
     when:
       all:
         - { field: planning_satisfied, eq: true }
-        - { field: needs_ui_refinement, eq: unknown }
+        - { field: needs_refinement, eq: unknown }
         - { field: eligible_child_state, in: ["Needs refinement", Queued] }
     to: judge
     stage: reconcile
-  - id: ui_needed
+  - id: refine_needed
     when:
       all:
         - { field: planning_satisfied, eq: true }
-        - { field: needs_ui_refinement, eq: true }
-        - { field: eligible_child_state, in: ["Needs refinement", Queued] }
-    to: ui_refiner
-    assignment: ui_refine
-    stage: ui_refine
-  - id: tech_unknown
-    when:
-      all:
-        - { field: planning_satisfied, eq: true }
-        - { field: needs_technical_refinement, eq: unknown }
-        - { field: eligible_child_state, in: ["Needs refinement", Queued] }
-    to: judge
-    stage: reconcile
-  - id: tech_needed
-    when:
-      all:
-        - { field: planning_satisfied, eq: true }
-        - { field: needs_technical_refinement, eq: true }
+        - { field: needs_refinement, eq: true }
         - { field: eligible_child_state, in: ["Needs refinement", Queued] }
     to: refiner
-    assignment: technical_refine
+    assignment: refine
     stage: refine
   - id: refinement_unresolved
     when:
@@ -540,10 +513,9 @@ non_edges:
   - id: implemented_child_never_returns_to_refiner
     given:
       eligible_child_state: "Implemented — awaiting parent review"
-      needs_ui_refinement: true
-      needs_technical_refinement: true
+      needs_refinement: true
       all_descendants_implemented: false
-    never: [refiner, ui_refiner]
+    never: [refiner]
   - id: hint_does_not_skip_prerequisites
     given:
       breakdown_valid: false

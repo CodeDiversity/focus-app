@@ -36,14 +36,21 @@ passing verdict before writing the findings.
 - Final reviewer walkthrough: user-facing code explanation, correctness evidence
   and workflow-specific manual test instructions/status, saved beside the final
   report before completion. Applies equally to ordinary and autopilot reviews.
-- Jira-sync ledger: tracker identity, last common spec baseline, pending mutations
-  and removal tombstones; never a duplicate execution queue.
 
 Other records link to these facts rather than repeating narratives. Historical
 records stay intact; do not bulk rewrite finished stories to adopt this convention.
-Explicit Jira-sync pruning may remove a completed specification under its skill
-gates; preserve historical evidence and repair live navigation to its tombstone.
 Required child status pointers and final review status sync remain scoped updates.
+
+Concretely:
+
+- The queue Evidence cell is links plus a one-line verdict; it never carries
+  test counts or finding prose.
+- A completed child's checkpoint is reduced to a closed pointer at closeout
+  (ID, final commit, record link, open finding IDs).
+- Decisions are cited by ID with at most a half-line gloss, never restated.
+- Review passes live in separate files (`review.md` latest, `review-round-<n>.md`
+  history); see [artifact conventions](../docs/artifacts/README.md).
+- Identifiers follow [ID conventions](id-conventions.md).
 
 ## Resolve responsibility once
 
@@ -58,7 +65,6 @@ Apply that existing exception directly; do not invent another approval gate.
 | Review report, final user walkthrough and permitted verdict-dependent sync | The reviewer completes these within runtime permissions; both final documents precede completion sync; a completed non-passing review returns concrete findings. |
 | Reviewer Git commit or restricted-runtime persistence fallback | The coordinating parent performs the specified writes/commit within its authority, preserving the report verbatim. Do not send it back to the reviewer to commit. |
 | Required scope, AC, dependency or readiness change | Use the planner/refiner boundary; preserve implementation progress and identify the precise unresolved decision. |
-| Authorized Jira reconciliation/prune | Follow jira-sync and existing authorization; role naming alone never grants tracker permission. |
 
 For a genuine out-of-scope action, specify the exact path/field, requested change,
 evidence and permitted recipient once. When delegation is authorized and useful,

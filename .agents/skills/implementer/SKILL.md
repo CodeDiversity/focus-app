@@ -18,8 +18,7 @@ not start a sibling, a reviewer, or a parallel writer.
 
 Apply [delivery state](../../delivery-state.md): read the parent README's queue
 before choosing/resuming work, resolve colocated artifact paths, and maintain
-active/next status. `Needs refinement` is actionable by the refiner (or the
-ui-refiner for frontend UI/UX gaps), not ready to code. Update execution fields
+active/next status. `Needs refinement` is actionable by the refiner, not ready to code. Update execution fields
 and the active child's status/artifact pointers only; all other planning content
 remains planner-owned.
 
@@ -89,9 +88,12 @@ Keep reviewer finding IDs when addressing review feedback; never edit the
 review report or claim independent approval.
 
 At completion, write `implementation.md` for every child, including docs-only
-or move-only work. Include AC-by-AC outcomes, verification commands/cwd/results
-and tested state, changed paths, commit scope, deviations and findings with
-their dispositions. If none were found, explicitly record `Findings/deviations:
+or move-only work. Include AC-by-AC outcomes (cited as `<STORY>-AC<n>`), verification
+commands/cwd/results and tested state, changed paths, commit scope, deviations
+and findings (`F-<STORY>-<nn>`) with their dispositions, per
+[ID conventions](../../id-conventions.md). Cite decisions by ID; do not restate
+them. This record is the only place test counts and finding narratives live;
+the queue cell and checkpoint link here. If none were found, explicitly record `Findings/deviations:
 None`; a missing section is not evidence of no findings. Move completed findings
 and verification into this record and link it from the checkpoint, keeping only
 actionable unfinished work in the checkpoint. Do not create a second findings
@@ -103,8 +105,11 @@ this closeout in order:
 1. Verify every required AC/check/artifact. Unmet requirements remain open;
    do not call them polish or mark the child implemented. Record blocked/partial
    progress honestly and hand off its next action when work cannot continue.
-2. Update the checkpoint's progress boxes/status, the active child's Status and
-   artifact pointers, and the parent queue row plus active/next fields together.
+2. Reduce the checkpoint to a short closed pointer (ID, final commit, link to
+   `implementation.md`, remaining open findings by ID), then update the active
+   child's Status and artifact pointers and the parent queue row plus
+   active/next fields together. The queue Evidence cell is links plus a
+   one-line verdict, not a copy of the record.
    Use `Implemented — awaiting parent review` only for finished implementation.
    Keep unchanged historical records intact; do not fabricate old evidence.
 3. Inspect the scoped diff and existing staging. Stage explicit owned paths or

@@ -108,9 +108,8 @@ small supporting steps remain with their cohesive outcome.
 For an oversized **unimplemented** story, the planner preserves its ID as a
 coordination record and creates smaller children using the existing naming scheme
 (for example, B1/B2). Map every original AC/test/DoD obligation to a child; retain
-shared contracts, dependency order, Jira identity and named integration ownership.
-The coordination record is not another implementation ticket. Do not duplicate
-existing Jira keys or sync without authorization.
+shared contracts, dependency order and named integration ownership.
+The coordination record is not another implementation ticket.
 
 For **in-progress or completed** work, preserve its history and scope. The refiner
 does not rewrite it. Any remaining-work split is an explicit planner task grounded

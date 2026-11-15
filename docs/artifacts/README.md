@@ -24,10 +24,10 @@ docs/stories/<epic>/<parent>/
         └── implementation.md
 ```
 
-Use stable story IDs for new artifact folders; Jira identity stays in metadata.
+Use stable story IDs for new artifact folders.
 Read the parent's recorded paths before creating anything. Unmigrated features
 can explicitly retain `docs/artifacts/<existing-id>/` until an authorized move.
-Do not duplicate records or rename directories just because a Jira key appears.
+Do not duplicate records or rename directories.
 
 ## Records and ownership
 
@@ -57,12 +57,13 @@ Do not duplicate records or rename directories just because a Jira key appears.
   and saves it before completion sync; the coordinator commits it and handles
   permitted verbatim fallback persistence. Regenerate for a changed final scope,
   preserving prior committed versions. See the
-  [final walkthrough gate](../../.agents/skills/studypilot-reviewer/SKILL.md#final-user-walkthrough).
+  [final walkthrough gate](../../.agents/skills/reviewer/SKILL.md#final-user-walkthrough).
+- **review-round-<n>.md:** when a review unit needs more than one pass, each
+  earlier pass is kept verbatim in its own round file and `review.md` holds only
+  the latest verdict. Do not append passes to one growing report.
 
-The Jira-sync role may remove a completed story specification only under its
-[prune gates](../../.agents/skills/studypilot-jira-sync/SKILL.md), preserving this
-folder, parent delivery READMEs, contracts, traceability and all artifacts. Its
-[ledger](../jira-sync/README.md) retains identity, recovery pointers and tombstones.
+Label every AC, decision and finding per [ID conventions](../../.agents/id-conventions.md).
+Historical `docs/jira-sync/` records are read-only; there is no tracker-sync role.
 
 Only the planner owns scope/dependency/decision changes. The implementer may
 update the README execution fields/table and active child status/artifact pointers

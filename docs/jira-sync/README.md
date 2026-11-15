@@ -1,5 +1,7 @@
 # Jira synchronization ledger
 
+> **Historical record (2026-11-15).** Jira synchronization was retired; there is no tracker-sync role. This ledger and its tombstones are kept read-only for the links that reference them.
+
 Use the `jira-sync` agent for on-demand reconciliation. Its shared instructions
 live in [the sync skill](../../.agents/skills/jira-sync/SKILL.md).
 This directory records what actually synchronized; parent README queues remain

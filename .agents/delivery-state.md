@@ -18,8 +18,7 @@ docs/stories/<epic>/<parent>/
     <child-story-id>/         # child checkpoint and implementation record
 ```
 
-Use stable story IDs for new artifact subdirectories; keep Jira keys in metadata,
-not as a reason to rename files. The README records **Delivery home**, **Artifact
+Use stable story IDs for new artifact subdirectories. The README records **Delivery home**, **Artifact
 root**, **Parent artifacts**, **Active substory**, **Next substory**, and the queue.
 Use actual paths from that record, not hardcoded `docs/artifacts/` paths. A
 standalone story gets its own story folder with the same convention.
@@ -49,6 +48,9 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
   implementation prerequisites have evidence. Tests required to complete the
   story remain its responsibility; no child reviewer approval is required.
 - `Needs refinement` can be the next actionable story, but is not ready to code.
+- The **Evidence / artifacts** cell holds artifact links and a one-line verdict
+  (for example `green 2026-11-15; open: F-EP13I-01`). Test counts, deviations
+  and finding narratives live only in the child's `implementation.md`.
 - Set **Active substory** to at most one ID. **Next substory** names exactly one
   actionable ID and action (refine, implement, resume, or fix), or `None` with a
   reason (all blocked, complete, or final parent review next). If a task is active,
@@ -93,21 +95,10 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
   review logs.
   Parent checkpoint task fields link back to this queue instead of becoming
   a competing task list. Coordinate handoff before transferring the single writer.
-- **Jira sync:** owns sync identity, baselines, pending operations and tombstones
-  in `docs/jira-sync/`. May reconcile scoped specifications/tracker metadata and
-  repair navigation under its skill; cannot invent readiness, review or execution
-  state. Explicit prune removes only eligible specifications after verified
-  specification preservation in Jira or recoverable Git history, plus the passing
-  final review; retain delivery READMEs, queue rows,
-  traceability, contracts and artifacts. Reopened imports return as drafts to the
-  planner, never automatically as active implementation.
-- **Refiner:** reads the queue, writes only the given unimplemented story, and
-  returns its readiness/dependency result for planner/coordinator reconciliation.
-  It cannot edit README, create artifacts or mark other stories ready.
-- **UI refiner:** reads the queue, writes only the given unimplemented frontend
-  story (UI/UX decisions), and returns its readiness/dependency result for
-  planner/coordinator reconciliation. It cannot edit README, create artifacts or
-  mark other stories ready.
+- **Refiner:** reads the queue, writes only the given unimplemented story
+  (technical grounding, plus UI/UX decisions for frontend stories), and returns
+  its readiness/dependency result for planner/coordinator reconciliation. It
+  cannot edit README, create artifacts or mark other stories ready.
 - **Reviewer:** reads the queue and colocated evidence independently; never
   moves files. The review is read-only and its only own writes are the saved
   report, final implementation walkthrough, plus on a passing verdict the reviewer skill's passing-review docs

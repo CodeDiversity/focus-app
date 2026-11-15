@@ -63,7 +63,7 @@ single implementer. Autopilot never authors implementation evidence or approval.
 Only the reviewer changes reports, except verbatim restricted-runtime fallback.
 
 An explicit autopilot invocation authorizes sequential delegation to these
-roles. Preserve their write limits and unrelated work. Tracker sync/prune,
+roles. Preserve their write limits and unrelated work.
 shared database changes, deployment, push/merge and destructive actions retain
 their existing authorization boundaries. Never read or write secret files.
 
@@ -124,9 +124,9 @@ existing evidence. After resolving the delivery home, maintain the `## Autopilot
 checkpoint in that README using the schema in
 [workflow-graph.md](../../workflow-graph.md). Replace only that section. It
 records scope, stage, the active dispatch, retry state, gate judgment, writer
-ownership, and the one blocker. It is not a second task list. Stages include
-`ui_refine` when an unimplemented frontend child still has unsettled UI/UX
-decisions; that is a gap in the old prose table, not a new approval gate.
+ownership, and the one blocker. It is not a second task list. The `refine`
+stage covers technical and (for frontend children) UI/UX refinement in one
+refiner dispatch.
 
 The execution queue remains authoritative for active/next children and ordering;
 checkpoints own unfinished implementation and reports own findings/verdicts.

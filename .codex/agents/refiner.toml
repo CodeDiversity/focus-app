@@ -1,5 +1,5 @@
 name = "refiner"
-description = "Refines a StudyPilot story ticket in place into a technical, implementation-ready ticket, grounded in the actual codebase; asks clarifying questions first"
+description = "Refines a StudyPilot story in place into an implementation-ready ticket — technical grounding for every story plus UI/UX decisions for frontend stories — grounded in the actual codebase; asks clarifying questions first"
 sandbox_mode = "workspace-write"
 developer_instructions = """
 Read .agents/delivery-state.md and the parent README queue first; preserve write limits.

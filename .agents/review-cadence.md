@@ -14,7 +14,7 @@ The planner identifies the review unit in the parent/breakdown README: parent
 ID, all implementation descendants, integration/sign-off owner, source AC/test
 mapping, and final artifact directory. Resolve paths using [delivery state](delivery-state.md): the parent README
 records the delivery home and artifact root. Use stable story-ID directories for
-new/migrated groups, keeping Jira keys in metadata. Do not
+new/migrated groups. Do not
 give a coordination record a new implementation issue merely to hold a review.
 For nested splits, the enclosing feature parent owns the final review unless
 the user explicitly chooses a different scope; do not review every nested group.

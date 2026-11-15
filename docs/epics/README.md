@@ -51,7 +51,7 @@ required from the implementer before initial review. Save `walkthrough.md`
 beside the resolved final `review.md`; verify both before marking `Reviewed`
 or complete. Label performed manual checks separately from unexecuted user
 instructions; required manual gates still need actual evidence. See the
-[reviewer workflow](../../.agents/skills/studypilot-reviewer/SKILL.md#final-user-walkthrough).
+[reviewer workflow](../../.agents/skills/reviewer/SKILL.md#final-user-walkthrough).
 
 **Target accessibility:** WCAG 2.2 AA.
 

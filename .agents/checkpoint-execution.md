@@ -35,9 +35,9 @@ Role / scope: implementer; <active layer, owned outcome and exclusions>
 - Saved work: <verified commit hashes and purposes, or uncommitted paths>
 - Other work to preserve: <paths; no stash/reset/cleanup instructions>
 
-## Progress
-- [x] <completed behavior / AC with code or test evidence>
-- [ ] <remaining behavior / AC>
+## Progress (steps S1…Sn; cite ACs as <STORY>-AC<n>, decisions by ID)
+- [x] S1 <completed behavior / AC with code or test evidence>
+- [ ] S2 <remaining behavior / AC>
 - Current step: <one bounded action, including partially written code>
 
 ## Decisions and dependencies
@@ -112,8 +112,10 @@ Legacy backend/frontend role labels resume as implementer
 while retaining the story's layer and original evidence.
 
 At task end, run required final verification and write `implementation.md`.
-That record owns completed behavior and verification; the checkpoint links to it
-and retains only actionable resume state. Do not copy the same narrative to both.
+That record owns completed behavior and verification; the checkpoint is then
+reduced to a closed pointer (ID, final commit, record link, open finding IDs)
+and retains nothing else. Do not copy the same narrative to both. Steps are
+`S<n>`; `M<n>` is reserved for release milestones ([ID conventions](id-conventions.md)).
 Follow [review cadence](review-cadence.md): a finished substory is `implementation
 complete — awaiting parent review` and may unblock later implementation. Do not
 dispatch an individual reviewer. Once every child and integration obligation is

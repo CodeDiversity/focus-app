@@ -53,7 +53,7 @@ The README must contain a table with `Pass`, `Blocked`, or `Not applicable`, a c
 7. Dependency mapping and sequencing.
 8. Material decisions resolved or explicitly blocked.
 9. Correction-log history, fixes, and verification completeness.
-10. Jira identity/sync consistency, if sync is authorized.
+10. Identifier consistency per [ID conventions](id-conventions.md): qualified child ACs, numeric-order decision register with override back-references, no `M` steps, no counts typed as prose.
 
 Use distinct status judgments:
 

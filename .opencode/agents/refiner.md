@@ -1,5 +1,5 @@
 ---
-description: Refines a StudyPilot story ticket in place into a technical, implementation-ready ticket, grounded in the actual codebase; asks clarifying questions first
+description: Refines a StudyPilot story in place into an implementation-ready ticket — technical grounding for every story plus UI/UX decisions for frontend stories — grounded in the actual codebase; asks clarifying questions first
 mode: all
 permissions:
   - action: shell
