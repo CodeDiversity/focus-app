@@ -1,0 +1,96 @@
+# EP13I — Energy-Aware Availability and Placement
+
+**Story ID:** EP13I
+**Parent epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md)
+**Milestone:** M6
+**Layer:** Backend + Frontend (one cohesive outcome; split would manufacture children)
+**Status:** Ready
+**Dependencies:** EP13F implemented (placement v2 is the insertion point). D13-10 provisional (V-13-5).
+**Jira key:** Pending creation
+
+## Summary
+
+ADHD energy is not uniform across the day; the scheduler currently treats
+09:00 Monday and 23:00 Thursday as equal. This story lets students tag
+availability windows with an energy level (`HIGH`/`NORMAL`/`LOW`, default
+`NORMAL` — additive migration) and teaches placement v2 to prefer HIGH
+windows for demanding work (assignment type PAPER/PROJECT/EXAM or remaining
+> 120 min — D13-10 provisional) and LOW windows for light work, with the
+existing deterministic tie-breaks deciding everything else. The availability
+dialog gains the energy field; the calendar's availability rendering shows
+the tag.
+
+## Scope
+
+**In scope:**
+- Migration: `AvailabilitySlot.energy EnergyLevel @default(NORMAL)`.
+- Engine: energy-aware candidate ordering inside placement v2 (preference,
+  never a hard constraint — feasibility always wins; LOW windows are still
+  used when needed).
+- Availability CRUD (DTO/validation) + dialog field + calendar tag rendering.
+- Tests (TR-E13-09); the small UI follows the existing availability dialog
+  pattern (specified here; no ui-refiner gate — D13-14 lists this story as
+  exempt).
+
+**Out of scope:**
+- Chronotype onboarding, per-day energy overrides, any learning of energy
+  from history (deterministic tags only; MVP AI exclusion stands).
+
+## Source requirement references
+
+- Epic AC-E13-10, AC-E13-14. Shared DoD 1, 2, 3, 6, 8, 9. TR-E13-09.
+
+## Acceptance criteria
+
+1. Energy round-trips through availability CRUD with validation (enum only;
+   default NORMAL preserves existing rows and clients).
+2. Demanding work (D13-10 rule) is placed into HIGH windows when a feasible
+   HIGH gap exists; light work prefers LOW; placement remains deterministic
+   (stable tie-breaks) and never sacrifices feasibility or the v2 rules
+   (breaks/density/min-max) to energy preference.
+3. With all slots NORMAL (the default), output is byte-identical to pre-EP13I
+   placement — the feature is strictly opt-in.
+4. The availability dialog edits energy with keyboard support; the calendar
+   availability rendering shows the level accessibly (not color-only).
+
+## Tests (TR-E13-09)
+
+- Migration default; DTO validation matrix.
+- Engine: demanding→HIGH preference, light→LOW preference, feasibility
+  override, all-NORMAL identity, determinism across runs.
+- Dialog field round-trip + keyboard; calendar tag rendering (a11y: text or
+  icon, not color-only).
+
+## Technical notes
+
+- **Inspected (2026-11-14):** `AvailabilitySlot` schema (311–324: no energy
+  field); availability feature per code baseline (dialog-based CRUD).
+- **Proposed:** enum + column; energy enters the engine as window metadata on
+  `freeIntervals` inputs; candidate gaps sorted (energy match, then existing
+  earliest-first order). "Demanding" classification is a pure function with
+  V-13-5 marking the heuristic for post-landing validation.
+
+## Definition of Done
+
+1. Functional criteria pass (AC-E13-10).
+2. DTO validation. 3. Ownership scoping unchanged on availability CRUD.
+4. Actionable validation errors. 5. Existing dialog states suffice (tested).
+6. Keyboard on the new field. 7. Existing responsive dialog behavior.
+8. Automated tests (TR-E13-09). 9. Migration + contract documented.
+10–11. Combined EP13 parent review / reviewer walkthrough.
+
+## Sizing
+
+- **Outcome:** demanding work lands where the student's brain is; everything else is unchanged by default.
+- **Estimate:** 2 requests/tokens.
+- **Model recommendation:** 3 — one field + one deterministic ordering hook; the identity-when-NORMAL test contains the risk.
+- **Production files:** `schema.prisma` + migration, availability module DTO/service, `scheduler.ts` ordering hook, availability dialog + calendar tag.
+- **Test files:** scheduler/availability specs, dialog component test.
+- **Minimal start context:** this story, EP13 README D13-10, EP13F record, availability feature files.
+- **Verification:** `pnpm --filter @studypilot/api test`, `pnpm --filter @studypilot/web test`, lint, typecheck, `pnpm db:generate`.
+- **Dependencies:** EP13F. Blocks nothing.
+- **Exclusions:** energy learning, per-date overrides, onboarding.
+
+## Tracker reference
+
+Jira key: Pending creation (no sync authorized).
