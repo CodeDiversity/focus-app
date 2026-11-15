@@ -39,14 +39,19 @@ const PREFERENCE_KEYS = [
   'minSessionMinutes',
   'maxSessionMinutes',
   'dailyCapMinutes',
+  // EP13F (D13-5) — the two placement levers joined the contract additively.
+  'breakMinutes',
+  'densityPercent',
 ].sort();
 
-/** The documented defaults (D06-4). */
+/** The documented defaults (D06-4 + EP13F's D13-5). */
 const DEFAULTS = {
   sessionLengthMinutes: 60,
   minSessionMinutes: 15,
   maxSessionMinutes: 120,
   dailyCapMinutes: 240,
+  breakMinutes: 15,
+  densityPercent: 80,
 };
 
 describeIntegration('study preferences data scoping (integration, real database)', () => {
@@ -164,12 +169,7 @@ describeIntegration('study preferences data scoping (integration, real database)
     expect(bRead.body).toEqual(DEFAULTS);
 
     const aRead = await getPreferences(studentA).expect(HttpStatus.OK);
-    expect(aRead.body).toEqual({
-      sessionLengthMinutes: 45,
-      minSessionMinutes: 15,
-      maxSessionMinutes: 120,
-      dailyCapMinutes: 240,
-    });
+    expect(aRead.body).toEqual({ ...DEFAULTS, sessionLengthMinutes: 45 });
   });
 
   it('the projection never exposes userId (and never another student’s id)', async () => {

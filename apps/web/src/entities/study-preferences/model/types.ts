@@ -6,12 +6,20 @@
 // 5..1440 and defaults 60 / 15 / 120 / 240 (D06-4, D06-16). The backend
 // returns the *effective* values (defaults filled in, cross-field rules
 // repaired), so the form always shows a usable value.
+//
+// EP13F (D13-5) added the two placement levers the engine's placement v2
+// reads: `breakMinutes` (0..60, default 15 — the gap between two planned
+// sessions) and `densityPercent` (50..100, default 80 — the share of a day's
+// free time the plan may fill). Both are additive and take part in no
+// cross-field rule.
 
 export interface StudyPreferences {
   sessionLengthMinutes: number;
   minSessionMinutes: number;
   maxSessionMinutes: number;
   dailyCapMinutes: number;
+  breakMinutes: number;
+  densityPercent: number;
 }
 
 export type UpdateStudyPreferencesPayload = Partial<StudyPreferences>;

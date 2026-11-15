@@ -43,4 +43,26 @@ export class UpdateStudyPreferencesDto {
   @Min(5, { message: 'dailyCapMinutes must be between 5 and 1440' })
   @Max(1440, { message: 'dailyCapMinutes must be between 5 and 1440' })
   dailyCapMinutes?: number | null;
+
+  /**
+   * EP13F (D13-5) — the break the engine leaves between two consecutive
+   * planned sessions. `0` is a legitimate "back-to-back" choice, so the
+   * lower bound is 0, not 5.
+   */
+  @IsOptional()
+  @IsInt({ message: 'breakMinutes must be an integer' })
+  @Min(0, { message: 'breakMinutes must be between 0 and 60' })
+  @Max(60, { message: 'breakMinutes must be between 0 and 60' })
+  breakMinutes?: number | null;
+
+  /**
+   * EP13F (D13-5) — the share of a day's free time the engine may fill.
+   * `100` restores the pre-EP13F cap-only behaviour; the 50 floor keeps the
+   * cap from starving a plan.
+   */
+  @IsOptional()
+  @IsInt({ message: 'densityPercent must be an integer' })
+  @Min(50, { message: 'densityPercent must be between 50 and 100' })
+  @Max(100, { message: 'densityPercent must be between 50 and 100' })
+  densityPercent?: number | null;
 }

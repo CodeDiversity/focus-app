@@ -1,4 +1,5 @@
 import {
+  PREFERENCES_BAG_MAX_BYTES,
   STUDY_PREFERENCE_BOUNDS,
   STUDY_PREFERENCE_DEFAULTS,
   STUDY_PREFERENCE_KEYS,
@@ -34,21 +35,27 @@ describe('study preferences (domain, EP06A)', () => {
   };
 
   describe('the defaults and the bounds (D06-4)', () => {
-    it('exposes the documented defaults 60 / 15 / 120 / 240', () => {
+    it('exposes the documented defaults 60 / 15 / 120 / 240, plus EP13F’s 15 / 80', () => {
       expect(DEFAULTS).toEqual({
         sessionLengthMinutes: 60,
         minSessionMinutes: 15,
         maxSessionMinutes: 120,
         dailyCapMinutes: 240,
+        breakMinutes: 15,
+        densityPercent: 80,
       });
     });
 
-    it('exposes the documented bounds 5..480 / 5..480 / 5..480 / 5..1440', () => {
+    it('exposes the documented bounds 5..480 / 5..480 / 5..480 / 5..1440 / 0..60 / 50..100', () => {
       expect(STUDY_PREFERENCE_BOUNDS).toEqual({
         sessionLengthMinutes: { min: 5, max: 480 },
         minSessionMinutes: { min: 5, max: 480 },
         maxSessionMinutes: { min: 5, max: 480 },
         dailyCapMinutes: { min: 5, max: 1440 },
+        // EP13F (D13-5): a zero break is a legitimate choice, and the
+        // density floor keeps the cap from starving a plan.
+        breakMinutes: { min: 0, max: 60 },
+        densityPercent: { min: 50, max: 100 },
       });
     });
   });
@@ -72,10 +79,8 @@ describe('study preferences (domain, EP06A)', () => {
 
     it('falls back per field when the key is missing', () => {
       expect(readStudyPreferences({ studyDefaults: { sessionLengthMinutes: 45 } })).toEqual({
+        ...DEFAULTS,
         sessionLengthMinutes: 45,
-        minSessionMinutes: 15,
-        maxSessionMinutes: 120,
-        dailyCapMinutes: 240,
       });
     });
 
@@ -118,6 +123,7 @@ describe('study preferences (domain, EP06A)', () => {
           },
         })
       ).toEqual({
+        ...DEFAULTS,
         sessionLengthMinutes: 5,
         minSessionMinutes: 5,
         maxSessionMinutes: 480,
@@ -202,10 +208,9 @@ describe('study preferences (domain, EP06A)', () => {
           },
         })
       ).toEqual({
+        ...DEFAULTS,
         sessionLengthMinutes: 90,
         minSessionMinutes: 90,
-        maxSessionMinutes: 120,
-        dailyCapMinutes: 240,
       });
     });
 
@@ -220,10 +225,10 @@ describe('study preferences (domain, EP06A)', () => {
           },
         })
       ).toEqual({
+        ...DEFAULTS,
         sessionLengthMinutes: 200,
         minSessionMinutes: 200,
         maxSessionMinutes: 200,
-        dailyCapMinutes: 240,
       });
     });
 
@@ -251,9 +256,7 @@ describe('study preferences (domain, EP06A)', () => {
           },
         })
       ).toEqual({
-        sessionLengthMinutes: 60,
-        minSessionMinutes: 15,
-        maxSessionMinutes: 120,
+        ...DEFAULTS,
         dailyCapMinutes: 15,
       });
     });
@@ -397,6 +400,111 @@ describe('study preferences (domain, EP06A)', () => {
       expect(validateStudyPreferences({ sessionLengthMinutes: 300 })).toBeNull();
       expect(validateStudyPreferences({})).toBeNull();
       expect(validateStudyPreferences(null)).toBeNull();
+    });
+  });
+
+  // =========================================================================
+  // EP13F — the two placement levers (D13-5): `breakMinutes`, `densityPercent`.
+  // =========================================================================
+
+  describe('the EP13F placement keys (D13-5)', () => {
+    it('a bag written before EP13F still reads back valid — both keys default', () => {
+      // The exact four-key object EP06 used to write.
+      const legacyBag = {
+        studyDefaults: {
+          sessionLengthMinutes: 45,
+          minSessionMinutes: 20,
+          maxSessionMinutes: 90,
+          dailyCapMinutes: 300,
+        },
+      };
+      expect(readStudyPreferences(legacyBag)).toEqual({
+        sessionLengthMinutes: 45,
+        minSessionMinutes: 20,
+        maxSessionMinutes: 90,
+        dailyCapMinutes: 300,
+        breakMinutes: 15,
+        densityPercent: 80,
+      });
+    });
+
+    it('keeps stored values inside the bounds', () => {
+      const prefs = readStudyPreferences({
+        studyDefaults: { breakMinutes: 5, densityPercent: 65 },
+      });
+      expect(prefs.breakMinutes).toBe(5);
+      expect(prefs.densityPercent).toBe(65);
+    });
+
+    it('keeps the boundary values 0 / 60 and 50 / 100', () => {
+      expect(
+        readStudyPreferences({ studyDefaults: { breakMinutes: 0, densityPercent: 50 } })
+      ).toEqual({ ...DEFAULTS, breakMinutes: 0, densityPercent: 50 });
+      expect(
+        readStudyPreferences({ studyDefaults: { breakMinutes: 60, densityPercent: 100 } })
+      ).toEqual({ ...DEFAULTS, breakMinutes: 60, densityPercent: 100 });
+    });
+
+    it('falls back for out-of-range, non-integer and wrong-typed values', () => {
+      const cases: unknown[] = [-1, 61, 10.5, '15', true, null, {}, []];
+      for (const value of cases) {
+        const prefs = readStudyPreferences({ studyDefaults: { breakMinutes: value } });
+        expect(prefs.breakMinutes).toBe(15);
+      }
+      for (const value of [49, 101, 80.5, '80', false, null]) {
+        const prefs = readStudyPreferences({ studyDefaults: { densityPercent: value } });
+        expect(prefs.densityPercent).toBe(80);
+      }
+    });
+
+    it('takes part in no cross-field repair (the four D06-4 steps ignore them)', () => {
+      // An inverted min/max pair is repaired; the two levers pass through.
+      const prefs = readStudyPreferences({
+        studyDefaults: {
+          sessionLengthMinutes: 60,
+          minSessionMinutes: 300,
+          maxSessionMinutes: 200,
+          breakMinutes: 0,
+          densityPercent: 50,
+        },
+      });
+      expect(prefs.minSessionMinutes).toBe(200);
+      expect(prefs.breakMinutes).toBe(0);
+      expect(prefs.densityPercent).toBe(50);
+    });
+
+    it('the validator checks their own bounds and names the field', () => {
+      expect(validateStudyPreferences({ breakMinutes: 61 })).toEqual({
+        breakMinutes: ['breakMinutes must be between 0 and 60'],
+      });
+      expect(validateStudyPreferences({ densityPercent: 49 })).toEqual({
+        densityPercent: ['densityPercent must be between 50 and 100'],
+      });
+      expect(validateStudyPreferences({ breakMinutes: 10.5 })).toEqual({
+        breakMinutes: ['breakMinutes must be an integer'],
+      });
+      expect(validateStudyPreferences({ breakMinutes: 0, densityPercent: 100 })).toBeNull();
+    });
+
+    it('the cross-field rules still run when only the four D06-4 keys are present', () => {
+      // EP13F must not make a rule un-evaluable by adding keys to the bag.
+      expect(
+        validateStudyPreferences({
+          sessionLengthMinutes: 10,
+          minSessionMinutes: 30,
+          maxSessionMinutes: 120,
+          dailyCapMinutes: 240,
+        })
+      ).toEqual({
+        sessionLengthMinutes: [
+          'sessionLengthMinutes must be greater than or equal to minSessionMinutes',
+        ],
+      });
+    });
+
+    it('the complete object still fits the 4096-byte bag cap with room to spare', () => {
+      const serialized = JSON.stringify({ studyDefaults: DEFAULTS });
+      expect(Buffer.byteLength(serialized, 'utf8')).toBeLessThan(PREFERENCES_BAG_MAX_BYTES);
     });
   });
 });

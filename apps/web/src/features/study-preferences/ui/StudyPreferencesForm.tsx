@@ -15,6 +15,8 @@ import {
 
 const BOUNDS_MSG = 'Must be between 5 and 480.';
 const DAILY_CAP_MSG = 'Must be between 5 and 1440.';
+const BREAK_MSG = 'Must be between 0 and 60.';
+const DENSITY_MSG = 'Must be between 50 and 100.';
 const INTEGER_MSG = 'Must be a whole number.';
 
 const studyPreferencesSchema = z
@@ -39,6 +41,18 @@ const studyPreferencesSchema = z
       .int(INTEGER_MSG)
       .min(5, DAILY_CAP_MSG)
       .max(1440, DAILY_CAP_MSG),
+    // EP13F (D13-5): the two placement levers. Neither takes part in a
+    // cross-field rule, so no `.refine` below reads them.
+    breakMinutes: z
+      .number({ invalid_type_error: INTEGER_MSG })
+      .int(INTEGER_MSG)
+      .min(0, BREAK_MSG)
+      .max(60, BREAK_MSG),
+    densityPercent: z
+      .number({ invalid_type_error: INTEGER_MSG })
+      .int(INTEGER_MSG)
+      .min(50, DENSITY_MSG)
+      .max(100, DENSITY_MSG),
   })
   .refine((data) => data.minSessionMinutes <= data.sessionLengthMinutes, {
     message: 'Shortest session must be no longer than the default session length.',
@@ -60,6 +74,8 @@ const DEFAULTS: FormValues = {
   minSessionMinutes: 15,
   maxSessionMinutes: 120,
   dailyCapMinutes: 240,
+  breakMinutes: 15,
+  densityPercent: 80,
 };
 
 const FIELD_NAMES = [
@@ -67,6 +83,8 @@ const FIELD_NAMES = [
   'minSessionMinutes',
   'maxSessionMinutes',
   'dailyCapMinutes',
+  'breakMinutes',
+  'densityPercent',
 ] as const;
 
 export function StudyPreferencesForm() {
@@ -233,6 +251,41 @@ export function StudyPreferencesForm() {
               error={errors.dailyCapMinutes?.message}
               disabled={isSaving}
               {...register('dailyCapMinutes', { valueAsNumber: true })}
+            />
+          </div>
+        </fieldset>
+
+        {/* EP13F (D13-5): the two levers of placement v2. */}
+        <fieldset className="space-y-4">
+          <legend className="text-sm font-medium text-text">How your days are filled</legend>
+          <p className="text-sm text-text-muted">
+            Breaks keep sessions from running into each other, and the fill level leaves part of
+            your free time unplanned.
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Input
+              label="Break between sessions (minutes)"
+              type="number"
+              min={0}
+              max={60}
+              step={1}
+              inputMode="numeric"
+              hint="0–60"
+              error={errors.breakMinutes?.message}
+              disabled={isSaving}
+              {...register('breakMinutes', { valueAsNumber: true })}
+            />
+            <Input
+              label="Fill up to (% of free time)"
+              type="number"
+              min={50}
+              max={100}
+              step={1}
+              inputMode="numeric"
+              hint="50–100"
+              error={errors.densityPercent?.message}
+              disabled={isSaving}
+              {...register('densityPercent', { valueAsNumber: true })}
             />
           </div>
         </fieldset>

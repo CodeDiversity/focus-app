@@ -25,17 +25,24 @@
  * - `minSessionMinutes` — the shortest session the student wants (5…480)
  * - `maxSessionMinutes` — the longest session the student wants (5…480)
  * - `dailyCapMinutes` — the most planned minutes per day (5…1440)
+ * - `breakMinutes` — the gap the engine leaves between two consecutive
+ *   planned sessions on a day (EP13F, D13-5; 0…60, `0` = back-to-back)
+ * - `densityPercent` — the share of a day's free time the engine is allowed
+ *   to fill (EP13F, D13-5; 50…100, `100` = the cap-only behaviour)
  *
  * The two cross-field rules are `minSessionMinutes ≤ sessionLengthMinutes ≤
  * maxSessionMinutes` and `dailyCapMinutes ≥ minSessionMinutes`. Every value
  * of this type that leaves the domain module satisfies both rules and every
- * field is inside its own bounds.
+ * field is inside its own bounds. The two EP13F keys take part in no
+ * cross-field rule — they are independent levers.
  */
 export type StudyPreferences = {
   sessionLengthMinutes: number;
   minSessionMinutes: number;
   maxSessionMinutes: number;
   dailyCapMinutes: number;
+  breakMinutes: number;
+  densityPercent: number;
 };
 
 /**

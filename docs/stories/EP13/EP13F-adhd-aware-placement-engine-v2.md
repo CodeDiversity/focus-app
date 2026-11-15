@@ -4,7 +4,7 @@
 **Parent epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md)
 **Milestone:** M6
 **Layer:** Backend (pure domain module)
-**Status:** Ready
+**Status:** Implemented — awaiting parent review (2026-11-15; record `./artifacts/EP13F/implementation.md`)
 **Dependencies:** EP13A implemented (corrected remaining-work inputs). No UI decisions.
 **Jira key:** Pending creation
 

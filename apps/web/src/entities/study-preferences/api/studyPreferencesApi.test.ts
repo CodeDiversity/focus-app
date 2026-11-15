@@ -26,6 +26,9 @@ const stored: StudyPreferences = {
   minSessionMinutes: 10,
   maxSessionMinutes: 90,
   dailyCapMinutes: 180,
+  // EP13F (D13-5): the contract gained the two placement levers.
+  breakMinutes: 10,
+  densityPercent: 70,
 };
 
 const defaults: StudyPreferences = {
@@ -33,6 +36,8 @@ const defaults: StudyPreferences = {
   minSessionMinutes: 15,
   maxSessionMinutes: 120,
   dailyCapMinutes: 240,
+  breakMinutes: 15,
+  densityPercent: 80,
 };
 
 describe('studyPreferencesApi.getStudyPreferences', () => {

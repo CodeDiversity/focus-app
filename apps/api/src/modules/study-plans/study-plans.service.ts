@@ -179,6 +179,9 @@ function toStudyPreferencesResponse(prefs: StudyPreferences): StudyPreferences {
     minSessionMinutes: prefs.minSessionMinutes,
     maxSessionMinutes: prefs.maxSessionMinutes,
     dailyCapMinutes: prefs.dailyCapMinutes,
+    // EP13F's two placement levers (D13-5), additive to the D06-4 four.
+    breakMinutes: prefs.breakMinutes,
+    densityPercent: prefs.densityPercent,
   };
 }
 

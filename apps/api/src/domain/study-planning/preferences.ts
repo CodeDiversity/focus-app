@@ -10,37 +10,64 @@ import type { StudyPreferences } from './types';
  * and (later) EP08 import it directly.
  */
 
-/** The four keys of the `studyDefaults` object, in the contract's order. */
+/**
+ * The keys of the `studyDefaults` object, in the contract's order. EP13F
+ * appended `breakMinutes` and `densityPercent` (D13-5) — additively, so a
+ * bag written before EP13F still reads back valid (both keys fall back to
+ * their defaults).
+ */
 export const STUDY_PREFERENCE_KEYS = [
+  'sessionLengthMinutes',
+  'minSessionMinutes',
+  'maxSessionMinutes',
+  'dailyCapMinutes',
+  'breakMinutes',
+  'densityPercent',
+] as const;
+
+/** One of the `studyDefaults` keys. */
+export type StudyPreferenceKey = (typeof STUDY_PREFERENCE_KEYS)[number];
+
+/**
+ * The four keys the two cross-field rules read. A rule is evaluated only
+ * when **its own** inputs are present (`validateStudyPreferences` accepts a
+ * partial body), so the EP13F keys — which take part in no rule — never
+ * decide whether the rules run.
+ */
+const CROSS_FIELD_KEYS = [
   'sessionLengthMinutes',
   'minSessionMinutes',
   'maxSessionMinutes',
   'dailyCapMinutes',
 ] as const;
 
-/** One of the four `studyDefaults` keys. */
-export type StudyPreferenceKey = (typeof STUDY_PREFERENCE_KEYS)[number];
-
 /**
  * The defaults used when the bag is missing, when a key is missing, or when
- * a key's stored value is invalid (D06-4): `60 / 15 / 120 / 240`.
+ * a key's stored value is invalid (D06-4): `60 / 15 / 120 / 240`, plus
+ * EP13F's `15` break minutes and `80` percent density (D13-5).
  */
 export const STUDY_PREFERENCE_DEFAULTS: StudyPreferences = {
   sessionLengthMinutes: 60,
   minSessionMinutes: 15,
   maxSessionMinutes: 120,
   dailyCapMinutes: 240,
+  breakMinutes: 15,
+  densityPercent: 80,
 };
 
 /**
- * The inclusive bounds of each key (D06-4): the three session-length keys
- * accept `5…480` minutes, the daily cap accepts `5…1440` minutes.
+ * The inclusive bounds of each key (D06-4, D13-5): the three session-length
+ * keys accept `5…480` minutes, the daily cap accepts `5…1440` minutes, the
+ * break accepts `0…60` minutes (`0` is a legitimate "no break" choice) and
+ * the density accepts `50…100` percent.
  */
 export const STUDY_PREFERENCE_BOUNDS: Record<StudyPreferenceKey, { min: number; max: number }> = {
   sessionLengthMinutes: { min: 5, max: 480 },
   minSessionMinutes: { min: 5, max: 480 },
   maxSessionMinutes: { min: 5, max: 480 },
   dailyCapMinutes: { min: 5, max: 1440 },
+  breakMinutes: { min: 0, max: 60 },
+  densityPercent: { min: 50, max: 100 },
 };
 
 /** The serialized-size cap of the `preferences` JSON column (SP-106, D106-5). */
@@ -105,7 +132,7 @@ export function validateStudyPreferences(input: unknown): Record<string, string[
     values[key] = raw;
   }
 
-  const complete = STUDY_PREFERENCE_KEYS.every((key) => values[key] !== undefined);
+  const complete = CROSS_FIELD_KEYS.every((key) => values[key] !== undefined);
   if (complete) {
     const sessionLengthMinutes = values.sessionLengthMinutes as number;
     const minSessionMinutes = values.minSessionMinutes as number;
@@ -133,7 +160,8 @@ export function validateStudyPreferences(input: unknown): Record<string, string[
 
 /**
  * The **defensive reader** (D06-14): the whole `preferences` value (which
- * may be `null`) in, the four effective study defaults out.
+ * may be `null`) in, the effective study defaults out (the four D06-4 keys
+ * plus EP13F's two).
  *
  * It never throws and never returns an invalid combination: every value it
  * returns is inside its own bounds and both cross-field rules hold. The
@@ -176,6 +204,14 @@ export function readStudyPreferences(bag: unknown): StudyPreferences {
     dailyCapMinutes: isValueInBounds('dailyCapMinutes', stored?.dailyCapMinutes)
       ? (stored?.dailyCapMinutes as number)
       : STUDY_PREFERENCE_DEFAULTS.dailyCapMinutes,
+    // EP13F (D13-5). Independent levers: no cross-field repair below touches
+    // them, so step 1 is the whole story for these two.
+    breakMinutes: isValueInBounds('breakMinutes', stored?.breakMinutes)
+      ? (stored?.breakMinutes as number)
+      : STUDY_PREFERENCE_DEFAULTS.breakMinutes,
+    densityPercent: isValueInBounds('densityPercent', stored?.densityPercent)
+      ? (stored?.densityPercent as number)
+      : STUDY_PREFERENCE_DEFAULTS.densityPercent,
   };
 
   // Step 2 — repair the inverted min/max pair (the maximum is kept).

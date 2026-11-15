@@ -14,6 +14,11 @@ describe('deterministic workload rescheduling (domain, EP08B)', () => {
     minSessionMinutes: 15,
     maxSessionMinutes: 120,
     dailyCapMinutes: 240,
+    // EP13F's placement levers (D13-5). `replan` passes preferences straight
+    // through to `schedule(...)`, so EP08's pass-through guarantees are
+    // asserted against the real v2 defaults.
+    breakMinutes: 15,
+    densityPercent: 80,
   };
 
   const DAYS = [

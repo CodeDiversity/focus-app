@@ -41,14 +41,19 @@ const PREFERENCE_KEYS = [
   'minSessionMinutes',
   'maxSessionMinutes',
   'dailyCapMinutes',
+  // EP13F (D13-5) — the two placement levers joined the contract additively.
+  'breakMinutes',
+  'densityPercent',
 ].sort();
 
-/** The documented defaults (D06-4). */
+/** The documented defaults (D06-4 + EP13F's D13-5). */
 const DEFAULTS = {
   sessionLengthMinutes: 60,
   minSessionMinutes: 15,
   maxSessionMinutes: 120,
   dailyCapMinutes: 240,
+  breakMinutes: 15,
+  densityPercent: 80,
 };
 
 describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', () => {
@@ -129,23 +134,13 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
         HttpStatus.OK
       );
 
-      expect(response.body).toEqual({
-        sessionLengthMinutes: 45,
-        minSessionMinutes: 15,
-        maxSessionMinutes: 120,
-        dailyCapMinutes: 240,
-      });
+      expect(response.body).toEqual({ ...DEFAULTS, sessionLengthMinutes: 45 });
       expect(Object.keys(response.body).sort()).toEqual(PREFERENCE_KEYS);
     });
 
     it('GET reads the saved values back', async () => {
       const response = await getPreferences(student).expect(HttpStatus.OK);
-      expect(response.body).toEqual({
-        sessionLengthMinutes: 45,
-        minSessionMinutes: 15,
-        maxSessionMinutes: 120,
-        dailyCapMinutes: 240,
-      });
+      expect(response.body).toEqual({ ...DEFAULTS, sessionLengthMinutes: 45 });
     });
 
     it('a second partial PUT merges onto the values already saved', async () => {
@@ -154,9 +149,8 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
       );
 
       expect(response.body).toEqual({
+        ...DEFAULTS,
         sessionLengthMinutes: 45,
-        minSessionMinutes: 15,
-        maxSessionMinutes: 120,
         dailyCapMinutes: 300,
       });
     });
@@ -185,12 +179,7 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
       });
       expect(stored?.preferences).toMatchObject({
         theme: 'dark',
-        studyDefaults: {
-          sessionLengthMinutes: 45,
-          minSessionMinutes: 15,
-          maxSessionMinutes: 120,
-          dailyCapMinutes: 240,
-        },
+        studyDefaults: { ...DEFAULTS, sessionLengthMinutes: 45 },
       });
     });
   });
@@ -223,7 +212,9 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
       // inverted pair 300 > 200 → the minimum becomes 200.  Step 3: 60 < 200
       // → the session length becomes 200.  Step 4: the daily cap 10 < 200 →
       // 200.
+      // The EP13F levers were never stored in this bag, so both default.
       expect(response.body).toEqual({
+        ...DEFAULTS,
         sessionLengthMinutes: 200,
         minSessionMinutes: 200,
         maxSessionMinutes: 200,

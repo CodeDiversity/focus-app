@@ -68,12 +68,17 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
 
   const userId = 'user-1';
 
-  /** The exact contract keys (shared API contract, EP06 README). */
+  /**
+   * The exact contract keys (shared API contract, EP06 README + EP13F's two
+   * placement levers, D13-5).
+   */
   const PREFERENCE_KEYS = [
     'sessionLengthMinutes',
     'minSessionMinutes',
     'maxSessionMinutes',
     'dailyCapMinutes',
+    'breakMinutes',
+    'densityPercent',
   ].sort();
 
   /** Assert a 400 and return its field-level `errors` map. */
@@ -107,7 +112,7 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
   // ==================== get (GET /study-preferences) ====================
 
   describe('getPreferences', () => {
-    it('reads the principal’s own row and returns exactly the four effective keys', async () => {
+    it('reads the principal’s own row and returns exactly the effective keys', async () => {
       userFindUnique.mockResolvedValue({ preferences: null });
 
       const result = await service.getPreferences(userId);
@@ -140,10 +145,9 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
       // The counterexample bag: the effective session length is 90 (the
       // clamp of step 3), not the raw 60.
       expect(result).toEqual({
+        ...STUDY_PREFERENCE_DEFAULTS,
         sessionLengthMinutes: 90,
         minSessionMinutes: 90,
-        maxSessionMinutes: 120,
-        dailyCapMinutes: 240,
       });
     });
 
@@ -180,18 +184,18 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
         data: {
           preferences: {
             studyDefaults: {
+              ...STUDY_PREFERENCE_DEFAULTS,
               sessionLengthMinutes: 90,
               minSessionMinutes: 90,
-              maxSessionMinutes: 120,
               dailyCapMinutes: 300,
             },
           },
         },
       });
       expect(result).toEqual({
+        ...STUDY_PREFERENCE_DEFAULTS,
         sessionLengthMinutes: 90,
         minSessionMinutes: 90,
-        maxSessionMinutes: 120,
         dailyCapMinutes: 300,
       });
     });
@@ -209,28 +213,21 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
           preferences: {
             theme: 'dark',
             notifications: { email: false },
-            studyDefaults: {
-              sessionLengthMinutes: 45,
-              minSessionMinutes: 15,
-              maxSessionMinutes: 120,
-              dailyCapMinutes: 240,
-            },
+            studyDefaults: { ...STUDY_PREFERENCE_DEFAULTS, sessionLengthMinutes: 45 },
           },
         },
       });
     });
 
-    it('writes the complete four-key object even when the stored bag was empty', async () => {
+    it('writes the complete preference object even when the stored bag was empty', async () => {
       userFindUnique.mockResolvedValue({ preferences: null });
 
       await service.updatePreferences(userId, { sessionLengthMinutes: 45 });
 
       const written = userUpdateMany.mock.calls[0][0].data.preferences;
       expect(written.studyDefaults).toEqual({
+        ...STUDY_PREFERENCE_DEFAULTS,
         sessionLengthMinutes: 45,
-        minSessionMinutes: 15,
-        maxSessionMinutes: 120,
-        dailyCapMinutes: 240,
       });
     });
 
@@ -275,6 +272,56 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
         'dailyCapMinutes'
       );
       expect(userUpdateMany).not.toHaveBeenCalled();
+    });
+
+    it('accepts the EP13F placement levers and writes them into the bag (D13-5)', async () => {
+      userFindUnique.mockResolvedValue({ preferences: null });
+
+      const result = await service.updatePreferences(userId, {
+        breakMinutes: 5,
+        densityPercent: 65,
+      });
+
+      expect(result).toEqual({
+        ...STUDY_PREFERENCE_DEFAULTS,
+        breakMinutes: 5,
+        densityPercent: 65,
+      });
+      const written = userUpdateMany.mock.calls[0][0].data.preferences;
+      expect(written.studyDefaults.breakMinutes).toBe(5);
+      expect(written.studyDefaults.densityPercent).toBe(65);
+    });
+
+    it('rejects out-of-range placement levers and writes nothing (DoD 2)', async () => {
+      userFindUnique.mockResolvedValue({ preferences: null });
+
+      await expect400With(service.updatePreferences(userId, { breakMinutes: 61 }), 'breakMinutes');
+      await expect400With(service.updatePreferences(userId, { breakMinutes: -1 }), 'breakMinutes');
+      await expect400With(
+        service.updatePreferences(userId, { densityPercent: 49 }),
+        'densityPercent'
+      );
+      await expect400With(
+        service.updatePreferences(userId, { densityPercent: 101 }),
+        'densityPercent'
+      );
+      await expect400With(
+        service.updatePreferences(userId, { breakMinutes: 10.5 }),
+        'breakMinutes'
+      );
+      expect(userUpdateMany).not.toHaveBeenCalled();
+    });
+
+    it('accepts the boundary levers 0 and 50 (a zero break is a real choice)', async () => {
+      userFindUnique.mockResolvedValue({ preferences: null });
+
+      const result = await service.updatePreferences(userId, {
+        breakMinutes: 0,
+        densityPercent: 50,
+      });
+
+      expect(result.breakMinutes).toBe(0);
+      expect(result.densityPercent).toBe(50);
     });
 
     it('rejects an unknown body field (the DTO re-validation) and writes nothing', async () => {

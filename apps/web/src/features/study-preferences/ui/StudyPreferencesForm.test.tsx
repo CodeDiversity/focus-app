@@ -30,6 +30,9 @@ const stored: StudyPreferences = {
   minSessionMinutes: 10,
   maxSessionMinutes: 90,
   dailyCapMinutes: 180,
+  // EP13F (D13-5): the two placement levers.
+  breakMinutes: 10,
+  densityPercent: 70,
 };
 
 const defaults: StudyPreferences = {
@@ -37,6 +40,8 @@ const defaults: StudyPreferences = {
   minSessionMinutes: 15,
   maxSessionMinutes: 120,
   dailyCapMinutes: 240,
+  breakMinutes: 15,
+  densityPercent: 80,
 };
 
 const setupUser = () => userEvent.setup();
@@ -109,6 +114,81 @@ describe('StudyPreferencesForm pre-fill', () => {
     expect(screen.getByLabelText(/shortest session/i)).toHaveValue(15);
     expect(screen.getByLabelText(/longest session/i)).toHaveValue(120);
     expect(screen.getByLabelText(/daily cap/i)).toHaveValue(240);
+  });
+});
+
+describe('StudyPreferencesForm placement levers (EP13F, D13-5)', () => {
+  it('renders both levers seeded from the stored values', async () => {
+    render(<StudyPreferencesForm />);
+    await waitFor(() =>
+      expect(screen.getByLabelText(/break between sessions/i)).toBeInTheDocument()
+    );
+
+    expect(screen.getByLabelText(/break between sessions/i)).toHaveValue(10);
+    expect(screen.getByLabelText(/fill up to/i)).toHaveValue(70);
+  });
+
+  it('sends both levers with the rest of the form', async () => {
+    const user = setupUser();
+    mockedPut.mockResolvedValue({ ...stored, breakMinutes: 5, densityPercent: 90 });
+
+    render(<StudyPreferencesForm />);
+    await waitFor(() =>
+      expect(screen.getByLabelText(/break between sessions/i)).toBeInTheDocument()
+    );
+
+    const breakInput = screen.getByLabelText(/break between sessions/i);
+    await user.clear(breakInput);
+    await user.type(breakInput, '5');
+    const densityInput = screen.getByLabelText(/fill up to/i);
+    await user.clear(densityInput);
+    await user.type(densityInput, '90');
+    await user.click(screen.getByRole('button', { name: /save study preferences/i }));
+
+    await waitFor(() => expect(mockedPut).toHaveBeenCalled());
+    expect(mockedPut.mock.calls[0][0]).toMatchObject({ breakMinutes: 5, densityPercent: 90 });
+  });
+
+  it('accepts a zero break — back-to-back sessions are a real choice', async () => {
+    const user = setupUser();
+    mockedPut.mockResolvedValue({ ...stored, breakMinutes: 0 });
+
+    render(<StudyPreferencesForm />);
+    await waitFor(() =>
+      expect(screen.getByLabelText(/break between sessions/i)).toBeInTheDocument()
+    );
+
+    const breakInput = screen.getByLabelText(/break between sessions/i);
+    await user.clear(breakInput);
+    await user.type(breakInput, '0');
+    await user.click(screen.getByRole('button', { name: /save study preferences/i }));
+
+    await waitFor(() => expect(mockedPut).toHaveBeenCalled());
+    expect(mockedPut.mock.calls[0][0]).toMatchObject({ breakMinutes: 0 });
+  });
+
+  it('blocks submit on out-of-range levers and names each field', async () => {
+    const user = setupUser();
+    render(<StudyPreferencesForm />);
+    await waitFor(() =>
+      expect(screen.getByLabelText(/break between sessions/i)).toBeInTheDocument()
+    );
+
+    const breakInput = screen.getByLabelText(/break between sessions/i);
+    await user.clear(breakInput);
+    await user.type(breakInput, '61');
+    await user.click(screen.getByRole('button', { name: /save study preferences/i }));
+    expect(await screen.findByText('Must be between 0 and 60.')).toBeInTheDocument();
+    expect(mockedPut).not.toHaveBeenCalled();
+
+    await user.clear(breakInput);
+    await user.type(breakInput, '15');
+    const densityInput = screen.getByLabelText(/fill up to/i);
+    await user.clear(densityInput);
+    await user.type(densityInput, '40');
+    await user.click(screen.getByRole('button', { name: /save study preferences/i }));
+    expect(await screen.findByText('Must be between 50 and 100.')).toBeInTheDocument();
+    expect(mockedPut).not.toHaveBeenCalled();
   });
 });
 
@@ -210,14 +290,9 @@ describe('StudyPreferencesForm validation', () => {
 });
 
 describe('StudyPreferencesForm save', () => {
-  it('calls PUT with the four values and announces success', async () => {
+  it('calls PUT with every value and announces success', async () => {
     const user = setupUser();
-    const saved: StudyPreferences = {
-      sessionLengthMinutes: 30,
-      minSessionMinutes: 10,
-      maxSessionMinutes: 90,
-      dailyCapMinutes: 180,
-    };
+    const saved: StudyPreferences = { ...stored, sessionLengthMinutes: 30 };
     mockedPut.mockResolvedValue(saved);
 
     render(<StudyPreferencesForm />);

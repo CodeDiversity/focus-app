@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { schedule } from './scheduler';
 import type { SchedulerInput } from './types';
 import type { SchedulableAssignment } from './types';
@@ -13,7 +15,15 @@ describe('scheduling engine (domain, EP06C)', () => {
     minSessionMinutes: 15,
     maxSessionMinutes: 120,
     dailyCapMinutes: 240,
+    // EP13F placement v2 (D13-5). The pre-v2 cases below opt out of the two
+    // new rules with `V1_PREFS` so they keep testing what they were written
+    // for; the v2 rules have their own section.
+    breakMinutes: 15,
+    densityPercent: 80,
   };
+
+  /** Placement v2 switched off: no break, the whole day's free time usable. */
+  const V1_PREFS: StudyPreferences = { ...PREFS, breakMinutes: 0, densityPercent: 100 };
 
   const assignment = (overrides: Partial<SchedulableAssignment> = {}): SchedulableAssignment => ({
     id: 'a-1',
@@ -204,7 +214,7 @@ describe('scheduling engine (domain, EP06C)', () => {
       expect(out.sessions[0].durationMinutes).toBe(60);
     });
 
-    it('places a shortened tail session', () => {
+    it('merges a sub-minimum tail into the previous block instead of placing it (EP13F rule 4)', () => {
       const a = assignment({ remainingMinutes: 70 });
       const out = schedule(
         input({
@@ -212,8 +222,11 @@ describe('scheduling engine (domain, EP06C)', () => {
           availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 0, endMinute: 1440 }],
         })
       );
-      // 60 + 10 tail
-      expect(out.sessions.map((s) => s.durationMinutes)).toEqual([60, 10]);
+      // v1 placed 60 + a 10-minute tail below `minSessionMinutes` (15).
+      // v2 grows the previous block to 70 (<= maxSessionMinutes).
+      expect(out.sessions.map((s) => s.durationMinutes)).toEqual([70]);
+      expect(out.results[0].placedMinutes).toBe(70);
+      expect(out.results[0].deficitMinutes).toBe(0);
     });
 
     it('truncates a session by the remaining daily budget rather than skipping', () => {
@@ -231,7 +244,7 @@ describe('scheduling engine (domain, EP06C)', () => {
       expect(out.results[0].deficitCategory).toBe('INSUFFICIENT_TIME_BEFORE_DEADLINE');
     });
 
-    it('places a session shorter than minSessionMinutes when the tail requires it', () => {
+    it('never places a block below minSessionMinutes — an unmergeable tail is a deficit (EP13F rule 4)', () => {
       const a = assignment({ remainingMinutes: 10 });
       const out = schedule(
         input({
@@ -239,10 +252,16 @@ describe('scheduling engine (domain, EP06C)', () => {
           availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 0, endMinute: 1440 }],
         })
       );
-      expect(out.sessions.map((s) => s.durationMinutes)).toEqual([10]);
+      // v1 placed a 10-minute block below the student's 15-minute minimum.
+      // v2 has no previous block to merge into, so nothing is placed and the
+      // work is reported rather than silently lost.
+      expect(out.sessions).toHaveLength(0);
+      expect(out.results[0].placedMinutes).toBe(0);
+      expect(out.results[0].deficitMinutes).toBe(10);
+      expect(out.results[0].deficitCategory).toBe('INSUFFICIENT_TIME_BEFORE_DEADLINE');
     });
 
-    it('places a session shorter than minSessionMinutes when the budget requires it', () => {
+    it('truncates the last block of a day to the remaining budget (still >= min)', () => {
       const a = assignment({ remainingMinutes: 200 });
       const out = schedule(
         input({
@@ -277,12 +296,7 @@ describe('scheduling engine (domain, EP06C)', () => {
         input({
           assignments: [a],
           availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 720 }],
-          preferences: {
-            sessionLengthMinutes: 60,
-            minSessionMinutes: 15,
-            maxSessionMinutes: 120,
-            dailyCapMinutes: 100,
-          },
+          preferences: { ...PREFS, dailyCapMinutes: 100 },
         })
       );
       expect(out.sessions.map((s) => s.durationMinutes)).toEqual([60, 40]);
@@ -420,6 +434,399 @@ describe('scheduling engine (domain, EP06C)', () => {
       const out = schedule(input({ assignments: [a] }));
       expect(out.sessions).toHaveLength(0);
       expect(out.results[0].placedMinutes).toBe(0);
+    });
+  });
+
+  // =========================================================================
+  // EP13F — placement v2 (TR-E13-06). Rules 1–5 of the EP13 shared contract.
+  // =========================================================================
+
+  describe('10. breaks between consecutive sessions (EP13F rule 1)', () => {
+    /** Sessions of one day, sorted by start minute. */
+    const dayBlocks = (out: ReturnType<typeof schedule>, date: string) =>
+      out.sessions.filter((s) => s.date === date).sort((x, y) => x.startMinute - y.startMinute);
+
+    it('separates two blocks on the same day by at least breakMinutes', () => {
+      const a = assignment({ remainingMinutes: 120 });
+      const out = schedule(
+        input({
+          assignments: [a],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 1020 }],
+          preferences: { ...PREFS, breakMinutes: 20 },
+        })
+      );
+      const blocks = dayBlocks(out, '2026-10-30');
+      expect(blocks).toHaveLength(2);
+      expect(blocks[1].startMinute - blocks[0].endMinute).toBeGreaterThanOrEqual(20);
+    });
+
+    it('breaks are consumed free time, never a stored row', () => {
+      const a = assignment({ remainingMinutes: 120 });
+      const out = schedule(
+        input({
+          assignments: [a],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 1020 }],
+        })
+      );
+      // Only study blocks are returned; the gap is implied by their minutes.
+      for (const session of out.sessions) {
+        expect(session.assignmentId).toBe('a-1');
+        expect(session.durationMinutes).toBe(session.endMinute - session.startMinute);
+      }
+      expect(out.sessions.map((s) => s.durationMinutes)).toEqual([60, 60]);
+    });
+
+    it('breakMinutes = 0 places back-to-back blocks (the v1 edge)', () => {
+      const a = assignment({ remainingMinutes: 120 });
+      const out = schedule(
+        input({
+          assignments: [a],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 1020 }],
+          preferences: { ...V1_PREFS },
+        })
+      );
+      const blocks = dayBlocks(out, '2026-10-30');
+      expect(blocks).toHaveLength(2);
+      expect(blocks[1].startMinute).toBe(blocks[0].endMinute);
+    });
+
+    it('a break is never required against a class or a busy interval', () => {
+      // The student may start studying the minute a class ends (rule 1 is
+      // about two *placed* sessions, not about hard windows).
+      const a = assignment({ remainingMinutes: 60 });
+      const out = schedule(
+        input({
+          assignments: [a],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 720 }],
+          classes: [{ dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 600 }],
+        })
+      );
+      expect(out.sessions[0].startMinute).toBe(600);
+    });
+  });
+
+  describe('11. the day-density cap (EP13F rule 2)', () => {
+    it('places at most densityPercent% of the day’s free minutes', () => {
+      // 300 free minutes, 60% → 180 placeable.
+      const a = assignment({ remainingMinutes: 600 });
+      const out = schedule(
+        input({
+          assignments: [a],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 840 }],
+          preferences: { ...PREFS, densityPercent: 60 },
+        })
+      );
+      const placed = out.sessions
+        .filter((s) => s.date === '2026-10-30')
+        .reduce((total, s) => total + s.durationMinutes, 0);
+      expect(placed).toBeLessThanOrEqual(180);
+      expect(placed).toBe(180);
+    });
+
+    it('still honours the daily cap when it is the tighter of the two', () => {
+      const a = assignment({ remainingMinutes: 600 });
+      const out = schedule(
+        input({
+          assignments: [a],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 0, endMinute: 1440 }],
+          preferences: { ...PREFS, densityPercent: 100, dailyCapMinutes: 120 },
+        })
+      );
+      const placed = out.sessions
+        .filter((s) => s.date === '2026-10-30')
+        .reduce((total, s) => total + s.durationMinutes, 0);
+      expect(placed).toBe(120);
+    });
+
+    it('densityPercent = 100 reproduces the cap-only behaviour', () => {
+      const a = assignment({ remainingMinutes: 600 });
+      const dense = schedule(
+        input({
+          assignments: [a],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 780 }],
+          preferences: { ...V1_PREFS, dailyCapMinutes: 240 },
+        })
+      );
+      const placed = dense.sessions.reduce((total, s) => total + s.durationMinutes, 0);
+      // 240 free minutes, no break, cap 240 → the whole window is usable.
+      expect(placed).toBe(240);
+    });
+
+    it('capacity lost to the cap is reported, never silently dropped (AC-2)', () => {
+      const a = assignment({ remainingMinutes: 300 });
+      const out = schedule(
+        input({
+          assignments: [a],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 840 }],
+          preferences: { ...PREFS, densityPercent: 50 },
+        })
+      );
+      const placed = out.sessions.reduce((total, s) => total + s.durationMinutes, 0);
+      expect(placed).toBe(150);
+      expect(out.results[0].placedMinutes).toBe(150);
+      expect(out.results[0].deficitMinutes).toBe(150);
+      expect(out.results[0].deficitCategory).toBe('INSUFFICIENT_TIME_BEFORE_DEADLINE');
+      // Nothing vanishes: placed + deficit is the whole remaining work.
+      expect(out.results[0].placedMinutes + out.results[0].deficitMinutes).toBe(300);
+    });
+  });
+
+  describe('12. interleaving within a day (EP13F rule 3)', () => {
+    it('rotates across assignments instead of finishing one first', () => {
+      // Two assignments with the whole week to spare: the day should read as
+      // variety, not as one long block of the first one.
+      const a = assignment({
+        id: 'a-1',
+        remainingMinutes: 120,
+        dueDate: '2026-11-05',
+        createdAt: new Date('2026-10-01T00:00:00Z'),
+      });
+      const b = assignment({
+        id: 'b-1',
+        remainingMinutes: 120,
+        dueDate: '2026-11-05',
+        createdAt: new Date('2026-10-02T00:00:00Z'),
+      });
+      const out = schedule(
+        input({
+          assignments: [a, b],
+          availability: [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+            dayOfWeek,
+            startMinute: 540,
+            endMinute: 1020,
+          })),
+        })
+      );
+      const firstDay = out.sessions
+        .filter((s) => s.date === '2026-10-30')
+        .sort((x, y) => x.startMinute - y.startMinute)
+        .map((s) => s.assignmentId);
+      expect(firstDay.length).toBeGreaterThanOrEqual(2);
+      // Consecutive blocks belong to different assignments.
+      expect(firstDay[0]).not.toBe(firstDay[1]);
+    });
+
+    it('the rotation follows the shared comparator order', () => {
+      const urgent = assignment({
+        id: 'urgent',
+        priority: 'URGENT',
+        remainingMinutes: 120,
+        dueDate: '2026-11-05',
+      });
+      const low = assignment({
+        id: 'low',
+        priority: 'LOW',
+        remainingMinutes: 120,
+        dueDate: '2026-11-05',
+      });
+      const out = schedule(
+        input({
+          assignments: [low, urgent],
+          availability: [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+            dayOfWeek,
+            startMinute: 540,
+            endMinute: 1020,
+          })),
+        })
+      );
+      const firstDay = out.sessions
+        .filter((s) => s.date === '2026-10-30')
+        .sort((x, y) => x.startMinute - y.startMinute)
+        .map((s) => s.assignmentId);
+      // The comparator puts URGENT first, so it opens the rotation.
+      expect(firstDay[0]).toBe('urgent');
+      expect(firstDay[1]).toBe('low');
+    });
+
+    it('feasibility beats variety: a deadline-critical assignment takes the day', () => {
+      // `tight` is due today and needs the whole day; `loose` has all week.
+      const tight = assignment({
+        id: 'tight',
+        remainingMinutes: 180,
+        dueDate: '2026-10-30',
+      });
+      const loose = assignment({
+        id: 'loose',
+        remainingMinutes: 180,
+        dueDate: '2026-11-05',
+      });
+      const out = schedule(
+        input({
+          assignments: [loose, tight],
+          availability: [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+            dayOfWeek,
+            startMinute: 540,
+            endMinute: 780, // 240 free minutes/day; 80% → 192 placeable
+          })),
+        })
+      );
+      const firstDay = out.sessions
+        .filter((s) => s.date === '2026-10-30')
+        .map((s) => s.assignmentId);
+      // No rotation on the critical day: every block is the due-today work.
+      expect(new Set(firstDay)).toEqual(new Set(['tight']));
+      // And the work that could not fit is reported rather than dropped.
+      const tightResult = out.results.find((r) => r.assignmentId === 'tight');
+      expect(tightResult?.placedMinutes).toBe(180);
+      expect(tightResult?.deficitMinutes).toBe(0);
+    });
+
+    it('reports the shortfall when even deadline order cannot make work fit', () => {
+      const tight = assignment({
+        id: 'tight',
+        remainingMinutes: 600,
+        dueDate: '2026-10-30',
+      });
+      const out = schedule(
+        input({
+          assignments: [tight],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 780 }],
+        })
+      );
+      const result = out.results[0];
+      expect(result.deficitCategory).toBe('INSUFFICIENT_TIME_BEFORE_DEADLINE');
+      expect(result.placedMinutes + result.deficitMinutes).toBe(600);
+    });
+  });
+
+  describe('13. min/max session lengths (EP13F rule 4)', () => {
+    it('never places a block longer than maxSessionMinutes', () => {
+      const a = assignment({ remainingMinutes: 600 });
+      const out = schedule(
+        input({
+          assignments: [a],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 0, endMinute: 1440 }],
+          preferences: { ...PREFS, sessionLengthMinutes: 200, maxSessionMinutes: 90 },
+        })
+      );
+      for (const session of out.sessions) {
+        expect(session.durationMinutes).toBeLessThanOrEqual(90);
+      }
+    });
+
+    it('never places a block shorter than minSessionMinutes', () => {
+      const a = assignment({ remainingMinutes: 137 });
+      const out = schedule(
+        input({
+          assignments: [a],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 0, endMinute: 1440 }],
+          preferences: { ...PREFS, minSessionMinutes: 30, sessionLengthMinutes: 60 },
+        })
+      );
+      for (const session of out.sessions) {
+        expect(session.durationMinutes).toBeGreaterThanOrEqual(30);
+      }
+    });
+
+    it('min = max pins every block to exactly that length', () => {
+      const a = assignment({ remainingMinutes: 180 });
+      const out = schedule(
+        input({
+          assignments: [a],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 0, endMinute: 1440 }],
+          preferences: {
+            ...PREFS,
+            minSessionMinutes: 45,
+            sessionLengthMinutes: 45,
+            maxSessionMinutes: 45,
+          },
+        })
+      );
+      expect(out.sessions.map((s) => s.durationMinutes)).toEqual([45, 45, 45, 45]);
+    });
+
+    it('the merge boundary: a tail merges only while the block stays within max', () => {
+      // 70 minutes of work, max 60: the 10-minute tail cannot be absorbed.
+      const a = assignment({ remainingMinutes: 70 });
+      const out = schedule(
+        input({
+          assignments: [a],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 0, endMinute: 1440 }],
+          preferences: { ...PREFS, sessionLengthMinutes: 60, maxSessionMinutes: 60 },
+        })
+      );
+      expect(out.sessions.map((s) => s.durationMinutes)).toEqual([60]);
+      expect(out.results[0].deficitMinutes).toBe(10);
+    });
+  });
+
+  describe('14. determinism and purity under v2 (EP13F rule 5)', () => {
+    const busyWeek = () =>
+      input({
+        assignments: [
+          assignment({ id: 'a-1', remainingMinutes: 200, dueDate: '2026-11-02' }),
+          assignment({ id: 'b-1', remainingMinutes: 150, dueDate: '2026-11-05' }),
+          assignment({ id: 'c-1', remainingMinutes: 90, dueDate: '2026-10-31' }),
+        ],
+        availability: [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+          dayOfWeek,
+          startMinute: 480,
+          endMinute: 1080,
+        })),
+        classes: [{ dayOfWeek: dow('2026-10-31'), startMinute: 600, endMinute: 720 }],
+        busy: [{ date: '2026-11-01', startMinute: 540, endMinute: 660 }],
+      });
+
+    it('produces byte-identical output across repeated runs of a busy week', () => {
+      const first = schedule(busyWeek());
+      const second = schedule(busyWeek());
+      const third = schedule(busyWeek());
+      expect(JSON.stringify(first)).toBe(JSON.stringify(second));
+      expect(JSON.stringify(second)).toBe(JSON.stringify(third));
+    });
+
+    it('is independent of the input order of the assignments', () => {
+      const base = busyWeek();
+      const reversed = { ...base, assignments: [...base.assignments].reverse() };
+      expect(JSON.stringify(schedule(base))).toBe(JSON.stringify(schedule(reversed)));
+    });
+
+    it('does not mutate its input', () => {
+      const inp = busyWeek();
+      const snapshot = JSON.stringify(inp);
+      schedule(inp);
+      expect(JSON.stringify(inp)).toBe(snapshot);
+    });
+
+    it('every placed block respects every rule at once', () => {
+      const out = schedule(busyWeek());
+      const byDate = new Map<string, typeof out.sessions>();
+      for (const session of out.sessions) {
+        const list = byDate.get(session.date) ?? [];
+        list.push(session);
+        byDate.set(session.date, list);
+      }
+      for (const [date, blocks] of byDate) {
+        const sorted = [...blocks].sort((x, y) => x.startMinute - y.startMinute);
+        // Rule 4 — every block inside [min, max].
+        for (const block of sorted) {
+          expect(block.durationMinutes).toBeGreaterThanOrEqual(PREFS.minSessionMinutes);
+          expect(block.durationMinutes).toBeLessThanOrEqual(PREFS.maxSessionMinutes);
+        }
+        // Rule 1 — a break between consecutive blocks.
+        for (let i = 1; i < sorted.length; i += 1) {
+          expect(sorted[i].startMinute - sorted[i - 1].endMinute).toBeGreaterThanOrEqual(
+            PREFS.breakMinutes
+          );
+        }
+        // Rule 2 — the day's density cap.
+        const placed = sorted.reduce((total, block) => total + block.durationMinutes, 0);
+        expect(placed).toBeLessThanOrEqual(PREFS.dailyCapMinutes);
+        expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      }
+    });
+
+    it('imports nothing from Nest or Prisma (the domain boundary, D06-17)', () => {
+      const source = readFileSync(join(__dirname, 'scheduler.ts'), 'utf8');
+      // Imports only — the module's own prose names `@nestjs/*` to state the
+      // boundary, so the check must look at the import graph, not the text.
+      expect(source).not.toMatch(/from\s+['"]@nestjs\//);
+      expect(source).not.toMatch(/from\s+['"]@prisma\/client['"]/);
+      expect(source).not.toMatch(/require\(\s*['"]@(nestjs|prisma)\//);
+      expect(source).not.toMatch(/PrismaService/);
+      expect(source).not.toMatch(/new Date\(\)/); // no clock
+      expect(source).not.toMatch(/Date\.now\(\)/); // no clock
+      expect(source).not.toMatch(/Math\.random/); // no randomness
     });
   });
 });
