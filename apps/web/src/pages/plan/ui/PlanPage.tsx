@@ -290,6 +290,8 @@ export function PlanPage() {
                     startTime: s.startTime,
                     endTime: s.endTime,
                     durationMinutes: s.durationMinutes,
+                    anchor: s.anchor,
+                    windowHint: s.windowHint,
                   })),
                 }))}
                 timeZone={preview.timeZone}
@@ -329,6 +331,8 @@ export function PlanPage() {
                     startTime: s.startTime,
                     endTime: s.endTime,
                     durationMinutes: s.durationMinutes,
+                    anchor: s.anchor,
+                    windowHint: s.windowHint,
                   })),
                 }))}
                 timeZone={savedPlan.timeZone}

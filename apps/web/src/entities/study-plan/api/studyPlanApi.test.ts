@@ -113,7 +113,14 @@ describe('studyPlanApi.saveStudyPlan', () => {
       return ok(config, saved, 201);
     };
     const sessions = [
-      { assignmentId: 'a-1', date: '2026-10-30', startTime: '09:00', endTime: '10:00' },
+      // EP13H: the save body carries the EP13G anchor (hint only on flex).
+      {
+        assignmentId: 'a-1',
+        date: '2026-10-30',
+        startTime: '09:00',
+        endTime: '10:00',
+        anchor: 'FIXED' as const,
+      },
     ];
     await expect(saveStudyPlan('2026-10-30', '2026-11-05', sessions)).resolves.toEqual(saved);
     expect(seen?.url).toBe('/study-plans');
@@ -227,7 +234,14 @@ describe('studyPlanApi.confirmCatchUpPlan', () => {
       return ok(config, saved, 201);
     };
     const sessions = [
-      { assignmentId: 'a-1', date: '2026-10-30', startTime: '09:00', endTime: '10:00' },
+      // EP13H: the save body carries the EP13G anchor (hint only on flex).
+      {
+        assignmentId: 'a-1',
+        date: '2026-10-30',
+        startTime: '09:00',
+        endTime: '10:00',
+        anchor: 'FIXED' as const,
+      },
     ];
     await expect(confirmCatchUpPlan('2026-10-30', '2026-11-05', sessions)).resolves.toEqual(saved);
     expect(seen?.url).toBe('/study-plans/catch-up/confirm');

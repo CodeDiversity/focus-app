@@ -1,10 +1,15 @@
 import { useMemo } from 'react';
+import type { PartOfDay, PlannedSessionAnchor } from '@/entities/study-plan/model/types';
+import { sessionTimeLabel } from '@/entities/study-plan/model/sessionTimeLabel';
 
 export interface PlanWeekSession {
   assignmentTitle: string;
   startTime: string;
   endTime: string;
   durationMinutes: number;
+  /** EP13H — optional so pre-EP13G callers/fixtures keep working (FIXED). */
+  anchor?: PlannedSessionAnchor;
+  windowHint?: PartOfDay | null;
 }
 
 export interface PlanWeekDay {
@@ -64,18 +69,31 @@ export function PlanWeek({ days, timeZone, emptyMessage }: PlanWeekProps) {
             {day.sessions.length === 0 ? (
               <p className="text-xs text-text-muted">No sessions</p>
             ) : (
-              day.sessions.map((s, i) => (
-                <article
-                  key={`${day.date}-${i}-${s.startTime}`}
-                  aria-label={`${s.assignmentTitle}, ${s.startTime} to ${s.endTime}, ${s.durationMinutes} minutes`}
-                  className="rounded-md border border-border bg-surface p-2 text-xs"
-                >
-                  <p className="font-medium text-text">{s.assignmentTitle}</p>
-                  <p className="text-text-muted">
-                    {s.startTime} – {s.endTime} ({s.durationMinutes} min)
-                  </p>
-                </article>
-              ))
+              day.sessions.map((s, i) => {
+                // EP13H (D-H1): the card's time position carries the model —
+                // a flex session reads "Anytime", never its suggested slot.
+                const flex = s.anchor === 'FLEX_DAY';
+                const meta = sessionTimeLabel({
+                  anchor: s.anchor ?? 'FIXED',
+                  windowHint: s.windowHint ?? null,
+                  timeRange: `${s.startTime} – ${s.endTime}`,
+                  durationMinutes: s.durationMinutes,
+                });
+                return (
+                  <article
+                    key={`${day.date}-${i}-${s.startTime}`}
+                    aria-label={
+                      flex
+                        ? `${s.assignmentTitle}, anytime, ${s.durationMinutes} minutes`
+                        : `${s.assignmentTitle}, ${s.startTime} to ${s.endTime}, ${s.durationMinutes} minutes`
+                    }
+                    className="rounded-md border border-border bg-surface p-2 text-xs"
+                  >
+                    <p className="font-medium text-text">{s.assignmentTitle}</p>
+                    <p className="text-text-muted">{meta}</p>
+                  </article>
+                );
+              })
             )}
           </section>
         ))}

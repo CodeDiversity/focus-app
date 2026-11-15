@@ -33,6 +33,9 @@ const session = (overrides: Partial<TodaySession> = {}): TodaySession => ({
   durationMinutes: 60,
   status: 'SCHEDULED',
   locked: false,
+  // EP13H: the anchor travels with every today session.
+  anchor: 'FIXED',
+  windowHint: null,
   ...overrides,
 });
 
@@ -227,5 +230,45 @@ describe('TodayPlanCard (EP13D)', () => {
     expect(screen.getByRole('button', { name: 'Start focus' })).toHaveFocus();
     await userEvent.keyboard('{Enter}');
     await waitFor(() => expect(mockedStart).toHaveBeenCalledWith('ps-1'));
+  });
+
+  // ===================== EP13H — flex sessions on the card =====================
+
+  it('a flex hero reads "Anytime today", never its suggested slot (D-H8)', () => {
+    const flex = session({ anchor: 'FLEX_DAY', windowHint: 'EVENING' });
+    renderCard({ plan: plan({ sessions: [flex], nextSession: flex }) });
+
+    expect(screen.getByText('Anytime today · 60 min · evening suggested')).toBeInTheDocument();
+    expect(screen.queryByText(/9:00/)).not.toBeInTheDocument();
+    // The start affordance is unchanged — flex is startable like anything.
+    expect(screen.getByRole('button', { name: 'Start focus' })).toBeInTheDocument();
+  });
+
+  it('a flex row in the rest-of-today list reads "Anytime today" with a working Start (D-H8)', async () => {
+    const fixedNext = session();
+    const flexRow = session({
+      id: 'ps-2',
+      assignmentTitle: 'Essay',
+      anchor: 'FLEX_DAY',
+      windowHint: null,
+      startTime: '19:00',
+      endTime: '20:00',
+    });
+    mockedStart.mockResolvedValue({ id: 'ss-1' } as never);
+    const user = userEvent.setup();
+    renderCard({ plan: plan({ sessions: [fixedNext, flexRow], nextSession: fixedNext }) });
+
+    expect(screen.getByText('Anytime today · 60 min')).toBeInTheDocument();
+    expect(screen.queryByText(/7:00/)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Start' }));
+    await waitFor(() => expect(mockedStart).toHaveBeenCalledWith('ps-2'));
+  });
+
+  it('fixed sessions keep their clock range (EP13D behaviour unchanged)', () => {
+    renderCard({ plan: plan() });
+    // The hero still shows the time range for a fixed next session.
+    expect(screen.getByText(/9:00/)).toBeInTheDocument();
+    expect(screen.queryByText(/Anytime/)).not.toBeInTheDocument();
   });
 });

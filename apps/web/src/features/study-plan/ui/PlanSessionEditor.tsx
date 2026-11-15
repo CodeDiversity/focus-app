@@ -6,6 +6,10 @@ import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
 import type { ProposedSession, PlanConflict } from '@/entities/study-plan/model/types';
 import { CONFLICT_REASON_LABEL } from '@/entities/study-plan/model/types';
+import {
+  sessionTimeLabel,
+  windowHintFromStart,
+} from '@/entities/study-plan/model/sessionTimeLabel';
 
 export interface PlanSessionEditorProps {
   sessions: ProposedSession[];
@@ -89,8 +93,16 @@ export function PlanSessionEditor({
       if (start < 0 || end > 24 * 60) return;
       const pad = (n: number) =>
         String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0');
-      updateAt(index, { startTime: pad(start), endTime: pad(end) });
-      setAnnouncement(`${s.assignmentTitle} moved to ${pad(start)} to ${pad(end)}`);
+      // EP13H (D-H5): choosing when it starts is the clock commitment — a
+      // moved flex session pins. Duration changes (resize) deliberately
+      // don't.
+      const pin = s.anchor === 'FLEX_DAY' ? { anchor: 'FIXED' as const, windowHint: null } : {};
+      updateAt(index, { startTime: pad(start), endTime: pad(end), ...pin });
+      setAnnouncement(
+        s.anchor === 'FLEX_DAY'
+          ? `${s.assignmentTitle} pinned to ${pad(start)} — you chose a time`
+          : `${s.assignmentTitle} moved to ${pad(start)} to ${pad(end)}`
+      );
     },
     [sessions, updateAt]
   );
@@ -123,6 +135,12 @@ export function PlanSessionEditor({
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {announcement}
       </div>
+      {/* EP13H (D-H3): one shared explanation — the contract stores no
+          per-session pin provenance, so the editor explains the category. */}
+      <p className="mb-3 text-xs text-text-muted">
+        Flexible sessions belong to their day — start them anytime. Fixed-time sessions keep their
+        slot — usually because a deadline is close, or you picked the time yourself.
+      </p>
       {sessions.map((s, i) => {
         const rowConflicts = (conflicts ?? []).filter((c) => c.sessionIndex === i);
         return (
@@ -136,7 +154,12 @@ export function PlanSessionEditor({
           >
             <p className="font-medium text-text">{s.assignmentTitle}</p>
             <p className="text-xs text-text-muted">
-              {s.startTime} – {s.endTime} ({s.durationMinutes} min)
+              {sessionTimeLabel({
+                anchor: s.anchor,
+                windowHint: s.windowHint,
+                timeRange: `${s.startTime} – ${s.endTime}`,
+                durationMinutes: s.durationMinutes,
+              })}
             </p>
 
             <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -168,7 +191,13 @@ export function PlanSessionEditor({
                     String(Math.floor(n / 60)).padStart(2, '0') +
                     ':' +
                     String(n % 60).padStart(2, '0');
-                  updateAt(i, { startTime: v, endTime: pad(newEnd) });
+                  // EP13H (D-H5): typing a start time pins a flex session.
+                  const pin =
+                    s.anchor === 'FLEX_DAY' ? { anchor: 'FIXED' as const, windowHint: null } : {};
+                  updateAt(i, { startTime: v, endTime: pad(newEnd), ...pin });
+                  if (s.anchor === 'FLEX_DAY') {
+                    setAnnouncement(`${s.assignmentTitle} pinned to ${v} — you chose a time`);
+                  }
                 }}
                 aria-label="Start time"
               />
@@ -234,6 +263,41 @@ export function PlanSessionEditor({
               >
                 Delete
               </Button>
+              {/* EP13H (D-H4): the pin/unpin toggle — two labelled actions,
+                  not a switch. Unpinning derives the hint from the suggested
+                  start so it can never disagree with the slot (D-H6). */}
+              {s.anchor === 'FLEX_DAY' ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    updateAt(i, { anchor: 'FIXED', windowHint: null });
+                    setAnnouncement(`${s.assignmentTitle} pinned to ${s.startTime}`);
+                  }}
+                  aria-label={`Pin ${s.assignmentTitle} to ${s.startTime}`}
+                >
+                  Pin to this time
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    updateAt(i, {
+                      anchor: 'FLEX_DAY',
+                      windowHint: windowHintFromStart(s.startTime),
+                    });
+                    setAnnouncement(
+                      `${s.assignmentTitle} made flexible — start it anytime that day`
+                    );
+                  }}
+                  aria-label={`Make ${s.assignmentTitle} flexible`}
+                >
+                  Make flexible
+                </Button>
+              )}
             </div>
             {rowConflicts.length > 0 ? (
               <p className="mt-2 text-xs text-danger">

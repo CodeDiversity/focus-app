@@ -28,6 +28,11 @@ export interface CalendarEvent {
   completed: boolean; // deadlines only
   focus: boolean; // STUDY_SESSION only
   link: string | null;
+  // EP13H: PLANNED_SESSION only — FLEX_DAY renders day-level ("Anytime") and
+  // the server sorts it first within its date; null for every other type.
+  // Optional on the client so pre-EP13H fixtures/readers stay valid (the
+  // server always sends it; absent reads as a fixed/clock event).
+  anchor?: 'FIXED' | 'FLEX_DAY' | null;
 }
 
 export interface CalendarEventsResult {

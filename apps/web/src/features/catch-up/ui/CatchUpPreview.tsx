@@ -219,6 +219,8 @@ export function CatchUpPreview() {
                     startTime: s.startTime,
                     endTime: s.endTime,
                     durationMinutes: s.durationMinutes,
+                    anchor: s.anchor,
+                    windowHint: s.windowHint,
                   })),
                 }))}
                 timeZone={preview.timeZone}

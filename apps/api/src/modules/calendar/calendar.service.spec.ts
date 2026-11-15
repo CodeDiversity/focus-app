@@ -336,6 +336,9 @@ describe('CalendarService (SP-127A)', () => {
       durationMinutes: 60,
       status: 'SCHEDULED',
       locked: false,
+      // EP13G/EP13H: the clock relation travels to the calendar payload.
+      anchor: 'FIXED',
+      windowHint: null,
       assignment: {
         id: 'a-1',
         title: 'Problem set 3',
@@ -372,6 +375,7 @@ describe('CalendarService (SP-127A)', () => {
       completed: false,
       focus: false,
       link: null,
+      anchor: 'FIXED',
     });
     // A finished planned session reuses the existing completed flag.
     expect(planned[1].completed).toBe(true);
@@ -381,5 +385,101 @@ describe('CalendarService (SP-127A)', () => {
     const where = prisma.plannedSession.findMany.mock.calls[0][0].where;
     expect(where.status).toEqual({ in: ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED'] });
     expect(where.studyPlan.userId).toBe('u1');
+  });
+
+  // ===========================================================================
+  // EP13H — the anchor on the payload and the day-level ordering (TR-E13-08).
+  // ===========================================================================
+
+  it('EP13H: every non-planned event carries anchor: null', async () => {
+    mockEmpty();
+    prisma.course.findMany.mockResolvedValue([
+      {
+        id: 'c1',
+        name: 'Algorithms',
+        code: 'CS101',
+        color: '#123456',
+        meetings: [{ id: 'm1', dayOfWeek: 1, startTime: '09:00', endTime: '10:00' }],
+      },
+    ]);
+
+    const result = await service.list('u1', { from: '2026-10-26', to: '2026-10-26' });
+
+    const cls = result.events.find((e) => e.type === 'CLASS');
+    expect(cls).toBeTruthy();
+    expect(cls?.anchor).toBeNull();
+  });
+
+  it('EP13H: a FLEX_DAY planned session carries its anchor and sorts first in its day', async () => {
+    mockEmpty();
+    prisma.course.findMany.mockResolvedValue([
+      {
+        id: 'c1',
+        name: 'Algorithms',
+        code: 'CS101',
+        color: '#123456',
+        // Monday 2026-10-26, 08:00 — earlier on the clock than everything.
+        meetings: [{ id: 'm1', dayOfWeek: 1, startTime: '08:00', endTime: '09:00' }],
+      },
+    ]);
+    prisma.plannedSession.findMany.mockResolvedValue([
+      {
+        id: 'ps-flex',
+        assignmentId: 'a-1',
+        studyPlan: { date: new Date('2026-10-26T00:00:00.000Z') },
+        startTime: new Date('2026-10-26T19:00:00.000Z'),
+        endTime: new Date('2026-10-26T20:00:00.000Z'),
+        durationMinutes: 60,
+        status: 'SCHEDULED',
+        locked: false,
+        anchor: 'FLEX_DAY',
+        windowHint: 'EVENING',
+        assignment: { id: 'a-1', title: 'Essay', course: null },
+      },
+    ]);
+
+    const result = await service.list('u1', { from: '2026-10-26', to: '2026-10-26' });
+
+    const flex = result.events.find((e) => e.id === 'planned:ps-flex');
+    expect(flex?.anchor).toBe('FLEX_DAY');
+    // Day-level: the flex intention leads the day even though its suggested
+    // slot (19:00) is later than the 08:00 class.
+    const day = result.events.filter((e) => e.date === '2026-10-26');
+    expect(day[0]?.id).toBe('planned:ps-flex');
+    expect(day[1]?.type).toBe('CLASS');
+  });
+
+  it('EP13H: FIXED planned sessions keep the clock ordering', async () => {
+    mockEmpty();
+    prisma.course.findMany.mockResolvedValue([
+      {
+        id: 'c1',
+        name: 'Algorithms',
+        code: 'CS101',
+        color: '#123456',
+        meetings: [{ id: 'm1', dayOfWeek: 1, startTime: '08:00', endTime: '09:00' }],
+      },
+    ]);
+    prisma.plannedSession.findMany.mockResolvedValue([
+      {
+        id: 'ps-fixed',
+        assignmentId: 'a-1',
+        studyPlan: { date: new Date('2026-10-26T00:00:00.000Z') },
+        startTime: new Date('2026-10-26T19:00:00.000Z'),
+        endTime: new Date('2026-10-26T20:00:00.000Z'),
+        durationMinutes: 60,
+        status: 'SCHEDULED',
+        locked: false,
+        anchor: 'FIXED',
+        windowHint: null,
+        assignment: { id: 'a-1', title: 'Essay', course: null },
+      },
+    ]);
+
+    const result = await service.list('u1', { from: '2026-10-26', to: '2026-10-26' });
+
+    const day = result.events.filter((e) => e.date === '2026-10-26');
+    expect(day[0]?.type).toBe('CLASS');
+    expect(day[day.length - 1]?.id).toBe('planned:ps-fixed');
   });
 });

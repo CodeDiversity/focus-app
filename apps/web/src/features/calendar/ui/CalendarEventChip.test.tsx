@@ -85,4 +85,43 @@ describe('CalendarEventChip (SP-127B)', () => {
     expect(screen.getByText('Planned')).toBeInTheDocument();
     expect(screen.getByText('Completed')).toBeInTheDocument();
   });
+
+  // ===================== EP13H — flex planned sessions =====================
+
+  it('a FLEX_DAY planned session shows "Anytime" where the time goes, in both layouts (D-H7)', () => {
+    const flex = {
+      ...baseEvent,
+      id: 'planned:ps-flex',
+      type: 'PLANNED_SESSION' as const,
+      title: 'Essay',
+      subtitle: null,
+      link: null,
+      anchor: 'FLEX_DAY' as const,
+    };
+
+    const { unmount } = render(<CalendarEventChip event={flex} onOpen={vi.fn()} />);
+    expect(screen.getByText('Anytime')).toBeInTheDocument();
+    expect(screen.queryByText('09:00')).not.toBeInTheDocument();
+    expect(screen.getByRole('button')).toHaveAttribute('aria-label', 'Planned: Essay, anytime');
+    unmount();
+
+    render(<CalendarEventChip event={flex} onOpen={vi.fn()} layout="agenda" />);
+    expect(screen.getByText('Anytime')).toBeInTheDocument();
+    expect(screen.queryByText('09:00')).not.toBeInTheDocument();
+  });
+
+  it('a FIXED planned session keeps its start time (EP13D behaviour unchanged)', () => {
+    const fixed = {
+      ...baseEvent,
+      id: 'planned:ps-fixed',
+      type: 'PLANNED_SESSION' as const,
+      title: 'Essay',
+      subtitle: null,
+      link: null,
+      anchor: 'FIXED' as const,
+    };
+    render(<CalendarEventChip event={fixed} onOpen={vi.fn()} />);
+    expect(screen.getByText('09:00')).toBeInTheDocument();
+    expect(screen.queryByText('Anytime')).not.toBeInTheDocument();
+  });
 });

@@ -33,6 +33,13 @@ interface CalendarEvent {
   completed: boolean;
   focus: boolean;
   link: string | null;
+  /**
+   * EP13H — the planned session's clock relation (EP13G): `FLEX_DAY` is a
+   * day-anchored intention whose times are a *suggestion* (the client
+   * renders "Anytime" and the day sorts it first); `FIXED` keeps the clock.
+   * `null` for every non-planned event type.
+   */
+  anchor: 'FIXED' | 'FLEX_DAY' | null;
 }
 
 export interface ListResult {
@@ -196,6 +203,7 @@ export class CalendarService {
             completed: false,
             focus: false,
             link: `/courses/${course.id}`,
+            anchor: null,
           });
         }
       }
@@ -217,6 +225,7 @@ export class CalendarService {
           completed: false,
           focus: false,
           link: '/availability',
+          anchor: null,
         });
       }
     }
@@ -242,6 +251,7 @@ export class CalendarService {
         completed: a.status === 'COMPLETED' || a.status === 'GRADED',
         focus: false,
         link: a.courseId ? `/courses/${a.courseId}` : '/assignments',
+        anchor: null,
       });
     }
 
@@ -270,6 +280,7 @@ export class CalendarService {
         completed: false,
         focus: s.isFocusMode,
         link: null,
+        anchor: null,
       });
     }
 
@@ -299,12 +310,18 @@ export class CalendarService {
         completed: ps.status === 'COMPLETED',
         focus: false,
         link: null,
+        // EP13H: the anchor travels so flex sessions can render day-level.
+        anchor: ps.anchor,
       });
     }
 
-    // Sort: date asc, startTime asc, type, id.
+    // Sort: date asc, then — EP13H — the day's flexible planned sessions
+    // first (they are day-level items, like all-day events; their suggested
+    // startTime is not a clock position), then startTime asc, type, id.
+    const dayRank = (e: CalendarEvent) => (e.anchor === 'FLEX_DAY' ? 0 : 1);
     events.sort((a, b) => {
       if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+      if (dayRank(a) !== dayRank(b)) return dayRank(a) - dayRank(b);
       if (a.startTime !== b.startTime) return a.startTime < b.startTime ? -1 : 1;
       if (a.type !== b.type) return a.type < b.type ? -1 : 1;
       return a.id < b.id ? -1 : 1;

@@ -9,6 +9,7 @@ import {
   eventTimeRange,
   type DashboardSectionStatus,
 } from '@/features/dashboard/ui/dashboardSection';
+import { sessionTimeLabel } from '@/entities/study-plan/model/sessionTimeLabel';
 import { useStartPlannedSession } from '../model/useStartPlannedSession';
 import { TodayPlanRow, isStartable } from './TodayPlanRow';
 
@@ -118,7 +119,14 @@ export function TodayPlanCard({ plan, status, error, isFetching, onRetry }: Toda
                   {next.assignmentTitle}
                 </p>
                 <p className="mt-0.5 text-sm text-text-muted">
-                  {eventTimeRange(next.startTime, next.endTime)} · {next.durationMinutes} min
+                  {/* EP13H (D-H8): the hero's meta follows the anchor. */}
+                  {sessionTimeLabel({
+                    anchor: next.anchor,
+                    windowHint: next.windowHint,
+                    timeRange: eventTimeRange(next.startTime, next.endTime),
+                    durationMinutes: next.durationMinutes,
+                    anytimeWord: 'Anytime today',
+                  })}
                 </p>
               </div>
               <Button

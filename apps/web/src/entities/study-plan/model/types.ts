@@ -5,12 +5,25 @@
 // sessions in component state and projects each onto the four-field
 // `ProposedSessionInput` before saving (D06-5, D06-21).
 
+/**
+ * EP13G/EP13H — how a planned session relates to the clock. `FLEX_DAY` is a
+ * day-anchored intention: the stored times are a *suggestion*, the session
+ * can be started whenever the student is ready, and it is never "missed" at
+ * a clock time. `FIXED` is the clock commitment (the EP06 behaviour).
+ */
+export type PlannedSessionAnchor = 'FIXED' | 'FLEX_DAY';
+
+/** EP13G/EP13H — the optional, flex-only part-of-day suggestion. */
+export type PartOfDay = 'MORNING' | 'AFTERNOON' | 'EVENING';
+
 export interface PlanPreviewSession {
   assignmentId: string;
   assignmentTitle: string;
   startTime: string; // HH:mm (wall-clock, profile zone)
   endTime: string; // HH:mm
   durationMinutes: number;
+  anchor: PlannedSessionAnchor;
+  windowHint: PartOfDay | null;
 }
 
 export interface PlanPreviewDay {
@@ -51,6 +64,9 @@ export interface PlanPreview {
     minSessionMinutes: number;
     maxSessionMinutes: number;
     dailyCapMinutes: number;
+    // EP13F (D13-5): the two placement levers ride on every preview.
+    breakMinutes: number;
+    densityPercent: number;
   };
   days: PlanPreviewDay[];
   warnings: PlanWarning[];
@@ -65,6 +81,8 @@ export interface SavedPlanSession {
   endTime: string; // HH:mm
   durationMinutes: number;
   status: string;
+  anchor: PlannedSessionAnchor;
+  windowHint: PartOfDay | null;
 }
 
 export interface SavedPlanDay {
@@ -88,14 +106,22 @@ export interface ProposedSession {
   startTime: string;
   endTime: string;
   durationMinutes: number;
+  anchor: PlannedSessionAnchor;
+  windowHint: PartOfDay | null;
 }
 
-/** The four-field projection the save body accepts (D06-21). */
+/**
+ * The save-body projection (D06-21 + EP13G's anchor fields). `windowHint`
+ * must be **omitted** (not `null`) on a fixed session — the server 400s a
+ * hint on fixed (EP13G AC-4/AC-5).
+ */
 export interface ProposedSessionInput {
   assignmentId: string;
   date: string;
   startTime: string;
   endTime: string;
+  anchor: PlannedSessionAnchor;
+  windowHint?: PartOfDay;
 }
 
 export interface PlanConflict {
@@ -200,6 +226,8 @@ export interface TodaySession {
   durationMinutes: number;
   status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED' | 'RESCHEDULED';
   locked: boolean;
+  anchor: PlannedSessionAnchor;
+  windowHint: PartOfDay | null;
 }
 
 /** Why there is no recommended next session. */

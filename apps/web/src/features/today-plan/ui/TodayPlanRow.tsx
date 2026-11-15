@@ -2,6 +2,7 @@ import type { TodaySession } from '@/entities/study-plan/model/types';
 import { Badge } from '@/shared/ui/Badge';
 import { Button } from '@/shared/ui/Button';
 import { eventTimeRange } from '@/features/dashboard/ui/dashboardSection';
+import { sessionTimeLabel } from '@/entities/study-plan/model/sessionTimeLabel';
 
 /**
  * EP13D — one row of today's plan (D-D6, D-D7, D-D12).
@@ -49,7 +50,15 @@ export function TodayPlanRow({ session, onStart, isStarting, isBusy }: TodayPlan
     <li className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <p className="text-xs text-text-muted">
-          {eventTimeRange(session.startTime, session.endTime)} · {session.durationMinutes} min
+          {/* EP13H (D-H1/D-H8): a flex session never shows a missable clock
+              slot — "Anytime today" takes the time's place. */}
+          {sessionTimeLabel({
+            anchor: session.anchor,
+            windowHint: session.windowHint,
+            timeRange: eventTimeRange(session.startTime, session.endTime),
+            durationMinutes: session.durationMinutes,
+            anytimeWord: 'Anytime today',
+          })}
         </p>
         <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm font-medium text-text">
           <span className="truncate">{session.assignmentTitle}</span>

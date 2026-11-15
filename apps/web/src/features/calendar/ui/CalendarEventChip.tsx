@@ -54,12 +54,16 @@ export function CalendarEventChip({ event, onOpen, layout = 'week' }: CalendarEv
   const meta = TYPE_META[event.type];
   const Icon = meta.icon;
   const label = typeLabel(event);
+  // EP13H (D-H7): a day-anchored planned session has no clock position — the
+  // time line and the accessible name both say "Anytime".
+  const flex = event.anchor === 'FLEX_DAY';
+  const timeText = flex ? 'Anytime' : event.startTime;
 
   return (
     <button
       type="button"
       onClick={() => onOpen(event)}
-      aria-label={`${label}: ${event.title}, ${event.startTime}`}
+      aria-label={`${label}: ${event.title}, ${flex ? 'anytime' : event.startTime}`}
       className="group flex w-full items-start gap-2 rounded-lg border border-border bg-surface p-2 text-left shadow-sm transition hover:border-accent hover:shadow focus:outline-none focus:ring-2 focus:ring-accent max-sm:min-h-[44px]"
       style={{ borderLeftWidth: 3, borderLeftColor: event.courseColor ?? 'transparent' }}
     >
@@ -78,13 +82,13 @@ export function CalendarEventChip({ event, onOpen, layout = 'week' }: CalendarEv
         </div>
         {layout === 'agenda' ? (
           <>
-            <p className="text-xs text-text-muted">{event.startTime}</p>
+            <p className="text-xs text-text-muted">{timeText}</p>
             <p className="truncate text-sm font-medium text-text">{event.title}</p>
           </>
         ) : (
           <>
             <p className="truncate text-sm font-medium text-text">{event.title}</p>
-            <p className="text-xs text-text-muted">{event.startTime}</p>
+            <p className="text-xs text-text-muted">{timeText}</p>
           </>
         )}
       </div>

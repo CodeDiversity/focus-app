@@ -12,8 +12,25 @@ const sessions: ProposedSession[] = [
     startTime: '09:00',
     endTime: '10:00',
     durationMinutes: 60,
+    // EP13H: the editor carries the EP13G anchor; the pre-existing cases
+    // exercise a fixed row (the EP06 behaviour).
+    anchor: 'FIXED',
+    windowHint: null,
   },
 ];
+
+const flexSession: ProposedSession = {
+  ...{
+    assignmentId: 'a-1',
+    assignmentTitle: 'Essay',
+    date: '2026-10-30',
+    startTime: '19:00',
+    endTime: '20:00',
+    durationMinutes: 60,
+  },
+  anchor: 'FLEX_DAY',
+  windowHint: 'EVENING',
+};
 
 const days = ['2026-10-30', '2026-10-31'];
 
@@ -104,5 +121,75 @@ describe('PlanSessionEditor', () => {
     const row = container.querySelector('article');
     expect(row?.className).toBe('mb-3 rounded-md border border-border bg-surface p-3');
     expect(row?.getAttribute('data-conflicted')).toBeNull();
+  });
+
+  // ===================== EP13H — flex sessions in the editor =====================
+
+  it('a flex row reads Anytime with its hint; a fixed row keeps its clock range (D-H1)', () => {
+    render(
+      <PlanSessionEditor sessions={[flexSession, sessions[0]]} days={days} onChange={() => {}} />
+    );
+    expect(screen.getByText('Anytime · 60 min · evening suggested')).toBeInTheDocument();
+    expect(screen.getByText('09:00 – 10:00 · 60 min')).toBeInTheDocument();
+    // The editor explains the categories once, in plain language (D-H3).
+    expect(screen.getByText(/Fixed-time sessions keep their slot/)).toBeInTheDocument();
+  });
+
+  it('"Pin to this time" fixes a flex row and clears its hint (D-H4)', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<PlanSessionEditor sessions={[flexSession]} days={days} onChange={onChange} />);
+
+    await user.click(screen.getByRole('button', { name: /pin essay to 19:00/i }));
+    const next = onChange.mock.calls[0][0];
+    expect(next[0].anchor).toBe('FIXED');
+    expect(next[0].windowHint).toBeNull();
+  });
+
+  it('"Make flexible" unpins and derives the hint from the suggested start (D-H6)', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<PlanSessionEditor sessions={sessions} days={days} onChange={onChange} />);
+
+    await user.click(screen.getByRole('button', { name: /make essay flexible/i }));
+    const next = onChange.mock.calls[0][0];
+    expect(next[0].anchor).toBe('FLEX_DAY');
+    // 09:00 start → morning.
+    expect(next[0].windowHint).toBe('MORNING');
+  });
+
+  it('moving a flex row pins it — choosing a time is the commitment (D-H5)', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<PlanSessionEditor sessions={[flexSession]} days={days} onChange={onChange} />);
+
+    await user.click(screen.getByRole('button', { name: /move later/i }));
+    const next = onChange.mock.calls[0][0];
+    expect(next[0].anchor).toBe('FIXED');
+    expect(next[0].windowHint).toBeNull();
+    expect(next[0].startTime).toBe('19:15');
+  });
+
+  it('changing only the duration keeps a flex row flexible (D-H5)', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<PlanSessionEditor sessions={[flexSession]} days={days} onChange={onChange} />);
+
+    await user.click(screen.getByRole('button', { name: /lengthen/i }));
+    const next = onChange.mock.calls[0][0];
+    expect(next[0].anchor).toBe('FLEX_DAY');
+    expect(next[0].windowHint).toBe('EVENING');
+    expect(next[0].durationMinutes).toBe(75);
+  });
+
+  it('changing the day keeps a flex row flexible — a day is what it anchors to (D-H5)', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<PlanSessionEditor sessions={[flexSession]} days={days} onChange={onChange} />);
+
+    await user.selectOptions(screen.getByLabelText('Day'), '2026-10-31');
+    const next = onChange.mock.calls[0][0];
+    expect(next[0].date).toBe('2026-10-31');
+    expect(next[0].anchor).toBe('FLEX_DAY');
   });
 });

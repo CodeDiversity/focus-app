@@ -52,6 +52,9 @@ const catchUpPreviewFixture = {
           startTime: '09:00',
           endTime: '10:00',
           durationMinutes: 60,
+          // EP13H: the catch-up preview carries the EP13G partition too.
+          anchor: 'FIXED',
+          windowHint: null,
         },
       ],
     },
@@ -124,7 +127,7 @@ describe('CatchUpPreview', () => {
     expect(screen.getByText(/2026-10-30 – 2026-11-05 · America\/New_York/)).toBeInTheDocument();
   });
 
-  it('editing a proposed session then confirming posts the exact four-field body', async () => {
+  it('editing a proposed session then confirming posts the exact save body (incl. the anchor)', async () => {
     mockedConfirm.mockResolvedValue({} as never);
     const user = userEvent.setup();
     renderPreview();
@@ -141,10 +144,18 @@ describe('CatchUpPreview', () => {
     expect(from).toBe('2026-10-30');
     expect(to).toBe('2026-11-05');
     expect(sessions).toEqual([
-      { assignmentId: 'a-1', date: '2026-10-30', startTime: '09:15', endTime: '10:15' },
+      {
+        assignmentId: 'a-1',
+        date: '2026-10-30',
+        startTime: '09:15',
+        endTime: '10:15',
+        anchor: 'FIXED',
+      },
     ]);
-    // Exactly the four fields — nothing else in each session object.
+    // Exactly the save-body fields (EP13H: + anchor; a fixed session never
+    // carries a windowHint key at all — the server 400s one).
     expect(Object.keys(sessions[0]).sort()).toEqual([
+      'anchor',
       'assignmentId',
       'date',
       'endTime',
