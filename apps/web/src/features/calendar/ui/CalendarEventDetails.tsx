@@ -47,7 +47,13 @@ export function CalendarEventDetails({ event, timeZone, onClose }: CalendarEvent
   const Icon = meta.icon;
   const label = typeLabel(event);
   const dateLabel = formatDate(new Date(`${event.date}T12:00:00Z`), timeZone);
-  const timeLabel = event.endTime ? `${event.startTime} – ${event.endTime}` : event.startTime;
+  // EP13H2 (F-EP13H-03): a day-anchored session's stored times are the
+  // engine's *suggestion* — the dialog must not re-promise the clock slot the
+  // chip deliberately hides. Time reads "Anytime"; the suggestion gets its
+  // own honestly-labelled row below.
+  const flex = event.anchor === 'FLEX_DAY';
+  const clockLabel = event.endTime ? `${event.startTime} – ${event.endTime}` : event.startTime;
+  const timeLabel = flex ? 'Anytime' : clockLabel;
   const isDeadline = event.type === 'ASSIGNMENT_DEADLINE' || event.type === 'EXAM_DEADLINE';
 
   return (
@@ -68,6 +74,12 @@ export function CalendarEventDetails({ event, timeZone, onClose }: CalendarEvent
           <dt className="font-medium text-text-muted">Time</dt>
           <dd className="text-text">{timeLabel}</dd>
         </div>
+        {flex && (
+          <div>
+            <dt className="font-medium text-text-muted">Suggested</dt>
+            <dd className="text-text">{clockLabel}</dd>
+          </div>
+        )}
         {event.courseName && (
           <div>
             <dt className="font-medium text-text-muted">Course</dt>

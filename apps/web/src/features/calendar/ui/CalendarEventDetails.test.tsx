@@ -66,4 +66,47 @@ describe('CalendarEventDetails (SP-127B)', () => {
     renderDialog();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
+
+  // ============ EP13H2 (F-EP13H-03) — flex planned sessions ============
+
+  it('a FLEX_DAY planned session reads Time: Anytime with a labelled suggestion row', () => {
+    const flex: CalendarEvent = {
+      ...event,
+      type: 'PLANNED_SESSION',
+      title: 'Problem set 3',
+      endTime: '10:00',
+      anchor: 'FLEX_DAY',
+    };
+    render(
+      <Providers initialEntries={['/calendar']}>
+        <CalendarEventDetails event={flex} timeZone="America/New_York" onClose={vi.fn()} />
+      </Providers>
+    );
+    expect(screen.getByText('Anytime')).toBeInTheDocument();
+    // The engine's slot survives, but only under an honest label.
+    expect(screen.getByText('Suggested')).toBeInTheDocument();
+    expect(screen.getByText('09:00 – 10:00')).toBeInTheDocument();
+  });
+
+  it('a FIXED planned session and every other type keep the plain time row', () => {
+    const fixed: CalendarEvent = {
+      ...event,
+      type: 'PLANNED_SESSION',
+      endTime: '10:00',
+      anchor: 'FIXED',
+    };
+    const { unmount } = render(
+      <Providers initialEntries={['/calendar']}>
+        <CalendarEventDetails event={fixed} timeZone="America/New_York" onClose={vi.fn()} />
+      </Providers>
+    );
+    expect(screen.getByText('09:00 – 10:00')).toBeInTheDocument();
+    expect(screen.queryByText('Anytime')).not.toBeInTheDocument();
+    expect(screen.queryByText('Suggested')).not.toBeInTheDocument();
+    unmount();
+
+    renderDialog(); // the ASSIGNMENT_DEADLINE base event (no anchor at all)
+    expect(screen.getByText('09:00')).toBeInTheDocument();
+    expect(screen.queryByText('Anytime')).not.toBeInTheDocument();
+  });
 });

@@ -74,6 +74,13 @@ const renderPage = () =>
 
 describe('CalendarPage (SP-127B)', () => {
   beforeEach(() => {
+    // EP13H2 (F-EP13D-01/F-EP13H-04): the page derives its week from the
+    // real clock while these fixtures are frozen at 2026-10-26…11-01, so the
+    // suite silently broke the day the real date left that week. Freeze
+    // *only* Date (timers stay real, so userEvent/waitFor are unaffected)
+    // to the Wednesday of the fixtures' week.
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-28T12:00:00'));
     vi.resetAllMocks();
     mediaListeners.clear();
     narrow = false;
@@ -81,6 +88,7 @@ describe('CalendarPage (SP-127B)', () => {
     mocked.mockResolvedValue(payload);
   });
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
