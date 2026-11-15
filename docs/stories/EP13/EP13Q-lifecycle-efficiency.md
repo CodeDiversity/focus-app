@@ -19,6 +19,11 @@ commit each, no plan review, no judges) was already lean — the heavy machinery
 is largely unused. This story trims the protocol to what practice needs, makes
 the hot path cheap, and finally measures it.
 
+**What this changes:** the protocol documents, graph gates, story template and
+record conventions — no application code. **Why it improves it:** every agent
+dispatch starts ~75 % cheaper, gates stop costing dispatches, every story
+states its own value, and every material choice carries a visible user ruling.
+
 ## Measurements (2026-11-15, HEAD 7f089a5)
 
 | Measure | Value |
@@ -148,6 +153,38 @@ Bonus: *three runtime role definitions (`.codex`, `.vibe`, `.opencode`) say
 the same thing in three syntaxes.* Generate them from one source, or keep one
 and note the others as derived.
 
+## Flow walkthrough — every stage, options considered, recommendation, ruling open
+
+The mechanism: each row is a decision. **Recommended** is what the ACs below
+assume. You override by editing the Ruling cell (`Overridden: <choice> (user,
+date)`) or saying so in session; a row left `Proposed` is ratified as the
+recommendation when implementation of its AC starts. Material rows (marked ▲)
+must not be silently defaulted — the implementer stops and asks if they are
+still `Proposed`.
+
+| ID | Stage | Options considered | Recommended | Why | Ruling |
+|---|---|---|---|---|---|
+| D-Q4 | Epic intake | (a) free-form epic; (b) epic template with problem statement + measurable outcome + explicit non-goals | **(b)** | Downstream ACs trace to a stated outcome; cheap to add; prevents scope drift at the source | Proposed |
+| D-Q5 ▲ | Story description | (a) summary only (today); (b) every story opens with two mandatory lines — **What this changes** (observable behavior/files) and **Why it improves it** (the concrete product or code quality gain) | **(b)** | Shared understanding at a glance; reviewers verify against the "why", not just the ACs; costs two lines | Proposed |
+| D-Q6 ▲ | AC authorship | (a) agents write ACs, user discovers them at review; (b) agents write ACs **plus** a Decisions table (Options / Recommended / Ruling) for every material choice, with the default-ratification rule above | **(b)** | Keeps agent speed, restores user authority; the override is a one-cell edit, not a rewrite | Proposed |
+| D-Q7 | Plan review | (a) always (today, honored in breach); (b) conditional — migration, security invariant, > 8 children, or user request; (c) never, quality-gate table only | **(b)** | Matches observed practice; keeps the gate where risk lives (= AC 6) | Proposed |
+| D-Q8 | Refinement batching | (a) one refiner dispatch per child (today); (b) one dispatch may refine up to 3 Ready siblings that share a surface/contract, still sequential questions | **(b)** | Protocol re-read is the dominant cost; EP13I+EP13K share the dashboard surface and would have been one pass | Proposed |
+| D-Q9 | Dispatch handoff | (a) specialist re-reads all protocol files (today); (b) coordinator's handoff inlines the 5–10 relevant rule lines and the specialist reads only its skill + story + queue | **(b)** | This is the 22k→4k token lever beyond AC 1; the .opencode defs already describe inlining | Proposed |
+| D-Q10 | Gate checking | (a) judge dispatches (today); (b) deterministic gates inline (= AC 2); (c) also add a 30-line `queue-lint` script (states, links, qualified IDs, evidence-cell shape) run at closeout | **(c)** | The script catches the EP13P class of drift (broken links, stale letters) for free at every closeout | Proposed |
+| D-Q11 ▲ | Autopilot | (a) keep as is; (b) keep but slim (= AC 2); (c) retire in-session autopilot for this repo, keep the edge table as the manual playbook | **(b)** | Unattended runs may matter later; slimming keeps the option at low carrying cost. (c) saves the most words if you never use it | Proposed |
+| D-Q12 | Implementation session | (a) strictly one child per fresh session (today); (b) one session may continue into the next Ready child when context remains, same single writer, checkpoint between | **(b)** | Protocol re-read per child is the cost; the single-writer invariant is untouched; checkpoint preserves resumability | Proposed |
+| D-Q13 | Commit cadence | (a) separate docs/status commit after the code commit (today, ~2 per child); (b) one commit per child with code + records + queue row | **(b)** | Halves commit ceremony; the child is the atomic unit of review anyway; fix stories keep their own commits | Proposed |
+| D-Q14 | Review input | (a) reviewer rediscovers scope from the index (today); (b) implementer's parent index must include the per-child diff ranges and test-command list so the reviewer starts from them (still verifying independently) | **(b)** | Removes the most expensive reviewer phase (re-derivation) without weakening independence | Proposed |
+| D-Q15 | Review output | (a) separate walkthrough.md + dispatch (today); (b) "How to verify by hand" as a final review.md section (= AC 5) | **(b)** | One dispatch and one document fewer per parent | Proposed |
+| D-Q16 | Model routing | (a) recommendation recorded, never used (today); (b) routing table in core.md: refiner/judge/queue-lint/doc corrections → small model; implementer/reviewer → default; drop the per-story 1–5 score | **(b)** | Turns a dead field into real savings; per-story scores duplicated what the role already implies | Proposed |
+| D-Q17 | Measurement | (a) none (today, despite the mandate); (b) one line per dispatch in efficiency.md (= AC 8); (c) also a monthly prune/review of the protocol against the data | **(b)**, revisit (c) after two children | Data before more process | Proposed |
+
+Considered and **not** recommended (recorded so they aren't re-litigated):
+parallel implementation writers (merge cost > gain, single-user repo);
+per-child formal reviews (the combined final review is cheaper and D-Q14 fixes
+its cost); skipping checkpoints entirely (multi-window tasks genuinely need
+them); deleting the graph (it is the only complete spec of the lifecycle).
+
 ## Acceptance criteria
 
 1. **Tiered reads.** A new `.agents/core.md` (≤ 800 words) holds the rules
@@ -193,6 +230,27 @@ and note the others as derived.
    `.opencode` definitions carry a header "derived from .codex — edit there"
    and are regenerated (a 20-line script is acceptable) or removed if unused.
 
+10. **Story description contract (D-Q5).** Core.md and the planner/refiner
+    story template require every new story to open with two lines: **What this
+    changes** and **Why it improves it** (product or code quality, concretely).
+    The quality-gate/queue-lint checks their presence. Applied to EP13's
+    remaining unimplemented children (L, N, K, J, M) as the first instance;
+    implemented children are left as history.
+11. **Decision table with user override (D-Q6).** The story template's
+    Decisions subsection becomes a table: ID / Options considered /
+    Recommended / Ruling. Agents fill Options + Recommended; only the user
+    (or an explicitly user-granted session) writes Ruling. Rules in core.md:
+    a row still `Proposed` at implementation start is ratified as recommended,
+    **except** rows marked ▲ material (security, data, public contract, user
+    workflow), where the implementer stops and asks. An override is one cell:
+    `Overridden: <choice> (user, <date>)`. This story's walkthrough table is
+    the first instance.
+12. **Handoff inlining + queue-lint (D-Q9, D-Q10c).** The coordinator handoff
+    template in core.md inlines the specific rule lines a task needs instead
+    of naming whole files; a `tools/queue-lint` script (≈30 lines) validates
+    queue states, relative links, qualified IDs and evidence-cell shape, and
+    the closeout contract runs it.
+
 ## Out of scope
 
 - Application code. Re-reviewing implemented EP13 children. Changing the
@@ -206,6 +264,9 @@ and note the others as derived.
 - Link check over all edited docs; `grep -c "to: judge"` ≤ 4 on judgment edges.
 - Two EP13 children (EP13L, EP13N) delivered after this story each produce
   `efficiency.md` rows; the story's record quotes them.
+- EP13L and EP13N carry the two description lines (AC 10) and a Decisions
+  table in the AC-11 format before implementation starts.
+- `tools/queue-lint` runs clean on `docs/stories/EP13/`.
 
 ## Technical notes
 
@@ -214,11 +275,12 @@ and note the others as derived.
   `docs/` boundary for most of it; user-granted as with EP13P.
 - Order: AC 8 (measurement schema) first so EP13L can log; AC 1/7
   (consolidation) next; AC 2/5/6 (graph) third; AC 3/4 last.
-- **Decisions:** D-Q1 keep single writer (refines nothing; confirms AGENTS.md);
-  D-Q2 keep one combined final review (confirms review-cadence); D-Q3
-  walkthrough becomes a review section (overrides DoD-11 wording — planner to
-  update `docs/epics/README.md` DoD item 11 to "review includes a manual
-  verification section").
+- **Decisions:** D-Q1 keep single writer (confirms AGENTS.md); D-Q2 keep one
+  combined final review (confirms review-cadence); D-Q3 ▲ walkthrough becomes
+  a review section (overrides DoD-11 wording — planner updates
+  `docs/epics/README.md` item 11; material, so it needs your ruling or
+  explicit ratification). D-Q4…D-Q17 live in the walkthrough table above with
+  open Rulings.
 
 ## Sizing block
 
