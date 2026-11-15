@@ -23,6 +23,7 @@
 | EP10 | UI Design System & Visual Refresh | [EP10-ui-design-system-and-visual-refresh.md](./EP10-ui-design-system-and-visual-refresh.md) | None (cross-cutting) | Pending creation |
 | EP11 | Navigation & Information Architecture (ADHD-friendly) | [EP11-navigation-and-information-architecture.md](./EP11-navigation-and-information-architecture.md) | EP10 (EP10C app shell) | Pending creation |
 | EP12 | Tech Debt Cleanup | [EP12-tech-debt-cleanup.md](./EP12-tech-debt-cleanup.md) | Cross-cutting (EP04, EP05, EP06, EP10B) | Pending creation |
+| EP13 | Adaptive Scheduling for ADHD | [EP13-adaptive-scheduling-for-adhd.md](./EP13-adaptive-scheduling-for-adhd.md) | EP06, EP07, EP08 | Pending creation |
 
 Epics synced to Jira (project STUDY, site adhdstudy.atlassian.net) on 2026-10-11, labeled `studypilot`, `mvp`. EP01, EP02, EP03 and EP04 have story breakdowns (see [docs/stories/EP01](../stories/EP01/README.md), [docs/stories/EP02](../stories/EP02/README.md), [docs/stories/EP03](../stories/EP03/README.md), [docs/stories/EP04](../stories/EP04/README.md)); EP02 covers all six proposed stories — SP-110 (story 1, complete 2026-10-21), SP-111 (stories 2–4, complete 2026-10-22) and SP-112 (stories 5–6, complete 2026-10-23); the epic is complete. EP04 is broken down (planned 2026-10-28) as SP-127 (weekly academic calendar), SP-128 (study availability and unavailable blocks) and SP-129 (mobile agenda view).
 
@@ -63,6 +64,7 @@ instructions; required manual gates still need actual evidence. See the
 | M3 | EP06, EP07 | Study planning and focus sessions |
 | M4 | EP08 | Catch-up workflow and complete MVP |
 | M5 | EP10, EP11 | Visual design system & refresh + navigation & IA (MVP polish; cross-cutting) |
+| M6 | EP13 | Adaptive scheduling for ADHD (release 1.1; user-approved 2026-11-14) |
 
 Cross-cutting technical tasks, such as initial NestJS setup, Prisma migrations, CI, error handling, and deployment, should be tracked as technical stories or tasks linked to the appropriate milestone.
 
