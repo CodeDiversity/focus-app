@@ -223,6 +223,36 @@ describe('StudyPlansService EP13A reality inputs (unit, mocked PrismaService)', 
     expect(proposed).toEqual([{ date: '2026-10-31', startTime: '09:00' }]);
   });
 
+  it('the preview carries the engine’s anchor partition and flex hints (EP13G AC-5)', async () => {
+    assignmentFindMany.mockResolvedValue([assignmentRow()]);
+
+    const preview = await service.preview(userId);
+
+    const proposed = preview.days.flatMap((d) => d.sessions);
+    expect(proposed.length).toBeGreaterThan(0);
+    for (const session of proposed) {
+      // Plenty of slack before the due date → day-anchored by default.
+      expect(session.anchor).toBe('FLEX_DAY');
+      expect(['MORNING', 'AFTERNOON', 'EVENING']).toContain(session.windowHint);
+    }
+  });
+
+  it('pins the preview’s sessions when the deadline leaves no slack (EP13G AC-1)', async () => {
+    // Due today with more work than today can hold → every block is FIXED.
+    assignmentFindMany.mockResolvedValue([
+      assignmentRow({ dueDate: new Date('2026-10-30T23:00:00.000Z'), estimatedHours: 9 }),
+    ]);
+
+    const preview = await service.preview(userId);
+
+    const proposed = preview.days.flatMap((d) => d.sessions);
+    expect(proposed.length).toBeGreaterThan(0);
+    for (const session of proposed) {
+      expect(session.anchor).toBe('FIXED');
+      expect(session.windowHint).toBeNull();
+    }
+  });
+
   it('only COMPLETED sessions count: the aggregation is scoped and status-filtered (AC-E13-01)', async () => {
     assignmentFindMany.mockResolvedValue([assignmentRow()]);
 

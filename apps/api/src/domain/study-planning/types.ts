@@ -191,6 +191,24 @@ export type FreeIntervalBase =
 export type DeficitCategory = 'NO_AVAILABLE_TIME' | 'INSUFFICIENT_TIME_BEFORE_DEADLINE' | 'OVERDUE';
 
 /**
+ * EP13G (D13-4 option b) — how a planned session relates to the clock.
+ *
+ * `FIXED` is the EP06/EP08 behaviour: the slot is a commitment and takes
+ * part in clock-overlap conflicts. `FLEX_DAY` is a day-anchored intention:
+ * the slot is a *suggestion*, the session cannot be missed at a clock time,
+ * and it is excluded from clock-overlap conflicts while still consuming the
+ * day's density/cap budget.
+ *
+ * Declared as a string-literal union rather than imported from the generated
+ * Prisma client — the domain module imports nothing from Prisma (D06-17) and
+ * the generated enum is the same union of literals.
+ */
+export type PlannedSessionAnchorValue = 'FIXED' | 'FLEX_DAY';
+
+/** EP13G — the optional, flex-only part-of-day hint. */
+export type PartOfDayValue = 'MORNING' | 'AFTERNOON' | 'EVENING';
+
+/**
  * One proposed session the engine places (the preview's session shape,
  * without the response-only `assignmentTitle`/`durationMinutes` extras —
  * `durationMinutes` is derived as `endMinute - startMinute`).
@@ -202,6 +220,16 @@ export type PlannedSessionProposal = {
   startMinute: number;
   endMinute: number;
   durationMinutes: number;
+  /**
+   * EP13G — `FLEX_DAY` (the default for generated work) or `FIXED` when the
+   * deadline leaves no slack. See `schedule(...)`'s rule 6.
+   */
+  anchor: PlannedSessionAnchorValue;
+  /**
+   * EP13G — an honest suggestion derived from the suggested slot, set only
+   * on a flex session (`null` on a fixed one).
+   */
+  windowHint: PartOfDayValue | null;
 };
 
 /**

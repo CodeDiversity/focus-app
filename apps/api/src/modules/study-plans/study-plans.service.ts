@@ -27,6 +27,8 @@ import type {
   AssignmentStatusValue,
   ClassifiedAssignment,
   DatedInterval,
+  PartOfDayValue,
+  PlannedSessionAnchorValue,
   RemainingWorkFlag,
   StudyPreferences,
   UnfinishedAssignmentStatus,
@@ -154,6 +156,14 @@ export type TodaySession = {
   durationMinutes: number;
   status: string;
   locked: boolean;
+  /**
+   * EP13G — `FLEX_DAY` means the times above are a suggestion and this
+   * session can be started whenever the student is ready today; `FIXED`
+   * keeps the clock commitment.
+   */
+  anchor: PlannedSessionAnchorValue;
+  /** EP13G — a flex-only part-of-day suggestion; `null` on a fixed session. */
+  windowHint: PartOfDayValue | null;
 };
 
 /** The body of `GET /study-plans/today`. */
@@ -264,6 +274,14 @@ export type PlanPreviewSession = {
   startTime: string;
   endTime: string;
   durationMinutes: number;
+  /**
+   * EP13G (D13-4 option b). `FLEX_DAY` — the times above are the engine's
+   * *suggestion* and the session belongs to its day; `FIXED` — the slot is
+   * a commitment (the deadline left no slack, or the student pinned it).
+   */
+  anchor: PlannedSessionAnchorValue;
+  /** EP13G — a flex-only part-of-day suggestion; `null` on a fixed session. */
+  windowHint: PartOfDayValue | null;
 };
 
 export type PlanPreviewDay = {
@@ -314,6 +332,10 @@ export type SavedPlanSession = {
   endTime: string;
   durationMinutes: number;
   status: string;
+  /** EP13G — see `PlanPreviewSession.anchor`. */
+  anchor: PlannedSessionAnchorValue;
+  /** EP13G — a flex-only part-of-day suggestion; `null` on a fixed session. */
+  windowHint: PartOfDayValue | null;
 };
 
 export type SavedPlanDay = {
@@ -799,6 +821,10 @@ export class StudyPlansService {
         durationMinutes: row.durationMinutes,
         status: row.status,
         locked: row.locked,
+        // EP13G: the today read carries the anchor so the client can offer
+        // "start whenever" rather than a clock-time promise (EP13H).
+        anchor: row.anchor,
+        windowHint: row.windowHint,
       };
     });
 
@@ -1070,6 +1096,9 @@ export class StudyPlansService {
         startTime: minutesToHHmm(s.startMinute),
         endTime: minutesToHHmm(s.endMinute),
         durationMinutes: s.durationMinutes,
+        // EP13G: the engine's partition travels with the proposal.
+        anchor: s.anchor,
+        windowHint: s.windowHint,
       });
     }
 
@@ -1168,6 +1197,9 @@ export class StudyPlansService {
         startTime: minutesToHHmm(s.startMinute),
         endTime: minutesToHHmm(s.endMinute),
         durationMinutes: s.durationMinutes,
+        // EP13G: the engine's partition travels with the proposal.
+        anchor: s.anchor,
+        windowHint: s.windowHint,
       });
     }
 
@@ -1243,6 +1275,13 @@ export class StudyPlansService {
       if (endMin <= startMin) {
         sessionErrors[`sessions.${i}.endTime`] = ['endTime must be after startTime'];
       }
+      // EP13G: a part-of-day hint only means something on a day-anchored
+      // session — a clock slot already says when (AC-4).
+      if (s.windowHint && (s.anchor ?? 'FIXED') !== 'FLEX_DAY') {
+        sessionErrors[`sessions.${i}.windowHint`] = [
+          'windowHint is only allowed on a FLEX_DAY session',
+        ];
+      }
     });
     if (Object.keys(sessionErrors).length) {
       throwFieldErrors(sessionErrors);
@@ -1293,6 +1332,10 @@ export class StudyPlansService {
       date: s.date,
       startTime: s.startTime,
       endTime: s.endTime,
+      // EP13G: a flex session's slot is a suggestion, so it neither suffers
+      // nor causes a clock-overlap conflict (AC-2). Its minutes still count
+      // towards the day's budget — that accounting is the engine's.
+      anchor: s.anchor ?? ('FIXED' as const),
     }));
     const conflicts = findConflicts(submitted, {
       classes: classesDated,
@@ -1352,6 +1395,10 @@ export class StudyPlansService {
             durationMinutes: hhmmToMinutes(s.endTime) - hhmmToMinutes(s.startTime),
             status: 'SCHEDULED',
             locked: false,
+            // EP13G: omitted means FIXED — a pre-EP13G client keeps its
+            // clock-commitment semantics, and the hint rides only on flex.
+            anchor: s.anchor ?? 'FIXED',
+            windowHint: s.anchor === 'FLEX_DAY' ? (s.windowHint ?? null) : null,
           })),
         });
       }
@@ -1370,11 +1417,18 @@ export class StudyPlansService {
    * and a missing or foreign id is the same uniform 404 `Resource not found`
    * — never a 403, never a distinct message (no existence oracle).
    *
-   * Semantics: sets only `locked` — never `status`, times, or any
+   * Semantics: sets `locked` — never `status`, times, or any
    * `StudySession`/`Assignment`/`Task` row. Status-agnostic on purpose:
    * confirm only deletes `SCHEDULED && !locked` rows, so locking a
    * non-SCHEDULED row persists without a scheduling effect, and the preview
    * only surfaces SCHEDULED rows for toggling anyway.
+   *
+   * EP13G (AC-5): **locking a session also fixes it** — `locked: true`
+   * writes `anchor: FIXED`. A lock is the student saying "keep this one
+   * exactly here", which is a clock commitment by definition; the invariant
+   * `locked ⇒ FIXED` is therefore enforced by the write rather than
+   * rejected as an invalid combination. Unlocking leaves the anchor alone:
+   * a session that was pinned stays pinned until the plan is regenerated.
    */
   async setSessionLock(
     userId: string,
@@ -1388,7 +1442,7 @@ export class StudyPlansService {
 
     const updated = await this.prisma.plannedSession.updateMany({
       where: { id: sessionId, studyPlan: { userId } },
-      data: { locked: dto.locked },
+      data: dto.locked ? { locked: true, anchor: 'FIXED' } : { locked: false },
     });
     assertAffected(userId, updated.count);
 
@@ -1444,6 +1498,13 @@ export class StudyPlansService {
       if (endMin <= startMin) {
         sessionErrors[`sessions.${i}.endTime`] = ['endTime must be after startTime'];
       }
+      // EP13G: a part-of-day hint only means something on a day-anchored
+      // session — a clock slot already says when (AC-4).
+      if (s.windowHint && (s.anchor ?? 'FIXED') !== 'FLEX_DAY') {
+        sessionErrors[`sessions.${i}.windowHint`] = [
+          'windowHint is only allowed on a FLEX_DAY session',
+        ];
+      }
     });
     if (Object.keys(sessionErrors).length) {
       throwFieldErrors(sessionErrors);
@@ -1491,6 +1552,10 @@ export class StudyPlansService {
       date: s.date,
       startTime: s.startTime,
       endTime: s.endTime,
+      // EP13G: a flex session's slot is a suggestion, so it neither suffers
+      // nor causes a clock-overlap conflict (AC-2). Its minutes still count
+      // towards the day's budget — that accounting is the engine's.
+      anchor: s.anchor ?? ('FIXED' as const),
     }));
     const conflicts = findConflicts(submitted, {
       classes: classesDated,
@@ -1554,6 +1619,10 @@ export class StudyPlansService {
             durationMinutes: hhmmToMinutes(s.endTime) - hhmmToMinutes(s.startTime),
             status: 'SCHEDULED',
             locked: false,
+            // EP13G: omitted means FIXED — a pre-EP13G client keeps its
+            // clock-commitment semantics, and the hint rides only on flex.
+            anchor: s.anchor ?? 'FIXED',
+            windowHint: s.anchor === 'FLEX_DAY' ? (s.windowHint ?? null) : null,
           })),
         });
       }
@@ -1649,6 +1718,9 @@ export class StudyPlansService {
           endTime: end.time,
           durationMinutes: sess.durationMinutes,
           status: sess.status,
+          // EP13G: the saved row's anchor and its flex-only hint.
+          anchor: sess.anchor,
+          windowHint: sess.windowHint,
         };
       });
       const targetMinutes = plan ? Math.round(plan.targetHours * 60) : 0;

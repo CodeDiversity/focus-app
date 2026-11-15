@@ -4,7 +4,8 @@
 **Parent epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md)
 **Milestone:** M6
 **Layer:** Backend
-**Status:** Blocked — **D13-4 flex-session model needs a user decision (V-13-3)**
+**Status:** Implemented — awaiting parent review (2026-11-15; record `./artifacts/EP13G/implementation.md`)
+**D13-4:** resolved as **option (b)** — user instruction 2026-11-15, taking the planner's recorded recommendation (suggested times + `anchor` + optional `windowHint`).
 **Dependencies:** EP13F implemented. D13-4 resolved.
 **Jira key:** Pending creation
 

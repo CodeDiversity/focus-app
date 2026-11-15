@@ -1,6 +1,10 @@
 import { ConflictException, HttpStatus, NotFoundException } from '@nestjs/common';
 
-import { PlannedSessionStatus, StudySessionStatus } from '../../generated/prisma/client';
+import {
+  PlannedSessionAnchor,
+  PlannedSessionStatus,
+  StudySessionStatus,
+} from '../../generated/prisma/client';
 import { RESOURCE_NOT_FOUND } from '../../common/ownership/ownership';
 import { StudySessionsService } from './study-sessions.service';
 
@@ -182,6 +186,41 @@ describe('StudySessionsService EP13B planned link (unit, mocked PrismaService)',
       expect(result.plannedSessionId).toBe(plannedSessionId);
       expect(result.status).toBe(StudySessionStatus.ACTIVE);
       expect(result).not.toHaveProperty('userId');
+    });
+
+    it('starting a day-anchored session fixes it at the real time (EP13G AC-3)', async () => {
+      plannedSessionFindFirst.mockResolvedValue(
+        plannedRow({ anchor: PlannedSessionAnchor.FLEX_DAY })
+      );
+
+      await service.startFromPlanned(userId, plannedSessionId);
+
+      // One write, inside the same transaction: status + the fix-up.
+      expect(txPlannedSessionUpdateMany).toHaveBeenCalledTimes(1);
+      const advance = txPlannedSessionUpdateMany.mock.calls[0][0];
+      expect(advance.data).toEqual({
+        status: PlannedSessionStatus.IN_PROGRESS,
+        anchor: PlannedSessionAnchor.FIXED,
+        startTime: now,
+        // The duration is kept; only where it sits on the clock moves.
+        endTime: new Date(now.getTime() + 50 * 60_000),
+      });
+    });
+
+    it('selects the anchor so the flex fix-up can be decided (EP13G)', async () => {
+      await service.startFromPlanned(userId, plannedSessionId);
+      expect(plannedSessionFindFirst.mock.calls[0][0].select).toMatchObject({ anchor: true });
+    });
+
+    it('a fixed session keeps its slot untouched (EP06 behaviour unchanged)', async () => {
+      plannedSessionFindFirst.mockResolvedValue(plannedRow({ anchor: PlannedSessionAnchor.FIXED }));
+
+      await service.startFromPlanned(userId, plannedSessionId);
+
+      const advance = txPlannedSessionUpdateMany.mock.calls[0][0];
+      expect(advance.data).toEqual({ status: PlannedSessionStatus.IN_PROGRESS });
+      expect(advance.data).not.toHaveProperty('startTime');
+      expect(advance.data).not.toHaveProperty('anchor');
     });
 
     it('reads the planned row scoped through its parent plan; missing or foreign → uniform 404 (AC-E13-05)', async () => {

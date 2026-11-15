@@ -76,6 +76,9 @@ describe('StudyPlansService EP13C reconciliation + today (unit, mocked PrismaSer
     durationMinutes: 60,
     status: 'SCHEDULED',
     locked: false,
+    // EP13G: the today read carries the anchor and the flex-only hint.
+    anchor: 'FIXED',
+    windowHint: null,
     assignment: {
       id: 'a-1',
       title: 'Problem set 3',
@@ -133,6 +136,18 @@ describe('StudyPlansService EP13C reconciliation + today (unit, mocked PrismaSer
       });
     });
 
+    it('rolls day-anchored sessions with everything else — no anchor filter (EP13G AC-3)', async () => {
+      await service.getToday(userId);
+
+      // The proof is the predicate itself: reconciliation keys off status and
+      // the civil date only, so a FLEX_DAY row rolls forward through exactly
+      // the same write as a FIXED one. No new code path, and none needed.
+      const where = reconcileCalls()[0].where as Record<string, unknown>;
+      expect(where).not.toHaveProperty('anchor');
+      expect(Object.keys(where).sort()).toEqual(['status', 'studyPlan', 'studySessions']);
+      expect(reconcileCalls()[0].data).toEqual({ status: 'RESCHEDULED' });
+    });
+
     it('the profile zone decides the boundary: Auckland is already on the next civil day', async () => {
       userFindUnique.mockResolvedValue({ timeZone: 'Pacific/Auckland', preferences: null });
 
@@ -185,6 +200,17 @@ describe('StudyPlansService EP13C reconciliation + today (unit, mocked PrismaSer
   // ===================== the today read =====================
 
   describe('getToday (GET /study-plans/today)', () => {
+    it('carries the anchor and the flex-only window hint (EP13G AC-5)', async () => {
+      plannedSessionFindMany.mockResolvedValue([
+        todayRow({ anchor: 'FLEX_DAY', windowHint: 'EVENING' }),
+      ]);
+
+      const today = await service.getToday(userId);
+
+      expect(today.sessions[0]).toMatchObject({ anchor: 'FLEX_DAY', windowHint: 'EVENING' });
+      expect(today.nextSession).toMatchObject({ anchor: 'FLEX_DAY', windowHint: 'EVENING' });
+    });
+
     it('returns the contract shape with the reconciled sessions, zone-rendered, userId never exposed', async () => {
       plannedSessionFindMany.mockResolvedValue([
         todayRow(),
@@ -218,6 +244,10 @@ describe('StudyPlansService EP13C reconciliation + today (unit, mocked PrismaSer
         durationMinutes: 60,
         status: 'SCHEDULED',
         locked: false,
+        // EP13G: every today session carries its anchor; the hint is
+        // flex-only, so a fixed session reports `null`.
+        anchor: 'FIXED',
+        windowHint: null,
       });
       expect(JSON.stringify(result)).not.toContain(userId);
 

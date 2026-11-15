@@ -1045,4 +1045,125 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
       });
     });
   });
+
+  // =========================================================================
+  // EP13G — the anchor round-trip through the save path (TR-E13-07, AC-5).
+  // =========================================================================
+
+  describe('save (EP13G) — anchor and window hint', () => {
+    const saveBody = (session: Record<string, unknown>) =>
+      plainToInstance(
+        SaveStudyPlanDto,
+        {
+          from: '2026-10-30',
+          to: '2026-11-05',
+          sessions: [
+            {
+              assignmentId: 'a-1',
+              date: '2026-10-30',
+              startTime: '10:00',
+              endTime: '11:00',
+              ...session,
+            },
+          ],
+        },
+        { enableImplicitConversion: true }
+      );
+
+    beforeEach(() => {
+      userFindUnique.mockResolvedValue({ timeZone: 'UTC', preferences: null });
+      assignmentFindMany.mockResolvedValue([assignmentRow()]);
+    });
+
+    it('persists a day-anchored session with its hint', async () => {
+      await service.save(userId, saveBody({ anchor: 'FLEX_DAY', windowHint: 'EVENING' }));
+
+      const inserted = txPlannedSessionCreateMany.mock.calls[0][0].data;
+      expect(inserted[0]).toMatchObject({ anchor: 'FLEX_DAY', windowHint: 'EVENING' });
+    });
+
+    it('an omitted anchor is FIXED — a pre-EP13G client keeps its semantics', async () => {
+      await service.save(userId, saveBody({}));
+
+      const inserted = txPlannedSessionCreateMany.mock.calls[0][0].data;
+      expect(inserted[0]).toMatchObject({ anchor: 'FIXED', windowHint: null });
+    });
+
+    it('a flex session without a hint is legal (hints are optional, AC-4)', async () => {
+      await service.save(userId, saveBody({ anchor: 'FLEX_DAY' }));
+
+      const inserted = txPlannedSessionCreateMany.mock.calls[0][0].data;
+      expect(inserted[0]).toMatchObject({ anchor: 'FLEX_DAY', windowHint: null });
+    });
+
+    it('rejects a window hint on a fixed session, naming the field, and writes nothing', async () => {
+      const error = await service
+        .save(userId, saveBody({ anchor: 'FIXED', windowHint: 'MORNING' }))
+        .then(
+          () => {
+            throw new Error('expected a 400');
+          },
+          (failure: unknown) => failure as BadRequestException
+        );
+      expect(error.getStatus()).toBe(400);
+      const payload = error.getResponse() as { errors: Record<string, string[]> };
+      expect(payload.errors['sessions.0.windowHint']).toEqual([
+        'windowHint is only allowed on a FLEX_DAY session',
+      ]);
+      expect(txPlannedSessionCreateMany).not.toHaveBeenCalled();
+    });
+
+    it('rejects an unknown anchor or hint value (DTO re-validation) and writes nothing', async () => {
+      for (const bad of [{ anchor: 'SOMEDAY' }, { anchor: 'FLEX_DAY', windowHint: 'NIGHT' }]) {
+        const error = await service.save(userId, saveBody(bad)).then(
+          () => {
+            throw new Error('expected a 400');
+          },
+          (failure: unknown) => failure as BadRequestException
+        );
+        expect(error.getStatus()).toBe(400);
+      }
+      expect(txPlannedSessionCreateMany).not.toHaveBeenCalled();
+    });
+
+    it('a flex session is exempt from the clock-overlap check but a fixed one is not (AC-2)', async () => {
+      // A locked row holds 14:00–15:00 on 10-31 (busy for the conflict check).
+      plannedSessionFindMany.mockResolvedValue([
+        plannedRow({
+          id: 'ps-locked',
+          locked: true,
+          studyPlan: { date: new Date('2026-10-31T00:00:00.000Z') },
+          startTime: new Date('2026-10-31T14:00:00.000Z'),
+          endTime: new Date('2026-10-31T15:00:00.000Z'),
+        }),
+      ]);
+
+      const collidingBody = (session: Record<string, unknown>) =>
+        plainToInstance(
+          SaveStudyPlanDto,
+          {
+            from: '2026-10-30',
+            to: '2026-11-05',
+            sessions: [
+              {
+                assignmentId: 'a-1',
+                date: '2026-10-31',
+                startTime: '14:30',
+                endTime: '15:30',
+                ...session,
+              },
+            ],
+          },
+          { enableImplicitConversion: true }
+        );
+
+      // Fixed → the EP06 409.
+      await expect409(service.save(userId, collidingBody({ anchor: 'FIXED' })));
+
+      // Flex → saved: its slot was never a promise.
+      await expect(
+        service.save(userId, collidingBody({ anchor: 'FLEX_DAY' }))
+      ).resolves.toMatchObject({ from: '2026-10-30' });
+    });
+  });
 });

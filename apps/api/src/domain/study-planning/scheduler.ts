@@ -4,6 +4,7 @@ import type {
   AssignmentScheduleResult,
   DatedInterval,
   DeficitCategory,
+  PartOfDayValue,
   PlannedSessionProposal,
   SchedulerInput,
   SchedulerOutput,
@@ -56,6 +57,15 @@ import type {
  * 5. **Purity and determinism**: every iteration is over a sorted structure
  *    and every tie-break is total, so the same input yields byte-identical
  *    output.
+ *
+ * EP13G adds one more rule on top of placement v2:
+ *
+ * 6. **Day-anchored by default** (D13-4 option b): a placed block is emitted
+ *    `FLEX_DAY` — its slot is a suggestion, it belongs to its day, and it
+ *    cannot be missed at a clock time — unless the assignment's deadline
+ *    leaves no slack, in which case all of its blocks are `FIXED` and keep
+ *    EP06's clock-commitment semantics. Flex blocks carry an honest
+ *    `windowHint` derived from the slot the engine suggested.
  */
 
 /** Convert a weekly window list into dated intervals for one civil date. */
@@ -91,6 +101,17 @@ function freeMinutes(intervals: DatedInterval[]): number {
  */
 function safeInt(value: number, fallback: number): number {
   return Number.isFinite(value) ? Math.trunc(value) : fallback;
+}
+
+/**
+ * EP13G — the part-of-day hint for a flex block, read off the slot the
+ * engine suggested. Deliberately mechanical: the hint is a description of
+ * the suggestion, never an extra preference to reconcile.
+ */
+function windowHintOf(startMinute: number): PartOfDayValue {
+  if (startMinute < 12 * 60) return 'MORNING';
+  if (startMinute < 17 * 60) return 'AFTERNOON';
+  return 'EVENING';
 }
 
 /** The per-assignment mutable state of one run. */
@@ -295,6 +316,10 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
         startMinute: interval.startMinute,
         endMinute: interval.startMinute + usable,
         durationMinutes: usable,
+        // EP13G rule 6: day-anchored by default. The post-pass below pins
+        // the blocks of any assignment whose deadline leaves no slack.
+        anchor: 'FLEX_DAY',
+        windowHint: windowHintOf(interval.startMinute),
       };
       sessions.push(block);
       placedSessions.push({
@@ -401,6 +426,48 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
       deficitCategory,
     };
   });
+
+  // ---------------------------------------------------------------------
+  // EP13G rule 6 — the FLEX_DAY / FIXED partition (D13-4 option b).
+  //
+  // Blocks are day-anchored intentions unless the deadline makes their exact
+  // placement load-bearing. An assignment pins when, inside its own horizon,
+  // its remaining work leaves less than one minimum session of slack, or
+  // when it ends with a deadline deficit.
+  //
+  // Two groups deliberately never pin:
+  // - **overdue** work — there is no deadline left to protect, and pinning it
+  //   would re-create exactly the "scheduled opportunity to fail" this story
+  //   removes;
+  // - work due **after** the window — its unplaced minutes are *deferred*,
+  //   not a deficit, so this week carries no deadline pressure for it.
+  //
+  // `results` is built by mapping `progress`, so the indices line up.
+  // ---------------------------------------------------------------------
+  const pinned = new Set<string>();
+  for (let index = 0; index < progress.length; index += 1) {
+    const item = progress[index];
+    const result = results[index];
+    const { assignment } = item;
+    const overdue = assignment.dueDate < today;
+    const beyondWindow = !overdue && days.length > 0 && assignment.dueDate > lastDay;
+    if (overdue || beyondWindow) continue;
+
+    let horizonCapacity = 0;
+    for (const date of days) {
+      if (item.horizon.has(date)) horizonCapacity += dayBudgetOf(date);
+    }
+    const noSlack = assignment.remainingMinutes + minBlock > horizonCapacity;
+    if (noSlack || result.deficitCategory === 'INSUFFICIENT_TIME_BEFORE_DEADLINE') {
+      pinned.add(assignment.id);
+    }
+  }
+  for (const session of sessions) {
+    if (pinned.has(session.assignmentId)) {
+      session.anchor = 'FIXED';
+      session.windowHint = null;
+    }
+  }
 
   return { sessions, results };
 }

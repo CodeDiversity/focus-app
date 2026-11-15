@@ -829,4 +829,186 @@ describe('scheduling engine (domain, EP06C)', () => {
       expect(source).not.toMatch(/Math\.random/); // no randomness
     });
   });
+
+  // =========================================================================
+  // EP13G — day-anchored flexible sessions (TR-E13-07, rule 6).
+  // =========================================================================
+
+  describe('15. the FLEX_DAY / FIXED partition (EP13G rule 6)', () => {
+    /** A week of open evenings: 17:00–22:00 every day (300 free minutes). */
+    const openEvenings = () =>
+      [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+        dayOfWeek,
+        startMinute: 17 * 60,
+        endMinute: 22 * 60,
+      }));
+
+    it('emits day-anchored sessions by default', () => {
+      // 120 minutes due at the end of the week: all the slack in the world.
+      const a = assignment({ remainingMinutes: 120, dueDate: '2026-11-05' });
+      const out = schedule(input({ assignments: [a], availability: openEvenings() }));
+
+      expect(out.sessions.length).toBeGreaterThan(0);
+      for (const session of out.sessions) {
+        expect(session.anchor).toBe('FLEX_DAY');
+      }
+    });
+
+    it('pins every block of an assignment whose deadline leaves no slack', () => {
+      // Due tomorrow, and the work needs both days' budgets in full.
+      // 300 free minutes/day at 80% → 240 placeable; two days → 480.
+      const a = assignment({ remainingMinutes: 480, dueDate: '2026-10-31' });
+      const out = schedule(input({ assignments: [a], availability: openEvenings() }));
+
+      expect(out.sessions.length).toBeGreaterThan(0);
+      for (const session of out.sessions) {
+        expect(session.anchor).toBe('FIXED');
+        expect(session.windowHint).toBeNull();
+      }
+    });
+
+    it('the slack boundary: one minimum session of room is the dividing line', () => {
+      // Capacity over today+tomorrow is 480 minutes (see above).
+      const pinned = schedule(
+        input({
+          assignments: [
+            assignment({
+              remainingMinutes: 480 - PREFS.minSessionMinutes + 1,
+              dueDate: '2026-10-31',
+            }),
+          ],
+          availability: openEvenings(),
+        })
+      );
+      expect(pinned.sessions.every((s) => s.anchor === 'FIXED')).toBe(true);
+
+      const loose = schedule(
+        input({
+          assignments: [
+            assignment({ remainingMinutes: 480 - PREFS.minSessionMinutes, dueDate: '2026-10-31' }),
+          ],
+          availability: openEvenings(),
+        })
+      );
+      expect(loose.sessions.every((s) => s.anchor === 'FLEX_DAY')).toBe(true);
+    });
+
+    it('pins work that ends with a deadline deficit', () => {
+      const a = assignment({ remainingMinutes: 900, dueDate: '2026-10-31' });
+      const out = schedule(input({ assignments: [a], availability: openEvenings() }));
+
+      expect(out.results[0].deficitCategory).toBe('INSUFFICIENT_TIME_BEFORE_DEADLINE');
+      expect(out.sessions.every((s) => s.anchor === 'FIXED')).toBe(true);
+    });
+
+    it('never pins overdue work — there is no deadline left to protect', () => {
+      const a = assignment({ remainingMinutes: 120, dueDate: '2026-10-01' });
+      const out = schedule(input({ assignments: [a], availability: openEvenings() }));
+
+      expect(out.results[0].deficitCategory).toBe('OVERDUE');
+      expect(out.sessions.length).toBeGreaterThan(0);
+      expect(out.sessions.every((s) => s.anchor === 'FLEX_DAY')).toBe(true);
+    });
+
+    it('never pins work due beyond the window — its leftovers are deferred, not late', () => {
+      // Far more work than the week can hold, but the deadline is weeks away.
+      const a = assignment({ remainingMinutes: 5000, dueDate: '2026-12-01' });
+      const out = schedule(input({ assignments: [a], availability: openEvenings() }));
+
+      expect(out.results[0].deferredMinutes).toBeGreaterThan(0);
+      expect(out.results[0].deficitCategory).toBeNull();
+      expect(out.sessions.every((s) => s.anchor === 'FLEX_DAY')).toBe(true);
+    });
+
+    it('partitions per assignment, not per day', () => {
+      const tight = assignment({ id: 'tight', remainingMinutes: 480, dueDate: '2026-10-31' });
+      const loose = assignment({ id: 'loose', remainingMinutes: 60, dueDate: '2026-11-05' });
+      const out = schedule(input({ assignments: [tight, loose], availability: openEvenings() }));
+
+      const anchorsOf = (id: string) =>
+        new Set(out.sessions.filter((s) => s.assignmentId === id).map((s) => s.anchor));
+      expect(anchorsOf('tight')).toEqual(new Set(['FIXED']));
+      expect(anchorsOf('loose')).toEqual(new Set(['FLEX_DAY']));
+    });
+
+    it('is deterministic — the partition is identical across runs', () => {
+      const build = () =>
+        input({
+          assignments: [
+            assignment({ id: 'tight', remainingMinutes: 480, dueDate: '2026-10-31' }),
+            assignment({ id: 'loose', remainingMinutes: 90, dueDate: '2026-11-05' }),
+          ],
+          availability: openEvenings(),
+        });
+      expect(JSON.stringify(schedule(build()))).toBe(JSON.stringify(schedule(build())));
+    });
+
+    it('derives an honest window hint from the suggested slot', () => {
+      const a = assignment({ remainingMinutes: 60, dueDate: '2026-11-05' });
+
+      const morning = schedule(
+        input({
+          assignments: [a],
+          availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 9 * 60, endMinute: 11 * 60 }],
+        })
+      );
+      expect(morning.sessions[0].windowHint).toBe('MORNING');
+
+      const afternoon = schedule(
+        input({
+          assignments: [a],
+          availability: [
+            { dayOfWeek: dow('2026-10-30'), startMinute: 13 * 60, endMinute: 15 * 60 },
+          ],
+        })
+      );
+      expect(afternoon.sessions[0].windowHint).toBe('AFTERNOON');
+
+      const evening = schedule(
+        input({
+          assignments: [a],
+          availability: [
+            { dayOfWeek: dow('2026-10-30'), startMinute: 19 * 60, endMinute: 21 * 60 },
+          ],
+        })
+      );
+      expect(evening.sessions[0].windowHint).toBe('EVENING');
+    });
+
+    it('keeps the boundaries 12:00 and 17:00 on the later side', () => {
+      const a = assignment({ remainingMinutes: 60, dueDate: '2026-11-05' });
+      const noon = schedule(
+        input({
+          assignments: [a],
+          availability: [
+            { dayOfWeek: dow('2026-10-30'), startMinute: 12 * 60, endMinute: 14 * 60 },
+          ],
+        })
+      );
+      expect(noon.sessions[0].windowHint).toBe('AFTERNOON');
+
+      const five = schedule(
+        input({
+          assignments: [a],
+          availability: [
+            { dayOfWeek: dow('2026-10-30'), startMinute: 17 * 60, endMinute: 19 * 60 },
+          ],
+        })
+      );
+      expect(five.sessions[0].windowHint).toBe('EVENING');
+    });
+
+    it('flex minutes still count towards the day budget (AC-2)', () => {
+      // The density cap must not care about the anchor: 300 free minutes at
+      // 80% is 240 placeable, flex or not.
+      const a = assignment({ remainingMinutes: 600, dueDate: '2026-11-05' });
+      const out = schedule(input({ assignments: [a], availability: openEvenings() }));
+
+      const firstDay = out.sessions
+        .filter((s) => s.date === '2026-10-30')
+        .reduce((total, s) => total + s.durationMinutes, 0);
+      expect(firstDay).toBe(240);
+      expect(out.sessions.every((s) => s.anchor === 'FLEX_DAY')).toBe(true);
+    });
+  });
 });

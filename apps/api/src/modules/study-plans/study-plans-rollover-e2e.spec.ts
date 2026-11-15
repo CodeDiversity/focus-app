@@ -228,6 +228,68 @@ describeIntegration('Rolling reconciliation + today read (integration, real data
     expect(after.body.nextSessionReason).toBe('NOTHING_LEFT_TODAY');
   });
 
+  // =========================================================================
+  // EP13G — day-anchored sessions, end to end (TR-E13-07, AC-3).
+  // =========================================================================
+
+  it('an unstarted FLEX_DAY session rolls forward through the same reconciliation (EP13G AC-3)', async () => {
+    const yesterday = addDaysCivil(today(), -1);
+    const flex = (await seedPlanned(yesterday, { anchor: 'FLEX_DAY', windowHint: 'EVENING' })).id;
+
+    // No new rollover machinery: an ordinary read self-heals, and the
+    // day-anchored row rolls exactly like a fixed one.
+    await getToday().expect(HttpStatus.OK);
+
+    expect(await statusOf(flex)).toBe('RESCHEDULED');
+    const row = await app.prisma.plannedSession.findUnique({
+      where: { id: flex },
+      select: { anchor: true, windowHint: true },
+    });
+    // The rollover is a status change only — the anchor and the hint survive.
+    expect(row?.anchor).toBe('FLEX_DAY');
+    expect(row?.windowHint).toBe('EVENING');
+  });
+
+  it('starting a day-anchored session fixes it at the real time (EP13G AC-3)', async () => {
+    const flex = (
+      await seedPlanned(today(), {
+        anchor: 'FLEX_DAY',
+        windowHint: 'MORNING',
+        startTime: new Date(`${today()}T06:00:00.000Z`),
+        endTime: new Date(`${today()}T07:00:00.000Z`),
+      })
+    ).id;
+
+    const before = new Date();
+    await agent
+      .post(`/study-sessions/from-planned/${flex}`)
+      .set('Authorization', `Bearer ${student.token}`)
+      .expect(HttpStatus.CREATED);
+
+    const row = await app.prisma.plannedSession.findUnique({
+      where: { id: flex },
+      select: { anchor: true, status: true, startTime: true, endTime: true, durationMinutes: true },
+    });
+    expect(row?.status).toBe('IN_PROGRESS');
+    expect(row?.anchor).toBe('FIXED');
+    // The suggested 06:00 slot is replaced by when the work actually started.
+    expect(row!.startTime.getTime()).toBeGreaterThanOrEqual(before.getTime() - 1000);
+    expect(row!.endTime.getTime() - row!.startTime.getTime()).toBe(row!.durationMinutes * 60_000);
+
+    // Leave the plan clean for the suites that follow.
+    const open = await app.prisma.studySession.findFirst({
+      where: { userId: student.id, status: { in: ['ACTIVE', 'PAUSED'] } },
+      select: { id: true },
+    });
+    if (open) {
+      await agent
+        .post(`/study-sessions/${open.id}/finish`)
+        .set('Authorization', `Bearer ${student.token}`)
+        .send({ confirmedMinutes: 1 })
+        .expect(HttpStatus.OK);
+    }
+  });
+
   it('no token → 401 (global guard)', async () => {
     await agent.get('/study-plans/today').expect(HttpStatus.UNAUTHORIZED);
   });

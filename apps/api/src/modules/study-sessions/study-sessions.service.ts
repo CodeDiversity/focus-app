@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { validateSync } from 'class-validator';
 import {
+  PlannedSessionAnchor,
   PlannedSessionStatus,
   StudySession,
   StudySessionStatus,
@@ -162,6 +163,14 @@ export class StudySessionsService {
    * `COMPLETED`, `SKIPPED` and `RESCHEDULED` each answer 409 with their own
    * actionable reason.
    *
+   * EP13G (AC-3): starting a **flex** session fixes it at the real time. A
+   * day-anchored session's stored slot was only ever a suggestion; the
+   * moment the student starts it the session is happening, so the row
+   * becomes `FIXED` and its times move to `[now, now + durationMinutes)`.
+   * The calendar then shows when the work actually happened, and the day's
+   * remaining free time is computed against the real block. A `FIXED`
+   * session keeps its slot untouched — EP06 behaviour, unchanged.
+   *
    * 201 → the active session; 404 → uniform; 409 → open session / not today /
    * not startable; 401 → unauthenticated (global guard).
    */
@@ -173,6 +182,7 @@ export class StudySessionsService {
         assignmentId: true,
         durationMinutes: true,
         status: true,
+        anchor: true,
         studyPlan: { select: { date: true } },
       },
     });
@@ -246,13 +256,25 @@ export class StudySessionsService {
 
       // Conditional: only a SCHEDULED row moves to IN_PROGRESS, so
       // re-entering an already IN_PROGRESS planned row is a no-op.
+      //
+      // EP13G: a flex row is also fixed at the real time in the same write —
+      // one row update, inside the same transaction, so a rejected start can
+      // never leave a half-moved session behind.
+      const fixFlex =
+        planned.anchor === PlannedSessionAnchor.FLEX_DAY
+          ? {
+              anchor: PlannedSessionAnchor.FIXED,
+              startTime: now,
+              endTime: new Date(now.getTime() + planned.durationMinutes * 60_000),
+            }
+          : {};
       await tx.plannedSession.updateMany({
         where: {
           id: planned.id,
           studyPlan: { userId },
           status: PlannedSessionStatus.SCHEDULED,
         },
-        data: { status: PlannedSessionStatus.IN_PROGRESS },
+        data: { status: PlannedSessionStatus.IN_PROGRESS, ...fixFlex },
       });
 
       return session;

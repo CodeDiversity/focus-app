@@ -360,6 +360,15 @@ model PlannedSession {
   // EP08A (PR-001): manually locked sessions are never moved/resized/deleted
   // by replanning and are treated as busy. Explicit student toggle (D08-4).
   locked      Boolean  @default(false)
+  // EP13G (D13-4, option b): most generated sessions are day-anchored
+  // intentions — `startTime`/`endTime` stay non-nullable and are the
+  // *suggested* slot, while `anchor` carries the semantics. A FLEX_DAY
+  // session belongs to its day, can be started whenever the student is
+  // ready, and is never a clock-time commitment. `windowHint` is an honest
+  // suggestion derived from the suggested slot and is only ever set on a
+  // flex session. Existing rows backfill to FIXED (EP06/EP08 behaviour).
+  anchor      PlannedSessionAnchor @default(FIXED)
+  windowHint  PartOfDay?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   // EP13B: the actual focus sessions started from this planned session.
@@ -368,6 +377,23 @@ model PlannedSession {
   @@index([studyPlanId])
   @@index([assignmentId])
   @@map("planned_sessions")
+}
+
+// EP13G (D13-4 option b): how a planned session relates to the clock.
+// FIXED — a clock commitment (the EP06/EP08 behaviour, and the default for
+// every row that existed before EP13G). FLEX_DAY — a day-anchored intention:
+// the stored times are a suggestion, the session cannot be "missed" at a
+// clock time, and it rolls forward at day end like any other unstarted row.
+enum PlannedSessionAnchor {
+  FIXED
+  FLEX_DAY
+}
+
+// EP13G: the optional, flex-only part-of-day hint.
+enum PartOfDay {
+  MORNING
+  AFTERNOON
+  EVENING
 }
 
 enum PlannedSessionStatus {

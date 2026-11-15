@@ -616,9 +616,10 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
       const write = plannedSessionUpdateMany.mock.calls[0][0];
       // Scoped through the parent relation (PlannedSession has no userId).
       expect(write.where).toEqual({ id: sessionId, studyPlan: { userId } });
-      // `data` carries ONLY the lock flag — never status, times or anything else.
-      expect(write.data).toEqual({ locked: true });
-      expect(Object.keys(write.data)).toEqual(['locked']);
+      // `data` carries the lock flag and — since EP13G — the `locked ⇒ FIXED`
+      // invariant. Never status, never times, never anything else.
+      expect(write.data).toEqual({ locked: true, anchor: 'FIXED' });
+      expect(Object.keys(write.data).sort()).toEqual(['anchor', 'locked']);
 
       // The echo read is scoped the same way, and selects exactly two keys.
       const read = plannedSessionFindMany.mock.calls[0][0];
@@ -627,6 +628,17 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
 
       expect(result).toEqual({ id: sessionId, locked: true });
       expect(Object.keys(result).sort()).toEqual(['id', 'locked']);
+    });
+
+    it('unlocking leaves the anchor alone (EP13G: a pinned session stays pinned)', async () => {
+      plannedSessionUpdateMany.mockResolvedValue({ count: 1 });
+      plannedSessionFindMany.mockResolvedValue([{ id: sessionId, locked: false }]);
+
+      await service.setSessionLock(userId, sessionId, { locked: false });
+
+      const write = plannedSessionUpdateMany.mock.calls[0][0];
+      expect(write.data).toEqual({ locked: false });
+      expect(Object.keys(write.data)).toEqual(['locked']);
     });
 
     it('missing or foreign session id → the uniform 404, nothing else written', async () => {

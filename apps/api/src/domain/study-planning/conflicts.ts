@@ -1,5 +1,5 @@
 import { freeIntervals, overlaps } from './intervals';
-import type { DatedInterval } from './types';
+import type { DatedInterval, PlannedSessionAnchorValue } from './types';
 
 /**
  * The save-time conflict re-check (EP06D, D06-5, D06-12).
@@ -28,6 +28,16 @@ export type SubmittedSession = {
   date: string;
   startTime: string;
   endTime: string;
+  /**
+   * EP13G (D13-4 option b). A `FLEX_DAY` session is a day-anchored
+   * intention, so its stored times are a *suggestion*: it neither suffers a
+   * clock-overlap conflict nor causes one for another session. Omitted
+   * means `FIXED` — the EP06 behaviour every existing caller gets.
+   *
+   * Flex minutes are **not** exempt from the day's budget; that accounting
+   * lives in the engine (`scheduler.ts` rule 2), not in this re-check.
+   */
+  anchor?: PlannedSessionAnchorValue;
 };
 
 export type ConflictContext = {
@@ -67,11 +77,18 @@ export function findConflicts(
     const session = submitted[i];
     const iv = intervals[i];
 
-    // placed = the OTHER submitted sessions on the same date.
+    // EP13G: a flex session has no clock slot to defend — it is never
+    // reported as conflicting.
+    if (session.anchor === 'FLEX_DAY') continue;
+
+    // placed = the OTHER submitted **fixed** sessions on the same date. A
+    // flex session's suggested slot is not a commitment, so it never makes
+    // a fixed session illegal either (EP13G AC-2).
     const placed: DatedInterval[] = [];
     for (let j = 0; j < submitted.length; j++) {
       if (j === i) continue;
       if (submitted[j].date !== session.date) continue;
+      if (submitted[j].anchor === 'FLEX_DAY') continue;
       placed.push(intervals[j]);
     }
 
