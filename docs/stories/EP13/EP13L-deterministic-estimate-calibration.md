@@ -114,8 +114,8 @@ than an emergent one.
 
 ### Decisions
 
-| ID | Options considered | Recommended | Ruling |
-|---|---|---|---|
+| ID | Options considered | Recommended | Why | Ruling |
+|---|---|---|---|---|
 | D-L1 ▲ (refines D13-7) | (a) multiply the estimate **before** EP13A subtracts confirmed minutes (`est×m − confirmed`); (b) multiply the remainder after subtraction (`(est − confirmed)×m`) | **(a)** | Confirmed minutes are real and must not be inflated; (b) would re-scale work already done. Material: changes plan math for every calibrated student. | Proposed |
 | D-L2 | Sample source: (a) `StudySession` confirmed minutes (EP13A attribution); (b) self-reported `Assignment.actualHours` | **(a)** | EP06 already ignores `actualHours` as unreliable; EP13A made confirmed minutes authoritative. | Proposed |
 | D-L3 | Fallback when a type has < 3 samples: (a) overall median across types; (b) 1.0 until the type has 3 | **(a)**, itself gated at ≥ 3 overall samples | A student with 3 finished essays and 1 problem set still benefits; (b) is simpler but delays value. | Proposed |
