@@ -4,7 +4,7 @@
 **Epic:** [EP13](../../epics/EP13-adaptive-scheduling-for-adhd.md) (process story; delivery home only — see Scope)
 **Milestone:** M6
 **Layer:** Documentation / process (no application code)
-**Status:** Queued
+**Status:** Implemented — awaiting review (plan-style review of the edited documents, D13-18). EP13P-AC1–AC3, AC5–AC6: record `./artifacts/EP13P/implementation.md` (a9afe4d). EP13P-AC4 completed by planner pass 50b8477 + 904a496 (+ the closeout commit that set this line; README Plan correction log C-EP13-01…09).
 **Dependencies:** None on application children. Can run any time; it does not block and is not blocked by EP13L–EP13M.
 **Created:** 2026-11-15 (user-requested lifecycle review)
 
