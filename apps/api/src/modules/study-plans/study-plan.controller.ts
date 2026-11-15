@@ -53,8 +53,23 @@ export class StudyPlanController {
   }
 
   /**
+   * GET /study-plans/today (EP13C) — today's reconciled sessions with live
+   * statuses, the single recommended next session (or null with a stated
+   * reason) and the minutes already confirmed inside today's profile-zone
+   * day. Reading it rolls unstarted past sessions forward first, so the
+   * answer is always a valid current view.
+   * 200 → `TodayPlan`; 404 → the uniform `Resource not found`; 401 →
+   * unauthenticated (global guard).
+   */
+  @Get('today')
+  getToday(@CurrentUser() user: AuthenticatedUser) {
+    return this.studyPlansService.getToday(user.id);
+  }
+
+  /**
    * POST /study-plans/preview — run the engine over the student's data and
-   * return the proposal. Writes nothing.
+   * return the proposal. Writes nothing beyond the idempotent EP13C
+   * reconciliation; the proposal itself persists nothing.
    */
   @Post('preview')
   @HttpCode(200)

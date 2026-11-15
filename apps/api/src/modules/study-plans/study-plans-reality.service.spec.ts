@@ -33,6 +33,7 @@ describe('StudyPlansService EP13A reality inputs (unit, mocked PrismaService)', 
   const studySessionFindMany = jest.fn();
   const studySessionGroupBy = jest.fn();
   const plannedSessionFindMany = jest.fn();
+  const plannedSessionUpdateMany = jest.fn();
 
   const prisma = {
     user: { findUnique: userFindUnique },
@@ -40,7 +41,9 @@ describe('StudyPlansService EP13A reality inputs (unit, mocked PrismaService)', 
     availabilitySlot: { findMany: availabilitySlotFindMany },
     course: { findMany: courseFindMany },
     studySession: { findMany: studySessionFindMany, groupBy: studySessionGroupBy },
-    plannedSession: { findMany: plannedSessionFindMany },
+    // `updateMany` is EP13C's read-time reconciliation — a no-op here (no
+    // past SCHEDULED fixtures) but part of every planning read's call set.
+    plannedSession: { findMany: plannedSessionFindMany, updateMany: plannedSessionUpdateMany },
   } as unknown as PrismaService;
 
   let service: StudyPlansService;
@@ -58,6 +61,7 @@ describe('StudyPlansService EP13A reality inputs (unit, mocked PrismaService)', 
     studySessionFindMany.mockResolvedValue([]);
     studySessionGroupBy.mockResolvedValue([]);
     plannedSessionFindMany.mockResolvedValue([]);
+    plannedSessionUpdateMany.mockResolvedValue({ count: 0 });
     // Open availability every day, 09:00–17:00 (480 free minutes; the default
     // daily cap is 240), so placement never fails for lack of declared time.
     availabilitySlotFindMany.mockResolvedValue(

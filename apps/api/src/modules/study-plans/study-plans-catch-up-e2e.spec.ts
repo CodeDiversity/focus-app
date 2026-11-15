@@ -14,13 +14,15 @@ import { createIntegrationApp, IntegrationApp } from '../../test/test-http';
  * /study-plans/recovery-summary`, `POST /study-plans/catch-up/preview` or
  * `POST /study-plans/catch-up/confirm` at the API level.
  *
- * Pinned here (TR-E08-01/02/04, real stack):
- * - recovery-summary: the classification end-to-end (past `SCHEDULED` rows of
- *   unfinished assignments reported, locked-missed reported, completed
- *   assignments and `COMPLETED` rows excluded), the exact `MissedSession`
- *   projection with UTC-rendered wall times, the unfinished-work reuse, the
- *   neutral non-blaming message (PR-008/D08-8), the uniform 404 for a deleted
- *   principal, 401 unauthenticated.
+ * Pinned here (TR-E08-01/02/04 + EP13C, real stack):
+ * - recovery-summary: reading it reconciles first (EP13C), so seeded past
+ *   `SCHEDULED` rows of unfinished assignments are rolled `RESCHEDULED` in
+ *   the database and reported as last-7-days `rolledForward` detail (locked
+ *   rows roll too and keep their flag); the legacy missed ledger stays
+ *   empty; completed assignments and `COMPLETED` rows excluded; the exact
+ *   `MissedSession` projection with UTC-rendered wall times, the
+ *   unfinished-work reuse, the neutral non-blaming message (PR-008/D08-8),
+ *   the uniform 404 for a deleted principal, 401 unauthenticated.
  * - catch-up/preview: the contract key set, a seven-day window from the
  *   server's clock, `timeZone` resolution, side-effect-freedom proven against
  *   **row counts in the real database** (the server half of "decline leaves
@@ -358,26 +360,45 @@ describeIntegration('catch-up recovery e2e (real database, EP08)', () => {
         'message',
         'missedCount',
         'missedSessions',
+        'rolledForward',
+        'rolledForwardCount',
+        'rolledForwardMinutes',
         'unfinishedWork',
       ]);
 
-      // Exactly the two in-scope missed rows; the completed-assignment row and
-      // the COMPLETED row are excluded; the locked-missed row IS reported.
-      expect(response.body.missedCount).toBe(2);
-      expect(response.body.missedSessions.map((s: { id: string }) => s.id).sort()).toEqual(
+      // EP13C: reading the summary reconciles first, so the two seeded past
+      // SCHEDULED rows have been rolled forward — the missed ledger is empty
+      // and stays empty (AC-E13-04)…
+      expect(response.body.missedCount).toBe(0);
+      expect(response.body.missedSessions).toEqual([]);
+
+      // …and the same two rows are reported as last-7-days rolled-forward
+      // detail instead. The completed-assignment row is excluded (its work is
+      // done); the planned-COMPLETED row was never SCHEDULED to roll.
+      expect(response.body.rolledForwardCount).toBe(2);
+      expect(response.body.rolledForwardMinutes).toBe(120);
+      expect(response.body.rolledForward.map((s: { id: string }) => s.id).sort()).toEqual(
         [missedLockedRowId, missedOpenRowId].sort()
       );
-      expect(response.body.missedSessions.map((s: { id: string }) => s.id)).not.toContain(
+      expect(response.body.rolledForward.map((s: { id: string }) => s.id)).not.toContain(
         completedAssignmentRowId
       );
-      expect(response.body.missedSessions.map((s: { id: string }) => s.id)).not.toContain(
+      expect(response.body.rolledForward.map((s: { id: string }) => s.id)).not.toContain(
         completedStatusRowId
       );
+      // The rows really changed status in the database (self-healing read).
+      const rolledRows = await app.prisma.plannedSession.findMany({
+        where: { id: { in: [missedLockedRowId, missedOpenRowId] } },
+        select: { status: true, locked: true },
+      });
+      expect(rolledRows.map((r) => r.status)).toEqual(['RESCHEDULED', 'RESCHEDULED']);
+      // A locked row rolls like any other and keeps its flag (D13-2).
+      expect(rolledRows.some((r) => r.locked)).toBe(true);
 
       // The projection, ordered by (date, startTime): the older (locked) row
       // first, wall times rendered in the profile zone (UTC for a fresh
       // student with no timeZone).
-      expect(response.body.missedSessions[0]).toEqual({
+      expect(response.body.rolledForward[0]).toEqual({
         id: missedLockedRowId,
         assignmentId: assignmentA.id,
         assignmentTitle: `Problem set ${runId}`,
@@ -387,7 +408,7 @@ describeIntegration('catch-up recovery e2e (real database, EP08)', () => {
         durationMinutes: 60,
         locked: true,
       });
-      expect(response.body.missedSessions[1]).toMatchObject({
+      expect(response.body.rolledForward[1]).toMatchObject({
         id: missedOpenRowId,
         date: addDaysCivil(from, -2),
         locked: false,
@@ -473,8 +494,9 @@ describeIntegration('catch-up recovery e2e (real database, EP08)', () => {
       expect(typeof response.body.lockedPreserved).toBe('number');
       expect(typeof response.body.completedPreserved).toBe('number');
 
-      // The seeded missed rows are the ones reported — the same classification
-      // as the summary read (one rule, one result).
+      // The seeded rows — rolled forward by EP13C's read-time reconciliation
+      // — are the sessions being recovered from, the same last-7-days
+      // classification as the summary's rolledForward (one rule, one result).
       expect(response.body.missedSessions.map((s: { id: string }) => s.id).sort()).toEqual(
         [missedLockedRowId, missedOpenRowId].sort()
       );

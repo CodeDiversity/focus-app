@@ -118,11 +118,54 @@ export type MissedSession = {
 
 /** The body of `GET /study-plans/recovery-summary`. */
 export type RecoverySummary = {
+  /**
+   * Past sessions still `SCHEDULED` — after EP13C's read-time reconciliation
+   * this is (almost always) empty: unstarted past work rolls forward instead
+   * of accumulating. Kept for the shipped EP08D surface until EP13E lands.
+   */
   missedSessions: MissedSession[];
   missedCount: number;
+  /**
+   * EP13C — the plan-health view's informational detail: sessions rolled
+   * forward (`RESCHEDULED`) over the **last 7 days** whose assignment is
+   * still unfinished. Bounded by construction so it can never become an
+   * accumulating ledger (AC-E13-04).
+   */
+  rolledForward: MissedSession[];
+  rolledForwardCount: number;
+  rolledForwardMinutes: number;
   unfinishedWork: RemainingWorkItem[];
   confirmedMinutes: number;
   message: string;
+};
+
+// ---------------------------------------------------------------------------
+// EP13C — the today read (GET /study-plans/today).
+// ---------------------------------------------------------------------------
+
+/** One of today's planned sessions, with its live status. */
+export type TodaySession = {
+  id: string;
+  assignmentId: string;
+  assignmentTitle: string;
+  date: string; // profile zone civil date YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  durationMinutes: number;
+  status: string;
+  locked: boolean;
+};
+
+/** The body of `GET /study-plans/today`. */
+export type TodayPlan = {
+  date: string;
+  timeZone: string;
+  sessions: TodaySession[];
+  /** The single recommended next session, or null with a stated reason. */
+  nextSession: TodaySession | null;
+  nextSessionReason: 'NO_PLAN' | 'NOTHING_LEFT_TODAY' | null;
+  /** Confirmed minutes studied inside today's profile-zone civil day. */
+  confirmedMinutesToday: number;
 };
 
 /**
@@ -334,6 +377,41 @@ export class StudyPlansService {
       }
     }
     return { byAssignment, unattributedMinutes, totalMinutes };
+  }
+
+  /**
+   * EP13C — the lazy, idempotent rollover (AC-E13-04): every owned planned
+   * session that is still `SCHEDULED`, dated strictly before today's civil
+   * date, and **not actually done** flips to `RESCHEDULED`. The row is
+   * preserved (history is never deleted) and no minute arithmetic happens
+   * here — remaining work already flows from estimate − confirmed (EP13A),
+   * so rolling forward is purely a status/reporting change.
+   *
+   * "Not actually done" = no linked `COMPLETED` study session with ≥ 1
+   * confirmed minute. (EP13B completes such rows atomically, so this guard is
+   * belt-and-braces; crucially it must NOT exclude rows whose linked session
+   * finished with 0 minutes — those were deliberately handed back as
+   * `SCHEDULED` and the work still remains.)
+   *
+   * Invoked at the start of every plan read/preview/save, the catch-up
+   * paths, the recovery summary and the today read — there are no scheduled
+   * jobs (D13-8), so reads self-heal. The conditional `updateMany` makes it
+   * idempotent and concurrency-safe: a racing second reconcile matches 0
+   * rows. Locked past rows roll like any other and keep their `locked` flag
+   * (D13-2 provisional, V-13-2). Never writes `StudySession`, `Assignment`
+   * or `Task`.
+   */
+  private async reconcilePastSessions(userId: string, todayCivil: string): Promise<number> {
+    const bound = new Date(`${todayCivil}T00:00:00.000Z`);
+    const result = await this.prisma.plannedSession.updateMany({
+      where: {
+        status: 'SCHEDULED',
+        studyPlan: { userId, date: { lt: bound } },
+        studySessions: { none: { status: 'COMPLETED', durationMinutes: { gte: 1 } } },
+      },
+      data: { status: 'RESCHEDULED' },
+    });
+    return result.count;
   }
 
   /**
@@ -574,6 +652,12 @@ export class StudyPlansService {
     const todayCivil = toCivilDate(new Date(), timeZone);
     const bound = new Date(`${todayCivil}T00:00:00.000Z`);
 
+    // EP13C: the summary reports a self-healed plan — unstarted past work is
+    // rolled forward first, so the "missed" list below no longer accumulates
+    // (AC-E13-04). The rolled-forward detail is reported separately, bounded
+    // to the last 7 days.
+    await this.reconcilePastSessions(userId, todayCivil);
+
     const missedRows = await this.prisma.plannedSession.findMany({
       where: {
         studyPlan: { userId, date: { lt: bound } },
@@ -609,13 +693,177 @@ export class StudyPlansService {
     // EP08 contract; EP08A does not re-implement the aggregation.
     const remaining = await this.remainingWorkInternal(userId);
 
+    // EP13C — the informational rolled-forward detail: RESCHEDULED rows of
+    // the last 7 days whose assignment is still unfinished. Same projection
+    // as the missed list; a finished assignment's rolled rows drop out, and
+    // the 7-day bound keeps this from ever becoming a ledger.
+    const rolledBound = new Date(`${addDays(todayCivil, -7)}T00:00:00.000Z`);
+    const rolledRows = await this.prisma.plannedSession.findMany({
+      where: {
+        studyPlan: { userId, date: { gte: rolledBound, lt: bound } },
+        status: 'RESCHEDULED',
+        assignment: { status: { in: ['PENDING', 'IN_PROGRESS'] } },
+      },
+      include: {
+        studyPlan: { select: { date: true } },
+        assignment: { select: { id: true, title: true } },
+      },
+      orderBy: [{ studyPlan: { date: 'asc' } }, { startTime: 'asc' }],
+    });
+    const rolledForward: MissedSession[] = rolledRows.map((row) => {
+      const start = zoneParts(row.startTime, timeZone);
+      const end = zoneParts(row.endTime, timeZone);
+      return {
+        id: row.id,
+        assignmentId: row.assignmentId,
+        assignmentTitle: row.assignment?.title ?? '',
+        date: row.studyPlan.date.toISOString().slice(0, 10),
+        startTime: start.time,
+        endTime: end.time,
+        durationMinutes: row.durationMinutes,
+        locked: row.locked,
+      };
+    });
+
     return {
       missedSessions,
       missedCount: missedSessions.length,
+      rolledForward,
+      rolledForwardCount: rolledForward.length,
+      rolledForwardMinutes: rolledForward.reduce((sum, s) => sum + s.durationMinutes, 0),
       unfinishedWork: remaining.items,
       confirmedMinutes: remaining.totalConfirmedMinutes,
       message:
         "Here's where your plan stands. You can create a catch-up plan whenever you're ready.",
+    };
+  }
+
+  /**
+   * GET /study-plans/today (EP13C) — the reconciled view of **today**: every
+   * planned session of today's civil date with its live status, the single
+   * recommended next session, and the minutes already confirmed inside
+   * today's profile-zone day.
+   *
+   * `nextSession` is deterministic: the first session (startTime ascending,
+   * ties by the shared comparator on the assignment facts, then id) whose own
+   * status is `SCHEDULED`/`IN_PROGRESS` **and** whose assignment is still
+   * unfinished. When it is null, `nextSessionReason` says why: `NO_PLAN`
+   * (today has no sessions at all) or `NOTHING_LEFT_TODAY`.
+   *
+   * 200 → `TodayPlan`; 404 → the uniform `Resource not found`; 401 →
+   * unauthenticated (global guard).
+   */
+  async getToday(userId: string): Promise<TodayPlan> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { timeZone: true },
+    });
+    if (!user) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+    const timeZone = resolveTimeZone(user.timeZone);
+    const today = toCivilDate(new Date(), timeZone);
+
+    await this.reconcilePastSessions(userId, today);
+
+    const rows = await this.prisma.plannedSession.findMany({
+      where: { studyPlan: { userId, date: new Date(`${today}T00:00:00.000Z`) } },
+      include: {
+        assignment: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            priority: true,
+            createdAt: true,
+            dueDate: true,
+          },
+        },
+      },
+      orderBy: [{ startTime: 'asc' }, { id: 'asc' }],
+    });
+
+    const sessions: TodaySession[] = rows.map((row) => {
+      const start = zoneParts(row.startTime, timeZone);
+      const end = zoneParts(row.endTime, timeZone);
+      return {
+        id: row.id,
+        assignmentId: row.assignmentId,
+        assignmentTitle: row.assignment?.title ?? '',
+        date: today,
+        startTime: start.time,
+        endTime: end.time,
+        durationMinutes: row.durationMinutes,
+        status: row.status,
+        locked: row.locked,
+      };
+    });
+
+    // The deterministic "what now" pick. Ties on startTime cannot normally
+    // exist (save's conflict check forbids overlaps), so the comparator and
+    // id tie-breaks only pin the total order for directly-seeded data.
+    const candidates = rows
+      .filter(
+        (row) =>
+          (row.status === 'SCHEDULED' || row.status === 'IN_PROGRESS') &&
+          (row.assignment?.status === 'PENDING' || row.assignment?.status === 'IN_PROGRESS')
+      )
+      .sort((a, b) => {
+        if (a.startTime.getTime() !== b.startTime.getTime()) {
+          return a.startTime.getTime() - b.startTime.getTime();
+        }
+        const byWork = compareAssignments(
+          {
+            id: a.assignmentId,
+            dueDate: a.assignment?.dueDate ? toCivilDate(a.assignment.dueDate, timeZone) : null,
+            priority: (a.assignment?.priority ?? 'MEDIUM') as AssignmentFacts['priority'],
+            createdAt: a.assignment?.createdAt ?? a.startTime,
+          },
+          {
+            id: b.assignmentId,
+            dueDate: b.assignment?.dueDate ? toCivilDate(b.assignment.dueDate, timeZone) : null,
+            priority: (b.assignment?.priority ?? 'MEDIUM') as AssignmentFacts['priority'],
+            createdAt: b.assignment?.createdAt ?? b.startTime,
+          },
+          today
+        );
+        if (byWork !== 0) return byWork;
+        return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+      });
+
+    const next = candidates.length > 0 ? sessions.find((s) => s.id === candidates[0].id)! : null;
+
+    // Confirmed minutes inside today's profile-zone civil day. Which day a
+    // session belongs to is decided by the canonical mapping — `toCivilDate`
+    // on the stored instant, the same rule every other surface uses — NOT by
+    // wall-clock bounds: `wallClockToInstant` resolves a DST-transition-day
+    // midnight with the post-transition offset, which would silently drop the
+    // first local hour of a DST-end day once a year. The instant range below
+    // is a safe over-fetch (any zone's civil "today" lies within ±1 day of
+    // its UTC midnight); the exact filter runs on the civil date.
+    const todayUtcMidnight = new Date(`${today}T00:00:00.000Z`).getTime();
+    const completedNearToday = await this.prisma.studySession.findMany({
+      where: {
+        userId,
+        status: 'COMPLETED',
+        startTime: {
+          gte: new Date(todayUtcMidnight - 24 * 3600 * 1000),
+          lt: new Date(todayUtcMidnight + 48 * 3600 * 1000),
+        },
+      },
+      select: { startTime: true, durationMinutes: true },
+    });
+    const confirmedMinutesToday = completedNearToday
+      .filter((s) => toCivilDate(s.startTime, timeZone) === today)
+      .reduce((sum, s) => sum + s.durationMinutes, 0);
+
+    return {
+      date: today,
+      timeZone,
+      sessions,
+      nextSession: next,
+      nextSessionReason: next ? null : sessions.length === 0 ? 'NO_PLAN' : 'NOTHING_LEFT_TODAY',
+      confirmedMinutesToday,
     };
   }
 
@@ -635,6 +883,11 @@ export class StudyPlansService {
     const preferences = readStudyPreferences(user.preferences);
 
     const today = toCivilDate(new Date(), timeZone);
+
+    // EP13C: plans self-heal at read time — unstarted past sessions roll
+    // forward before anything else is gathered.
+    await this.reconcilePastSessions(userId, today);
+
     const days: string[] = [];
     for (let i = 0; i < 7; i++) {
       days.push(addDays(today, i));
@@ -852,13 +1105,18 @@ export class StudyPlansService {
   async catchUpPreview(userId: string): Promise<CatchUpPreview> {
     const data = await this.gatherPlanData(userId);
 
-    // Missed sessions (EP08A logic): SCHEDULED planned sessions in the past
-    // whose assignment is still PENDING/IN_PROGRESS.
+    // The sessions being recovered from (EP13C): after the read-time
+    // reconciliation (run inside `gatherPlanData`) unstarted past work is
+    // `RESCHEDULED`, so the catch-up preview lists the last 7 days of
+    // rolled-forward sessions whose assignment is still unfinished — the
+    // same 7-day bound as the recovery summary, so neither view can become
+    // an accumulating ledger (AC-E13-04). Shape unchanged (`MissedSession`).
     const bound = new Date(`${data.days[0]}T00:00:00.000Z`);
+    const rolledBound = new Date(`${addDays(data.days[0], -7)}T00:00:00.000Z`);
     const missedRows = await this.prisma.plannedSession.findMany({
       where: {
-        studyPlan: { userId, date: { lt: bound } },
-        status: 'SCHEDULED',
+        studyPlan: { userId, date: { gte: rolledBound, lt: bound } },
+        status: 'RESCHEDULED',
         assignment: { status: { in: ['PENDING', 'IN_PROGRESS'] } },
       },
       include: {
@@ -1310,6 +1568,10 @@ export class StudyPlansService {
       throw new NotFoundException(RESOURCE_NOT_FOUND);
     }
     const timeZone = resolveTimeZone(user.timeZone);
+
+    // EP13C: the saved-plan read self-heals too — a student returning after
+    // days away gets a valid current plan from this read alone (AC-E13-04).
+    await this.reconcilePastSessions(userId, toCivilDate(new Date(), timeZone));
 
     let effectiveFrom: string;
     let effectiveTo: string;

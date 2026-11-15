@@ -146,6 +146,9 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
     studySessionFindMany.mockResolvedValue([]);
     studySessionGroupBy.mockResolvedValue([]);
     plannedSessionFindMany.mockResolvedValue([]);
+    // EP13C: every planning read begins with the idempotent reconciliation
+    // (a conditional updateMany). Empty world → 0 rows rolled.
+    plannedSessionUpdateMany.mockResolvedValue({ count: 0 });
     studyPlanFindFirst.mockResolvedValue(null);
     studyPlanFindMany.mockResolvedValue([]);
     transaction.mockImplementation(async (cb: (t: typeof tx) => Promise<unknown>) => cb(tx));
@@ -216,6 +219,28 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
     expect(txPlannedSessionCreateMany).not.toHaveBeenCalled();
   };
 
+  /**
+   * EP13C: planning reads begin with the idempotent reconciliation, which is
+   * the ONLY permitted write — every `plannedSession.updateMany` call must be
+   * exactly the rollover shape (`SCHEDULED → RESCHEDULED`), and nothing else
+   * (no transaction, no delete, no create, no user/assignment/studySession
+   * write) may have run. The proposal itself persists nothing.
+   */
+  const expectNoWritesBeyondReconcile = () => {
+    for (const write of writeMethods) {
+      if (write === plannedSessionUpdateMany) continue;
+      expect(write).not.toHaveBeenCalled();
+    }
+    for (const call of plannedSessionUpdateMany.mock.calls) {
+      expect(call[0].data).toEqual({ status: 'RESCHEDULED' });
+      expect(call[0].where.status).toBe('SCHEDULED');
+    }
+    expect(transaction).not.toHaveBeenCalled();
+    expect(txStudyPlanUpsert).not.toHaveBeenCalled();
+    expect(txPlannedSessionDeleteMany).not.toHaveBeenCalled();
+    expect(txPlannedSessionCreateMany).not.toHaveBeenCalled();
+  };
+
   /** A row of `assignment.findMany` as the service selects it. */
   const assignmentRow = (overrides: Record<string, unknown> = {}) => ({
     id: 'a-1',
@@ -265,32 +290,58 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
       userFindUnique.mockResolvedValue({ timeZone: 'America/New_York', preferences: null });
     });
 
-    it('queries missed sessions with exactly the contract classification (TR-E08-01)', async () => {
+    it('reconciles first, then queries the legacy missed list and the rolled-forward detail with exactly the contract classification (TR-E08-01 + EP13C)', async () => {
       await service.getRecoverySummary(userId);
 
-      expect(plannedSessionFindMany).toHaveBeenCalledTimes(1);
-      const query = plannedSessionFindMany.mock.calls[0][0];
-      // Deep-equal the whole query: ownership scoping (`studyPlan.userId`),
-      // the strict civil-date bound, the SCHEDULED inclusion, the
-      // unfinished-assignment filter (PENDING/IN_PROGRESS — a COMPLETED
-      // assignment's sessions are never missed work, AC-E08-01), and the
-      // stable order.
-      expect(query.where).toEqual({
+      // EP13C: the summary self-heals first. The rollover is one conditional
+      // updateMany — SCHEDULED, strictly before today's civil date (UTC
+      // midnight of the civil string, never a zone-converted instant), not
+      // actually done (no linked COMPLETED session with ≥ 1 minute).
+      expect(plannedSessionUpdateMany).toHaveBeenCalledTimes(1);
+      const reconcile = plannedSessionUpdateMany.mock.calls[0][0];
+      expect(reconcile.where).toEqual({
+        status: 'SCHEDULED',
+        studyPlan: { userId, date: { lt: new Date('2026-10-30T00:00:00.000Z') } },
+        studySessions: { none: { status: 'COMPLETED', durationMinutes: { gte: 1 } } },
+      });
+      expect(reconcile.data).toEqual({ status: 'RESCHEDULED' });
+
+      expect(plannedSessionFindMany).toHaveBeenCalledTimes(2);
+      const queries = plannedSessionFindMany.mock.calls.map((call) => call[0]);
+      const missed = queries.find((q) => q.where.status === 'SCHEDULED');
+      const rolled = queries.find((q) => q.where.status === 'RESCHEDULED');
+
+      // The legacy missed query is unchanged (and near-empty post-reconcile):
+      // ownership scoping, the strict civil-date bound, the SCHEDULED
+      // inclusion, the unfinished-assignment filter, the stable order.
+      expect(missed.where).toEqual({
         studyPlan: { userId, date: { lt: new Date('2026-10-30T00:00:00.000Z') } },
         status: 'SCHEDULED',
         assignment: { status: { in: ['PENDING', 'IN_PROGRESS'] } },
       });
-      // The counterexample from the review: a zone-converted NY midnight
-      // (04:00Z) would shift the boundary — the bound is UTC midnight of
-      // the civil date string, with no conversion.
-      expect(query.where.studyPlan.date.lt.getTime()).toBe(
+      expect(missed.where.studyPlan.date.lt.getTime()).toBe(
         new Date('2026-10-30T00:00:00.000Z').getTime()
       );
-      expect(query.include).toEqual({
+      expect(missed.include).toEqual({
         studyPlan: { select: { date: true } },
         assignment: { select: { id: true, title: true } },
       });
-      expect(query.orderBy).toEqual([{ studyPlan: { date: 'asc' } }, { startTime: 'asc' }]);
+      expect(missed.orderBy).toEqual([{ studyPlan: { date: 'asc' } }, { startTime: 'asc' }]);
+
+      // The rolled-forward detail is bounded to the last 7 days — it can
+      // never accumulate (AC-E13-04) — and drops finished assignments.
+      expect(rolled.where).toEqual({
+        studyPlan: {
+          userId,
+          date: {
+            gte: new Date('2026-10-23T00:00:00.000Z'),
+            lt: new Date('2026-10-30T00:00:00.000Z'),
+          },
+        },
+        status: 'RESCHEDULED',
+        assignment: { status: { in: ['PENDING', 'IN_PROGRESS'] } },
+      });
+      expect(rolled.orderBy).toEqual([{ studyPlan: { date: 'asc' } }, { startTime: 'asc' }]);
     });
 
     it('404s uniformly when the principal’s row is gone, and reads nothing else (TR-E08-01)', async () => {
@@ -313,10 +364,16 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
         'message',
         'missedCount',
         'missedSessions',
+        'rolledForward',
+        'rolledForwardCount',
+        'rolledForwardMinutes',
         'unfinishedWork',
       ]);
       expect(result.missedSessions).toEqual([]);
       expect(result.missedCount).toBe(0);
+      expect(result.rolledForward).toEqual([]);
+      expect(result.rolledForwardCount).toBe(0);
+      expect(result.rolledForwardMinutes).toBe(0);
       expect(result.unfinishedWork).toEqual([]);
       expect(result.confirmedMinutes).toBe(0);
       expect(typeof result.message).toBe('string');
@@ -428,40 +485,46 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
   describe('catchUpPreview (POST /study-plans/catch-up/preview)', () => {
     /**
      * The preview makes two `plannedSession.findMany` calls with different
-     * filters: the missed query (carries `status: 'SCHEDULED'`) and the
-     * all-planned busy read (filter `COMPLETED || locked` in code). Dispatch
-     * by argument so each call sees its own result set.
+     * filters: the recovered-from query (carries `status: 'RESCHEDULED'` —
+     * EP13C) and the all-planned busy read (filter `COMPLETED || locked` in
+     * code). Dispatch by argument so each call sees its own result set.
      */
     const dispatchPlannedRows = (missed: unknown[], all: unknown[]) => {
       plannedSessionFindMany.mockImplementation((args: { where?: { status?: string } }) =>
-        Promise.resolve(args?.where?.status === 'SCHEDULED' ? missed : all)
+        Promise.resolve(args?.where?.status === 'RESCHEDULED' ? missed : all)
       );
     };
 
-    it('is side-effect-free: no write method and no transaction is ever reached (TR-E08-04)', async () => {
+    it('persists nothing of the proposal: no write beyond the idempotent reconciliation, no transaction (TR-E08-04 + EP13C)', async () => {
       assignmentFindMany.mockResolvedValue([assignmentRow()]);
       dispatchPlannedRows([plannedRow()], [plannedRow()]);
 
       await service.catchUpPreview(userId);
 
-      expectNoWrites();
-      // Read-only surface: the two planned-session reads happened.
+      expectNoWritesBeyondReconcile();
+      // Read-only proposal surface: the two planned-session reads happened.
       expect(plannedSessionFindMany).toHaveBeenCalled();
     });
 
-    it('classifies missed sessions with the same contract filters (TR-E08-01/04)', async () => {
+    it('lists the sessions being recovered from with the EP13C classification: rolled-forward, last 7 days, unfinished assignments', async () => {
       dispatchPlannedRows([plannedRow()], [plannedRow()]);
 
       await service.catchUpPreview(userId);
 
-      // Since EP13A `gatherPlanData` issues the all-planned busy read first;
-      // pick the missed query by its status filter rather than by index.
+      // `gatherPlanData` issues the all-planned busy read first; pick the
+      // recovered-from query by its status filter rather than by index.
       const missedQuery = plannedSessionFindMany.mock.calls
         .map((call) => call[0])
-        .find((args) => args?.where?.status === 'SCHEDULED');
+        .find((args) => args?.where?.status === 'RESCHEDULED');
       expect(missedQuery.where).toEqual({
-        studyPlan: { userId, date: { lt: new Date('2026-10-30T00:00:00.000Z') } },
-        status: 'SCHEDULED',
+        studyPlan: {
+          userId,
+          date: {
+            gte: new Date('2026-10-23T00:00:00.000Z'),
+            lt: new Date('2026-10-30T00:00:00.000Z'),
+          },
+        },
+        status: 'RESCHEDULED',
         assignment: { status: { in: ['PENDING', 'IN_PROGRESS'] } },
       });
     });
@@ -640,7 +703,14 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
       expect(studySessionUpdate).not.toHaveBeenCalled();
       expect(studySessionUpdateMany).not.toHaveBeenCalled();
       expect(userUpdateMany).not.toHaveBeenCalled();
-      expect(plannedSessionUpdateMany).not.toHaveBeenCalled();
+      // EP13C: the only non-transactional planned-session writes are the
+      // idempotent reconciliations (one per planning read in this flow —
+      // gatherPlanData and the trailing saved-plan read); never a status or
+      // lock edit of specific rows.
+      for (const call of plannedSessionUpdateMany.mock.calls) {
+        expect(call[0].data).toEqual({ status: 'RESCHEDULED' });
+        expect(call[0].where.status).toBe('SCHEDULED');
+      }
       expect(plannedSessionDeleteMany).not.toHaveBeenCalled();
 
       // The response is the saved plan for the confirmed window.
@@ -714,7 +784,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
         },
       ]);
       // 409 means nothing was written.
-      expectNoWrites();
+      expectNoWritesBeyondReconcile();
     });
 
     it('re-checks confirmed StudySession collisions too: 409 OVERLAPS_CONFIRMED_SESSION (TR-E08-04)', async () => {
@@ -736,7 +806,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
         sessionIndex: 0,
         reason: 'OVERLAPS_CONFIRMED_SESSION',
       });
-      expectNoWrites();
+      expectNoWritesBeyondReconcile();
     });
 
     it('attributes the other conflict reasons by the shared precedence: class, blocked window, submitted-vs-submitted (TR-E08-04)', async () => {
@@ -782,7 +852,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
         'OVERLAPS_PLANNED_SESSION',
         'OVERLAPS_PLANNED_SESSION',
       ]);
-      expectNoWrites();
+      expectNoWritesBeyondReconcile();
     });
 
     it('rejects the malformed-session matrix with field-level 400s and writes nothing (TR-E08-04 / DoD 2)', async () => {
@@ -816,7 +886,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
       );
       expect((payload.errors as Record<string, string[]>).to[0]).toContain('six days after from');
 
-      expectNoWrites();
+      expectNoWritesBeyondReconcile();
     });
 
     it('409s WINDOW_ROLLED_OVER when the window left the tolerance, and writes nothing (TR-E08-04)', async () => {
@@ -872,7 +942,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
         where: { id: 'a-foreign' },
         select: { userId: true },
       });
-      expectNoWrites();
+      expectNoWritesBeyondReconcile();
     });
   });
 
