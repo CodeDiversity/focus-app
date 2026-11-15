@@ -6,7 +6,8 @@
 **Milestone:** M6
 **Layer:** Backend + Frontend (one cohesive outcome; split would manufacture children)
 **Status:** Ready
-**Dependencies:** EP13F implemented (placement v2 is the insertion point). D13-10 provisional (V-13-5).
+**Dependencies:** EP13F implemented (placement v2 is the insertion point); EP13G implemented (the anchor partition reads placement output, so energy must not disturb it). D13-10 provisional (V-13-5).
+**Reviewed:** 2026-11-15 — ACs revised against shipped EP13F/EP13G behaviour (see *Review note*).
 **Jira key:** Pending creation
 
 ## Summary
@@ -49,10 +50,18 @@ the tag.
    HIGH gap exists; light work prefers LOW; placement remains deterministic
    (stable tie-breaks) and never sacrifices feasibility or the v2 rules
    (breaks/density/min-max) to energy preference.
-3. With all slots NORMAL (the default), output is byte-identical to pre-EP13I
-   placement — the feature is strictly opt-in.
+3. With all slots NORMAL (the default), output is byte-identical to
+   pre-EP13J placement — **including every session's `anchor` and
+   `windowHint`** (EP13G), not just its date/time/duration. The feature is
+   strictly opt-in and the identity test is the safety net.
 4. The availability dialog edits energy with keyboard support; the calendar
    availability rendering shows the level accessibly (not color-only).
+5. **Energy survives the interval algebra**: a free interval never spans two
+   windows of different energy levels. Touching windows of the *same* level
+   still merge (today's behaviour); touching windows of *different* levels
+   stay separate, so a placed block's energy is always unambiguous. Proven
+   by a test with a `HIGH` 09:00–11:00 window touching a `NORMAL`
+   11:00–13:00 window.
 
 ## Tests (TR-E13-09)
 
@@ -70,6 +79,34 @@ the tag.
   `freeIntervals` inputs; candidate gaps sorted (energy match, then existing
   earliest-first order). "Demanding" classification is a pure function with
   V-13-5 marking the heuristic for post-landing validation.
+
+### Review note (2026-11-15) — the merge hazard this story must solve
+
+`intervals.ts` → `mergeIntervals` merges **touching** intervals
+(`interval.startMinute <= last.endMinute`), and `freeIntervals` runs the
+student's declared windows through it before any subtraction. Two adjacent
+availability windows therefore collapse into one free interval **today**:
+a `HIGH` 09:00–11:00 beside a `NORMAL` 11:00–13:00 becomes a single
+09:00–13:00 gap with no energy provenance left to read. Any implementation
+that "attaches energy to the window" and then calls `freeIntervals`
+unchanged will silently lose the tag exactly in the case the feature exists
+for.
+
+The implementer must therefore either (a) make the merge energy-aware
+(merge only across equal levels — AC-5's wording), or (b) carry energy as a
+parallel map and re-derive each candidate gap's level by intersection. (a)
+is the smaller change and keeps one interval algebra; (b) avoids touching a
+helper EP06D's save-time re-check also calls — **the choice is the
+implementer's, but the behaviour in AC-5 is not.**
+
+Second interaction, from EP13F/EP13G as shipped: placement v2 scans a day's
+gaps **earliest-first** and stops at the first that fits, and EP13G's pin
+decision is computed *after* placement from each assignment's horizon
+capacity. Energy preference reorders the scan; it must not (i) reorder the
+day's *critical* work (feasibility still beats preference, EP13F rule 3),
+(ii) change the per-day budget (rule 2), or (iii) change which assignments
+pin. AC-3's byte-identity test covers the all-NORMAL case; the energy cases
+need their own determinism assertions.
 
 ## Definition of Done
 

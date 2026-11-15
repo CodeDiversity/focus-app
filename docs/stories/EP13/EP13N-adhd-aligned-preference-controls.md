@@ -5,7 +5,8 @@
 **Milestone:** M6
 **Layer:** Frontend (form presentation only — the stored contract and the API are unchanged)
 **Status:** Ready (design settled in this story — it exists *because of* the design finding, so the refinement is the story)
-**Dependencies:** EP13F implemented (the two keys and the form fields exist). Scheduled after EP13M.
+**Dependencies:** EP13F implemented (the two keys and the form fields exist).
+**Re-sequenced:** 2026-11-15 (D13-17) — moved from after EP13M to **before EP13K**: EP13K adds two more goal preferences, and the named-choice control this story builds is what those must use (EP13K AC-3). Building the pattern first means it is implemented once, not shipped raw and corrected twice.
 **Provenance:** User decision 2026-11-15 (D13-15), raised from the EP13F implementation review note and F-EP13F-04's broader concern: a preference lever that quietly makes the app harsher.
 **Jira key:** Pending creation
 
@@ -122,7 +123,7 @@ existing levers are asked.
 - **Production files:** `apps/web/src/features/study-preferences/ui/StudyPreferencesForm.tsx`.
 - **Test files:** `StudyPreferencesForm.test.tsx` (extend).
 - **Verification:** `pnpm --filter @studypilot/web test`, lint, typecheck.
-- **Dependencies:** EP13F. Blocks nothing; EP13M does not reference it.
+- **Dependencies:** EP13F. **Blocks EP13K** (its goal controls reuse this pattern, D13-17); EP13M indexes it.
 - **Exclusions:** warning-contract changes (F-EP13F-01/-04), API/schema.
 
 ## Tracker reference

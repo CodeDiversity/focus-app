@@ -5,7 +5,8 @@
 **Milestone:** M6
 **Layer:** Backend + Frontend (one cohesive outcome; split would manufacture children)
 **Status:** Needs refinement (ui-refiner required, D13-14)
-**Dependencies:** EP07 session log (done); EP13D (dashboard placement). D13-11 provisional.
+**Dependencies:** EP07 session log (done); EP13D (dashboard placement); EP13I (the what-now card now carries the micro-start — momentum shares that surface); **EP13N implemented** (its named-choice control pattern is what the two goal preferences must use — D13-15). D13-11 provisional.
+**Reviewed:** 2026-11-15 — ACs revised so this story does not re-introduce the control pattern EP13N exists to remove (see *Review note*).
 **Jira key:** Pending creation
 
 ## Summary
@@ -28,7 +29,8 @@ app serves. No surface anywhere shows a plan-compliance percentage (D13-9).
   sessions; deterministic).
 - `dailyGoalMinutes` (60, 5–480) and `weeklyGoalDays` (3, 1–7) additive
   preference keys (D06-4 style: defaults, bounds, defensive reader) + the two
-  fields on the preferences form.
+  controls on the preferences form, **built on EP13N's named-choice pattern**
+  (D13-15), never as raw numeric inputs.
 - Dashboard momentum display; finish-session celebration in the existing
   `FinishSessionDialog` flow.
 - Tests (TR-E13-11); recorded manual a11y pass (TR-E13-14).
@@ -53,11 +55,25 @@ app serves. No surface anywhere shows a plan-compliance percentage (D13-9).
    zeroes history display) on a missed week — presentation per ui-refiner,
    math per D13-11.
 3. Goals are editable preferences with validation and defensive-reader
-   fallback; defaults are modest (60 min / 3 days).
+   fallback; defaults are modest (60 min / 3 days). **The controls follow
+   EP13N's pattern (D13-15):** the daily goal is a named choice — *Gentle*
+   (30 min) / *Steady* (60 min) / *Ambitious* (120 min), plus an honest
+   `Custom (n min)` option when the stored value is none of the three — and
+   the weekly goal is a row of discrete day chips (1–7). Neither asks the
+   student to type a number or reason about a ratio; the stored contract
+   (integers, the bounds above) is unchanged.
 4. The celebration respects `prefers-reduced-motion` and is announced
    accessibly; copy celebrates minutes done, never references the plan
    ("you studied 45 minutes", never "you completed 60% of your plan").
-5. No compliance percentage exists on any EP13K surface (asserted by test).
+5. **No percentage of anything** appears on an EP13K surface — not plan
+   compliance (D13-9) and not goal progress. Progress is shown in its own
+   units ("45 of 60 min", "3 of 4 days"); a filling indicator may *depict* a
+   ratio graphically, but no number ending in `%` is rendered. Asserted by
+   test.
+6. **Momentum never displaces initiation.** On the dashboard the what-now
+   card stays the first meaningful content (D-D1, EP13E AC-1): momentum
+   renders after it, and a test pins the DOM order. A student who opens the
+   dashboard sees what to do before how they are doing.
 
 ## Tests (TR-E13-11)
 
@@ -65,9 +81,11 @@ app serves. No surface anywhere shows a plan-compliance percentage (D13-9).
   only, ownership scoping.
 - Streak matrix: goal met/missed weeks, mid-week state, missed-day-no-reset,
   week-boundary (Monday start).
-- Preference keys: defaults/bounds/reader; form fields round-trip.
+- Preference keys: defaults/bounds/reader; the named-choice controls
+  round-trip (incl. the `Custom (n min)` case EP13N defines).
 - Dashboard display states (no data, goal met, in progress); celebration
-  reduced-motion branch; copy assertions.
+  reduced-motion branch; copy assertions (no `%` anywhere); DOM-order test
+  for AC-6.
 
 ## Technical notes
 
@@ -80,7 +98,22 @@ app serves. No surface anywhere shows a plan-compliance percentage (D13-9).
   EP13F's keys (coordinate the shared `preferences.ts` diff in queue order).
 - **UI/UX gaps for the ui-refiner (D13-14):** daily indicator form (ring?
   bar?), weekly presentation, streak display and its paused-week framing,
-  celebration treatment, dashboard placement relative to EP13D's sections.
+  celebration treatment, dashboard placement **below** the what-now card
+  (AC-6 fixes the constraint; the refiner chooses the exact slot).
+
+### Review note (2026-11-15)
+
+This story was written before EP13N existed. As drafted it would have added
+**two more raw numeric preference inputs** to the very form EP13N is
+correcting — the same mistake, shipped twice, then fixed twice. AC-3 now
+requires EP13N's pattern and the queue runs EP13N first, so the control is
+built once and reused.
+
+The second revision is AC-6. EP13D/EP13E spent two stories making "what
+now" the first thing a student sees, and EP13I just put the micro-start
+beside it. A momentum ring at the top of the dashboard would quietly undo
+that: the student would land on a scoreboard instead of an action. Momentum
+is feedback *about* showing up — it belongs after the thing it rewards.
 
 ## Definition of Done
 

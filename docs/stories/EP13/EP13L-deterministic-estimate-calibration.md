@@ -5,7 +5,8 @@
 **Milestone:** M6
 **Layer:** Backend (pure domain core + small frontend annotation)
 **Status:** Ready
-**Dependencies:** EP13A implemented (calibration applies where confirmed time is attributed). D13-7 provisional.
+**Dependencies:** EP13A implemented (calibration applies where confirmed time is attributed); EP13F + EP13G implemented (calibrated remaining work feeds placement v2's budgets and the flex/fixed partition — see *Review note*). D13-7 provisional.
+**Reviewed:** 2026-11-15 — one AC added for the EP13G interaction.
 **Jira key:** Pending creation
 
 ## Summary
@@ -59,6 +60,14 @@ arithmetic over the student's own records.
    (multiplier 1.0, no annotation noise).
 4. The frontend annotation renders the explanation neutrally and
    accessibly; no shaming framing (test-asserted).
+5. **The flex/fixed partition is computed from calibrated remaining work**
+   (EP13G rule 6) and stays deterministic: the same history yields the same
+   anchors. More calibrated work legitimately pins more sessions — that is
+   deadline pressure becoming visible, not a regression — and the extra
+   minutes that no longer fit surface through the existing deficit
+   warnings (EP13F), never as silent loss. Pinned by a test that runs the
+   same fixture with and without calibration and asserts both the anchor
+   shift and `placed + deficit = calibrated remaining`.
 
 ## Tests (TR-E13-12)
 
@@ -68,6 +77,8 @@ arithmetic over the student's own records.
   unwritten (field-for-field); identity when uncalibrated.
 - Payload annotations present/absent correctly; ownership scoping of the
   history query.
+- EP13G interaction (AC-5): anchor partition under calibration, determinism,
+  and the no-silent-loss assertion.
 - Frontend annotation rendering + copy assertion.
 
 ## Technical notes
@@ -82,6 +93,18 @@ arithmetic over the student's own records.
 - Interaction with EP13A is compositional: calibration scales the estimate,
   EP13A subtracts confirmed minutes — order fixed (scale first) and pinned
   by test.
+
+### Review note (2026-11-15)
+
+Calibration lands after EP13F and EP13G, which both read `remainingMinutes`:
+placement v2 sizes blocks and spends the day budget from it, and EP13G's
+pin rule asks whether the work still fits its horizon. Multiplying a
+student's estimates by 1.6 therefore does more than make plans longer — it
+**converts flex sessions into fixed ones** wherever the extra work removes
+the slack. That is correct behaviour (the deadline really did get tighter),
+but it is a visible, surprising change that a reviewer could read as an
+EP13G regression, so AC-5 makes it an asserted, intentional outcome rather
+than an emergent one.
 
 ## Definition of Done
 

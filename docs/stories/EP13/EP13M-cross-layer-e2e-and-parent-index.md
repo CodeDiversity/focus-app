@@ -5,7 +5,8 @@
 **Milestone:** M6
 **Layer:** Integration
 **Status:** Queued
-**Dependencies:** EP13A–EP13L implemented (if D13-4 descopes EP13G/H, their journeys drop out and this story's AC 4 becomes N/A with a recorded reason).
+**Dependencies:** EP13A–EP13N implemented — the whole epic, including EP13H2 (fix story) and EP13N (preference controls). **D13-4 is resolved (option b), so the flex journeys are in scope unconditionally.**
+**Reviewed:** 2026-11-15 — dependencies de-conditionalised, the manual a11y pass promoted from "collected" to "performed" (see *Review note*).
 **Jira key:** Pending creation
 
 ## Summary
@@ -25,12 +26,20 @@ and the recorded manual a11y passes (TR-E13-14) for the combined review.
 **In scope:**
 - New E2E journeys: (1) focus session → confirmed minutes → regenerated plan
   demonstrably smaller for that assignment; (2) past unstarted session →
-  next plan read shows it rolled forward, recovery view informational, no
+  next plan read shows it rolled forward, plan health informational, no
   mandatory catch-up; (3) dashboard what-now → one-tap focus start → finish
   → planned session COMPLETED on calendar/today; (4) flex session started
-  anytime and absent from clock-conflict behavior (if EP13G/H landed);
-  (5) micro-start counts; absorption extends; (6) momentum numbers update
-  after a finish.
+  anytime, absent from clock-conflict behaviour, rendered as "Anytime" on
+  the plan/today/calendar surfaces (EP13G/EP13H — unconditional since D13-4
+  ruled option (b)); (5) micro-start ("Just 10 min") counts and absorption
+  extends the running target (EP13I); (6) momentum numbers update after a
+  finish (EP13K); (7) information architecture: `/catch-up` and
+  `/catch-up/preview` redirect into plan health, Focus and Plan health are
+  reachable from the nav, and no surface leads with a missed/rolled count
+  (EP13E).
+- **One combined manual accessibility pass** across every surface EP13D,
+  EP13E, EP13H, EP13I and EP13K added, recorded as the TR-E13-14 evidence
+  those five stories each left open.
 - Keeping every pre-existing suite green (API, web unit, existing E2E specs).
 - Parent implementation index.
 
@@ -47,17 +56,23 @@ and the recorded manual a11y passes (TR-E13-14) for the combined review.
 
 1. The six journeys above pass deterministically against the self-contained
    stack (`pnpm test:e2e`), with dated fixtures controlled by the suite.
-2. All pre-existing suites remain green; any pre-existing failure is
-   documented with control-run evidence, never silently waived.
-3. The parent index exists with per-child evidence links and the collected
-   TR-E13-14 manual a11y records.
-4. Flex and absorption journeys match the D13-4/D13-13 rulings as landed (or
-   carry a recorded N/A if descoped).
+2. All pre-existing suites remain green. **The baseline is now genuinely
+   zero failures** (EP13H2 repaired the clock-dependent `CalendarPage`
+   suite), so any failing test at this gate is a real regression to fix —
+   the "report, don't absorb" escape hatch no longer has a standing
+   exception to point at.
+3. The parent index exists with per-child evidence links **for every child
+   including EP13H2 and EP13N**, and carries the TR-E13-14 record produced
+   by this story's own combined manual a11y pass — **performed here, not
+   merely collected**: five children (EP13D, EP13E, EP13H, EP13I, EP13K)
+   each deferred it, and an empty slot ×5 is not evidence.
+4. Flex, absorption and micro-start journeys match the D13-4 (option b) and
+   D13-13/D-I8 rulings as landed.
 
 ## Tests (TR-E13-13)
 
-The journeys **are** the tests; plus a smoke assertion that `/catch-up`
-redirects and no nav dead-ends exist (EP13E).
+The journeys **are** the tests; journey (7) carries the EP13E information-
+architecture assertions (redirects, nav entries, no count-led surface).
 
 ## Technical notes
 
@@ -68,6 +83,26 @@ redirects and no nav dead-ends exist (EP13E).
 - Journey (2) needs a planned session dated before "today": create it via
   the API with an earlier window (the save endpoint accepts windows starting
   up to today−6, D06-23) rather than clock-mocking the stack.
+
+### Review note (2026-11-15)
+
+Two changes. First, the D13-4 conditional is gone: the ruling landed and
+EP13G/EP13H shipped, so the flex journeys are ordinary scope and AC-4 no
+longer offers an N/A escape.
+
+Second, and more important: **the manual accessibility pass is now this
+story's work, not its filing cabinet.** Five children deferred TR-E13-14 to
+"a recorded manual pass" that no environment in the delivery chain could
+execute; collecting five absences would hand the combined review an evidence
+gap at the last gate. Doing one pass here across the whole surface set is
+cheaper than five, catches cross-surface issues (focus order between the
+what-now card, momentum and the timer) that per-story passes would miss, and
+is the honest reading of "collected".
+
+A warning for whoever implements this story: a clock-dependent E2E fixture
+is exactly what broke `CalendarPage` for four stories (EP13H2's diagnosis).
+Dated fixtures here must be derived from the suite's own controlled "today",
+never from a hard-coded calendar week.
 
 ## Definition of Done
 
