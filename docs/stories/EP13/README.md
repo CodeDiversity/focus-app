@@ -33,9 +33,10 @@
 | [EP13J](./EP13J-micro-start-and-hyperfocus-absorption.md) | Needs refinement | EP13B + EP13D implemented. D13-13 provisional (V-13-6). **ui-refiner pass required** (D13-14). | ui-refiner, then implement | — |
 | [EP13K](./EP13K-momentum-daily-goal-and-repairable-streak.md) | Needs refinement | EP07 session log (done); EP13D (dashboard placement). D13-11 provisional. **ui-refiner pass required** (D13-14). | ui-refiner, then implement | — |
 | [EP13L](./EP13L-deterministic-estimate-calibration.md) | Ready | EP13A implemented (calibration applies to the same remaining-work path). D13-7 provisional. | Implement after EP13A | — |
-| [EP13M](./EP13M-cross-layer-e2e-and-parent-index.md) | Queued | EP13A–EP13L implemented (EP13G/H may be descoped by D13-4 ruling; then their journeys drop out). | Implement last | — |
+| [EP13M](./EP13M-cross-layer-e2e-and-parent-index.md) | Queued | EP13A–EP13L implemented (D13-4 ruled option (b), so the flex journeys stay in scope). | Implement after EP13A–EP13L | — |
+| [EP13N](./EP13N-adhd-aligned-preference-controls.md) | Ready | EP13F implemented. Design settled in-story (D13-15; no separate ui-refiner pass — the design *is* the story). | Implement after EP13M | — |
 
-Sequence (one writer): EP13A → EP13B → EP13C → EP13D → EP13E → EP13F → EP13G → EP13H → EP13I → EP13J → EP13K → EP13L → EP13M.
+Sequence (one writer): EP13A → EP13B → EP13C → EP13D → EP13E → EP13F → EP13G → EP13H → EP13I → EP13J → EP13K → EP13L → EP13M → EP13N.
 
 Why this order: A/B/C are the backend spine — the plan cannot "react to reality" until confirmed time counts (A), planned and actual sessions are linked (B), and unstarted work rolls forward (C). D/E make that spine visible and are the first user-facing payoff. F is the placement redesign and deliberately lands after the spine so its tests run against the corrected remaining-work semantics. G/H (flex sessions) build on F's placement and carry the one open model decision, so they must not block earlier value. I/J/K/L are independent experience layers in rough order of leverage. M verifies the whole stack. If D13-4 resolves early, G/H may be implemented in queue order; nothing else depends on them.
 
@@ -58,6 +59,7 @@ Why this order: A/B/C are the backend spine — the plan cannot "react to realit
 | [EP13K](./EP13K-momentum-daily-goal-and-repairable-streak.md) | 9. Momentum feedback | Backend + Frontend | Pending creation |
 | [EP13L](./EP13L-deterministic-estimate-calibration.md) | 10. Deterministic estimate calibration | Backend (+ small frontend annotation) | Pending creation |
 | [EP13M](./EP13M-cross-layer-e2e-and-parent-index.md) | 11. Cross-layer end-to-end verification + parent index | Integration | Pending creation |
+| [EP13N](./EP13N-adhd-aligned-preference-controls.md) | — (correction story, user decision 2026-11-15: reshape EP13F's two preference fields for ADHD users; see D13-15) | Frontend | Pending creation |
 
 **Why EP13F is its own pure-domain child** (like EP06C/EP08B): breaks, density cap, interleaving and min/max enforcement are placement-algorithm invariants that must be unit-tested deterministically without HTTP or persistence; folding them into a service story would bury the determinism/purity contract.
 
@@ -192,7 +194,7 @@ Existing endpoints keep their shapes; `POST /study-plans/preview` and the saved-
 | D13-1 | Extend the EP06 engine in place; pure, deterministic, no AI, no second scheduler. | Settled (epic Technical Notes). |
 | D13-2 | Rollover semantics: past unstarted `SCHEDULED` rows flip to `RESCHEDULED` at reconcile; rows preserved. | Provisional (V-13-2: locked past rows). |
 | D13-3 | Link = `StudySession.plannedSessionId` (nullable, SetNull); many actual sessions may serve one planned session; first finished linked session with ≥1 confirmed minute completes it. | Provisional. |
-| D13-4 | **Flex-session model.** Options: (a) nullable `startTime`/`endTime` for flex rows; (b) keep non-nullable times as the *suggested* slot + `anchor` enum + optional `windowHint`. **Planner recommends (b)** — smaller migration, calendar can still render a suggestion, missed-ness keys off `anchor`. | **Needs user decision (V-13-3). Blocks EP13G/EP13H only.** |
+| D13-4 | **Flex-session model.** Options: (a) nullable `startTime`/`endTime` for flex rows; (b) keep non-nullable times as the *suggested* slot + `anchor` enum + optional `windowHint`. **Ruled (b)** — smaller migration, calendar can still render a suggestion, missed-ness keys off `anchor`. | **User decision 2026-11-15** (ratified the planner's recommendation; V-13-3 closed). Implemented by EP13G. |
 | D13-5 | Placement defaults: `breakMinutes` 15 (0–60), `densityPercent` 80 (50–100), stored in `studyDefaults` with defensive-reader fallback. | Provisional. |
 | D13-6 | Interleaving = deterministic round-robin over the ordering comparator; feasibility beats variety. | Provisional. |
 | D13-7 | Calibration: ratio = confirmed/estimated over finished assignments (COMPLETED/SUBMITTED/GRADED, both values > 0), median per `Assignment.type` (fallback: overall), ≥3 samples else 1.0, clamp [0.5, 3.0]; applied to remaining-work classification; always annotated in previews. | Provisional. |
@@ -203,12 +205,13 @@ Existing endpoints keep their shapes; `POST /study-plans/preview` and the saved-
 | D13-12 | EP13 approved as post-MVP milestone M6, release 1.1; large changes to EP06 scheduling behavior authorized. | User decision 2026-11-14 (this request). |
 | D13-13 | Absorption: the next `SCHEDULED` planned session of the same assignment on the same civil day is marked `COMPLETED` and linked to the running session; the running session's `plannedMinutes` grows by its duration. | Provisional (V-13-6). |
 | D13-14 | EP13D, EP13E, EP13H, EP13J, EP13K are `Needs refinement` until their `ui-refiner` pass settles layout, copy, affordances, states, keyboard and responsive behavior. | Planner skill UI/UX handoff rule. |
+| D13-15 | **EP13N added after EP13M**: EP13F's `densityPercent` numeric input is replaced by three named choices (Relaxed 60 / Balanced 80 / Packed 100, plus an honest Custom for non-preset values); `breakMinutes` stays numeric. Stored contract unchanged. Rationale documented in the story: a ratio of an unmeasured quantity is an executive-function trap, and the percent is the engine's vocabulary, not the student's. | **User decision 2026-11-15** (raised from the EP13F implementation note). |
 
 ### Verification tasks
 
 - **V-13-1:** Confirm task-only sessions (`assignmentId` null, `taskId` set) stay in the unattributed total and never reduce an assignment's remaining work (EP13A).
 - **V-13-2:** Locked past unstarted rows: rolled like others, or held visible until explicitly resolved? (D13-2; EP13C.)
-- **V-13-3:** D13-4 flex model — user decision. Blocks EP13G/EP13H.
+- **V-13-3:** ~~D13-4 flex model — user decision. Blocks EP13G/EP13H.~~ Closed 2026-11-15: ruled option (b) (user decision); implemented by EP13G.
 - **V-13-4:** D13-8 notifications capability — user decision for any future reminder epic; nothing in EP13 depends on it.
 - **V-13-5:** "Demanding work" heuristic for energy placement (D13-10; EP13I).
 - **V-13-6:** Absorption status semantics (D13-13; EP13J).
