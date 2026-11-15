@@ -5,6 +5,7 @@ import { api } from '@/features/session/api/sessionApi';
 import { assignmentsApi } from '@/features/assignments/api/assignmentsApi';
 import { calendarApi } from '@/features/calendar/api/calendarApi';
 import { todayPlanApi } from '@/features/today-plan/api/todayPlanApi';
+import { planHealthApi } from '@/features/plan-health/api/planHealthApi';
 
 export const store = configureStore({
   reducer: {
@@ -17,6 +18,8 @@ export const store = configureStore({
     [calendarApi.reducerPath]: calendarApi.reducer,
     // EP13D: the dashboard's today read (GET /study-plans/today).
     [todayPlanApi.reducerPath]: todayPlanApi.reducer,
+    // EP13E: the shared plan-health read (GET /study-plans/recovery-summary).
+    [planHealthApi.reducerPath]: planHealthApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -28,13 +31,15 @@ export const store = configureStore({
           assignmentsApi.reducerPath,
           calendarApi.reducerPath,
           todayPlanApi.reducerPath,
+          planHealthApi.reducerPath,
         ],
       },
     }).concat(
       api.middleware,
       assignmentsApi.middleware,
       calendarApi.middleware,
-      todayPlanApi.middleware
+      todayPlanApi.middleware,
+      planHealthApi.middleware
     ),
 });
 

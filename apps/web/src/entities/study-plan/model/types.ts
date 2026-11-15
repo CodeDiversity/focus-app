@@ -149,8 +149,22 @@ export interface MissedSession {
 }
 
 export interface RecoverySummary {
+  /**
+   * Past sessions still `SCHEDULED`. After EP13C's read-time reconciliation
+   * this is (almost always) empty — unstarted past work rolls forward
+   * instead of accumulating. EP13E's plan-health view does not render it.
+   */
   missedSessions: MissedSession[];
   missedCount: number;
+  /**
+   * EP13C — the plan-health detail (EP13E's "Moved forward" section):
+   * sessions rolled forward over the **last 7 days** whose assignment is
+   * still unfinished. Bounded by construction, so it can never become an
+   * accumulating ledger (AC-E13-04).
+   */
+  rolledForward: MissedSession[];
+  rolledForwardCount: number;
+  rolledForwardMinutes: number;
   unfinishedWork: RemainingWorkItem[]; // reuse existing type
   confirmedMinutes: number;
   message: string;

@@ -26,7 +26,7 @@ const FOCUSABLE_SELECTOR =
 
 const MENU_ITEM_SELECTOR = '[role="menuitem"]';
 
-type DesktopMenu = 'academics' | 'planning' | 'account';
+type DesktopMenu = 'academics' | 'planning' | 'focus' | 'account';
 
 function navLinkClass(isActive: boolean, mobile: boolean) {
   return clsx(
@@ -497,7 +497,9 @@ export function Header() {
           </Link>
 
           {/* Desktop navigation */}
-          <nav aria-label="Primary" className="hidden md:flex items-center gap-6">
+          {/* EP13E (D-E13): five sections since Focus joined — a tighter gap
+              at `md` keeps them on one row; `lg` keeps EP11's spacing. */}
+          <nav aria-label="Primary" className="hidden md:flex items-center gap-4 lg:gap-6">
             {navGroups.map((section) => {
               const Icon = section.icon;
               if (section.items) {

@@ -22,7 +22,9 @@ type Phase = 'loading' | 'ready' | 'error';
 
 /**
  * The catch-up preview / edit / confirm / decline surface (EP08E), at the
- * nested route `/catch-up/preview`. Flow-local state only (the PlanPage
+ * nested route `/plan/health/catch-up` since EP13E reframed the standalone
+ * catch-up entry as plan health (D-E14 — the flow itself is unchanged; only
+ * its home and its return targets moved). Flow-local state only (the PlanPage
  * pattern — no store): the preview is a client-held proposal; confirming
  * posts the (possibly edited) sessions as the exact four-field change set,
  * declining (`Not now` or browser back) makes no request and discards the
@@ -73,7 +75,7 @@ export function CatchUpPreview() {
     try {
       await confirmCatchUpPlan(preview.from, preview.to, projectSessions(edited));
       toast.success('Catch-up plan saved.');
-      navigate('/catch-up');
+      navigate('/plan/health');
     } catch (err) {
       const data = (err as { response?: { data?: { error?: string; conflicts?: PlanConflict[] } } })
         ?.response?.data;
@@ -147,7 +149,7 @@ export function CatchUpPreview() {
           ) : null}
           <Button
             variant="ghost"
-            onClick={() => navigate('/catch-up')}
+            onClick={() => navigate('/plan/health')}
             className="w-full sm:w-auto"
           >
             Not now
@@ -188,8 +190,8 @@ export function CatchUpPreview() {
           <p className="text-sm text-danger">We couldn&apos;t build a catch-up plan. Try again.</p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Button onClick={() => void load()}>Try again</Button>
-            <Button variant="outline" onClick={() => navigate('/catch-up')}>
-              Back to catch-up
+            <Button variant="outline" onClick={() => navigate('/plan/health')}>
+              Back to plan health
             </Button>
           </div>
         </Card>
@@ -202,8 +204,8 @@ export function CatchUpPreview() {
               title="Nothing new to schedule"
               description="Your unfinished work didn't need any new sessions this week. Check the workload warnings below."
               action={
-                <Button variant="secondary" onClick={() => navigate('/catch-up')}>
-                  Back to catch-up
+                <Button variant="secondary" onClick={() => navigate('/plan/health')}>
+                  Back to plan health
                 </Button>
               }
             />

@@ -12,8 +12,8 @@ import { StudyHistoryPage } from '@/pages/focus/history/ui/StudyHistoryPage';
 import { CalendarPage } from '@/pages/calendar/ui/CalendarPage';
 import { AvailabilityPage } from '@/pages/availability/ui/AvailabilityPage';
 import { PlanPage } from '@/pages/plan/ui/PlanPage';
-import { CatchUpPage } from '@/pages/catch-up/ui/CatchUpPage';
-import { RecoverySummary } from '@/features/recovery/ui/RecoverySummary';
+import { PlanHealthPage } from '@/pages/plan-health/ui/PlanHealthPage';
+import { PlanHealthView } from '@/features/plan-health/ui/PlanHealthView';
 import { CatchUpPreview } from '@/features/catch-up/ui/CatchUpPreview';
 import { CourseDetailPage } from '@/pages/courses/ui/CourseDetailPage';
 import { ProfilePage } from '@/pages/profile/ui/ProfilePage';
@@ -64,13 +64,21 @@ function App() {
               standard Layout like the other pages) */}
           <Route path="/availability" element={<AvailabilityPage />} />
           <Route path="/plan" element={<PlanPage />} />
-          {/* EP08D: recovery summary and replanning entry point; EP08E nests
-              the catch-up preview/edit/confirm/decline surface under it
-              (decision 1/2 — deep-linking /catch-up/preview self-fetches). */}
-          <Route path="/catch-up" element={<CatchUpPage />}>
-            <Route index element={<RecoverySummary />} />
-            <Route path="preview" element={<CatchUpPreview />} />
+          {/* EP13E (D-E1): the informational plan-health view and, nested
+              under it, EP08E's regeneration preview/edit/confirm/decline
+              surface (deep-linking /plan/health/catch-up self-fetches). */}
+          <Route path="/plan/health" element={<PlanHealthPage />}>
+            <Route index element={<PlanHealthView />} />
+            <Route path="catch-up" element={<CatchUpPreview />} />
           </Route>
+          {/* EP13E (D-E2): EP08's standalone catch-up entry is folded into
+              plan health. The old paths keep working for bookmarks and
+              `replace` keeps Back from bouncing between old and new. */}
+          <Route path="/catch-up" element={<Navigate to="/plan/health" replace />} />
+          <Route
+            path="/catch-up/preview"
+            element={<Navigate to="/plan/health/catch-up" replace />}
+          />
           <Route path="/profile" element={<ProfilePage />} />
           {/* SP-107C: onboarding wizard (D107-3: inside ProtectedRoute,
               rendered within the standard Layout like all existing pages) */}

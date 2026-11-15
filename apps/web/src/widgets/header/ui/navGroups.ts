@@ -1,4 +1,5 @@
 import {
+  Activity,
   BookOpen,
   Calendar,
   CalendarCheck,
@@ -7,10 +8,12 @@ import {
   ClipboardList,
   Clock,
   GraduationCap,
+  History,
   Home,
   LayoutDashboard,
   LogOut,
   MailCheck,
+  Timer,
   User,
   type LucideIcon,
 } from 'lucide-react';
@@ -82,6 +85,20 @@ export const authenticatedNavGroups: NavSection[] = [
       // secondary shortcut to the same route (D11-8).
       { id: 'availability', label: 'Availability', icon: Clock, to: '/availability' },
       { id: 'plan', label: 'Plan', icon: CalendarCheck, to: '/plan' },
+      // EP13E (D-E13): the informational plan-health view. It replaces the
+      // standalone `/catch-up` entry, which never appeared in the nav at all.
+      { id: 'plan-health', label: 'Plan health', icon: Activity, to: '/plan/health' },
+    ],
+  },
+  {
+    // EP13E (D-E13): focus mode and its history had no nav entry — the only
+    // link to the history lived inside a running timer.
+    id: 'focus',
+    label: 'Focus',
+    icon: Timer,
+    items: [
+      { id: 'focus-session', label: 'Focus session', icon: Timer, to: '/focus' },
+      { id: 'focus-history', label: 'Study history', icon: History, to: '/focus/history' },
     ],
   },
 ];

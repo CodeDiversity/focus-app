@@ -152,7 +152,7 @@ describe('CatchUpPreview', () => {
     ]);
   });
 
-  it("'Not now' makes no request and returns to /catch-up", async () => {
+  it("'Not now' makes no request and returns to plan health (EP13E D-E14)", async () => {
     const user = userEvent.setup();
     renderPreview();
     await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
@@ -161,7 +161,7 @@ describe('CatchUpPreview', () => {
     await user.click(screen.getByRole('button', { name: /not now/i }));
     expect(mockedConfirm).not.toHaveBeenCalled();
     expect(mockedPreview).toHaveBeenCalledTimes(callsBefore);
-    expect(navigate).toHaveBeenCalledWith('/catch-up');
+    expect(navigate).toHaveBeenCalledWith('/plan/health');
   });
 
   it('a 409 conflict marks the offending rows and lists reasons; edits are preserved', async () => {
@@ -268,7 +268,7 @@ describe('CatchUpPreview', () => {
         "Your unfinished work didn't need any new sessions this week. Check the workload warnings below."
       )
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /back to catch-up/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /back to plan health/i })).toBeInTheDocument();
     expect(screen.queryByTestId('plan-session-editor')).not.toBeInTheDocument();
   });
 

@@ -9,6 +9,8 @@ import {
   saveStudyPlan,
   listStudyPlan,
   listRemainingWork,
+  getTodayPlan,
+  getRecoverySummary,
 } from '@/entities/study-plan/api/studyPlanApi';
 
 vi.mock('@/entities/study-plan/api/studyPlanApi', () => ({
@@ -17,8 +19,10 @@ vi.mock('@/entities/study-plan/api/studyPlanApi', () => ({
   listStudyPlan: vi.fn(),
   listRemainingWork: vi.fn(),
   // EP13D: the shared test store mounts `todayPlanApi`, which imports this
-  // module's `getTodayPlan`; the mock must expose it.
+  // module's `getTodayPlan`; EP13E adds `planHealthApi` over
+  // `getRecoverySummary`. The mock must expose both.
   getTodayPlan: vi.fn(),
+  getRecoverySummary: vi.fn(),
 }));
 
 vi.mock('react-hot-toast', () => ({
@@ -29,6 +33,29 @@ const mockedPreview = vi.mocked(previewStudyPlan);
 const mockedSave = vi.mocked(saveStudyPlan);
 const mockedList = vi.mocked(listStudyPlan);
 const mockedRemainingWork = vi.mocked(listRemainingWork);
+const mockedToday = vi.mocked(getTodayPlan);
+const mockedPlanHealth = vi.mocked(getRecoverySummary);
+
+/** EP13E: today's plan (EP13D's card) and the plan-health read. */
+const emptyToday = {
+  date: '2026-10-30',
+  timeZone: 'America/New_York',
+  sessions: [],
+  nextSession: null,
+  nextSessionReason: 'NO_PLAN' as const,
+  confirmedMinutesToday: 0,
+};
+
+const emptyPlanHealth = {
+  missedSessions: [],
+  missedCount: 0,
+  rolledForward: [],
+  rolledForwardCount: 0,
+  rolledForwardMinutes: 0,
+  unfinishedWork: [],
+  confirmedMinutes: 0,
+  message: "Here's where your plan stands.",
+};
 
 const emptySaved = {
   from: '2026-10-30',
@@ -119,6 +146,8 @@ describe('PlanPage', () => {
     vi.clearAllMocks();
     mockedList.mockResolvedValue(emptySaved as never);
     mockedRemainingWork.mockResolvedValue({ items: [], unattributedConfirmedMinutes: 0 } as never);
+    mockedToday.mockResolvedValue(emptyToday as never);
+    mockedPlanHealth.mockResolvedValue(emptyPlanHealth as never);
   });
 
   it('initial state offers the generate action', async () => {
@@ -218,5 +247,79 @@ describe('PlanPage', () => {
     // listStudyPlan called with no args
     expect(mockedList).toHaveBeenCalledWith();
     await waitFor(() => expect(screen.getByText('Essay')).toBeInTheDocument());
+  });
+
+  // -------------------------------------------------------------------------
+  // EP13E — today-first framing (AC-1, D-E10) and the return note (AC-4, D-E11)
+  // -------------------------------------------------------------------------
+
+  it("leads with today's plan, above the week region (AC-1)", async () => {
+    mockedList.mockResolvedValue(savedFixture as never);
+    renderPage();
+
+    const todayHeading = await screen.findByRole('heading', { name: /today's plan/i });
+    await waitFor(() => expect(screen.getByText('Essay')).toBeInTheDocument());
+
+    const pageHeading = screen.getByRole('heading', { level: 1, name: 'Plan' });
+    const week = screen.getByText(/2026-10-30 – 2026-11-05/);
+    // DOM order: page heading → today's plan → the week.
+    expect(pageHeading.compareDocumentPosition(todayHeading)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+    expect(todayHeading.compareDocumentPosition(week)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
+  it("renders today's plan while the saved-plan read is still loading", async () => {
+    mockedList.mockReturnValue(new Promise(() => {}) as never);
+    renderPage();
+    expect(await screen.findByRole('heading', { name: /today's plan/i })).toBeInTheDocument();
+  });
+
+  it("renders today's plan even when the saved-plan read fails, with a scoped retry", async () => {
+    mockedList.mockRejectedValue(new Error('boom'));
+    renderPage();
+
+    expect(await screen.findByRole('heading', { name: /today's plan/i })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getAllByRole('alert').length).toBeGreaterThan(0));
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+  });
+
+  it('shows no return note when nothing moved forward', async () => {
+    renderPage();
+    await waitFor(() => expect(mockedPlanHealth).toHaveBeenCalled());
+    expect(screen.queryByTestId('moved-forward-note')).not.toBeInTheDocument();
+  });
+
+  it('shows one neutral, number-free return note when work moved forward (AC-4)', async () => {
+    mockedPlanHealth.mockResolvedValue({
+      ...emptyPlanHealth,
+      rolledForward: [
+        {
+          id: 'ps-1',
+          assignmentId: 'a-1',
+          assignmentTitle: 'Essay',
+          date: '2026-10-29',
+          startTime: '09:00',
+          endTime: '10:00',
+          durationMinutes: 60,
+          locked: false,
+        },
+      ],
+      rolledForwardCount: 1,
+      rolledForwardMinutes: 60,
+    } as never);
+    renderPage();
+
+    const note = await screen.findByTestId('moved-forward-note');
+    expect(note).toHaveTextContent(
+      "Some earlier sessions moved into your current plan — today's list is up to date."
+    );
+    // No counts, no percentages, no shaming terms (D13-9).
+    expect(note.textContent ?? '').not.toMatch(/\d/);
+    expect(note.textContent ?? '').not.toMatch(/missed|behind|failed|%/i);
+    expect(screen.getByRole('link', { name: 'See plan health' })).toHaveAttribute(
+      'href',
+      '/plan/health'
+    );
   });
 });

@@ -7,8 +7,10 @@ import { listRemainingWork } from '@/entities/study-plan/api/studyPlanApi';
 
 vi.mock('@/entities/study-plan/api/studyPlanApi', () => ({
   listRemainingWork: vi.fn(),
-  // EP13D: the shared test store mounts `todayPlanApi` (see PlanPage.test).
+  // EP13D/EP13E: the shared test store mounts `todayPlanApi` and
+  // `planHealthApi` (see PlanPage.test), which import these two.
   getTodayPlan: vi.fn(),
+  getRecoverySummary: vi.fn(),
 }));
 
 const mocked = vi.mocked(listRemainingWork);

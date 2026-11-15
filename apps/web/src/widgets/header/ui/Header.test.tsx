@@ -85,6 +85,32 @@ describe('Header desktop grouped navigation (EP11A)', () => {
     expect(screen.queryByRole('link', { name: 'Availability' })).not.toBeInTheDocument();
   });
 
+  it('exposes the EP13E Focus group and the Plan health entry (D-E13)', async () => {
+    const user = setupUser();
+    renderAuthenticated('/plan/health');
+
+    const focus = screen.getByRole('button', { name: 'Focus menu' });
+    expect(focus).toHaveAttribute('aria-haspopup', 'menu');
+    await user.click(focus);
+    expect(screen.getByRole('menuitem', { name: 'Focus session' })).toHaveAttribute(
+      'href',
+      '/focus'
+    );
+    expect(screen.getByRole('menuitem', { name: 'Study history' })).toHaveAttribute(
+      'href',
+      '/focus/history'
+    );
+
+    // Planning owns plan health, and the group reads as active on its route.
+    const planning = screen.getByRole('button', { name: 'Planning menu' });
+    expect(planning.className).toContain('text-accent');
+    await user.click(planning);
+    expect(screen.getByRole('menuitem', { name: 'Plan health' })).toHaveAttribute(
+      'href',
+      '/plan/health'
+    );
+  });
+
   it('renders only Home and auth buttons when unauthenticated', () => {
     renderHeader('/', { isAuthenticated: false, user: null });
 
@@ -198,7 +224,8 @@ describe('Header desktop grouped navigation (EP11A)', () => {
     const planning = screen.getByRole('button', { name: 'Planning menu' });
     planning.focus();
     await user.keyboard('{ArrowUp}');
-    expect(screen.getByRole('menuitem', { name: 'Plan' })).toHaveFocus();
+    // EP13E appended Plan health, so Planning's last item moved.
+    expect(screen.getByRole('menuitem', { name: 'Plan health' })).toHaveFocus();
   });
 
   it('cycles items with ArrowUp/ArrowDown and supports Home/End', async () => {
@@ -476,6 +503,23 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
     );
     // Ratified EP06F contract entry (plan-review PR-001); drawer/desktop parity.
     expect(within(planning).getByRole('link', { name: 'Plan' })).toHaveAttribute('href', '/plan');
+    // EP13E (D-E13): plan health replaces the never-linked /catch-up entry.
+    expect(within(planning).getByRole('link', { name: 'Plan health' })).toHaveAttribute(
+      'href',
+      '/plan/health'
+    );
+
+    // EP13E (D-E13): focus mode and its history finally have a nav home.
+    expect(within(dialog).getByRole('heading', { level: 2, name: 'Focus' })).toBeInTheDocument();
+    const focus = within(dialog).getByRole('region', { name: 'Focus' });
+    expect(within(focus).getByRole('link', { name: 'Focus session' })).toHaveAttribute(
+      'href',
+      '/focus'
+    );
+    expect(within(focus).getByRole('link', { name: 'Study history' })).toHaveAttribute(
+      'href',
+      '/focus/history'
+    );
 
     const account = within(dialog).getByRole('region', { name: 'Account' });
     expect(within(account).getByRole('link', { name: 'Profile' })).toHaveAttribute(
@@ -499,7 +543,7 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
     expect(within(dialog).getByRole('button', { name: 'Login' })).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
 
-    for (const label of ['Academics', 'Planning', 'Account']) {
+    for (const label of ['Academics', 'Planning', 'Focus', 'Account']) {
       expect(
         within(dialog).queryByRole('heading', { level: 2, name: label })
       ).not.toBeInTheDocument();
@@ -591,7 +635,7 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
       within(dialog).queryByRole('button', { name: 'Academics menu' })
     ).not.toBeInTheDocument();
     expect(within(dialog).queryByRole('button', { name: 'Planning menu' })).not.toBeInTheDocument();
-    for (const label of ['Academics', 'Planning', 'Account']) {
+    for (const label of ['Academics', 'Planning', 'Focus', 'Account']) {
       const heading = within(dialog).getByRole('heading', { level: 2, name: label });
       expect(heading).not.toHaveAttribute('aria-expanded');
       expect(heading).not.toHaveAttribute('aria-haspopup');
@@ -625,11 +669,12 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
 
     const dialog = getDrawer();
     // Trap order guard (story risk note): close, Home, Dashboard, Academics ×3,
-    // Planning ×3 (incl. Plan), Profile, Availability, Verify email, Logout.
+    // Planning ×4 (incl. Plan and EP13E's Plan health), Focus ×2 (EP13E),
+    // Profile, Availability, Verify email, Logout.
     const focusables = dialog.querySelectorAll(
       'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
     );
-    expect(focusables).toHaveLength(13);
+    expect(focusables).toHaveLength(16);
     const logout = within(dialog).getByRole('button', { name: 'Logout' });
     expect(focusables[focusables.length - 1]).toBe(logout);
 

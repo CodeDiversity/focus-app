@@ -16,13 +16,14 @@ describe('store', () => {
     store.dispatch({ type: '@@test/no-op' });
     // SP-107C added the onboarding reducer alongside auth and the RTK Query api;
     // EP05A added the dashboard's two per-domain RTK Query slices; EP13D added
-    // the today read.
+    // the today read; EP13E added the shared plan-health read.
     expect(Object.keys(store.getState()).sort()).toEqual([
       'api',
       'assignmentsApi',
       'auth',
       'calendarApi',
       'onboarding',
+      'planHealthApi',
       'todayPlanApi',
     ]);
     expect(store.getState().api).toEqual(expect.objectContaining({ queries: {}, mutations: {} }));
@@ -69,15 +70,15 @@ describe('store', () => {
       </Provider>
     );
 
-    // EP13D: the todayPlanApi slice joins auth, onboarding, api, assignmentsApi
-    // and calendarApi reducers, so state has six keys
-    expect(getByTestId('state-size').textContent).toBe('6');
+    // EP13E: the planHealthApi slice joins auth, onboarding, api,
+    // assignmentsApi, calendarApi and todayPlanApi, so state has seven keys
+    expect(getByTestId('state-size').textContent).toBe('7');
 
     // Dispatch should work without error
     const btn = getByTestId('dispatch-btn');
     btn.click();
 
     // Verify dispatch changed nothing (no reducers listening)
-    expect(getByTestId('state-size').textContent).toBe('6');
+    expect(getByTestId('state-size').textContent).toBe('7');
   });
 });

@@ -4,7 +4,7 @@
 **Parent epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md)
 **Milestone:** M6
 **Layer:** Frontend
-**Status:** Ready (ui-refiner pass complete 2026-11-15)
+**Status:** Implemented — awaiting parent review (2026-11-15; record `./artifacts/EP13E/implementation.md`)
 **Refined:** 2026-11-15 (ui-refiner)
 **Dependencies:** EP13C implemented (reshaped recovery contract, self-healing reads). EP13D implemented (`TodayPlanCard`, `todayPlanApi` — reused here).
 **Jira key:** Pending creation
