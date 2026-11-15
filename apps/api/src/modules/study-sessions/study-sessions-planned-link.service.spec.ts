@@ -223,6 +223,49 @@ describe('StudySessionsService EP13B planned link (unit, mocked PrismaService)',
       expect(advance.data).not.toHaveProperty('anchor');
     });
 
+    it('EP13I (D-I4): an explicit plannedMinutes overrides the planned duration — the micro-start', async () => {
+      await service.startFromPlanned(userId, plannedSessionId, { plannedMinutes: 10 });
+
+      const created = txStudySessionCreate.mock.calls[0][0].data;
+      expect(created.plannedMinutes).toBe(10);
+      // The planned row still advances exactly as a full start would.
+      expect(txPlannedSessionUpdateMany).toHaveBeenCalledTimes(1);
+    });
+
+    it('EP13I: an omitted or empty body keeps the planned-duration default (EP13B unchanged)', async () => {
+      await service.startFromPlanned(userId, plannedSessionId, {});
+      expect(txStudySessionCreate.mock.calls[0][0].data.plannedMinutes).toBe(50);
+    });
+
+    it('EP13I: out-of-bounds or non-integer plannedMinutes is a field-level 400, nothing written', async () => {
+      for (const bad of [4, 481, 10.5]) {
+        const error = await service
+          .startFromPlanned(userId, plannedSessionId, { plannedMinutes: bad })
+          .then(
+            () => {
+              throw new Error('expected a 400');
+            },
+            (failure: unknown) => failure as { getStatus: () => number }
+          );
+        expect(error.getStatus()).toBe(400);
+      }
+      expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('EP13I: a micro-start on a flex row fixes the row by its own duration, not the micro target', async () => {
+      plannedSessionFindFirst.mockResolvedValue(
+        plannedRow({ anchor: PlannedSessionAnchor.FLEX_DAY })
+      );
+
+      await service.startFromPlanned(userId, plannedSessionId, { plannedMinutes: 10 });
+
+      const advance = txPlannedSessionUpdateMany.mock.calls[0][0];
+      // The row still represents the full planned block (50 min) — only the
+      // timer's target is 10.
+      expect(advance.data.endTime).toEqual(new Date(now.getTime() + 50 * 60_000));
+      expect(txStudySessionCreate.mock.calls[0][0].data.plannedMinutes).toBe(10);
+    });
+
     it('reads the planned row scoped through its parent plan; missing or foreign → uniform 404 (AC-E13-05)', async () => {
       await service.startFromPlanned(userId, plannedSessionId);
       expect(plannedSessionFindFirst.mock.calls[0][0].where).toEqual({

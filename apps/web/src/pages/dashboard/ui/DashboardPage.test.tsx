@@ -315,9 +315,10 @@ function controlKinds(container: HTMLElement): string[] {
         if (node.getAttribute('data-assignment-focus') === 'add') return 'add';
         if (node.getAttribute('href') === '/profile') return 'profile';
         if (node.getAttribute('aria-label')?.startsWith('See all')) return 'see-all';
-        // EP13D: the today card's start controls.
+        // EP13D: the today card's start controls; EP13I adds the micro-start.
         const text = node.textContent?.trim() ?? '';
-        if (text.startsWith('Start') || text.startsWith('Resume')) return 'start';
+        if (text.startsWith('Start') || text.startsWith('Resume') || text.startsWith('Just 10'))
+          return 'start';
         if (node.getAttribute('data-assignment-focus')?.startsWith('edit:')) return 'row';
         if (node.getAttribute('href')?.startsWith('/courses/')) return 'row';
         return 'other';
@@ -527,7 +528,9 @@ describe('DashboardPage (EP05B)', () => {
       'refresh',
       'add',
       'profile',
-      // EP13D: today's plan — the primary next action — precedes the grid.
+      // EP13D: today's plan — the primary next action — precedes the grid;
+      // EP13I adds the micro-start ("Just 10 min") right beside it.
+      'start',
       'start',
       'see-all',
       'row',

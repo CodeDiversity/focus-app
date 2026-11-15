@@ -4,6 +4,7 @@ import { Timer as TimerIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { FocusTimer } from '@/features/focus-session/ui/FocusTimer';
+import { AbsorbNextOffer } from '@/features/focus-session/ui/AbsorbNextOffer';
 import { FocusAssignmentPanel } from '@/features/focus-session/ui/FocusAssignmentPanel';
 import { FinishSessionDialog } from '@/features/focus-session/ui/FinishSessionDialog';
 import { useFocusSession } from '@/features/focus-session/model/useFocusSession';
@@ -92,6 +93,18 @@ export function FocusPage() {
         onFinish={() => setFinishDialogOpen(true)}
         onReload={() => void reload()}
       />
+      {/* EP13I (D-I6): the absorption offer — the same target-reached rule
+          the timer renders, computed here so the two can never disagree. */}
+      <div className="max-w-2xl mx-auto px-4 sm:px-6">
+        <AbsorbNextOffer
+          session={session}
+          targetReached={
+            session.plannedMinutes != null &&
+            Math.floor(displayedElapsed / 60) >= session.plannedMinutes
+          }
+          onApply={applySession}
+        />
+      </div>
       <div className="max-w-2xl mx-auto px-4 sm:px-6 pb-12">
         <FocusAssignmentPanel assignmentId={session.assignmentId} />
       </div>

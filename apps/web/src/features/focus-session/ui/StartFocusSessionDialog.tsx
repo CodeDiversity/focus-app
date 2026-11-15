@@ -143,6 +143,19 @@ export function StartFocusSessionDialog({
         <Button type="button" variant="outline" onClick={handleClose} disabled={isStarting}>
           Cancel
         </Button>
+        {/* EP13I (D-I1/D-I5): micro-start — an exit from deciding, not one
+            more preset to weigh. Starts immediately with a 10-minute target. */}
+        {!conflict ? (
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={isStarting}
+            onClick={() => void start(10)}
+            aria-label="Start for just 10 minutes"
+          >
+            Just 10 minutes
+          </Button>
+        ) : null}
         <Button
           type="button"
           variant="primary"

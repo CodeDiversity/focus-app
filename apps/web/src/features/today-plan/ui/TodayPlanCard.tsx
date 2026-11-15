@@ -129,16 +129,35 @@ export function TodayPlanCard({ plan, status, error, isFetching, onRetry }: Toda
                   })}
                 </p>
               </div>
-              <Button
-                type="button"
-                size="lg"
-                className="mt-3 w-full sm:mt-0 sm:w-auto max-sm:min-h-[44px]"
-                isLoading={start.startingId === next.id}
-                disabled={Boolean(start.startingId) && start.startingId !== next.id}
-                onClick={() => void start.start(next.id)}
-              >
-                {next.status === 'IN_PROGRESS' ? 'Resume focus' : 'Start focus'}
-              </Button>
+              <div className="mt-3 flex flex-col gap-2 sm:mt-0 sm:flex-row sm:items-center">
+                <Button
+                  type="button"
+                  size="lg"
+                  className="w-full sm:w-auto max-sm:min-h-[44px]"
+                  isLoading={start.startingId === next.id}
+                  disabled={Boolean(start.startingId) && start.startingId !== next.id}
+                  onClick={() => void start.start(next.id)}
+                >
+                  {next.status === 'IN_PROGRESS' ? 'Resume focus' : 'Start focus'}
+                </Button>
+                {/* EP13I (D-I1/D-I2): the micro-start — the barrier is the
+                    first minute, so the smallest honest commitment sits one
+                    tap away, right where initiation happens. Not shown when
+                    re-entering a session already in progress. */}
+                {next.status !== 'IN_PROGRESS' ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="lg"
+                    className="w-full sm:w-auto max-sm:min-h-[44px]"
+                    disabled={Boolean(start.startingId)}
+                    onClick={() => void start.start(next.id, 10)}
+                    aria-label={`Start ${next.assignmentTitle} for just 10 minutes`}
+                  >
+                    Just 10 min
+                  </Button>
+                ) : null}
+              </div>
             </div>
           ) : (
             <div className="rounded-xl border border-success/30 bg-success/10 p-4">

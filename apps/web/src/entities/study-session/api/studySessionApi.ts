@@ -33,11 +33,33 @@ export async function startStudySession(data: StartStudySessionRequest): Promise
  * session straight from the plan. The assignment and the planned duration are
  * inherited server-side.
  *
+ * EP13I (D-I4): an optional `plannedMinutes` (5..480) overrides the target —
+ * the "Just 10 min" micro-start — while the planned row's lifecycle stays
+ * exactly EP13B's.
+ *
  * 201: StudySession projection (linked, ACTIVE); 404 uniform (missing or
- * foreign); 409 open session / not today / not startable.
+ * foreign); 409 open session / not today / not startable; 400 bad minutes.
  */
-export async function startSessionFromPlanned(plannedSessionId: string): Promise<StudySession> {
-  const response = await api.post<StudySession>(`/study-sessions/from-planned/${plannedSessionId}`);
+export async function startSessionFromPlanned(
+  plannedSessionId: string,
+  body?: { plannedMinutes: number }
+): Promise<StudySession> {
+  const response = await api.post<StudySession>(
+    `/study-sessions/from-planned/${plannedSessionId}`,
+    body
+  );
+  return response.data;
+}
+
+/**
+ * EP13I — `POST /study-sessions/:id/absorb-next` (D-I8): fold the next
+ * planned session of the same assignment today into the running session; the
+ * target grows in place.
+ *
+ * 200: the updated StudySession; 404 uniform; 409 not running / no candidate.
+ */
+export async function absorbNextSession(id: string): Promise<StudySession> {
+  const response = await api.post<StudySession>(`/study-sessions/${id}/absorb-next`);
   return response.data;
 }
 

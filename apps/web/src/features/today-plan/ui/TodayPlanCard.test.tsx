@@ -271,4 +271,35 @@ describe('TodayPlanCard (EP13D)', () => {
     expect(screen.getByText(/9:00/)).toBeInTheDocument();
     expect(screen.queryByText(/Anytime/)).not.toBeInTheDocument();
   });
+
+  // ===================== EP13I — the micro-start (D-I1/D-I2) =====================
+
+  it('the hero offers "Just 10 min" and starts the planned session with a 10-minute target', async () => {
+    mockedStart.mockResolvedValue({ id: 'ss-1' } as never);
+    const user = userEvent.setup();
+    renderCard({ plan: plan() });
+
+    const micro = screen.getByRole('button', {
+      name: 'Start Problem set 3 for just 10 minutes',
+    });
+    await user.click(micro);
+    await waitFor(() => expect(mockedStart).toHaveBeenCalledWith('ps-1', { plannedMinutes: 10 }));
+  });
+
+  it('the full start posts no body — EP13D behaviour unchanged by the micro affordance', async () => {
+    mockedStart.mockResolvedValue({ id: 'ss-1' } as never);
+    const user = userEvent.setup();
+    renderCard({ plan: plan() });
+
+    await user.click(screen.getByRole('button', { name: 'Start focus' }));
+    await waitFor(() => expect(mockedStart).toHaveBeenCalledWith('ps-1'));
+  });
+
+  it('no micro affordance on a session already in progress — resuming is not starting', () => {
+    const inProgress = session({ status: 'IN_PROGRESS' });
+    renderCard({ plan: plan({ sessions: [inProgress], nextSession: inProgress }) });
+
+    expect(screen.getByRole('button', { name: 'Resume focus' })).toBeInTheDocument();
+    expect(screen.queryByText('Just 10 min')).not.toBeInTheDocument();
+  });
 });

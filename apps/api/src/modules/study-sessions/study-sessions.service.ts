@@ -15,6 +15,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RESOURCE_NOT_FOUND, ownedWhere } from '../../common/ownership/ownership';
 import { resolveTimeZone, toCivilDate } from '../../common/lib/civil-date';
 import { StartStudySessionDto } from './dto/start-study-session.dto';
+import { StartFromPlannedDto } from './dto/start-from-planned.dto';
 import { FinishStudySessionDto } from './dto/finish-study-session.dto';
 import { ListStudySessionsQueryDto } from './dto/list-study-sessions-query.dto';
 type StudySessionRow = StudySession;
@@ -174,7 +175,14 @@ export class StudySessionsService {
    * 201 → the active session; 404 → uniform; 409 → open session / not today /
    * not startable; 401 → unauthenticated (global guard).
    */
-  async startFromPlanned(userId: string, plannedSessionId: string) {
+  async startFromPlanned(userId: string, plannedSessionId: string, dto?: StartFromPlannedDto) {
+    // Defense in depth for non-HTTP callers (the HTTP path is owned by the
+    // global FieldValidationPipe), the module's existing precedent.
+    const fieldErrors = dtoErrors(dto ?? ({} as StartFromPlannedDto), new StartFromPlannedDto());
+    if (fieldErrors) {
+      throwFieldErrors(fieldErrors);
+    }
+
     const planned = await this.prisma.plannedSession.findFirst({
       where: { id: plannedSessionId, studyPlan: { userId } },
       select: {
@@ -249,7 +257,9 @@ export class StudySessionsService {
           status: StudySessionStatus.ACTIVE,
           elapsedSeconds: 0,
           durationMinutes: 0,
-          plannedMinutes: planned.durationMinutes,
+          // EP13I (D-I4): an explicit target (the 10-minute micro-start)
+          // overrides the planned duration; omitted keeps EP13B's default.
+          plannedMinutes: dto?.plannedMinutes ?? planned.durationMinutes,
           resumedAt: now,
         },
       });
@@ -281,6 +291,118 @@ export class StudySessionsService {
     });
 
     return toStudySessionResponse(created);
+  }
+
+  /**
+   * EP13I — `POST /study-sessions/:id/absorb-next` (D-I8, resolves V-13-6):
+   * hyperfocus absorption. When the student has blown past the target and is
+   * still working, fold the **next** planned session of the same assignment
+   * on the running session's civil day into the running session, instead of
+   * flagging an overrun (AC-E13-11).
+   *
+   * Candidate (deterministic): the earliest `SCHEDULED` planned session —
+   * `startTime` ascending, then `id` — of the running session's assignment,
+   * on the civil day (profile zone) the running session started, excluding
+   * its own linked row (which is IN_PROGRESS anyway).
+   *
+   * Effect, one transaction, both writes conditional so a race can neither
+   * double-absorb nor absorb into a finished session:
+   * - the candidate flips `SCHEDULED → COMPLETED` (its work is part of the
+   *   running session now; EP13C's rollover ignores COMPLETED rows);
+   * - the running session's `plannedMinutes` grows by the candidate's
+   *   duration — the timer target extends in place, nothing is interrupted.
+   *
+   * **No row-level link to the absorbed row** (D-I8): `StudySession.
+   * plannedSessionId` is single-valued, so D13-13's "linked" cannot be
+   * expressed without a migration; the COMPLETED flip inside this
+   * transaction is the audit trail.
+   *
+   * 200 → the updated session; 404 → uniform (missing/foreign id); 409 →
+   * not running / no candidate, each with its own actionable reason.
+   */
+  async absorbNext(userId: string, id: string) {
+    const session = await this.prisma.studySession.findFirst({
+      where: ownedWhere(userId, id),
+      select: {
+        id: true,
+        assignmentId: true,
+        plannedSessionId: true,
+        status: true,
+        startTime: true,
+      },
+    });
+    if (!session) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+    if (session.status !== StudySessionStatus.ACTIVE) {
+      throw new ConflictException('This session isn’t running.');
+    }
+
+    const noCandidate = () =>
+      new ConflictException('No upcoming session of this assignment is planned for today.');
+
+    if (!session.assignmentId) {
+      throw noCandidate();
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { timeZone: true },
+    });
+    if (!user) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+    const timeZone = resolveTimeZone(user.timeZone);
+    // The running session's civil day (profile zone), as UTC midnight — the
+    // plan-date convention (D06-24).
+    const civilDay = toCivilDate(session.startTime, timeZone);
+    const planDate = new Date(`${civilDay}T00:00:00.000Z`);
+
+    const candidate = await this.prisma.plannedSession.findFirst({
+      where: {
+        studyPlan: { userId, date: planDate },
+        assignmentId: session.assignmentId,
+        status: PlannedSessionStatus.SCHEDULED,
+        ...(session.plannedSessionId ? { id: { not: session.plannedSessionId } } : {}),
+      },
+      orderBy: [{ startTime: 'asc' }, { id: 'asc' }],
+      select: { id: true, durationMinutes: true },
+    });
+    if (!candidate) {
+      throw noCandidate();
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      // Conditional flip: a racing second absorb (or a replan) matches 0
+      // rows, and the thrown 409 rolls the whole transaction back.
+      const absorbed = await tx.plannedSession.updateMany({
+        where: {
+          id: candidate.id,
+          studyPlan: { userId },
+          status: PlannedSessionStatus.SCHEDULED,
+        },
+        data: { status: PlannedSessionStatus.COMPLETED },
+      });
+      if (absorbed.count === 0) {
+        throw noCandidate();
+      }
+
+      // Conditional growth: only a still-ACTIVE session absorbs.
+      const grown = await tx.studySession.updateMany({
+        where: { id: session.id, userId, status: StudySessionStatus.ACTIVE },
+        data: { plannedMinutes: { increment: candidate.durationMinutes } },
+      });
+      if (grown.count === 0) {
+        throw new ConflictException('This session isn’t running.');
+      }
+
+      return tx.studySession.findFirst({ where: ownedWhere(userId, session.id) });
+    });
+    if (!updated) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+
+    return toStudySessionResponse(updated);
   }
 
   async pause(userId: string, id: string) {

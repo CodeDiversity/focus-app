@@ -3,6 +3,7 @@ import { StudySessionsService } from './study-sessions.service';
 import { StartStudySessionDto } from './dto/start-study-session.dto';
 import { FinishStudySessionDto } from './dto/finish-study-session.dto';
 import { ListStudySessionsQueryDto } from './dto/list-study-sessions-query.dto';
+import { StartFromPlannedDto } from './dto/start-from-planned.dto';
 import { AuthenticatedUser } from '../../common/types';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -24,9 +25,22 @@ export class StudySessionsController {
   @Post('from-planned/:plannedSessionId')
   startFromPlanned(
     @CurrentUser() user: AuthenticatedUser,
-    @Param('plannedSessionId') plannedSessionId: string
+    @Param('plannedSessionId') plannedSessionId: string,
+    @Body() dto: StartFromPlannedDto
   ) {
-    return this.studySessionsService.startFromPlanned(user.id, plannedSessionId);
+    return this.studySessionsService.startFromPlanned(user.id, plannedSessionId, dto);
+  }
+
+  /**
+   * EP13I — hyperfocus absorption (D-I8, resolves V-13-6): fold the next
+   * SCHEDULED planned session of the same assignment on the running
+   * session's civil day into the running session. The literal second segment
+   * keeps it clear of the parameterised routes, like `:id/pause`.
+   */
+  @Post(':id/absorb-next')
+  @HttpCode(HttpStatus.OK)
+  absorbNext(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.studySessionsService.absorbNext(user.id, id);
   }
 
   @Post(':id/pause')

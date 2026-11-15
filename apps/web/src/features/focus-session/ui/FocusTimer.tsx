@@ -84,9 +84,11 @@ export function FocusTimer({
         >
           {formatted}
         </p>
+        {/* EP13I (D-I7): running past the target is working, not failing —
+            the reached state is positive, never a warning (AC-E13-11). */}
         <p
           className={
-            exceeded ? 'mt-2 text-body-sm text-warning' : 'mt-2 text-body-sm text-text-muted'
+            exceeded ? 'mt-2 text-body-sm text-success' : 'mt-2 text-body-sm text-text-muted'
           }
         >
           {planned == null
@@ -100,7 +102,7 @@ export function FocusTimer({
             <div
               className={
                 exceeded
-                  ? 'h-full bg-warning transition-all duration-base motion-reduce:transition-none'
+                  ? 'h-full bg-success transition-all duration-base motion-reduce:transition-none'
                   : 'h-full bg-accent transition-all duration-base motion-reduce:transition-none'
               }
               style={{ width: `${Math.min(displayedElapsed / (planned * 60), 1) * 100}%` }}

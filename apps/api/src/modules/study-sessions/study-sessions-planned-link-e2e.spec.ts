@@ -218,6 +218,75 @@ describeIntegration('Start focus from a planned session (integration, real datab
     expect(missing.body.message).toBe('Resource not found');
   });
 
+  // ===========================================================================
+  // EP13I — micro-start and hyperfocus absorption (TR-E13-10), end to end.
+  // ===========================================================================
+
+  it('a 10-minute micro-start is linked, targets 10, and its confirmed minutes shrink remaining work (EP13A math)', async () => {
+    const planned = await seedPlanned(student, assignmentId, today());
+
+    const started = await startFromPlanned(student.token, planned.id)
+      .send({ plannedMinutes: 10 })
+      .expect(HttpStatus.CREATED);
+    expect(started.body).toMatchObject({
+      plannedSessionId: planned.id,
+      plannedMinutes: 10,
+      status: 'ACTIVE',
+    });
+    expect(await plannedStatus(planned.id)).toBe('IN_PROGRESS');
+
+    const before = await agent
+      .get('/study-plans/remaining-work')
+      .set('Authorization', `Bearer ${student.token}`)
+      .expect(HttpStatus.OK);
+    const beforeItem = before.body.items.find(
+      (item: { assignmentId: string }) => item.assignmentId === assignmentId
+    );
+
+    await closeOpenSession(student.token, 10);
+    expect(await plannedStatus(planned.id)).toBe('COMPLETED');
+
+    // The ten minutes are real: confirmed grew and remaining shrank (EP13A).
+    const after = await agent
+      .get('/study-plans/remaining-work')
+      .set('Authorization', `Bearer ${student.token}`)
+      .expect(HttpStatus.OK);
+    const afterItem = after.body.items.find(
+      (item: { assignmentId: string }) => item.assignmentId === assignmentId
+    );
+    expect(afterItem.confirmedMinutes).toBe(beforeItem.confirmedMinutes + 10);
+    if (beforeItem.remainingMinutes !== null) {
+      expect(afterItem.remainingMinutes).toBe(Math.max(0, beforeItem.remainingMinutes - 10));
+    }
+  });
+
+  it('absorb-next folds the next planned session into the running one and cannot double-absorb', async () => {
+    const current = await seedPlanned(student, assignmentId, today());
+    const next = await seedPlanned(student, assignmentId, today(), {
+      startTime: new Date(`${today()}T15:00:00.000Z`),
+      endTime: new Date(`${today()}T16:00:00.000Z`),
+      durationMinutes: 60,
+    });
+
+    const started = await startFromPlanned(student.token, current.id).expect(HttpStatus.CREATED);
+
+    const absorbed = await agent
+      .post(`/study-sessions/${started.body.id}/absorb-next`)
+      .set('Authorization', `Bearer ${student.token}`)
+      .expect(HttpStatus.OK);
+    expect(absorbed.body.plannedMinutes).toBe(50 + 60);
+    expect(await plannedStatus(next.id)).toBe('COMPLETED');
+
+    // Nothing left to absorb → an actionable 409, nothing changed.
+    const again = await agent
+      .post(`/study-sessions/${started.body.id}/absorb-next`)
+      .set('Authorization', `Bearer ${student.token}`)
+      .expect(HttpStatus.CONFLICT);
+    expect(again.body.message).toContain('No upcoming session');
+
+    await closeOpenSession(student.token, 1);
+  });
+
   it('no token → 401 (global guard)', async () => {
     await agent.post(`/study-sessions/from-planned/${uuidv4()}`).expect(HttpStatus.UNAUTHORIZED);
   });

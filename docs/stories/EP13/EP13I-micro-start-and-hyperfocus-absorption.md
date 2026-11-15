@@ -5,7 +5,7 @@
 **Parent epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md)
 **Milestone:** M6
 **Layer:** Frontend (+ one small API endpoint, one optional request field)
-**Status:** Ready (ui-refiner pass complete 2026-11-15)
+**Status:** Implemented — awaiting parent review (2026-11-15; record `./artifacts/EP13I/implementation.md`)
 **Refined:** 2026-11-15 (ui-refiner)
 **Dependencies:** EP13B + EP13D implemented (start paths); EP13H implemented (flex sessions are the initiation gap this closes, F-EP13H-02). D13-13 provisional (V-13-6).
 **Jira key:** Pending creation

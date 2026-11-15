@@ -20,7 +20,7 @@ export interface UseStartPlannedSessionResult {
   startingId: string | null;
   error: string | null;
   conflict: boolean;
-  start: (plannedSessionId: string) => Promise<void>;
+  start: (plannedSessionId: string, plannedMinutes?: number) => Promise<void>;
   viewCurrentSession: () => void;
   clearError: () => void;
 }
@@ -39,14 +39,21 @@ export function useStartPlannedSession(onStalePlan?: () => void): UseStartPlanne
     setConflict(false);
   };
 
-  const start = async (plannedSessionId: string) => {
+  const start = async (plannedSessionId: string, plannedMinutes?: number) => {
     // One start at a time: a double tap must not open two sessions.
     if (startingId) return;
     setStartingId(plannedSessionId);
     setError(null);
     setConflict(false);
     try {
-      await startSessionFromPlanned(plannedSessionId);
+      // EP13I (D-I2): the micro-start passes an explicit 10-minute target;
+      // the planned row's lifecycle is identical either way. The full start
+      // keeps its exact one-argument call (no body on the wire).
+      if (plannedMinutes === undefined) {
+        await startSessionFromPlanned(plannedSessionId);
+      } else {
+        await startSessionFromPlanned(plannedSessionId, { plannedMinutes });
+      }
       navigate('/focus');
     } catch (err: unknown) {
       const apiError = extractApiError(err);
