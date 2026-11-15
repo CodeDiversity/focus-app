@@ -101,6 +101,7 @@ const previewFixture = {
   ],
   warnings: [],
   deferred: [],
+  calibration: [],
 };
 
 const savedFixture = {
@@ -164,6 +165,33 @@ describe('PlanPage', () => {
     await user.click(screen.getByRole('button', { name: /generate plan/i }));
     await waitFor(() => expect(mockedPreview).toHaveBeenCalled());
     expect(screen.getAllByText('Essay').length).toBeGreaterThan(0);
+  });
+
+  it('a calibrated preview renders the neutral calibration note above the week (EP13L-AC4)', async () => {
+    mockedPreview.mockResolvedValue({
+      ...previewFixture,
+      calibration: [{ assignmentType: 'PAPER', multiplier: 1.6, samples: 4 }],
+    } as never);
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() => expect(mockedList).toHaveBeenCalled());
+    await user.click(screen.getByRole('button', { name: /generate plan/i }));
+    await waitFor(() => expect(mockedPreview).toHaveBeenCalled());
+    expect(
+      screen.getByRole('note', { name: 'How your estimates were adjusted' })
+    ).toHaveTextContent(
+      'Your papers usually take about 1.6× your estimate, so we planned for that.'
+    );
+  });
+
+  it('an uncalibrated preview renders no calibration note (EP13L-AC3)', async () => {
+    mockedPreview.mockResolvedValue(previewFixture as never);
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() => expect(mockedList).toHaveBeenCalled());
+    await user.click(screen.getByRole('button', { name: /generate plan/i }));
+    await waitFor(() => expect(mockedPreview).toHaveBeenCalled());
+    expect(screen.queryByTestId('calibration-note')).not.toBeInTheDocument();
   });
 
   it('save posts projected four-field sessions and renders saved week', async () => {

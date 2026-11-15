@@ -17,6 +17,8 @@ import {
   validateStudyPreferences,
 } from '../../domain/study-planning/preferences';
 import { classifyAssignments } from '../../domain/study-planning/remaining-work';
+import { calibrationSamplesOf, computeCalibration } from '../../domain/study-planning/calibration';
+import type { CalibrationTable } from '../../domain/study-planning/calibration';
 import { compareAssignments } from '../../domain/study-planning/ordering';
 import { schedule } from '../../domain/study-planning/scheduler';
 import { findConflicts } from '../../domain/study-planning/conflicts';
@@ -25,6 +27,7 @@ import type { ReplanBusyInterval } from '../../domain/study-planning/catch-up';
 import type {
   AssignmentFacts,
   AssignmentStatusValue,
+  CalibrationAnnotation,
   ClassifiedAssignment,
   DatedInterval,
   PartOfDayValue,
@@ -86,6 +89,12 @@ export type RemainingWorkItem = {
   remainingMinutes: number | null;
   status: UnfinishedAssignmentStatus;
   flagged: RemainingWorkFlag | null;
+  /**
+   * EP13L — the explanation behind a calibrated `remainingMinutes`
+   * (`{ assignmentType, multiplier, samples }`), or `null` when the
+   * student's history gave no multiplier (the figure is EP13A's unchanged).
+   */
+  calibration: CalibrationAnnotation | null;
 };
 
 /** The body of `GET /study-plans/remaining-work`. */
@@ -261,7 +270,23 @@ function toRemainingWorkItem(assignment: ClassifiedAssignment): RemainingWorkIte
     remainingMinutes: assignment.remainingMinutes,
     status: assignment.status,
     flagged: assignment.flagged,
+    calibration: assignment.calibration,
   };
+}
+
+/**
+ * EP13L — the distinct annotations behind a set of classified assignments,
+ * one per figure (a type's own, or the overall fallback), in a stable
+ * order. Empty for the uncalibrated student (EP13L-AC3: no annotation noise).
+ */
+function calibrationAnnotationsOf(
+  assignments: readonly ClassifiedAssignment[]
+): CalibrationAnnotation[] {
+  const byKey = new Map<string, CalibrationAnnotation>();
+  for (const a of assignments) {
+    if (a.calibration) byKey.set(a.calibration.assignmentType ?? '', a.calibration);
+  }
+  return [...byKey.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([, v]) => v);
 }
 
 // ---------------------------------------------------------------------------
@@ -307,6 +332,13 @@ export type PlanPreview = {
   days: PlanPreviewDay[];
   warnings: PlanPreviewWarning[];
   deferred: { assignmentId: string; minutes: number }[];
+  /**
+   * EP13L — every multiplier the proposal was planned with, each with its
+   * history (`{ assignmentType, multiplier, samples }`); `assignmentType:
+   * null` is the overall fallback (D-L3). Empty when no history calibrated
+   * anything — the proposal is then exactly EP13A's.
+   */
+  calibration: CalibrationAnnotation[];
 };
 
 export type CatchUpPreview = PlanPreview & {
@@ -402,6 +434,38 @@ export class StudyPlansService {
       }
     }
     return { byAssignment, unattributedMinutes, totalMinutes };
+  }
+
+  /**
+   * EP13L (D-L5) — the student's calibration table, computed once per plan
+   * read from their own finished assignments and the confirmed-time map
+   * above (D-L2: confirmed session minutes, never `actualHours`). Pure
+   * arithmetic over owned rows; nothing is persisted and `Assignment` is
+   * never written. The query is `userId`-scoped and pre-filters what the
+   * domain's sample rule (`calibrationSamplesOf`) re-applies.
+   */
+  private async calibrationTable(
+    userId: string,
+    confirmedByAssignment: ReadonlyMap<string, number>
+  ): Promise<CalibrationTable> {
+    const finished = await this.prisma.assignment.findMany({
+      where: {
+        userId,
+        status: { in: ['COMPLETED', 'SUBMITTED', 'GRADED'] },
+        estimatedHours: { gt: 0 },
+      },
+      select: { id: true, type: true, estimatedHours: true, status: true },
+    });
+    const samples = calibrationSamplesOf(
+      finished.map((row) => ({
+        id: row.id,
+        assignmentType: row.type ?? null,
+        estimatedHours: row.estimatedHours,
+        status: row.status as AssignmentStatusValue,
+      })),
+      confirmedByAssignment
+    );
+    return computeCalibration(samples);
   }
 
   /**
@@ -607,6 +671,7 @@ export class StudyPlansService {
         status: true,
         priority: true,
         createdAt: true,
+        type: true,
       },
     });
 
@@ -633,9 +698,13 @@ export class StudyPlansService {
       status: assignment.status,
       priority: assignment.priority,
       createdAt: assignment.createdAt,
+      assignmentType: assignment.type ?? null,
     }));
 
-    const { schedulable, flagged } = classifyAssignments(facts, confirmedByAssignment);
+    // EP13L: the student's own pace scales each estimate before confirmed
+    // time is subtracted (D-L1); every item carries its explanation.
+    const calibration = await this.calibrationTable(userId, confirmedByAssignment);
+    const { schedulable, flagged } = classifyAssignments(facts, confirmedByAssignment, calibration);
 
     // The shared comparator (D06-22). "Today" is the server's civil date in
     // the profile zone — the client never derives a date from the browser's
@@ -933,6 +1002,7 @@ export class StudyPlansService {
         status: true,
         priority: true,
         createdAt: true,
+        type: true,
       },
     });
 
@@ -951,6 +1021,13 @@ export class StudyPlansService {
     // (State B) and feeds the classification below, so work already done is
     // never scheduled again.
     const confirmedTime = await this.confirmedTimeByAssignment(userId);
+
+    // EP13L (D-L5): the calibration table, once per plan read, beside the
+    // confirmed map it is derived from. Applied below in classification
+    // (`est × m − confirmed`, D-L1) so placement v2 and the EP13G partition
+    // read calibrated remaining work through the one existing path
+    // (EP13L-AC2, EP13L-AC5).
+    const calibration = await this.calibrationTable(userId, confirmedTime.byAssignment);
 
     // EP13A (AC-E13-02): one read of the planned sessions serves every
     // planning path. Preserved rows (completed or locked) become busy
@@ -984,9 +1061,14 @@ export class StudyPlansService {
       status: a.status as AssignmentStatusValue,
       priority: a.priority as AssignmentFacts['priority'],
       createdAt: a.createdAt,
+      assignmentType: a.type ?? null,
     }));
 
-    const { schedulable: classified } = classifyAssignments(facts, confirmedTime.byAssignment);
+    const { schedulable: classified } = classifyAssignments(
+      facts,
+      confirmedTime.byAssignment,
+      calibration
+    );
 
     // EP13A (AC-E13-02): minutes held by locked, future, still-SCHEDULED
     // sessions are kept commitments — subtract them from the work handed to
@@ -1070,6 +1152,9 @@ export class StudyPlansService {
       titleById,
       dueById,
       assignments,
+      // EP13L (EP13L-AC3): the explanations behind the engine's input —
+      // empty for the uncalibrated student.
+      calibration: calibrationAnnotationsOf(schedulable),
     };
   }
 
@@ -1131,6 +1216,7 @@ export class StudyPlansService {
       days,
       warnings,
       deferred,
+      calibration: data.calibration,
     };
   }
 
@@ -1232,6 +1318,7 @@ export class StudyPlansService {
       days,
       warnings,
       deferred,
+      calibration: data.calibration,
       missedSessions: output.missedSessions,
       lockedPreserved: output.lockedPreserved,
       completedPreserved: output.completedPreserved,

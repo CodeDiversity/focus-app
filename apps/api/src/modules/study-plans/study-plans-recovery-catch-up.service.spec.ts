@@ -547,6 +547,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
       const result = await service.catchUpPreview(userId);
 
       expect(Object.keys(result).sort()).toEqual([
+        'calibration',
         'completedPreserved',
         'days',
         'deferred',

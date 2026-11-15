@@ -46,6 +46,17 @@ export interface PlanWarning {
 /** Backwards-compatible alias for the looser preview warning shape (EP06F). */
 export type PlanPreviewWarning = PlanWarning;
 
+/**
+ * EP13L — the explanation behind a calibrated figure: the student's own
+ * finished work of this `assignmentType` (`null` = all finished work, the
+ * overall fallback) took `multiplier`× the estimate over `samples` items.
+ */
+export interface CalibrationAnnotation {
+  assignmentType: string | null;
+  multiplier: number;
+  samples: number;
+}
+
 export interface PlanDeferred {
   assignmentId: string;
   minutes: number;
@@ -71,6 +82,8 @@ export interface PlanPreview {
   days: PlanPreviewDay[];
   warnings: PlanWarning[];
   deferred: PlanDeferred[];
+  /** EP13L — every multiplier this proposal was planned with; empty when none. */
+  calibration: CalibrationAnnotation[];
 }
 
 export interface SavedPlanSession {
@@ -155,6 +168,8 @@ export interface RemainingWorkItem {
   remainingMinutes: number | null;
   status: string;
   flagged: RemainingWorkFlag;
+  /** EP13L — why `remainingMinutes` differs from estimate − confirmed; `null` when it does not. */
+  calibration: CalibrationAnnotation | null;
 }
 
 export interface RemainingWorkResponse {

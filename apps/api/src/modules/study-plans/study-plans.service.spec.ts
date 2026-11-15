@@ -473,6 +473,7 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
       expect(result.items).toHaveLength(1);
       expect(Object.keys(result.items[0]).sort()).toEqual([
         'assignmentId',
+        'calibration',
         'confirmedMinutes',
         'courseCode',
         'dueDate',
@@ -492,6 +493,7 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
         remainingMinutes: 180,
         status: 'PENDING',
         flagged: null,
+        calibration: null,
       });
     });
 

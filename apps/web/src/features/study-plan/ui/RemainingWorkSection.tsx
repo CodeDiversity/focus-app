@@ -7,6 +7,8 @@ import { getErrorMessage } from '@/shared/lib/errors';
 import { listRemainingWork } from '@/entities/study-plan/api/studyPlanApi';
 import type { RemainingWorkItem } from '@/entities/study-plan/model/types';
 import { formatMinutes } from '@/features/study-plan/lib/formatMinutes';
+import { distinctCalibrations } from '@/features/study-plan/lib/calibrationCopy';
+import { CalibrationNote } from '@/features/study-plan/ui/CalibrationNote';
 
 export interface RemainingWorkSectionProps {
   timeZone?: string;
@@ -97,6 +99,8 @@ export function RemainingWorkSection({ timeZone, className }: RemainingWorkSecti
                 {formatMinutes(totalRemaining)} of work left
               </p>
             )}
+            {/* EP13L (D-L4): the "Left" figures already include the student's own pace. */}
+            <CalibrationNote calibration={distinctCalibrations(items)} className="mb-3" />
             <ul className="divide-y divide-border">
               {items.map((item) => {
                 const badge = flaggedLabel(item.flagged);

@@ -25,6 +25,7 @@ const item = (overrides: Partial<Record<string, unknown>> = {}) => ({
   remainingMinutes: 120,
   status: 'PENDING',
   flagged: null,
+  calibration: null,
   ...overrides,
 });
 
@@ -151,5 +152,35 @@ describe('RemainingWorkSection', () => {
     } as never);
     renderSection();
     await waitFor(() => expect(screen.getByText(/Due 2026-11-01/)).toBeInTheDocument());
+  });
+
+  // EP13L-AC4 — the calibration note where estimates are shown.
+  it('renders one neutral calibration sentence per multiplier behind the rows (EP13L)', async () => {
+    const paper = { assignmentType: 'PAPER', multiplier: 1.6, samples: 4 };
+    mocked.mockResolvedValue({
+      items: [
+        item({ assignmentId: 'a-1', title: 'Essay', remainingMinutes: 192, calibration: paper }),
+        item({ assignmentId: 'a-2', title: 'Essay 2', remainingMinutes: 96, calibration: paper }),
+        item({ assignmentId: 'a-3', title: 'Lab', calibration: null }),
+      ],
+      unattributedConfirmedMinutes: 0,
+    } as never);
+    renderSection();
+    await waitFor(() => expect(screen.getByText('Essay')).toBeInTheDocument());
+    const note = screen.getByRole('note', { name: 'How your estimates were adjusted' });
+    expect(note).toHaveTextContent(
+      'Your papers usually take about 1.6× your estimate, so we planned for that.'
+    );
+    // One sentence for the one figure, not one per row.
+    expect(
+      screen.queryAllByRole('listitem').filter((li) => li.closest('[role="note"]'))
+    ).toHaveLength(0);
+  });
+
+  it('shows no calibration note for an uncalibrated student (EP13L-AC3)', async () => {
+    mocked.mockResolvedValue({ items: [item()], unattributedConfirmedMinutes: 0 } as never);
+    renderSection();
+    await waitFor(() => expect(screen.getByText('Essay')).toBeInTheDocument());
+    expect(screen.queryByTestId('calibration-note')).not.toBeInTheDocument();
   });
 });

@@ -20,6 +20,7 @@ import { PlanWeek } from '@/features/study-plan/ui/PlanWeek';
 import { PlanSessionEditor } from '@/features/study-plan/ui/PlanSessionEditor';
 import { RemainingWorkSection } from '@/features/study-plan/ui/RemainingWorkSection';
 import { WorkloadWarnings } from '@/features/study-plan/ui/WorkloadWarnings';
+import { CalibrationNote } from '@/features/study-plan/ui/CalibrationNote';
 import { TodayPlanCard } from '@/features/today-plan/ui/TodayPlanCard';
 import { useTodayPlanQuery } from '@/features/today-plan/api/todayPlanApi';
 import { usePlanHealthQuery } from '@/features/plan-health/api/planHealthApi';
@@ -277,6 +278,8 @@ export function PlanPage() {
                   {preview.from} – {preview.to} · {preview.timeZone}
                 </p>
               </div>
+              {/* EP13L (D-L4): why the proposal may be longer than the raw estimates. */}
+              <CalibrationNote calibration={preview.calibration} className="mb-4" />
               {preview.days.every((d) => d.sessions.length === 0) && (
                 <div className="mb-4 card p-4 text-center" data-testid="plan-empty">
                   <p className="text-sm text-text">No sessions proposed — Generate a plan</p>

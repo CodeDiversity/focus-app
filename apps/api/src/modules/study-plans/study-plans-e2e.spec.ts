@@ -437,6 +437,7 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
       for (const item of response.body.items) {
         expect(Object.keys(item).sort()).toEqual([
           'assignmentId',
+          'calibration',
           'confirmedMinutes',
           'courseCode',
           'dueDate',

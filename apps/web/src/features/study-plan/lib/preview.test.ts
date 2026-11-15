@@ -49,6 +49,7 @@ const preview: PlanPreview = {
   ],
   warnings: [],
   deferred: [],
+  calibration: [],
 };
 
 describe('flattenPreview (EP13H)', () => {

@@ -1,3 +1,5 @@
+import { calibratedEstimateMinutes, multiplierFor } from './calibration';
+import type { CalibrationTable } from './calibration';
 import type {
   AssignmentFacts,
   AssignmentStatusValue,
@@ -20,7 +22,11 @@ import type {
  *   one) → `MISSING_ESTIMATE`; no due date → `MISSING_DUE_DATE`;
  *   `MISSING_ESTIMATE` wins when both are missing;
  * - the remaining-work arithmetic — `remainingMinutes = max(0,
- *   estimatedMinutes − confirmedMinutes)`.
+ *   estimatedMinutes − confirmedMinutes)`;
+ * - EP13L (D-L1): when a calibration table is supplied, the estimate is
+ *   scaled **first** — `max(0, round(estimatedMinutes × m) − confirmed)` —
+ *   so confirmed minutes are never inflated; `estimatedMinutes` stays raw
+ *   and `calibration` carries the explanation.
  *
  * It is a pure domain module (D06-17): it imports nothing from `@nestjs/*`,
  * nothing from Prisma, reads no clock and knows no time zone. The caller
@@ -100,7 +106,8 @@ export function remainingMinutesOf(
  */
 export function classifyAssignments(
   assignments: AssignmentFacts[],
-  confirmedByAssignment: ReadonlyMap<string, number>
+  confirmedByAssignment: ReadonlyMap<string, number>,
+  calibration?: CalibrationTable
 ): { schedulable: SchedulableAssignment[]; flagged: FlaggedAssignment[] } {
   const schedulable: SchedulableAssignment[] = [];
   const flagged: FlaggedAssignment[] = [];
@@ -113,6 +120,18 @@ export function classifyAssignments(
     const estimatedMinutes = estimateToMinutes(assignment.estimatedHours);
     const confirmedMinutes = confirmedByAssignment.get(assignment.id) ?? 0;
 
+    // EP13L (D-L1): scale the estimate before subtracting confirmed time.
+    // A missing estimate has nothing to scale and carries no annotation.
+    const annotation =
+      calibration && estimatedMinutes !== null
+        ? multiplierFor(calibration, assignment.assignmentType)
+        : null;
+    const calibratedMinutes =
+      estimatedMinutes === null
+        ? null
+        : calibratedEstimateMinutes(estimatedMinutes, annotation?.multiplier ?? null);
+    const remainingMinutes = remainingMinutesOf(calibratedMinutes, confirmedMinutes);
+
     const base = {
       id: assignment.id,
       title: assignment.title,
@@ -120,10 +139,11 @@ export function classifyAssignments(
       dueDate: assignment.dueDate,
       estimatedMinutes,
       confirmedMinutes,
-      remainingMinutes: remainingMinutesOf(estimatedMinutes, confirmedMinutes),
+      remainingMinutes,
       status: assignment.status,
       priority: assignment.priority,
       createdAt: assignment.createdAt,
+      calibration: annotation,
     };
 
     // The flagging rule (AC-E06-09, D06-25) — expressed here and nowhere
@@ -144,7 +164,7 @@ export function classifyAssignments(
       ...base,
       dueDate: assignment.dueDate,
       estimatedMinutes,
-      remainingMinutes: remainingMinutesOf(estimatedMinutes, confirmedMinutes),
+      remainingMinutes: remainingMinutes as number,
       flagged: null,
     });
   }

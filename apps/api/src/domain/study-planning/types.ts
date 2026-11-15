@@ -98,6 +98,23 @@ export type AssignmentFacts = {
   status: AssignmentStatusValue;
   priority: AssignmentPriorityValue;
   createdAt: Date;
+  /**
+   * EP13L — the closed `Assignment.type` identifier (`null`/omitted when
+   * untyped). Only the calibration lookup reads it (`calibration.ts`).
+   */
+  assignmentType?: string | null;
+};
+
+/**
+ * EP13L — the explanation that travels with every calibrated value
+ * (AC-E13-13): which history produced the multiplier. `assignmentType` is
+ * `null` when the figure is the overall fallback (D-L3). The shared API
+ * contract's `calibration` annotation.
+ */
+export type CalibrationAnnotation = {
+  assignmentType: string | null;
+  multiplier: number;
+  samples: number;
 };
 
 /**
@@ -109,6 +126,10 @@ export type AssignmentFacts = {
  *   estimate).
  * - `flagged` is `null` for a schedulable assignment and the reason
  *   otherwise.
+ * - `estimatedMinutes` is always the **raw** estimate (EP13L-AC2);
+ *   `remainingMinutes` is `max(0, round(estimate × multiplier) − confirmed)`
+ *   and `calibration` explains the multiplier, or is `null` when none
+ *   applied (the uncalibrated student sees exactly the EP13A figures).
  */
 export type ClassifiedAssignment = {
   id: string;
@@ -122,6 +143,7 @@ export type ClassifiedAssignment = {
   priority: AssignmentPriorityValue;
   createdAt: Date;
   flagged: RemainingWorkFlag | null;
+  calibration: CalibrationAnnotation | null;
 };
 
 /**

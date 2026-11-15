@@ -285,6 +285,7 @@ describeIntegration('study preferences data scoping (integration, real database)
           expect(item).not.toHaveProperty('userId');
           expect(Object.keys(item).sort()).toEqual([
             'assignmentId',
+            'calibration',
             'confirmedMinutes',
             'courseCode',
             'dueDate',

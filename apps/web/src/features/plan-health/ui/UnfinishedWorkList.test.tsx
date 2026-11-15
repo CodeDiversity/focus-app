@@ -13,6 +13,7 @@ const item: RemainingWorkItem = {
   remainingMinutes: 90,
   status: 'PENDING',
   flagged: null,
+  calibration: null,
 };
 
 describe('UnfinishedWorkList', () => {

@@ -28,6 +28,8 @@ describe('StudyPlansService EP13A reality inputs (unit, mocked PrismaService)', 
 
   const userFindUnique = jest.fn();
   const assignmentFindMany = jest.fn();
+  const assignmentUpdate = jest.fn();
+  const assignmentUpdateMany = jest.fn();
   const availabilitySlotFindMany = jest.fn();
   const courseFindMany = jest.fn();
   const studySessionFindMany = jest.fn();
@@ -37,7 +39,13 @@ describe('StudyPlansService EP13A reality inputs (unit, mocked PrismaService)', 
 
   const prisma = {
     user: { findUnique: userFindUnique },
-    assignment: { findMany: assignmentFindMany },
+    // EP13L: `update`/`updateMany` exist only so the spec can assert they are
+    // never called — calibration must never write an `Assignment` row.
+    assignment: {
+      findMany: assignmentFindMany,
+      update: assignmentUpdate,
+      updateMany: assignmentUpdateMany,
+    },
     availabilitySlot: { findMany: availabilitySlotFindMany },
     course: { findMany: courseFindMany },
     studySession: { findMany: studySessionFindMany, groupBy: studySessionGroupBy },
@@ -261,5 +269,144 @@ describe('StudyPlansService EP13A reality inputs (unit, mocked PrismaService)', 
     const aggregation = studySessionGroupBy.mock.calls[0][0];
     expect(aggregation.where).toEqual({ userId, status: 'COMPLETED' });
     expect(aggregation.by).toEqual(['assignmentId']);
+  });
+
+  // =========================================================================
+  // EP13L — deterministic estimate calibration through the one remaining-work
+  // path (TR-E13-12: application, payload annotations, ownership scoping).
+  // =========================================================================
+
+  describe('EP13L estimate calibration', () => {
+    /** A finished paper: 1 h estimated; its confirmed minutes come from the groupBy. */
+    const finishedRow = (id: string, type: string | null = 'PAPER') => ({
+      id,
+      type,
+      estimatedHours: 1,
+      status: 'GRADED',
+    });
+
+    /**
+     * `assignment.findMany` is one mock serving two reads: the unfinished
+     * candidates (status PENDING/IN_PROGRESS) and the finished history
+     * (status COMPLETED/SUBMITTED/GRADED). Route on the `where` clause.
+     */
+    const serveAssignments = (unfinished: unknown[], finished: unknown[]) => {
+      assignmentFindMany.mockImplementation(
+        ({ where }: { where: { status?: { in?: string[] } } }) =>
+          Promise.resolve(where.status?.in?.includes('GRADED') ? finished : unfinished)
+      );
+    };
+
+    /** Three finished papers that each took 1.6× their estimate (96 of 60 minutes). */
+    const papersTakeLonger = () => {
+      serveAssignments(
+        [assignmentRow({ type: 'PAPER' })],
+        [finishedRow('f-1'), finishedRow('f-2'), finishedRow('f-3')]
+      );
+      studySessionGroupBy.mockResolvedValue([
+        { assignmentId: 'f-1', _sum: { durationMinutes: 96 } },
+        { assignmentId: 'f-2', _sum: { durationMinutes: 96 } },
+        { assignmentId: 'f-3', _sum: { durationMinutes: 96 } },
+      ]);
+    };
+
+    it('scales the estimate before confirmed time is subtracted and annotates the preview (EP13L-AC2, EP13L-AC3, D-L1)', async () => {
+      papersTakeLonger();
+      // 30 confirmed minutes on the open paper: 120 × 1.6 = 192; 192 − 30 = 162.
+      studySessionGroupBy.mockResolvedValue([
+        { assignmentId: 'a-1', _sum: { durationMinutes: 30 } },
+        { assignmentId: 'f-1', _sum: { durationMinutes: 96 } },
+        { assignmentId: 'f-2', _sum: { durationMinutes: 96 } },
+        { assignmentId: 'f-3', _sum: { durationMinutes: 96 } },
+      ]);
+
+      const preview = await service.preview(userId);
+
+      expect(placedMinutes(preview, 'a-1')).toBe(162);
+      expect(preview.calibration).toEqual([
+        { assignmentType: 'PAPER', multiplier: 1.6, samples: 3 },
+      ]);
+    });
+
+    it('annotates each remaining-work item and keeps the raw estimate visible (EP13L-AC2, EP13L-AC3)', async () => {
+      papersTakeLonger();
+
+      const result = await service.getRemainingWork(userId);
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].estimatedMinutes).toBe(120);
+      expect(result.items[0].remainingMinutes).toBe(192);
+      expect(result.items[0].calibration).toEqual({
+        assignmentType: 'PAPER',
+        multiplier: 1.6,
+        samples: 3,
+      });
+    });
+
+    it("an uncalibrated student (under 3 samples everywhere) sees exactly today's behavior (EP13L-AC3)", async () => {
+      serveAssignments(
+        [assignmentRow({ type: 'PAPER' })],
+        [finishedRow('f-1'), finishedRow('f-2')]
+      );
+      studySessionGroupBy.mockResolvedValue([
+        { assignmentId: 'f-1', _sum: { durationMinutes: 96 } },
+        { assignmentId: 'f-2', _sum: { durationMinutes: 96 } },
+      ]);
+
+      const preview = await service.preview(userId);
+      const remaining = await service.getRemainingWork(userId);
+
+      expect(placedMinutes(preview, 'a-1')).toBe(120);
+      expect(preview.calibration).toEqual([]);
+      expect(remaining.items[0].remainingMinutes).toBe(120);
+      expect(remaining.items[0].calibration).toBeNull();
+    });
+
+    it('an untyped open assignment falls back to the overall figure (D-L3)', async () => {
+      serveAssignments(
+        [assignmentRow({ type: null })],
+        [finishedRow('f-1', 'PAPER'), finishedRow('f-2', 'QUIZ'), finishedRow('f-3', null)]
+      );
+      studySessionGroupBy.mockResolvedValue([
+        { assignmentId: 'f-1', _sum: { durationMinutes: 120 } },
+        { assignmentId: 'f-2', _sum: { durationMinutes: 120 } },
+        { assignmentId: 'f-3', _sum: { durationMinutes: 120 } },
+      ]);
+
+      const preview = await service.preview(userId);
+
+      expect(placedMinutes(preview, 'a-1')).toBe(240);
+      expect(preview.calibration).toEqual([{ assignmentType: null, multiplier: 2, samples: 3 }]);
+    });
+
+    it('scopes the history query to the authenticated student and never writes an Assignment (DoD 3, EP13L-AC2)', async () => {
+      papersTakeLonger();
+
+      await service.preview(userId);
+      await service.getRemainingWork(userId);
+
+      expect(assignmentFindMany).toHaveBeenCalled();
+      for (const call of assignmentFindMany.mock.calls) {
+        expect(call[0].where.userId).toBe(userId);
+      }
+      const historyReads = assignmentFindMany.mock.calls.filter((call) =>
+        call[0].where.status?.in?.includes('GRADED')
+      );
+      expect(historyReads).toHaveLength(2);
+      for (const [args] of historyReads) {
+        expect(args.where.status.in).toEqual(['COMPLETED', 'SUBMITTED', 'GRADED']);
+        expect(args.where.estimatedHours).toEqual({ gt: 0 });
+      }
+      expect(assignmentUpdate).not.toHaveBeenCalled();
+      expect(assignmentUpdateMany).not.toHaveBeenCalled();
+    });
+
+    it('is deterministic: the same history yields the same proposal and annotation', async () => {
+      papersTakeLonger();
+      const a = await service.preview(userId);
+      const b = await service.preview(userId);
+      expect(b.days).toEqual(a.days);
+      expect(b.calibration).toEqual(a.calibration);
+    });
   });
 });

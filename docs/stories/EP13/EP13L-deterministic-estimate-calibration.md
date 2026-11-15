@@ -4,7 +4,7 @@
 **Parent epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md)
 **Milestone:** M6
 **Layer:** Backend (pure domain core + small frontend annotation)
-**Status:** Ready
+**Status:** Implemented — awaiting parent review — record: [`artifacts/EP13L/implementation.md`](./artifacts/EP13L/implementation.md)
 **Dependencies:** EP13A implemented (calibration applies where confirmed time is attributed); EP13F + EP13G implemented (calibrated remaining work feeds placement v2's budgets and the flex/fixed partition — see *Review note*). D13-7 provisional.
 **Reviewed:** 2026-11-15 — one AC added for the EP13G interaction.
 **Replanned:** 2026-11-15 — converted to the shared-understanding template (EP13Q); decisions D-L1…D-L5 proposed for user review before implementation.
@@ -117,10 +117,10 @@ than an emergent one.
 | ID | Options considered | Recommended | Why | Ruling |
 |---|---|---|---|---|
 | D-L1 ▲ (refines D13-7) | (a) multiply the estimate **before** EP13A subtracts confirmed minutes (`est×m − confirmed`); (b) multiply the remainder after subtraction (`(est − confirmed)×m`) | **(a)** | Confirmed minutes are real and must not be inflated; (b) would re-scale work already done. Material: changes plan math for every calibrated student. | **Ratified (user, 2026-11-15)** |
-| D-L2 | Sample source: (a) `StudySession` confirmed minutes (EP13A attribution); (b) self-reported `Assignment.actualHours` | **(a)** | EP06 already ignores `actualHours` as unreliable; EP13A made confirmed minutes authoritative. | Proposed |
-| D-L3 | Fallback when a type has < 3 samples: (a) overall median across types; (b) 1.0 until the type has 3 | **(a)**, itself gated at ≥ 3 overall samples | A student with 3 finished essays and 1 problem set still benefits; (b) is simpler but delays value. | Proposed |
+| D-L2 | Sample source: (a) `StudySession` confirmed minutes (EP13A attribution); (b) self-reported `Assignment.actualHours` | **(a)** | EP06 already ignores `actualHours` as unreliable; EP13A made confirmed minutes authoritative. | Ratified by default, 2026-11-15 |
+| D-L3 | Fallback when a type has < 3 samples: (a) overall median across types; (b) 1.0 until the type has 3 | **(a)**, itself gated at ≥ 3 overall samples | A student with 3 finished essays and 1 problem set still benefits; (b) is simpler but delays value. | Ratified by default, 2026-11-15 |
 | D-L4 ▲ | Annotation copy: (a) "Your papers usually take about 1.6× your estimate, so we planned for that."; (b) numeric badge "×1.6" with tooltip only; (c) no student-facing copy, annotation in payload only | **(a)** | D13-9 wants the app on the student's side and explainable (AC-E13-13); (b) is terse but opaque; (c) fails the epic AC. Material: user-visible wording. | **Ratified (user, 2026-11-15)** |
-| D-L5 | Where the multiplier is computed: (a) once per plan read inside `gatherPlanData` alongside the EP13A confirmed map; (b) a cached per-student value persisted on save | **(a)** | Pure function of history, cheap (one grouped query); persistence would add a write path and staleness for no measured need. | Proposed |
+| D-L5 | Where the multiplier is computed: (a) once per plan read inside `gatherPlanData` alongside the EP13A confirmed map; (b) a cached per-student value persisted on save | **(a)** | Pure function of history, cheap (one grouped query); persistence would add a write path and staleness for no measured need. | Ratified by default, 2026-11-15 |
 
 Rows are `D-L<n>`; one that refines or overrides a register row says `(refines D13-<n>)` / `(overrides D13-<n>)`. ▲ = material: the implementer stops and asks if still `Proposed`; other rows become `Ratified by default` at implementation start.
 
@@ -137,7 +137,7 @@ Rows are `D-L<n>`; one that refines or overrides a register row says `(refines D
 ## Sizing
 
 - **Outcome:** plans absorb the student's real pace, visibly and explainably, with zero behavior change until history exists.
-- **Actual at closeout:** tbd (from `artifacts/efficiency.md`).
+- **Actual at closeout:** 1 dispatch (implementer, default tier); ~40 tool calls; tokens n/a (see `artifacts/efficiency.md`, 2026-11-15).
 - **Model tier:** default (implementer).
 - **Production files:** `apps/api/src/domain/study-planning/calibration.ts` (new), `study-plans.service.ts` wiring, preview DTO, small frontend annotation component.
 - **Test files:** `calibration.spec.ts` (new), service spec (extend), annotation component test.

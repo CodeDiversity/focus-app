@@ -37,6 +37,7 @@ describe('scheduling engine (domain, EP06C)', () => {
     priority: 'MEDIUM',
     createdAt: new Date('2026-10-20T12:00:00.000Z'),
     flagged: null,
+    calibration: null,
     ...overrides,
   });
 

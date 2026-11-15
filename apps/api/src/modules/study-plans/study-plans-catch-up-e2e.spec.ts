@@ -469,6 +469,7 @@ describeIntegration('catch-up recovery e2e (real database, EP08)', () => {
       const response = await catchUpPreview(student).expect(HttpStatus.OK);
 
       expect(Object.keys(response.body).sort()).toEqual([
+        'calibration',
         'completedPreserved',
         'days',
         'deferred',

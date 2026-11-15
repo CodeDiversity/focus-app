@@ -54,6 +54,7 @@ const movedSummary: RecoverySummary = {
       remainingMinutes: 90,
       status: 'PENDING',
       flagged: null,
+      calibration: null,
     },
   ],
   confirmedMinutes: 30,
