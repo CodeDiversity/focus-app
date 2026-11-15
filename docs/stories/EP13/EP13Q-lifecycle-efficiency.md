@@ -4,9 +4,23 @@
 **Epic:** [EP13](../../epics/EP13-adaptive-scheduling-for-adhd.md) (process story; delivery home only, outside the EP13 application review unit — D13-19)
 **Milestone:** M6
 **Layer:** Documentation / process (no application code)
-**Status:** Queued
+**Status:** Ready — planning finalized 2026-11-15 (user rulings recorded below); implement next
 **Dependencies:** EP13P implemented (a9afe4d…7f089a5). None on application children.
 **Created:** 2026-11-15 (user-requested efficiency review)
+
+## Plan at a glance
+
+- **What this changes:** the protocol documents, the lifecycle graph, the story
+  template and the record conventions. No application code.
+- **Why it improves it:** every agent dispatch starts far cheaper (≈22k → ≤4k
+  tokens of protocol), gates stop costing dispatches, autopilot's carrying
+  cost is gone, and every story leaves you with a complete picture of what is
+  being done, why, and which choices are yours — editable in one cell.
+- **Decisions needing you:** none open. D-Q3, D-Q5, D-Q6, D-Q11 ruled
+  2026-11-15; the rest auto-ratify as recommended when implementation starts.
+- **How to change this plan:** edit a Ruling cell in the walkthrough table, or
+  ask the planner to change an AC. Once implementation starts, AC text is
+  frozen; new asks become a follow-up story.
 
 ## Summary
 
@@ -17,7 +31,10 @@ must read is 40 % history. Meanwhile the way EP13 was actually delivered
 (user-driven: one refiner pass for UI children, one implementer pass, one
 commit each, no plan review, no judges) was already lean — the heavy machinery
 is largely unused. This story trims the protocol to what practice needs, makes
-the hot path cheap, and finally measures it.
+the hot path cheap, and finally measures it. The organizing goal, set by the
+user on 2026-11-15: **a story plan must leave the reader with complete clarity
+on what is being done and why, a shared understanding of every AC, and an
+easy way to modify any choice** — speed is pursued only within that.
 
 **What this changes:** the protocol documents, graph gates, story template and
 record conventions — no application code. **Why it improves it:** every agent
@@ -165,13 +182,13 @@ still `Proposed`.
 | ID | Stage | Options considered | Recommended | Why | Ruling |
 |---|---|---|---|---|---|
 | D-Q4 | Epic intake | (a) free-form epic; (b) epic template with problem statement + measurable outcome + explicit non-goals | **(b)** | Downstream ACs trace to a stated outcome; cheap to add; prevents scope drift at the source | Proposed |
-| D-Q5 ▲ | Story description | (a) summary only (today); (b) every story opens with two mandatory lines — **What this changes** (observable behavior/files) and **Why it improves it** (the concrete product or code quality gain) | **(b)** | Shared understanding at a glance; reviewers verify against the "why", not just the ACs; costs two lines | Proposed |
-| D-Q6 ▲ | AC authorship | (a) agents write ACs, user discovers them at review; (b) agents write ACs **plus** a Decisions table (Options / Recommended / Ruling) for every material choice, with the default-ratification rule above | **(b)** | Keeps agent speed, restores user authority; the override is a one-cell edit, not a rewrite | Proposed |
+| D-Q5 ▲ | Story description | (a) summary only (today); (b) every story opens with two mandatory lines — **What this changes** (observable behavior/files) and **Why it improves it** (product/user quality and code quality, both when both apply) | **(b)** | Shared understanding at a glance; reviewers verify against the "why", not just the ACs; costs two lines | **Ratified (user, 2026-11-15)** — "why" covers product/user quality and code quality, both when both apply |
+| D-Q6 ▲ | AC authorship | (a) agents write ACs, user discovers them at review; (b) agents write ACs **plus** a Decisions table (Options / Recommended / Ruling) for every material choice, with the default-ratification rule above | **(b)** | Keeps agent speed, restores user authority; the override is a one-cell edit, not a rewrite | **Ratified (user, 2026-11-15)** — applies to every story; un-ruled rows auto-ratify as recommended at implementation start, ▲ rows still stop and ask |
 | D-Q7 | Plan review | (a) always (today, honored in breach); (b) conditional — migration, security invariant, > 8 children, or user request; (c) never, quality-gate table only | **(b)** | Matches observed practice; keeps the gate where risk lives (= AC 6) | Proposed |
 | D-Q8 | Refinement batching | (a) one refiner dispatch per child (today); (b) one dispatch may refine up to 3 Ready siblings that share a surface/contract, still sequential questions | **(b)** | Protocol re-read is the dominant cost; EP13I+EP13K share the dashboard surface and would have been one pass | Proposed |
 | D-Q9 | Dispatch handoff | (a) specialist re-reads all protocol files (today); (b) coordinator's handoff inlines the 5–10 relevant rule lines and the specialist reads only its skill + story + queue | **(b)** | This is the 22k→4k token lever beyond AC 1; the .opencode defs already describe inlining | Proposed |
-| D-Q10 | Gate checking | (a) judge dispatches (today); (b) deterministic gates inline (= AC 2); (c) also add a 30-line `queue-lint` script (states, links, qualified IDs, evidence-cell shape) run at closeout | **(c)** | The script catches the EP13P class of drift (broken links, stale letters) for free at every closeout | Proposed |
-| D-Q11 ▲ | Autopilot | (a) keep as is; (b) keep but slim (= AC 2); (c) retire in-session autopilot for this repo, keep the edge table as the manual playbook | **(b)** | Unattended runs may matter later; slimming keeps the option at low carrying cost. (c) saves the most words if you never use it | Proposed |
+| D-Q10 | Gate checking | (a) judge dispatches (today); (b) deterministic checks inline by the live session (= AC 2); (c) also add a 30-line `queue-lint` script (states, links, qualified IDs, evidence-cell shape) run at closeout | **(c)** | The script catches the EP13P class of drift (broken links, stale letters) for free at every closeout | Proposed |
+| D-Q11 ▲ | Autopilot | (a) keep as is; (b) keep but slim; (c) retire in-session autopilot for this repo, keep the edge table as the manual playbook | (b) | Unattended runs may matter later; slimming keeps the option at low carrying cost. (c) saves the most words if you never use it | **Overridden: (c) retire autopilot (user, 2026-11-15)** — the live session is the coordinator; AC 2 rewritten accordingly |
 | D-Q12 | Implementation session | (a) strictly one child per fresh session (today); (b) one session may continue into the next Ready child when context remains, same single writer, checkpoint between | **(b)** | Protocol re-read per child is the cost; the single-writer invariant is untouched; checkpoint preserves resumability | Proposed |
 | D-Q13 | Commit cadence | (a) separate docs/status commit after the code commit (today, ~2 per child); (b) one commit per child with code + records + queue row | **(b)** | Halves commit ceremony; the child is the atomic unit of review anyway; fix stories keep their own commits | Proposed |
 | D-Q14 | Review input | (a) reviewer rediscovers scope from the index (today); (b) implementer's parent index must include the per-child diff ranges and test-command list so the reviewer starts from them (still verifying independently) | **(b)** | Removes the most expensive reviewer phase (re-derivation) without weakening independence | Proposed |
@@ -194,11 +211,18 @@ them); deleting the graph (it is the only complete spec of the lifecycle).
    demand*. AGENTS.md becomes the entry point (≤ 400 words) pointing at
    `core.md`. The fresh-implementer mandatory read set (protocol + DoD, before
    README/story) measures ≤ 4,000 words.
-2. **Deterministic gates inline.** The workflow graph marks each judge edge
-   as `deterministic` (coordinator checks queue state / file existence
-   inline, no dispatch) or `judgment` (dispatch). At most 4 judgment edges
-   remain. The autopilot checkpoint YAML shrinks to: scope, stage,
-   active_dispatch, writer, blocker, last_result.
+2. **Autopilot retired; graph becomes the playbook (D-Q11c).** Remove the
+   autopilot skill, its `.codex`/`.vibe`/`.opencode` definitions and command,
+   step mode, the `## Autopilot` README checkpoint schema, interrupts and the
+   YAML graph contract. `.agents/workflow-graph.md` is rewritten as a ≤ 600-word
+   **manual lifecycle playbook**: the ordered edge table with, per edge, who
+   acts (the live session, or which specialist to dispatch) and the
+   deterministic check that decides it (queue state, file existence,
+   queue-lint result). The `judge`/dod-auditor dispatch is removed; a
+   read-only audit remains available on explicit user request via the
+   reviewer skill's static-audit mode. AGENTS.md, delivery-state,
+   context-efficiency and review-cadence drop every autopilot/coordinator-
+   dispatch reference; "coordinator" means the live session throughout.
 3. **Breakdown split.** Delivery-state defines `README.md` (queue, contracts,
    AC/TR ownership, live decisions) and `history.md` (correction log,
    quality-gate table, superseded decisions). Applied to EP13 as the first
@@ -240,10 +264,11 @@ them); deleting the graph (it is the only complete spec of the lifecycle).
     Decisions subsection becomes a table: ID / Options considered /
     Recommended / Ruling. Agents fill Options + Recommended; only the user
     (or an explicitly user-granted session) writes Ruling. Rules in core.md:
-    a row still `Proposed` at implementation start is ratified as recommended,
-    **except** rows marked ▲ material (security, data, public contract, user
-    workflow), where the implementer stops and asks. An override is one cell:
-    `Overridden: <choice> (user, <date>)`. This story's walkthrough table is
+    a row still `Proposed` at implementation start is ratified as recommended
+    (`Ratified by default, <date>`), **except** rows marked ▲ material
+    (security, data, public contract, user workflow), where the implementer
+    stops and asks. An override is one cell: `Overridden: <choice> (user,
+    <date>)`. Applies to **every** story. This story's walkthrough table is
     the first instance.
 12. **Handoff inlining + queue-lint (D-Q9, D-Q10c).** The coordinator handoff
     template in core.md inlines the specific rule lines a task needs instead
@@ -251,17 +276,27 @@ them); deleting the graph (it is the only complete spec of the lifecycle).
     queue states, relative links, qualified IDs and evidence-cell shape, and
     the closeout contract runs it.
 
+13. **Plan at a glance + how to change it (shared-understanding contract).**
+    Every story opens with a short block: What this changes / Why it improves
+    it / Decisions needing you (▲ rows still `Proposed`, or "none") / How to
+    change this plan (edit a Ruling cell; ask the planner for AC changes; AC
+    text freezes at implementation start, later asks become a follow-up
+    story). The planner's final response to the user repeats that block
+    verbatim for each story it created or changed, so the chat and the file
+    say the same thing. Queue-lint checks the block exists.
+
 ## Out of scope
 
 - Application code. Re-reviewing implemented EP13 children. Changing the
   single-writer rule (Q16: keep). Changing the one-final-review cadence
-  (Q17: keep the single verdict).
+  (Q17: keep the single verdict). Rewriting implemented stories into the new
+  template (they stay as history; EP13L/N/K/J/M are converted, AC 10/13).
 
 ## Verification
 
 - `wc -w` over the protocol corpus and over each role's declared mandatory
   read set, recorded in this story's `implementation.md` against the table above.
-- Link check over all edited docs; `grep -c "to: judge"` ≤ 4 on judgment edges.
+- Link check over all edited docs; `grep -rn "autopilot\|judge\|ui_refiner"` in `.agents/`, AGENTS.md, CLAUDE.md, README.md: 0 live hits (the static-audit mention in the reviewer skill excepted).
 - Two EP13 children (EP13L, EP13N) delivered after this story each produce
   `efficiency.md` rows; the story's record quotes them.
 - EP13L and EP13N carry the two description lines (AC 10) and a Decisions
@@ -273,8 +308,13 @@ them); deleting the graph (it is the only complete spec of the lifecycle).
 - Writes land in `.agents/`, `AGENTS.md`, `CLAUDE.md`, `.codex/.vibe/.opencode`,
   `docs/artifacts/README.md`, `docs/stories/EP13/` — outside the planner's
   `docs/` boundary for most of it; user-granted as with EP13P.
-- Order: AC 8 (measurement schema) first so EP13L can log; AC 1/7
-  (consolidation) next; AC 2/5/6 (graph) third; AC 3/4 last.
+- Order: AC 8 (measurement schema) and AC 11/13 (template + core.md
+  mechanism) first so EP13L starts under the new contract; AC 1/7
+  (consolidation) next; AC 2/5/6 (retire autopilot, playbook, review) third;
+  AC 3/4/10/12 last (EP13 split, checkpoint rule, convert L/N/K/J/M, queue-lint).
+- Implementation convention for this story: because it edits the protocol the
+  implementing session itself follows, finish AC 11/13 and commit before
+  touching anything else, then re-read `core.md` once.
 - **Decisions:** D-Q1 keep single writer (confirms AGENTS.md); D-Q2 keep one
   combined final review (confirms review-cadence); D-Q3 ▲ walkthrough becomes
   a review section (overrides DoD-11 wording — planner updates
@@ -284,16 +324,23 @@ them); deleting the graph (it is the only complete spec of the lifecycle).
 
 ## Sizing block
 
-- **Outcome:** a protocol roughly 40 % smaller by words, ≥ 75 % smaller on the
-  per-dispatch fixed read, with judge dispatches mostly eliminated and a
-  measurement log in place.
+- **Outcome:** a protocol roughly 45 % smaller by words, ≥ 75 % smaller on the
+  per-dispatch fixed read, autopilot and judge dispatches gone, a measurement
+  log in place, and every story carrying the shared-understanding block and
+  decision table.
 - **Actual at closeout:** (to be filled)
 - **Model recommendation:** 3 — editing is mechanical but the consolidation
   must not drop a safety rule; a mid-tier model with the checklist above.
-- **Files:** `.agents/core.md` (new), `AGENTS.md`, `CLAUDE.md`,
-  `.agents/*.md`, `.agents/skills/*/SKILL.md`, `docs/artifacts/README.md`,
+  (This field is replaced by the routing table once AC 8 lands.)
+- **Files:** `.agents/core.md` (new), `AGENTS.md`, `CLAUDE.md`, `README.md`
+  (agents section), `.agents/*.md`, `.agents/skills/*/SKILL.md` (autopilot
+  deleted; backend/frontend folded), `.codex/.vibe/.opencode` role defs
+  (autopilot deleted), `.opencode/commands/autopilot.md` (deleted),
+  `docs/workflow-graph.md` (rendering regenerated or deleted),
+  `docs/agents/autopilot-*.md` (historical, left), `docs/artifacts/README.md`,
   `docs/epics/README.md` (DoD-11), `docs/stories/EP13/{README,history}.md`,
-  `docs/stories/EP13/artifacts/efficiency.md` (new), runtime role defs.
+  `docs/stories/EP13/EP13{L,N,K,J,M}-*.md` (template conversion),
+  `docs/stories/EP13/artifacts/efficiency.md` (new), `tools/queue-lint` (new).
 - **Start context:** this story; EP13P for the conventions already in force.
 - **Verification:** as above.
 - **Dependencies / exclusions:** EP13P done; exclusions per Out of scope.
