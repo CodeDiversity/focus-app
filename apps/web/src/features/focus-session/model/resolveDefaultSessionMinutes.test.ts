@@ -5,10 +5,16 @@ import {
 } from './resolveDefaultSessionMinutes';
 
 describe('resolveDefaultSessionMinutes', () => {
-  it('returns the preference value when present and well-formed', () => {
+  it('returns the saved sessionLengthMinutes preference (EP13D — V-07-1 closed)', () => {
+    expect(
+      resolveDefaultSessionMinutes({ preferences: { studyDefaults: { sessionLengthMinutes: 50 } } })
+    ).toBe(50);
+  });
+
+  it('ignores the legacy `sessionMinutes` key nothing ever wrote', () => {
     expect(
       resolveDefaultSessionMinutes({ preferences: { studyDefaults: { sessionMinutes: 50 } } })
-    ).toBe(50);
+    ).toBe(DEFAULT_SESSION_MINUTES);
   });
   it('falls back when preference absent', () => {
     expect(resolveDefaultSessionMinutes({ preferences: null })).toBe(DEFAULT_SESSION_MINUTES);
@@ -25,19 +31,27 @@ describe('resolveDefaultSessionMinutes', () => {
       DEFAULT_SESSION_MINUTES
     );
     expect(
-      resolveDefaultSessionMinutes({ preferences: { studyDefaults: { sessionMinutes: 'x' } } })
+      resolveDefaultSessionMinutes({
+        preferences: { studyDefaults: { sessionLengthMinutes: 'x' } },
+      })
     ).toBe(DEFAULT_SESSION_MINUTES);
     expect(
-      resolveDefaultSessionMinutes({ preferences: { studyDefaults: { sessionMinutes: NaN } } })
+      resolveDefaultSessionMinutes({
+        preferences: { studyDefaults: { sessionLengthMinutes: NaN } },
+      })
     ).toBe(DEFAULT_SESSION_MINUTES);
     expect(
-      resolveDefaultSessionMinutes({ preferences: { studyDefaults: { sessionMinutes: Infinity } } })
+      resolveDefaultSessionMinutes({
+        preferences: { studyDefaults: { sessionLengthMinutes: Infinity } },
+      })
     ).toBe(DEFAULT_SESSION_MINUTES);
     expect(
-      resolveDefaultSessionMinutes({ preferences: { studyDefaults: { sessionMinutes: 4 } } })
+      resolveDefaultSessionMinutes({ preferences: { studyDefaults: { sessionLengthMinutes: 4 } } })
     ).toBe(DEFAULT_SESSION_MINUTES);
     expect(
-      resolveDefaultSessionMinutes({ preferences: { studyDefaults: { sessionMinutes: 481 } } })
+      resolveDefaultSessionMinutes({
+        preferences: { studyDefaults: { sessionLengthMinutes: 481 } },
+      })
     ).toBe(DEFAULT_SESSION_MINUTES);
     expect(resolveDefaultSessionMinutes({ preferences: { studyDefaults: { other: 10 } } })).toBe(
       DEFAULT_SESSION_MINUTES

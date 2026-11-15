@@ -1,6 +1,7 @@
 import {
   Brain,
   Ban,
+  CalendarClock,
   Check,
   CheckCircle2,
   ClipboardList,
@@ -27,6 +28,9 @@ const TYPE_META: Record<CalendarEvent['type'], TypeMeta> = {
   ASSIGNMENT_DEADLINE: { icon: ClipboardList, label: 'Assignment' },
   EXAM_DEADLINE: { icon: FileText, label: 'Exam' },
   STUDY_SESSION: { icon: Brain, label: 'Study session' },
+  // EP13D: a session the plan proposes (not time logged). Icon + text, so the
+  // distinction is never colour-only.
+  PLANNED_SESSION: { icon: CalendarClock, label: 'Planned' },
   AVAILABILITY: { icon: CheckCircle2, label: 'Available' },
   BLOCKED_TIME: { icon: Ban, label: 'Blocked' },
 };

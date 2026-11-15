@@ -11,6 +11,7 @@ describe('CalendarService (SP-127A)', () => {
     assignment: { findMany: jest.Mock };
     studySession: { findMany: jest.Mock };
     availabilitySlot: { findMany: jest.Mock };
+    plannedSession: { findMany: jest.Mock };
   };
 
   beforeEach(() => {
@@ -20,6 +21,8 @@ describe('CalendarService (SP-127A)', () => {
       assignment: { findMany: jest.fn() },
       studySession: { findMany: jest.fn() },
       availabilitySlot: { findMany: jest.fn() },
+      // EP13D: planned sessions are drawn on the calendar too.
+      plannedSession: { findMany: jest.fn().mockResolvedValue([]) },
     };
     service = new CalendarService(prisma as unknown as PrismaService);
   });
@@ -30,6 +33,7 @@ describe('CalendarService (SP-127A)', () => {
     prisma.assignment.findMany.mockResolvedValue([]);
     prisma.studySession.findMany.mockResolvedValue([]);
     prisma.availabilitySlot.findMany.mockResolvedValue([]);
+    prisma.plannedSession.findMany.mockResolvedValue([]);
   }
 
   it('recurrence: a dayOfWeek=1 meeting appears on every Monday in a 7-day range and nowhere else', async () => {
@@ -320,5 +324,62 @@ describe('CalendarService (SP-127A)', () => {
     ]);
     const result = await service.list('u1', { from: '2026-10-26', to: '2026-10-26' });
     expect(result.events.filter((e) => e.type === 'STUDY_SESSION')).toHaveLength(0);
+  });
+  it('EP13D: draws current planned sessions, excludes rolled-forward/set-aside rows, and scopes through the parent plan', async () => {
+    mockEmpty();
+    const plannedRow = (overrides: Record<string, unknown> = {}) => ({
+      id: 'ps-1',
+      assignmentId: 'a-1',
+      studyPlan: { date: new Date('2026-10-26T00:00:00.000Z') },
+      startTime: new Date('2026-10-26T09:00:00.000Z'),
+      endTime: new Date('2026-10-26T10:00:00.000Z'),
+      durationMinutes: 60,
+      status: 'SCHEDULED',
+      locked: false,
+      assignment: {
+        id: 'a-1',
+        title: 'Problem set 3',
+        course: { id: 'c1', name: 'Algorithms', code: 'CS101', color: '#123456' },
+      },
+      ...overrides,
+    });
+    prisma.plannedSession.findMany.mockResolvedValue([
+      plannedRow(),
+      plannedRow({
+        id: 'ps-done',
+        status: 'COMPLETED',
+        startTime: new Date('2026-10-26T11:00:00.000Z'),
+        endTime: new Date('2026-10-26T12:00:00.000Z'),
+      }),
+    ]);
+
+    const result = await service.list('u1', { from: '2026-10-26', to: '2026-10-26' });
+
+    const planned = result.events.filter((e) => e.type === 'PLANNED_SESSION');
+    expect(planned).toHaveLength(2);
+    expect(planned[0]).toEqual({
+      id: 'planned:ps-1',
+      type: 'PLANNED_SESSION',
+      title: 'Problem set 3',
+      subtitle: 'CS101',
+      date: '2026-10-26',
+      startTime: '09:00',
+      endTime: '10:00',
+      courseId: 'c1',
+      courseName: 'Algorithms',
+      courseColor: '#123456',
+      assignmentId: 'a-1',
+      completed: false,
+      focus: false,
+      link: null,
+    });
+    // A finished planned session reuses the existing completed flag.
+    expect(planned[1].completed).toBe(true);
+
+    // Only current work is queried — RESCHEDULED/SKIPPED rows are never drawn
+    // (no past ghosts, D13-9) — and the scope rides through the parent plan.
+    const where = prisma.plannedSession.findMany.mock.calls[0][0].where;
+    expect(where.status).toEqual({ in: ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED'] });
+    expect(where.studyPlan.userId).toBe('u1');
   });
 });

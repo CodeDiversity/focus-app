@@ -170,3 +170,33 @@ export interface PlannedSessionLock {
   id: string;
   locked: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// EP13C/EP13D — the today read (`GET /study-plans/today`).
+// ---------------------------------------------------------------------------
+
+/** One of today's planned sessions, with its live status. */
+export interface TodaySession {
+  id: string;
+  assignmentId: string;
+  assignmentTitle: string;
+  date: string; // YYYY-MM-DD (civil, profile zone)
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  durationMinutes: number;
+  status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED' | 'RESCHEDULED';
+  locked: boolean;
+}
+
+/** Why there is no recommended next session. */
+export type NextSessionReason = 'NO_PLAN' | 'NOTHING_LEFT_TODAY';
+
+/** The body of `GET /study-plans/today`. */
+export interface TodayPlan {
+  date: string;
+  timeZone: string;
+  sessions: TodaySession[];
+  nextSession: TodaySession | null;
+  nextSessionReason: NextSessionReason | null;
+  confirmedMinutesToday: number;
+}

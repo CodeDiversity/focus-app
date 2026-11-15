@@ -18,6 +18,7 @@ interface CalendarEvent {
     | 'ASSIGNMENT_DEADLINE'
     | 'EXAM_DEADLINE'
     | 'STUDY_SESSION'
+    | 'PLANNED_SESSION'
     | 'AVAILABILITY'
     | 'BLOCKED_TIME';
   title: string;
@@ -134,6 +135,35 @@ export class CalendarService {
       where: { userId },
     });
 
+    /**
+     * EP13D (closes EP06's V-05-1): the plan becomes visible on the calendar.
+     *
+     * Only *current* planned work is emitted — `SCHEDULED`, `IN_PROGRESS` and
+     * `COMPLETED`. Rows that EP13C rolled forward (`RESCHEDULED`) or the
+     * student set aside (`SKIPPED`) are deliberately **not** drawn: leaving
+     * ghosts of unstarted past sessions on the calendar would rebuild exactly
+     * the accumulating "missed" ledger EP13C removes (D13-9).
+     *
+     * Ownership: `PlannedSession` has no `userId` column, so the scoped where
+     * carries the authenticated id through the parent plan.
+     */
+    const plannedSessions = await this.prisma.plannedSession.findMany({
+      where: {
+        studyPlan: { userId, date: { gte: fromDate, lte: toDate } },
+        status: { in: ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED'] },
+      },
+      include: {
+        studyPlan: { select: { date: true } },
+        assignment: {
+          select: {
+            id: true,
+            title: true,
+            course: { select: { id: true, name: true, code: true, color: true } },
+          },
+        },
+      },
+    });
+
     const events: CalendarEvent[] = [];
 
     // CLASS events from active courses' meetings.
@@ -239,6 +269,35 @@ export class CalendarService {
         assignmentId: null,
         completed: false,
         focus: s.isFocusMode,
+        link: null,
+      });
+    }
+
+    // PLANNED_SESSION (EP13D). The plan row's civil date comes from its
+    // parent plan (stored as UTC midnight of that civil date, EP06
+    // convention); the wall times are rendered in the profile zone.
+    for (const ps of plannedSessions) {
+      const date = ps.studyPlan.date.toISOString().slice(0, 10);
+      if (date < from || date > to) continue;
+      const start = zoneParts(ps.startTime, timeZone);
+      const end = zoneParts(ps.endTime, timeZone);
+      events.push({
+        id: `planned:${ps.id}`,
+        type: 'PLANNED_SESSION',
+        title: ps.assignment?.title ?? 'Study session',
+        subtitle: ps.assignment?.course?.code ?? null,
+        date,
+        startTime: start.time,
+        endTime: end.time,
+        courseId: ps.assignment?.course?.id ?? null,
+        courseName: ps.assignment?.course?.name ?? null,
+        courseColor: ps.assignment?.course?.color ?? null,
+        assignmentId: ps.assignmentId,
+        // A finished planned session reuses the existing "completed" flag, so
+        // the chip's established Completed badge covers it without a payload
+        // contract change.
+        completed: ps.status === 'COMPLETED',
+        focus: false,
         link: null,
       });
     }

@@ -3,6 +3,8 @@ export interface StudySession {
   id: string;
   assignmentId: string | null;
   taskId: string | null;
+  /** EP13B: the planned session this focus session executes, or null. */
+  plannedSessionId: string | null;
   status: 'ACTIVE' | 'PAUSED' | 'COMPLETED';
   startTime: string;
   endTime: string | null;

@@ -1,5 +1,13 @@
 import { Link } from 'react-router-dom';
-import { Brain, Ban, CheckCircle2, ClipboardList, FileText, GraduationCap } from 'lucide-react';
+import {
+  Brain,
+  Ban,
+  CalendarClock,
+  CheckCircle2,
+  ClipboardList,
+  FileText,
+  GraduationCap,
+} from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { Dialog } from '@/shared/ui/Dialog';
 import { formatDate } from '@/shared/lib/datetime';
@@ -16,6 +24,8 @@ const TYPE_META: Record<CalendarEvent['type'], { icon: typeof GraduationCap; lab
   ASSIGNMENT_DEADLINE: { icon: ClipboardList, label: 'Assignment' },
   EXAM_DEADLINE: { icon: FileText, label: 'Exam' },
   STUDY_SESSION: { icon: Brain, label: 'Study session' },
+  // EP13D: a session the plan proposes (not time logged).
+  PLANNED_SESSION: { icon: CalendarClock, label: 'Planned' },
   AVAILABILITY: { icon: CheckCircle2, label: 'Available' },
   BLOCKED_TIME: { icon: Ban, label: 'Blocked' },
 };

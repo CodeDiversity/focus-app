@@ -4,7 +4,7 @@
 **Parent epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md)
 **Milestone:** M6
 **Layer:** Frontend (+ one additive backend calendar event — see Technical notes / flagged for the implementer)
-**Status:** Ready (UI/UX settled)
+**Status:** Implemented — awaiting parent review (2026-11-14; record `./artifacts/EP13D/implementation.md`)
 **Refined:** 2026-11-14 (ui-refiner)
 **Dependencies:** EP13B (`POST /study-sessions/from-planned/:id`), EP13C (`GET /study-plans/today`) — both implemented.
 **Jira key:** Pending creation

@@ -7,6 +7,7 @@ const session: StudySession = {
   id: 's-1',
   assignmentId: 'a-1',
   taskId: null,
+  plannedSessionId: null,
   status: 'ACTIVE',
   startTime: '2026-10-30T10:00:00.000Z',
   endTime: null,

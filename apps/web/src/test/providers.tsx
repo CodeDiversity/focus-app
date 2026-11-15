@@ -7,10 +7,12 @@ import onboardingReducer from '@/features/onboarding/model/onboardingSlice';
 import { api } from '@/features/session/api/sessionApi';
 import { assignmentsApi } from '@/features/assignments/api/assignmentsApi';
 import { calendarApi } from '@/features/calendar/api/calendarApi';
+import { todayPlanApi } from '@/features/today-plan/api/todayPlanApi';
 
 /**
  * A fresh store per test, mirroring `src/app/store/store.ts` (auth + onboarding
- * + api + assignmentsApi + calendarApi reducers and their middlewares) so
+ * + api + assignmentsApi + calendarApi + todayPlanApi reducers and their
+ * middlewares) so
  * tests never share mutable session, onboarding or RTK Query cache state.
  */
 export function makeTestStore() {
@@ -21,13 +23,24 @@ export function makeTestStore() {
       [api.reducerPath]: api.reducer,
       [assignmentsApi.reducerPath]: assignmentsApi.reducer,
       [calendarApi.reducerPath]: calendarApi.reducer,
+      [todayPlanApi.reducerPath]: todayPlanApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
         serializableCheck: {
-          ignoredActions: [api.reducerPath, assignmentsApi.reducerPath, calendarApi.reducerPath],
+          ignoredActions: [
+            api.reducerPath,
+            assignmentsApi.reducerPath,
+            calendarApi.reducerPath,
+            todayPlanApi.reducerPath,
+          ],
         },
-      }).concat(api.middleware, assignmentsApi.middleware, calendarApi.middleware),
+      }).concat(
+        api.middleware,
+        assignmentsApi.middleware,
+        calendarApi.middleware,
+        todayPlanApi.middleware
+      ),
   });
 }
 

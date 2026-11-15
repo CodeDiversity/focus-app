@@ -7,6 +7,9 @@ export type CalendarEventType =
   | 'ASSIGNMENT_DEADLINE'
   | 'EXAM_DEADLINE'
   | 'STUDY_SESSION'
+  // EP13D: a session the plan proposes (closes EP06's V-05-1). Distinct from
+  // STUDY_SESSION, which is time actually logged.
+  | 'PLANNED_SESSION'
   | 'AVAILABILITY'
   | 'BLOCKED_TIME';
 

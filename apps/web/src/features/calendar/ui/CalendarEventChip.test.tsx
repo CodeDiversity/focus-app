@@ -63,4 +63,26 @@ describe('CalendarEventChip (SP-127B)', () => {
     await user.click(screen.getByRole('button'));
     expect(onOpen).toHaveBeenCalledWith(baseEvent);
   });
+  it('EP13D: a planned session reads as "Planned", distinct from a logged study session', () => {
+    const planned: CalendarEvent = {
+      ...baseEvent,
+      id: 'planned:ps-1',
+      type: 'PLANNED_SESSION',
+      title: 'Problem set 3',
+      subtitle: 'CS101',
+      link: null,
+    };
+    const { unmount } = render(<CalendarEventChip event={planned} onOpen={vi.fn()} />);
+    expect(screen.getByText('Planned')).toBeInTheDocument();
+    expect(screen.getByRole('button')).toHaveAttribute(
+      'aria-label',
+      'Planned: Problem set 3, 09:00'
+    );
+    unmount();
+
+    // A finished planned session reuses the established Completed badge.
+    render(<CalendarEventChip event={{ ...planned, completed: true }} onOpen={vi.fn()} />);
+    expect(screen.getByText('Planned')).toBeInTheDocument();
+    expect(screen.getByText('Completed')).toBeInTheDocument();
+  });
 });

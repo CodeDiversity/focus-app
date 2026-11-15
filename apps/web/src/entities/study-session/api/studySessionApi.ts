@@ -28,6 +28,19 @@ export async function startStudySession(data: StartStudySessionRequest): Promise
   return response.data;
 }
 
+/**
+ * EP13B — `POST /study-sessions/from-planned/:plannedSessionId`: start a focus
+ * session straight from the plan. The assignment and the planned duration are
+ * inherited server-side.
+ *
+ * 201: StudySession projection (linked, ACTIVE); 404 uniform (missing or
+ * foreign); 409 open session / not today / not startable.
+ */
+export async function startSessionFromPlanned(plannedSessionId: string): Promise<StudySession> {
+  const response = await api.post<StudySession>(`/study-sessions/from-planned/${plannedSessionId}`);
+  return response.data;
+}
+
 /** 200: StudySession projection | null (null when no open session). */
 export async function getCurrentStudySession(): Promise<StudySession | null> {
   const response = await api.get<StudySession | null>('/study-sessions/current');

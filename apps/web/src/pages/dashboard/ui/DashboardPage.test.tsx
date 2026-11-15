@@ -135,10 +135,47 @@ const calendarPayload: CalendarEventsResult = {
   ],
 };
 
+/**
+ * EP13D — the today read (`GET /study-plans/today`). The default payload has
+ * one startable session, so the card's "Next up" hero is the page's first
+ * action; `todayFailure` drives the query-independence cases.
+ */
+const todayPayload = {
+  date: TODAY,
+  timeZone: TIME_ZONE,
+  sessions: [
+    {
+      id: 'ps-1',
+      assignmentId: 'a1',
+      assignmentTitle: 'Problem set 3',
+      date: TODAY,
+      startTime: '09:00',
+      endTime: '10:00',
+      durationMinutes: 60,
+      status: 'SCHEDULED' as const,
+      locked: false,
+    },
+  ],
+  nextSession: {
+    id: 'ps-1',
+    assignmentId: 'a1',
+    assignmentTitle: 'Problem set 3',
+    date: TODAY,
+    startTime: '09:00',
+    endTime: '10:00',
+    durationMinutes: 60,
+    status: 'SCHEDULED' as const,
+    locked: false,
+  },
+  nextSessionReason: null,
+  confirmedMinutesToday: 0,
+};
+
 /** The requests the adapter saw, in order. */
 let requests: { url?: string; method?: string; params?: unknown }[] = [];
 let assignmentsFailure: string | null = null;
 let calendarFailure: string | null = null;
+let todayFailure: string | null = null;
 /**
  * The assignment rows the adapter serves. The create mutates it, so the
  * refetch after a create shows the new row (EP05C's cache hand-off).
@@ -231,6 +268,16 @@ function installAdapter() {
         config,
       } as AxiosResponse;
     }
+    if (config.url === '/study-plans/today') {
+      if (todayFailure) throw failure(config, todayFailure);
+      return {
+        data: todayPayload,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      } as AxiosResponse;
+    }
     if (config.url === '/courses') {
       return {
         data: courseRows,
@@ -268,6 +315,9 @@ function controlKinds(container: HTMLElement): string[] {
         if (node.getAttribute('data-assignment-focus') === 'add') return 'add';
         if (node.getAttribute('href') === '/profile') return 'profile';
         if (node.getAttribute('aria-label')?.startsWith('See all')) return 'see-all';
+        // EP13D: the today card's start controls.
+        const text = node.textContent?.trim() ?? '';
+        if (text.startsWith('Start') || text.startsWith('Resume')) return 'start';
         if (node.getAttribute('data-assignment-focus')?.startsWith('edit:')) return 'row';
         if (node.getAttribute('href')?.startsWith('/courses/')) return 'row';
         return 'other';
@@ -280,6 +330,7 @@ describe('DashboardPage (EP05B)', () => {
     requests = [];
     assignmentsFailure = null;
     calendarFailure = null;
+    todayFailure = null;
     calendarTimeZone = TIME_ZONE;
     assignmentRows = assignmentsPayload;
     courseRows = coursesPayload;
@@ -294,14 +345,17 @@ describe('DashboardPage (EP05B)', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders the four sections in the page order with their headings', async () => {
+  it('renders today’s plan first, then the four sections in page order', async () => {
     renderPage();
 
     await screen.findByText('Lab report');
     const headings = screen
       .getAllByRole('heading', { level: 2 })
       .map((heading) => heading.textContent);
+    // EP13D (D-D1): today's plan leads — the single next action is the first
+    // thing the student sees — then EP05's urgency order, unchanged.
     expect(headings).toEqual([
+      "Today's plan",
       'Overdue assignments',
       'Upcoming deadlines',
       "Today's classes",
@@ -405,6 +459,7 @@ describe('DashboardPage (EP05B)', () => {
     const headings = screen.getAllByRole('heading').map((heading) => heading.textContent);
     expect(headings).toEqual([
       'Dashboard',
+      "Today's plan",
       'Overdue assignments',
       'Upcoming deadlines',
       "Today's classes",
@@ -426,11 +481,14 @@ describe('DashboardPage (EP05B)', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Refresh dashboard' }));
 
-    await waitFor(() => expect(requests.length).toBe(before + 2));
+    // EP13D: the refresh also re-reads today's plan (which reconciles it
+    // server-side), so three requests go out.
+    await waitFor(() => expect(requests.length).toBe(before + 3));
     const calendarRequests = requests.filter((request) => request.url === '/calendar/events');
     expect(calendarRequests).toHaveLength(2);
     expect(calendarRequests[1].params).toEqual(dashboardTodayRange());
     expect(requests.filter((request) => request.url === '/assignments')).toHaveLength(2);
+    expect(requests.filter((request) => request.url === '/study-plans/today')).toHaveLength(2);
   });
 
   it('renders a responsive page container whose section grid splits at the lg breakpoint', async () => {
@@ -457,6 +515,8 @@ describe('DashboardPage (EP05B)', () => {
       .map((region) => region.getAttribute('aria-labelledby'));
     expect(regions).toEqual([
       'dashboard-heading',
+      // EP13D: today's plan is the first named region after the page itself.
+      'today-plan-heading',
       'dashboard-overdue-heading',
       'dashboard-upcoming-heading',
       'dashboard-classes-heading',
@@ -467,6 +527,8 @@ describe('DashboardPage (EP05B)', () => {
       'refresh',
       'add',
       'profile',
+      // EP13D: today's plan — the primary next action — precedes the grid.
+      'start',
       'see-all',
       'row',
       'see-all',
@@ -510,7 +572,9 @@ describe('DashboardPage (EP05B)', () => {
     expect(refresh).toHaveFocus();
     const before = requests.length;
     await userEvent.keyboard('{Enter}');
-    await waitFor(() => expect(requests.length).toBe(before + 2));
+    // EP13D: the refresh also re-reads today's plan (which reconciles it
+    // server-side), so three requests go out.
+    await waitFor(() => expect(requests.length).toBe(before + 3));
 
     const rowTitle = screen.getByRole('button', { name: 'Lab report' });
     rowTitle.focus();
@@ -557,6 +621,7 @@ describe('DashboardPage (EP05C)', () => {
     requests = [];
     assignmentsFailure = null;
     calendarFailure = null;
+    todayFailure = null;
     calendarTimeZone = TIME_ZONE;
     assignmentRows = assignmentsPayload;
     courseRows = coursesPayload;

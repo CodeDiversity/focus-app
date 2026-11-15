@@ -4,6 +4,7 @@ import onboardingReducer from '@/features/onboarding/model/onboardingSlice';
 import { api } from '@/features/session/api/sessionApi';
 import { assignmentsApi } from '@/features/assignments/api/assignmentsApi';
 import { calendarApi } from '@/features/calendar/api/calendarApi';
+import { todayPlanApi } from '@/features/today-plan/api/todayPlanApi';
 
 export const store = configureStore({
   reducer: {
@@ -14,15 +15,27 @@ export const store = configureStore({
     // EP05A: the dashboard's two per-domain RTK Query slices (D05-1, D05-8).
     [assignmentsApi.reducerPath]: assignmentsApi.reducer,
     [calendarApi.reducerPath]: calendarApi.reducer,
+    // EP13D: the dashboard's today read (GET /study-plans/today).
+    [todayPlanApi.reducerPath]: todayPlanApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       // RTK's guidance: ignore the RTK Query action paths in the serializability
       // check — its internal cache actions are not plain serializable objects.
       serializableCheck: {
-        ignoredActions: [api.reducerPath, assignmentsApi.reducerPath, calendarApi.reducerPath],
+        ignoredActions: [
+          api.reducerPath,
+          assignmentsApi.reducerPath,
+          calendarApi.reducerPath,
+          todayPlanApi.reducerPath,
+        ],
       },
-    }).concat(api.middleware, assignmentsApi.middleware, calendarApi.middleware),
+    }).concat(
+      api.middleware,
+      assignmentsApi.middleware,
+      calendarApi.middleware,
+      todayPlanApi.middleware
+    ),
 });
 
 export type AppStore = typeof store;

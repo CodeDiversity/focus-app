@@ -7,6 +7,7 @@ import type {
   RecoverySummary,
   CatchUpPreview,
   PlannedSessionLock,
+  TodayPlan,
 } from '@/entities/study-plan/model/types';
 
 export {
@@ -58,6 +59,17 @@ export async function saveStudyPlan(
 
 export async function listStudyPlan(): Promise<SavedPlan> {
   const response = await api.get<SavedPlan>('/study-plans');
+  return response.data;
+}
+
+/**
+ * `GET /study-plans/today` (EP13C) → today's reconciled sessions, the single
+ * recommended next session (or null with a reason) and the minutes already
+ * confirmed inside today's profile-zone day. Reading it rolls unstarted past
+ * sessions forward server-side, so the answer is always a current view.
+ */
+export async function getTodayPlan(): Promise<TodayPlan> {
+  const response = await api.get<TodayPlan>('/study-plans/today');
   return response.data;
 }
 

@@ -15,13 +15,15 @@ describe('store', () => {
     // Dispatch a no-op action to confirm the middleware chain is active
     store.dispatch({ type: '@@test/no-op' });
     // SP-107C added the onboarding reducer alongside auth and the RTK Query api;
-    // EP05A added the dashboard's two per-domain RTK Query slices.
+    // EP05A added the dashboard's two per-domain RTK Query slices; EP13D added
+    // the today read.
     expect(Object.keys(store.getState()).sort()).toEqual([
       'api',
       'assignmentsApi',
       'auth',
       'calendarApi',
       'onboarding',
+      'todayPlanApi',
     ]);
     expect(store.getState().api).toEqual(expect.objectContaining({ queries: {}, mutations: {} }));
     expect(store.getState().assignmentsApi).toEqual(
@@ -67,15 +69,15 @@ describe('store', () => {
       </Provider>
     );
 
-    // The store registers the auth, onboarding, api (RTK Query), assignmentsApi
-    // and calendarApi reducers, so state has five keys
-    expect(getByTestId('state-size').textContent).toBe('5');
+    // EP13D: the todayPlanApi slice joins auth, onboarding, api, assignmentsApi
+    // and calendarApi reducers, so state has six keys
+    expect(getByTestId('state-size').textContent).toBe('6');
 
     // Dispatch should work without error
     const btn = getByTestId('dispatch-btn');
     btn.click();
 
     // Verify dispatch changed nothing (no reducers listening)
-    expect(getByTestId('state-size').textContent).toBe('5');
+    expect(getByTestId('state-size').textContent).toBe('6');
   });
 });

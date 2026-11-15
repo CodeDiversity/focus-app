@@ -15,6 +15,8 @@ import {
   selectUpcomingAssignments,
 } from '@/features/dashboard/model/dashboardSelectors';
 import { DashboardQuickActions } from '@/features/dashboard/ui/DashboardQuickActions';
+import { TodayPlanCard } from '@/features/today-plan/ui/TodayPlanCard';
+import { useTodayPlanQuery } from '@/features/today-plan/api/todayPlanApi';
 import { OverdueAssignmentsSection } from '@/features/dashboard/ui/OverdueAssignmentsSection';
 import { TodayClassesSection } from '@/features/dashboard/ui/TodayClassesSection';
 import { TodayStudySessionsSection } from '@/features/dashboard/ui/TodayStudySessionsSection';
@@ -137,6 +139,13 @@ export function DashboardPage({ onOpenDetails }: DashboardPageProps = {}) {
 
   const assignmentsQuery = useAssignmentsQuery();
   const calendarQuery = useCalendarEventsQuery(range);
+  /**
+   * EP13D — today's plan (`GET /study-plans/today`). Its own query, so the
+   * card owns its three states exactly like every dashboard section; reading
+   * it also reconciles the plan server-side (EP13C), which is why the refresh
+   * control refetches it too.
+   */
+  const todayPlanQuery = useTodayPlanQuery();
 
   const assignments = assignmentsQuery.data ?? NO_ASSIGNMENTS;
   const calendar = calendarQuery.data;
@@ -261,6 +270,7 @@ export function DashboardPage({ onOpenDetails }: DashboardPageProps = {}) {
       void calendarQuery.refetch();
     }
     void assignmentsQuery.refetch();
+    void todayPlanQuery.refetch();
   };
 
   /**
@@ -324,6 +334,19 @@ export function DashboardPage({ onOpenDetails }: DashboardPageProps = {}) {
       >
         {statusMessage}
       </div>
+
+      {/*
+        EP13D (D-D1): today's plan sits directly under the header — the single
+        next action is the first thing the student sees. The urgency grid
+        below keeps EP05's documented order untouched.
+      */}
+      <TodayPlanCard
+        plan={todayPlanQuery.data}
+        status={sectionStatus(todayPlanQuery)}
+        error={todayPlanQuery.error}
+        isFetching={todayPlanQuery.isFetching}
+        onRetry={() => void todayPlanQuery.refetch()}
+      />
 
       {/* Urgency order: overdue first, then the deadlines, then the day. */}
       <div className="grid gap-6 lg:grid-cols-2">

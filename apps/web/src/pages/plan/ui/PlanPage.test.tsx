@@ -16,6 +16,9 @@ vi.mock('@/entities/study-plan/api/studyPlanApi', () => ({
   saveStudyPlan: vi.fn(),
   listStudyPlan: vi.fn(),
   listRemainingWork: vi.fn(),
+  // EP13D: the shared test store mounts `todayPlanApi`, which imports this
+  // module's `getTodayPlan`; the mock must expose it.
+  getTodayPlan: vi.fn(),
 }));
 
 vi.mock('react-hot-toast', () => ({

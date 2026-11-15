@@ -4,10 +4,12 @@
  * a finite number inside the server's accepted range (5–480); otherwise falls
  * back to EP07's own default of 25 minutes.
  *
- * Accepted shape today (provisional): `preferences.studyDefaults` must be a
- * plain object whose `sessionMinutes` key is a finite number in 5–480. Any
- * other shape falls back. If EP06 later chooses a different key, only this
- * helper changes.
+ * Accepted shape (EP13D, V-07-1 closed): `preferences.studyDefaults` must be
+ * a plain object whose **`sessionLengthMinutes`** key is a finite number in
+ * 5–480 — the key EP06's preferences contract actually writes
+ * (`domain/study-planning/preferences.ts`). The previous `sessionMinutes`
+ * lookup matched a key nothing ever wrote, so the saved preference was
+ * silently ignored and every focus session defaulted to 25 minutes.
  */
 export const DEFAULT_SESSION_MINUTES = 25;
 
@@ -20,7 +22,7 @@ export function resolveDefaultSessionMinutes(
   if (!studyDefaults || typeof studyDefaults !== 'object' || Array.isArray(studyDefaults)) {
     return DEFAULT_SESSION_MINUTES;
   }
-  const sessionMinutes = (studyDefaults as Record<string, unknown>).sessionMinutes;
+  const sessionMinutes = (studyDefaults as Record<string, unknown>).sessionLengthMinutes;
   if (typeof sessionMinutes !== 'number' || !Number.isFinite(sessionMinutes)) {
     return DEFAULT_SESSION_MINUTES;
   }
