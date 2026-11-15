@@ -13,7 +13,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP13I — implement (Ready, backend+frontend), or EP13L (Ready, backend). EP13A–EP13D landed 2026-11-14; EP13E–EP13H landed 2026-11-15. The remaining `ui-refiner` passes (EP13J/K, D13-14) can run in parallel with backend work; EP13N follows EP13M. Open evidence items riding to the parent review: the gated live-DB suites and the EP13B migration are CI-executed, not run locally (F-EP13A-03, F-EP13B-02, F-EP13C-02); the `wallClockToInstant` DST-midnight observation is on the planner/EP12 roster (F-EP13C-01).
+**Next substory:** EP13H2 — implement (small fix story), then EP13I — `ui-refiner`, then implement (micro-start, re-prioritised ahead of energy by D13-16). EP13J and EP13L stay Ready (backend). EP13A–EP13D landed 2026-11-14; EP13E–EP13H landed 2026-11-15. The remaining `ui-refiner` passes (EP13I/K, D13-14) can run in parallel with backend work; EP13N follows EP13M. Open evidence items riding to the parent review: the gated live-DB suites and the EP13B migration are CI-executed, not run locally (F-EP13A-03, F-EP13B-02, F-EP13C-02); the `wallClockToInstant` DST-midnight observation is on the planner/EP12 roster (F-EP13C-01).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (layer labels are scope, not concurrent roles).
 
@@ -22,25 +22,25 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [EP13A](./EP13A-plan-generation-counts-reality.md) | Implemented — awaiting parent review | EP06/EP07 complete. No UI decisions. | None (unblocks EP13B/C/F/L) | `./artifacts/EP13A/implementation.md`, `./artifacts/EP13A/checkpoint.md`; unit/lint/typecheck green 2026-11-14; gated live suites updated, not executed (F-EP13A-03) |
-| [EP13B](./EP13B-planned-actual-link-and-lifecycle.md) | Implemented — awaiting parent review | EP13A implemented. D13-3 provisional (implemented as specified). | None (unblocks EP13C, EP13D, EP13J) | `./artifacts/EP13B/implementation.md`, `./artifacts/EP13B/checkpoint.md`; migration `20261114120000_study_session_planned_link`; unit/lint/typecheck green 2026-11-14 (937 passed); gated suites + migration CI-executed (F-EP13B-02) |
+| [EP13B](./EP13B-planned-actual-link-and-lifecycle.md) | Implemented — awaiting parent review | EP13A implemented. D13-3 provisional (implemented as specified). | None (unblocks EP13C, EP13D, EP13I) | `./artifacts/EP13B/implementation.md`, `./artifacts/EP13B/checkpoint.md`; migration `20261114120000_study_session_planned_link`; unit/lint/typecheck green 2026-11-14 (937 passed); gated suites + migration CI-executed (F-EP13B-02) |
 | [EP13C](./EP13C-rolling-reconciliation-and-auto-forgiveness.md) | Implemented — awaiting parent review | EP13A + EP13B implemented. D13-2 provisional (V-13-2 open: locked past rows roll, keep `locked`). | None (unblocks EP13D, EP13E) | `./artifacts/EP13C/implementation.md`, `./artifacts/EP13C/checkpoint.md`; unit/lint/typecheck green 2026-11-14 (947 passed); gated suites CI-executed (F-EP13C-02) |
-| [EP13D](./EP13D-plan-visibility-and-one-tap-start.md) | Implemented — awaiting parent review | EP13B + EP13C implemented. UI/UX settled (D-D1…D-D13, commit bd06a9e). | None (unblocks EP13J, EP13K) | `./artifacts/EP13D/implementation.md`, `./artifacts/EP13D/checkpoint.md`; web 1144 passed + api 948 passed, lint/typecheck/format clean 2026-11-14; 8 pre-existing CalendarPage failures reported not absorbed (F-EP13D-01); manual a11y pass open (F-EP13D-02) |
+| [EP13D](./EP13D-plan-visibility-and-one-tap-start.md) | Implemented — awaiting parent review | EP13B + EP13C implemented. UI/UX settled (D-D1…D-D13, commit bd06a9e). | None (unblocks EP13I, EP13K) | `./artifacts/EP13D/implementation.md`, `./artifacts/EP13D/checkpoint.md`; web 1144 passed + api 948 passed, lint/typecheck/format clean 2026-11-14; 8 pre-existing CalendarPage failures reported not absorbed (F-EP13D-01); manual a11y pass open (F-EP13D-02) |
 | [EP13E](./EP13E-fresh-start-reframing-and-navigation.md) | Implemented — awaiting parent review | EP13C + EP13D implemented. UI/UX settled (D-E1…D-E15, commit ec3d17e). | None | `./artifacts/EP13E/implementation.md`, `./artifacts/EP13E/checkpoint.md`; web 1156 passed, lint/typecheck/format clean 2026-11-15; 8 pre-existing CalendarPage failures inherited not absorbed (F-EP13E-02); manual a11y pass open (F-EP13E-01); AC-2 feasibility-warning scoping recorded as D-E8 (F-EP13E-03 routes a backend cleanup observation) |
-| [EP13F](./EP13F-adhd-aware-placement-engine-v2.md) | Implemented — awaiting parent review | EP13A implemented (remaining-work semantics). No UI decisions. | None (unblocks EP13G after D13-4, EP13I) | `./artifacts/EP13F/implementation.md`, `./artifacts/EP13F/checkpoint.md`; api 980 passed + web 1160 passed, lint/typecheck/format clean 2026-11-15; gated preference suites updated, not executed (F-EP13F-02); deficit-category wording for sub-minimum tails open (F-EP13F-01); EP06 README contract doc stale (F-EP13F-03); density-cap shortfall on short windows surfaced (F-EP13F-04) |
+| [EP13F](./EP13F-adhd-aware-placement-engine-v2.md) | Implemented — awaiting parent review | EP13A implemented (remaining-work semantics). No UI decisions. | None (unblocks EP13G after D13-4, EP13J) | `./artifacts/EP13F/implementation.md`, `./artifacts/EP13F/checkpoint.md`; api 980 passed + web 1160 passed, lint/typecheck/format clean 2026-11-15; gated preference suites updated, not executed (F-EP13F-02); deficit-category wording for sub-minimum tails open (F-EP13F-01); EP06 README contract doc stale (F-EP13F-03); density-cap shortfall on short windows surfaced (F-EP13F-04) |
 | [EP13G](./EP13G-flexible-day-anchored-sessions-api.md) | Implemented — awaiting parent review | EP13F implemented. **D13-4 ruled option (b)** — user instruction 2026-11-15 (planner's recommendation). | None (unblocks EP13H after its ui-refiner pass) | `./artifacts/EP13G/implementation.md`, `./artifacts/EP13G/checkpoint.md`; api 1012 passed, lint/typecheck/format clean 2026-11-15; migration `20261115120000_planned_session_flex_anchor` + gated flex journeys CI-executed, not run locally (F-EP13G-03); decision register/V-13-3 still show D13-4 open — planner update needed (F-EP13G-01); flex chips may visually overlap until EP13H (F-EP13G-02); no student-visible benefit until EP13H (F-EP13G-04) |
-| [EP13H](./EP13H-flexible-sessions-ui.md) | Implemented — awaiting parent review | EP13G implemented; D13-4 ruled option (b). UI/UX settled (D-H1…D-H12, commit e272f4d). | None | `./artifacts/EP13H/implementation.md`, `./artifacts/EP13H/checkpoint.md`; web 1179 passed + api 1015 passed, lint/typecheck/format clean 2026-11-15; 8 pre-existing CalendarPage failures inherited not absorbed (F-EP13H-04); manual a11y pass open (F-EP13H-01, third instance); flex-initiation counterweight routed to EP13J/K ui-refiners (F-EP13H-02) |
-| [EP13I](./EP13I-energy-aware-availability-and-placement.md) | Ready | EP13F implemented (placement v2 is the insertion point). D13-10 provisional (V-13-5). | Implement after EP13F | — |
-| [EP13J](./EP13J-micro-start-and-hyperfocus-absorption.md) | Needs refinement | EP13B + EP13D implemented. D13-13 provisional (V-13-6). **ui-refiner pass required** (D13-14). | ui-refiner, then implement | — |
+| [EP13H](./EP13H-flexible-sessions-ui.md) | Implemented — awaiting parent review | EP13G implemented; D13-4 ruled option (b). UI/UX settled (D-H1…D-H12, commit e272f4d). | None | `./artifacts/EP13H/implementation.md`, `./artifacts/EP13H/checkpoint.md`; web 1179 passed + api 1015 passed, lint/typecheck/format clean 2026-11-15; 8 pre-existing CalendarPage failures inherited not absorbed (F-EP13H-04); manual a11y pass open (F-EP13H-01, third instance); flex-initiation counterweight routed to EP13I/K ui-refiners (F-EP13H-02) |
+| [EP13I](./EP13I-micro-start-and-hyperfocus-absorption.md) | Needs refinement | EP13B + EP13D implemented. D13-13 provisional (V-13-6). **ui-refiner pass required** (D13-14). | ui-refiner, then implement | — |
+| [EP13J](./EP13J-energy-aware-availability-and-placement.md) | Ready | EP13F implemented (placement v2 is the insertion point). D13-10 provisional (V-13-5). | Implement after EP13F | — |
 | [EP13K](./EP13K-momentum-daily-goal-and-repairable-streak.md) | Needs refinement | EP07 session log (done); EP13D (dashboard placement). D13-11 provisional. **ui-refiner pass required** (D13-14). | ui-refiner, then implement | — |
 | [EP13L](./EP13L-deterministic-estimate-calibration.md) | Ready | EP13A implemented (calibration applies to the same remaining-work path). D13-7 provisional. | Implement after EP13A | — |
 | [EP13M](./EP13M-cross-layer-e2e-and-parent-index.md) | Queued | EP13A–EP13L implemented (D13-4 ruled option (b), so the flex journeys stay in scope). | Implement after EP13A–EP13L | — |
 | [EP13N](./EP13N-adhd-aligned-preference-controls.md) | Ready | EP13F implemented. Design settled in-story (D13-15; no separate ui-refiner pass — the design *is* the story). | Implement after EP13M | — |
 
-Sequence (one writer): EP13A → EP13B → EP13C → EP13D → EP13E → EP13F → EP13G → EP13H → EP13I → EP13J → EP13K → EP13L → EP13M → EP13N.
+Sequence (one writer): EP13A → EP13B → EP13C → EP13D → EP13E → EP13F → EP13G → EP13H → EP13H2 → EP13I → EP13J → EP13K → EP13L → EP13M → EP13N (I/J re-lettered 2026-11-15, D13-16: micro-start before energy, F-EP13H-02).
 
 Why this order: A/B/C are the backend spine — the plan cannot "react to reality" until confirmed time counts (A), planned and actual sessions are linked (B), and unstarted work rolls forward (C). D/E make that spine visible and are the first user-facing payoff. F is the placement redesign and deliberately lands after the spine so its tests run against the corrected remaining-work semantics. G/H (flex sessions) build on F's placement and carry the one open model decision, so they must not block earlier value. I/J/K/L are independent experience layers in rough order of leverage. M verifies the whole stack. If D13-4 resolves early, G/H may be implemented in queue order; nothing else depends on them.
 
-**Do not start EP13D, EP13E, EP13H, EP13J or EP13K before their `ui-refiner` pass** (D13-14): the "what now" card, today-first plan layout, plan-health framing, flex-session presentation, micro-start/absorption affordances, momentum displays, all copy (non-blaming, D13-9), empty/loading/error states, keyboard behavior and responsive behavior are deliberately undecided. EP13A, EP13B, EP13C, EP13F, EP13G, EP13I, EP13L and EP13M carry no UI decisions (EP13I's and EP13L's small UI touches follow existing patterns and are specified in their stories).
+**Do not start EP13D, EP13E, EP13H, EP13I or EP13K before their `ui-refiner` pass** (D13-14): the "what now" card, today-first plan layout, plan-health framing, flex-session presentation, micro-start/absorption affordances, momentum displays, all copy (non-blaming, D13-9), empty/loading/error states, keyboard behavior and responsive behavior are deliberately undecided. EP13A, EP13B, EP13C, EP13F, EP13G, EP13J, EP13L and EP13M carry no UI decisions (EP13J's and EP13L's small UI touches follow existing patterns and are specified in their stories).
 
 ## Stories
 
@@ -54,8 +54,8 @@ Why this order: A/B/C are the backend spine — the plan cannot "react to realit
 | [EP13F](./EP13F-adhd-aware-placement-engine-v2.md) | 5. Placement rework: breaks, density, interleaving, min/max | Backend (pure domain) | Pending creation |
 | [EP13G](./EP13G-flexible-day-anchored-sessions-api.md) | 6. Flexible day-anchored sessions (model + engine + API) | Backend | Pending creation |
 | [EP13H](./EP13H-flexible-sessions-ui.md) | 6. Flexible day-anchored sessions (UI) | Frontend | Pending creation |
-| [EP13I](./EP13I-energy-aware-availability-and-placement.md) | 7. Energy-tagged availability and placement | Backend + Frontend | Pending creation |
-| [EP13J](./EP13J-micro-start-and-hyperfocus-absorption.md) | 8. Micro-start and hyperfocus absorption | Frontend (+ small API) | Pending creation |
+| [EP13I](./EP13I-micro-start-and-hyperfocus-absorption.md) | 8. Micro-start and hyperfocus absorption (re-lettered from EP13J, D13-16) | Frontend (+ small API) | Pending creation |
+| [EP13J](./EP13J-energy-aware-availability-and-placement.md) | 7. Energy-tagged availability and placement (re-lettered from EP13I, D13-16) | Backend + Frontend | Pending creation |
 | [EP13K](./EP13K-momentum-daily-goal-and-repairable-streak.md) | 9. Momentum feedback | Backend + Frontend | Pending creation |
 | [EP13L](./EP13L-deterministic-estimate-calibration.md) | 10. Deterministic estimate calibration | Backend (+ small frontend annotation) | Pending creation |
 | [EP13M](./EP13M-cross-layer-e2e-and-parent-index.md) | 11. Cross-layer end-to-end verification + parent index | Integration | Pending creation |
@@ -63,7 +63,7 @@ Why this order: A/B/C are the backend spine — the plan cannot "react to realit
 
 **Why EP13F is its own pure-domain child** (like EP06C/EP08B): breaks, density cap, interleaving and min/max enforcement are placement-algorithm invariants that must be unit-tested deterministically without HTTP or persistence; folding them into a service story would bury the determinism/purity contract.
 
-**Why EP13I/EP13K keep both layers in one story**: each layer's share is below the meaningful-work gate on its own (a one-field migration + a heuristic hook; an aggregate endpoint + a card), while together they form one coherent, independently verifiable outcome. One sequential implementer owns all layers, so a split would manufacture children.
+**Why EP13J/EP13K keep both layers in one story**: each layer's share is below the meaningful-work gate on its own (a one-field migration + a heuristic hook; an aggregate endpoint + a card), while together they form one coherent, independently verifiable outcome. One sequential implementer owns all layers, so a split would manufacture children.
 
 **Why a separate integration child exists**: EP13M adds a new Playwright suite (`apps/web/e2e/adaptive-scheduling.spec.ts`) covering multi-day journeys the unit level cannot (do work → plan shrinks; miss a day → plan rolls forward; start focus from the plan; momentum updates), plus the parent implementation index — real integration implementation per the EP08F precedent.
 
@@ -82,11 +82,11 @@ Original wording from [EP13](../../epics/EP13-adaptive-scheduling-for-adhd.md#ac
 | Interleaving of assignments within a day | AC-E13-07 | **EP13F** |
 | Min/max session lengths honored | AC-E13-08 | **EP13F** |
 | Day-anchored flexible sessions; no clock time to miss; deadline-critical may stay pinned | AC-E13-09 | **EP13G** (model/engine/API), **EP13H** (UI), EP13M — *blocked on D13-4* |
-| Energy-tagged availability attracts demanding work | AC-E13-10 | **EP13I** |
-| Micro-start; hyperfocus absorption instead of overrun flags | AC-E13-11 | **EP13J**, EP13M |
+| Energy-tagged availability attracts demanding work | AC-E13-10 | **EP13J** |
+| Micro-start; hyperfocus absorption instead of overrun flags | AC-E13-11 | **EP13I**, EP13M |
 | Showing-up rewards; no compliance percentages; non-blaming copy | AC-E13-12 | **EP13K** (momentum), **EP13E** (framing/copy), all UI children (copy rule D13-9) |
 | Calibrated estimates, multiplier visible and explainable | AC-E13-13 | **EP13L** |
-| Deterministic throughout; no AI, no randomness | AC-E13-14 | **EP13F**, **EP13G**, **EP13I**, **EP13L** (each proves determinism for its own rules); EP13M |
+| Deterministic throughout; no AI, no randomness | AC-E13-14 | **EP13F**, **EP13G**, **EP13J**, **EP13L** (each proves determinism for its own rules); EP13M |
 
 ## Requirement and test traceability
 
@@ -102,26 +102,26 @@ The epic defines no TR IDs; stable TR IDs are assigned here.
 | TR-E13-06 | Placement v2 unit tests: break insertion, density cap, interleaving rotation, min/max honored (tail merge/drop), determinism, purity, deadline feasibility never sacrificed to variety | EP13F |
 | TR-E13-07 | Flex sessions: anchor persistence/validation, flex excluded from clock-overlap conflicts but counted in daily budget, deadline-pinning rule, day-end rollover of unstarted flex | EP13G |
 | TR-E13-08 | Flex UI: day-anchored presentation, start-anytime affordance, pinned-vs-flex distinction, states, keyboard, narrow screen | EP13H |
-| TR-E13-09 | Energy: migration default NORMAL, deterministic energy-aware placement (demanding→HIGH preference with stable tie-breaks), availability UI tag round-trip | EP13I |
-| TR-E13-10 | Micro-start/absorption: 10-minute start records confirmed minutes and shrinks remaining work; absorption offer at target with student still active; decline changes nothing; absorbed session semantics per D13-13 | EP13J |
+| TR-E13-09 | Energy: migration default NORMAL, deterministic energy-aware placement (demanding→HIGH preference with stable tie-breaks), availability UI tag round-trip | EP13J |
+| TR-E13-10 | Micro-start/absorption: 10-minute start records confirmed minutes and shrinks remaining work; absorption offer at target with student still active; decline changes nothing; absorbed session semantics per D13-13 | EP13I |
 | TR-E13-11 | Momentum: daily-minutes aggregate, repairable weekly streak math (missed day never resets the week), goal defaults, no compliance %, celebration respects reduced motion | EP13K |
 | TR-E13-12 | Calibration: median ratio per assignment type, ≥3 samples else 1.0, clamp [0.5, 3.0], determinism, preview annotation present/explainable, no write to assignments | EP13L |
 | TR-E13-13 | Cross-layer E2E: do-work→plan-shrinks, miss-a-day→rolls-forward, start-focus-from-plan, flex journey (if D13-4 lands), momentum display; existing suites stay green | EP13M |
-| TR-E13-14 | Manual accessibility pass recorded for every new surface (keyboard, focus visibility, screen-reader path, reduced motion, narrow screen) | EP13D, EP13E, EP13H, EP13J, EP13K (recorded); EP13M (collected) |
+| TR-E13-14 | Manual accessibility pass recorded for every new surface (keyboard, focus visibility, screen-reader path, reduced motion, narrow screen) | EP13D, EP13E, EP13H, EP13I, EP13K (recorded); EP13M (collected) |
 
 Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 
 | DoD | Owner / applicability |
 |---|---|
 | 1 functional criteria | All children |
-| 2 invalid-input validation | EP13B/EP13C/EP13G/EP13K (API boundaries), EP13D/EP13H/EP13J (client mirror); N/A for the pure-domain EP13F/EP13L cores (validation at their API boundary owners) |
-| 3 student data scoping | EP13A, EP13B, EP13C, EP13G, EP13I, EP13K, EP13M |
+| 2 invalid-input validation | EP13B/EP13C/EP13G/EP13K (API boundaries), EP13D/EP13H/EP13I (client mirror); N/A for the pure-domain EP13F/EP13L cores (validation at their API boundary owners) |
+| 3 student data scoping | EP13A, EP13B, EP13C, EP13G, EP13J, EP13K, EP13M |
 | 4 actionable API errors | EP13B, EP13C, EP13G, EP13K |
-| 5 loading/empty/error states | EP13D, EP13E, EP13H, EP13J, EP13K |
-| 6 keyboard accessibility | EP13D, EP13E, EP13H, EP13J, EP13K |
-| 7 responsive layouts | EP13D, EP13E, EP13H, EP13J, EP13K |
+| 5 loading/empty/error states | EP13D, EP13E, EP13H, EP13I, EP13K |
+| 6 keyboard accessibility | EP13D, EP13E, EP13H, EP13I, EP13K |
+| 7 responsive layouts | EP13D, EP13E, EP13H, EP13I, EP13K |
 | 8 automated tests | All children (TR-E13-01…13); TR-E13-14 is a recorded manual pass |
-| 9 API/migration documentation | EP13B (link migration), EP13G (anchor migration), EP13I (energy migration), EP13A/EP13C/EP13K (contract docs), EP13M (parent index) |
+| 9 API/migration documentation | EP13B (link migration), EP13G (anchor migration), EP13J (energy migration), EP13A/EP13C/EP13K (contract docs), EP13M (parent index) |
 | 10 integrated review | EP13 parent review unit (all children) |
 | 11 reviewer walkthrough | Reviewer, once for the EP13 parent unit |
 
@@ -147,7 +147,7 @@ model PlannedSession {
   windowHint PartOfDay?                              // MORNING | AFTERNOON | EVENING (flex only)
 }
 
-// (EP13I) AvailabilitySlot gains an energy level.
+// (EP13J) AvailabilitySlot gains an energy level.
 model AvailabilitySlot {
   // ... existing fields ...
   energy EnergyLevel @default(NORMAL)   // HIGH | NORMAL | LOW
@@ -174,7 +174,7 @@ Runs lazily and idempotently at the start of every plan read/preview/save and th
 |---|---|---|---|---|
 | `POST /study-sessions/from-planned/:plannedSessionId` | EP13B | Start a focus session linked to a planned session (duration defaults to the planned duration) | 201 → ActiveSession | 401; 404 uniform; 409 open-session |
 | `GET /study-plans/today` | EP13C | Today's reconciled sessions + the single recommended next session (first unfinished by start time, then ordering comparator) | 200 | 401 |
-| `POST /study-sessions/:id/absorb-next` | EP13J | Absorb the next planned session of the same assignment into the running session (D13-13) | 200 | 401; 404 uniform; 409 no-candidate |
+| `POST /study-sessions/:id/absorb-next` | EP13I | Absorb the next planned session of the same assignment into the running session (D13-13) | 200 | 401; 404 uniform; 409 no-candidate |
 | `GET /study-sessions/momentum` | EP13K | Minutes today, daily goal, week's study-day count, weekly goal, streak of goal-met weeks | 200 | 401 |
 
 Existing endpoints keep their shapes; `POST /study-plans/preview` and the saved-plan read gain `calibration` annotations (EP13L: `{ assignmentType, multiplier, samples }[]`) and per-session `anchor`/`windowHint` fields (EP13G, after D13-4).
@@ -204,7 +204,8 @@ Existing endpoints keep their shapes; `POST /study-plans/preview` and the saved-
 | D13-11 | Streak = study days per Monday-start week vs `weeklyGoalDays` (default 3); a missed day never resets within-week progress; the long streak counts consecutive goal-met weeks. No consecutive-day streaks. | Provisional. |
 | D13-12 | EP13 approved as post-MVP milestone M6, release 1.1; large changes to EP06 scheduling behavior authorized. | User decision 2026-11-14 (this request). |
 | D13-13 | Absorption: the next `SCHEDULED` planned session of the same assignment on the same civil day is marked `COMPLETED` and linked to the running session; the running session's `plannedMinutes` grows by its duration. | Provisional (V-13-6). |
-| D13-14 | EP13D, EP13E, EP13H, EP13J, EP13K are `Needs refinement` until their `ui-refiner` pass settles layout, copy, affordances, states, keyboard and responsive behavior. | Planner skill UI/UX handoff rule. |
+| D13-14 | EP13D, EP13E, EP13H, EP13I, EP13K are `Needs refinement` until their `ui-refiner` pass settles layout, copy, affordances, states, keyboard and responsive behavior. | Planner skill UI/UX handoff rule. |
+| D13-16 | **EP13I ⇄ EP13J re-letter**: micro-start/hyperfocus absorption is now EP13I and energy-aware placement is EP13J, so the queue's letters match the new priority — F-EP13H-02's finding that day-anchored (flex) sessions remove the clock as an initiation cue, so the counterweight (micro-start) must land before placement gets smarter. Artifacts and story text dated before 2026-11-15 use the old lettering; historical records are preserved verbatim. | **User decision 2026-11-15.** |
 | D13-15 | **EP13N added after EP13M**: EP13F's `densityPercent` numeric input is replaced by three named choices (Relaxed 60 / Balanced 80 / Packed 100, plus an honest Custom for non-preset values); `breakMinutes` stays numeric. Stored contract unchanged. Rationale documented in the story: a ratio of an unmeasured quantity is an executive-function trap, and the percent is the engine's vocabulary, not the student's. | **User decision 2026-11-15** (raised from the EP13F implementation note). |
 
 ### Verification tasks
@@ -213,8 +214,8 @@ Existing endpoints keep their shapes; `POST /study-plans/preview` and the saved-
 - **V-13-2:** Locked past unstarted rows: rolled like others, or held visible until explicitly resolved? (D13-2; EP13C.)
 - **V-13-3:** ~~D13-4 flex model — user decision. Blocks EP13G/EP13H.~~ Closed 2026-11-15: ruled option (b) (user decision); implemented by EP13G.
 - **V-13-4:** D13-8 notifications capability — user decision for any future reminder epic; nothing in EP13 depends on it.
-- **V-13-5:** "Demanding work" heuristic for energy placement (D13-10; EP13I).
-- **V-13-6:** Absorption status semantics (D13-13; EP13J).
+- **V-13-5:** "Demanding work" heuristic for energy placement (D13-10; EP13J).
+- **V-13-6:** Absorption status semantics (D13-13; EP13I).
 
 ### Code baseline (inspected 2026-11-14, not proposed)
 
@@ -252,7 +253,7 @@ Child implementation completion unblocks dependents; only the passing combined r
 
 | # | Check | Result | Reference |
 |---|---|---|---|
-| 1 | Child separation and sizing | Pass | Thirteen children, each a substantive outcome; split reasons recorded (Stories section); EP13I/EP13K deliberately kept single cross-layer stories to avoid manufactured children; no README-only/status-only child. |
+| 1 | Child separation and sizing | Pass | Thirteen children, each a substantive outcome; split reasons recorded (Stories section); EP13J/EP13K deliberately kept single cross-layer stories to avoid manufactured children; no README-only/status-only child. |
 | 2 | Original AC/TR coverage | Pass | All 14 epic ACs mapped (ownership table); TR-E13-01…14 each have a named owner. |
 | 3 | Definition of Done | Pass | DoD map above; items 10/11 belong to the combined parent review. |
 | 4 | Contract consistency | Pass | One shared-contracts section (migrations, lifecycle, reconciliation, endpoints, placement rules); implementers EP13A–L, consumers EP13D/E/H/J/K, verifier EP13M. |

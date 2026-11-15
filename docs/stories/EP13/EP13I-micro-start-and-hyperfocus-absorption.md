@@ -1,6 +1,7 @@
-# EP13J — Micro-Start and Hyperfocus Absorption
+# EP13I — Micro-Start and Hyperfocus Absorption
 
-**Story ID:** EP13J
+**Story ID:** EP13I
+**Re-lettered:** 2026-11-15 (D13-16; EP13J until the user re-prioritised micro-start ahead of energy — F-EP13H-02 is the rationale: flex sessions need an initiation counterweight before the plan gets smarter about placement)
 **Parent epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md)
 **Milestone:** M6
 **Layer:** Frontend (+ one small API endpoint)

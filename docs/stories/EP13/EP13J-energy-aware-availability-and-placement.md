@@ -1,6 +1,7 @@
-# EP13I — Energy-Aware Availability and Placement
+# EP13J — Energy-Aware Availability and Placement
 
-**Story ID:** EP13I
+**Story ID:** EP13J
+**Re-lettered:** 2026-11-15 (D13-16; EP13I until the user re-prioritised micro-start ahead of energy — artifacts dated earlier use the old letter)
 **Parent epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md)
 **Milestone:** M6
 **Layer:** Backend + Frontend (one cohesive outcome; split would manufacture children)
