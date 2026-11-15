@@ -3,7 +3,7 @@ Updated: 2026-11-15 (local session)
 Execution state: [EP13 execution queue](../../README.md#execution-queue) → row EP13H
 Story: [EP13H — Flexible Sessions UI](../../EP13H-flexible-sessions-ui.md)
 Review unit: EP13 parent (combined review after EP13M); parent index `../EP13/implementation.md` (not yet written)
-Role / scope: implementer; frontend presentation of EP13G's contract + one additive calendar field (anchor + flex-first ordering). Excludes engine/API semantics (EP13G), micro-start (EP13J), momentum (EP13K).
+Role / scope: implementer; frontend presentation of EP13G's contract + one additive calendar field (anchor + flex-first ordering). Excludes engine/API semantics (EP13G), micro-start (EP13I), momentum (EP13K).
 
 ## Repository state
 - Workspace / branch: `oak` worktree, `hfi/7d487005-e0c1-41bd-86ad-91c841f956bb/oak`
@@ -32,12 +32,12 @@ Role / scope: implementer; frontend presentation of EP13G's contract + one addit
 - `apps/web`: 1179 passed / 8 pre-existing `CalendarPage` failures; typecheck/lint/format clean.
 - `apps/api`: 1015 passed / 473 gated-skipped; typecheck/lint/format clean.
 - Open findings ride to the parent review: F-EP13H-01 (manual a11y pass, third
-  instance), F-EP13H-02 (flex needs EP13J/K as initiation counterweights),
+  instance), F-EP13H-02 (flex needs EP13I/EP13K as initiation counterweights),
   F-EP13H-03 (details dialog shows flex times, cosmetic), F-EP13H-04
   (CalendarPage suite inherited a fourth time).
 
 ## Resume next
-1. Nothing for EP13H. The queue's next actionable rows are EP13I or EP13L
-   (Ready, backend); EP13J/EP13K need their ui-refiner passes; EP13N after EP13M.
+1. Nothing for EP13H. Queue order after EP13I (D13-17): EP13L → EP13N → EP13K → EP13J → EP13M;
+   EP13L is next; EP13K needs its refiner pass (D13-14) before its turn.
 2. `pnpm --filter @studypilot/web test` re-confirms this story's suites.
 - Read next: `../../README.md` execution queue.

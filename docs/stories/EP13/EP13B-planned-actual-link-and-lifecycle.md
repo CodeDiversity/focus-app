@@ -34,7 +34,7 @@ working unchanged and never touch planned rows.
 - Tests (TR-E13-02).
 
 **Out of scope:**
-- Rollover of past sessions (EP13C). All UI (EP13D). Absorption (EP13J).
+- Rollover of past sessions (EP13C). All UI (EP13D). Absorption (EP13I).
 
 ## Source requirement references
 
@@ -104,8 +104,8 @@ working unchanged and never touch planned rows.
 - **Test files:** study-sessions service/controller specs (extend); gated API spec.
 - **Minimal start context:** this story, EP13 README lifecycle contract, `schema.prisma`, the EP07 lifecycle service, EP13A's implementation record.
 - **Verification:** `pnpm --filter @studypilot/api test`, lint, typecheck, `pnpm db:generate`.
-- **Dependencies:** EP13A. Blocks EP13C, EP13D, EP13J.
-- **Exclusions:** rollover (EP13C), UI (EP13D), absorption endpoint (EP13J).
+- **Dependencies:** EP13A. Blocks EP13C, EP13D, EP13I.
+- **Exclusions:** rollover (EP13C), UI (EP13D), absorption endpoint (EP13I).
 
 ## Tracker reference
 

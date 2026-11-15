@@ -38,7 +38,7 @@ with defensive-reader fallback.
 - Unit tests (TR-E13-06).
 
 **Out of scope:**
-- Flex anchors (EP13G). Energy preferences (EP13I — it hooks into v2's
+- Flex anchors (EP13G). Energy preferences (EP13J — it hooks into v2's
   candidate ordering). Calibration (EP13L). Any scheduling UI.
 
 ## Source requirement references
@@ -108,7 +108,7 @@ with defensive-reader fallback.
 - **Test files:** `scheduler.spec.ts`, `preferences.spec.ts` (extend), affected EP06/EP08 specs.
 - **Minimal start context:** this story, EP13 README Placement v2 + D13-5/6, `scheduler.ts`, `intervals.ts`, `ordering.ts`, `preferences.ts`, EP13A record.
 - **Verification:** `pnpm --filter @studypilot/api test`, lint, typecheck; `pnpm --filter @studypilot/web test` (form fields).
-- **Dependencies:** EP13A. Blocks EP13G, EP13I.
+- **Dependencies:** EP13A. Blocks EP13G, EP13J.
 - **Exclusions:** flex anchors, energy ordering, calibration, UI beyond the two form fields.
 
 ## Tracker reference

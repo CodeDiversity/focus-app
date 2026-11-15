@@ -40,7 +40,9 @@ the tag.
 
 ## Source requirement references
 
-- Epic AC-E13-10, AC-E13-14. Shared DoD 1, 2, 3, 6, 8, 9. TR-E13-09.
+- Epic AC-E13-10, AC-E13-14. Shared DoD 1, 2, 3, 4, 6, 8, 9 (DoD 5 and 7 are
+  inherited unchanged from the existing availability dialog — see Definition of
+  Done). TR-E13-09. D13-10 (V-13-5).
 
 ## Acceptance criteria
 

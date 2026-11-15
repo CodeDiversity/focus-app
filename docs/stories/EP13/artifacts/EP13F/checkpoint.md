@@ -3,7 +3,7 @@ Updated: 2026-11-15 (local session)
 Execution state: [EP13 execution queue](../../README.md#execution-queue) → row EP13F
 Story: [EP13F — ADHD-Aware Placement Engine v2](../../EP13F-adhd-aware-placement-engine-v2.md)
 Review unit: EP13 parent (combined review after EP13M); parent index `../EP13/implementation.md` (not yet written)
-Role / scope: implementer; backend pure-domain placement rewrite + the two new preference keys through the API boundary and the profile form. Excluded flex anchors (EP13G), energy ordering (EP13I), calibration (EP13L).
+Role / scope: implementer; backend pure-domain placement rewrite + the two new preference keys through the API boundary and the profile form. Excluded flex anchors (EP13G), energy ordering (EP13J), calibration (EP13L).
 
 ## Repository state
 - Workspace / branch: `oak` worktree, `hfi/7d487005-e0c1-41bd-86ad-91c841f956bb/oak`
@@ -37,6 +37,6 @@ Role / scope: implementer; backend pure-domain placement rewrite + the two new p
 - `apps/web`: `pnpm vitest run` → 1160 passed, 8 failed (the pre-existing `CalendarPage` suite); typecheck/lint/format clean.
 
 ## Resume next
-1. Nothing for EP13F. The queue's next actionable rows are EP13I or EP13L (both Ready); EP13G stays blocked on D13-4.
+1. Nothing for EP13F. Queue order after EP13I (D13-17): EP13L → EP13N → EP13K → EP13J → EP13M; EP13L is next.
 2. `pnpm --filter @studypilot/api test` re-confirms the engine suites if needed.
-- Read next: `../../README.md` execution queue, `../../EP13I-energy-aware-availability-and-placement.md`, `../../EP13L-deterministic-estimate-calibration.md`.
+- Read next: `../../README.md` execution queue, `../../EP13L-deterministic-estimate-calibration.md`, `../../EP13J-energy-aware-availability-and-placement.md`.

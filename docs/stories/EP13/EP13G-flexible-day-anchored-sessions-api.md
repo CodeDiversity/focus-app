@@ -40,7 +40,7 @@ keep working.
 - Tests (TR-E13-07).
 
 **Out of scope:**
-- All presentation (EP13H). Energy (EP13I). Notification of day-end.
+- All presentation (EP13H). Energy (EP13J). Notification of day-end.
 
 ## Source requirement references
 
@@ -108,7 +108,7 @@ keep working.
 - **Minimal start context:** this story, the D13-4 ruling, EP13 README contracts, EP13F record, `conflicts.ts`, save DTO.
 - **Verification:** `pnpm --filter @studypilot/api test`, lint, typecheck, `pnpm db:generate`.
 - **Dependencies:** EP13F; D13-4 ruling. Blocks EP13H.
-- **Exclusions:** UI (EP13H); energy (EP13I).
+- **Exclusions:** UI (EP13H); energy (EP13J).
 
 ## Tracker reference
 

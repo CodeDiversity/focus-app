@@ -45,7 +45,7 @@ exactly one obvious next action, one tap away from a running timer.
 
 **Out of scope:**
 - Recovery/catch-up reframing and navigation (EP13E); micro-start and
-  absorption (EP13J); momentum displays (EP13K); flex presentation (EP13H).
+  absorption (EP13I); momentum displays (EP13K); flex presentation (EP13H).
 - A "not today" dismissal (see Decision D-D5 — no endpoint exists).
 
 ## Source requirement references
@@ -140,8 +140,8 @@ Vitest + React Testing Library, colocated `*.test.tsx` (repo convention):
 | D-D1 | Where does the "what now" surface live? | **One full-width card directly under the page header/live region, above the existing 2-column grid.** The single next action must be the first thing seen (ADHD initiation); the grid keeps EP05's documented urgency order untouched below it. |
 | D-D2 | One hero card plus a separate list card, or one merged card? | **One merged card** (`TodayPlanCard`): hero + rows + minutes chip. Two cards about today would double the surface area and compete for attention; merging keeps one place for "today". |
 | D-D3 | What happens to EP05's "Today's study sessions" section? | **Unchanged.** It reports *logged* sessions (the calendar's `STUDY_SESSION` events); the new card reports *the plan*. Removing or renaming it would regress an EP05 AC for no gain. |
-| D-D4 | Hero contents and primary action copy | "Next up" label, assignment title (`text-lg font-semibold`), `{startTime} – {endTime} · {n} min`, primary `<Button size="lg">Start focus</Button>`. No duration picker here (EP13J owns micro-start). |
-| D-D5 | Does a "not today" / dismiss control ship? | **No.** No endpoint sets `SKIPPED` (EP13C only reserves the status), so shipping it would mean backend scope creep; dismissal is also lower ADHD value than starting. Revisit in EP13E/EP13J. |
+| D-D4 | Hero contents and primary action copy | "Next up" label, assignment title (`text-lg font-semibold`), `{startTime} – {endTime} · {n} min`, primary `<Button size="lg">Start focus</Button>`. No duration picker here (EP13I owns micro-start). |
+| D-D5 | Does a "not today" / dismiss control ship? | **No.** No endpoint sets `SKIPPED` (EP13C only reserves the status), so shipping it would mean backend scope creep; dismissal is also lower ADHD value than starting. Revisit in EP13E/EP13I. |
 | D-D6 | Can the student start a session other than the suggested one? | **Yes** — every startable row carries its own quiet `variant="outline" size="sm"` Start button. Forcing the suggestion would fight the "pick what I can face" reality. |
 | D-D7 | Status presentation on rows | Text badges, never colour alone: `Planned`, `In progress`, `Done`, `Moved forward` (`RESCHEDULED`), `Set aside` (`SKIPPED`). Reuses `Badge` (`variant="accent"` for in progress, default otherwise). |
 | D-D8 | Calendar treatment of planned sessions | Own `TYPE_META` entry: icon `CalendarClock`, label **"Planned"**; non-`SCHEDULED` rows append a status word (`Planned · done`). Icon + text, consistent with the existing non-colour-only rule; `link: null` (no deep link that goes nowhere). |
@@ -183,8 +183,8 @@ Vitest + React Testing Library, colocated `*.test.tsx` (repo convention):
 - **Production files:** `features/today-plan/*` (new), `entities/study-plan/{api,model}`, `entities/study-session/{api,model}`, `features/calendar/ui/CalendarEventChip.tsx`, `entities/calendar/model/types.ts`, `pages/dashboard/ui/DashboardPage.tsx`, `features/focus-session/model/resolveDefaultSessionMinutes.ts`, plus `apps/api/src/modules/calendar/calendar.service.ts` (+ spec) for the additive event.
 - **Minimal start context:** this story, EP13 README endpoints, EP13B/EP13C implementation records, `DashboardPage.tsx`, `TodayStudySessionsSection.tsx`, `useStartFocusSession.ts`, `CalendarEventChip.tsx`, `calendarApi.ts`.
 - **Verification:** `pnpm --filter @studypilot/web test`, `pnpm --filter @studypilot/api test`, lint, typecheck.
-- **Dependencies:** EP13B, EP13C (both implemented). Blocks EP13J, EP13K.
-- **Exclusions:** nav/recovery reframing (EP13E), micro-start (EP13J), momentum (EP13K).
+- **Dependencies:** EP13B, EP13C (both implemented). Blocks EP13I, EP13K.
+- **Exclusions:** nav/recovery reframing (EP13E), micro-start (EP13I), momentum (EP13K).
 
 ## Tracker reference
 

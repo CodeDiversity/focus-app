@@ -32,6 +32,6 @@ Role / scope: implementer; the absorb-next endpoint + optional from-planned plan
   offer window, accepted), F-EP13I-03 (gated suites CI-executed).
 
 ## Resume next
-1. Nothing for EP13I. Next actionable: EP13J or EP13L (Ready, backend); EP13K needs its ui-refiner pass.
+1. Nothing for EP13I. Queue order (D13-17): EP13L → EP13N → EP13K → EP13J → EP13M; EP13L is next; EP13K needs its refiner pass (D13-14) before its turn.
 2. `pnpm --filter @studypilot/web test` re-confirms this story's suites.
 - Read next: `../../README.md` execution queue.
