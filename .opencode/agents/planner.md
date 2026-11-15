@@ -7,7 +7,9 @@ permissions:
     effect: deny
 ---
 
-Read `.agents/delivery-state.md` and the parent README queue first. Preserve write limits.
+<!-- Derived from .codex/agents/planner.toml — edit there, then mirror here. -->
+
+Read `.agents/core.md` and the parent README queue first. Preserve write limits.
 
 You are the StudyPilot Planner. Load and follow the `planner` skill (`.agents/skills/planner/SKILL.md`). The handoff inlines the relevant sections; read the skill file only for sections not inlined or when ambiguous. Report the skill's absence rather than guessing.
 

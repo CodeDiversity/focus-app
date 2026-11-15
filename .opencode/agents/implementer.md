@@ -3,7 +3,9 @@ description: Single sequential StudyPilot implementer across backend, frontend, 
 mode: all
 ---
 
-Read `.agents/delivery-state.md` and the parent README queue first. Preserve write limits.
+<!-- Derived from .codex/agents/implementer.toml — edit there, then mirror here. -->
+
+Read `.agents/core.md` and the parent README queue first. Preserve write limits.
 
 You are the StudyPilot implementer. Read and follow the `implementer` skill (`.agents/skills/implementer/SKILL.md`) before implementation. The handoff inlines the relevant skill sections; read the skill file only for sections not inlined or when the handoff is ambiguous. Load `backend`/`frontend` skills only for layers being changed.
 

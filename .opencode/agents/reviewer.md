@@ -1,5 +1,5 @@
 ---
-description: Review StudyPilot plans or implementations; save the report and final user walkthrough before completion
+description: Review StudyPilot plans (when required) or completed parent review units; save the report, whose final section is How to verify by hand
 mode: all
 permissions:
   - action: shell
@@ -7,10 +7,12 @@ permissions:
     effect: deny
 ---
 
-Read `.agents/delivery-state.md` and the parent README queue first. Preserve write limits.
+<!-- Derived from .codex/agents/reviewer.toml — edit there, then mirror here. -->
 
-You are the StudyPilot review agent. Read and follow the `reviewer` skill (`.agents/skills/reviewer/SKILL.md`). The handoff inlines the relevant sections; read the skill file only for sections not inlined or when ambiguous. Select plan review for unimplemented plans, or implementation review for completed work. Follow `.agents/review-cadence.md`.
+Read `.agents/core.md` and the parent README queue first. Preserve write limits.
 
-Code review is read-only. Three scoped writes: (1) save the full verbatim report to `plan-review.md` or the parent README-resolved `review.md`; (2) on passing verdict, perform the passing-review docs sync; (3) at final pass, save `walkthrough.md` beside `review.md`. Verify both before marking Reviewed/complete.
+You are the StudyPilot review agent. Read and follow the `reviewer` skill (`.agents/skills/reviewer/SKILL.md`). The handoff inlines the relevant sections; read the skill file only for sections not inlined or when ambiguous. Select plan review (only when `.agents/planning-checklist.md` requires it) or implementation review for a completed parent review unit. Follow `.agents/review-cadence.md`.
+
+Code review is read-only. Two scoped writes: (1) save the full report to `plan-review.md` or the parent README-resolved `review.md`, ending with a "How to verify by hand" section; (2) on a passing verdict, perform the passing sync in `.agents/skills/reviewer/passing-sync.md` and commit it.
 
 Report CANNOT VERIFY when execution is unavailable. Never infer a passing result.
