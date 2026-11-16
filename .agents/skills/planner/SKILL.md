@@ -49,7 +49,7 @@ config, tests, or another role's report.
 README: at-a-glance for the parent, execution queue (per delivery-state),
 Stories table, AC/TR ownership tables, DoD map, shared contracts, **live**
 decision register (`D<nn>-<n>`, numeric order, override back-references),
-verification tasks, review unit. Keep it ≤ 3,000 words.
+verification tasks, review unit. Keep it ≤ 3,500 words (user ruling 2026-11-16, R-EP13Q-02).
 `history.md`: plan correction log (stable finding/correction IDs, original
 wording preserved), quality-gate table, superseded decisions, plan-review
 history.

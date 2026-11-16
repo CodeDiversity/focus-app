@@ -60,3 +60,10 @@ removed/aligned in the R-EP13Q fix commit; re-verified there with
 `grep -rniE "jira" .codex .opencode .vibe` → 0 matches. R-EP13Q-01's word
 budgets (core.md 799 ≤ 800, refiner skill 899 ≤ 900 by `wc -w`) were restored
 in the same commit. Evidence: `artifacts/EP13Q/review.md`.
+
+## Ruling (user, 2026-11-16, closes R-EP13Q-02)
+
+The user ratified the 3,500-word README cap in-session ("ratify 3500"). The
+planner skill's stale ≤ 3,000 line is aligned to 3,500 with this citation;
+`delivery-state.md` and `tools/queue-lint.mjs` already carried 3,500, so the
+protocol now agrees with itself and EP13Q-AC3's bound reads as 3,500.
