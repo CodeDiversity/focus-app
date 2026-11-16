@@ -1,120 +1,102 @@
 # EP13 combined review — Adaptive Scheduling for ADHD (parent review unit)
 
-**Date:** 2026-11-16 · **Pass:** 1 · **Reviewed commit:** `210f76c` (clean tree)
+**Date:** 2026-11-16 · **Pass:** 2 (re-review) · **Reviewed commit:** `619faef` (clean tree)
 **Scope:** EP13A–EP13N incl. EP13H2 (15 application children; EP13P/EP13Q outside the unit, D13-18/D13-19)
-**Reviewer:** `reviewer` role, assignment `parent_review`, from the parent index [`implementation.md`](./implementation.md)
+**Reviewer:** `reviewer` role, assignment `parent_review`, round 2. Round 1 (does not pass, R-EP13-01…05) is preserved verbatim at [`review-round-1.md`](./review-round-1.md); this round re-verifies only what changed since `210f76c` (commits `5e3fe2a`, `619faef`) plus cross-child behavior, and cites round-1 evidence for everything untouched.
 
 ## Verdict
 
-**Does not pass.** Three conditions fail:
+**Passes.** No blocker or should-fix finding remains open. All five round-1 findings are dispositioned below with fresh evidence: R-EP13-01, R-EP13-02, R-EP13-04 and R-EP13-05 are **resolved**; R-EP13-03 **stays open as a pre-existing, registered, non-gating finding** (verified identical at baseline `9ffd854` in round 1; registered as D-R14 in [`EP13R`](../../EP13R-follow-up-register-and-triage.md); same standing as F-EP13M-01/-02/-06 under the D-M5 precedent — no new evidence that any of the four failures is EP13-caused).
 
-1. **R-EP13-01** — the `DATABASE_URL`-gated API suites, executed by this review for the first time anywhere in this delivery chain, are **red: 8 failed / 1572 passed (6 suites)**, and four of the eight failures are EP13-caused.
-2. **R-EP13-02** — eight child records dispositioned their unexecuted gated suites as "CI executes them on every push"; CI (`.github/workflows/ci.yml`) triggers only on push/PR to `main`/`develop`, so **no CI run has ever executed these suites for this chain**. The recorded dispositions are inaccurate evidence claims.
-3. **R-EP13-05** — TR-E13-14's user-run accessibility checklist (screen reader, reduced motion, narrow screen) has no recorded evidence; a required manual gate stays **CANNOT VERIFY**.
+## Prior findings disposition (round 1 → round 2)
 
-Everything else is in good shape: all seven cross-layer journeys pass under this reviewer's own run, unit suites are fully green (api 1104/0, web 1264/0), the three migrations are additive, documented and deploy cleanly to a fresh database (verified live), and ownership scoping with the uniform 404 was verified in code on every EP13 endpoint. No blocker-severity finding exists; closure of R-EP13-01/-02 is test/record work, not feature work.
+| ID | Round-1 severity | Round-2 disposition | Fresh evidence |
+|---|---|---|---|
+| R-EP13-01 | Should-fix | **Resolved** (fixed in `5e3fe2a`) | Reviewer-executed full gated run at `619faef` on a fresh `ep13_r2_gated` database: **4 failed / 1576 passed / 1580 total, 2 suites failed** (`study-plans-e2e.spec.ts`, `study-plans-data-scoping.spec.ts`) — exactly the pre-existing R-EP13-03 set, none of the four EP13-caused failures (a)–(d) remains. Each repair re-inspected below. |
+| R-EP13-02 | Should-fix | **Resolved** (fixed in `5e3fe2a`) | Dated `## Correction (2026-11-16, R-EP13-02)` sections read in all ten records (EP13A/B/C/F/G/H/I/J/K/M `implementation.md`) — each retracts the "CI executes them" claim, names the real trigger scope (`main`/`develop` only) and cites the actual first execution at `210f76c`. Parent index test-command row corrected (`implementation.md` §Test commands) and §Known gaps updated. The CI-policy half is registered as D-R15 in EP13R (planner/user-owned; not a record-accuracy gap anymore). |
+| R-EP13-03 | Should-fix (pre-existing, outside this unit) | **Still open — non-gating** (unchanged by design) | The four remaining gated failures reproduced by this round's run are the same four verified pre-existing at baseline `9ffd854` in round 1: lock 400-case (implicit-conversion coercion), lock happy-path + lock scoping (`seedPlannedSession` unique-constraint collision), bag-survival (replace-vs-merge premise obsoleted by R-EP06-06). Registered with a `Do next` recommendation as **D-R14** in [`EP13R`](../../EP13R-follow-up-register-and-triage.md) (awaiting user ruling). Per the round-1 disposition and the D-M5 precedent it does not gate this unit. |
+| R-EP13-04 | Polish | **Resolved** (fixed in `5e3fe2a`) | `docs/stories/EP13/README.md` line 27 now reads "Reviewer artifacts: `./artifacts/EP13/review.md` (walkthrough + DoD-11 section inside it, D13-19)" — the stale `walkthrough.md` artifact name is gone. |
+| R-EP13-05 | Should-fix (CANNOT VERIFY) | **Resolved** (user evidence recorded in `619faef`) | The user executed and signed the 7-item TR-E13-14 checklist in-session on 2026-11-16 ("the accessibility checklist is approved and passed now"); the parent index §TR-E13-14 records it as "Executed and signed (user, 2026-11-16) … passed, no defects reported" with the checked items preserved. This is the recorded manual evidence DoD-8/TR-E13-14 required; accepted as a real user sign-off per the dispatch. |
 
-## Findings
+No new findings. Round-2 inspection surfaced nothing blocker-, should-fix- or polish-worthy beyond the dispositions above.
 
-| ID | Severity | Finding (requirement → observed gap) | Owner | Closure condition |
-|---|---|---|---|---|
-| R-EP13-01 | Should-fix | DoD-8 / each child's "gated suites updated" claim: the gated live-DB suites are red at `210f76c` — 8 failed / 1572 passed. Four failures are EP13-caused (details below); production behavior is correct in three of the four, the committed tests are stale or isolation-broken; the fourth (d) is an internal inconsistency inside EP13C's own change set. | implementer | The full gated run (`cd apps/api && DATABASE_URL=… npx jest --runInBand` against a freshly migrated DB) passes, or each remaining failure is explicitly dispositioned as a pre-existing finding with baseline evidence. |
-| R-EP13-02 | Should-fix | Accurate records (core.md "Missing records are unverified, not done"): F-EP13A-03, F-EP13B-02, F-EP13C-02, F-EP13F-02, F-EP13G-03, F-EP13I-03, F-EP13K-02 and F-EP13J-01 are all dispositioned "CI executes them on every push". `ci.yml` runs only on `push: branches: [main, develop]` / PRs to those branches; this chain lives on `hfi/*` branches. The claimed compensating evidence never existed, and the suites in fact fail. | implementer (records), planner (CI policy) | Correct the dispositions in the eight records (or add a CI trigger that actually covers delivery branches), and land R-EP13-01's fix with a real executed run recorded. |
-| R-EP13-03 | Should-fix (pre-existing, outside this unit) | Four of the eight gated failures pre-date EP13 (verified identical at baseline `9ffd854`): (1) `study-plans-e2e.spec.ts` lock 400-case — the global pipe's `enableImplicitConversion: true` (scaffold-era, `main.ts:19`/`test-http.ts:108`) coerces `locked: "yes"`/`1` to `true`, so invalid bodies answer 200: a real app-wide validation weakness; (2)+(3) `study-plans-e2e.spec.ts` lock happy-path and `study-plans-data-scoping.spec.ts` lock scoping — `seedPlannedSession` does `studyPlan.create` on a fixed date and is called twice per student → unique-constraint `study_plans_userId_date_key` collision; (4) `study-plans-e2e.spec.ts` bag-survival — the spec's premise "PATCH /users/me replaces the column verbatim" was obsoleted by the R-EP06-06 merge fix (`users.service.ts:97–126`). | planner (follow-up story) | A fix story repairs the fixtures, re-decides the implicit-conversion policy for boolean/number bodies (or pins the coercion as contract), and updates the bag-survival spec to the merge contract. Does not gate the EP13 unit (same standing as F-EP13M-01/-02/-06, D-M5). |
-| R-EP13-04 | Polish | `docs/stories/EP13/README.md` line 27 still names `./artifacts/EP13/walkthrough.md` as a reviewer artifact; D13-19 (EP13Q) folded the walkthrough into `review.md`. | planner | Drop the stale artifact name from the queue header. |
-| R-EP13-05 | Should-fix (CANNOT VERIFY) | TR-E13-14 / DoD-8 ("recorded manual pass"): the automated half is executed and verified (axe + keyboard inside the journeys, re-run by this reviewer); the user-run half (screen reader, reduced motion, 375px checks — index §TR-E13-14, items 1–7) has no recorded evidence. Agents cannot produce it. | user | The user signs the 7-item checklist in the parent index with date + result; any defect found becomes follow-up work. |
+## What changed since round 1 — re-verification
 
-### R-EP13-01 details — the four EP13-caused gated failures
+The application diff `210f76c..619faef` is five files in `apps/api` (one production file, four spec files) plus docs; `apps/web` is untouched (verified: `git diff --stat 210f76c..HEAD -- apps/web` is empty), so every round-1 web/E2E/a11y result stands as recorded.
 
-All reproduced twice (deterministic) on a fresh `ep13_review_gated` database at `210f76c`:
+### The one production change — EP13C's missed query (R-EP13-01d)
 
-- **(a) `study-plans-catch-up-e2e.spec.ts:688`** — the EP08 "P-03 pin" asserts the SavedPlan session key set without `anchor`/`windowHint`; EP13G intentionally added both to the saved-plan read (EP13G-AC5, `study-plans.service.ts` projections). EP13C and EP13L both edited this file afterwards without updating the pin. Production is per contract; the pin is stale.
-- **(b) `study-plans-catch-up-data-scoping.spec.ts:257`** — asserts `missedCount: 1` for a seeded past row; EP13C's read-time reconciliation now rolls it (`missedCount: 0`). The behavior change is EP13C's AC; this sibling spec was never updated (no EP13 commit touches it).
-- **(c) `study-sessions-planned-link-e2e.spec.ts:277`** — EP13I's absorb journey expects `plannedMinutes` 50+60=110 but gets 100: earlier tests in the same file leave a SCHEDULED 50-minute row for the same student/assignment/day, and `absorbNext` deterministically absorbs the *earliest* candidate (`study-sessions.service.ts:365–374`) — the leftover, not the seeded `next`. Production matches D13-13/D-I8; the test lacks fixture isolation.
-- **(d) `study-plans-rollover-e2e.spec.ts:163`** — EP13C's own journey asserts `missedCount: 0` after reconciliation, but the recovery summary's legacy missed query (`study-plans.service.ts:758–763`) does not carry the reconciliation predicate's "actually done" exclusion (`:502` — `studySessions: { none: { status: 'COMPLETED', durationMinutes: { gte: 1 } } }`). A past SCHEDULED row protected from rollover by that guard still reports as "missed". Reachable only with hand-crafted history (EP13B normally completes such rows), but the committed test and committed code disagree — one of them must change.
+`apps/api/src/modules/study-plans/study-plans.service.ts:758–767`: the recovery summary's legacy missed query now carries the same "actually done" exclusion as the reconciliation guard — `studySessions: { none: { status: 'COMPLETED', durationMinutes: { gte: 1 } } }` — verified **character-identical** to `reconcilePastSessions`' predicate at `:502`. Semantics re-checked: a past `SCHEDULED` row the guard protects (kept `SCHEDULED` because a linked session completed it with ≥1 minute) is now excluded from "missed" too, which is exactly what EP13C's rollover journey asserts (`study-plans-rollover-e2e.spec.ts` — green in this round's gated run). The matching unit where-pin was updated in `study-plans-recovery-catch-up.service.spec.ts:318–322` (green in the ungated run).
+
+**Blast radius inspected:**
+- The query stays scoped `studyPlan: { userId, … }` — ownership unchanged (DoD-3 holds).
+- `catchUpPreview` (`study-plans.service.ts:1244–1250`) keys off `status: 'RESCHEDULED'`; guard-protected rows stay `SCHEDULED` and never reach it — no interaction.
+- The save/confirm selective deletes (`:1478–1484`, `:1702–1710`) filter `SCHEDULED && !locked` in the plan's date range — unrelated to missed semantics, untouched.
+- The today read (`getToday`, `:853`) reconciles first and was verified in round 1; unchanged.
+- No other `missedSessions`/`missedCount` producer exists (`grep` over the service: the only other site is `catchUpPreview`, covered above).
+
+### The three gated-test repairs (R-EP13-01 a/b/c) — test-only, inspected + executed
+
+- **(a)** `study-plans-catch-up-e2e.spec.ts:686–699` — the EP08 P-03 saved-shape pin now includes `anchor` and `windowHint` (EP13G-AC5's contract) while still proving no `locked` leak; the comment records why. Correct: it pins the *current* contract instead of the pre-EP13G one.
+- **(b)** `study-plans-catch-up-data-scoping.spec.ts:255–266` — the cross-student scoping test now asserts rolled semantics (`missedCount: 0`, `rolledForwardCount: 1` for A; both 0/empty for B), matching EP13C's AC; the nothing-crosses property it exists for is strengthened, not weakened (B's summary must stay empty on *both* counters).
+- **(c)** `study-sessions-planned-link-e2e.spec.ts:264–280` — the absorb journey seeds its own dedicated assignment, removing the fixture bleed (earlier tests' leftover SCHEDULED rows for the shared assignment); the earliest-candidate determinism of `absorbNext` (verified in round 1 at `study-sessions.service.ts:365–374`) is now exercised against only its own rows.
+
+All three suites passed in this round's gated run.
+
+### Record and index corrections (R-EP13-02/-04), user sign-off (R-EP13-05)
+
+Verified by direct read at `619faef`: the ten correction sections (diffed in `5e3fe2a`), the corrected parent-index test-command row, the README artifact line, and the signed §TR-E13-14 (diffed in `619faef`). The EP13R register (`EP13R-follow-up-register-and-triage.md`, D-R1…D-R16) exists, carries D-R14 (= R-EP13-03) and D-R15 (CI trigger policy) with evidence links, and is docs-only — it changes nothing in this unit.
 
 ## Reviewer-executed verification (evidence discipline)
 
-All commands at commit `210f76c`, clean tree, this worktree, 2026-11-16. Reviewer-executed unless labeled otherwise.
+All commands at commit `619faef`, clean tree, this worktree, 2026-11-16, reviewer-executed. Round-1 results at `210f76c` are cited (not rerun) for everything the diff does not touch.
 
 | Command (cwd) | Result |
 |---|---|
 | `npx jest` (`apps/api`) | **1104 passed, 0 failed**, 476 skipped (27 gated suites self-skip), exit 0 |
-| `createdb ep13_review_gated` → `DATABASE_URL=… npx prisma migrate deploy` (`apps/api`) | **All migrations applied successfully** to a fresh database — incl. the three EP13 migrations (closes the migration half of F-EP13B-02/F-EP13G-03/F-EP13J-01) |
-| `DATABASE_URL=… JWT_SECRET=… JWT_REFRESH_SECRET=… npx jest --runInBand` (`apps/api`) | **8 failed, 1572 passed, 1580 total; 6 suites failed**, exit 1 — run twice, identical results (R-EP13-01/-03). Database dropped afterwards. |
-| `pnpm test` (`apps/web`, run solo) | **1264 passed, 0 failed** (111 files), exit 0. (A first run concurrent with the API suites flaked 3 `CourseForm.test.tsx` timeouts; solo rerun and the file alone are green — load flake, not a defect.) |
-| `pnpm lint` + `pnpm typecheck` (both apps) | clean, exit 0 (tree unchanged afterwards) |
-| `DATABASE_URL=… npx playwright test e2e/adaptive-scheduling.spec.ts` (`apps/web`) | **7 passed** (15.2s); throwaway `postgres_e2e_test` created and dropped by the harness |
-| Live endpoint probe (`ts-node src/main.ts` on :4999, curl) | `{}` → 400, `{locked:true,extra:…}` → 400, `{locked:"yes"}` → **passes validation** (404 on a random id = the service ran) — isolates R-EP13-03's coercion mechanism |
+| `psql -h localhost -d postgres -c "create database ep13_r2_gated"` → `DATABASE_URL=postgresql://michaelrobert@localhost:5432/ep13_r2_gated npx prisma migrate deploy` (`apps/api`) | **All migrations applied successfully** to the fresh database (incl. the three EP13 migrations) |
+| `DATABASE_URL=… JWT_SECRET=$(openssl rand -hex 32) JWT_REFRESH_SECRET=$(openssl rand -hex 32) npx jest --runInBand` (`apps/api`) | **4 failed, 1576 passed, 1580 total; 2 suites failed** (`study-plans-e2e`, `study-plans-data-scoping`) — jest exit non-zero on the known set. Verbose re-run of the two suites confirms the four failing tests by name: lock 400-case, lock happy-path, lock scoping, bag-survival — **exactly the R-EP13-03 set**, nothing else. Database dropped afterwards. |
+| `pnpm lint` + `pnpm typecheck` (`apps/api`) | clean, exit 0 (the one app with changed code) |
+| `git diff --stat 210f76c..HEAD -- apps/web` | empty — `apps/web` untouched since round 1; web unit (1264/0), lint/typecheck, and the 7/7 E2E journeys stand on round-1 reviewer-executed evidence at `210f76c` ([review-round-1.md](./review-round-1.md) §Reviewer-executed verification) |
 
-Implementer-provided evidence accepted as recorded (not re-derived, per the review brief): the full-parallel E2E baseline comparison for F-EP13M-01/-02/-06 (four pre-existing failures + two parallel flakes, each verified by the implementer at `9ffd854` or in files EP13 never touched); per-child red-first/test-count claims inside each record.
+## Child and cross-child dispositions (round 2)
 
-## Child-by-child AC dispositions
+Only EP13C's production behavior changed. Per-child AC tables from round 1 remain valid and are incorporated by reference ([review-round-1.md](./review-round-1.md) §Child-by-child AC dispositions); deltas:
 
-Format: child — ACs — disposition (evidence: reviewer-executed tests `[T]`, reviewer code inspection `[C]`, reviewer-run E2E journey `[E#]`, implementer record `[R]`).
+| Child | Round-2 status |
+|---|---|
+| EP13C | 5/5 ACs satisfied, internal inconsistency **closed**: committed test and committed code now agree (the R-EP13-01(d) exclusion), the un-updated sibling scoping spec (b) is on rolled semantics, both suites green in this round's gated run. R-EP13-01(b)/(d) closed. |
+| EP13G | R-EP13-01(a) closed — the P-03 pin tracks the anchor/windowHint contract; catch-up e2e suite green. |
+| EP13I | R-EP13-01(c) closed — absorb journey isolated; planned-link e2e suite green. |
+| EP13M | F-EP13M-07 remains closed-by-execution, now with a green result (modulo R-EP13-03); parent index no longer repeats the wrong CI claim. |
+| EP13A/B/D/E/F/H/H2/J/K/L/N | Unchanged code; round-1 dispositions stand (all ACs satisfied). Records now carry the R-EP13-02 corrections where applicable. |
 
-| Child | ACs | Disposition |
-|---|---|---|
-| EP13A | 5/5 satisfied | Confirmed-time groupBy scoped by `userId`+COMPLETED; locked-future subtraction; save preserves locked (`study-plans.service.ts`, `confirmedTimeByAssignment`/`gatherPlanData`) [C]; `study-plans-reality.service.spec.ts` + unit pins green [T]; journey 1 (180→120 placed) [E1] |
-| EP13B | 5/5 satisfied | `startFromPlanned` fully inspected: scoped read `{ id, studyPlan: { userId } }` (:191), uniform 404, open-session 409 inside the transaction (:242–251), conditional status move (:285–292), today-rule with profile zone (:218–226) [C]; 14 unit tests green [T]; gated journeys red only on EP13I's absorb isolation (R-EP13-01c) [T]; journey 3 start→finish→COMPLETED [E3] |
-| EP13C | 5/5 satisfied; one internal inconsistency | Predicate verified at `study-plans.service.ts:496–507` (conditional `updateMany`, idempotent, no history writes); `getToday` (:853) scoped with reconcile-first [C]; reconciliation unit suite green [T]; journey 2 (missedCount 0, rolledForwardCount 1) [E2]. Open: R-EP13-01(b)/(d) — the missed-query/guard mismatch and the un-updated sibling spec |
-| EP13D | 5/5 satisfied | TodayPlanCard/one-tap/calendar emission tests green [T]; calendar emission scoped `studyPlan: { userId … }` (`calendar.service.ts:166`) [C]; `resolveDefaultSessionMinutes` reads `sessionLengthMinutes` (V-07-1 closed) [R+T]; journeys 3, 4 [E] |
-| EP13E | 5/5 satisfied | Plan-health informational view, redirects, no-digit return note — component/route tests green incl. `not.toMatch(/\d/)` [T]; journey 7 (redirects, nav, nothing count-led) [E7] |
-| EP13F | 5/5 satisfied | scheduler.spec (breaks §10, density §11, interleaving §12, min/max §13, determinism/purity §14) green [T]; defaults/bounds in `preferences.ts:55,74` [C]; journey 1 exercises the engine end to end [E1] |
-| EP13G | 5/5 satisfied | Anchor migration verified additive + deployed [T]; flex partition/conflict-exemption/start-fixes-time suites green [T]; `fixFlex` in one conditional write (`study-sessions.service.ts:277–292`) [C]; journey 4 (flex overlaps a FIXED row without conflict, "Anytime" rendering, startable) [E4]. Open: R-EP13-01(a) — the stale P-03 pin his change broke |
-| EP13H | 5/5 satisfied | `sessionTimeLabel` vocabulary + negative clock-time assertions green [T]; journey 4 [E4] |
-| EP13H2 | 3/3 satisfied | CalendarEventDetails flex conditional + the 12 CalendarPage tests green in the full solo run [T]; the Date-freeze repair is test-only [C via record + diff scope] |
-| EP13I | 5/5 satisfied | `absorbNext` fully inspected: `ownedWhere`, uniform 404, both conditional writes in one transaction, earliest-candidate determinism (:327–410) [C]; absorb unit suite (9) green [T]; journey 5 (micro-start 10 → absorb → `plannedMinutes` 40, 12 min shrink) [E5]. Open: R-EP13-01(c) — his gated journey's fixture isolation |
-| EP13L | 5/5 satisfied | `calibration.spec.ts` (24) green: median, ≥3 gate, clamp [0.5, 3.0], fallback, determinism, no `assignment.update` [T]; scale-then-subtract at both classification sites [R+T]; F-EP13L-01 contracts wording already fixed in plan (C-EP13-10) [C] |
-| EP13N | 5/5 satisfied | Radio-card fieldset, preset→integer mapping, custom derivation, keyboard arrows, no-percent primary labels — 30 component tests green [T] |
-| EP13K | 5/5 satisfied | `momentum.ts` pure (imports only civil-string helpers — F-EP13K-04 confirmed acceptable) [C]; `momentum()` scoped `where { userId, status: COMPLETED }` with profile-zone bucketing (:685–718) [C]; momentum/preferences/card/celebration suites green incl. no-`%` assertions [T]; journey 6 [E6] |
-| EP13J | 5/5 satisfied | Energy migration additive + deployed [T]; `energy.spec.ts` incl. the all-NORMAL byte-identity (EP13J-AC3) green [T]; availability CRUD scoping verified (`availability.service.ts:151–315`) [C]; enum-only 400 via DTO `@IsIn` [C+T]. V-13-5 stays open (planner-owned, reported) |
-| EP13M | 4/4 satisfied | All seven journeys re-executed by this reviewer: 7/7 passed [E1–E7]; axe gate real (`helpers.ts` axeViolations, serious/critical, two exact-pattern exclusions matching F-EP13M-04/-05) [C]; parent index accurate except the CI claim it repeats (R-EP13-02); F-EP13M-07 now **closed by execution — with a red result** (R-EP13-01) |
+Cross-child: the recovery summary, catch-up preview/confirm, today read and plan save all sit on the one reconciliation predicate, now applied consistently at both read sites (reconcile guard + missed query); the gated e2e suites that chain them (rollover, catch-up, recovery scoping, planned-link) are green in this round's serial run. Epic ACs AC-E13-01…14: round-1 coverage stands; AC-E13-04's "rolled sessions stop being missed" is now also pinned at the summary level by the corrected scoping spec.
 
-Epic ACs: AC-E13-01…14 all covered by the owners above; cross-layer halves verified by journeys 1–7 (reviewer-run). Open product follow-ups raised by children (F-EP13F-01/-04, F-EP13G-02/-04, F-EP13H-02, F-EP13I-02, F-EP13J-02/-03/-04, F-EP13K-01/-03, F-EP13E-03, F-EP13C-01) are each dispositioned in their records with owners; none re-litigated here, none blocks.
-
-## DoD table
+## DoD table (round 2)
 
 | DoD | Disposition | Evidence |
 |---|---|---|
-| 1 functional criteria | PASS | AC table above; unit suites + journeys reviewer-run |
-| 2 invalid-input validation | PASS for EP13 endpoints (enum/bounds/DTO tests green; service-level double validation in preferences/from-planned) — with the pre-existing app-wide coercion caveat (R-EP13-03, boolean/number bodies) | `[T]`+`[C]`; probe run |
-| 3 student data scoping | PASS | Code inspection of all six EP13 endpoints + calendar emission (file:line above); scoping suites green at unit level; gated scoping failures are fixture/stale-expectation issues, not scoping violations |
-| 4 actionable API errors | PASS | 409/400 messages inspected (`study-sessions.service.ts:221–235,342–346`); tests pin them |
-| 5 loading/empty/error states | PASS | Component suites (card/health/momentum/form) green |
-| 6 keyboard accessibility | PASS (automated half) | Component tests + journeys 3/7 keyboard paths (reviewer-run); human half → R-EP13-05 |
-| 7 responsive layouts | PASS (code level: stacking/44px classes test-pinned); 375px human check → R-EP13-05 | `[T]` |
-| 8 automated tests | **FAIL** — unit/component/E2E green, but the gated suites are red (R-EP13-01) and TR-E13-14's recorded manual pass is half-missing (R-EP13-05) | reviewer-executed gated run |
-| 9 API/migration documentation | PASS | Three migrations additive with in-file docs + rollback notes (read in full); `contracts.md` endpoint rows current (C-EP13-10 applied); payload contracts in records |
-| 10 integrated review | PASS | Reviewer-run journeys 7/7 + implementer's recorded full-suite runs at this commit |
-| 11 walkthrough + How to verify by hand | This report (below), per D13-19 |
+| 1 functional criteria | PASS | Round-1 AC tables + this round's gated run; EP13C delta re-verified above |
+| 2 invalid-input validation | PASS for EP13 endpoints; the app-wide coercion caveat stays pre-existing (R-EP13-03 → D-R14) | Round 1 `[T]`+`[C]` + probe; unchanged code |
+| 3 student data scoping | PASS | Round-1 inspection of all EP13 endpoints; the one changed query re-inspected (`studyPlan: { userId }` kept); scoping suites green in this round's gated run (except the two pre-existing lock cases, R-EP13-03) |
+| 4 actionable API errors | PASS | Round 1; unchanged code |
+| 5 loading/empty/error states | PASS | Round 1; `apps/web` untouched |
+| 6 keyboard accessibility | PASS | Automated half round 1 (reviewer-run journeys); human half now signed (R-EP13-05 resolved) |
+| 7 responsive layouts | PASS | Round-1 code-level evidence + the signed 375px checklist item (§TR-E13-14 item 7) |
+| 8 automated tests | **PASS** — ungated 1104/0; gated 1576 passed with only the four pre-existing R-EP13-03 failures (registered D-R14); TR-E13-14's manual pass recorded and signed | reviewer-executed runs this round |
+| 9 API/migration documentation | PASS | Round 1 (migrations re-deployed clean this round); records corrected per R-EP13-02 |
+| 10 integrated review | PASS | Round-1 reviewer-run journeys 7/7 at `210f76c`; no web/app-behavior change since except the missed-query fix, covered by the gated rollover/scoping journeys this round |
+| 11 walkthrough + How to verify by hand | This report (below), per D13-19 | — |
 
-## Walkthrough (D13-19 — reviewer narrative)
+## Walkthrough (D13-19 — reviewer narrative, round-2 delta)
 
-The unit delivers what the epic promised, as one coherent spine. **Reality accounting (A→B→C):** confirmed COMPLETED minutes now flow through one aggregation into remaining work, previews, saves, recovery and catch-up; planned rows link to the focus sessions that execute them; unstarted past rows flip to `RESCHEDULED` lazily and idempotently on any read, so "missed" stops accumulating structurally rather than cosmetically. **Surfaces (D/E/H/H2):** the dashboard and plan page lead with today and a one-tap start; plan health is informational and never gates anything; flex sessions read "Anytime" everywhere a clock time would shame. **Engine (F/G/J/L):** placement v2 adds breaks, a density budget, round-robin interleaving with a feasibility override, honored min/max, a deterministic flex/fixed partition, energy-preferring gap scans, and median-clamped calibration — all pure, all order-independent, all proven at unit level (109 scheduler/energy/calibration/momentum domain tests, reviewer-run). **Experience (I/K/N):** micro-start and absorption replace overrun flags; momentum counts showing up with a repairable week; the preference controls speak named choices instead of percentages. The cross-layer journeys prove the stack end to end and passed under this reviewer's own run.
-
-The unit's one systemic weakness is evidential, not functional: every child deferred its live-database proof to a CI that never watches these branches, and the first actual execution (this review) found six suites red — four EP13's own doing. Nothing there is a product defect a student would hit (two stale pins, a fixture bleed, and one hand-crafted-data edge where EP13C's test and code disagree), but a green gate that was never run is not a gate, and eight records say it was. That, plus the still-unsigned human half of the accessibility pass, is what stands between this unit and sign-off.
-
-## Prior findings disposition (from the index's known-gaps list)
-
-- F-EP13M-07 (gated suites never executed): **closed by execution — result red** → superseded by R-EP13-01/-02/-03.
-- F-EP13M-01/-02/-06 (pre-existing E2E failures/flakes): provenance accepted as recorded; still open with planner.
-- F-EP13D-02/F-EP13E-01/F-EP13H-01/F-EP13I-01 + deferred a11y evidence (EP13N/EP13K): consolidated into R-EP13-05 (user checklist).
-- Migration halves of F-EP13B-02/F-EP13G-03/F-EP13J-01: **closed** — `prisma migrate deploy` verified by this reviewer on a fresh database.
-- V-13-5: open, planner-owned (reported, not blocking).
+The round-1 walkthrough ([review-round-1.md](./review-round-1.md) §Walkthrough) describes the unit and stands unchanged — the spine (reality accounting), the surfaces, the engine and the experience children are exactly as reviewed there, and nothing user-visible moved between the rounds. What round 2 adds is the closure of the unit's one systemic weakness: the gate that had never run now runs and is green for everything EP13 owns. The single production correction makes EP13C internally consistent — the recovery summary now applies the same "actually done" test the rollover guard does, so a row protected from rolling because a linked session genuinely finished it can never resurface as "missed" (reachable only with hand-crafted history, but the code and its committed test now agree). The three test repairs pin current contracts instead of pre-EP13 ones. The records that claimed CI coverage that never existed now say plainly what happened and when the suites actually first ran; the policy gap behind it (CI never watches delivery branches) is registered for a user ruling (D-R15), as is the pre-existing four-failure residue (D-R14). The human half of the accessibility pass is signed. The unit is done.
 
 ## How to verify by hand
 
-Use a disposable local account/database only. Prereqs: Postgres on :5432 (trust auth), `pnpm install` done; API `cd apps/api && DATABASE_URL=postgresql://$USER@localhost:5432/studypilot_dev npx prisma migrate deploy` then start api+web (`pnpm dev` per app, or use the E2E harness).
+Steps 1–9 are unchanged from round 1 and stand with their labels ([review-round-1.md](./review-round-1.md) §How to verify by hand — journeys 1–7 `Executed — 2026-11-16, reviewer`; energy windows `Not executed — user instructions`; ownership negative case `Executed`). Round-2 deltas:
 
-1. **Plans count reality (AC-E13-01).** `Executed — 2026-11-16, reviewer, journey 1 (E2E, local stack)`: create an assignment with a 180-minute estimate → generate+save a plan → finish a 60-minute focus session for it → regenerate: the preview places ~120 minutes; the finished work is never rescheduled.
-2. **Miss a day (AC-E13-04).** `Executed — journey 2`: seed a planned session yesterday, open the dashboard: no redirect, no "missed" counter; `/plan/health` shows one "Moved forward" row; the plan page's note has no digits.
-3. **One-tap start/finish (AC-E13-03/05).** `Executed — journey 3`: keyboard-Tab to "Start focus" (visible ring), Enter → `/focus` running; finish → planned row reads Completed, "{n} min studied today" chip updates.
-4. **Flex sessions (AC-E13-09).** `Executed — journey 4`: in the plan editor press "Make flexible", save over a fixed row at the same clock time — no conflict error; calendar chip and dashboard read "Anytime"; Start works.
-5. **Micro-start + absorption (AC-E13-11).** `Executed — journey 5`: "Just 10 min of …" → timer target 10; at target with a second same-assignment session planned today, the offer appears; accepting grows the target and completes the absorbed row; declining changes nothing.
-6. **Momentum (AC-E13-12).** `Executed — journey 6`: finish ≥1 minute → celebration "You studied N minutes." with daily/weekly lines; dashboard "Your momentum" card shows minutes/days — verify no percent sign anywhere.
-7. **Preferences.** `Executed — reviewer probe + component tests`: `/profile` → pick "Relaxed" and save → reload shows Relaxed; PUT body carries integers (devtools); an out-of-range `breakMinutes` (61) shows "Must be between 0 and 60."
-8. **Energy windows.** `Not executed — user instructions`: on `/availability` create a window, set Energy = High; the list row and its calendar chip show "High energy"; generate a plan with one demanding assignment (PAPER or >120 min remaining) and confirm it lands in the HIGH window first.
-9. **Ownership negative case.** `Executed — gated scoping suites (passing cases) + code inspection`: with two accounts, POST `/study-sessions/from-planned/<other student's id>` → 404 `Resource not found` (never 403, no existence oracle).
-10. **Screen reader / reduced motion / 375px.** `Not executed — user instructions`: run the 7-item checklist in the [parent index §TR-E13-14](./implementation.md#tr-e13-14--combined-accessibility-record-d-m1) and sign each line with date + result (R-EP13-05).
-11. **Gated API suites (after the R-EP13-01 fix).** `Executed by this review — currently red`: `psql -c "create database ep13_gated"`, `cd apps/api && DATABASE_URL=postgresql://$USER@localhost:5432/ep13_gated npx prisma migrate deploy && DATABASE_URL=… JWT_SECRET=$(openssl rand -hex 32) JWT_REFRESH_SECRET=$(openssl rand -hex 32) npx jest --runInBand`; expect 0 failures once fixed; drop the database afterwards.
+10. **Screen reader / reduced motion / 375px (TR-E13-14 items 1–7).** `Executed — user, 2026-11-16, in-session sign-off recorded in the parent index §TR-E13-14 (commit 619faef): passed, no defects reported.`
+11. **Gated API suites.** `Executed — this review, 2026-11-16, commit 619faef`: fresh database `ep13_r2_gated`, `prisma migrate deploy`, `npx jest --runInBand` → **4 failed / 1576 passed**, the four failures being exactly the pre-existing R-EP13-03 set (D-R14). Expect 0 failures once D-R14's fix story lands. Database dropped afterwards.
+12. **Recovery summary never counts a completed-but-unrolled row as missed (the R-EP13-01d fix).** `Executed — gated rollover + recovery suites this round.` Manually: seed a past planned session, complete it via a linked focus session (≥1 min), leave its row `SCHEDULED`; GET the recovery summary → `missedCount: 0` and the row is not listed.
