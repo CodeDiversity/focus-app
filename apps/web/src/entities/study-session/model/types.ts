@@ -56,6 +56,8 @@ export interface MomentumSummary {
   today: { confirmedMinutes: number; goalMinutes: number; goalMet: boolean };
   week: {
     startDate: string;
+    /** EP14B (D-B4) — the week's seven civil dates, Monday first; the client derives no dates (D05-6). */
+    days: string[];
     studyDays: string[];
     studyDayCount: number;
     goalDays: number;

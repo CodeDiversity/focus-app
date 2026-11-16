@@ -319,8 +319,12 @@ describeIntegration('study preferences data scoping (integration, real database)
     /** Seed one planned session for a student (direct writes: the fixture). */
     async function seedPlannedSession(student: Student) {
       const assignment = await seedAssignment(student, { title: `${student.id} lock target` });
-      const plan = await app.prisma.studyPlan.create({
-        data: { userId: student.id, date: new Date('2026-10-30T00:00:00.000Z'), targetHours: 1 },
+      const plan = await app.prisma.studyPlan.upsert({
+        // R-EP13-03/EP14B (D-B2): called more than once per student — upsert on
+        // (userId, date) so the unique constraint never collides.
+        where: { userId_date: { userId: student.id, date: new Date('2026-10-30T00:00:00.000Z') } },
+        create: { userId: student.id, date: new Date('2026-10-30T00:00:00.000Z'), targetHours: 1 },
+        update: {},
       });
       return app.prisma.plannedSession.create({
         data: {

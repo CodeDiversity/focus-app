@@ -144,7 +144,11 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
   });
 
   it('renders all runtime-supported zones sorted by offset then region (AC-106E-1, AC-106E-2)', async () => {
-    renderProfilePage();
+    // F-EP14B-01: a stored canonical zone, so the IR-106-15c alias prepend
+    // never fires and the assertion holds on any host TZ (the default
+    // fixture stores 'UTC' → browser-zone fallback → on a UTC host the
+    // non-canonical 'UTC' is prepended and values[0] is no longer Midway).
+    renderProfilePage({ ...storedStudent, timeZone: 'America/New_York' });
     await waitForBoot();
 
     const select = timeZoneSelect();

@@ -66,7 +66,10 @@ test('journey: generate, edit, save, and survive a reload', async ({ page, reque
     title: `Reading ${uniqueSuffix()}`,
     courseId: course.id,
     dueDate: due,
-    estimatedHours: 1,
+    // Two hours → two sessions, so the move target and the delete target are
+    // independent rows on every weekday (EP14C: Mondays place exactly one
+    // movable row otherwise — the 09:00 class pins a1's morning slot).
+    estimatedHours: 2,
     priority: 'MEDIUM',
   });
 
@@ -79,9 +82,21 @@ test('journey: generate, edit, save, and survive a reload', async ({ page, reque
 
   await page.goto('/plan');
 
-  // Generate.
-  await page.getByRole('button', { name: /generate plan/i }).click();
-  await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 15_000 });
+  // Generate, capturing the engine's own proposal (EP14C D-C1: the edit
+  // target is chosen from it, never blindly).
+  const [previewRes] = await Promise.all([
+    page.waitForResponse(
+      (r) => r.url().includes('/api/study-plans/preview') && r.request().method() === 'POST'
+    ),
+    page.getByRole('button', { name: /generate plan/i }).click(),
+  ]);
+  const preview = (await previewRes.json()) as {
+    days: {
+      date: string;
+      sessions: { startTime: string; endTime: string; assignmentTitle: string }[];
+    }[];
+  };
+  await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 30_000 });
 
   // Seven days rendered.
   const daySections = page.locator('[data-testid="plan-week"] > section');
@@ -89,15 +104,47 @@ test('journey: generate, edit, save, and survive a reload', async ({ page, reque
 
   // Proposed sessions present.
   await expect(page.getByTestId('plan-session-editor').getByText(a1.title)).toBeVisible();
-  await expect(page.getByTestId('plan-session-editor').getByText(a2.title)).toBeVisible();
+  await expect(page.getByTestId('plan-session-editor').getByText(a2.title).first()).toBeVisible();
 
-  // Move a session (move later 15 minutes).
-  const moveLater = page.getByRole('button', { name: /move later 15 minutes/i }).first();
-  await moveLater.click();
+  // Move a session 15 minutes later — one whose shifted window the preview
+  // itself proves free (EP14C D-C1, closes the F-EP13M-06 date dependence:
+  // `.first()` landed on the Monday 09:00 class whenever today was a Monday).
+  const minutes = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
+  const flat = preview.days.flatMap((d) =>
+    d.sessions.map((sess, si) => ({ ...sess, date: d.date, last: si === d.sessions.length - 1 }))
+  );
+  const classOnDate = (date: string) =>
+    new Date(`${date}T00:00:00.000Z`).getUTCDay() === 1 ? [{ s: 540, e: 600 }] : []; // Mon 09:00–10:00
+  const movable = flat
+    .map((sess, i) => ({ sess, i }))
+    .filter(({ sess, i }) => {
+      const s0 = minutes(sess.startTime) + 15;
+      const e0 = minutes(sess.endTime) + 15;
+      if (classOnDate(sess.date).some((c) => s0 < c.e && c.s < e0)) return false;
+      // Keep clear of the next proposal on the same day after the shift.
+      const next = flat[i + 1];
+      if (!sess.last && next && minutes(next.startTime) < e0) return false;
+      return true;
+    });
+  expect(movable.length).toBeGreaterThan(0);
+  const target = movable[movable.length - 1].i;
+  await page
+    .getByRole('button', { name: /move later 15 minutes/i })
+    .nth(target)
+    .click();
 
-  // Delete a session.
-  const deleteBtn = page.getByRole('button', { name: /delete session/i }).last();
-  await deleteBtn.click();
+  // Delete a session — never the one just moved, and never a1's only row
+  // (the post-save assertions expect a1 visible) (EP14C: the old blind
+  // `.last()` could erase the move when the only safe target was last).
+  const deletable = flat
+    .map((sess, i) => ({ sess, i }))
+    .filter(({ sess, i }) => i !== target && sess.assignmentTitle !== a1.title);
+  expect(deletable.length).toBeGreaterThan(0);
+  const deleteIdx = deletable[deletable.length - 1].i;
+  await page
+    .getByRole('button', { name: /delete session/i })
+    .nth(deleteIdx)
+    .click();
 
   // Save.
   await page.getByRole('button', { name: /save plan/i }).click();
@@ -109,7 +156,7 @@ test('journey: generate, edit, save, and survive a reload', async ({ page, reque
 
   // Reload and assert saved plan still there.
   await page.reload();
-  await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId('plan-week').getByText(a1.title)).toBeVisible();
 });
 
@@ -152,8 +199,13 @@ test('deficit warning reports an assignment that cannot fit', async ({ page, req
   await expect(page.getByText('Study preferences saved.')).toBeVisible();
 
   await page.goto('/plan');
-  await page.getByRole('button', { name: /generate plan/i }).click();
-  await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 15_000 });
+  // EP14C (F-EP14C-01 family): a click can land during the today-card query's
+  // re-render and be lost — retry the idempotent generate until the preview
+  // renders, as a human would.
+  await expect(async () => {
+    await page.getByRole('button', { name: /generate plan/i }).click();
+    await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 10_000 });
+  }).toPass({ timeout: 45_000 });
   await expect(page.getByText(/do not fit/i)).toBeVisible({ timeout: 15_000 });
 });
 

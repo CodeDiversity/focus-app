@@ -112,8 +112,20 @@ test('logout returns to /login and the protected route then redirects there', as
 
   // Logout clears the session; because we are on a protected route,
   // ProtectedRoute immediately navigates to /login.
-  await page.getByRole('button', { name: /open account menu/i }).click();
-  await page.getByRole('menuitem', { name: 'Logout' }).click();
+  // EP14C (D-C3, F-EP13M-06): wait for the authenticated shell to settle
+  // before acting — under parallel load the header re-renders during the
+  // silent session-restore and the click's target detached (30s timeout).
+  const accountMenu = page.getByRole('button', { name: /open account menu/i });
+  await expect(accountMenu).toBeVisible({ timeout: 15_000 });
+  const logoutItem = page.getByRole('menuitem', { name: 'Logout' });
+  // Re-open and retry: under parallel load the header re-renders (silent
+  // profile refresh) and can close or destabilize the open menu — the menu
+  // item then never reaches "stable" and a single click times out
+  // (F-EP14C-01: suspected product-side menu flicker, reported not absorbed).
+  await expect(async () => {
+    if (!(await logoutItem.isVisible())) await accountMenu.click();
+    await logoutItem.click({ timeout: 3_000 });
+  }).toPass({ timeout: 25_000 });
   await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
 
   // The protected route must not render while logged out.

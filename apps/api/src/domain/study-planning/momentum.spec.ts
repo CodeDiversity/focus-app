@@ -99,7 +99,14 @@ describe('momentum (domain, EP13K)', () => {
     expect(run(day(2), [])).toEqual({
       date: day(2),
       today: { confirmedMinutes: 0, goalMinutes: 60, goalMet: false },
-      week: { startDate: MON, studyDays: [], studyDayCount: 0, goalDays: 3, goalMet: false },
+      week: {
+        startDate: MON,
+        days: [0, 1, 2, 3, 4, 5, 6].map((d) => day(d)),
+        studyDays: [],
+        studyDayCount: 0,
+        goalDays: 3,
+        goalMet: false,
+      },
       run: { currentWeeks: 0, bestWeeks: 0, currentWeekCounted: false },
       hasHistory: false,
     });
@@ -130,5 +137,20 @@ describe('momentum (domain, EP13K)', () => {
     expect(high.today.goalMet).toBe(false);
     expect(high.week.goalMet).toBe(true);
     expect(run(SUN, week.slice(1), 7, 480).week.goalMet).toBe(false);
+  });
+
+  it('week.days is the seven civil dates Monday-first, across a month boundary (EP14B, D-B4)', () => {
+    expect(run('2026-12-02', []).week.days).toEqual([
+      '2026-11-30',
+      '2026-12-01',
+      '2026-12-02',
+      '2026-12-03',
+      '2026-12-04',
+      '2026-12-05',
+      '2026-12-06',
+    ]);
+    const out = run(SUN, [s(day(0))]);
+    expect(out.week.days[0]).toBe(out.week.startDate);
+    expect(out.week.days).toHaveLength(7);
   });
 });

@@ -190,6 +190,15 @@ describe('FocusPage', () => {
       today: { confirmedMinutes: 25, goalMinutes: 60, goalMet: false },
       week: {
         startDate: '2026-10-26',
+        days: [
+          '2026-10-26',
+          '2026-10-27',
+          '2026-10-28',
+          '2026-10-29',
+          '2026-10-30',
+          '2026-10-31',
+          '2026-11-01',
+        ],
         studyDays: ['2026-10-26', '2026-10-30'],
         studyDayCount: 2,
         goalDays: 3,

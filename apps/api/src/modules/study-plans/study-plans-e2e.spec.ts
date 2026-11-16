@@ -166,10 +166,14 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
   describe('the bag’s other keys survive a PUT', () => {
     it('the stored preferences column still carries the student’s unrelated keys', async () => {
       // The free-form profile bag (SP106) is written through PATCH
-      // /users/me — EP06 does not narrow it (D06-14).  That PATCH writes the
-      // `preferences` column verbatim (it replaces the column, it does not
-      // merge into it), so it is seeded **before** the study defaults are
-      // saved.
+      // /users/me, which MERGES into the stored column (R-EP06-06; EP14B
+      // updated this spec from the old replace-verbatim premise, D-B3). The
+      // column is reset first so earlier serial tests' defaults cannot leak
+      // into the expected bag.
+      await app.prisma.user.update({
+        where: { id: student.id },
+        data: { preferences: {} },
+      });
       await agent
         .patch('/users/me')
         .set('Authorization', `Bearer ${student.accessToken}`)
@@ -540,8 +544,12 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
           priority: 'MEDIUM',
         },
       });
-      const plan = await app.prisma.studyPlan.create({
-        data: { userId: session.id, date: new Date('2026-10-31T00:00:00.000Z'), targetHours: 1 },
+      const plan = await app.prisma.studyPlan.upsert({
+        // R-EP13-03/EP14B (D-B2): called more than once per student — upsert on
+        // (userId, date) so the unique constraint never collides.
+        where: { userId_date: { userId: session.id, date: new Date('2026-10-31T00:00:00.000Z') } },
+        create: { userId: session.id, date: new Date('2026-10-31T00:00:00.000Z'), targetHours: 1 },
+        update: {},
       });
       return app.prisma.plannedSession.create({
         data: {

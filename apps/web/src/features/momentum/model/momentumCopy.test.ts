@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { MomentumSummary } from '@/entities/study-session/model/types';
-import { dailyLine, runLine, studiedOnSentence, weekDates, weeklyLine } from './momentumCopy';
+import * as momentumCopy from './momentumCopy';
+import { dailyLine, runLine, studiedOnSentence, weeklyLine } from './momentumCopy';
 
 const base: MomentumSummary = {
   date: '2026-11-18',
@@ -8,6 +9,15 @@ const base: MomentumSummary = {
   today: { confirmedMinutes: 45, goalMinutes: 60, goalMet: false },
   week: {
     startDate: '2026-11-16',
+    days: [
+      '2026-11-16',
+      '2026-11-17',
+      '2026-11-18',
+      '2026-11-19',
+      '2026-11-20',
+      '2026-11-21',
+      '2026-11-22',
+    ],
     studyDays: ['2026-11-16', '2026-11-18'],
     studyDayCount: 2,
     goalDays: 3,
@@ -59,16 +69,9 @@ describe('momentumCopy (EP13K, D-K10)', () => {
     ).toBe('Goal met 52+ weeks in a row');
   });
 
-  it('weekDates is Mon…Sun from the server’s start date, across a month boundary', () => {
-    expect(weekDates('2026-11-30')).toEqual([
-      '2026-11-30',
-      '2026-12-01',
-      '2026-12-02',
-      '2026-12-03',
-      '2026-12-04',
-      '2026-12-05',
-      '2026-12-06',
-    ]);
+  it('derives nothing: the module exports no date arithmetic (EP14B, D-B4)', () => {
+    // The server owns the week's dates (week.days); this module only maps them.
+    expect(Object.keys(momentumCopy)).not.toContain('weekDates');
   });
 
   it('the sr-only sentence names full weekdays', () => {

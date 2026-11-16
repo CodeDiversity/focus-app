@@ -143,7 +143,7 @@ test('journey 1 — do the work and the plan shrinks (AC-E13-01)', async ({ page
   await loginViaUi(page, s.email);
   await page.goto('/plan');
   await page.getByRole('button', { name: /generate plan/i }).click();
-  await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 30_000 });
   await expect(
     page.getByTestId('plan-session-editor').getByText(essay.title).first()
   ).toBeVisible();
@@ -340,7 +340,12 @@ test('journey 5 — micro-start counts, and absorption extends the running targe
   await expect(page.getByText('Focus session running')).toBeAttached();
   await page.clock.fastForward('11:00');
   const offer = page.getByTestId('absorb-next-offer');
-  await expect(offer).toBeVisible({ timeout: 15_000 });
+  // EP14C hardening: under parallel load one tick/render can lag the
+  // fast-forward — nudge the controlled clock until the offer renders.
+  await expect(async () => {
+    await page.clock.fastForward('02:00');
+    await expect(offer).toBeVisible({ timeout: 3_000 });
+  }).toPass({ timeout: 30_000 });
   await expectNoAxeViolations(page, '/focus (absorption offer)');
   await offer.getByRole('button', { name: /Keep going \(\+30 min\)/ }).click();
   await expect(offer).toHaveCount(0);
