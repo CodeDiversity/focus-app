@@ -61,7 +61,7 @@ AC-E14-05; TR-E14-05; DoD-6, DoD-7, DoD-8.
 
 - **Outcome:** EP13's accessibility gate passes with no exclusions.
 - **Actual at closeout:** tbd.
-- **Files:** `features/assignments/ui/AssignmentDialogs.tsx` (or the empty-state host), the calendar agenda/detail host, assignment form controls, `shared/ui/Badge.tsx`, `features/availability/ui/AvailabilitySlotList.tsx`, `features/assignments/ui/assignmentPresentation.ts`, `index.css`/`tailwind.config.js` (token), `features/calendar/ui/CalendarEventChip.tsx`, `e2e/adaptive-scheduling.spec.ts` + focused component tests.
+- **Files:** `features/assignments/ui/AssignmentDialogs.tsx` (or the empty-state host), the calendar agenda/detail host, assignment form controls, `shared/ui/Badge.tsx`, `features/availability/ui/AvailabilitySlotList.tsx`, `features/assignments/ui/assignmentPresentation.ts`, `index.css`/`tailwind.config.js` (token), `features/calendar/ui/CalendarEventChip.tsx`, `e2e/adaptive-scheduling.spec.ts` + focused component tests; `pages/assignments/ui/AssignmentsPage.test.tsx:853` pins the old pairing and must move with the token (R-EP14-10; the guard test skips `*.test.tsx`).
 - **Start context:** this story; F-EP13M-01/-02/-04/-05 in `docs/stories/EP13/artifacts/EP13M/implementation.md`.
 - **Verification:** the three named E2E tests and all seven journeys green; web unit suite green.
 - **Dependencies / exclusions:** E2E flakes → EP14C.
