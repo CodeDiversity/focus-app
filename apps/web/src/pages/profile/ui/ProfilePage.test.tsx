@@ -144,7 +144,12 @@ describe('ProfilePage time-zone editing (SP-106C)', () => {
   });
 
   it('renders all runtime-supported zones sorted by offset then region (AC-106E-1, AC-106E-2)', async () => {
-    renderProfilePage();
+    // EP14B (F-EP14B-01): seed a canonical stored zone. With the default
+    // stored "UTC", the form falls back to the *machine's* zone — and on a
+    // UTC machine (CI) that zone is absent from the runtime list, so the page
+    // rightly prepends it as an alias (IR-106-15c), which made this ordering
+    // assertion environment-dependent.
+    renderProfilePage({ ...storedStudent, timeZone: 'Europe/London' });
     await waitForBoot();
 
     const select = timeZoneSelect();

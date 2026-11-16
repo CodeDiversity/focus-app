@@ -323,6 +323,8 @@ export type MomentumSummary = {
   week: {
     /** The Monday that starts this week (D-K2). */
     startDate: string;
+    /** EP14B (D-B4) — the week's seven civil dates, Monday first (D05-6: the server owns date math). */
+    days: string[];
     /** This week's study days, ascending civil dates (D-K1). */
     studyDays: string[];
     studyDayCount: number;

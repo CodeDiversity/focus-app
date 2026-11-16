@@ -4,7 +4,7 @@
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 (D14-2)
 **Layer:** Backend (+ one small frontend consumer change)
-**Status:** Ready — ▲ D-B1 and ▲ D-B4 ratified (user, 2026-11-16)
+**Status:** Implemented — awaiting parent review (2026-11-16); EP14B-AC2's "fully green CI" clause open (F-EP14B-02). Record: [`artifacts/EP14B/implementation.md`](./artifacts/EP14B/implementation.md)
 **Dependencies:** EP14A recommended first (so this story's gated evidence is a CI run). Sources: EP13R D-R14 and D-R8 (user rulings 2026-11-16), R-EP13-03, F-EP13K-01.
 
 ## Plan at a glance
@@ -62,7 +62,7 @@ AC-E14-02, AC-E14-03; TR-E14-02, TR-E14-03; DoD-2, DoD-3, DoD-8, DoD-9.
 ## Sizing
 
 - **Outcome:** inputs are validated strictly, the gated baseline is zero failures, and the client no longer computes week dates.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** as planned + the latent UTC test fix (F-EP14B-01); two CI proof runs; Secret scan open (F-EP14B-02).
 - **Files:** `apps/api/src/main.ts`, `apps/api/src/test/test-http.ts`, query DTOs found by grep (`list-study-sessions-query.dto.ts` et al.), `momentum.ts`, `types.ts`, `study-plans-e2e.spec.ts`, `study-plans-data-scoping.spec.ts`, new `validation-strictness.e2e-spec.ts`; web `entities/study-session/model/types.ts`, `features/momentum/{model/momentumCopy.ts, ui/MomentumWeekStrip.tsx}` + tests; `docs/stories/EP13/contracts.md` momentum row.
 - **Start context:** this story; the inspected lines above; R-EP13-03 in `docs/stories/EP13/artifacts/EP13/review-round-1.md`.
 - **Verification:** full gated run 0 failed locally **and** a green CI run link (the run includes the gated suites via EP14A's step); ungated API + web suites green; lint/typecheck.

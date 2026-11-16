@@ -1,6 +1,6 @@
 import { CheckCircle2 } from 'lucide-react';
 import type { MomentumSummary } from '@/entities/study-session/model/types';
-import { WEEKDAY_SHORT, studiedOnSentence, weekDates } from '../model/momentumCopy';
+import { WEEKDAY_SHORT, studiedOnSentence } from '../model/momentumCopy';
 
 /**
  * EP13K — the seven Mon…Sun day marks. Decorative (`aria-hidden`); the
@@ -18,7 +18,7 @@ export function MomentumWeekStrip({
   return (
     <>
       <ol aria-hidden className="flex gap-1" data-testid="momentum-week-strip">
-        {weekDates(momentum.week.startDate).map((date, i) => {
+        {momentum.week.days.map((date, i) => {
           const didStudy = studied.has(date);
           const isToday = date === momentum.date;
           return (

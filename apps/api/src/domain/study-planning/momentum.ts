@@ -103,6 +103,9 @@ export function computeMomentum(input: MomentumInput): Omit<MomentumSummary, 'ti
   const bestWeeks = Math.min(best, horizonWeeks);
 
   const thisWeekDays = [...studyDays].filter((day) => day >= weekStart).sort();
+  // EP14B (D-B4): the server owns the week's dates (D05-6) — seven civil
+  // dates, Monday first, so no client ever derives them.
+  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   return {
     date: today,
@@ -113,6 +116,7 @@ export function computeMomentum(input: MomentumInput): Omit<MomentumSummary, 'ti
     },
     week: {
       startDate: weekStart,
+      days,
       studyDays: thisWeekDays,
       studyDayCount: thisWeekDays.length,
       goalDays: weeklyGoalDays,

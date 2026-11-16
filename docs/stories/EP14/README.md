@@ -18,9 +18,9 @@
 
 **Artifact root:** `./artifacts/` — one directory per child, plus `./artifacts/EP14/` for the parent index and review.
 
-**Active substory:** EP14B.
+**Active substory:** EP14C.
 
-**Next substory:** EP14B — implement (in progress 2026-11-16).
+**Next substory:** EP14C — implement (in progress 2026-11-16).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -29,7 +29,7 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [EP14A](./EP14A-ci-runs-the-full-gate-on-delivery-branches.md) | Implemented — awaiting parent review | None. | None (known-red window closed by EP14B) | `./artifacts/EP14A/implementation.md`; runs 43908087082 (baseline) / 43908098549 (red); open: F-EP14A-01 |
-| [EP14B](./EP14B-api-contract-integrity.md) | Ready | ▲ D-B1, ▲ D-B4 ratified (user, 2026-11-16); EP14A first | Implement after EP14A | — |
+| [EP14B](./EP14B-api-contract-integrity.md) | Implemented — awaiting parent review | EP14A implemented. | User: unblock F-EP14B-02 (Secret scan) for the fully-green CI clause | `./artifacts/EP14B/implementation.md`; gated 1584/0; CI run 43910951890 backend+frontend green, Secret scan red; open: F-EP14B-02 |
 | [EP14C](./EP14C-e2e-reliability.md) | Ready | None | Implement after EP14B | — |
 | [EP14D](./EP14D-accessibility-debt-from-the-ep13-pass.md) | Ready | None | Implement after EP14C | — |
 | [EP14E](./EP14E-effort-aware-placement.md) | Needs refinement | EP14B; ▲ D-E1…D-E3 ratified (user, 2026-11-16); refiner pass still required (assignment-form UI) | Refine, then implement last | — |

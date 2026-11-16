@@ -106,7 +106,10 @@ export async function createIntegrationApp(): Promise<IntegrationApp> {
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: {
-        enableImplicitConversion: true,
+        // EP14B (D-B1a, R-EP13-03): no implicit coercion — a wrong-typed body
+        // field (locked: "yes") must 400, never silently convert. Query
+        // params that need numbers carry explicit @Transform(Number).
+        enableImplicitConversion: false,
       },
     })
   );

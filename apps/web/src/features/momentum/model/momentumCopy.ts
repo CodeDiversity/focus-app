@@ -45,24 +45,11 @@ export function runLine({ run }: MomentumSummary): string | null {
   return null;
 }
 
-/**
- * The seven civil dates of the week, Monday first, as strings. The server
- * owns the dates (D05-6): this is index arithmetic on `startDate`'s day
- * component via the UTC date counter, never a time-zone conversion.
- */
-export function weekDates(startDate: string): string[] {
-  const base = new Date(`${startDate}T00:00:00.000Z`);
-  return WEEKDAY_SHORT.map((_, i) => {
-    const d = new Date(base);
-    d.setUTCDate(base.getUTCDate() + i);
-    return d.toISOString().slice(0, 10);
-  });
-}
-
-/** The sr-only sentence for the week strip, e.g. "Studied on Monday, Wednesday and Sunday." */
+/** The sr-only sentence for the week strip, e.g. "Studied on Monday, Wednesday and Sunday."
+ * EP14B (D-B4, closes F-EP13K-01): the dates come from the server's `week.days` — no client date math. */
 export function studiedOnSentence({ week }: MomentumSummary): string {
   const studied = new Set(week.studyDays);
-  const names = weekDates(week.startDate)
+  const names = week.days
     .map((date, i) => (studied.has(date) ? WEEKDAY_FULL[i] : null))
     .filter((name): name is (typeof WEEKDAY_FULL)[number] => name !== null);
   if (names.length === 0) return 'No study days yet this week.';

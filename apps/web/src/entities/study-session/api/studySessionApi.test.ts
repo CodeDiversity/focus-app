@@ -13,6 +13,15 @@ const payload: MomentumSummary = {
   today: { confirmedMinutes: 25, goalMinutes: 60, goalMet: false },
   week: {
     startDate: '2026-11-16',
+    days: [
+      '2026-11-16',
+      '2026-11-17',
+      '2026-11-18',
+      '2026-11-19',
+      '2026-11-20',
+      '2026-11-21',
+      '2026-11-22',
+    ],
     studyDays: ['2026-11-18'],
     studyDayCount: 1,
     goalDays: 3,
