@@ -164,6 +164,8 @@ interface RecoverySummaryResponse {
     locked: boolean;
   }[];
   missedCount: number;
+  rolledForwardCount: number;
+  rolledForward: Array<{ id: string; assignmentId: string; locked: boolean }>;
   unfinishedWork: { assignmentId: string }[];
   confirmedMinutes: number;
   message: string;
@@ -293,8 +295,11 @@ test('journey: missed sessions → preview → edit → confirm → the saved pl
     },
   ]);
 
+  // EP13C (D13-2, AC-E13-04): the summary read reconciles first — unstarted
+  // past sessions roll forward and stop being "missed".
   const summaryBefore = await getRecoverySummary(request, user.accessToken);
-  expect(summaryBefore.missedCount).toBe(3);
+  expect(summaryBefore.missedCount).toBe(0);
+  expect(summaryBefore.rolledForwardCount).toBe(3);
   const essayBefore = await assignmentSnapshot(request, user.accessToken, essay.id);
   const readingBefore = await assignmentSnapshot(request, user.accessToken, reading.id);
 
@@ -302,18 +307,18 @@ test('journey: missed sessions → preview → edit → confirm → the saved pl
   await savePreferencesViaUi(page);
 
   // AC 1a — the recovery summary surfaces the missed sessions.
-  await page.goto('/catch-up');
-  await expect(page.getByRole('heading', { name: 'Catch up' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Missed sessions' })).toBeVisible();
+  await page.goto('/plan/health');
+  await expect(page.getByRole('heading', { name: 'Plan health' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Moved forward' })).toBeVisible();
   await expect(page.getByText(essay.title).first()).toBeVisible();
   await expect(page.getByText(addDays(user.today, -2)).first()).toBeVisible();
 
   // AC 1b — manual entry point → preview; assert against the server window.
   const [previewRes] = await Promise.all([
     waitForPreviewResponse(page),
-    page.getByRole('button', { name: 'Create catch-up plan' }).click(),
+    page.getByRole('button', { name: 'Regenerate my week' }).click(),
   ]);
-  await expect(page).toHaveURL(/\/catch-up\/preview/);
+  await expect(page).toHaveURL(/\/plan\/health\/catch-up/);
   const preview = (await previewRes.json()) as CatchUpPreviewResponse;
   expect(preview.from).toBe(user.today);
   expect(preview.to).toBe(user.to);
@@ -346,7 +351,7 @@ test('journey: missed sessions → preview → edit → confirm → the saved pl
   // AC 1d — confirm.
   await page.getByRole('button', { name: 'Use this plan' }).click();
   await expect(page.getByText('Catch-up plan saved.')).toBeVisible();
-  await expect(page).toHaveURL(/\/catch-up$/);
+  await expect(page).toHaveURL(/\/plan\/health$/);
 
   // AC 1e — reload survival: the plan page re-reads the saved plan from the
   // server after a full reload.
@@ -365,7 +370,8 @@ test('journey: missed sessions → preview → edit → confirm → the saved pl
   // are still the same missed sessions, assignments are field-for-field
   // unchanged, and no study log was written.
   const summaryAfter = await getRecoverySummary(request, user.accessToken);
-  expect(summaryAfter.missedCount).toBe(3);
+  expect(summaryAfter.missedCount).toBe(0);
+  expect(summaryAfter.rolledForwardCount).toBe(3);
   expect(await assignmentSnapshot(request, user.accessToken, essay.id)).toBe(essayBefore);
   expect(await assignmentSnapshot(request, user.accessToken, reading.id)).toBe(readingBefore);
   const sessionList = await request.get('/api/study-sessions', {
@@ -412,10 +418,10 @@ test('decline leaves the plan unchanged (no confirm call, no persisted mutation)
 
   await loginViaUi(page, user.email);
   await savePreferencesViaUi(page);
-  await page.goto('/catch-up');
+  await page.goto('/plan/health');
   const [previewRes] = await Promise.all([
     waitForPreviewResponse(page),
-    page.getByRole('button', { name: 'Create catch-up plan' }).click(),
+    page.getByRole('button', { name: 'Regenerate my week' }).click(),
   ]);
   const preview = (await previewRes.json()) as CatchUpPreviewResponse;
   await expect(page.getByRole('button', { name: 'Use this plan' })).toBeVisible();
@@ -423,9 +429,9 @@ test('decline leaves the plan unchanged (no confirm call, no persisted mutation)
 
   // Decline = "Not now": client-side only (V-08-4) — no confirm request.
   await page.getByRole('button', { name: 'Not now' }).click();
-  await expect(page).toHaveURL(/\/catch-up$/);
+  await expect(page).toHaveURL(/\/plan\/health$/);
   expect(confirmCalls).toHaveLength(0);
-  await expect(page.getByRole('heading', { name: 'Missed sessions' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Moved forward' })).toBeVisible();
 
   // The plan is byte-for-byte unchanged.
   const planAfter = await getPlanWindow(request, user.accessToken, user.today, user.to);
@@ -471,7 +477,7 @@ test('a locked session survives confirm unchanged (fields + count)', async ({ pa
   // The preview reports the preserved locked session.
   const [previewRes] = await Promise.all([
     waitForPreviewResponse(page),
-    page.goto('/catch-up/preview'),
+    page.goto('/plan/health/catch-up'),
   ]);
   await expect(page.getByRole('heading', { name: 'Catch-up plan' })).toBeVisible();
   const preview = (await previewRes.json()) as CatchUpPreviewResponse;
@@ -533,7 +539,7 @@ test('feasibility warning is displayed when work cannot fit before its deadline'
   await savePreferencesViaUi(page);
   const [previewRes] = await Promise.all([
     waitForPreviewResponse(page),
-    page.goto('/catch-up/preview'),
+    page.goto('/plan/health/catch-up'),
   ]);
   const preview = (await previewRes.json()) as CatchUpPreviewResponse;
 
@@ -597,14 +603,16 @@ test("a completed assignment's planned sessions are not reported as missed", asy
 
   // Server side: only the pending assignment's rows are missed (AC 5).
   const summary = await getRecoverySummary(request, user.accessToken);
-  expect(summary.missedCount).toBe(2);
-  expect(summary.missedSessions.map((m) => m.assignmentId)).toEqual([pending.id, pending.id]);
+  // EP13C: the rows roll forward instead of accumulating as missed; a
+  // finished assignment's rolled rows drop out of the detail.
+  expect(summary.missedCount).toBe(0);
+  expect(summary.rolledForward.map((m) => m.assignmentId)).toEqual([pending.id, pending.id]);
   expect(summary.unfinishedWork.map((w) => w.assignmentId)).not.toContain(done.id);
 
   // UI side: the completed assignment is nowhere on the recovery surface.
   await loginViaUi(page, user.email);
-  await page.goto('/catch-up');
-  await expect(page.getByRole('heading', { name: 'Missed sessions' })).toBeVisible();
+  await page.goto('/plan/health');
+  await expect(page.getByRole('heading', { name: 'Moved forward' })).toBeVisible();
   await expect(page.getByText(pending.title).first()).toBeVisible();
   await expect(page.getByText(done.title)).toHaveCount(0);
 });
@@ -643,7 +651,7 @@ test('recorded confirmed time reaches the recovery summary', async ({ page, requ
   expect(summary.confirmedMinutes).toBe(45);
 
   await loginViaUi(page, user.email);
-  await page.goto('/catch-up');
+  await page.goto('/plan/health');
   await expect(page.getByText('45 minutes studied so far')).toBeVisible();
   await expect(page.getByText(assignment.title).first()).toBeVisible();
 });
@@ -670,8 +678,8 @@ test('EP04 calendar regression: an in-progress (null endTime) session still rend
 
   // The catch-up surface coexists with the open session; the calendar still
   // renders it afterwards.
-  await page.goto('/catch-up');
-  await expect(page.getByRole('heading', { name: 'Catch up' })).toBeVisible();
+  await page.goto('/plan/health');
+  await expect(page.getByRole('heading', { name: 'Plan health' })).toBeVisible();
   await page.goto('/calendar');
   await expect(page.getByRole('button', { name: /Study session/ }).first()).toBeVisible();
 });
@@ -699,8 +707,8 @@ test.describe('EP08 surfaces — narrow viewport + keyboard (TR-E08-08 durable e
     ]);
 
     await loginViaUi(page, user.email);
-    await page.goto('/catch-up');
-    await expect(page.getByRole('heading', { name: 'Catch up' })).toBeVisible();
+    await page.goto('/plan/health');
+    await expect(page.getByRole('heading', { name: 'Plan health' })).toBeVisible();
     await expect(page.getByText(assignment.title).first()).toBeVisible();
 
     // Responsive: the page does not scroll sideways at 320px…
@@ -711,13 +719,13 @@ test.describe('EP08 surfaces — narrow viewport + keyboard (TR-E08-08 durable e
     expect(widths.scroll).toBeLessThanOrEqual(widths.client);
 
     // …and the entry point keeps a 44px tap target (max-sm min-height).
-    const entry = page.getByRole('button', { name: 'Create catch-up plan' });
+    const entry = page.getByRole('button', { name: 'Regenerate my week' });
     const box = await entry.boundingBox();
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
 
     // Keyboard: Tab from the document start reaches the entry, with the
     // shared focus-visible ring on the focused element, and Enter activates.
-    const walk = await tabUntil(page, /create catch-up plan/i);
+    const walk = await tabUntil(page, /regenerate my week/i);
     expect(walk.found, `Tab path: ${walk.path.join(' → ')}`).toBe(true);
     const ring = await page.evaluate(() => {
       const el = document.activeElement as HTMLElement;
@@ -725,7 +733,7 @@ test.describe('EP08 surfaces — narrow viewport + keyboard (TR-E08-08 durable e
     });
     expect(ring).not.toBe('none');
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/\/catch-up\/preview/);
+    await expect(page).toHaveURL(/\/plan\/health\/catch-up/);
   });
 
   test('/catch-up/preview at 320px: controls stack and stay tappable; the lock toggle is operable', async ({
@@ -756,7 +764,7 @@ test.describe('EP08 surfaces — narrow viewport + keyboard (TR-E08-08 durable e
     await loginViaUi(page, user.email);
     const [previewRes] = await Promise.all([
       waitForPreviewResponse(page),
-      page.goto('/catch-up/preview'),
+      page.goto('/plan/health/catch-up'),
     ]);
     const preview = (await previewRes.json()) as CatchUpPreviewResponse;
     expect(preview.lockedPreserved).toBe(1);
@@ -788,7 +796,8 @@ test.describe('EP08 surfaces — narrow viewport + keyboard (TR-E08-08 durable e
     await expect(page.getByTestId('catch-up-preservation')).toHaveCount(0);
 
     const summary = await getRecoverySummary(request, user.accessToken);
-    const missed = summary.missedSessions.find((m) => m.id === missedRowId);
-    expect(missed?.locked).toBe(false);
+    // EP13C (V-13-2): a locked past row rolls forward and keeps its flag.
+    const rolled = summary.rolledForward.find((m) => m.id === missedRowId);
+    expect(rolled?.locked).toBe(false);
   });
 });

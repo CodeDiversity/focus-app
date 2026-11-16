@@ -282,7 +282,7 @@ describe('TodayPlanCard (EP13D)', () => {
     renderCard({ plan: plan() });
 
     const micro = screen.getByRole('button', {
-      name: 'Start Problem set 3 for just 10 minutes',
+      name: 'Just 10 min of Problem set 3',
     });
     await user.click(micro);
     await waitFor(() => expect(mockedStart).toHaveBeenCalledWith('ps-1', { plannedMinutes: 10 }));

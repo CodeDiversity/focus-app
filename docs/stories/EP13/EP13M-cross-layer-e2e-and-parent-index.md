@@ -4,7 +4,7 @@
 **Parent epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md)
 **Milestone:** M6
 **Layer:** Integration
-**Status:** Queued
+**Status:** Implemented — EP13 unit ready for the combined review (2026-11-16). Record: [`artifacts/EP13M/implementation.md`](./artifacts/EP13M/implementation.md); parent index: [`artifacts/EP13/implementation.md`](./artifacts/EP13/implementation.md)
 **Dependencies:** EP13A–EP13N implemented — the whole epic, including EP13H2 (fix story) and EP13N (preference controls). **D13-4 is resolved (option b), so the flex journeys are in scope unconditionally.**
 **Reviewed:** 2026-11-15 — dependencies de-conditionalised, the manual a11y pass promoted from "collected" to "performed" (see *Review note*).
 **Replanned:** 2026-11-15 — shared-understanding template (EP13Q); decisions D-M1…D-M6 proposed for user review.
@@ -137,7 +137,7 @@ Rows are `D-M<n>`; one that refines or overrides a register row says `(refines D
 ## Sizing
 
 - **Outcome:** the epic's adaptive loop is proven end to end on the real stack, and the parent index readies the combined review.
-- **Actual at closeout:** tbd (from `artifacts/efficiency.md`).
+- **Actual at closeout:** the suite + index as planned, plus repair of two stale pre-EP13 E2E specs (EP13 regressions), shared helpers, and one a11y fix (F-EP13M-03); see `artifacts/efficiency.md`.
 - **Model tier:** default (implementer).
 - **Production files:** `apps/web/e2e/adaptive-scheduling.spec.ts` (new); `./artifacts/EP13/implementation.md` (new).
 - **Test files:** the spec itself.

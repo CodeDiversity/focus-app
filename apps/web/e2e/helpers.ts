@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import { expect, type APIRequestContext, type Page } from '@playwright/test';
 
 /**
@@ -208,4 +209,122 @@ export async function loginViaUi(page: Page, email: string): Promise<void> {
   // Login routes new accounts to /onboarding (onboarding incomplete) and
   // onboarded accounts to the `from` path or /dashboard.
   await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 10_000 });
+}
+
+// ---------------------------------------------------------------------------
+// EP13M — shared helpers for the adaptive-scheduling journeys (D-M3).
+// ---------------------------------------------------------------------------
+
+/** Civil-date arithmetic on server-returned `YYYY-MM-DD` strings only (never the wall clock). */
+export function addCivilDays(dateStr: string, n: number): string {
+  const d = new Date(`${dateStr}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * The server's planning window for a plan-less student: `from` is the server
+ * civil "today" (D-M2 — the only "today" a journey may use; EP13H2 lesson).
+ */
+export async function getServerWindow(
+  request: APIRequestContext,
+  accessToken: string
+): Promise<{ today: string; to: string }> {
+  const res = await request.get('/api/study-plans', { headers: authHeaders(accessToken) });
+  requireStatus(res, [200]);
+  const win = (await res.json()) as { from: string; to: string };
+  return { today: win.from, to: win.to };
+}
+
+/** One row of `POST /api/study-plans`. */
+export interface PlanSeedSession {
+  assignmentId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  anchor?: 'FIXED' | 'FLEX_DAY';
+  windowHint?: 'MORNING' | 'AFTERNOON' | 'EVENING';
+}
+
+/** Save a seven-day plan week starting at `from` (accepted from today−6, D06-23). */
+export async function savePlanWeekViaApi(
+  request: APIRequestContext,
+  accessToken: string,
+  from: string,
+  sessions: PlanSeedSession[]
+): Promise<{ days: { date: string; sessions: { id: string; assignmentId: string }[] }[] }> {
+  const res = await request.post('/api/study-plans', {
+    headers: authHeaders(accessToken),
+    data: { from, to: addCivilDays(from, 6), sessions },
+  });
+  requireStatus(res, [201]);
+  return (await res.json()) as {
+    days: { date: string; sessions: { id: string; assignmentId: string }[] }[];
+  };
+}
+
+/**
+ * Run axe-core (the copy already installed with eslint-plugin-jsx-a11y — no
+ * new dependency) against the current page for WCAG 2.x A/AA rules and return
+ * the violations at `serious`/`critical` impact, as compact strings.
+ */
+export async function axeViolations(
+  page: Page,
+  options: { ignore?: (ruleId: string, html: string) => boolean } = {}
+): Promise<string[]> {
+  const fromPlugin = createRequire(require.resolve('eslint-plugin-jsx-a11y/package.json'));
+  // Scan the settled page: an entrance animation mid-fade would read as low
+  // contrast (opacity < 1) — a sampling artefact, not a defect.
+  await page.waitForFunction(() =>
+    document.getAnimations().every((a) => a.playState === 'finished' || a.playState === 'idle')
+  );
+  await page.addScriptTag({ path: fromPlugin.resolve('axe-core/axe.min.js') });
+  const results = await page.evaluate(async () => {
+    const axe = (
+      window as unknown as { axe: { run: (ctx: unknown, opts: unknown) => Promise<unknown> } }
+    ).axe;
+    return (await axe.run(document, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
+    })) as {
+      violations: {
+        id: string;
+        impact: string | null;
+        nodes: { target: string[]; html: string }[];
+      }[];
+    };
+  });
+  const ignore = options.ignore ?? (() => false);
+  return results.violations
+    .filter((v) => v.impact === 'serious' || v.impact === 'critical')
+    .map((v) => ({ ...v, nodes: v.nodes.filter((n) => !ignore(v.id, n.html)) }))
+    .filter((v) => v.nodes.length > 0)
+    .map(
+      (v) =>
+        `${v.id} (${v.impact}) × ${v.nodes.length}: ${v.nodes
+          .map((n) => n.target.join(' '))
+          .slice(0, 3)
+          .join(' | ')}`
+    );
+}
+
+/**
+ * Walk the real Tab order until the focused element's accessible text matches
+ * `label`; returns the visited path so a failure names where focus stalled.
+ */
+export async function tabTo(
+  page: Page,
+  label: RegExp,
+  max = 60
+): Promise<{ found: boolean; path: string[] }> {
+  const path: string[] = [];
+  for (let i = 0; i < max; i++) {
+    await page.keyboard.press('Tab');
+    const text = await page.evaluate(() => {
+      const el = document.activeElement as HTMLElement | null;
+      return el ? (el.getAttribute('aria-label') ?? el.textContent ?? '').trim() : '';
+    });
+    path.push(text.slice(0, 48));
+    if (new RegExp(label.source, label.flags).test(text)) return { found: true, path };
+  }
+  return { found: false, path };
 }

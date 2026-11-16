@@ -152,7 +152,9 @@ export function TodayPlanCard({ plan, status, error, isFetching, onRetry }: Toda
                     className="w-full sm:w-auto max-sm:min-h-[44px]"
                     disabled={Boolean(start.startingId)}
                     onClick={() => void start.start(next.id, 10)}
-                    aria-label={`Start ${next.assignmentTitle} for just 10 minutes`}
+                    // EP13M (F-EP13M-03, WCAG 2.5.3 label in name): the name
+                    // starts with the visible words so voice control matches.
+                    aria-label={`Just 10 min of ${next.assignmentTitle}`}
                   >
                     Just 10 min
                   </Button>

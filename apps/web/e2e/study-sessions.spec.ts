@@ -51,7 +51,8 @@ test.describe('study sessions — cross-layer journey', () => {
     await minutesInput.fill('45');
     await page.getByRole('button', { name: 'Save time' }).click();
 
-    await expect(page.getByText('45 minutes recorded')).toBeVisible();
+    // EP13K (D-K8/D-K10): the completed block is now the celebration.
+    await expect(page.getByText('You studied 45 minutes.', { exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'View study history' })).toBeVisible();
 
     // History surface shows the finished session
@@ -117,7 +118,8 @@ test.describe('study sessions — cross-layer journey', () => {
     await expect(page.getByRole('heading', { name: 'Finish this session' })).toBeVisible();
     await page.getByLabel('Minutes to record').fill('45');
     await page.getByRole('button', { name: 'Save time' }).click();
-    await expect(page.getByText('45 minutes recorded')).toBeVisible();
+    // EP13K (D-K8/D-K10): the completed block is now the celebration.
+    await expect(page.getByText('You studied 45 minutes.', { exact: true })).toBeVisible();
 
     const afterRes = await request.get('/api/assignments', {
       headers: authHeaders(accessToken),
@@ -139,7 +141,8 @@ test.describe('study sessions — cross-layer journey', () => {
     await page.getByRole('button', { name: 'Finish session' }).click();
     await page.getByLabel('Minutes to record').fill('45');
     await page.getByRole('button', { name: 'Save time' }).click();
-    await expect(page.getByText('45 minutes recorded')).toBeVisible();
+    // EP13K (D-K8/D-K10): the completed block is now the celebration.
+    await expect(page.getByText('You studied 45 minutes.', { exact: true })).toBeVisible();
 
     const ctRes = await request.get(
       `/api/study-sessions/confirmed-time?assignmentId=${created.id}`,

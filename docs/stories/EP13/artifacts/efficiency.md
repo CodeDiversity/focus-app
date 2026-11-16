@@ -10,3 +10,4 @@ Schema: see `.agents/context-efficiency.md`. `n/a` when the runtime does not exp
 | 2026-11-15 | EP13N | implementer | default | n/a / n/a | ~16 | 1 | implemented; 5/5 ACs; web 1220 green (+10 form tests); 4 deviations recorded, no open findings |
 | 2026-11-16 | EP13K | implementer (live session) | default | n/a / n/a | ~75 | 0 | implemented; 5/5 ACs; ▲ rulings asked then ratified by user; api 1084 / web 1255 green; 4 findings (F-EP13K-01…04), 6 deviations |
 | 2026-11-16 | EP13J | implementer (live session) | default | n/a / n/a | ~65 | 0 | implemented; 5/5 ACs; D-J1…D-J6 authored + ratified (▲ by user grant); api 1104 / web 1264 green; 4 findings, 4 deviations |
+| 2026-11-16 | EP13M | implementer (live session) | default | n/a / n/a | ~110 | 0 | implemented; 4/4 ACs; 7 journeys green; 4 EP13 E2E regressions repaired (8 never-run catch-up tests recovered); 1 a11y fix; 7 findings; parent index written |
