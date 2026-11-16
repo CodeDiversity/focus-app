@@ -18,9 +18,9 @@
 
 **Artifact root:** `./artifacts/` — one directory per child, plus `./artifacts/EP14/` for the parent index and review.
 
-**Active substory:** EP14C.
+**Active substory:** None.
 
-**Next substory:** EP14C — implement (in progress 2026-11-16).
+**Next substory:** EP14D — implement, after BL-14-08 (Plan page load/generate race) is fixed or promoted: EP14D-AC4 needs all seven journeys reliably green.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -30,7 +30,7 @@
 |---|---|---|---|---|
 | [EP14A](./EP14A-ci-runs-the-full-gate-on-delivery-branches.md) | Implemented — awaiting parent review | None. | None (known-red window closed by EP14B) | `./artifacts/EP14A/implementation.md`; runs 43908087082 (baseline) / 43908098549 (red); open: F-EP14A-01 |
 | [EP14B](./EP14B-api-contract-integrity.md) | Implemented — awaiting parent review | EP14A implemented. | User: unblock F-EP14B-02 (Secret scan) for the fully-green CI clause | `./artifacts/EP14B/implementation.md`; gated 1584/0; CI run 43910951890 backend+frontend green, Secret scan red; open: F-EP14B-02 |
-| [EP14C](./EP14C-e2e-reliability.md) | Ready | None | Implement after EP14B | — |
+| [EP14C](./EP14C-e2e-reliability.md) | Implemented — awaiting parent review | None | None | `./artifacts/EP14C/implementation.md`; 3 full runs, 0 failures from its files; open: F-EP14C-02/-03 (BL-14-07/-08) |
 | [EP14D](./EP14D-accessibility-debt-from-the-ep13-pass.md) | Ready | None | Implement after EP14C | — |
 | [EP14E](./EP14E-effort-aware-placement.md) | Needs refinement | EP14B; ▲ D-E1…D-E3 ratified (user, 2026-11-16); refiner pass still required (assignment-form UI) | Refine, then implement last | — |
 
@@ -94,6 +94,8 @@ Reviewed at every epic breakdown and every parent sign-off; list all open rows a
 | BL-14-04 | **Fragmentation at energy boundaries** — sessions never straddle levels | EP13R D-R6; F-EP13J-03 | Needs real tagged-schedule data first | The BL-14-01 usage check shows tagged students' median placed block is shorter than untagged students' | planner | 2026-11-16 | Backlog |
 | BL-14-05 | **Momentum goal history** — goal changes re-score past weeks | EP13R D-R7; F-EP13K-03 | Real schema work; honest limitation already documented in-module | A user reports a shrunk run after changing goals, or any migration touches `User.preferences` | planner | 2026-11-16 | Backlog |
 | BL-14-06 | **EP13Q review polish** — record never quoted the efficiency rows; queue-lint rule 5 dead | EP13R D-R16; R-EP13Q-04/-05 | Optional polish | The next edit to `tools/queue-lint.mjs` (fired 2026-11-16, this breakdown) | planner | 2026-11-16 | Dropped — trigger fired during this breakdown: rule 5 fixed (now lints in-flight checkpoints only; closed EP13 history is legacy by id-conventions); the record-quote half is historical and not worth a record edit |
+| BL-14-07 | **Account menu unmounted after login** — a late post-login re-render can close a just-opened menu | F-EP14C-02 | Product behavior outside EP14C's test-only scope; root cause not yet isolated | Any work on the header/auth shell, or a user reports the menu closing on its own | planner | 2026-11-16 | Backlog |
+| BL-14-08 | **Plan page load/generate race** — a fast "Generate plan" click is overwritten by the mount-time saved-plan read ("No plan yet.") | F-EP14C-03 | Product bug found by EP14C; fixing it is product code, outside EP14C's test-only scope | **Before EP14D starts** — EP14D-AC4 needs all seven journeys reliably green (journey 1 flakes 5/24 under load) | planner / user | 2026-11-16 | Backlog |
 
 ## Final implementation review unit
 

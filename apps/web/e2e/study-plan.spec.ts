@@ -7,6 +7,7 @@ import {
   createAvailabilitySlotViaApi,
   createCourseViaApi,
   createSemesterViaApi,
+  getServerWindow,
   loginViaUi,
 } from './helpers';
 
@@ -20,7 +21,10 @@ function addDays(dateStr: string, n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-const todayUTC = () => new Date().toISOString().slice(0, 10);
+function minutesOf(hhmm: string): number {
+  const [h, m] = hhmm.split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
 
 test('journey: generate, edit, save, and survive a reload', async ({ page, request }) => {
   const { email, accessToken } = await createAuthenticatedUserViaApi(request);
@@ -53,7 +57,8 @@ test('journey: generate, edit, save, and survive a reload', async ({ page, reque
     });
   }
 
-  const today = todayUTC();
+  // EP14C (D-M2 discipline): "today" is the server's, never the wall clock's.
+  const { today } = await getServerWindow(request, accessToken);
   const due = `${addDays(today, 5)}T12:00:00.000Z`;
   const a1 = await createAssignmentViaApi(request, accessToken, {
     title: `Essay ${uniqueSuffix()}`,
@@ -91,9 +96,28 @@ test('journey: generate, edit, save, and survive a reload', async ({ page, reque
   await expect(page.getByTestId('plan-session-editor').getByText(a1.title)).toBeVisible();
   await expect(page.getByTestId('plan-session-editor').getByText(a2.title)).toBeVisible();
 
-  // Move a session (move later 15 minutes).
-  const moveLater = page.getByRole('button', { name: /move later 15 minutes/i }).first();
-  await moveLater.click();
+  // Move a session 15 minutes later — EP14C (D-C1, F-EP13M-06): choose, from
+  // the engine's real output, the first proposal whose shifted window stays
+  // clear of the Monday 09:00–10:00 class and inside the 20:00 availability
+  // edge. Moving `.first()` blindly failed on any Monday, where the engine
+  // rightly placed 08:00–09:00 right before the class.
+  const rows = page.getByTestId('plan-session-editor').locator('article');
+  const rowCount = await rows.count();
+  let target = -1;
+  for (let i = 0; i < rowCount && target < 0; i++) {
+    const row = rows.nth(i);
+    const date = await row.getByLabel('Day').inputValue();
+    const start = minutesOf(await row.getByLabel('Start time').inputValue()) + 15;
+    const end = minutesOf(await row.getByLabel('End time').inputValue()) + 15;
+    const isMonday = new Date(`${date}T00:00:00.000Z`).getUTCDay() === 1;
+    const hitsClass = isMonday && start < 10 * 60 && end > 9 * 60;
+    if (!hitsClass && end <= 20 * 60) target = i;
+  }
+  expect(
+    target,
+    'a proposal that can move 15 minutes without hitting the class'
+  ).toBeGreaterThanOrEqual(0);
+  await rows.nth(target).getByRole('button', { name: 'Move later 15 minutes' }).click();
 
   // Delete a session.
   const deleteBtn = page.getByRole('button', { name: /delete session/i }).last();
@@ -136,7 +160,8 @@ test('deficit warning reports an assignment that cannot fit', async ({ page, req
     });
   }
 
-  const today = todayUTC();
+  // EP14C (D-M2 discipline): "today" is the server's, never the wall clock's.
+  const { today } = await getServerWindow(request, accessToken);
   const due = `${addDays(today, 2)}T12:00:00.000Z`;
   await createAssignmentViaApi(request, accessToken, {
     title: `Big ${uniqueSuffix()}`,
@@ -180,7 +205,8 @@ test('flagged marker shows for an assignment with no estimate', async ({ page, r
     });
   }
 
-  const today = todayUTC();
+  // EP14C (D-M2 discipline): "today" is the server's, never the wall clock's.
+  const { today } = await getServerWindow(request, accessToken);
   const due = `${addDays(today, 5)}T12:00:00.000Z`;
   const flaggedTitle = `Flagged ${uniqueSuffix()}`;
   await createAssignmentViaApi(request, accessToken, {
@@ -215,7 +241,8 @@ test('isolation: a second student assignment is invisible and a save naming it i
     name: `E2E Course ${uniqueSuffix()}`,
     semesterId: semester.id,
   });
-  const today = todayUTC();
+  // EP14C (D-M2 discipline): "today" is the server's, never the wall clock's.
+  const { today } = await getServerWindow(request, user1.accessToken);
   const due = `${addDays(today, 5)}T12:00:00.000Z`;
   const foreign = await createAssignmentViaApi(request, user2.accessToken, {
     title: `Foreign ${uniqueSuffix()}`,
@@ -287,7 +314,8 @@ test('conflict: a save naming a slot inside a class meeting is rejected with 409
     });
   }
 
-  const today = todayUTC();
+  // EP14C (D-M2 discipline): "today" is the server's, never the wall clock's.
+  const { today } = await getServerWindow(request, accessToken);
   const due = `${addDays(today, 5)}T12:00:00.000Z`;
   const assignment = await createAssignmentViaApi(request, accessToken, {
     title: `Conflict ${uniqueSuffix()}`,

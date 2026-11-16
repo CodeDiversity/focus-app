@@ -55,6 +55,50 @@ async function registerUserViaApi(request: APIRequestContext, email: string): Pr
 }
 
 /** Log in through the real login UI and wait for an authenticated destination. */
+/**
+ * EP14C (D-C3, F-EP13M-06): wait for the post-login page to settle before
+ * touching the account menu. Diagnosed from reproduced traces under 8-worker
+ * load: (1) the menu was clicked ~270 ms after "Sign In" while the login
+ * redirect chain was still running; (2) even after the page heading rendered,
+ * the menu could still be unmounted by a late re-render in the first second
+ * after login (F-EP14C-02, product follow-up BL-14-07 — not fixed here; this
+ * story is test-only).
+ */
+async function waitForSettledShell(page: Page): Promise<void> {
+  await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible({ timeout: 15_000 });
+}
+
+/** Open the account menu (re-opening if a late re-render closed it) until "Logout" is visible. */
+async function openAccountMenu(page: Page): Promise<void> {
+  await waitForSettledShell(page);
+  const logout = page.getByRole('menuitem', { name: 'Logout' });
+  await expect(async () => {
+    if (!(await logout.isVisible())) {
+      await page.getByRole('button', { name: /open account menu/i }).click({ timeout: 2_000 });
+    }
+    await expect(logout).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 20_000 });
+}
+
+/**
+ * Log out through the real menu. Open + click + "reached /login" is one
+ * retried unit, so a menu unmounted between opening and clicking (F-EP14C-02)
+ * is retried instead of timing out; each attempt checks the URL first, so a
+ * slow-but-successful logout is never misread as a failure.
+ */
+async function logoutViaMenu(page: Page): Promise<void> {
+  await waitForSettledShell(page);
+  const logout = page.getByRole('menuitem', { name: 'Logout' });
+  await expect(async () => {
+    if (/\/login/.test(page.url())) return;
+    if (!(await logout.isVisible())) {
+      await page.getByRole('button', { name: /open account menu/i }).click({ timeout: 2_000 });
+    }
+    await logout.click({ timeout: 2_000 });
+    await expect(page).toHaveURL(/\/login/, { timeout: 5_000 });
+  }).toPass({ timeout: 25_000 });
+}
+
 async function loginViaUi(page: Page, email: string): Promise<void> {
   await page.goto('/login');
   await page.getByLabel('Email').fill(email);
@@ -85,8 +129,7 @@ test('registering a new account through the UI leads to an authenticated session
   // The just-registered credentials now work: logging in through the real UI
   // reaches the authenticated app.
   await loginViaUi(page, email);
-  await page.getByRole('button', { name: /open account menu/i }).click();
-  await expect(page.getByRole('menuitem', { name: 'Logout' })).toBeVisible();
+  await openAccountMenu(page);
 });
 
 test('a logged-in session survives a page reload', async ({ page, request }) => {
@@ -112,9 +155,7 @@ test('logout returns to /login and the protected route then redirects there', as
 
   // Logout clears the session; because we are on a protected route,
   // ProtectedRoute immediately navigates to /login.
-  await page.getByRole('button', { name: /open account menu/i }).click();
-  await page.getByRole('menuitem', { name: 'Logout' }).click();
-  await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
+  await logoutViaMenu(page);
 
   // The protected route must not render while logged out.
   await page.goto('/dashboard');
@@ -124,7 +165,23 @@ test('logout returns to /login and the protected route then redirects there', as
 test('visiting a protected route while logged out redirects to /login', async ({ page }) => {
   // Fresh context: no session cookie exists, so boot restore finds no user
   // and ProtectedRoute redirects instead of rendering the dashboard.
+  //
+  // EP14C (F-EP14C-01): the redirect fires only after the boot-time
+  // /api/auth/refresh answers. On a cold, fully parallel stack that answer
+  // took longer than this test's fixed budget (seen once in three full runs),
+  // so the test waits on the real event — the refresh response — instead of a
+  // clock, and says so if it never comes. The behavior under test is "it
+  // redirects", not how fast a cold stack boots, hence the per-test budget.
+  test.setTimeout(60_000);
+  const refreshAnswered = page.waitForResponse((r) => r.url().includes('/api/auth/refresh'), {
+    timeout: 45_000,
+  });
   await page.goto('/dashboard');
+  await refreshAnswered.catch(() => {
+    throw new Error(
+      'Boot-time /api/auth/refresh never answered — the API stalled, not the redirect.'
+    );
+  });
   await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
 });
 

@@ -4,14 +4,14 @@
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 (D14-2)
 **Layer:** Integration (E2E tests only)
-**Status:** Ready
+**Status:** Implemented — awaiting parent review (2026-11-16). Record: [`artifacts/EP14C/implementation.md`](./artifacts/EP14C/implementation.md)
 **Dependencies:** none (EP14D owns the a11y E2E failures). Source: EP13R D-R13 (user ruling 2026-11-16), F-EP13M-06.
 
 ## Plan at a glance
 
 - **What this changes:** the study-plan journey stops failing on days where "move later 15 minutes" lands on a class; the login and logout specs stop flaking under full parallel runs. Test code only.
 - **Why it improves it:** EP13M's baseline had a date-dependent failure and two load flakes, which train everyone to ignore red E2E runs (product: gate trust; code: deterministic fixtures, the EP13H2 lesson).
-- **Decisions needing you:** none ▲; D-C1…D-C3 auto-ratify.
+- **Decisions needing you:** none — D-C1…D-C3 ratified (user, 2026-11-16).
 - **How to change this plan:** edit a Ruling cell below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary
@@ -57,7 +57,7 @@ The specs themselves; EP14C-AC3's three-run record in the implementation record 
 ## Sizing
 
 - **Outcome:** the E2E suite is deterministic under parallel load on any date.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** as planned + the server-window "today" in all five study-plan tests and a cold-start fix (F-EP14C-01); two product races found and registered, not fixed (BL-14-07, BL-14-08).
 - **Files:** the three spec files; `e2e/helpers.ts` if a shared waiter is added.
 - **Start context:** this story; F-EP13M-06 in `docs/stories/EP13/artifacts/EP13M/implementation.md`.
 - **Verification:** three full parallel runs, zero failures from these files.
