@@ -3,7 +3,7 @@
 **Epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 — release 1.1.x hardening (D14-2)
 **Origin:** user rulings on [EP13R](../EP13/EP13R-follow-up-register-and-triage.md), 2026-11-16 — every recommendation ratified: eight "Do next" items became the five children below, six "Backlog" items are tracked in the [Backlog register](#backlog).
-**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: see [history.md](./history.md). Plan review pass 1: **Changes Required** ([plan-review.md](./plan-review.md), R-EP14-01…09); corrections C-EP14-01…09 applied — awaiting pass 2.
+**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: see [history.md](./history.md). Plan review **passed** (pass 2, Plan Ready — [plan-review.md](./plan-review.md); pass 1: [plan-review-round-1.md](./plan-review-round-1.md)).
 
 ## Plan at a glance
 
@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** None — plan review pass 2 first (corrections applied), then EP14A — implement.
+**Next substory:** EP14A — implement.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
