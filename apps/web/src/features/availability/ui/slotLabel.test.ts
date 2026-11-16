@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatSlotLabel, formatSlotName, slotKindLabel } from './slotLabel';
+import { energyLabel, formatSlotLabel, formatSlotName, slotKindLabel } from './slotLabel';
 
 /** A Monday 09:00–10:30 slot (the `meetingLabel` convention's example, D128B-4). */
 const mondayMorning = {
@@ -62,5 +62,15 @@ describe('slotKindLabel (the CalendarEventChip vocabulary verbatim, D127B-5)', (
   it('maps isAvailable true → "Available" and false → "Blocked"', () => {
     expect(slotKindLabel(true)).toBe('Available');
     expect(slotKindLabel(false)).toBe('Blocked');
+  });
+});
+
+describe('energyLabel (EP13J, D-J6)', () => {
+  it('tags HIGH and LOW available windows; Normal, missing and blocked rows get no tag', () => {
+    expect(energyLabel({ isAvailable: true, energy: 'HIGH' })).toBe('High energy');
+    expect(energyLabel({ isAvailable: true, energy: 'LOW' })).toBe('Low energy');
+    expect(energyLabel({ isAvailable: true, energy: 'NORMAL' })).toBeNull();
+    expect(energyLabel({ isAvailable: true })).toBeNull();
+    expect(energyLabel({ isAvailable: false, energy: 'HIGH' })).toBeNull();
   });
 });

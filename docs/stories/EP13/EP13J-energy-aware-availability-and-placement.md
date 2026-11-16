@@ -5,7 +5,7 @@
 **Parent epic:** [EP13: Adaptive Scheduling for ADHD](../../epics/EP13-adaptive-scheduling-for-adhd.md)
 **Milestone:** M6
 **Layer:** Backend + Frontend (one cohesive outcome; split would manufacture children)
-**Status:** Ready
+**Status:** Implemented — awaiting parent review (2026-11-16). D-J rows proposed at implementation start and ratified (▲ rows under the user's grant). Record: [`artifacts/EP13J/implementation.md`](./artifacts/EP13J/implementation.md)
 **Dependencies:** EP13F implemented (placement v2 is the insertion point); EP13G implemented (the anchor partition reads placement output, so energy must not disturb it). D13-10 provisional (V-13-5).
 **Reviewed:** 2026-11-15 — ACs revised against shipped EP13F/EP13G behaviour (see *Review note*).
 
@@ -13,7 +13,7 @@
 
 - **What this changes:** an additive `AvailabilitySlot.energy` (HIGH/NORMAL/LOW, default NORMAL) migration, an energy preference inside placement v2 (demanding work → HIGH windows, light → LOW, existing tie-breaks otherwise), and the energy field in the availability dialog and calendar rendering.
 - **Why it improves it:** demanding work lands when the student actually has the energy for it instead of at 23:00 Thursday (product). The heuristic is deterministic, additive and survives interval merging, so EP13G's anchor partition is undisturbed (code).
-- **Decisions needing you:** ▲ D13-10 (the "demanding work" heuristic, V-13-5) is provisional at epic level; D-J rows to be proposed at refinement.
+- **Decisions needing you:** none — D-J1…D-J6 ratified 2026-11-16 (▲ rows by user grant: "ratify any decisions needed"). D13-10 stays provisional at epic level pending V-13-5 field validation.
 - **How to change this plan:** edit a Ruling cell in the Decisions table below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 
@@ -119,7 +119,12 @@ need their own determinism assertions.
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| — | None recorded yet; proposed at refinement. | | Proposed |
+| ▲ D-J1 (refines D13-10) | What is *demanding* work: (a) `Assignment.type` PAPER/PROJECT/EXAM **or** input `remainingMinutes > 120`, everything else *light*; (b) type only; (c) remaining only. | **(a)** — D13-10 verbatim; read from the run's input (never the shrinking in-run remainder) so it is stable for a whole run. | Ratified (user grant, 2026-11-16) |
+| D-J2 | Keeping energy through the interval algebra (EP13J-AC5): (a) energy-aware `mergeIntervals` — merge only equal levels; overlapping windows of different levels: the earlier-starting keeps its span, the later is clipped to start where it ends; (b) a parallel energy map re-derived by intersection. | **(a)** — the Review note's smaller change; one interval algebra; a window without a level is NORMAL, so every pre-EP13J caller is unchanged. | Ratified by default, 2026-11-16 |
+| ▲ D-J3 | Preference order inside placement v2: (a) demanding scans HIGH → NORMAL → LOW gaps, light scans LOW → NORMAL → HIGH, earliest-first within a level; *critical* work (rule 3) ignores energy and scans earliest-first; (b) demanding-only preference, light unchanged; (c) hard constraint. | **(a)** — the AC's two preferences, never a constraint; feasibility-critical work keeps EP13F's exact behaviour; with every gap NORMAL the order is the old earliest-first, so EP13J-AC3 identity holds by construction. | Ratified (user grant, 2026-11-16) |
+| D-J4 | Energy on *blocked* rows (`isAvailable: false`): (a) stored (column default) but ignored by the engine and hidden in the dialog; (b) rejected by validation. | **(a)** — no new 400 for existing clients; a blocked window has no energy meaning. | Ratified by default, 2026-11-16 |
+| ▲ D-J5 | Persisted/public contract: (a) `enum EnergyLevel { HIGH NORMAL LOW }` + `AvailabilitySlot.energy @default(NORMAL)` (additive migration); `energy` optional on POST/PATCH (enum-only 400 `energy must be one of HIGH, NORMAL, LOW`), always present in the slot response; (b) free-text column. | **(a)** | Ratified (user grant, 2026-11-16) |
+| D-J6 | UI: (a) an "Energy" native `<select>` (High energy / Normal / Low energy) in the availability dialog, shown for available windows only; calendar availability shows a text tag "High energy" / "Low energy" (NORMAL shows no tag — it is the default and adds noise); (b) a radio group; (c) colour only. | **(a)** — follows the dialog's existing field pattern; text, not colour (EP13J-AC4). | Ratified by default, 2026-11-16 |
 
 Rows are `D-J<n>`; one that refines or overrides a register row says `(refines D13-<n>)` / `(overrides D13-<n>)`. ▲ = material: the implementer stops and asks if still `Proposed`; other rows become `Ratified by default` at implementation start.
 
@@ -136,6 +141,7 @@ Rows are `D-J<n>`; one that refines or overrides a register row says `(refines D
 
 - **Outcome:** demanding work lands where the student's brain is; everything else is unchanged by default.
 - **Estimate:** 2 requests/tokens.
+- **Actual at closeout:** as estimated plus the calendar `subtitle` tag, an availability-list tag and the D-J table; one commit.
 - **Model recommendation:** 3 — one field + one deterministic ordering hook; the identity-when-NORMAL test contains the risk.
 - **Production files:** `schema.prisma` + migration, availability module DTO/service, `scheduler.ts` ordering hook, availability dialog + calendar tag.
 - **Test files:** scheduler/availability specs, dialog component test.

@@ -1,4 +1,23 @@
-import type { DatedInterval, FreeIntervalBase } from './types';
+import type { DatedInterval, EnergyLevelValue, FreeIntervalBase } from './types';
+
+/** EP13J (D-J2) — a window without a level is NORMAL. */
+export function energyOf(interval: { energy?: EnergyLevelValue }): EnergyLevelValue {
+  return interval.energy ?? 'NORMAL';
+}
+
+const ENERGY_TIE_ORDER: Record<EnergyLevelValue, number> = { HIGH: 0, NORMAL: 1, LOW: 2 };
+
+/** Copy an interval's span, keeping its energy only when it has one (pre-EP13J shapes stay byte-identical). */
+function piece(
+  source: { energy?: EnergyLevelValue },
+  date: string,
+  startMinute: number,
+  endMinute: number
+): DatedInterval {
+  return source.energy !== undefined
+    ? { date, startMinute, endMinute, energy: source.energy }
+    : { date, startMinute, endMinute };
+}
 
 /**
  * The interval algebra and the **one** shared free-interval helper (EP06C).
@@ -15,7 +34,13 @@ import type { DatedInterval, FreeIntervalBase } from './types';
 /** Merge overlapping and touching intervals. The input may be unsorted and
  * may span several dates; intervals on different dates are never merged
  * together. The result is sorted by date then start minute, and disjoint
- * (touching intervals are merged). */
+ * (touching intervals are merged).
+ *
+ * EP13J (D-J2, EP13J-AC5): only intervals of the **same energy** merge. A
+ * touching pair of different levels stays two intervals; an overlapping pair
+ * of different levels is made disjoint — the earlier-starting interval keeps
+ * its span and the later one is clipped to begin where it ends. With every
+ * interval at the default level this is exactly the pre-EP13J behaviour. */
 export function mergeIntervals(intervals: DatedInterval[]): DatedInterval[] {
   // Group by date so intervals on different days never merge.
   const byDate = new Map<string, DatedInterval[]>();
@@ -30,16 +55,25 @@ export function mergeIntervals(intervals: DatedInterval[]): DatedInterval[] {
 
   const result: DatedInterval[] = [];
   for (const [date, list] of byDate) {
-    const sorted = [...list].sort((a, b) => a.startMinute - b.startMinute);
+    const sorted = [...list].sort(
+      (a, b) =>
+        a.startMinute - b.startMinute ||
+        ENERGY_TIE_ORDER[energyOf(a)] - ENERGY_TIE_ORDER[energyOf(b)]
+    );
     for (const interval of sorted) {
       const last = result.length > 0 ? result[result.length - 1] : null;
       // Only merge into the last result entry when it is on the same date.
       if (last && last.date === date && interval.startMinute <= last.endMinute) {
-        if (interval.endMinute > last.endMinute) {
-          last.endMinute = interval.endMinute;
+        if (energyOf(interval) === energyOf(last)) {
+          if (interval.endMinute > last.endMinute) {
+            last.endMinute = interval.endMinute;
+          }
+        } else if (interval.endMinute > last.endMinute) {
+          // Different level: keep the two apart; clip any overlap off the later one.
+          result.push(piece(interval, date, last.endMinute, interval.endMinute));
         }
       } else {
-        result.push({ date, startMinute: interval.startMinute, endMinute: interval.endMinute });
+        result.push(piece(interval, date, interval.startMinute, interval.endMinute));
       }
     }
   }
@@ -62,36 +96,28 @@ export function subtractIntervals(
   const result: DatedInterval[] = [];
   for (const baseInterval of base) {
     let current: DatedInterval[] = [
-      {
-        date: baseInterval.date,
-        startMinute: baseInterval.startMinute,
-        endMinute: baseInterval.endMinute,
-      },
+      piece(baseInterval, baseInterval.date, baseInterval.startMinute, baseInterval.endMinute),
     ];
     const subtractors = toSubtract.filter((s) => s.date === baseInterval.date);
     for (const sub of subtractors) {
       const next: DatedInterval[] = [];
-      for (const piece of current) {
+      for (const part of current) {
         // No overlap (half-open): keep the whole piece.
-        if (sub.endMinute <= piece.startMinute || sub.startMinute >= piece.endMinute) {
-          next.push(piece);
+        if (sub.endMinute <= part.startMinute || sub.startMinute >= part.endMinute) {
+          next.push(part);
           continue;
         }
         // Left remainder.
-        if (sub.startMinute > piece.startMinute) {
-          next.push({
-            date: piece.date,
-            startMinute: piece.startMinute,
-            endMinute: Math.min(sub.startMinute, piece.endMinute),
-          });
+        if (sub.startMinute > part.startMinute) {
+          next.push(
+            piece(part, part.date, part.startMinute, Math.min(sub.startMinute, part.endMinute))
+          );
         }
         // Right remainder.
-        if (sub.endMinute < piece.endMinute) {
-          next.push({
-            date: piece.date,
-            startMinute: Math.max(sub.endMinute, piece.startMinute),
-            endMinute: piece.endMinute,
-          });
+        if (sub.endMinute < part.endMinute) {
+          next.push(
+            piece(part, part.date, Math.max(sub.endMinute, part.startMinute), part.endMinute)
+          );
         }
       }
       current = next;

@@ -58,12 +58,14 @@ export function CalendarEventChip({ event, onOpen, layout = 'week' }: CalendarEv
   // time line and the accessible name both say "Anytime".
   const flex = event.anchor === 'FLEX_DAY';
   const timeText = flex ? 'Anytime' : event.startTime;
+  // EP13J (D-J6): an available window's energy, as text (never colour only).
+  const energyTag = event.type === 'AVAILABILITY' && event.subtitle ? event.subtitle : null;
 
   return (
     <button
       type="button"
       onClick={() => onOpen(event)}
-      aria-label={`${label}: ${event.title}, ${flex ? 'anytime' : event.startTime}`}
+      aria-label={`${label}: ${event.title}${energyTag ? `, ${energyTag}` : ''}, ${flex ? 'anytime' : event.startTime}`}
       className="group flex w-full items-start gap-2 rounded-lg border border-border bg-surface p-2 text-left shadow-sm transition hover:border-accent hover:shadow focus:outline-none focus:ring-2 focus:ring-accent max-sm:min-h-[44px]"
       style={{ borderLeftWidth: 3, borderLeftColor: event.courseColor ?? 'transparent' }}
     >
@@ -77,6 +79,14 @@ export function CalendarEventChip({ event, onOpen, layout = 'week' }: CalendarEv
             <span className="inline-flex items-center gap-0.5 rounded-full bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
               <Check aria-hidden size={10} />
               Completed
+            </span>
+          )}
+          {energyTag && (
+            <span
+              data-testid="energy-tag"
+              className="inline-flex items-center gap-0.5 rounded-full bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-text"
+            >
+              {energyTag}
             </span>
           )}
         </div>

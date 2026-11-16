@@ -1,5 +1,5 @@
 import api from '@/shared/api/httpClient';
-import type { AvailabilitySlot } from '@/entities/availability/model/types';
+import type { AvailabilitySlot, EnergyLevel } from '@/entities/availability/model/types';
 
 /**
  * Availability API (SP-128B; the shared API contract in
@@ -30,6 +30,8 @@ export interface CreateAvailabilitySlotRequest {
   endTime: string;
   /** Omitted → the API default `true` (an available window). */
   isAvailable?: boolean;
+  /** EP13J (D-J5) — omitted → the API default `NORMAL`. */
+  energy?: EnergyLevel;
 }
 
 /**
@@ -41,6 +43,7 @@ export interface UpdateAvailabilitySlotRequest {
   startTime?: string;
   endTime?: string;
   isAvailable?: boolean;
+  energy?: EnergyLevel;
 }
 
 /**

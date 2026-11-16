@@ -148,6 +148,11 @@ export type ClassifiedAssignment = {
   createdAt: Date;
   flagged: RemainingWorkFlag | null;
   calibration: CalibrationAnnotation | null;
+  /**
+   * EP13J (D-J1) — the `Assignment.type` passed through for the engine's
+   * "demanding work" rule. Present only when the caller supplied it.
+   */
+  assignmentType?: string | null;
 };
 
 /**
@@ -185,7 +190,15 @@ export type WeeklyWindow = {
   dayOfWeek: number;
   startMinute: number;
   endMinute: number;
+  /** EP13J (D-J5) — availability windows only; omitted = `NORMAL`. */
+  energy?: EnergyLevelValue;
 };
+
+/**
+ * EP13J (D-J5) — the energy tag of an availability window (the schema's
+ * `EnergyLevel` enum as a literal union, D06-17).
+ */
+export type EnergyLevelValue = 'HIGH' | 'NORMAL' | 'LOW';
 
 /**
  * A half-open `[startMinute, endMinute)` interval on one civil date
@@ -195,6 +208,12 @@ export type DatedInterval = {
   date: string;
   startMinute: number;
   endMinute: number;
+  /**
+   * EP13J (D-J2) — the energy of the availability window this free time came
+   * from. Omitted means `NORMAL`; the algebra never merges two different
+   * levels, so a free interval's energy is always unambiguous.
+   */
+  energy?: EnergyLevelValue;
 };
 
 /**

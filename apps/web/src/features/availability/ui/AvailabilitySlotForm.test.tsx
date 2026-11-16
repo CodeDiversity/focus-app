@@ -209,6 +209,7 @@ describe('AvailabilitySlotForm submissions (AC 2, AC 3)', () => {
         startTime: '09:00',
         endTime: '10:30',
         isAvailable: true,
+        energy: 'NORMAL', // EP13J (D-J5): available windows send their level
       })
     );
     await waitFor(() => expect(onSuccess).toHaveBeenCalledWith('created', mondayWindow));
@@ -252,6 +253,7 @@ describe('AvailabilitySlotForm submissions (AC 2, AC 3)', () => {
         startTime: '09:00',
         endTime: '12:00',
         isAvailable: true,
+        energy: 'NORMAL',
       })
     );
     await waitFor(() => expect(onSuccess).toHaveBeenCalledWith('updated', updated));
@@ -463,6 +465,9 @@ describe('AvailabilitySlotForm dialog behavior (D128B-5)', () => {
     expect(startInput()).toHaveFocus();
     await user.tab();
     expect(endInput()).toHaveFocus();
+    // EP13J (D-J6): the Energy select follows the times for an available window.
+    await user.tab();
+    expect(screen.getByLabelText('Energy')).toHaveFocus();
     await user.tab();
     expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
     await user.tab();
@@ -481,5 +486,92 @@ describe('AvailabilitySlotForm dialog behavior (D128B-5)', () => {
     fireEvent.click(screen.getByRole('dialog').previousElementSibling as Element);
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(mockedCreate).not.toHaveBeenCalled();
+  });
+});
+
+describe('AvailabilitySlotForm energy (EP13J, D-J5/D-J6)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const energySelect = () => screen.getByLabelText('Energy');
+
+  it('an available window shows a labelled Energy select defaulting to Normal, with all three levels', () => {
+    renderForm();
+    expect(energySelect()).toHaveValue('NORMAL');
+    expect(
+      Array.from((energySelect() as HTMLSelectElement).options).map((o) => o.textContent)
+    ).toEqual(['High energy', 'Normal', 'Low energy']);
+    expect(energySelect()).toHaveAccessibleDescription(
+      'High-energy windows get demanding work; low-energy windows get lighter work.'
+    );
+  });
+
+  it('choosing High energy with the keyboard submits energy: HIGH', async () => {
+    const user = setupUser();
+    renderForm();
+    mockedCreate.mockResolvedValue({ ...mondayWindow, energy: 'HIGH' });
+
+    await user.type(startInput(), '09:00');
+    await user.type(endInput(), '10:30');
+    energySelect().focus();
+    await user.selectOptions(energySelect(), 'HIGH');
+    await user.click(screen.getByRole('button', { name: 'Create time slot' }));
+
+    await waitFor(() =>
+      expect(mockedCreate).toHaveBeenCalledWith({
+        dayOfWeek: 1,
+        startTime: '09:00',
+        endTime: '10:30',
+        isAvailable: true,
+        energy: 'HIGH',
+      })
+    );
+  });
+
+  it('edit mode pre-fills the stored level', () => {
+    renderForm({ slot: { ...mondayWindow, energy: 'LOW' } });
+    expect(energySelect()).toHaveValue('LOW');
+  });
+
+  it('a blocked time hides the field and sends no energy (D-J4)', async () => {
+    const user = setupUser();
+    renderForm();
+    mockedCreate.mockResolvedValue(blockedWednesday);
+
+    await user.click(kindRadio('Blocked time'));
+    expect(screen.queryByLabelText('Energy')).not.toBeInTheDocument();
+    await user.type(startInput(), '20:00');
+    await user.type(endInput(), '22:00');
+    await user.click(screen.getByRole('button', { name: 'Create time slot' }));
+
+    await waitFor(() =>
+      expect(mockedCreate).toHaveBeenLastCalledWith({
+        dayOfWeek: 1,
+        startTime: '20:00',
+        endTime: '22:00',
+        isAvailable: false,
+      })
+    );
+  });
+
+  it('renders a 400 energy error under the field', async () => {
+    const user = setupUser();
+    renderForm();
+    mockedCreate.mockRejectedValue({
+      response: {
+        data: {
+          statusCode: 400,
+          message: ['energy must be one of HIGH, NORMAL, LOW'],
+          error: 'Bad Request',
+          errors: { energy: ['energy must be one of HIGH, NORMAL, LOW'] },
+        },
+      },
+      message: 'Request failed with status code 400',
+    });
+    await user.type(startInput(), '09:00');
+    await user.type(endInput(), '10:30');
+    await user.click(screen.getByRole('button', { name: 'Create time slot' }));
+    expect(await screen.findByText('energy must be one of HIGH, NORMAL, LOW')).toBeInTheDocument();
   });
 });

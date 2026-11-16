@@ -1,9 +1,10 @@
 import { compareAssignments } from './ordering';
-import { freeIntervals } from './intervals';
+import { energyOf, freeIntervals } from './intervals';
 import type {
   AssignmentScheduleResult,
   DatedInterval,
   DeficitCategory,
+  EnergyLevelValue,
   PartOfDayValue,
   PlannedSessionProposal,
   SchedulerInput,
@@ -79,9 +80,53 @@ function weeklyToDated(windows: WeeklyWindow[], date: string): DatedInterval[] {
     if (window.dayOfWeek !== weekday) {
       continue;
     }
-    result.push({ date, startMinute: window.startMinute, endMinute: window.endMinute });
+    result.push(
+      window.energy !== undefined
+        ? {
+            date,
+            startMinute: window.startMinute,
+            endMinute: window.endMinute,
+            energy: window.energy,
+          }
+        : { date, startMinute: window.startMinute, endMinute: window.endMinute }
+    );
   }
   return result;
+}
+
+/**
+ * EP13J (D-J1, refines D13-10) — *demanding* work: a PAPER, PROJECT or EXAM,
+ * or more than two hours of remaining work at the start of the run. Read
+ * from the input, never the in-run remainder, so the label is stable.
+ */
+const DEMANDING_TYPES: ReadonlySet<string> = new Set(['PAPER', 'PROJECT', 'EXAM']);
+export const DEMANDING_REMAINING_MINUTES = 120;
+
+export function isDemanding(assignment: {
+  assignmentType?: string | null;
+  remainingMinutes: number;
+}): boolean {
+  return (
+    (assignment.assignmentType != null && DEMANDING_TYPES.has(assignment.assignmentType)) ||
+    assignment.remainingMinutes > DEMANDING_REMAINING_MINUTES
+  );
+}
+
+/**
+ * EP13J (D-J3) — the gap scan order: demanding work looks at HIGH, then
+ * NORMAL, then LOW gaps; light work at LOW, then NORMAL, then HIGH. A stable
+ * sort keeps earliest-first inside each level, so when every gap is NORMAL
+ * the order is exactly placement v2's (EP13J-AC3).
+ */
+const DEMANDING_RANK: Record<EnergyLevelValue, number> = { HIGH: 0, NORMAL: 1, LOW: 2 };
+const LIGHT_RANK: Record<EnergyLevelValue, number> = { LOW: 0, NORMAL: 1, HIGH: 2 };
+
+function byEnergyPreference(free: DatedInterval[], demanding: boolean): DatedInterval[] {
+  const rank = demanding ? DEMANDING_RANK : LIGHT_RANK;
+  return free
+    .map((interval, index) => ({ interval, index }))
+    .sort((a, b) => rank[energyOf(a.interval)] - rank[energyOf(b.interval)] || a.index - b.index)
+    .map(({ interval }) => interval);
 }
 
 /** Sum the free minutes of a list of intervals. */
@@ -125,6 +170,8 @@ type Progress = {
   horizon: Set<string>;
   /** The last block this run placed for it, or `null`. */
   lastBlock: PlannedSessionProposal | null;
+  /** EP13J (D-J1) — fixed for the run. */
+  demanding: boolean;
 };
 
 export function schedule(input: SchedulerInput): SchedulerOutput {
@@ -190,6 +237,7 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
       placedMinutes: 0,
       horizon: new Set(horizon),
       lastBlock: null,
+      demanding: isDemanding(assignment),
     };
   });
 
@@ -289,7 +337,12 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
    * Place one block for `item` on `date` if the rules allow. Returns the
    * minutes placed (`0` when nothing could be placed on this day).
    */
-  const placeBlock = (item: Progress, date: string, budgetLeft: Map<string, number>): number => {
+  const placeBlock = (
+    item: Progress,
+    date: string,
+    budgetLeft: Map<string, number>,
+    preferEnergy = true
+  ): number => {
     const budget = budgetLeft.get(date) ?? 0;
     if (budget <= 0 || item.remaining <= 0) return 0;
 
@@ -303,7 +356,11 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
       return tryMergeTail(item, Math.min(item.remaining, maxBlock), budgetLeft);
     }
 
-    const free = freeFor(date, withBreakBuffers(placedSessions, date));
+    // EP13J (D-J3): energy reorders the scan (a preference, never a
+    // constraint — every gap is still tried); critical work keeps the plain
+    // earliest-first scan so feasibility is never traded for preference.
+    const earliestFirst = freeFor(date, withBreakBuffers(placedSessions, date));
+    const free = preferEnergy ? byEnergyPreference(earliestFirst, item.demanding) : earliestFirst;
     for (const interval of free) {
       const usable = Math.min(desired, interval.endMinute - interval.startMinute);
       // A gap that cannot host a legal block is skipped, not half-filled.
@@ -357,7 +414,7 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
     for (const item of critical) {
       // Keep placing this assignment until the day can give it no more.
       while (item.remaining > 0 && (budgetLeft.get(date) ?? 0) > 0) {
-        if (placeBlock(item, date, budgetLeft) === 0) break;
+        if (placeBlock(item, date, budgetLeft, false) === 0) break;
       }
     }
 

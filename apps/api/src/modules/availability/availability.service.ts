@@ -21,6 +21,7 @@ type AvailabilitySlotRow = {
   startTime: string;
   endTime: string;
   isAvailable: boolean;
+  energy: 'HIGH' | 'NORMAL' | 'LOW';
   createdAt: Date;
   updatedAt: Date;
 };
@@ -39,6 +40,8 @@ function toSlotResponse(row: AvailabilitySlotRow) {
     startTime: row.startTime,
     endTime: row.endTime,
     isAvailable: row.isAvailable,
+    // EP13J (D-J5): always present; NORMAL for every pre-EP13J row.
+    energy: row.energy,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -185,6 +188,8 @@ export class AvailabilityService {
           endTime: dto.endTime,
           // Omitted or explicit null → the schema default (true).
           ...(dto.isAvailable != null ? { isAvailable: dto.isAvailable } : {}),
+          // EP13J (D-J5): omitted or null → the schema default (NORMAL).
+          ...(dto.energy != null ? { energy: dto.energy } : {}),
         },
       });
       return toSlotResponse(row);
@@ -229,7 +234,13 @@ export class AvailabilityService {
     const has = (value: unknown): boolean => value !== undefined && value !== null;
 
     // At least one field (contract: "any subset … an empty body is a 400").
-    if (!has(dto.dayOfWeek) && !has(dto.startTime) && !has(dto.endTime) && !has(dto.isAvailable)) {
+    if (
+      !has(dto.dayOfWeek) &&
+      !has(dto.startTime) &&
+      !has(dto.endTime) &&
+      !has(dto.isAvailable) &&
+      !has(dto.energy)
+    ) {
       throw new BadRequestException('At least one field must be provided');
     }
 
@@ -250,6 +261,7 @@ export class AvailabilityService {
       startTime?: string;
       endTime?: string;
       isAvailable?: boolean;
+      energy?: 'HIGH' | 'NORMAL' | 'LOW';
     } = {};
     if (has(dto.dayOfWeek)) {
       data.dayOfWeek = mergedDayOfWeek;
@@ -262,6 +274,9 @@ export class AvailabilityService {
     }
     if (has(dto.isAvailable)) {
       data.isAvailable = dto.isAvailable!;
+    }
+    if (has(dto.energy)) {
+      data.energy = dto.energy!;
     }
 
     try {

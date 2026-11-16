@@ -1,4 +1,8 @@
-import { IsBoolean, IsInt, IsOptional, IsString, Matches, Max, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Matches, Max, Min } from 'class-validator';
+
+/** EP13J (D-J5) — the closed set of energy levels (the schema's `EnergyLevel`). */
+export const ENERGY_LEVELS = ['HIGH', 'NORMAL', 'LOW'] as const;
+export type EnergyLevelInput = (typeof ENERGY_LEVELS)[number];
 
 /**
  * Body accepted by POST /availability-slots (SP-128A).
@@ -38,4 +42,12 @@ export class CreateAvailabilitySlotDto {
   @IsOptional()
   @IsBoolean({ message: 'isAvailable must be a boolean' })
   isAvailable?: boolean | null;
+
+  /**
+   * EP13J (D-J5) — the window's energy level. Optional; omitted keeps the
+   * schema default (NORMAL) on create and the stored value on update.
+   */
+  @IsOptional()
+  @IsIn(ENERGY_LEVELS, { message: 'energy must be one of HIGH, NORMAL, LOW' })
+  energy?: EnergyLevelInput | null;
 }

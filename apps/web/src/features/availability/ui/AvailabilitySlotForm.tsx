@@ -74,6 +74,9 @@ const slotFormSchema = z
       .string()
       .min(1, 'End time is required')
       .refine(isValidTime, 'End time must be a 24-hour time (HH:mm)'),
+    // EP13J (D-J5/D-J6): the enum mirrors the API; the select makes any
+    // other value unselectable.
+    energy: z.enum(['HIGH', 'NORMAL', 'LOW']),
   })
   .refine((data) => data.startTime === '' || data.endTime === '' || data.endTime > data.startTime, {
     message: 'End time must be after the start time.',
@@ -83,7 +86,18 @@ const slotFormSchema = z
 type SlotFormData = z.infer<typeof slotFormSchema>;
 
 /** The form fields the API 400 `errors` map can name (D128B-8; `kind` maps to `isAvailable`). */
-const FIELD_ERROR_FIELDS = ['dayOfWeek', 'startTime', 'endTime'] as const;
+const FIELD_ERROR_FIELDS = ['dayOfWeek', 'startTime', 'endTime', 'energy'] as const;
+
+/**
+ * EP13J (D-J6) — the energy choices. The planner gives demanding work
+ * (papers, projects, exams, long tasks) your high-energy windows and light
+ * work your low-energy ones; Normal changes nothing.
+ */
+const ENERGY_OPTIONS = [
+  { value: 'HIGH', label: 'High energy' },
+  { value: 'NORMAL', label: 'Normal' },
+  { value: 'LOW', label: 'Low energy' },
+] as const;
 
 export interface AvailabilitySlotFormProps {
   /**
@@ -157,6 +171,7 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
       dayOfWeek: slot?.dayOfWeek ?? DEFAULT_DAY_OF_WEEK,
       startTime: slot?.startTime ?? '',
       endTime: slot?.endTime ?? '',
+      energy: slot?.energy ?? 'NORMAL',
     },
   });
 
@@ -222,6 +237,9 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
         startTime: data.startTime,
         endTime: data.endTime,
         isAvailable: data.kind === 'available',
+        // EP13J (D-J4): energy is meaningful only on an available window;
+        // a blocked row keeps whatever is stored.
+        ...(data.kind === 'available' ? { energy: data.energy } : {}),
       };
       let saved: AvailabilitySlot;
       if (slot) {
@@ -332,6 +350,23 @@ export function AvailabilitySlotForm({ slot, onSuccess, onClose }: AvailabilityS
               {...register('endTime')}
             />
           </div>
+          {/* EP13J (D-J6): energy — available windows only (D-J4). A native
+              select: keyboard-operable as-is, labelled, hint as description. */}
+          {selectedKind === 'available' && (
+            <Select
+              label="Energy"
+              hint="High-energy windows get demanding work; low-energy windows get lighter work."
+              error={errors.energy?.message}
+              disabled={isSubmitting}
+              {...register('energy')}
+            >
+              {ENERGY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+          )}
         </div>
 
         {formError && (

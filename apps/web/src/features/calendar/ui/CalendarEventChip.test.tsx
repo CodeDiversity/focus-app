@@ -125,3 +125,36 @@ describe('CalendarEventChip (SP-127B)', () => {
     expect(screen.queryByText('Anytime')).not.toBeInTheDocument();
   });
 });
+
+describe('CalendarEventChip energy tag (EP13J-AC4, D-J6)', () => {
+  const available: CalendarEvent = {
+    ...baseEvent,
+    id: 'availability:s1:2026-10-27',
+    type: 'AVAILABILITY',
+    title: 'Available',
+    subtitle: 'High energy',
+    courseId: null,
+    courseName: null,
+    courseColor: null,
+    link: '/availability',
+  };
+
+  it('an available window shows its energy as text and in the accessible name', () => {
+    render(<CalendarEventChip event={available} onOpen={vi.fn()} />);
+    expect(screen.getByTestId('energy-tag')).toHaveTextContent('High energy');
+    expect(screen.getByRole('button')).toHaveAttribute(
+      'aria-label',
+      'Available: Available, High energy, 09:00'
+    );
+  });
+
+  it('a Normal window (null subtitle) and other event types show no energy tag', () => {
+    const { unmount } = render(
+      <CalendarEventChip event={{ ...available, subtitle: null }} onOpen={vi.fn()} />
+    );
+    expect(screen.queryByTestId('energy-tag')).not.toBeInTheDocument();
+    unmount();
+    render(<CalendarEventChip event={baseEvent} onOpen={vi.fn()} />);
+    expect(screen.queryByTestId('energy-tag')).not.toBeInTheDocument();
+  });
+});

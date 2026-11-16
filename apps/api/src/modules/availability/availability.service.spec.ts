@@ -65,6 +65,7 @@ describe('AvailabilityService (unit, mocked PrismaService)', () => {
     startTime: '09:00',
     endTime: '10:30',
     isAvailable: true,
+    energy: 'NORMAL' as const,
     createdAt: new Date('2026-10-20T12:00:00.000Z'),
     updatedAt: new Date('2026-10-20T12:00:00.000Z'),
   };
@@ -74,6 +75,7 @@ describe('AvailabilityService (unit, mocked PrismaService)', () => {
     'createdAt',
     'dayOfWeek',
     'endTime',
+    'energy', // EP13J (D-J5)
     'id',
     'isAvailable',
     'startTime',
@@ -161,6 +163,37 @@ describe('AvailabilityService (unit, mocked PrismaService)', () => {
       });
     });
 
+    it('EP13J: writes an explicit energy level and echoes it (D-J5)', async () => {
+      slotCreate.mockResolvedValue({ ...slotRow, energy: 'HIGH' });
+
+      const result = await service.create(userId, { ...validDto, energy: 'HIGH' });
+
+      expect(slotCreate).toHaveBeenCalledWith({
+        data: { userId, dayOfWeek: 1, startTime: '09:00', endTime: '10:30', energy: 'HIGH' },
+      });
+      expect(result.energy).toBe('HIGH');
+    });
+
+    it('EP13J: an omitted energy is not written (schema default NORMAL) and reads back NORMAL', async () => {
+      slotCreate.mockResolvedValue(slotRow);
+      const result = await service.create(userId, validDto);
+      expect(slotCreate.mock.calls[0][0].data).not.toHaveProperty('energy');
+      expect(result.energy).toBe('NORMAL');
+    });
+
+    it('EP13J: rejects an energy outside the enum with a field-level 400 and writes nothing', async () => {
+      for (const energy of ['MEDIUM', 'high', 3]) {
+        const payload = await expect400With(
+          service.create(userId, { ...validDto, energy } as unknown as CreateAvailabilitySlotDto),
+          'energy'
+        );
+        expect((payload.errors as Record<string, string[]>).energy[0]).toBe(
+          'energy must be one of HIGH, NORMAL, LOW'
+        );
+      }
+      expect(slotCreate).not.toHaveBeenCalled();
+    });
+
     it('rejects dayOfWeek 7, -1 and 1.5 with field-level 400s and writes nothing', async () => {
       const cases: { dayOfWeek: number; message: RegExp }[] = [
         { dayOfWeek: 7, message: /between 0 \(Sunday\) and 6 \(Saturday\)/ },
@@ -246,6 +279,19 @@ describe('AvailabilityService (unit, mocked PrismaService)', () => {
         data: { isAvailable: false },
       });
       expect(result.isAvailable).toBe(false);
+    });
+
+    it('EP13J: an energy-only patch is a valid body and writes only energy', async () => {
+      slotFindFirst.mockResolvedValue(slotRow);
+      slotUpdate.mockResolvedValue({ ...slotRow, energy: 'LOW' });
+
+      const result = await service.update(userId, slotId, { energy: 'LOW' });
+
+      expect(slotUpdate).toHaveBeenCalledWith({
+        where: { id: slotId, userId },
+        data: { energy: 'LOW' },
+      });
+      expect(result.energy).toBe('LOW');
     });
 
     it('merges multiple fields and validates on the merged values', async () => {

@@ -1,4 +1,5 @@
-import { IsBoolean, IsInt, IsOptional, IsString, Matches, Max, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Matches, Max, Min } from 'class-validator';
+import { ENERGY_LEVELS, type EnergyLevelInput } from './create-availability-slot.dto';
 
 /**
  * Body accepted by PATCH /availability-slots/:id (SP-128A).
@@ -40,4 +41,12 @@ export class UpdateAvailabilitySlotDto {
   @IsOptional()
   @IsBoolean({ message: 'isAvailable must be a boolean' })
   isAvailable?: boolean | null;
+
+  /**
+   * EP13J (D-J5) — the window's energy level. Optional; omitted keeps the
+   * schema default (NORMAL) on create and the stored value on update.
+   */
+  @IsOptional()
+  @IsIn(ENERGY_LEVELS, { message: 'energy must be one of HIGH, NORMAL, LOW' })
+  energy?: EnergyLevelInput | null;
 }

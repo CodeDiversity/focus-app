@@ -33,6 +33,7 @@ const SLOT_KEYS = [
   'createdAt',
   'dayOfWeek',
   'endTime',
+  'energy', // EP13J (D-J5)
   'id',
   'isAvailable',
   'startTime',

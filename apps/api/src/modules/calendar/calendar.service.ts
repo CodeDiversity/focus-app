@@ -50,6 +50,13 @@ export interface ListResult {
   events: CalendarEvent[];
 }
 
+/** EP13J (D-J6) — the calendar's text tag for an available window's energy. */
+function energyTag(energy: string | undefined): string | null {
+  if (energy === 'HIGH') return 'High energy';
+  if (energy === 'LOW') return 'Low energy';
+  return null;
+}
+
 // Range instants for study session overlap. Thin wrappers over the shared
 // wall-clock seam: midnight of `from`, and midnight of the day after `to`.
 function rangeStartInstant(from: string, timeZone: string): Date {
@@ -214,7 +221,10 @@ export class CalendarService {
           id: `${slot.isAvailable ? 'availability' : 'blocked'}:${slot.id}:${date}`,
           type: slot.isAvailable ? 'AVAILABILITY' : 'BLOCKED_TIME',
           title: slot.isAvailable ? 'Available' : 'Blocked time',
-          subtitle: null,
+          // EP13J (D-J6): a non-default energy rides as a text tag on an
+          // available window; NORMAL (and every blocked row) stays null, so
+          // pre-EP13J payloads are unchanged.
+          subtitle: slot.isAvailable ? energyTag(slot.energy) : null,
           date,
           startTime: slot.startTime,
           endTime: slot.endTime,

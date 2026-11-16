@@ -144,6 +144,11 @@ export function classifyAssignments(
       priority: assignment.priority,
       createdAt: assignment.createdAt,
       calibration: annotation,
+      // EP13J (D-J1): carried for the engine's demanding-work rule; only when
+      // supplied, so callers that never set it see the EP13L shape unchanged.
+      ...(assignment.assignmentType !== undefined
+        ? { assignmentType: assignment.assignmentType }
+        : {}),
     };
 
     // The flagging rule (AC-E06-09, D06-25) — expressed here and nowhere

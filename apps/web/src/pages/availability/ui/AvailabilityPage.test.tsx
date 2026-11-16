@@ -269,6 +269,7 @@ describe('AvailabilityPage add / edit / delete (AC 2–4, D128B-12)', () => {
         startTime: '09:00',
         endTime: '12:00',
         isAvailable: true,
+        energy: 'NORMAL', // EP13J (D-J5)
       })
     );
     // The updated label replaces the old one, from the API's response.

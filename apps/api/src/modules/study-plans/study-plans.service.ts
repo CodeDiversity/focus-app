@@ -1108,8 +1108,12 @@ export class StudyPlansService {
         startMinute: hhmmToMinutes(slot.startTime),
         endMinute: hhmmToMinutes(slot.endTime),
       };
-      if (slot.isAvailable) available.push(w);
-      else blocked.push(w);
+      // EP13J (D-J4/D-J3): only available windows carry energy, and only a
+      // non-default level is attached — an all-NORMAL student feeds the
+      // engine exactly the pre-EP13J input (EP13J-AC3).
+      if (slot.isAvailable) {
+        available.push(slot.energy && slot.energy !== 'NORMAL' ? { ...w, energy: slot.energy } : w);
+      } else blocked.push(w);
     }
     const classes: WeeklyWindow[] = [];
     for (const course of courses) {

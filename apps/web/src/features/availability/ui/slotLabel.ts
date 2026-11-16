@@ -48,3 +48,16 @@ export function formatSlotName(
 ): string {
   return `${slotKindLabel(slot.isAvailable)} ${formatSlotLabel(slot)}`;
 }
+
+/**
+ * EP13J (D-J6) — the text tag for an available window's energy; `null` for
+ * Normal (the default adds no tag) and for blocked rows (D-J4).
+ */
+export function energyLabel(
+  slot: Pick<AvailabilitySlot, 'isAvailable' | 'energy'>
+): 'High energy' | 'Low energy' | null {
+  if (!slot.isAvailable) return null;
+  if (slot.energy === 'HIGH') return 'High energy';
+  if (slot.energy === 'LOW') return 'Low energy';
+  return null;
+}

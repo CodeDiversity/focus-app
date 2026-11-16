@@ -315,6 +315,13 @@ enum StudySessionStatus {
   COMPLETED
 }
 
+/// EP13J (D-J5) — energy level of an availability window.
+enum EnergyLevel {
+  HIGH
+  NORMAL
+  LOW
+}
+
 model AvailabilitySlot {
   id          String   @id @default(uuid())
   userId      String
@@ -323,6 +330,9 @@ model AvailabilitySlot {
   startTime   String   // HH:mm format
   endTime     String   // HH:mm format
   isAvailable Boolean  @default(true)
+  // EP13J (D-J5): energy of an available window; placement prefers HIGH for
+  // demanding work and LOW for light work. Ignored on blocked rows (D-J4).
+  energy      EnergyLevel @default(NORMAL)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

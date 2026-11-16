@@ -1,7 +1,13 @@
 import { Ban, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import type { AvailabilitySlot } from '@/entities/availability/model/types';
-import { formatSlotLabel, formatSlotName, slotKindLabel, WEEKDAY_FULL } from './slotLabel';
+import {
+  energyLabel,
+  formatSlotLabel,
+  formatSlotName,
+  slotKindLabel,
+  WEEKDAY_FULL,
+} from './slotLabel';
 
 export interface AvailabilitySlotListProps {
   /**
@@ -76,6 +82,11 @@ export function AvailabilitySlotList({ slots, onEdit, onDelete }: AvailabilitySl
                         <BadgeIcon aria-hidden size={12} className="shrink-0" />
                         {slotKindLabel(isAvailable)}
                       </span>
+                      {energyLabel(slot) && (
+                        <span className="inline-flex items-center rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-text">
+                          {energyLabel(slot)}
+                        </span>
+                      )}
                     </span>
                     <div className="flex flex-wrap gap-2">
                       <Button

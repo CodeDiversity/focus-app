@@ -14,6 +14,14 @@ export interface AvailabilitySlot {
   startTime: string;
   endTime: string;
   isAvailable: boolean;
+  /**
+   * EP13J (D-J5) — the window's energy; the API always sends it (NORMAL for
+   * every pre-EP13J row). Optional here so older fixtures stay valid.
+   */
+  energy?: EnergyLevel;
   createdAt: string;
   updatedAt: string;
 }
+
+/** EP13J (D-J5) — energy level of an available window. */
+export type EnergyLevel = 'HIGH' | 'NORMAL' | 'LOW';
