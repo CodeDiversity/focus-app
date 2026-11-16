@@ -23,6 +23,7 @@ config, tests, or another role's report.
 
 ## Breakdown
 
+0. Run `node tools/queue-lint.mjs --backlog docs/stories`; promote or drop any row whose trigger fired and stamp `Last reviewed` ([delivery-state](../../delivery-state.md#backlog-register)).
 1. Classify work (backend / frontend / integration / docs). Split only for substantial independent outcomes per [story-sizing](../../story-sizing.md); a shared contract lives once in the README. Integration/index ownership goes to an existing substantial child unless real integration code or a new harness exists.
 2. Sequence vertically (contract → persistence/backend → frontend → integration) in one queue for the single implementer. Letters are stable IDs; skip `O`. A re-letter/re-sequence updates every live cross-reference in the same commit.
 3. Mark a story `Needs refinement` when technical grounding or (frontend) UI/UX is unsettled; record the gaps; name it for the refiner. Do not invent UI decisions to avoid the handoff.

@@ -45,3 +45,21 @@ States: `Queued`, `Needs refinement`, `Ready`, `In progress`, `Blocked`,
 - **Implementer:** execution fields, its row, the active child's Status/artifact pointers; never ACs, dependencies or decisions.
 - **Reviewer:** on a passing verdict only — `Reviewed` states, status line, `history.md` correction entries, report links; then commits. Non-passing: saves the report, nothing else.
 - **Live session:** commits refiner output; reconciles deferred edits; runs `queue-lint`.
+
+## Backlog register
+
+Deferred work lives in the delivery home README's `## Backlog` section, one
+`BL-<nn>-<nn>` row each: `| ID | Item | Source | Why deferred | Revisit when |
+Owner | Last reviewed | Status |`. "Revisit when" is a concrete, checkable
+trigger ("after EP14E ships and 2 weeks of tagged schedules exist"), never a
+date guess. Status is `Backlog`, `Promoted → [<story>](<file>)` (the planner
+creates the story in the same commit) or `Dropped — <reason>`; rows are never
+deleted. `queue-lint` rule 6 enforces the shape.
+
+**When it is reviewed** (planner, or the live session): at every new epic
+breakdown and at every parent sign-off, run
+`node tools/queue-lint.mjs --backlog docs/stories` — it lists every open row
+across all delivery homes, least recently reviewed first — then for each row
+whose trigger has fired, promote or drop it, and stamp `Last reviewed` on every
+row you looked at. A finding a reviewer or implementer defers goes here, not
+only into its record, so it cannot evaporate.

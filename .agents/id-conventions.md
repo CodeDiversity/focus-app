@@ -20,6 +20,7 @@ is not in this table is not introduced without adding it here first.
 | Story decision | `D-<story suffix><n>` | the story's Decisions subsection | `D-I8` (EP13I), `D-H2-1` (EP13H2) | A story decision that refines or overrides an epic decision ends with `(refines D13-13)` / `(overrides D13-13)`, and the planner adds a back-reference to that register row. |
 | Cross-epic decision | same as epic decision | that epic's register | `D08-8` | Cite with the epic prefix; never shorten. |
 | Verification task | `V-<nn>-<n>` | breakdown README | `V-13-6` | |
+| Backlog item | `BL-<nn>-<nn>` | breakdown README `## Backlog` register | `BL-14-03` | Epic number + two-digit serial; stable, never reused. Status is `Backlog`, `Promoted → [<story ID>](<file>)` or `Dropped — <reason>` (queue-lint rule 6). |
 | Implementer finding | `F-<STORY>-<nn>` | `implementation.md` / checkpoint | `F-EP13H-02` | Two digits; stable once assigned; never reused. |
 | Reviewer finding | `R-<UNIT>-<nn>` | `review.md` / `plan-review.md` | `R-EP13-04`, `R-SP-105-02` | One scheme for plan and implementation reviews. Replaces `PR-NNN`, `F-NN` and `P-NNN`. Prior reports keep their legacy IDs. |
 | Finding disposition | fixed words | — | `open`, `fixed`, `blocked`, `Addressed — awaiting re-review`, `closed` | `closed` is reviewer-only. |
