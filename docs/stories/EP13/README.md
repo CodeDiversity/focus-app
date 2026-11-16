@@ -20,11 +20,11 @@
 
 **Active substory:** None.
 
-**Next substory:** None — every application child is implemented. **Next action: the combined EP13 review** (`reviewer`, from `./artifacts/EP13/implementation.md`), plus the user-run TR-E13-14 checklist in that index and the gated live-DB API suites (F-EP13M-07). EP13P/EP13Q still await their own plan-style reviews.
+**Next substory:** None to implement. **Combined review round 1 (2026-11-16, `./artifacts/EP13/review.md`): does not pass** — R-EP13-01 (gated suites; fixed, see below) , R-EP13-02 (record corrections; applied), R-EP13-05 (user-run TR-E13-14 checklist, open). Next actions: the user signs the checklist in `./artifacts/EP13/implementation.md`, then review round 2; EP13P/EP13Q document reviews; EP13R triage rulings.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (layer labels are scope, not concurrent roles).
 
-**Final review:** one combined review for the EP13 parent review unit — every application child in the queue (EP13A–EP13N incl. EP13H2; EP13P is outside the unit, D13-18) — after EP13M is implemented. Reviewer artifacts: `./artifacts/EP13/review.md` + `./artifacts/EP13/walkthrough.md` (DoD 10/11).
+**Final review:** one combined review for the EP13 parent review unit — every application child in the queue (EP13A–EP13N incl. EP13H2; EP13P is outside the unit, D13-18) — after EP13M is implemented. Reviewer artifacts: `./artifacts/EP13/review.md` (walkthrough + DoD-11 section inside it, D13-19).
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
@@ -45,12 +45,13 @@
 | [EP13M](./EP13M-cross-layer-e2e-and-parent-index.md) | Implemented — awaiting parent review | EP13A–EP13N implemented. D-M1…D-M6 ratified (user, 2026-11-15). | None — the unit is ready for the combined review | `./artifacts/EP13M/implementation.md`, parent index `./artifacts/EP13/implementation.md`; 7/7 journeys green; web 1264/0; TR-E13-14 automated half executed, user checklist pending; open: F-EP13M-01…07 |
 | [EP13P](./EP13P-agent-lifecycle-and-record-clarity.md) | Implemented — awaiting review | None on application children (docs/process only; outside the EP13 application review unit, D13-18). | Plan-style review of the edited documents (its own sign-off, D13-18) | `./artifacts/EP13P/implementation.md` (EP13P-AC1–AC3, EP13P-AC5–AC6, a9afe4d); EP13P-AC4 done by planner pass 50b8477 + 904a496 + closeout commit (C-EP13-01…09 below) |
 | [EP13Q](./EP13Q-lifecycle-efficiency.md) | Implemented — awaiting review | EP13P implemented. Docs/process only; outside the EP13 application review unit (D13-19). | Plan-style review of the protocol edits (its own sign-off) | `./artifacts/EP13Q/implementation.md`; queue-lint clean; corpus 22,585 → see record |
+| [EP13R](./EP13R-follow-up-register-and-triage.md) | Blocked | EP13M implemented (register of its and the children's residue). Docs-only; outside the review unit (EP13P/Q precedent); blocked on user rulings. | User rules D-R1…D-R15 (do next / backlog / drop), then planner breakdown | — |
 
 Sequence (one writer): EP13A → EP13B → EP13C → EP13D → EP13E → EP13F → EP13G → EP13H → EP13H2 → EP13I → **EP13L → EP13N → EP13K → EP13J → EP13M** (I/J re-lettered 2026-11-15, D13-16; the remaining five re-sequenced 2026-11-15, D13-17 — letters are stable IDs, the queue row order is the execution order).
 
 Why this order: see [history.md](./history.md#sequencing-rationale).
 
-**Refiner gate (D13-14):** all five gated stories (EP13D/E/H/I/K) have had their `refiner` pass (D-D/D-E/D-H/D-I/D-K tables). EP13J and EP13M carry no refiner-gated UI decisions; EP13N's design is settled in-story (D13-15).
+**Refiner gate (D13-14):** closed — all five gated stories had their pass (D-D/D-E/D-H/D-I/D-K tables); EP13N settled in-story (D13-15); the rest carry no gated UI decisions.
 
 ## Stories
 
@@ -72,10 +73,11 @@ Why this order: see [history.md](./history.md#sequencing-rationale).
 | [EP13N](./EP13N-adhd-aligned-preference-controls.md) | — (correction story, user decision 2026-11-15: reshape EP13F's two preference fields for ADHD users; see D13-15) | Frontend |
 | [EP13P](./EP13P-agent-lifecycle-and-record-clarity.md) | — (process story, user decision 2026-11-15: agent-lifecycle audit and record/label clarity plan; see D13-18. Letter O skipped to avoid O/0 ambiguity) | Documentation / process |
 | [EP13Q](./EP13Q-lifecycle-efficiency.md) | — (process story, user decision 2026-11-15: lifecycle efficiency review — twenty questions answered in-story, tiered reads, inline deterministic gates, walkthrough folded into review, measurement log; see D13-19) | Documentation / process |
+| [EP13R](./EP13R-follow-up-register-and-triage.md) | — (planning story, user request 2026-11-16: register + triage of every optional EP13 follow-up; no code) | Documentation / planning |
 
-**Why EP13F is its own pure-domain child** (like EP06C/EP08B): breaks, density cap, interleaving and min/max enforcement are placement-algorithm invariants that must be unit-tested deterministically without HTTP or persistence; folding them into a service story would bury the determinism/purity contract.
+**Why EP13F is its own pure-domain child** (EP06C/EP08B precedent): placement invariants need deterministic unit tests without HTTP or persistence.
 
-**Why EP13J/EP13K keep both layers in one story**: each layer's share is below the meaningful-work gate on its own (a one-field migration + a heuristic hook; an aggregate endpoint + a card), while together they form one coherent, independently verifiable outcome. One sequential implementer owns all layers, so a split would manufacture children.
+**Why EP13J/EP13K keep both layers in one story**: each layer alone is below the meaningful-work gate; together they are one verifiable outcome (one sequential implementer, so a split manufactures children).
 
 **Why a separate integration child exists**: EP13M adds a new Playwright suite (`apps/web/e2e/adaptive-scheduling.spec.ts`) covering multi-day journeys the unit level cannot (do work → plan shrinks; miss a day → plan rolls forward; start focus from the plan; momentum updates), plus the parent implementation index — real integration implementation per the EP08F precedent.
 
@@ -167,12 +169,12 @@ Moved to [contracts.md](./contracts.md) (data model, lifecycle, reconciliation, 
 
 ### Verification tasks
 
-- **V-13-1:** Confirm task-only sessions (`assignmentId` null, `taskId` set) stay in the unattributed total and never reduce an assignment's remaining work (EP13A).
+- **V-13-1:** task-only sessions stay unattributed, never reduce assignment work (EP13A).
 - **V-13-2:** Locked past unstarted rows: rolled like others, or held visible until explicitly resolved? (D13-2; EP13C.)
-- **V-13-3:** ~~D13-4 flex model — user decision. Blocks EP13G/EP13H.~~ Closed 2026-11-15: ruled option (b) (user decision); implemented by EP13G.
+- **V-13-3:** closed 2026-11-15 — D13-4 ruled (b); implemented by EP13G.
 - **V-13-4:** D13-8 notifications capability — user decision for any future reminder epic; nothing in EP13 depends on it.
 - **V-13-5:** "Demanding work" heuristic for energy placement (D13-10; EP13J).
-- **V-13-6:** ~~Absorption status semantics (D13-13; EP13I).~~ Resolved 2026-11-15 by D-I8 (refines D13-13; see register).
+- **V-13-6:** closed 2026-11-15 by D-I8 (refines D13-13).
 
 ### Final implementation review unit
 

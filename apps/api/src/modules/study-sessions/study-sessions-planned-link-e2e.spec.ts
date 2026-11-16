@@ -261,8 +261,22 @@ describeIntegration('Start focus from a planned session (integration, real datab
   });
 
   it('absorb-next folds the next planned session into the running one and cannot double-absorb', async () => {
-    const current = await seedPlanned(student, assignmentId, today());
-    const next = await seedPlanned(student, assignmentId, today(), {
+    // R-EP13-01(c): a dedicated assignment — earlier tests leave SCHEDULED
+    // rows for the shared one on the same day, and absorb-next deterministically
+    // takes the earliest candidate, which made this journey absorb a leftover.
+    const absorbAssignment = await app.prisma.assignment.create({
+      data: {
+        userId: student.id,
+        title: `Absorb journey ${runId}`,
+        estimatedHours: 2,
+        dueDate: new Date(`${today()}T23:00:00.000Z`),
+        status: 'PENDING',
+        priority: 'MEDIUM',
+      },
+      select: { id: true },
+    });
+    const current = await seedPlanned(student, absorbAssignment.id, today());
+    const next = await seedPlanned(student, absorbAssignment.id, today(), {
       startTime: new Date(`${today()}T15:00:00.000Z`),
       endTime: new Date(`${today()}T16:00:00.000Z`),
       durationMinutes: 60,

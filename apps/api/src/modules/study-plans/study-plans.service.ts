@@ -760,6 +760,10 @@ export class StudyPlansService {
         studyPlan: { userId, date: { lt: bound } },
         status: 'SCHEDULED',
         assignment: { status: { in: ['PENDING', 'IN_PROGRESS'] } },
+        // R-EP13-01(d): the same "actually done" exclusion the reconciliation
+        // guard uses (reconcilePastSessions) — a past row kept SCHEDULED
+        // because a linked session completed it is done, never "missed".
+        studySessions: { none: { status: 'COMPLETED', durationMinutes: { gte: 1 } } },
       },
       include: {
         studyPlan: { select: { date: true } },

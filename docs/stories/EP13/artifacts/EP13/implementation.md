@@ -43,7 +43,7 @@ Per child, the commands and counts are in each child's record (the only home for
 | Command (cwd) | What it covers |
 |---|---|
 | `pnpm --filter @studypilot/api test` (repo root) or `npx jest` (`apps/api`) | API unit + mocked-Prisma suites; the 27 `DATABASE_URL`-gated suites self-skip without a DB |
-| `DATABASE_URL=… npx jest` (`apps/api`) | the gated live-DB suites — **still not executed in this delivery chain** (F-EP13M-07) |
+| `DATABASE_URL=… npx jest --runInBand` (`apps/api`, freshly migrated throwaway DB) | the gated live-DB suites — first executed by the combined review at `210f76c` (8 red, R-EP13-01) and green after the R-EP13-01 fix except the four pre-existing R-EP13-03 failures. The old "CI executes them" claim was wrong (R-EP13-02): ci.yml covers `main`/`develop` only |
 | `pnpm test` (`apps/web`) | web unit/component suites |
 | `pnpm test:e2e` (repo root) / `npx playwright test` (`apps/web`) | all E2E incl. `e2e/adaptive-scheduling.spec.ts` (the seven EP13 journeys) |
 | `pnpm lint`, `pnpm typecheck` (each app); `npx eslint e2e --ext ts` (`apps/web`) | static gates (`format:write` does not cover `e2e/`) |
@@ -68,7 +68,7 @@ Ownership is as tabulated in the [README](../../README.md#epic-acceptance-criter
 
 ## Known gaps for the reviewer
 
-- Gated live-DB API suites never executed (F-EP13M-07; same standing as F-EP13A-03 et al.).
+- Gated live-DB API suites: executed by the combined review (closing F-EP13M-07) — see R-EP13-01/-02/-03 in `review.md` for the result and the record corrections.
 - Four pre-existing E2E failures and two pre-existing parallel-load flakes, all outside EP13's change set (F-EP13M-01/02/06).
 - The user-run half of TR-E13-14 above.
 - Product follow-ups raised by children (e.g. F-EP13J-02…04, F-EP13K-03) are dispositioned in their records; none blocks review.

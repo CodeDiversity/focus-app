@@ -683,9 +683,11 @@ describeIntegration('catch-up recovery e2e (real database, EP08)', () => {
       // The preserved locked row is readable…
       expect(saved).toBeTruthy();
       expect(saved).toMatchObject({ status: 'SCHEDULED', durationMinutes: 60 });
-      // …and the SavedPlan session shape is UNCHANGED by EP08 — no `locked`
-      // key leaks into the EP06 contract (review polish P-03 disposition).
+      // …and the SavedPlan session shape is EP08's P-03 contract plus the two
+      // keys EP13G added (`anchor`, `windowHint`, EP13G-AC5) — still no
+      // `locked` leak (R-EP13-01a: the pin now tracks the current contract).
       expect(Object.keys(saved).sort()).toEqual([
+        'anchor',
         'assignmentId',
         'assignmentTitle',
         'durationMinutes',
@@ -693,6 +695,7 @@ describeIntegration('catch-up recovery e2e (real database, EP08)', () => {
         'id',
         'startTime',
         'status',
+        'windowHint',
       ]);
     });
 

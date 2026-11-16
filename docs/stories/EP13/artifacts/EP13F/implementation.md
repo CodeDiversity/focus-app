@@ -50,3 +50,13 @@ New/changed tests: `scheduler.spec.ts` (+20 EP13F cases, 2 v1 expectations recon
 - `apps/api/src/modules/study-plans/{study-plans.service,study-plans-e2e,study-plans-data-scoping}.spec.ts` — expectations.
 - `apps/web/src/entities/study-preferences/model/types.ts` (+ api spec fixtures), `apps/web/src/features/study-preferences/ui/StudyPreferencesForm.tsx` (+ spec) — the "How your days are filled" fieldset.
 - Docs: this record, `checkpoint.md`, the EP13 README queue row, the EP13F story status.
+
+## Correction (2026-11-16, R-EP13-02)
+
+This record dispositioned its unexecuted `DATABASE_URL`-gated suites as
+CI-executed. That claim was wrong: `.github/workflows/ci.yml` triggers only on
+`main`/`develop`, which never ran for this delivery chain. The suites were
+first executed by the combined EP13 review at `210f76c` (red — R-EP13-01) and
+are green after the R-EP13-01 fix commit, except the four pre-existing
+failures dispositioned as R-EP13-03. Evidence: `artifacts/EP13/review.md` and
+the fix commit's record in `history.md`.

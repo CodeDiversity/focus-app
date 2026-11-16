@@ -58,3 +58,13 @@ Minor: the link check is falsy-based (`if (!plannedSessionId)`) so a narrower `s
 - `apps/api/src/modules/study-sessions/study-sessions-planned-link.service.spec.ts`, `…-planned-link-e2e.spec.ts` — **new**.
 - `apps/api/src/modules/study-sessions/study-sessions-e2e.spec.ts`, `…-data-scoping.spec.ts` — key sets.
 - Docs: this record, `checkpoint.md`, EP13 README queue row, EP13B story status.
+
+## Correction (2026-11-16, R-EP13-02)
+
+This record dispositioned its unexecuted `DATABASE_URL`-gated suites as
+CI-executed. That claim was wrong: `.github/workflows/ci.yml` triggers only on
+`main`/`develop`, which never ran for this delivery chain. The suites were
+first executed by the combined EP13 review at `210f76c` (red — R-EP13-01) and
+are green after the R-EP13-01 fix commit, except the four pre-existing
+failures dispositioned as R-EP13-03. Evidence: `artifacts/EP13/review.md` and
+the fix commit's record in `history.md`.

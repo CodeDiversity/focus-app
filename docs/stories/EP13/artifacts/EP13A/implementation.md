@@ -47,3 +47,11 @@ New/changed tests: `study-plans-reality.service.spec.ts` (new, 7 tests — TR-E1
 - `apps/api/src/modules/study-plans/study-plans.service.spec.ts`, `study-plans-recovery-catch-up.service.spec.ts` — updated unit pins.
 - `apps/api/src/modules/study-plans/study-plans-e2e.spec.ts`, `study-plans-data-scoping.spec.ts` — gated fixtures/assertions (State B).
 - Docs: this record, `checkpoint.md`, EP13 README queue row, EP13A story status.
+
+## Correction (2026-11-16, R-EP13-02)
+
+F-EP13A-03's gated evidence is now closed by execution: the combined EP13
+review ran the gated suites at `210f76c` (first execution in this chain;
+queue-row claims of CI execution were wrong — ci.yml covers `main`/`develop`
+only). Green after the R-EP13-01 fix commit except the four pre-existing
+R-EP13-03 failures. Evidence: `artifacts/EP13/review.md`, `history.md`.

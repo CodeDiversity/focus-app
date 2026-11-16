@@ -318,6 +318,9 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
         studyPlan: { userId, date: { lt: new Date('2026-10-30T00:00:00.000Z') } },
         status: 'SCHEDULED',
         assignment: { status: { in: ['PENDING', 'IN_PROGRESS'] } },
+        // R-EP13-01(d): a row the rollover guard protected because a linked
+        // session completed it is done — excluded from "missed" too.
+        studySessions: { none: { status: 'COMPLETED', durationMinutes: { gte: 1 } } },
       });
       expect(missed.where.studyPlan.date.lt.getTime()).toBe(
         new Date('2026-10-30T00:00:00.000Z').getTime()

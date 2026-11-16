@@ -252,13 +252,18 @@ describeIntegration('catch-up data scoping (integration, real database, EP08)', 
     await app.app.close();
   }, 60_000);
 
-  it('B’s recovery summary is empty while A’s missed row and work exist — nothing crosses', async () => {
+  it('B’s recovery summary is empty while A’s rolled-forward row and work exist — nothing crosses', async () => {
+    // EP13C (R-EP13-01b): the summary read reconciles first, so A's past
+    // unstarted row reports as rolled forward, never as missed.
     const aSummary = await getRecoverySummary(studentA).expect(HttpStatus.OK);
-    expect(aSummary.body.missedCount).toBe(1);
+    expect(aSummary.body.missedCount).toBe(0);
+    expect(aSummary.body.rolledForwardCount).toBe(1);
 
     const bSummary = await getRecoverySummary(studentB).expect(HttpStatus.OK);
     expect(bSummary.body.missedCount).toBe(0);
     expect(bSummary.body.missedSessions).toEqual([]);
+    expect(bSummary.body.rolledForwardCount).toBe(0);
+    expect(bSummary.body.rolledForward).toEqual([]);
     // B's unfinished work lists only B's assignment.
     expect(
       bSummary.body.unfinishedWork.map((i: { assignmentId: string }) => i.assignmentId)

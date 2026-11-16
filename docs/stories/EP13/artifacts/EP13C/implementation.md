@@ -45,3 +45,13 @@ New/changed tests: `study-plans-reconciliation.service.spec.ts` (new, 10 unit te
 - `apps/api/src/modules/study-plans/study-plans-reconciliation.service.spec.ts`, `study-plans-rollover-e2e.spec.ts` — **new**.
 - `apps/api/src/modules/study-plans/study-plans-recovery-catch-up.service.spec.ts`, `study-plans-catch-up-e2e.spec.ts`, `study-plans-reality.service.spec.ts` — re-pinned.
 - Docs: this record, `checkpoint.md`, EP13 README queue row, EP13C story status.
+
+## Correction (2026-11-16, R-EP13-02)
+
+This record dispositioned its unexecuted `DATABASE_URL`-gated suites as
+CI-executed. That claim was wrong: `.github/workflows/ci.yml` triggers only on
+`main`/`develop`, which never ran for this delivery chain. The suites were
+first executed by the combined EP13 review at `210f76c` (red — R-EP13-01) and
+are green after the R-EP13-01 fix commit, except the four pre-existing
+failures dispositioned as R-EP13-03. Evidence: `artifacts/EP13/review.md` and
+the fix commit's record in `history.md`.

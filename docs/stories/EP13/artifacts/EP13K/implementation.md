@@ -46,3 +46,13 @@ Decisions applied: ▲ D-K1, D-K2, D-K3, D-K5, D-K6, D-K7, D-K8, D-K9, D-K10 rat
 - API: `src/common/lib/calendar-date.ts` (+spec), `src/domain/study-planning/{momentum.ts (new), momentum.spec.ts (new), types.ts, preferences.ts, preferences.spec.ts, calibration.spec.ts, catch-up.spec.ts, scheduler.spec.ts}`, `src/modules/study-plans/{dto/update-study-preferences.dto.ts, study-plans.service.ts, study-plans.service.spec.ts, study-plans-e2e.spec.ts, study-plans-data-scoping.spec.ts}`, `src/modules/study-sessions/{study-sessions.service.ts, study-sessions.controller.ts, study-sessions-momentum.service.spec.ts (new), study-sessions-data-scoping.spec.ts}`.
 - Web: `src/entities/study-session/{model/types.ts, api/studySessionApi.ts, api/studySessionApi.test.ts (new)}`, `src/entities/study-preferences/{model/types.ts, api/studyPreferencesApi.test.ts}`, `src/features/momentum/{api/momentumApi.ts, model/momentumCopy.ts, model/momentumCopy.test.ts, ui/MomentumCard.tsx, ui/MomentumCard.test.tsx, ui/MomentumWeekStrip.tsx}` (new), `src/app/store/{store.ts, store.test.tsx}`, `src/test/providers.tsx`, `src/pages/dashboard/ui/DashboardPage.{tsx,test.tsx}`, `src/features/focus-session/ui/FocusTimer.{tsx,test.tsx}`, `src/pages/focus/ui/FocusPage.{tsx,test.tsx}`, `src/features/study-preferences/ui/StudyPreferencesForm.{tsx,test.tsx}`, `src/index.css`; `getMomentum` stub added to the entity mocks in `TodayPlanCard.test.tsx`, `AbsorbNextOffer.test.tsx`, `StartFocusSessionDialog.test.tsx`, `useFocusSession.test.ts`.
 - Docs: `docs/stories/EP13/contracts.md` (momentum endpoint row), the EP13K story (Status, rulings, sizing actual), `docs/stories/EP13/README.md` (queue row, Active/Next), this record, `artifacts/efficiency.md`.
+
+## Correction (2026-11-16, R-EP13-02)
+
+This record dispositioned its unexecuted `DATABASE_URL`-gated suites as
+CI-executed. That claim was wrong: `.github/workflows/ci.yml` triggers only on
+`main`/`develop`, which never ran for this delivery chain. The suites were
+first executed by the combined EP13 review at `210f76c` (red — R-EP13-01) and
+are green after the R-EP13-01 fix commit, except the four pre-existing
+failures dispositioned as R-EP13-03. Evidence: `artifacts/EP13/review.md` and
+the fix commit's record in `history.md`.

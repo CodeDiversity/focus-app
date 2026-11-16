@@ -41,3 +41,10 @@ Decisions: D-M1…D-M6 were already ratified by the user (2026-11-15); nothing w
 2. **axe-core is the copy already installed** (via `eslint-plugin-jsx-a11y`), injected with `page.addScriptTag` — no new dependency. Scans wait for animations to finish (a mid-fade scan read as low contrast).
 3. **Browser clock control in journey 5** (`page.clock`) — D-M2 forbids mocking the *stack* clock for dated fixtures; the server clock is untouched.
 4. **One product code change** (F-EP13M-03) in a verification story — an EP13-owned a11y defect the combined pass exists to catch; the story's "no new behavior" holds (copy of an accessible name only).
+
+## Correction (2026-11-16, R-EP13-02)
+
+F-EP13M-07 is closed by execution: the combined review ran the gated suites at
+`210f76c` (8 red → R-EP13-01, fixed in the follow-up commit; 4 pre-existing →
+R-EP13-03). The "run in CI" half of its disposition repeated the wrong CI
+claim — ci.yml never covers this branch (R-EP13-02).

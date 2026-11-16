@@ -45,3 +45,13 @@ Decisions: the story had no D-J rows (planned "at refinement"; D13-14 exempts EP
 - API: `prisma/schema.prisma`, `prisma/migrations/20261116120000_availability_slot_energy/migration.sql` (new), `src/domain/study-planning/{types.ts, intervals.ts, scheduler.ts, remaining-work.ts, energy.spec.ts (new)}`, `src/modules/availability/{availability.service.ts, dto/create-availability-slot.dto.ts, dto/update-availability-slot.dto.ts, availability.service.spec.ts, availability-e2e.spec.ts, availability-data-scoping.spec.ts}`, `src/modules/calendar/calendar.service.ts`, `src/modules/study-plans/{study-plans.service.ts, study-plans-energy.service.spec.ts (new)}`.
 - Web: `src/entities/availability/{model/types.ts, api/availabilityApi.ts}`, `src/features/availability/ui/{AvailabilitySlotForm.tsx, AvailabilitySlotForm.test.tsx, AvailabilitySlotList.tsx, AvailabilitySlotList.test.tsx (new), slotLabel.ts, slotLabel.test.ts}`, `src/features/calendar/ui/{CalendarEventChip.tsx, CalendarEventChip.test.tsx}`, `src/pages/availability/ui/AvailabilityPage.test.tsx`.
 - Docs: `docs/stories/EP13/contracts.md`, the EP13J story, `docs/stories/EP13/README.md`, this record, `artifacts/efficiency.md`.
+
+## Correction (2026-11-16, R-EP13-02)
+
+This record dispositioned its unexecuted `DATABASE_URL`-gated suites as
+CI-executed. That claim was wrong: `.github/workflows/ci.yml` triggers only on
+`main`/`develop`, which never ran for this delivery chain. The suites were
+first executed by the combined EP13 review at `210f76c` (red — R-EP13-01) and
+are green after the R-EP13-01 fix commit, except the four pre-existing
+failures dispositioned as R-EP13-03. Evidence: `artifacts/EP13/review.md` and
+the fix commit's record in `history.md`.

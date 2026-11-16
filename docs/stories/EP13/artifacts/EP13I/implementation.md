@@ -46,3 +46,13 @@
 - `apps/web/src/pages/focus/ui/FocusPage.tsx` — offer mounted under the timer (one shared target-reached rule).
 - `apps/web/src/pages/dashboard/ui/DashboardPage.test.tsx` — keyboard-order inventory.
 - Docs: this record, `checkpoint.md`, the EP13 README queue row, the EP13I story status.
+
+## Correction (2026-11-16, R-EP13-02)
+
+This record dispositioned its unexecuted `DATABASE_URL`-gated suites as
+CI-executed. That claim was wrong: `.github/workflows/ci.yml` triggers only on
+`main`/`develop`, which never ran for this delivery chain. The suites were
+first executed by the combined EP13 review at `210f76c` (red — R-EP13-01) and
+are green after the R-EP13-01 fix commit, except the four pre-existing
+failures dispositioned as R-EP13-03. Evidence: `artifacts/EP13/review.md` and
+the fix commit's record in `history.md`.
