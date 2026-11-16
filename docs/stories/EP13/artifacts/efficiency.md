@@ -13,3 +13,5 @@ Schema: see `.agents/context-efficiency.md`. `n/a` when the runtime does not exp
 | 2026-11-16 | EP13M | implementer (live session) | default | n/a / n/a | ~110 | 0 | implemented; 4/4 ACs; 7 journeys green; 4 EP13 E2E regressions repaired (8 never-run catch-up tests recovered); 1 a11y fix; 7 findings; parent index written |
 | 2026-11-16 | EP13 | reviewer (subagent, parent_review round 1) | default | ~206k / n/a | 91 | 1 | does not pass — R-EP13-01…05; gated suites executed first time (8 red); 7/7 journeys green |
 | 2026-11-16 | EP13 | implementer (live session, R-EP13-01/02/04 fixes) | default | n/a / n/a | ~25 | 0 | gated suites green but 4 pre-existing (R-EP13-03); 1 code fix (missed-query guard), 3 test fixes, 10 record corrections, EP13R register |
+| 2026-11-16 | EP13P | reviewer (subagent, document review round 1) | default | n/a / n/a | ~14 | 1 | passes; 1 polish finding (R-EP13P-01); queue row synced to Reviewed |
+| 2026-11-16 | EP13Q | reviewer (same dispatch, document review round 1) | default | n/a / n/a | ~14 | 0 | does not pass — R-EP13Q-01…03 should-fix, R-EP13Q-04/05 polish; report saved, no sync |

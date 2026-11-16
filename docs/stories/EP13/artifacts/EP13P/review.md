@@ -1,0 +1,40 @@
+# EP13P document review — round 1
+
+**Date:** 2026-11-16 · **Pass:** 1 · **Reviewed commit:** `5e3fe2a` (clean tree)
+**Mode:** plan-style review of the edited documents (EP13P's own sign-off, D13-18; EP13P is outside the EP13 application review unit)
+**Scope:** EP13P-AC1–AC6 verified independently against HEAD: `.agents/**`, `AGENTS.md`, `CLAUDE.md`, `docs/artifacts/README.md`, `docs/epics/README.md`, `docs/stories/EP13/**` (specs, README, history, checkpoints), `.codex`/`.vibe`/`.opencode` role definitions, `docs/jira-sync/`. The implementation record (`./implementation.md`, a9afe4d + planner pass 50b8477/904a496/9f307c3) was treated as a map, not evidence. Because EP13Q (055b9f0) later rewrote several documents EP13P first edited, each AC is verified as holding **at HEAD** in its canonical home.
+
+## Findings
+
+| ID | Severity | Location | Gap | Owner | Closure condition |
+|---|---|---|---|---|---|
+| R-EP13P-01 | Polish | `.codex/agents/planner.toml:7`; `.opencode/agents/planner.md:16` | After the user-directed full removal of jira-sync (supersedes the frozen EP13P-AC3 "pointer" wording), the planner runtime definitions still carry the live instruction "Ask for authorization before bulk Jira mutations"; the `.vibe` mirror already dropped it. The jira-sync role itself is gone (no `jira-sync` definition in any runtime, skill deleted, `docs/jira-sync/` carries the historical banner at `docs/jira-sync/README.md:3`), and EP13P's record does not claim these two files, so no explicit AC or record claim is unmet. | live session (protocol owner) | The sentence removed from (or deliberately kept and mirrored into) all three planner runtime definitions. Cross-referenced in R-EP13Q-03, which owns the source/mirror divergence. |
+
+## AC verification
+
+| AC | Disposition | Evidence (HEAD) |
+|---|---|---|
+| EP13P-AC1 | Satisfied | `.agents/id-conventions.md` exists: one table defining every family — epic ACs/TRs, qualified child ACs `<STORY>-AC<n>`, epic/story/cross-epic decisions with mandatory override back-references (lines 15–21, rule 4 at 37–39), `V-` tasks (line 22), `F-<STORY>-<nn>` (line 23), single reviewer scheme `R-<UNIT>-<nn>` replacing `PR-`/`F-`/`P-` (line 24), checkpoint steps `S<n>` never `M` (lines 13–14, rule 2 at 32–33). Re-letter/re-sequence policy: rule 5 (lines 40–47) requires every live cross-reference updated in the same commit, historical records verbatim. Legacy forms listed read-only (lines 51–56). Linked from `AGENTS.md:24`, `.agents/core.md:52`, planner skill line 11, refiner skill lines 22/53. |
+| EP13P-AC2 | Satisfied | Reviewer-executed `grep -rn "studypilot-" --include=*.md .` → zero hits in `CLAUDE.md`, `AGENTS.md`, `docs/artifacts/README.md`, `README.md`, `.agents/**`; all remaining hits are dated historical records (`docs/agents/autopilot-*.md`, SP-108/STUDY-* records, `docs/jira-sync/` tombstone, EP13P's own audit text) plus the unrelated Mailpit container name (`README.md:122`). Drift items B.2–B.5 absent at HEAD: planner skill has no "M1–M4" and uses `AC-E<nn>-<nn>`/`TR-E<nn>-<nn>` (SKILL.md:18); reviewer skill mandates `R-<UNIT>-<nn>` (SKILL.md:38) and per-round files (SKILL.md:62–64); the merged refiner requires the actual EP13 story structure, no "Description" section (refiner SKILL.md:49–52). |
+| EP13P-AC3 | Satisfied (merge applied; jira removal per superseding user decision 2026-11-15) | One `refiner` skill with the UI/UX section (`.agents/skills/refiner/SKILL.md:85–104`; "there is no separate UI refiner role", lines 12–13). `ls .agents/skills` → implementer/planner/refiner/reviewer only; `ls .codex/agents .vibe/agents .opencode/agents` → no ui-refiner, no jira-sync, in any runtime. `grep -rn "ui-refiner\|ui_refiner" .agents AGENTS.md CLAUDE.md README.md .codex .vibe .opencode` → only the refiner skill's "no separate UI refiner role" statement. The lifecycle playbook (`.agents/workflow-graph.md`, row 8) has a single `refine` edge, no ui nodes. AGENTS.md:11 states there is no tracker-sync role; jira-sync skill and role defs deleted; `docs/jira-sync/README.md:3` carries the historical banner. Residue: R-EP13P-01 (polish). |
+| EP13P-AC4 | Satisfied | Every §D item fixed in live docs and logged as `C-EP13-01…09` in `docs/stories/EP13/history.md:29–37` with preserved originals. Spot-verified: EP13B.md:36,106–107 and EP13D.md:47,185–186 now say EP13I for absorption/micro-start; EP13F.md:40,110 and EP13G.md:42,110 now say EP13J for energy; `grep -rn "EP13I-energy" docs/stories/EP13` → 0 hits outside the audit text/correction log; README review unit now "EP13A–EP13N incl. EP13H2 (EP13P excluded, D13-18)" (README.md:27,183), no "thirteen children", register D13-1…D13-19 in numeric order with back-references (D13-13 ← D-I8, D13-15 ← D-N1/D-N2, README.md:162,164); EP13F/H/I checkpoint "Resume next" pointers carry the D13-17 order (EP13F/checkpoint.md:40, EP13H/checkpoint.md:40, EP13I/checkpoint.md:35); DoD map rebuilt (README.md:126–140, C-EP13-03). Historical records left verbatim (e.g. EP13F checkpoint's legacy `M1` step labels, covered by id-conventions line 14). |
+| EP13P-AC5 | Satisfied | At HEAD the one-fact-one-place rules live in the canonical homes: evidence cell = links + one-line verdict (`.agents/delivery-state.md:37`, enforced by `tools/queue-lint.mjs:23`); completed checkpoint reduced to a closed pointer (`.agents/checkpoint-execution.md:41–43`); `S<n>` steps (checkpoint-execution.md:14; queue-lint rule 5); decisions cited by ID, never restated (`.agents/core.md:65`, id-conventions rule 3); multi-round reviews in `review-round-<n>.md` with `review.md` as latest verdict (reviewer SKILL.md:62–64, `.agents/review-cadence.md:22–23`, `docs/artifacts/README.md:11`). Queue rows EP13A–EP13I trimmed to the rule (C-EP13-08). |
+| EP13P-AC6 | Satisfied | Planner skill story-file template (SKILL.md:30–45) lists Plan at a glance / Summary / Scope / Source requirement references / Acceptance criteria / Tests / Technical notes with Decisions subsection / Definition of Done / Sizing — matching the actual EP13 structure; the refiner skill requires preserving exactly that structure (refiner SKILL.md:49–52). |
+
+Story-level verification items re-executed: link targets of `AGENTS.md`, `CLAUDE.md`, `.agents/**` cross-references all exist (file inventory above); `grep` checks as per EP13P-AC2/AC4 cells.
+
+## Verdict
+
+**Passes.** No blocker or should-fix finding is open; R-EP13P-01 is polish (no unmet mandatory obligation). Per D13-18 this is EP13P's sign-off; it does not touch the EP13 application review unit.
+
+### How to verify by hand
+
+All steps are document inspection on commit `5e3fe2a`; each was executed by the reviewer on 2026-11-16 in the repo root.
+
+1. `cat .agents/id-conventions.md` — expect one label-family table covering AC/TR/decision/finding/step/milestone forms, rules 1–6 incl. the re-letter policy, and a legacy-forms section. **Executed — 2026-11-16, repo root; content as expected (lines 9–56).**
+2. `grep -rn "studypilot-" --include=*.md CLAUDE.md AGENTS.md README.md .agents docs/artifacts/README.md` — expect zero hits. **Executed — 2026-11-16; zero hits (all remaining repo hits are dated historical records).**
+3. `ls .agents/skills .codex/agents .vibe/agents .opencode/agents` — expect refiner present, no ui-refiner and no jira-sync anywhere. **Executed — 2026-11-16; confirmed.**
+4. `grep -n "EP13I\|EP13J" docs/stories/EP13/EP13B*.md docs/stories/EP13/EP13F*.md` — expect absorption references to say EP13I and energy references EP13J. **Executed — 2026-11-16; confirmed (EP13B.md:36,106; EP13F.md:40,110).**
+5. Open `docs/stories/EP13/history.md` — expect C-EP13-01…09 rows with preserved original wording and verification columns. **Executed — 2026-11-16; rows at lines 29–37.**
+6. `sed -n '1,5p' docs/jira-sync/README.md` — expect the 2026-11-15 historical banner. **Executed — 2026-11-16; banner at line 3.**
+7. Negative check (R-EP13P-01): `grep -rn "Jira" .codex .vibe .opencode` — expect the stale sentence only in `.codex/agents/planner.toml:7` and `.opencode/agents/planner.md:16`. **Executed — 2026-11-16; confirmed.**
