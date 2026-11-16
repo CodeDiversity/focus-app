@@ -1,8 +1,10 @@
 name: CI
 
 on:
+  # EP14A (AC1): every branch — delivery branches included — runs the full
+  # gate; PRs to the protected branches keep their trigger.
   push:
-    branches: [main, develop]
+    branches: ['**']
   pull_request:
     branches: [main, develop]
 
@@ -28,7 +30,9 @@ jobs:
     env:
       DATABASE_URL: postgresql://studypilot:studypilot@localhost:5432/studypilot_test?schema=public
       TEST_DATABASE_URL: postgresql://studypilot:studypilot@localhost:5432/studypilot_test?schema=public
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      # EP14A (AC2, R-EP14-02): never empty — test-http's `??` fallback does
+      # not catch an empty string, so an unset repo secret must not yield one.
+      JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-only-test-secret' }}
 
     steps:
       - name: Checkout repository
@@ -74,7 +78,9 @@ jobs:
         run: pnpm --filter @studypilot/api run test:integration --runInBand
 
       - name: Run backend tests
-        run: pnpm --filter @studypilot/api test
+        # EP14A (AC2, R-EP14-02): single-worker — execution-mode parity with
+        # every recorded zero-failure gated run (`npx jest --runInBand`).
+        run: pnpm --filter @studypilot/api run test --runInBand
 
       - name: Run frontend tests
         run: pnpm --filter @studypilot/web test

@@ -53,6 +53,7 @@ bundle. Match existing component/styling conventions; minimal diffs.
 3. Update the story Status line, the queue row (state, next action, evidence = links + one-line verdict) and Active/Next fields; fill the sizing block's **Actual at closeout**.
 4. Stage owned paths explicitly, inspect the staged diff, **one commit per child** (code + records + queue row); never blanket-stage or bypass hooks. If blocked: `commit pending`, paths, reason.
 5. `node tools/queue-lint.mjs <delivery-home>`; append the `efficiency.md` row; return the closeout fields.
+6. A gated-suite pass is recorded only with a CI run link or a local run command + result; "CI will run it" is not evidence (EP14A-AC4).
 
 When every child and integration task is implemented, write the parent index
 per [review-cadence](../../review-cadence.md) (inventory, per-child diff ranges,

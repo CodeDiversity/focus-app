@@ -56,13 +56,13 @@ AC-E14-01; TR-E14-01; DoD-8, DoD-9.
 
 ## Definition of Done
 
-1, 8 (the red/green proof), 9 (the rule documented); 2–7, 10–11 N/A beyond the parent review.
+1, 8 (the deliberate-red + known-red-baseline proof), 9 (the rule documented); 2–7, 10–11 N/A beyond the parent review.
 
 ## Sizing
 
 - **Outcome:** CI executes the full API gate on the branch under review.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** as planned + R-EP14-04 polish; two scratch CI runs (red `c8fecc5`, baseline `5bd86c9`), branches deleted; one finding (F-EP14A-01, anonymous log access).
 - **Files:** `.github/workflows/ci.yml`; `.agents/skills/implementer/SKILL.md` (one line).
 - **Start context:** this story; the three `ci.yml` ranges above.
-- **Verification:** two CI run links (red, then green) on a scratch branch.
+- **Verification:** two CI run links on a scratch branch: deliberate-red, then the known-red baseline (exactly the four R-EP13-03 failures). First true green = EP14B.
 - **Dependencies / exclusions:** needs push access to a scratch branch (user authorization at implementation time — pushing is outward-facing); test repairs owned by EP14B/EP14C.

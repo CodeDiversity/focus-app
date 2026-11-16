@@ -18,9 +18,9 @@
 
 **Artifact root:** `./artifacts/` — one directory per child, plus `./artifacts/EP14/` for the parent index and review.
 
-**Active substory:** None.
+**Active substory:** EP14B.
 
-**Next substory:** EP14A — implement (plan review pass 2 returned Plan Ready, 2026-11-16, [plan-review.md](./plan-review.md)). Push authorization for EP14A's scratch-branch proof granted (user, 2026-11-16).
+**Next substory:** EP14B — implement (in progress 2026-11-16).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -64,7 +64,7 @@ Sequence (one writer): EP14A → EP14B → EP14C → EP14D → EP14E. Why: the C
 
 | Req | Requirement | Owner |
 |---|---|---|
-| TR-E14-01 | Scratch-branch red/green CI run pair recorded | EP14A |
+| TR-E14-01 | Scratch-branch deliberate-red + known-red-baseline CI runs recorded | EP14A |
 | TR-E14-02 | Strictness E2E (bodies 400, query numbers parse) + full gated run 0 failed | EP14B |
 | TR-E14-03 | `week.days` shape tests + week strip renders without date math | EP14B |
 | TR-E14-04 | Three consecutive full parallel E2E runs, zero failures from the three specs | EP14C |
