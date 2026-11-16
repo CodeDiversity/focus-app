@@ -4,14 +4,14 @@
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 (D14-2)
 **Layer:** Integration (CI configuration + process rule)
-**Status:** Ready
+**Status:** Implemented — awaiting parent review (2026-11-16). Record: [`artifacts/EP14A/implementation.md`](./artifacts/EP14A/implementation.md)
 **Dependencies:** none. Source: EP13R D-R15 (user ruling 2026-11-16), R-EP13-02.
 
 ## Plan at a glance
 
 - **What this changes:** `.github/workflows/ci.yml` runs on pushes to every branch (delivery branches included) and its backend-test step runs the gated suites single-worker (`--runInBand`, the mode every recorded zero-failure contract uses) with a non-empty JWT secret even when the repo secret is unset; plus one closeout rule that a gated-suite claim cites a run.
 - **Why it improves it:** for a week, eight EP13 records said "CI executes the gated suites" while CI only watched `main`/`develop`; the first real run found 8 failures (product). A gate that cannot see the branch is not a gate (code).
-- **Decisions needing you:** none ▲; D-A1/D-A2 auto-ratify at implementation start.
+- **Decisions needing you:** none — D-A1/D-A2 ratified (user, 2026-11-16).
 - **How to change this plan:** edit a Ruling cell below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary

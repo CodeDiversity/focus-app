@@ -28,7 +28,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP14A](./EP14A-ci-runs-the-full-gate-on-delivery-branches.md) | Ready | None. Needs push authorization for the scratch-branch proof at implementation time. | Implement (plan review passed 2026-11-16) | — |
+| [EP14A](./EP14A-ci-runs-the-full-gate-on-delivery-branches.md) | Implemented — awaiting parent review | None. | None (known-red window closed by EP14B) | `./artifacts/EP14A/implementation.md`; runs 43908087082 (baseline) / 43908098549 (red); open: F-EP14A-01 |
 | [EP14B](./EP14B-api-contract-integrity.md) | Ready | ▲ D-B1, ▲ D-B4 ratified (user, 2026-11-16); EP14A first | Implement after EP14A | — |
 | [EP14C](./EP14C-e2e-reliability.md) | Ready | None | Implement after EP14B | — |
 | [EP14D](./EP14D-accessibility-debt-from-the-ep13-pass.md) | Ready | None | Implement after EP14C | — |
