@@ -11,7 +11,7 @@
 
 - **What this changes:** the study-plan journey stops failing on days where "move later 15 minutes" lands on a class; the login and logout specs stop flaking under full parallel runs. Test code only.
 - **Why it improves it:** EP13M's baseline had a date-dependent failure and two load flakes, which train everyone to ignore red E2E runs (product: gate trust; code: deterministic fixtures, the EP13H2 lesson).
-- **Decisions needing you:** none ▲; D-C1…D-C3 auto-ratify.
+- **Decisions needing you:** none — D-C1…D-C3 ratified by the user 2026-11-16.
 - **How to change this plan:** edit a Ruling cell below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary
@@ -46,9 +46,9 @@ The specs themselves; EP14C-AC3's three-run record in the implementation record 
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-C1 | Study-plan target choice: (a) pick from the preview JSON the first proposal whose +15-min window is free of classes; (b) seed no classes on the edited day | **(a)** — exercises the real UI with the real engine output | Proposed |
-| D-C2 | Login isolation: (a) per-test registration; (b) retry on 409 | **(a)** — retries mask the cause | Proposed |
-| D-C3 | Logout flake: (a) await the authenticated header (role-based locator) before clicking; diagnose with a trace first; (b) raise the timeout | **(a)** | Proposed |
+| D-C1 | Study-plan target choice: (a) pick from the preview JSON the first proposal whose +15-min window is free of classes; (b) seed no classes on the edited day | **(a)** — exercises the real UI with the real engine output | Ratified (user, 2026-11-16) |
+| D-C2 | Login isolation: (a) per-test registration; (b) retry on 409 | **(a)** — retries mask the cause | Ratified (user, 2026-11-16) |
+| D-C3 | Logout flake: (a) await the authenticated header (role-based locator) before clicking; diagnose with a trace first; (b) raise the timeout | **(a)** | Ratified (user, 2026-11-16) |
 
 ## Definition of Done
 
