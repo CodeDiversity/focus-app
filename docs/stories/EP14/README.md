@@ -3,7 +3,7 @@
 **Epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 — release 1.1.x hardening (D14-2)
 **Origin:** user rulings on [EP13R](../EP13/EP13R-follow-up-register-and-triage.md), 2026-11-16 — every recommendation ratified: eight "Do next" items became the five children below, six "Backlog" items are tracked in the [Backlog register](#backlog).
-**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: see [history.md](./history.md). **Plan review:** pass 1 ([plan-review.md](./plan-review.md)) Changes Required — R-EP14-01…03 corrected (C-EP14-01…03 in [history.md](./history.md)); pass 2 pending.
+**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: see [history.md](./history.md). **Plan review:** pass 1 ([plan-review-pass-1.md](./plan-review-pass-1.md)) Changes Required — R-EP14-01…03 corrected (C-EP14-01…03 in [history.md](./history.md)); pass 2 ([plan-review.md](./plan-review.md)) **Plan Ready** (reviewer, 2026-11-16, at `966b109` — prior findings resolved; R-EP14-04 polish only).
 
 ## Plan at a glance
 
@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP14A — implement, once the plan review (in progress 2026-11-16, required by the planning checklist) returns Plan Ready. Push authorization for EP14A's scratch-branch proof granted (user, 2026-11-16).
+**Next substory:** EP14A — implement (plan review pass 2 returned Plan Ready, 2026-11-16, [plan-review.md](./plan-review.md)). Push authorization for EP14A's scratch-branch proof granted (user, 2026-11-16).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -28,7 +28,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP14A](./EP14A-ci-runs-the-full-gate-on-delivery-branches.md) | Ready | None. Needs push authorization for the scratch-branch proof at implementation time. | Implement after the plan review | — |
+| [EP14A](./EP14A-ci-runs-the-full-gate-on-delivery-branches.md) | Ready | None. Needs push authorization for the scratch-branch proof at implementation time. | Implement (plan review passed 2026-11-16) | — |
 | [EP14B](./EP14B-api-contract-integrity.md) | Ready | ▲ D-B1, ▲ D-B4 ratified (user, 2026-11-16); EP14A first | Implement after EP14A | — |
 | [EP14C](./EP14C-e2e-reliability.md) | Ready | None | Implement after EP14B | — |
 | [EP14D](./EP14D-accessibility-debt-from-the-ep13-pass.md) | Ready | None | Implement after EP14C | — |
