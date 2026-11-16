@@ -5,12 +5,11 @@ description: Load when refining a StudyPilot story into an implementation-ready 
 
 # StudyPilot Story Refiner
 
-Refines a story in place into an implementation-ready ticket. The purpose of
-refinement is to surface and resolve ambiguity before implementation; asking the
-right questions matters more than filling every blank. For a frontend story the
-same pass also settles the UI/UX decisions (see
-[UI/UX section](#uiux-section-frontend-stories-only)); there is no separate
-UI refiner role.
+Refines a story in place into an implementation-ready ticket: surface and
+resolve ambiguity before implementation — asking the right questions matters
+more than filling every blank. For a frontend story the same pass settles the
+UI/UX decisions (see [UI/UX section](#uiux-section-frontend-stories-only));
+there is no separate UI refiner role.
 
 ## Graph node
 
@@ -18,17 +17,17 @@ Playbook row 8 in [workflow-graph.md](../../workflow-graph.md). Assignment:
 `refine`. Return readiness and the closeout fields; the live session commits.
 Do not edit the README. An implemented or in-progress child is not this task.
 
-Mandatory reads: `.agents/core.md`, this file, the queue, the story, the DoD.
-On demand: [story-sizing](../../story-sizing.md), [id-conventions](../../id-conventions.md).
-One dispatch may refine up to three Ready/Needs-refinement siblings that share
-a surface or contract, still asking dependent questions sequentially. Return
+Mandatory reads: `.agents/core.md`, this file, the queue, the story, the DoD;
+on demand [story-sizing](../../story-sizing.md), [id-conventions](../../id-conventions.md).
+One dispatch may refine up to three Ready/Needs-refinement siblings sharing a
+surface or contract, still asking dependent questions sequentially. Return
 oversized scope to the planner with proposed outcomes and AC/test owners; write
-only the given story files, never siblings' content, README or artifacts.
+only the given story files, never siblings, README or artifacts.
 
 ## Common rules
 
-- Refine only stories that have not been implemented yet. If the story's work is
-  already merged or in progress, report that and stop.
+- Refine only unimplemented stories; if the work is merged or in progress,
+  report that and stop.
 - Read before refining: the story file, its epic in `docs/epics/`, the shared
   Definition of Done in `docs/epics/README.md`, the breakdown README's decision
   register, and the actual codebase. Grep and read the modules, Prisma schema,
@@ -43,8 +42,8 @@ only the given story files, never siblings' content, README or artifacts.
   when running as a subagent. Continue independent inspection while waiting, but
   do not finalize affected decisions without answers.
 - Record harmless reversible assumptions explicitly. If no material ambiguity
-  remains, refine directly; no mandatory final-callouts question or extra
-  approval turn. Incorporate any callouts the user supplies.
+  remains, refine directly — no mandatory final-callouts question. Incorporate
+  any callouts the user supplies.
 - Refine the story in place under `docs/stories/`, preserving its metadata
   (Story ID, Epic, Milestone, Layer, Status, Dependencies) and the repository's
   story structure: Summary, Scope, Source requirement references, Acceptance
@@ -61,12 +60,11 @@ only the given story files, never siblings' content, README or artifacts.
   the returned result for the planner's register back-reference.
 - Keep or add the **Plan at a glance** block (core.md) and update it to match
   the refined ACs; the returned result repeats it verbatim.
-- Add an explicit out-of-scope list so implementers do not drift.
+- Add an explicit out-of-scope list against implementer drift.
 - AI features, syllabus parsing, LMS integrations, grade calculations,
   flashcards, and native mobile apps are out of scope. Flag a story whose
   refinement reveals them.
-- You write documentation only. Do not write application code or modify files
-  other than the story file.
+- You write documentation only — nothing beyond the story file.
 
 ## Technical section (every story)
 
@@ -74,7 +72,7 @@ only the given story files, never siblings' content, README or artifacts.
   files to create, following the repo's existing module and test naming
   conventions (Feature-Sliced Design placement for `apps/web`).
 - Technical notes: endpoint signatures and DTOs, Prisma model changes and
-  required migrations, module and service wiring, environment variables by name
+  migrations, module and service wiring, environment variables by name
   (never values), and security constraints (academic data scoped to the
   authenticated student, uniform 404, no user-enumeration leaks).
 - Test cases to add: specific test files and case names per acceptance

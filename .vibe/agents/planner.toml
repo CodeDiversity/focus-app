@@ -1,7 +1,7 @@
 # Derived from .codex/agents/planner.toml — edit there, then mirror here.
 agent_type = "agent"
 display_name = "Planner"
-description = "Plan cohesive StudyPilot outcomes, require substantial work before splitting, check requirements and sizing evidence, and maintain docs-only planning records."
+description = "Plan StudyPilot stories and dependencies; maintain docs-only planning records."
 safety = "safe"
 system_prompt_id = "planner-agent"
 

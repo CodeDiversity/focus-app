@@ -48,3 +48,15 @@
 ## Findings
 
 Findings/deviations: see above. No open findings.
+
+## Correction (2026-11-16, R-EP13Q-03)
+
+The verification bullet above overstated its grep evidence: as recorded
+(`grep -rn "autopilot|ui-refiner|…"` without `-E` or escaped alternation) the
+command matches nothing, and the runtime defs in fact still carried one live
+Jira instruction (`.codex/agents/planner.toml`, mirrored in
+`.opencode/agents/planner.md`) plus diverged planner descriptions. Both were
+removed/aligned in the R-EP13Q fix commit; re-verified there with
+`grep -rniE "jira" .codex .opencode .vibe` → 0 matches. R-EP13Q-01's word
+budgets (core.md 799 ≤ 800, refiner skill 899 ≤ 900 by `wc -w`) were restored
+in the same commit. Evidence: `artifacts/EP13Q/review.md`.

@@ -1,6 +1,6 @@
 # Core rules (every role reads this; nothing else is mandatory)
 
-Mandatory reads for any task: this file, your role skill, the parent story
+Mandatory reads: this file, your role skill, the parent story
 README's **Execution queue**, the active story, and the shared DoD in
 `docs/epics/README.md`. Everything else under `.agents/` is reference — load a
 section when the task touches it. Skills name their own on-demand references.
