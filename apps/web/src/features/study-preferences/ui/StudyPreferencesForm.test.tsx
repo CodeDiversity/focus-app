@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import toast from 'react-hot-toast';
 import { StudyPreferencesForm } from './StudyPreferencesForm';
@@ -33,6 +33,9 @@ const stored: StudyPreferences = {
   // EP13F (D13-5): the two placement levers.
   breakMinutes: 10,
   densityPercent: 70,
+  // EP13K (D-K6/D-K7): the two momentum goals.
+  dailyGoalMinutes: 30,
+  weeklyGoalDays: 2,
 };
 
 const defaults: StudyPreferences = {
@@ -42,6 +45,8 @@ const defaults: StudyPreferences = {
   dailyCapMinutes: 240,
   breakMinutes: 15,
   densityPercent: 80,
+  dailyGoalMinutes: 60,
+  weeklyGoalDays: 3,
 };
 
 const setupUser = () => userEvent.setup();
@@ -140,7 +145,8 @@ describe('StudyPreferencesForm placement levers (EP13F, D13-5; EP13N, D13-15)', 
     render(<StudyPreferencesForm />);
     await waitFor(() => expect(densityGroup()).toBeInTheDocument());
 
-    const radios = screen.getAllByRole('radio');
+    // EP13K: scoped — the form now also carries the two goal groups.
+    const radios = within(densityGroup()).getAllByRole('radio');
     expect(radios.map((r) => r.getAttribute('aria-labelledby'))).toHaveLength(3);
     expect(radio('Relaxed')).not.toBeChecked();
     expect(radio('Balanced')).toBeChecked();
@@ -218,7 +224,7 @@ describe('StudyPreferencesForm placement levers (EP13F, D13-5; EP13N, D13-15)', 
     render(<StudyPreferencesForm />);
     await waitFor(() => expect(densityGroup()).toBeInTheDocument());
 
-    expect(screen.getAllByRole('radio')).toHaveLength(4);
+    expect(within(densityGroup()).getAllByRole('radio')).toHaveLength(4);
     expect(radio('Custom (70%)')).toBeChecked();
     expect(radio('Balanced')).not.toBeChecked();
 
@@ -248,7 +254,7 @@ describe('StudyPreferencesForm placement levers (EP13F, D13-5; EP13N, D13-15)', 
 
     await waitFor(() => expect(radio('Balanced')).toBeChecked());
     expect(screen.queryByRole('radio', { name: /custom/i })).not.toBeInTheDocument();
-    expect(screen.getAllByRole('radio')).toHaveLength(3);
+    expect(within(densityGroup()).getAllByRole('radio')).toHaveLength(3);
   });
 
   // EP13N-AC3
@@ -589,7 +595,8 @@ describe('StudyPreferencesForm a11y', () => {
     );
 
     // Tab through; eventually save button receives focus.
-    for (let i = 0; i < 8; i++) {
+    // EP13K: the two goal groups add two tab stops (one per radio group).
+    for (let i = 0; i < 10; i++) {
       await user.tab();
       if (
         document.activeElement === screen.getByRole('button', { name: /save study preferences/i })
@@ -597,5 +604,129 @@ describe('StudyPreferencesForm a11y', () => {
         break;
     }
     expect(screen.getByRole('button', { name: /save study preferences/i })).toHaveFocus();
+  });
+});
+
+describe('StudyPreferencesForm goal preferences (EP13K, D13-15)', () => {
+  const BLAME = /missed|behind|failed|lazy|should|broke|lost/i;
+  const dailyGroup = () => screen.getByRole('group', { name: 'Daily goal' });
+  const weeklyGroup = () => screen.getByRole('group', { name: 'Weekly goal' });
+  const goalsFieldset = () => screen.getByRole('group', { name: 'Your goals' });
+  const radioIn = (group: HTMLElement, name: string | RegExp) =>
+    within(group).getByRole('radio', { name });
+  const labelsOf = (group: HTMLElement) =>
+    within(group)
+      .getAllByRole('radio')
+      .map((r) => document.getElementById(r.getAttribute('aria-labelledby')!)!.textContent);
+
+  it('renders the daily goal as a radio group of exactly Gentle / Steady / Ambitious for a preset value', async () => {
+    mockedGet.mockResolvedValue(defaults); // 60
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(dailyGroup()).toBeInTheDocument());
+    expect(labelsOf(dailyGroup())).toEqual(['Gentle', 'Steady', 'Ambitious']);
+    expect(radioIn(dailyGroup(), 'Steady')).toBeChecked();
+    expect(radioIn(dailyGroup(), 'Steady')).toHaveAccessibleDescription(
+      'About an hour — the default.'
+    );
+  });
+
+  it('renders the weekly goal as Light / Steady / Most days', async () => {
+    mockedGet.mockResolvedValue(defaults); // 3
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(weeklyGroup()).toBeInTheDocument());
+    expect(labelsOf(weeklyGroup())).toEqual(['Light', 'Steady', 'Most days']);
+    expect(radioIn(weeklyGroup(), 'Steady')).toBeChecked();
+  });
+
+  it("a stored 45 shows a pre-selected 'Custom (45 min)'; a stored 4 shows 'Custom (4 days)'", async () => {
+    mockedGet.mockResolvedValue({ ...defaults, dailyGoalMinutes: 45, weeklyGoalDays: 4 });
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(dailyGroup()).toBeInTheDocument());
+    expect(radioIn(dailyGroup(), 'Custom (45 min)')).toBeChecked();
+    expect(radioIn(weeklyGroup(), 'Custom (4 days)')).toBeChecked();
+    expect(within(dailyGroup()).getAllByRole('radio')).toHaveLength(4);
+  });
+
+  it('selecting Ambitious then saving PUTs `dailyGoalMinutes: 120` as a number', async () => {
+    const user = setupUser();
+    mockedGet.mockResolvedValue(defaults);
+    mockedPut.mockResolvedValue({ ...defaults, dailyGoalMinutes: 120 });
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(dailyGroup()).toBeInTheDocument());
+    await user.click(radioIn(dailyGroup(), 'Ambitious'));
+    await user.click(screen.getByRole('button', { name: /save study preferences/i }));
+    await waitFor(() => expect(mockedPut).toHaveBeenCalled());
+    expect(mockedPut.mock.calls[0][0]).toMatchObject({ dailyGoalMinutes: 120, weeklyGoalDays: 3 });
+    expect(typeof mockedPut.mock.calls[0][0].dailyGoalMinutes).toBe('number');
+  });
+
+  it('drops the Custom option once a preset is saved', async () => {
+    const user = setupUser();
+    mockedGet.mockResolvedValue({ ...defaults, weeklyGoalDays: 4 });
+    mockedPut.mockResolvedValue({ ...defaults, weeklyGoalDays: 5 });
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(weeklyGroup()).toBeInTheDocument());
+    await user.click(radioIn(weeklyGroup(), 'Most days'));
+    expect(radioIn(weeklyGroup(), 'Custom (4 days)')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /save study preferences/i }));
+    await waitFor(() => expect(radioIn(weeklyGroup(), 'Most days')).toBeChecked());
+    expect(within(weeklyGroup()).queryByRole('radio', { name: /custom/i })).not.toBeInTheDocument();
+  });
+
+  it('arrow keys move the selection in both groups', async () => {
+    const user = setupUser();
+    mockedGet.mockResolvedValue(defaults);
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(dailyGroup()).toBeInTheDocument());
+
+    radioIn(dailyGroup(), 'Steady').focus();
+    await user.keyboard('{ArrowRight}');
+    expect(radioIn(dailyGroup(), 'Ambitious')).toHaveFocus();
+    expect(radioIn(dailyGroup(), 'Ambitious')).toBeChecked();
+
+    await user.tab();
+    expect(radioIn(weeklyGroup(), 'Steady')).toHaveFocus();
+    await user.keyboard('{ArrowLeft}');
+    expect(radioIn(weeklyGroup(), 'Light')).toBeChecked();
+    // Moving the weekly goal never touched the daily one.
+    expect(radioIn(dailyGroup(), 'Ambitious')).toBeChecked();
+  });
+
+  it('renders a 400 `weeklyGoalDays` error under its group', async () => {
+    const user = setupUser();
+    mockedGet.mockResolvedValue(defaults);
+    mockedPut.mockRejectedValue({
+      response: {
+        data: {
+          statusCode: 400,
+          message: ['weeklyGoalDays must be between 1 and 7'],
+          error: 'Bad Request',
+          errors: { weeklyGoalDays: ['weeklyGoalDays must be between 1 and 7'] },
+        },
+      },
+      message: 'Request failed with status code 400',
+    });
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(weeklyGroup()).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: /save study preferences/i }));
+    const error = await screen.findByText('weeklyGoalDays must be between 1 and 7');
+    expect(weeklyGroup()).toContainElement(error);
+    expect(mockedToast.error).not.toHaveBeenCalled();
+  });
+
+  it('goal copy carries no percent and no blame term', async () => {
+    mockedGet.mockResolvedValue({ ...defaults, dailyGoalMinutes: 45, weeklyGoalDays: 4 });
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(goalsFieldset()).toBeInTheDocument());
+    expect(goalsFieldset().textContent).not.toMatch(/%/);
+    expect(goalsFieldset().textContent).not.toMatch(BLAME);
+  });
+
+  it('there is no `input[type=number]` for either goal', async () => {
+    mockedGet.mockResolvedValue(defaults);
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(goalsFieldset()).toBeInTheDocument());
+    expect(goalsFieldset().querySelector('input[type="number"]')).toBeNull();
+    expect(screen.queryByLabelText(/daily goal \(minutes\)/i)).not.toBeInTheDocument();
   });
 });

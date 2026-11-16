@@ -6,6 +6,8 @@ import { StartFocusSessionDialog } from './StartFocusSessionDialog';
 import { startStudySession } from '@/entities/study-session/api/studySessionApi';
 
 vi.mock('@/entities/study-session/api/studySessionApi', () => ({
+  // EP13K: the momentum slice imports this client.
+  getMomentum: vi.fn(),
   startStudySession: vi.fn(),
 }));
 

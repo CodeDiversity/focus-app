@@ -17,6 +17,8 @@ import {
 import { DashboardQuickActions } from '@/features/dashboard/ui/DashboardQuickActions';
 import { TodayPlanCard } from '@/features/today-plan/ui/TodayPlanCard';
 import { useTodayPlanQuery } from '@/features/today-plan/api/todayPlanApi';
+import { MomentumCard } from '@/features/momentum/ui/MomentumCard';
+import { useMomentumQuery } from '@/features/momentum/api/momentumApi';
 import { OverdueAssignmentsSection } from '@/features/dashboard/ui/OverdueAssignmentsSection';
 import { TodayClassesSection } from '@/features/dashboard/ui/TodayClassesSection';
 import { TodayStudySessionsSection } from '@/features/dashboard/ui/TodayStudySessionsSection';
@@ -146,6 +148,8 @@ export function DashboardPage({ onOpenDetails }: DashboardPageProps = {}) {
    * control refetches it too.
    */
   const todayPlanQuery = useTodayPlanQuery();
+  /** EP13K (D-K9) — momentum, read after initiation; refreshed with the rest. */
+  const momentumQuery = useMomentumQuery();
 
   const assignments = assignmentsQuery.data ?? NO_ASSIGNMENTS;
   const calendar = calendarQuery.data;
@@ -271,6 +275,7 @@ export function DashboardPage({ onOpenDetails }: DashboardPageProps = {}) {
     }
     void assignmentsQuery.refetch();
     void todayPlanQuery.refetch();
+    void momentumQuery.refetch();
   };
 
   /**
@@ -346,6 +351,15 @@ export function DashboardPage({ onOpenDetails }: DashboardPageProps = {}) {
         error={todayPlanQuery.error}
         isFetching={todayPlanQuery.isFetching}
         onRetry={() => void todayPlanQuery.refetch()}
+      />
+
+      {/* EP13K (D-K9): momentum follows the action it rewards. */}
+      <MomentumCard
+        momentum={momentumQuery.data}
+        status={sectionStatus(momentumQuery)}
+        error={momentumQuery.error}
+        isFetching={momentumQuery.isFetching}
+        onRetry={() => void momentumQuery.refetch()}
       />
 
       {/* Urgency order: overdue first, then the deadlines, then the day. */}

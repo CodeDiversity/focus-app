@@ -285,6 +285,8 @@ describe('estimate calibration (domain, EP13L)', () => {
       dailyCapMinutes: 240,
       breakMinutes: 15,
       densityPercent: 80,
+      dailyGoalMinutes: 60,
+      weeklyGoalDays: 3,
     };
     /** A week of open evenings: 17:00–22:00 (300 free minutes, 240 at 80%). */
     const openEvenings = () =>

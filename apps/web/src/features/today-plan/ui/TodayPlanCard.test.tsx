@@ -8,6 +8,8 @@ import type { TodayPlan, TodaySession } from '@/entities/study-plan/model/types'
 import { TodayPlanCard } from './TodayPlanCard';
 
 vi.mock('@/entities/study-session/api/studySessionApi', () => ({
+  // EP13K: the momentum slice imports this client.
+  getMomentum: vi.fn(),
   startSessionFromPlanned: vi.fn(),
 }));
 

@@ -201,6 +201,9 @@ function toStudyPreferencesResponse(prefs: StudyPreferences): StudyPreferences {
     // EP13F's two placement levers (D13-5), additive to the D06-4 four.
     breakMinutes: prefs.breakMinutes,
     densityPercent: prefs.densityPercent,
+    // EP13K's two momentum goals (D-K6/D-K7), additive.
+    dailyGoalMinutes: prefs.dailyGoalMinutes,
+    weeklyGoalDays: prefs.weeklyGoalDays,
   };
 }
 

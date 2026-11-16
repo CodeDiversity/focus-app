@@ -20,6 +20,8 @@ describe('scheduling engine (domain, EP06C)', () => {
     // for; the v2 rules have their own section.
     breakMinutes: 15,
     densityPercent: 80,
+    dailyGoalMinutes: 60,
+    weeklyGoalDays: 3,
   };
 
   /** Placement v2 switched off: no break, the whole day's free time usable. */

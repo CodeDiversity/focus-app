@@ -65,4 +65,18 @@ export class UpdateStudyPreferencesDto {
   @Min(50, { message: 'densityPercent must be between 50 and 100' })
   @Max(100, { message: 'densityPercent must be between 50 and 100' })
   densityPercent?: number | null;
+
+  /** EP13K (D-K6) — the daily momentum goal in minutes. */
+  @IsOptional()
+  @IsInt({ message: 'dailyGoalMinutes must be an integer' })
+  @Min(5, { message: 'dailyGoalMinutes must be between 5 and 480' })
+  @Max(480, { message: 'dailyGoalMinutes must be between 5 and 480' })
+  dailyGoalMinutes?: number | null;
+
+  /** EP13K (D-K7) — the weekly momentum goal in study days. */
+  @IsOptional()
+  @IsInt({ message: 'weeklyGoalDays must be an integer' })
+  @Min(1, { message: 'weeklyGoalDays must be between 1 and 7' })
+  @Max(7, { message: 'weeklyGoalDays must be between 1 and 7' })
+  weeklyGoalDays?: number | null;
 }

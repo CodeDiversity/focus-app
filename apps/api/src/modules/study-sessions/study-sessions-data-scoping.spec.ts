@@ -190,8 +190,36 @@ describeIntegration('Study sessions data scoping (integration, real database)', 
     expect(after.body.status).toBe(before.body.status);
   });
 
+  it('GET /study-sessions/momentum is scoped: B’s payload is all zeros while A has sessions (EP13K)', async () => {
+    const startTime = new Date();
+    await app.prisma.studySession.create({
+      data: {
+        userId: studentA.id,
+        startTime,
+        endTime: startTime,
+        status: 'COMPLETED',
+        durationMinutes: 30,
+      },
+    });
+    const a = await agent
+      .get('/study-sessions/momentum')
+      .set('Authorization', `Bearer ${studentA.token}`)
+      .expect(HttpStatus.OK);
+    expect(a.body.today.confirmedMinutes).toBeGreaterThanOrEqual(30);
+    expect(a.body.hasHistory).toBe(true);
+    const b = await agent
+      .get('/study-sessions/momentum')
+      .set('Authorization', `Bearer ${studentB.token}`)
+      .expect(HttpStatus.OK);
+    expect(b.body.today.confirmedMinutes).toBe(0);
+    expect(b.body.week.studyDayCount).toBe(0);
+    expect(b.body.run).toEqual({ currentWeeks: 0, bestWeeks: 0, currentWeekCounted: false });
+    expect(b.body.hasHistory).toBe(false);
+  });
+
   it('unauthenticated requests return 401', async () => {
     await agent.get('/study-sessions/current').expect(HttpStatus.UNAUTHORIZED);
     await agent.post('/study-sessions').send({}).expect(HttpStatus.UNAUTHORIZED);
+    await agent.get('/study-sessions/momentum').expect(HttpStatus.UNAUTHORIZED);
   });
 });

@@ -12,6 +12,9 @@
 // sessions) and `densityPercent` (50..100, default 80 — the share of a day's
 // free time the plan may fill). Both are additive and take part in no
 // cross-field rule.
+//
+// EP13K (D-K6/D-K7) added the two momentum goals: `dailyGoalMinutes` (5..480,
+// default 60) and `weeklyGoalDays` (1..7, default 3). They gate nothing.
 
 export interface StudyPreferences {
   sessionLengthMinutes: number;
@@ -20,6 +23,8 @@ export interface StudyPreferences {
   dailyCapMinutes: number;
   breakMinutes: number;
   densityPercent: number;
+  dailyGoalMinutes: number;
+  weeklyGoalDays: number;
 }
 
 export type UpdateStudyPreferencesPayload = Partial<StudyPreferences>;

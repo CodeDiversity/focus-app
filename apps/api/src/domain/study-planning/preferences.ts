@@ -23,6 +23,8 @@ export const STUDY_PREFERENCE_KEYS = [
   'dailyCapMinutes',
   'breakMinutes',
   'densityPercent',
+  'dailyGoalMinutes',
+  'weeklyGoalDays',
 ] as const;
 
 /** One of the `studyDefaults` keys. */
@@ -53,6 +55,10 @@ export const STUDY_PREFERENCE_DEFAULTS: StudyPreferences = {
   dailyCapMinutes: 240,
   breakMinutes: 15,
   densityPercent: 80,
+  // EP13K (D13-11, D-K6/D-K7): momentum goals. They gate nothing — they are
+  // only the yardstick the momentum read reports progress against.
+  dailyGoalMinutes: 60,
+  weeklyGoalDays: 3,
 };
 
 /**
@@ -68,6 +74,8 @@ export const STUDY_PREFERENCE_BOUNDS: Record<StudyPreferenceKey, { min: number; 
   dailyCapMinutes: { min: 5, max: 1440 },
   breakMinutes: { min: 0, max: 60 },
   densityPercent: { min: 50, max: 100 },
+  dailyGoalMinutes: { min: 5, max: 480 },
+  weeklyGoalDays: { min: 1, max: 7 },
 };
 
 /** The serialized-size cap of the `preferences` JSON column (SP-106, D106-5). */
@@ -212,6 +220,13 @@ export function readStudyPreferences(bag: unknown): StudyPreferences {
     densityPercent: isValueInBounds('densityPercent', stored?.densityPercent)
       ? (stored?.densityPercent as number)
       : STUDY_PREFERENCE_DEFAULTS.densityPercent,
+    // EP13K (D-K6/D-K7). Independent like the EP13F levers — step 1 only.
+    dailyGoalMinutes: isValueInBounds('dailyGoalMinutes', stored?.dailyGoalMinutes)
+      ? (stored?.dailyGoalMinutes as number)
+      : STUDY_PREFERENCE_DEFAULTS.dailyGoalMinutes,
+    weeklyGoalDays: isValueInBounds('weeklyGoalDays', stored?.weeklyGoalDays)
+      ? (stored?.weeklyGoalDays as number)
+      : STUDY_PREFERENCE_DEFAULTS.weeklyGoalDays,
   };
 
   // Step 2 — repair the inverted min/max pair (the maximum is kept).

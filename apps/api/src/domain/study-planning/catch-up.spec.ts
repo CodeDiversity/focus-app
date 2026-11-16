@@ -19,6 +19,8 @@ describe('deterministic workload rescheduling (domain, EP08B)', () => {
     // asserted against the real v2 defaults.
     breakMinutes: 15,
     densityPercent: 80,
+    dailyGoalMinutes: 60,
+    weeklyGoalDays: 3,
   };
 
   const DAYS = [

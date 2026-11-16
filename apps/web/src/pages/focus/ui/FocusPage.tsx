@@ -8,6 +8,7 @@ import { AbsorbNextOffer } from '@/features/focus-session/ui/AbsorbNextOffer';
 import { FocusAssignmentPanel } from '@/features/focus-session/ui/FocusAssignmentPanel';
 import { FinishSessionDialog } from '@/features/focus-session/ui/FinishSessionDialog';
 import { useFocusSession } from '@/features/focus-session/model/useFocusSession';
+import { useLazyMomentumQuery } from '@/features/momentum/api/momentumApi';
 
 export function FocusPage() {
   const {
@@ -25,6 +26,14 @@ export function FocusPage() {
   } = useFocusSession();
 
   const [finishDialogOpen, setFinishDialogOpen] = useState(false);
+  /**
+   * EP13K (D-K8) — momentum is read only after a finish, so the celebration
+   * never shows the pre-finish numbers; a failed or pending read leaves the
+   * celebration with its headline alone.
+   */
+  const [fetchMomentum, momentumResult] = useLazyMomentumQuery();
+  const momentum =
+    momentumResult.isSuccess && !momentumResult.isFetching ? momentumResult.data : undefined;
 
   const emptyActionRef = useRef<HTMLAnchorElement>(null);
 
@@ -92,6 +101,7 @@ export function FocusPage() {
         onResume={() => void resume()}
         onFinish={() => setFinishDialogOpen(true)}
         onReload={() => void reload()}
+        momentum={momentum}
       />
       {/* EP13I (D-I6): the absorption offer — the same target-reached rule
           the timer renders, computed here so the two can never disagree. */}
@@ -115,6 +125,9 @@ export function FocusPage() {
         onFinished={(completed) => {
           applySession(completed);
           setFinishDialogOpen(false);
+          if (completed.durationMinutes >= 1) {
+            void fetchMomentum(undefined, false);
+          }
         }}
         onReload={() => void reload()}
       />

@@ -59,3 +59,12 @@ export function addDays(dateStr: string, n: number): string {
 export function dayOfWeekOf(dateStr: string): number {
   return new Date(`${dateStr}T00:00:00.000Z`).getUTCDay();
 }
+
+/**
+ * The Monday that starts the week of a valid `YYYY-MM-DD` string (EP13K,
+ * D-K2). Sunday belongs to the week that began the previous Monday. Pure
+ * string arithmetic on civil dates — DST-free.
+ */
+export function startOfMondayWeek(dateStr: string): string {
+  return addDays(dateStr, -((dayOfWeekOf(dateStr) + 6) % 7));
+}

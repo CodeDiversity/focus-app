@@ -35,7 +35,7 @@ describe('study preferences (domain, EP06A)', () => {
   };
 
   describe('the defaults and the bounds (D06-4)', () => {
-    it('exposes the documented defaults 60 / 15 / 120 / 240, plus EP13F’s 15 / 80', () => {
+    it('exposes the documented defaults 60 / 15 / 120 / 240, plus EP13F’s 15 / 80 and EP13K’s 60 / 3', () => {
       expect(DEFAULTS).toEqual({
         sessionLengthMinutes: 60,
         minSessionMinutes: 15,
@@ -43,10 +43,12 @@ describe('study preferences (domain, EP06A)', () => {
         dailyCapMinutes: 240,
         breakMinutes: 15,
         densityPercent: 80,
+        dailyGoalMinutes: 60,
+        weeklyGoalDays: 3,
       });
     });
 
-    it('exposes the documented bounds 5..480 / 5..480 / 5..480 / 5..1440 / 0..60 / 50..100', () => {
+    it('exposes the documented bounds 5..480 / 5..480 / 5..480 / 5..1440 / 0..60 / 50..100 / 5..480 / 1..7', () => {
       expect(STUDY_PREFERENCE_BOUNDS).toEqual({
         sessionLengthMinutes: { min: 5, max: 480 },
         minSessionMinutes: { min: 5, max: 480 },
@@ -56,6 +58,8 @@ describe('study preferences (domain, EP06A)', () => {
         // density floor keeps the cap from starving a plan.
         breakMinutes: { min: 0, max: 60 },
         densityPercent: { min: 50, max: 100 },
+        dailyGoalMinutes: { min: 5, max: 480 },
+        weeklyGoalDays: { min: 1, max: 7 },
       });
     });
   });
@@ -308,7 +312,7 @@ describe('study preferences (domain, EP06A)', () => {
       }
     });
 
-    it('returns exactly the four keys', () => {
+    it('returns exactly the eight keys', () => {
       expect(Object.keys(readStudyPreferences({ theme: 'dark' })).sort()).toEqual(
         [...STUDY_PREFERENCE_KEYS].sort()
       );
@@ -425,6 +429,8 @@ describe('study preferences (domain, EP06A)', () => {
         dailyCapMinutes: 300,
         breakMinutes: 15,
         densityPercent: 80,
+        dailyGoalMinutes: 60,
+        weeklyGoalDays: 3,
       });
     });
 
@@ -505,6 +511,47 @@ describe('study preferences (domain, EP06A)', () => {
     it('the complete object still fits the 4096-byte bag cap with room to spare', () => {
       const serialized = JSON.stringify({ studyDefaults: DEFAULTS });
       expect(Buffer.byteLength(serialized, 'utf8')).toBeLessThan(PREFERENCES_BAG_MAX_BYTES);
+    });
+  });
+
+  describe('the EP13K momentum goals (D-K6/D-K7)', () => {
+    it('a bag with the EP13F keys but no goals reads back the goal defaults (additive)', () => {
+      const prefs = readStudyPreferences({
+        studyDefaults: { breakMinutes: 10, densityPercent: 60 },
+      });
+      expect(prefs.dailyGoalMinutes).toBe(60);
+      expect(prefs.weeklyGoalDays).toBe(3);
+    });
+
+    it('keeps stored goals and the boundary values', () => {
+      expect(
+        readStudyPreferences({ studyDefaults: { dailyGoalMinutes: 5, weeklyGoalDays: 1 } })
+      ).toEqual({ ...DEFAULTS, dailyGoalMinutes: 5, weeklyGoalDays: 1 });
+      expect(
+        readStudyPreferences({ studyDefaults: { dailyGoalMinutes: 480, weeklyGoalDays: 7 } })
+      ).toEqual({ ...DEFAULTS, dailyGoalMinutes: 480, weeklyGoalDays: 7 });
+    });
+
+    it('falls back per field for an out-of-range goal (0, 481; 0, 8)', () => {
+      for (const value of [0, 481, 45.5, '45', null]) {
+        expect(
+          readStudyPreferences({ studyDefaults: { dailyGoalMinutes: value } }).dailyGoalMinutes
+        ).toBe(60);
+      }
+      for (const value of [0, 8, 2.5, '3', null]) {
+        expect(
+          readStudyPreferences({ studyDefaults: { weeklyGoalDays: value } }).weeklyGoalDays
+        ).toBe(3);
+      }
+    });
+
+    it('the validator names the goal field and its bounds', () => {
+      expect(validateStudyPreferences({ weeklyGoalDays: 8 })).toEqual({
+        weeklyGoalDays: ['weeklyGoalDays must be between 1 and 7'],
+      });
+      expect(validateStudyPreferences({ dailyGoalMinutes: 4 })).toEqual({
+        dailyGoalMinutes: ['dailyGoalMinutes must be between 5 and 480'],
+      });
     });
   });
 });

@@ -9,6 +9,8 @@ import type { StudySession } from '@/entities/study-session/model/types';
 import type { TodayPlan, TodaySession } from '@/entities/study-plan/model/types';
 
 vi.mock('@/entities/study-session/api/studySessionApi', () => ({
+  // EP13K: the momentum slice imports this client.
+  getMomentum: vi.fn(),
   absorbNextSession: vi.fn(),
 }));
 

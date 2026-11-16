@@ -43,6 +43,10 @@ export type StudyPreferences = {
   dailyCapMinutes: number;
   breakMinutes: number;
   densityPercent: number;
+  /** EP13K (D-K6) — minutes a study day aims for (5…480, default 60). Gates nothing. */
+  dailyGoalMinutes: number;
+  /** EP13K (D-K7) — study days a Monday-start week aims for (1…7, default 3). */
+  weeklyGoalDays: number;
 };
 
 /**
@@ -286,4 +290,35 @@ export type SchedulerInput = {
 export type SchedulerOutput = {
   sessions: PlannedSessionProposal[];
   results: AssignmentScheduleResult[];
+};
+
+/**
+ * The `GET /study-sessions/momentum` payload (EP13K, D-K5). Minutes and days
+ * only — no percentage field exists by construction (D13-9).
+ */
+export type MomentumSummary = {
+  /** Today's civil date in the profile zone. */
+  date: string;
+  timeZone: string;
+  today: { confirmedMinutes: number; goalMinutes: number; goalMet: boolean };
+  week: {
+    /** The Monday that starts this week (D-K2). */
+    startDate: string;
+    /** This week's study days, ascending civil dates (D-K1). */
+    studyDays: string[];
+    studyDayCount: number;
+    goalDays: number;
+    goalMet: boolean;
+  };
+  run: {
+    /** Consecutive goal-met weeks; the current week counts once met (D-K3). */
+    currentWeeks: number;
+    /** The longest run inside the horizon — never erased by a quiet week. */
+    bestWeeks: number;
+    currentWeekCounted: boolean;
+    /** Present (and `true`) only when a run reached the 52-week horizon (D-K4). */
+    capped?: true;
+  };
+  /** False when the horizon holds no study day at all (the card's empty state). */
+  hasHistory: boolean;
 };

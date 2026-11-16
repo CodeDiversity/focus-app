@@ -29,6 +29,9 @@ const stored: StudyPreferences = {
   // EP13F (D13-5): the contract gained the two placement levers.
   breakMinutes: 10,
   densityPercent: 70,
+  // EP13K (D-K6/D-K7): the two momentum goals.
+  dailyGoalMinutes: 30,
+  weeklyGoalDays: 2,
 };
 
 const defaults: StudyPreferences = {
@@ -38,6 +41,8 @@ const defaults: StudyPreferences = {
   dailyCapMinutes: 240,
   breakMinutes: 15,
   densityPercent: 80,
+  dailyGoalMinutes: 60,
+  weeklyGoalDays: 3,
 };
 
 describe('studyPreferencesApi.getStudyPreferences', () => {

@@ -14,6 +14,10 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { RESOURCE_NOT_FOUND, ownedWhere } from '../../common/ownership/ownership';
 import { resolveTimeZone, toCivilDate } from '../../common/lib/civil-date';
+import { addDays } from '../../common/lib/calendar-date';
+import { computeMomentum, momentumWindowStart } from '../../domain/study-planning/momentum';
+import { readStudyPreferences } from '../../domain/study-planning/preferences';
+import type { MomentumSummary } from '../../domain/study-planning/types';
 import { StartStudySessionDto } from './dto/start-study-session.dto';
 import { StartFromPlannedDto } from './dto/start-from-planned.dto';
 import { FinishStudySessionDto } from './dto/finish-study-session.dto';
@@ -665,6 +669,52 @@ export class StudySessionsService {
       items: rows.map((row: StudySession) => toStudySessionResponse(row)),
       total,
     };
+  }
+
+  /**
+   * `GET /study-sessions/momentum` (EP13K, D-K5). Read-only. The I/O shell
+   * around the pure `computeMomentum`: `today` is computed once here, each
+   * COMPLETED session is bucketed by `toCivilDate(startTime, profileZone)`
+   * (the `getToday` precedent, D-K2), and goals come through the defensive
+   * reader so a corrupt bag can never fail the read.
+   *
+   * The fetch window is a safe UTC superset — a civil date lies within ±1
+   * day of its UTC midnight — and exact filtering is on the civil date, so
+   * no wall-clock bound is ever computed (DST-safe).
+   */
+  async momentum(userId: string): Promise<MomentumSummary> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { timeZone: true, preferences: true },
+    });
+    if (!user) {
+      throw new NotFoundException(RESOURCE_NOT_FOUND);
+    }
+    const timeZone = resolveTimeZone(user.timeZone);
+    const today = toCivilDate(new Date(), timeZone);
+    const { dailyGoalMinutes, weeklyGoalDays } = readStudyPreferences(user.preferences);
+
+    const fetchFrom = new Date(`${addDays(momentumWindowStart(today), -1)}T00:00:00.000Z`);
+    const rows: { startTime: Date; durationMinutes: number | null }[] =
+      await this.prisma.studySession.findMany({
+        where: {
+          userId,
+          status: StudySessionStatus.COMPLETED,
+          startTime: { gte: fetchFrom },
+        },
+        select: { startTime: true, durationMinutes: true },
+      });
+
+    const summary = computeMomentum({
+      today,
+      sessions: rows.map((row) => ({
+        civilDate: toCivilDate(row.startTime, timeZone),
+        minutes: row.durationMinutes ?? 0,
+      })),
+      dailyGoalMinutes,
+      weeklyGoalDays,
+    });
+    return { ...summary, timeZone };
   }
 
   async confirmedTime(userId: string, assignmentId?: string) {

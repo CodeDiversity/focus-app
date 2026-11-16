@@ -6,6 +6,7 @@ import { assignmentsApi } from '@/features/assignments/api/assignmentsApi';
 import { calendarApi } from '@/features/calendar/api/calendarApi';
 import { todayPlanApi } from '@/features/today-plan/api/todayPlanApi';
 import { planHealthApi } from '@/features/plan-health/api/planHealthApi';
+import { momentumApi } from '@/features/momentum/api/momentumApi';
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +21,8 @@ export const store = configureStore({
     [todayPlanApi.reducerPath]: todayPlanApi.reducer,
     // EP13E: the shared plan-health read (GET /study-plans/recovery-summary).
     [planHealthApi.reducerPath]: planHealthApi.reducer,
+    // EP13K: the shared momentum read (GET /study-sessions/momentum).
+    [momentumApi.reducerPath]: momentumApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -32,6 +35,7 @@ export const store = configureStore({
           calendarApi.reducerPath,
           todayPlanApi.reducerPath,
           planHealthApi.reducerPath,
+          momentumApi.reducerPath,
         ],
       },
     }).concat(
@@ -39,7 +43,8 @@ export const store = configureStore({
       assignmentsApi.middleware,
       calendarApi.middleware,
       todayPlanApi.middleware,
-      planHealthApi.middleware
+      planHealthApi.middleware,
+      momentumApi.middleware
     ),
 });
 

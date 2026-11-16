@@ -70,6 +70,12 @@ export class StudySessionsController {
     return this.studySessionsService.current(user.id);
   }
 
+  /** EP13K (D-K5) — declared before `@Get()` like the other literal segments. */
+  @Get('momentum')
+  momentum(@CurrentUser() user: AuthenticatedUser) {
+    return this.studySessionsService.momentum(user.id);
+  }
+
   @Get('confirmed-time')
   confirmedTime(
     @CurrentUser() user: AuthenticatedUser,

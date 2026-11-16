@@ -8,6 +8,8 @@ import {
 } from '@/entities/study-session/api/studySessionApi';
 
 vi.mock('@/entities/study-session/api/studySessionApi', () => ({
+  // EP13K: the momentum slice imports this client.
+  getMomentum: vi.fn(),
   getCurrentStudySession: vi.fn(),
   pauseStudySession: vi.fn(),
   resumeStudySession: vi.fn(),

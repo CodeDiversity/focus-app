@@ -4,6 +4,7 @@ import type {
   StudySessionListResponse,
   ConfirmedTimeListResponse,
   ConfirmedTimeSingleResponse,
+  MomentumSummary,
 } from '../model/types';
 
 export interface StartStudySessionRequest {
@@ -60,6 +61,12 @@ export async function startSessionFromPlanned(
  */
 export async function absorbNextSession(id: string): Promise<StudySession> {
   const response = await api.post<StudySession>(`/study-sessions/${id}/absorb-next`);
+  return response.data;
+}
+
+/** EP13K (D-K5) — 200: the momentum summary; 404 uniform (missing user). Read-only. */
+export async function getMomentum(): Promise<MomentumSummary> {
+  const response = await api.get<MomentumSummary>('/study-sessions/momentum');
   return response.data;
 }
 

@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Pause, Play, Square } from 'lucide-react';
+import { Pause, Play, Sparkles, Square } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { Badge } from '@/shared/ui/Badge';
-import type { StudySession } from '@/entities/study-session/model/types';
+import type { MomentumSummary, StudySession } from '@/entities/study-session/model/types';
+import { dailyLine, runLine, weeklyLine } from '@/features/momentum/model/momentumCopy';
+import { MomentumWeekStrip } from '@/features/momentum/ui/MomentumWeekStrip';
 import type { BusyAction } from '../model/useFocusSession';
 
 export interface FocusTimerProps {
@@ -16,6 +18,12 @@ export interface FocusTimerProps {
   onResume: () => void;
   onFinish: () => void;
   onReload: () => void;
+  /**
+   * EP13K (D-K8) — the momentum read after a finish. Absent while loading or
+   * on failure: the celebration then shows its headline alone, never a
+   * spinner or an error.
+   */
+  momentum?: MomentumSummary;
 }
 
 function formatElapsed(seconds: number): string {
@@ -39,6 +47,7 @@ export function FocusTimer({
   onResume,
   onFinish,
   onReload,
+  momentum,
 }: FocusTimerProps) {
   const primaryRef = useRef<HTMLButtonElement>(null);
   const anyBusy = busyAction !== null;
@@ -57,7 +66,9 @@ export function FocusTimer({
       ? 'Focus session running'
       : session.status === 'PAUSED'
         ? 'Focus session paused'
-        : 'Focus session complete';
+        : session.durationMinutes >= 1
+          ? `Focus session complete — you studied ${session.durationMinutes} minutes.`
+          : 'Focus session complete';
 
   const elapsedMinutes = Math.floor(displayedElapsed / 60);
   const planned = session.plannedMinutes;
@@ -161,9 +172,34 @@ export function FocusTimer({
 
       {session.status === 'COMPLETED' && (
         <div className="mt-8 rounded-lg border border-border bg-surface p-6 text-center">
-          <p className="font-semibold text-text">Session complete</p>
-          <p className="mt-1 text-text-muted">{session.durationMinutes} minutes recorded</p>
-          <p className="mt-2 text-sm text-text-muted">
+          {session.durationMinutes >= 1 ? (
+            // EP13K (D-K8): the completed block *is* the celebration — one
+            // entrance, reduced-motion-safe, persistent (no toast, no modal).
+            <div
+              data-testid="focus-celebration"
+              className="animate-[momentum-in_300ms_ease-out_both] motion-reduce:animate-none"
+            >
+              <Sparkles aria-hidden size={24} className="mx-auto text-accent" />
+              <p className="mt-2 text-lg font-semibold text-text">
+                You studied {session.durationMinutes} minutes.
+              </p>
+              {momentum ? (
+                <div className="mx-auto mt-4 max-w-sm space-y-2 text-sm text-text">
+                  <p>{dailyLine(momentum)}</p>
+                  <MomentumWeekStrip momentum={momentum} compact />
+                  <p>{weeklyLine(momentum)}</p>
+                  {runLine(momentum) ? (
+                    <p className="text-text-muted">{runLine(momentum)}</p>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <p className="font-semibold text-text">
+              Nothing recorded this time. Your work is still in your plan.
+            </p>
+          )}
+          <p className="mt-4 text-sm text-text-muted">
             You can review and adjust this session in your study history.
           </p>
           <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center">

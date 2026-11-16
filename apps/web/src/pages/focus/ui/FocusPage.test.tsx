@@ -8,10 +8,13 @@ import {
   pauseStudySession,
   resumeStudySession,
   finishStudySession,
+  getMomentum,
 } from '@/entities/study-session/api/studySessionApi';
 import { listAssignments } from '@/entities/assignment/api/assignmentApi';
 
 vi.mock('@/entities/study-session/api/studySessionApi', () => ({
+  // EP13K: the momentum slice imports this client.
+  getMomentum: vi.fn(),
   getCurrentStudySession: vi.fn(),
   pauseStudySession: vi.fn(),
   resumeStudySession: vi.fn(),
@@ -28,6 +31,7 @@ const mockedPause = vi.mocked(pauseStudySession);
 const mockedResume = vi.mocked(resumeStudySession);
 const mockedFinish = vi.mocked(finishStudySession);
 const mockedList = vi.mocked(listAssignments);
+const mockedMomentum = vi.mocked(getMomentum);
 
 const activeSession = {
   id: 's-1',
@@ -177,5 +181,65 @@ describe('FocusPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument());
     await user.keyboard('{Escape}');
     expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument();
+  });
+
+  describe('celebration after finishing (EP13K, D-K8)', () => {
+    const momentum = {
+      date: '2026-10-30',
+      timeZone: 'UTC',
+      today: { confirmedMinutes: 25, goalMinutes: 60, goalMet: false },
+      week: {
+        startDate: '2026-10-26',
+        studyDays: ['2026-10-26', '2026-10-30'],
+        studyDayCount: 2,
+        goalDays: 3,
+        goalMet: false,
+      },
+      run: { currentWeeks: 0, bestWeeks: 2, currentWeekCounted: false },
+      hasHistory: true,
+    };
+    const finish = async () => {
+      mockedCurrent.mockResolvedValue({ ...activeSession, elapsedSeconds: 20 * 60 });
+      mockedFinish.mockResolvedValue({
+        ...activeSession,
+        status: 'COMPLETED',
+        durationMinutes: 25,
+        endTime: '2026-10-30T10:25:00.000Z',
+      } as never);
+      const user = userEvent.setup();
+      renderPage();
+      await user.click(await screen.findByRole('button', { name: 'Finish session' }));
+      await user.click(await screen.findByRole('button', { name: 'Save time' }));
+    };
+
+    it('finishing triggers the momentum fetch and the celebration shows the daily and weekly lines when it resolves', async () => {
+      mockedMomentum.mockResolvedValue(momentum);
+      await finish();
+      expect(await screen.findByText('You studied 25 minutes.')).toBeInTheDocument();
+      expect(await screen.findByText('25 of 60 min today')).toBeInTheDocument();
+      expect(screen.getByText('2 of 3 days this week')).toBeInTheDocument();
+      expect(
+        screen.getByText('Best run so far: 2 weeks. This week is a fresh start.')
+      ).toBeInTheDocument();
+      expect(mockedMomentum).toHaveBeenCalledTimes(1);
+    });
+
+    it('a failed momentum read leaves the celebration with the minutes sentence only (no error surface)', async () => {
+      mockedMomentum.mockRejectedValue(new Error('Network down'));
+      await finish();
+      expect(await screen.findByText('You studied 25 minutes.')).toBeInTheDocument();
+      await waitFor(() => expect(mockedMomentum).toHaveBeenCalled());
+      expect(screen.queryByText(/min today/)).not.toBeInTheDocument();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('introduces no animation without its reduced-motion companion', async () => {
+      mockedMomentum.mockResolvedValue(momentum);
+      await finish();
+      await screen.findByText('25 of 60 min today');
+      for (const el of document.querySelectorAll('[class*="animate-"]')) {
+        expect(el.className).toContain('motion-reduce:animate-none');
+      }
+    });
   });
 });

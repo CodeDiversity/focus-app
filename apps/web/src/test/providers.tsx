@@ -9,6 +9,7 @@ import { assignmentsApi } from '@/features/assignments/api/assignmentsApi';
 import { calendarApi } from '@/features/calendar/api/calendarApi';
 import { todayPlanApi } from '@/features/today-plan/api/todayPlanApi';
 import { planHealthApi } from '@/features/plan-health/api/planHealthApi';
+import { momentumApi } from '@/features/momentum/api/momentumApi';
 
 /**
  * A fresh store per test, mirroring `src/app/store/store.ts` (auth + onboarding
@@ -26,6 +27,7 @@ export function makeTestStore() {
       [calendarApi.reducerPath]: calendarApi.reducer,
       [todayPlanApi.reducerPath]: todayPlanApi.reducer,
       [planHealthApi.reducerPath]: planHealthApi.reducer,
+      [momentumApi.reducerPath]: momentumApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
@@ -36,6 +38,7 @@ export function makeTestStore() {
             calendarApi.reducerPath,
             todayPlanApi.reducerPath,
             planHealthApi.reducerPath,
+            momentumApi.reducerPath,
           ],
         },
       }).concat(
@@ -43,7 +46,8 @@ export function makeTestStore() {
         assignmentsApi.middleware,
         calendarApi.middleware,
         todayPlanApi.middleware,
-        planHealthApi.middleware
+        planHealthApi.middleware,
+        momentumApi.middleware
       ),
   });
 }

@@ -44,3 +44,23 @@ export interface ConfirmedTimeSingleResponse {
 }
 
 export type ConfirmedTimeResponse = ConfirmedTimeListResponse | ConfirmedTimeSingleResponse;
+
+/**
+ * EP13K (D-K5) — response of GET /study-sessions/momentum. Minutes and days
+ * only; there is no percentage field (D13-9). Civil dates are `YYYY-MM-DD`
+ * in the profile zone — the client does no date arithmetic (D05-6).
+ */
+export interface MomentumSummary {
+  date: string;
+  timeZone: string;
+  today: { confirmedMinutes: number; goalMinutes: number; goalMet: boolean };
+  week: {
+    startDate: string;
+    studyDays: string[];
+    studyDayCount: number;
+    goalDays: number;
+    goalMet: boolean;
+  };
+  run: { currentWeeks: number; bestWeeks: number; currentWeekCounted: boolean; capped?: true };
+  hasHistory: boolean;
+}

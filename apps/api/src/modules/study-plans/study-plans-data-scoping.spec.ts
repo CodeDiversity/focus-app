@@ -42,6 +42,9 @@ const PREFERENCE_KEYS = [
   // EP13F (D13-5) — the two placement levers joined the contract additively.
   'breakMinutes',
   'densityPercent',
+  // EP13K (D-K6/D-K7) — the two momentum goals, additive.
+  'dailyGoalMinutes',
+  'weeklyGoalDays',
 ].sort();
 
 /** The documented defaults (D06-4 + EP13F's D13-5). */
@@ -52,6 +55,8 @@ const DEFAULTS = {
   dailyCapMinutes: 240,
   breakMinutes: 15,
   densityPercent: 80,
+  dailyGoalMinutes: 60,
+  weeklyGoalDays: 3,
 };
 
 describeIntegration('study preferences data scoping (integration, real database)', () => {

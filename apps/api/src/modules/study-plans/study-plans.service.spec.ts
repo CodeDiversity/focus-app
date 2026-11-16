@@ -79,6 +79,8 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
     'dailyCapMinutes',
     'breakMinutes',
     'densityPercent',
+    'dailyGoalMinutes',
+    'weeklyGoalDays',
   ].sort();
 
   /** Assert a 400 and return its field-level `errors` map. */
@@ -308,6 +310,52 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
       await expect400With(
         service.updatePreferences(userId, { breakMinutes: 10.5 }),
         'breakMinutes'
+      );
+      expect(userUpdateMany).not.toHaveBeenCalled();
+    });
+
+    it('PUT merges `dailyGoalMinutes`/`weeklyGoalDays` onto the effective bag and leaves the other keys untouched (EP13K)', async () => {
+      userFindUnique.mockResolvedValue({
+        preferences: { theme: 'dark', studyDefaults: { breakMinutes: 5, densityPercent: 60 } },
+      });
+
+      const result = await service.updatePreferences(userId, {
+        dailyGoalMinutes: 120,
+        weeklyGoalDays: 5,
+      });
+
+      expect(result).toEqual({
+        ...STUDY_PREFERENCE_DEFAULTS,
+        breakMinutes: 5,
+        densityPercent: 60,
+        dailyGoalMinutes: 120,
+        weeklyGoalDays: 5,
+      });
+      const written = userUpdateMany.mock.calls[0][0].data.preferences;
+      expect(written.theme).toBe('dark');
+      expect(written.studyDefaults.dailyGoalMinutes).toBe(120);
+      expect(written.studyDefaults.weeklyGoalDays).toBe(5);
+      expect(written.studyDefaults.breakMinutes).toBe(5);
+    });
+
+    it('400 names the field for `weeklyGoalDays: 8` and `dailyGoalMinutes: 4` (EP13K)', async () => {
+      userFindUnique.mockResolvedValue({ preferences: null });
+
+      await expect400With(
+        service.updatePreferences(userId, { weeklyGoalDays: 8 }),
+        'weeklyGoalDays'
+      );
+      await expect400With(
+        service.updatePreferences(userId, { weeklyGoalDays: 0 }),
+        'weeklyGoalDays'
+      );
+      await expect400With(
+        service.updatePreferences(userId, { dailyGoalMinutes: 4 }),
+        'dailyGoalMinutes'
+      );
+      await expect400With(
+        service.updatePreferences(userId, { dailyGoalMinutes: 481 }),
+        'dailyGoalMinutes'
       );
       expect(userUpdateMany).not.toHaveBeenCalled();
     });

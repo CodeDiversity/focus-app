@@ -19,6 +19,8 @@ const DAILY_CAP_MSG = 'Must be between 5 and 1440.';
 const BREAK_MSG = 'Must be between 0 and 60.';
 const DENSITY_MSG = 'Must be between 50 and 100.';
 const INTEGER_MSG = 'Must be a whole number.';
+const DAILY_GOAL_MSG = 'Must be between 5 and 480.';
+const WEEKLY_GOAL_MSG = 'Must be between 1 and 7.';
 
 const studyPreferencesSchema = z
   .object({
@@ -54,6 +56,18 @@ const studyPreferencesSchema = z
       .int(INTEGER_MSG)
       .min(50, DENSITY_MSG)
       .max(100, DENSITY_MSG),
+    // EP13K (D-K6/D-K7): the two momentum goals — named choices on the form,
+    // integers in the contract. Independent of every cross-field rule.
+    dailyGoalMinutes: z
+      .number({ invalid_type_error: INTEGER_MSG })
+      .int(INTEGER_MSG)
+      .min(5, DAILY_GOAL_MSG)
+      .max(480, DAILY_GOAL_MSG),
+    weeklyGoalDays: z
+      .number({ invalid_type_error: INTEGER_MSG })
+      .int(INTEGER_MSG)
+      .min(1, WEEKLY_GOAL_MSG)
+      .max(7, WEEKLY_GOAL_MSG),
   })
   .refine((data) => data.minSessionMinutes <= data.sessionLengthMinutes, {
     message: 'Shortest session must be no longer than the default session length.',
@@ -77,6 +91,8 @@ const DEFAULTS: FormValues = {
   dailyCapMinutes: 240,
   breakMinutes: 15,
   densityPercent: 80,
+  dailyGoalMinutes: 60,
+  weeklyGoalDays: 3,
 };
 
 // EP13N (D-N1, D13-15): the density lever is asked as three named presets
@@ -93,7 +109,37 @@ const DENSITY_PRESETS: ReadonlyArray<{ value: number; label: string; description
   { value: 100, label: 'Packed', description: 'Use nearly all your free time — 100%.' },
 ];
 
-const isDensityPreset = (value: number) => DENSITY_PRESETS.some((p) => p.value === value);
+type Preset = { value: number; label: string; description: string };
+
+const isPreset = (presets: ReadonlyArray<Preset>, value: number) =>
+  presets.some((p) => p.value === value);
+const isDensityPreset = (value: number) => isPreset(DENSITY_PRESETS, value);
+
+// EP13K (D-K6/D-K7, D13-15): the goals reuse EP13N's named-choice control.
+// Copy fixed by the story's UI/UX section (D-K10) — own units, no percent.
+const GOAL_MINUTE_PRESETS: ReadonlyArray<Preset> = [
+  { value: 30, label: 'Gentle', description: 'About 30 minutes. One short session counts.' },
+  { value: 60, label: 'Steady', description: 'About an hour — the default.' },
+  { value: 120, label: 'Ambitious', description: 'About two hours, for heavier weeks.' },
+];
+const GOAL_DAY_PRESETS: ReadonlyArray<Preset> = [
+  { value: 2, label: 'Light', description: '2 days a week.' },
+  { value: 3, label: 'Steady', description: '3 days a week — the default.' },
+  { value: 5, label: 'Most days', description: '5 days a week.' },
+];
+
+const CUSTOM_DESCRIPTION = 'What is saved right now. Pick a named option to change it.';
+
+/** The presets plus the honest Custom option when the saved value is none of them (D-N2). */
+function withCustom(
+  presets: ReadonlyArray<Preset>,
+  custom: number | null,
+  label: (n: number) => string
+): ReadonlyArray<Preset> {
+  return custom === null
+    ? presets
+    : [...presets, { value: custom, label: label(custom), description: CUSTOM_DESCRIPTION }];
+}
 
 const FIELD_NAMES = [
   'sessionLengthMinutes',
@@ -102,7 +148,98 @@ const FIELD_NAMES = [
   'dailyCapMinutes',
   'breakMinutes',
   'densityPercent',
+  'dailyGoalMinutes',
+  'weeklyGoalDays',
 ] as const;
+
+type PresetField = 'densityPercent' | 'dailyGoalMinutes' | 'weeklyGoalDays';
+
+/**
+ * EP13N's radio-card group (D-N5), extracted in-file once EP13K added two
+ * more groups. Native fieldset/legend + radios; arrow keys move the
+ * selection; `focus-within` ring; a "Selected" text cue (never colour only).
+ */
+function PresetRadioGroup({
+  name,
+  legend,
+  options,
+  value,
+  onSelect,
+  error,
+  disabled,
+  idBase,
+}: {
+  name: PresetField;
+  legend: string;
+  options: ReadonlyArray<Preset>;
+  value: number;
+  onSelect: (value: number) => void;
+  error?: string;
+  disabled: boolean;
+  idBase: string;
+}) {
+  const errorId = `${idBase}-${name}-error`;
+  return (
+    <fieldset className="space-y-2" aria-describedby={error ? errorId : undefined}>
+      <legend className="mb-2 block text-body-sm font-medium text-text">{legend}</legend>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        {options.map((option) => {
+          const checked = value === option.value;
+          const optionId = `${idBase}-${name}-${option.value}`;
+          return (
+            <label
+              key={option.value}
+              className={clsx(
+                'flex cursor-pointer items-start gap-2 rounded-lg border p-3 transition-colors duration-base max-sm:min-h-[44px]',
+                'focus-within:outline-none focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
+                checked
+                  ? 'border-accent bg-accent/10'
+                  : 'border-border bg-surface hover:border-border-strong',
+                disabled && 'cursor-not-allowed opacity-50'
+              )}
+            >
+              <input
+                type="radio"
+                name={name}
+                value={option.value}
+                checked={checked}
+                onChange={() => onSelect(option.value)}
+                aria-labelledby={`${optionId}-label`}
+                aria-describedby={`${optionId}-desc`}
+                // Explicit size + resets: the global base rule
+                // `input { @apply w-full … }` (index.css) would
+                // otherwise stretch this radio to the card width.
+                className="mt-1 h-4 w-4 shrink-0 border-0 bg-transparent p-0"
+                disabled={disabled}
+              />
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center justify-between gap-2">
+                  <span id={`${optionId}-label`} className="text-sm font-medium text-text">
+                    {option.label}
+                  </span>
+                  {checked && (
+                    <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-accent">
+                      <CheckCircle2 aria-hidden size={14} data-icon="selected" />
+                      Selected
+                    </span>
+                  )}
+                </span>
+                <span id={`${optionId}-desc`} className="mt-0.5 block text-xs text-text-muted">
+                  {option.description}
+                </span>
+              </span>
+            </label>
+          );
+        })}
+      </div>
+      {error && (
+        <p id={errorId} className="text-body-sm text-danger">
+          {error}
+        </p>
+      )}
+    </fieldset>
+  );
+}
 
 export function StudyPreferencesForm() {
   // (no stored-preferences state needed; the form is reset from the API
@@ -116,6 +253,9 @@ export function StudyPreferencesForm() {
   // last server state (load or save), so it disappears only once a preset
   // has actually been saved — never snapped silently.
   const [customDensity, setCustomDensity] = useState<number | null>(null);
+  // EP13K (D-K6/D-K7): the same honest-Custom rule for the two goals.
+  const [customDailyGoal, setCustomDailyGoal] = useState<number | null>(null);
+  const [customWeeklyGoal, setCustomWeeklyGoal] = useState<number | null>(null);
   const idBase = useId();
 
   const {
@@ -132,11 +272,22 @@ export function StudyPreferencesForm() {
   });
 
   const densityPercent = watch('densityPercent');
+  const dailyGoalMinutes = watch('dailyGoalMinutes');
+  const weeklyGoalDays = watch('weeklyGoalDays');
+
+  const selectPreset = (field: PresetField) => (value: number) =>
+    setValue(field, value, { shouldDirty: true, shouldValidate: Boolean(errors[field]) });
 
   const applyServerState = useCallback(
     (data: FormValues) => {
       reset(data);
       setCustomDensity(isDensityPreset(data.densityPercent) ? null : data.densityPercent);
+      setCustomDailyGoal(
+        isPreset(GOAL_MINUTE_PRESETS, data.dailyGoalMinutes) ? null : data.dailyGoalMinutes
+      );
+      setCustomWeeklyGoal(
+        isPreset(GOAL_DAY_PRESETS, data.weeklyGoalDays) ? null : data.weeklyGoalDays
+      );
     },
     [reset]
   );
@@ -189,17 +340,17 @@ export function StudyPreferencesForm() {
     }
   };
 
-  const densityOptions =
-    customDensity === null
-      ? DENSITY_PRESETS
-      : [
-          ...DENSITY_PRESETS,
-          {
-            value: customDensity,
-            label: `Custom (${customDensity}%)`,
-            description: 'What is saved right now. Pick a named option to change it.',
-          },
-        ];
+  const densityOptions = withCustom(DENSITY_PRESETS, customDensity, (n) => `Custom (${n}%)`);
+  const dailyGoalOptions = withCustom(
+    GOAL_MINUTE_PRESETS,
+    customDailyGoal,
+    (n) => `Custom (${n} min)`
+  );
+  const weeklyGoalOptions = withCustom(
+    GOAL_DAY_PRESETS,
+    customWeeklyGoal,
+    (n) => `Custom (${n} ${n === 1 ? 'day' : 'days'})`
+  );
 
   if (isLoading) {
     return (
@@ -325,75 +476,46 @@ export function StudyPreferencesForm() {
               {...register('breakMinutes', { valueAsNumber: true })}
             />
           </div>
-          <fieldset
-            className="space-y-2"
-            aria-describedby={errors.densityPercent ? `${idBase}-density-error` : undefined}
-          >
-            <legend className="mb-2 block text-body-sm font-medium text-text">Fill level</legend>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              {densityOptions.map((option) => {
-                const checked = densityPercent === option.value;
-                const optionId = `${idBase}-density-${option.value}`;
-                return (
-                  <label
-                    key={option.value}
-                    className={clsx(
-                      'flex cursor-pointer items-start gap-2 rounded-lg border p-3 transition-colors duration-base',
-                      'focus-within:outline-none focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
-                      checked
-                        ? 'border-accent bg-accent/10'
-                        : 'border-border bg-surface hover:border-border-strong',
-                      isSaving && 'cursor-not-allowed opacity-50'
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name="densityPercent"
-                      value={option.value}
-                      checked={checked}
-                      onChange={() =>
-                        setValue('densityPercent', option.value, {
-                          shouldDirty: true,
-                          shouldValidate: Boolean(errors.densityPercent),
-                        })
-                      }
-                      aria-labelledby={`${optionId}-label`}
-                      aria-describedby={`${optionId}-desc`}
-                      // Explicit size + resets: the global base rule
-                      // `input { @apply w-full … }` (index.css) would
-                      // otherwise stretch this radio to the card width.
-                      className="mt-1 h-4 w-4 shrink-0 border-0 bg-transparent p-0"
-                      disabled={isSaving}
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center justify-between gap-2">
-                        <span id={`${optionId}-label`} className="text-sm font-medium text-text">
-                          {option.label}
-                        </span>
-                        {checked && (
-                          <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-accent">
-                            <CheckCircle2 aria-hidden size={14} data-icon="selected" />
-                            Selected
-                          </span>
-                        )}
-                      </span>
-                      <span
-                        id={`${optionId}-desc`}
-                        className="mt-0.5 block text-xs text-text-muted"
-                      >
-                        {option.description}
-                      </span>
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-            {errors.densityPercent?.message && (
-              <p id={`${idBase}-density-error`} className="text-body-sm text-danger">
-                {errors.densityPercent.message}
-              </p>
-            )}
-          </fieldset>
+          <PresetRadioGroup
+            name="densityPercent"
+            legend="Fill level"
+            options={densityOptions}
+            value={densityPercent}
+            onSelect={selectPreset('densityPercent')}
+            error={errors.densityPercent?.message}
+            disabled={isSaving}
+            idBase={idBase}
+          />
+        </fieldset>
+
+        {/* EP13K (D-K6/D-K7): the momentum goals, as named choices (D13-15). */}
+        <fieldset className="space-y-4">
+          <legend className="text-sm font-medium text-text">Your goals</legend>
+          <p className="text-sm text-text-muted">
+            A daily goal is the minutes you&apos;d like to reach on a study day. A weekly goal is
+            how many days you&apos;d like to show up. Small goals you actually hit beat big ones you
+            dread.
+          </p>
+          <PresetRadioGroup
+            name="dailyGoalMinutes"
+            legend="Daily goal"
+            options={dailyGoalOptions}
+            value={dailyGoalMinutes}
+            onSelect={selectPreset('dailyGoalMinutes')}
+            error={errors.dailyGoalMinutes?.message}
+            disabled={isSaving}
+            idBase={idBase}
+          />
+          <PresetRadioGroup
+            name="weeklyGoalDays"
+            legend="Weekly goal"
+            options={weeklyGoalOptions}
+            value={weeklyGoalDays}
+            onSelect={selectPreset('weeklyGoalDays')}
+            error={errors.weeklyGoalDays?.message}
+            disabled={isSaving}
+            idBase={idBase}
+          />
         </fieldset>
 
         {/* Always present so outcomes are announced (AC-3, D128B-12). */}

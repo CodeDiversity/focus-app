@@ -171,6 +171,23 @@ const todayPayload = {
   confirmedMinutesToday: 0,
 };
 
+/** EP13K — the momentum read (`GET /study-sessions/momentum`), D-K5 shape. */
+let momentumPayload = {
+  date: '2026-05-06',
+  timeZone: 'UTC',
+  today: { confirmedMinutes: 25, goalMinutes: 60, goalMet: false },
+  week: {
+    startDate: '2026-05-04',
+    studyDays: ['2026-05-04', '2026-05-06'],
+    studyDayCount: 2,
+    goalDays: 3,
+    goalMet: false,
+  },
+  run: { currentWeeks: 1, bestWeeks: 2, currentWeekCounted: false },
+  hasHistory: true,
+};
+const MOMENTUM_DEFAULT = momentumPayload;
+
 /** The requests the adapter saw, in order. */
 let requests: { url?: string; method?: string; params?: unknown }[] = [];
 let assignmentsFailure: string | null = null;
@@ -278,6 +295,15 @@ function installAdapter() {
         config,
       } as AxiosResponse;
     }
+    if (config.url === '/study-sessions/momentum') {
+      return {
+        data: momentumPayload,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      } as AxiosResponse;
+    }
     if (config.url === '/courses') {
       return {
         data: courseRows,
@@ -329,6 +355,7 @@ function controlKinds(container: HTMLElement): string[] {
 describe('DashboardPage (EP05B)', () => {
   beforeEach(() => {
     requests = [];
+    momentumPayload = MOMENTUM_DEFAULT;
     assignmentsFailure = null;
     calendarFailure = null;
     todayFailure = null;
@@ -355,8 +382,10 @@ describe('DashboardPage (EP05B)', () => {
       .map((heading) => heading.textContent);
     // EP13D (D-D1): today's plan leads — the single next action is the first
     // thing the student sees — then EP05's urgency order, unchanged.
+    // EP13K (D-K9): momentum follows the action it rewards — second, never first.
     expect(headings).toEqual([
       "Today's plan",
+      'Your momentum',
       'Overdue assignments',
       'Upcoming deadlines',
       "Today's classes",
@@ -461,6 +490,7 @@ describe('DashboardPage (EP05B)', () => {
     expect(headings).toEqual([
       'Dashboard',
       "Today's plan",
+      'Your momentum',
       'Overdue assignments',
       'Upcoming deadlines',
       "Today's classes",
@@ -483,13 +513,17 @@ describe('DashboardPage (EP05B)', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Refresh dashboard' }));
 
     // EP13D: the refresh also re-reads today's plan (which reconciles it
-    // server-side), so three requests go out.
-    await waitFor(() => expect(requests.length).toBe(before + 3));
+    // server-side); EP13K adds the momentum read — four requests go out.
+    await waitFor(() => expect(requests.length).toBe(before + 4));
     const calendarRequests = requests.filter((request) => request.url === '/calendar/events');
     expect(calendarRequests).toHaveLength(2);
     expect(calendarRequests[1].params).toEqual(dashboardTodayRange());
     expect(requests.filter((request) => request.url === '/assignments')).toHaveLength(2);
     expect(requests.filter((request) => request.url === '/study-plans/today')).toHaveLength(2);
+    // EP13K (EP13K-AC3): the refresh control refetches momentum too.
+    expect(requests.filter((request) => request.url === '/study-sessions/momentum')).toHaveLength(
+      2
+    );
   });
 
   it('renders a responsive page container whose section grid splits at the lg breakpoint', async () => {
@@ -518,6 +552,8 @@ describe('DashboardPage (EP05B)', () => {
       'dashboard-heading',
       // EP13D: today's plan is the first named region after the page itself.
       'today-plan-heading',
+      // EP13K (D-K9): the momentum card follows it.
+      'momentum-heading',
       'dashboard-overdue-heading',
       'dashboard-upcoming-heading',
       'dashboard-classes-heading',
@@ -576,8 +612,8 @@ describe('DashboardPage (EP05B)', () => {
     const before = requests.length;
     await userEvent.keyboard('{Enter}');
     // EP13D: the refresh also re-reads today's plan (which reconciles it
-    // server-side), so three requests go out.
-    await waitFor(() => expect(requests.length).toBe(before + 3));
+    // server-side); EP13K adds the momentum read — four requests go out.
+    await waitFor(() => expect(requests.length).toBe(before + 4));
 
     const rowTitle = screen.getByRole('button', { name: 'Lab report' });
     rowTitle.focus();

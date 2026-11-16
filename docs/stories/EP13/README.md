@@ -8,7 +8,7 @@
 ## Plan at a glance
 
 - **What this changes:** the EP06 scheduler and its surfaces learn to react to reality — confirmed work shrinks plans, missed work rolls forward without blame, sessions can be day-anchored, placement respects breaks/density/energy, estimates calibrate from history, and momentum is rewarded.
-- **Why it improves it:** ADHD students stop being punished by their own plan (product); the engine stays pure, deterministic and single (code). Remaining children: EP13L, EP13N, EP13K, EP13J, EP13M.
+- **Why it improves it:** ADHD students stop being punished by their own plan (product); the engine stays pure, deterministic and single (code). Remaining children: EP13J, EP13M.
 - **Decisions needing you:** none ▲ open; see each story's Decisions table. Register below holds epic-level decisions.
 - **How to change this plan:** edit a Ruling cell in a story, or ask the planner for AC/queue changes. Corrections and the quality gate live in [history.md](./history.md).
 
@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP13K — refine (Needs refinement; `refiner` pass required by D13-14, then implement). EP13A–EP13D landed 2026-11-14; EP13E–EP13N (incl. EP13H2, EP13L) landed 2026-11-15. Open evidence items riding to the parent review: the gated live-DB suites and the EP13B migration are CI-executed, not run locally (F-EP13A-03, F-EP13B-02, F-EP13C-02); the `wallClockToInstant` DST-midnight observation is on the planner/EP12 roster (F-EP13C-01).
+**Next substory:** EP13J — implement (Ready; last feature child, D13-17), then EP13M. EP13A–EP13D landed 2026-11-14; EP13E–EP13N (incl. EP13H2, EP13L) landed 2026-11-15; EP13K landed 2026-11-16. Open evidence items riding to the parent review: the gated live-DB suites and the EP13B migration are CI-executed, not run locally (F-EP13A-03, F-EP13B-02, F-EP13C-02, F-EP13K-02); the `wallClockToInstant` DST-midnight observation is on the planner/EP12 roster (F-EP13C-01).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (layer labels are scope, not concurrent roles).
 
@@ -40,8 +40,8 @@
 | [EP13I](./EP13I-micro-start-and-hyperfocus-absorption.md) | Implemented — awaiting parent review | EP13B + EP13D + EP13H implemented. UI/UX settled (D-I1…D-I9, commit 06ee759); V-13-6 resolved as D-I8. | None | `./artifacts/EP13I/implementation.md`, `./artifacts/EP13I/checkpoint.md`; green 2026-11-15; open: F-EP13I-01, F-EP13I-02, F-EP13I-03; V-13-6 resolved (D-I8) |
 | [EP13L](./EP13L-deterministic-estimate-calibration.md) | Implemented — awaiting parent review | EP13A + EP13F + EP13G implemented. D13-7 provisional (implemented as specified). | None | `./artifacts/EP13L/implementation.md`; green 2026-11-15; open: F-EP13L-01 (contracts wording), F-EP13L-02 (gated suites not run locally) |
 | [EP13N](./EP13N-adhd-aligned-preference-controls.md) | Implemented — awaiting parent review | EP13F implemented. Design settled in-story (D13-15); D-N3…D-N5 ratified by default 2026-11-15. **Moved ahead of EP13K 2026-11-15 (D13-17)** so the named-choice control exists before EP13K adds two more goal preferences. | None (unblocks EP13K) | `./artifacts/EP13N/implementation.md`; green 2026-11-15 (web 1220 / 0 failed); 5/5 ACs; a11y manual evidence deferred to EP13M (TR-E13-14) |
-| [EP13K](./EP13K-momentum-daily-goal-and-repairable-streak.md) | Needs refinement | EP07 session log (done); EP13D + EP13I (shared dashboard surface); **EP13N implemented** (control pattern, D13-15). D13-11 provisional. **refiner pass required** (D13-14). | **Refine next** (refiner pass, then implement) | — |
-| [EP13J](./EP13J-energy-aware-availability-and-placement.md) | Ready | EP13F + EP13G implemented. D13-10 provisional (V-13-5). EP13J-AC3/EP13J-AC5 revised 2026-11-15 (anchor-inclusive identity; energy must survive interval merging). | Implement after EP13K — last feature child (D13-17) | — |
+| [EP13K](./EP13K-momentum-daily-goal-and-repairable-streak.md) | Implemented — awaiting parent review | EP13D + EP13I + EP13N implemented. Refiner pass fc220cd; ▲ D-K rows ratified by user 2026-11-16. | None (unblocks EP13J) | `./artifacts/EP13K/implementation.md`; green 2026-11-16 (api 1084 / web 1255, 0 failed); 5/5 ACs; open: F-EP13K-01…04; a11y manual evidence deferred to EP13M |
+| [EP13J](./EP13J-energy-aware-availability-and-placement.md) | Ready | EP13F + EP13G implemented. D13-10 provisional (V-13-5). EP13J-AC3/EP13J-AC5 revised 2026-11-15 (anchor-inclusive identity; energy must survive interval merging). | **Implement next** — last feature child (D13-17) | — |
 | [EP13M](./EP13M-cross-layer-e2e-and-parent-index.md) | Queued | EP13A–EP13N implemented. D13-4 resolved, so the flex journeys are unconditional. | Implement last; **performs the combined manual a11y pass** (TR-E13-14 for EP13D/E/H/I/K) | — |
 | [EP13P](./EP13P-agent-lifecycle-and-record-clarity.md) | Implemented — awaiting review | None on application children (docs/process only; outside the EP13 application review unit, D13-18). | Plan-style review of the edited documents (its own sign-off, D13-18) | `./artifacts/EP13P/implementation.md` (EP13P-AC1–AC3, EP13P-AC5–AC6, a9afe4d); EP13P-AC4 done by planner pass 50b8477 + 904a496 + closeout commit (C-EP13-01…09 below) |
 | [EP13Q](./EP13Q-lifecycle-efficiency.md) | Implemented — awaiting review | EP13P implemented. Docs/process only; outside the EP13 application review unit (D13-19). | Plan-style review of the protocol edits (its own sign-off) | `./artifacts/EP13Q/implementation.md`; queue-lint clean; corpus 22,585 → see record |
@@ -50,7 +50,7 @@ Sequence (one writer): EP13A → EP13B → EP13C → EP13D → EP13E → EP13F �
 
 Why this order: see [history.md](./history.md#sequencing-rationale).
 
-**Do not start EP13K before its `refiner` pass** (D13-14; the EP13D/E/H/I passes are done — their D-D/D-E/D-H/D-I tables): momentum displays, their copy (non-blaming, D13-9), empty/loading/error states, keyboard behavior and responsive behavior are deliberately undecided. EP13A, EP13B, EP13C, EP13F, EP13G, EP13J, EP13L and EP13M carry no refiner-gated UI decisions (EP13J's and EP13L's small UI touches follow existing patterns and are specified in their stories); EP13N's design is settled in-story (D13-15).
+**Refiner gate (D13-14):** all five gated stories (EP13D/E/H/I/K) have had their `refiner` pass (D-D/D-E/D-H/D-I/D-K tables). EP13J and EP13M carry no refiner-gated UI decisions; EP13N's design is settled in-story (D13-15).
 
 ## Stories
 
