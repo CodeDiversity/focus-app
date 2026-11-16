@@ -3,11 +3,11 @@
 **Epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 — release 1.1.x hardening (D14-2)
 **Origin:** user rulings on [EP13R](../EP13/EP13R-follow-up-register-and-triage.md), 2026-11-16 — every recommendation ratified: eight "Do next" items became the five children below, six "Backlog" items are tracked in the [Backlog register](#backlog).
-**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: see [history.md](./history.md). **Plan review required** before implementation (new migration in EP14E; strict-validation invariant in EP14B — planning-checklist rule).
+**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: see [history.md](./history.md). Plan review pass 1: **Changes Required** ([plan-review.md](./plan-review.md), R-EP14-01…09); corrections C-EP14-01…09 applied — awaiting pass 2.
 
 ## Plan at a glance
 
-- **What this changes:** CI that runs the live-database gate on delivery branches (EP14A); strict request validation, a zero-failure gated baseline and server-owned week dates (EP14B); deterministic E2E (EP14C); the four EP13 accessibility defects fixed and the axe allowlist removed (EP14D); a student-owned "hard" flag plus a light-work timing guard (EP14E).
+- **What this changes:** CI that runs the live-database gate on delivery branches, with the three gated test defects repaired (EP14A); strict request validation, a green gate and server-owned week dates (EP14B); deterministic E2E (EP14C); the four EP13 accessibility defects fixed and the axe allowlist removed (EP14D); a student-owned "hard" flag plus a light-work timing guard (EP14E).
 - **Why it improves it:** EP13's review proved the gates could be green without having run, and left a validation hole and an a11y truce behind (code); students get an honest say in what counts as hard, and easy work stops drifting late (product).
 - **Decisions needing you:** none — every story and register decision ratified by the user 2026-11-16.
 - **How to change this plan:** edit a Ruling cell in a story or in the register below; ask the planner for AC or queue changes.
@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** None — plan review first (`reviewer`, `plan_review`, required by the planning checklist), then EP14A — implement.
+**Next substory:** None — plan review pass 2 first (corrections applied), then EP14A — implement.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -34,14 +34,14 @@
 | [EP14D](./EP14D-accessibility-debt-from-the-ep13-pass.md) | Ready | None | Implement after EP14C | — |
 | [EP14E](./EP14E-effort-aware-placement.md) | Needs refinement | EP14B (D-B1); refiner pass (assignment-form UI, D13-14 rule); ▲ D-E1…D-E3 ratified | Refine, then implement last | — |
 
-Sequence (one writer): EP14A → EP14B → EP14C → EP14D → EP14E. Why: the CI trigger first makes every later child's gated evidence a real run; EP14B makes the baseline zero-failure before anything else lands on it; EP14E adds a migration and new body field, so it follows the validation policy it depends on.
+Sequence (one writer): EP14A → EP14B → EP14C → EP14D → EP14E. Why: EP14A makes CI see the branch and leaves exactly one known red gated test, which EP14B's strict validation fixes — so the proof's red half lands in EP14A and its green half in EP14B (C-EP14-01); EP14E adds a migration and new body field, so it follows the validation policy it depends on.
 
 ## Stories
 
 | Story | EP13R source | Layer |
 |---|---|---|
-| [EP14A](./EP14A-ci-runs-the-full-gate-on-delivery-branches.md) | D-R15 | Integration (CI) |
-| [EP14B](./EP14B-api-contract-integrity.md) | D-R14, D-R8 | Backend (+ small frontend) |
+| [EP14A](./EP14A-ci-runs-the-full-gate-on-delivery-branches.md) | D-R15, D-R14 (test repairs) | Integration (CI + gated tests) |
+| [EP14B](./EP14B-api-contract-integrity.md) | D-R14 (validation), D-R8 | Backend (+ small frontend) |
 | [EP14C](./EP14C-e2e-reliability.md) | D-R13 | Integration (E2E) |
 | [EP14D](./EP14D-accessibility-debt-from-the-ep13-pass.md) | D-R9, D-R10, D-R11, D-R12 | Frontend |
 | [EP14E](./EP14E-effort-aware-placement.md) | D-R1, D-R2 | Backend + Frontend |
@@ -53,19 +53,19 @@ Sequence (one writer): EP14A → EP14B → EP14C → EP14D → EP14E. Why: the C
 | Epic AC (abbreviated) | Stable ID | Owner |
 |---|---|---|
 | Delivery-branch pushes run the gated suites; red fails the job | AC-E14-01 | **EP14A** |
-| Gated run zero failures; wrong-typed bodies → 400 | AC-E14-02 | **EP14B** |
+| Gated run zero failures; wrong-typed bodies → 400 | AC-E14-02 | **EP14A** (three test repairs), **EP14B** (validation + green run) |
 | Momentum carries its week dates; no client date math | AC-E14-03 | **EP14B** |
 | E2E deterministic under parallel load on any date | AC-E14-04 | **EP14C** |
 | Four a11y defects fixed; axe gate with no allowlist | AC-E14-05 | **EP14D** |
 | Student-owned hard flag; light-work timing guard | AC-E14-06 | **EP14E** |
-| Deferred items tracked, lint-enforced, reviewed | AC-E14-07 | this breakdown (register below + `tools/queue-lint.mjs` rule 6 and `--backlog`) |
+| Deferred items tracked, lint-enforced, reviewed | AC-E14-07 | this breakdown (register below + `tools/queue-lint.mjs` rule 6 and `--backlog`); verified by the EP14 parent review (C-EP14-09) |
 
 ## Requirement and test traceability
 
 | Req | Requirement | Owner |
 |---|---|---|
-| TR-E14-01 | Scratch-branch red/green CI run pair recorded | EP14A |
-| TR-E14-02 | Strictness E2E (bodies 400, query numbers parse) + full gated run 0 failed | EP14B |
+| TR-E14-01 | Proof branch: red run with exactly the one named gated failure (EP14A), then green run (EP14B) | EP14A, EP14B |
+| TR-E14-02 | Strictness spec (bodies 400 incl. `"false"`, query numbers parse), pipe-options guard, full gated run 0 failed, Playwright journeys | EP14B |
 | TR-E14-03 | `week.days` shape tests + week strip renders without date math | EP14B |
 | TR-E14-04 | Three consecutive full parallel E2E runs, zero failures from the three specs | EP14C |
 | TR-E14-05 | The three a11y E2E tests + seven journeys green with no `ignore` predicate | EP14D |
@@ -88,11 +88,11 @@ Reviewed at every epic breakdown and every parent sign-off; list all open rows a
 
 | ID | Item | Source | Why deferred | Revisit when | Owner | Last reviewed | Status |
 |---|---|---|---|---|---|---|---|
-| BL-14-01 | **Energy quick setup** — bulk-tag windows ("my mornings are high energy") | EP13R D-R3; EP13J closeout | Unvalidated that students tag energy at all (V-13-5 data) | EP14E has shipped and a usage check (share of students with ≥ 1 non-NORMAL window) has been run on real data | planner | 2026-11-16 | Backlog |
+| BL-14-01 | **Energy quick setup** — bulk-tag windows ("my mornings are high energy") | EP13R D-R3; EP13J closeout | Unvalidated that students tag energy at all (V-13-5 data) | At EP14 parent sign-off the user is asked whether to run the usage count (share of students with ≥ 1 non-NORMAL window); promote if they run it and it is non-trivial (C-EP14-09) | planner | 2026-11-16 | Backlog |
 | BL-14-02 | **"Drained today" override** — one tap treats today as LOW energy | EP13R D-R4; EP13J exclusion | Needs its own model decision (per-date row vs transient flag) | BL-14-01 is promoted, or a user asks for it | planner | 2026-11-16 | Backlog |
 | BL-14-03 | **Placement explainability** — preview says why a session landed there | EP13R D-R5 | No user has asked; EP13L's annotation plumbing makes it cheap later | EP14E ships (the hard flag gives a second reason worth explaining), or a user asks "why is this here?" | planner | 2026-11-16 | Backlog |
-| BL-14-04 | **Fragmentation at energy boundaries** — sessions never straddle levels | EP13R D-R6; F-EP13J-03 | Needs real tagged-schedule data first | The BL-14-01 usage check shows tagged students' median placed block is shorter than untagged students' | planner | 2026-11-16 | Backlog |
-| BL-14-05 | **Momentum goal history** — goal changes re-score past weeks | EP13R D-R7; F-EP13K-03 | Real schema work; honest limitation already documented in-module | A user reports a shrunk run after changing goals, or any migration touches `User.preferences` | planner | 2026-11-16 | Backlog |
+| BL-14-04 | **Fragmentation at energy boundaries** — sessions never straddle levels | EP13R D-R6; F-EP13J-03 | Needs real tagged-schedule data first | When BL-14-01's usage count is run, also compare tagged vs untagged students' median placed block; promote if tagged is shorter | planner | 2026-11-16 | Backlog |
+| BL-14-05 | **Momentum goal history** — goal changes re-score past weeks | EP13R D-R7; F-EP13K-03 | Real schema work; honest limitation already documented in-module | A user reports a shrunk run after changing goals, or any change to the goal keys in `update-study-preferences.dto.ts` (C-EP14-09) | planner | 2026-11-16 | Backlog |
 | BL-14-06 | **EP13Q review polish** — record never quoted the efficiency rows; queue-lint rule 5 dead | EP13R D-R16; R-EP13Q-04/-05 | Optional polish | The next edit to `tools/queue-lint.mjs` (fired 2026-11-16, this breakdown) | planner | 2026-11-16 | Dropped — trigger fired during this breakdown: rule 5 fixed (now lints in-flight checkpoints only; closed EP13 history is legacy by id-conventions); the record-quote half is historical and not worth a record edit |
 
 ## Final implementation review unit

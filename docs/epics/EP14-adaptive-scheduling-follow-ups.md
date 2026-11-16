@@ -3,7 +3,7 @@
 **Epic ID:** EP14
 **Predecessor:** [EP13: Adaptive Scheduling for ADHD](./EP13-adaptive-scheduling-for-adhd.md) — closed (combined review round 2 passed, 2026-11-16). EP14 is deliberately separate so EP13's signed-off review unit stays closed.
 **Origin:** the user's rulings on [EP13R](../stories/EP13/EP13R-follow-up-register-and-triage.md) (2026-11-16: "ratify all of your findings on EP13R, put them in a new epic"). Requested as "EP13B"; created as EP14 because `EP13B` is already a stable EP13 child ID (see D14-1).
-**Milestone:** proposed M7 — release 1.1.x hardening (D14-2).
+**Milestone:** M7 — release 1.1.x hardening (D14-2, ratified).
 **Dependencies:** EP13 (closed). Cross-cutting into EP04 (calendar), EP03 (assignments) and EP10 (design tokens).
 
 ## Epic Summary
@@ -46,7 +46,7 @@ Everything ruled Backlog in EP13R (energy quick setup, "drained today", placemen
 3. The momentum payload carries the week's seven civil dates; the client performs no date arithmetic for the week strip.
 4. The full E2E suite passes deterministically under parallel load on any calendar date.
 5. The four EP13M accessibility defects are fixed and the axe gate in `e2e/adaptive-scheduling.spec.ts` runs with no allowlist.
-6. A student can mark an assignment as hard (or not hard); placement uses that flag in place of the D13-10 heuristic when set; light work never moves to a LOW window later in the day than a free NORMAL window in the same part of the day.
+6. A student can mark an assignment as hard (or not hard); placement uses that flag in place of the D13-10 heuristic when set; light work prefers a LOW window only within the same part of the day as the earliest usable free NORMAL gap (C-EP14-07 — the wording matches EP14E-AC3).
 7. Deferred items are tracked in a register whose shape is lint-enforced and reviewed at every breakdown and sign-off.
 
 ## Proposed Stories
@@ -55,7 +55,7 @@ See [the breakdown README](../stories/EP14/README.md): EP14A (CI), EP14B (API co
 
 ## Technical Notes
 
-- CI already provisions Postgres and exports `DATABASE_URL` (`.github/workflows/ci.yml:13–30`); only the branch triggers (`:3–7`) exclude delivery branches.
+- CI already provisions Postgres and exports `DATABASE_URL` (`.github/workflows/ci.yml:13–30`); only the branch triggers (`:3–7`) exclude delivery branches. Every `main` push since 2026-10-25 failed at "Run backend tests" (Actions history).
 - `enableImplicitConversion: true` is set in the global pipe (`apps/api/src/main.ts:20`) and its test mirror (`apps/api/src/test/test-http.ts:109`).
 - The shared `Dialog` already restores focus (`apps/web/src/shared/ui/Dialog.tsx:45`); the two failing sites lose their trigger element — root cause per site is EP14D's first task.
 - `isDemanding` (`apps/api/src/domain/study-planning/scheduler.ts:105`) is the heuristic EP14E makes overridable; `Assignment.type` is nullable (`schema.prisma:202`).

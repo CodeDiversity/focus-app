@@ -21,7 +21,7 @@ and prove it by running the EP13 axe gate with no exclusions.
 
 ## Scope
 
-**In:** the two dialog trigger sites, assignment-dialog control sizing, the `Badge` success variant (shared — every consumer benefits), `CalendarEventChip` naming, the two existing E2E tests, the allowlist removal.
+**In:** the two dialog trigger sites, assignment-dialog control sizing, every `bg-success/10` + `text-success` site (five, R-EP14-06), `CalendarEventChip` naming, the two existing E2E tests, the allowlist removal.
 **Out:** a general a11y audit of untouched surfaces; restyling beyond the success pairing.
 
 ## Source requirement references
@@ -32,13 +32,13 @@ AC-E14-05; TR-E14-05; DoD-6, DoD-7, DoD-8.
 
 1. After Escape closes the assignment-create dialog (opened from the empty-list button) and the phone-width calendar event detail, focus is on the element that opened it — `e2e/assignments-list.spec.ts:23` and `e2e/calendar.spec.ts:100` pass.
 2. At 375px every interactive control in the assignment dialog is ≥ 44px tall — `e2e/assignments-list.spec.ts:168` passes.
-3. Success-badge text meets ≥ 4.5:1 against its background, and every calendar chip's accessible name contains its visible text in order (WCAG 2.5.3).
+3. Every element pairing `bg-success/10` with `text-success` — `Badge.tsx:14`, `AvailabilitySlotList.tsx:79`, `assignmentPresentation.ts:26,112`, `CalendarEventChip.tsx:79` (the 10px completed tag) — meets ≥ 4.5:1 using the D-D2 token, a guard test fails on the old pairing anywhere in `src/`, and every calendar chip's accessible name contains its visible text in order (WCAG 2.5.3).
 4. `expectNoAxeViolations` in `e2e/adaptive-scheduling.spec.ts` has no `ignore` predicate, and all seven journeys stay green.
 
 ## Tests
 
 - AC1/AC2: the three existing E2E tests above (no new specs needed); a component test for each trigger site asserting focus restoration.
-- AC3: `Badge.test.tsx` pins the success classes; `CalendarEventChip.test.tsx` asserts the accessible name starts with the visible type label and contains the title and time (existing anytime/energy cases updated).
+- AC3: `Badge.test.tsx` pins the success classes; `successPairing.guard.test.ts` scans `src/**` for the old pairing (C-EP14-06); `CalendarEventChip.test.tsx` asserts the accessible name starts with the visible type label and contains the title and time (existing anytime/energy cases updated).
 - AC4: the journeys themselves.
 
 ## Technical notes
@@ -61,7 +61,7 @@ AC-E14-05; TR-E14-05; DoD-6, DoD-7, DoD-8.
 
 - **Outcome:** EP13's accessibility gate passes with no exclusions.
 - **Actual at closeout:** tbd.
-- **Files:** `features/assignments/ui/AssignmentDialogs.tsx` (or the empty-state host), the calendar agenda/detail host, assignment form controls, `shared/ui/Badge.tsx`, `index.css`/`tailwind.config.js` (token), `features/calendar/ui/CalendarEventChip.tsx`, `e2e/adaptive-scheduling.spec.ts` + focused component tests.
+- **Files:** `features/assignments/ui/AssignmentDialogs.tsx` (or the empty-state host), the calendar agenda/detail host, assignment form controls, `shared/ui/Badge.tsx`, `features/availability/ui/AvailabilitySlotList.tsx`, `features/assignments/ui/assignmentPresentation.ts`, `index.css`/`tailwind.config.js` (token), `features/calendar/ui/CalendarEventChip.tsx`, `e2e/adaptive-scheduling.spec.ts` + focused component tests.
 - **Start context:** this story; F-EP13M-01/-02/-04/-05 in `docs/stories/EP13/artifacts/EP13M/implementation.md`.
 - **Verification:** the three named E2E tests and all seven journeys green; web unit suite green.
 - **Dependencies / exclusions:** E2E flakes → EP14C.

@@ -33,14 +33,14 @@ AC-E14-06; TR-E14-06; DoD-1–9.
 
 1. Assignments carry an optional hard flag (Auto when unset); create/update accept it with validation; the response always includes it; existing rows read as Auto.
 2. When set, placement treats the assignment as demanding (Hard) or light (Not hard) regardless of type and size; Auto keeps D13-10 exactly; with every window NORMAL the output stays byte-identical (EP13J-AC3 preserved).
-3. Light work prefers a LOW window only if it lies in the same part of the day (`windowHintOf`) as the earliest free NORMAL gap; otherwise it takes that NORMAL gap; demanding work is unchanged; deterministic.
+3. Light work prefers a LOW window only if it lies in the same part of the day (`windowHintOf`) as the earliest free NORMAL gap **that can host the desired block** (`usable ≥ minBlock`); otherwise it takes that NORMAL gap. If the day has no usable NORMAL gap, the EP13J D-J3 order applies unchanged (LOW → NORMAL → HIGH). Demanding work is unchanged; deterministic.
 4. The assignment form offers the three choices with keyboard support and plain copy (no percentages, no blame), following the EP13N named-choice pattern.
 
 ## Tests
 
 - AC1: DTO matrix (true/false/null/omitted, wrong types → 400 under D-B1); migration default; ownership on update.
 - AC2: `energy.spec.ts` — a HOMEWORK marked Hard scans HIGH first, an EXAM marked Not hard scans LOW first, Auto unchanged; identity case extended with flags set.
-- AC3: the F-EP13J-04 scenario (09:00 NORMAL + 22:00 LOW → light work at 09:00); same-part-of-day LOW still preferred; determinism.
+- AC3: the F-EP13J-04 scenario (09:00 NORMAL + 22:00 LOW → light work at 09:00); same-part-of-day LOW still preferred (09:00 NORMAL + 11:00 LOW → 11:00); a too-short earliest NORMAL gap is skipped as the reference; a day with no NORMAL gap keeps the D-J3 order; determinism.
 - AC4: form component tests (render, arrow keys, round-trip, 400 under the group).
 
 ## Technical notes
@@ -64,7 +64,7 @@ AC-E14-06; TR-E14-06; DoD-1–9.
 
 - **Outcome:** students decide what counts as hard, and easy work stops drifting late.
 - **Actual at closeout:** tbd.
-- **Files:** `schema.prisma` + migration, assignments DTOs/service/response, `remaining-work.ts` (carry the flag), `scheduler.ts`, `types.ts`, `energy.spec.ts`, assignment form + tests, `contracts.md`.
+- **Files:** `schema.prisma` + migration, assignments DTOs/service/response, `study-plans.service.ts` `gatherPlanData` (`:1071`, where engine input is mapped — C-EP14-09), `remaining-work.ts` (carry the flag), `scheduler.ts`, `types.ts`, `energy.spec.ts`, assignment form + tests, `contracts.md`.
 - **Start context:** this story; EP13J record (D-J1/D-J3); `scheduler.ts` energy section.
 - **Verification:** API + web suites, gated run (via EP14A CI), the journeys unchanged.
 - **Dependencies / exclusions:** EP14B (D-B1); backlog items BL-14-01…04.

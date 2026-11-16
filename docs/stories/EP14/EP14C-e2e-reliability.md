@@ -31,7 +31,7 @@ AC-E14-04; TR-E14-04; DoD-8.
 ## Acceptance criteria
 
 1. The study-plan journey edits a proposed session chosen from the server's own preview so that the moved window is free (no class/busy overlap), and passes for any server "today".
-2. The login spec registers a unique user per test (no shared `beforeAll` registration), and the logout journey waits for the authenticated shell before acting; both pass under `fullyParallel`.
+2. The login 409 and the logout timeout are each **diagnosed with a Playwright trace first** and the root cause recorded before any fix. If the cause is shared-user state, the login spec registers per test (D-C2); if it is a duplicate registration POST (retry/proxy under load — the plan review's leading hypothesis) or any other product-side race, stop and return it as a finding per Scope. The logout journey waits for the authenticated shell before acting (D-C3). Both pass under `fullyParallel`.
 3. Three consecutive full `npx playwright test` runs with default parallelism show zero failures from these files.
 
 ## Tests
@@ -40,7 +40,7 @@ The specs themselves; EP14C-AC3's three-run record in the implementation record 
 
 ## Technical notes
 
-- Inspected: `apps/web/e2e/study-plan.spec.ts:94–95` (moves `.first()` proposal blindly); `login.spec.ts:13–27` (`testUser` + `beforeAll` registration; the per-worker random suffix still collided in EP13M's runs); the logout failure was a 30s click timeout (EP13M record, F-EP13M-06).
+- Inspected: `apps/web/e2e/study-plan.spec.ts:94–95` (moves `.first()` proposal blindly); `login.spec.ts:13–27` (`testUser` + `beforeAll` registration; the email is `Date.now()` + a UUID fragment per worker module, `:16–20`, so a collision is implausible — `auth.service.ts:141–145` returns 409 only for an existing email; a re-sent POST under load is the likelier cause, R-EP14-08 / C-EP14-08); the logout failure was a 30s click timeout (EP13M record, F-EP13M-06).
 
 ### Decisions
 

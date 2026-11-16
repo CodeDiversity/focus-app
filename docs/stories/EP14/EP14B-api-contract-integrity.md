@@ -1,69 +1,73 @@
-# EP14B — API Contract Integrity: Strict Bodies, Green Gated Baseline, Server-Owned Week Dates
+# EP14B — API Contract Integrity: Strict Bodies, a Green Gate, Server-Owned Week Dates
 
 **Story ID:** EP14B
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
-**Milestone:** proposed M7 (D14-2)
+**Milestone:** M7 (D14-2)
 **Layer:** Backend (+ one small frontend consumer change)
 **Status:** Ready
-**Dependencies:** EP14A recommended first (so this story's gated evidence is a CI run). Sources: EP13R D-R14 and D-R8 (user rulings 2026-11-16), R-EP13-03, F-EP13K-01.
+**Dependencies:** EP14A (CI sees the branch; the gated run starts with exactly the one failure this story fixes). Sources: EP13R D-R14 (validation half) and D-R8 (user rulings 2026-11-16); R-EP13-03; F-EP13K-01; plan review R-EP14-03/-04/-05/-09 (corrections C-EP14-03…05, C-EP14-09).
 
 ## Plan at a glance
 
-- **What this changes:** request bodies stop being silently coerced (`locked: "yes"` → 400, not 200); the four pre-existing red gated tests are repaired so the gated baseline is zero failures; `GET /study-sessions/momentum` gains `week.days` (seven Monday-first civil dates) and the web week strip uses it instead of computing dates.
-- **Why it improves it:** an invalid body that answers 200 is a real validation hole app-wide (security/DoD-2); a red baseline hides new regressions; the client doing date math broke D05-6 (code). Students see no change except correct errors.
-- **Decisions needing you:** none — all rows ratified by the user 2026-11-16.
+- **What this changes:** request bodies stop being silently coerced — `locked: "yes"`, `locked: "false"` (today it becomes `true`) and `plannedMinutes: "25"` return a field-level 400 — via one shared validation-pipe options constant used by production and every test; the branch's CI run goes green (the green half of EP14A's proof); `GET /study-sessions/momentum` gains `week.days` and the web week strip uses it instead of computing dates.
+- **Why it improves it:** an invalid body that answers 200 — or flips `"false"` to `true` — is a real validation hole across ~25 number/boolean body fields (DoD-2); fifteen test files kept their own copy of the old pipe options and would have kept passing while production changed (code); the client doing date math broke D05-6. Students see no change except correct errors.
+- **Decisions needing you:** none — D-B1 and D-B4 ratified by the user 2026-11-16 (D-B2/D-B3 moved to EP14A as D-A3/D-A4).
 - **How to change this plan:** edit a Ruling cell below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary
 
-Three API-contract corrections in one backend pass: strict input conversion,
-a gated suite that is green against the contract as it now is, and an output
-field that lets the client stop deriving dates.
+Turn implicit conversion off behind a single source of pipe options, prove
+every body DTO still accepts what the real clients send, end with a green CI
+run, and let the server own the momentum week's dates.
 
 ## Scope
 
-**In:** the global validation pipe and any query DTO that relied on implicit conversion; the four failing gated tests; the momentum payload + `MomentumWeekStrip`/`momentumCopy` consumer.
-**Out:** any other endpoint's behavior; new validation rules beyond type strictness.
+**In:** `main.ts`, `test-http.ts` and every spec-local pipe/transform copy (switched to the shared constant); the body DTO inventory below; the momentum payload + `momentumCopy`/`MomentumWeekStrip` consumers.
+**Out:** query/param DTOs (none rely on implicit conversion — plan review R-EP14-04); new validation rules beyond type strictness; the three gated test repairs (EP14A).
 
 ## Source requirement references
 
-AC-E14-02, AC-E14-03; TR-E14-02, TR-E14-03; DoD-2, DoD-3, DoD-8, DoD-9.
+AC-E14-02 (validation half + green run), AC-E14-03; TR-E14-01 (green half), TR-E14-02, TR-E14-03; DoD-2, DoD-3, DoD-4, DoD-8, DoD-9.
 
 ## Acceptance criteria
 
-1. A request body with a wrong-typed boolean or number (`{ locked: "yes" }`, `{ locked: 1 }`, `{ plannedMinutes: "25" }`) returns 400 with the field-level `errors` map and writes nothing; query parameters that are legitimately numeric (`?limit=10`) still parse.
-2. The full gated API run (`DATABASE_URL=… npx jest --runInBand` on a freshly migrated DB) has **zero failures**: the lock happy-path and lock-scoping fixtures no longer collide on `study_plans_userId_date_key`, and the bag-survival spec asserts the PATCH /users/me **merge** contract (R-EP06-06).
-3. `GET /study-sessions/momentum` returns `week.days`: seven `YYYY-MM-DD` strings starting at `week.startDate`; the web week strip renders from it and `weekDates` is deleted; the payload is otherwise unchanged and `contracts.md` documents the field.
+1. With implicit conversion off, wrong-typed boolean/number body fields — at least `{ locked: "yes" }`, `{ locked: "false" }`, `{ locked: 1 }`, `{ plannedMinutes: "25" }` — return 400 with the field-level `errors` map and write nothing; the EP14A-recorded lock 400-case passes; `?limit=10&offset=5` on GET /study-sessions still parses.
+2. One exported `VALIDATION_PIPE_OPTIONS` (or pipe factory) in `apps/api/src/common/pipes/` is the only definition used by `main.ts`, `test-http.ts` and every spec that builds a pipe; a guard test fails if `src/**` contains `enableImplicitConversion: true`.
+3. The full gated run has **zero failures**, the proof branch's CI run is **green** (run URL recorded — TR-E14-01's green half), and the full Playwright suite (or at minimum the journeys exercising preferences, availability, meetings, courses, assignments, focus finish and onboarding) passes — every web form still sends correctly typed bodies.
+4. `GET /study-sessions/momentum` returns `week.days`: seven `YYYY-MM-DD` strings starting at `week.startDate`; `MomentumWeekStrip` and `studiedOnSentence` use it and `weekDates` is deleted; the payload is otherwise unchanged and `contracts.md` documents the field.
 
 ## Tests
 
-- AC1: `validation-strictness.e2e-spec` (gated) — the three bodies above → 400 per field; `?limit=10` on GET /study-sessions → 200; unit: the pipe options pinned in `test-http.ts` equal `main.ts`.
-- AC2: the four named failing tests (R-EP13-03) green; full gated run recorded with its command.
-- AC3: `momentum.spec.ts` — `days` length 7, Monday first, across a month/year boundary; `MomentumWeekStrip.test.tsx` renders from `days` with no `Date` arithmetic (grep-guard test that `momentumCopy.ts` no longer exports `weekDates`).
+- AC1: `validation-strictness-e2e.spec.ts` (gated via `describeIntegration`; the name matches Jest's `.*\.spec\.ts$` — R-EP14-05) — the four bodies above → 400 per field, no write; `?limit=10&offset=5` → 200.
+- AC2: `validation-pipe-options.spec.ts` — `main.ts` and `test-http.ts` import the constant; grep guard over `src/**` for `enableImplicitConversion: true`.
+- AC3: the full gated run and the CI run URL; the Playwright command and count.
+- AC4: `momentum.spec.ts` — `days` length 7, Monday first, across a month/year boundary; `MomentumWeekStrip.test.tsx` renders from `days`; `momentumCopy.test.ts` updated (its `weekDates` case removed, `studiedOnSentence` driven by `days`).
 
 ## Technical notes
 
-- Inspected: `apps/api/src/main.ts:20` and `apps/api/src/test/test-http.ts:109` (`enableImplicitConversion: true`); `study-plans-e2e.spec.ts:532` `seedPlannedSession` (`studyPlan.create` on a fixed date, called twice per student); `:164–166` bag-survival block; `users.service.ts:97–126` (merge semantics); `apps/web/src/features/momentum/model/momentumCopy.ts` `weekDates`.
-- Proposed (D-B2): `seedPlannedSession` upserts on `userId_date`, the pattern `study-sessions-planned-link-e2e.spec.ts:47` already uses.
+- Inspected: `apps/api/src/main.ts:20`, `apps/api/src/test/test-http.ts:109` (`enableImplicitConversion: true`). Spec-local copies that must switch to the constant (plan review R-EP14-03): `assignments.service.spec.ts:168–174, 534, 1059, 1108`; `auth.controller.spec.ts:215–220`; `auth/dto/{register,reset-password,forgot-password,resend-verification,verify-email}.dto.spec.ts:9–11`; `study-plans-recovery-catch-up.service.spec.ts:611–624, 886, 978, 1017, 1074, 1161` — the implementer greps for the full list.
+- Query side (R-EP14-04): `ListStudySessionsQueryDto.limit/offset` already convert explicitly (`list-study-sessions-query.dto.ts:34–45`); other query DTOs and every `@Param` are strings — unaffected.
+- Body side inventory (R-EP14-04, ~25 fields / 14 DTOs): onboarding `step`/`completed`; availability `dayOfWeek`/`isAvailable`; courses `credits`/`isActive`; class-meeting `dayOfWeek`; semester `isActive`; subtask `orderIndex`; assignment `estimatedHours`; study-session `plannedMinutes`/`confirmedMinutes`; the eight study-preference integers; lock `locked`. Web forms spot-checked to convert explicitly (`MeetingForm.tsx:197`, `AvailabilitySlotForm.tsx:328`, `StudyPreferencesForm.tsx:415–476`, `CourseForm.tsx:264`, `AssignmentForm.tsx:168,182`) — AC3's Playwright run is the proof. Nested bodies unaffected (`save-study-plan.dto.ts:67–68` has `@Type`).
+- Momentum: `weekDates` in `apps/web/src/features/momentum/model/momentumCopy.ts` and its second consumer `studiedOnSentence` (`:65`); test `momentumCopy.test.ts:62`.
 
 ### Decisions
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| ▲ D-B1 | Coercion policy: (a) turn `enableImplicitConversion` off globally and add explicit `@Type(() => Number)` / boolean transforms to the query DTOs that need them; (b) keep implicit conversion, add strict per-field transforms that reject strings for booleans/numbers in bodies; (c) keep coercion and pin it as contract | **(a)** — correct by construction; the query DTOs needing conversion are few and get explicit, reviewable annotations; (b) leaves the hole open for every future field | Ratified (user, 2026-11-16) |
-| D-B2 | Fixture repair: (a) upsert the study plan per (user, date); (b) distinct dates per call | **(a)** — the sibling-spec precedent | Ratified (user, 2026-11-16) |
-| D-B3 | Bag-survival spec: (a) assert the merge contract; (b) delete the spec | **(a)** — the contract is real and worth pinning | Ratified (user, 2026-11-16) |
+| ▲ D-B1 | Coercion policy: (a) turn `enableImplicitConversion` off globally behind one shared options constant; (b) keep implicit conversion, add strict per-field transforms that reject strings; (c) keep coercion and pin it as contract | **(a)** — correct by construction; the plan review's enumeration shows no query/param DTO depends on it, so the change is body-only | Ratified (user, 2026-11-16) |
 | ▲ D-B4 | Momentum `week.days`: (a) additive `days: string[]` (7, Monday-first); (b) replace `startDate`; (c) leave the client math (F-EP13K-01 accepted) | **(a)** — additive, removes the one D05-6 deviation | Ratified (user, 2026-11-16) |
+
+(D-B2 and D-B3 moved to EP14A as D-A3/D-A4 with their rulings, C-EP14-01.)
 
 ## Definition of Done
 
-1, 2 (the point of AC1), 3 (scoping suites green), 4 (field-level 400s), 8, 9 (`contracts.md` momentum row; pipe policy noted in the API README if one exists); 5–7 unchanged UI.
+1, 2 (the point of AC1), 3 (scoping suites green), 4 (field-level 400s), 8, 9 (`contracts.md` momentum row; pipe policy noted where the API documents validation); 5–7 unchanged UI (proven by AC3's Playwright run).
 
 ## Sizing
 
-- **Outcome:** inputs are validated strictly, the gated baseline is zero failures, and the client no longer computes week dates.
+- **Outcome:** bodies are validated strictly behind one source of truth, the gate is green on CI, and the client no longer computes week dates.
 - **Actual at closeout:** tbd.
-- **Files:** `apps/api/src/main.ts`, `apps/api/src/test/test-http.ts`, query DTOs found by grep (`list-study-sessions-query.dto.ts` et al.), `momentum.ts`, `types.ts`, `study-plans-e2e.spec.ts`, `study-plans-data-scoping.spec.ts`, new `validation-strictness.e2e-spec.ts`; web `entities/study-session/model/types.ts`, `features/momentum/{model/momentumCopy.ts, ui/MomentumWeekStrip.tsx}` + tests; `docs/stories/EP13/contracts.md` momentum row.
-- **Start context:** this story; the inspected lines above; R-EP13-03 in `docs/stories/EP13/artifacts/EP13/review-round-1.md`.
-- **Verification:** full gated run 0 failed; ungated API + web suites green; lint/typecheck.
-- **Dependencies / exclusions:** E2E fixes → EP14C; CI trigger → EP14A.
+- **Files:** `apps/api/src/common/pipes/` (new constant), `main.ts`, `test/test-http.ts`, the spec-local pipe copies listed above, new `validation-strictness-e2e.spec.ts` and `validation-pipe-options.spec.ts`; `domain/study-planning/{momentum.ts, types.ts}` + `momentum.spec.ts`; web `entities/study-session/model/types.ts`, `features/momentum/{model/momentumCopy.ts, model/momentumCopy.test.ts, ui/MomentumWeekStrip.tsx}` + test; `docs/stories/EP13/contracts.md` momentum row.
+- **Start context:** this story; EP14A's record (the remaining failing test and the run URL).
+- **Verification:** full gated run 0 failed; ungated API + web suites; Playwright (AC3); proof-branch CI run green; lint/typecheck.
+- **Dependencies / exclusions:** EP14A first; E2E reliability → EP14C.
