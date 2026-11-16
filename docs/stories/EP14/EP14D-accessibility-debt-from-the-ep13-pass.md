@@ -49,9 +49,9 @@ AC-E14-05; TR-E14-05; DoD-6, DoD-7, DoD-8.
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-D1 | Focus return: (a) fix each site so the trigger survives or a stable fallback (the list heading) is focused; (b) change `Dialog` to focus `document.body` fallback | **(a)** — the primitive is correct; the sites lose their trigger | Proposed |
-| D-D2 | Success contrast: (a) a darker `success-strong` text token for the badge (≈ rgb 21 101 52, ≥ 4.5:1 on the 10% tint); (b) a solid success background with white text; (c) raise caption size | **(a)** — smallest visual change, keeps the soft-badge look | Proposed |
-| D-D3 | Chip naming: (a) drop `aria-label` and let the name come from the visible content plus sr-only separators; (b) rewrite `aria-label` to the visible order | **(a)** — label-in-name holds by construction; anytime/energy text is already visible | Proposed |
+| D-D1 | Focus return: (a) fix each site so the trigger survives or a stable fallback (the list heading) is focused; (b) change `Dialog` to focus `document.body` fallback | **(a)** — the primitive is correct; the sites lose their trigger | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
+| D-D2 | Success contrast: (a) a darker `success-strong` text token for the badge (≈ rgb 21 101 52, ≥ 4.5:1 on the 10% tint); (b) a solid success background with white text; (c) raise caption size | **(a)** — smallest visual change, keeps the soft-badge look | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
+| D-D3 | Chip naming: (a) drop `aria-label` and let the name come from the visible content plus sr-only separators; (b) rewrite `aria-label` to the visible order | **(a)** — label-in-name holds by construction; anytime/energy text is already visible | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
 
 ## Definition of Done
 

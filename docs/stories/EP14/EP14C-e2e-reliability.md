@@ -46,9 +46,9 @@ The specs themselves; EP14C-AC3's three-run record in the implementation record 
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-C1 | Study-plan target choice: (a) pick from the preview JSON the first proposal whose +15-min window is free of classes; (b) seed no classes on the edited day | **(a)** — exercises the real UI with the real engine output | Proposed |
-| D-C2 | Login isolation: (a) per-test registration; (b) retry on 409 | **(a)** — retries mask the cause | Proposed |
-| D-C3 | Logout flake: (a) await the authenticated header (role-based locator) before clicking; diagnose with a trace first; (b) raise the timeout | **(a)** | Proposed |
+| D-C1 | Study-plan target choice: (a) pick from the preview JSON the first proposal whose +15-min window is free of classes; (b) seed no classes on the edited day | **(a)** — exercises the real UI with the real engine output | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
+| D-C2 | Login isolation: (a) per-test registration; (b) retry on 409 | **(a)** — retries mask the cause | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
+| D-C3 | Logout flake: (a) await the authenticated header (role-based locator) before clicking; diagnose with a trace first; (b) raise the timeout | **(a)** | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
 
 ## Definition of Done
 

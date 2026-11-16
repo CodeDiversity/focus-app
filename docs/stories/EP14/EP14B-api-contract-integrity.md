@@ -4,14 +4,14 @@
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 (D14-2)
 **Layer:** Backend (+ one small frontend consumer change)
-**Status:** Ready — ▲ D-B1 and ▲ D-B4 need rulings before implementation
+**Status:** Ready — ▲ D-B1 and ▲ D-B4 ratified (user, 2026-11-16)
 **Dependencies:** EP14A recommended first (so this story's gated evidence is a CI run). Sources: EP13R D-R14 and D-R8 (user rulings 2026-11-16), R-EP13-03, F-EP13K-01.
 
 ## Plan at a glance
 
 - **What this changes:** request bodies stop being silently coerced (`locked: "yes"` → 400, not 200); the four pre-existing red gated tests are repaired so the gated baseline is zero failures; `GET /study-sessions/momentum` gains `week.days` (seven Monday-first civil dates) and the web week strip uses it instead of computing dates.
 - **Why it improves it:** an invalid body that answers 200 is a real validation hole app-wide (security/DoD-2); a red baseline hides new regressions; the client doing date math broke D05-6 (code). Students see no change except correct errors.
-- **Decisions needing you:** ▲ D-B1 (coercion policy — changes how every endpoint parses input), ▲ D-B4 (additive momentum payload field).
+- **Decisions needing you:** none — D-B1…D-B4 ratified (user, 2026-11-16).
 - **How to change this plan:** edit a Ruling cell below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary
@@ -50,10 +50,10 @@ AC-E14-02, AC-E14-03; TR-E14-02, TR-E14-03; DoD-2, DoD-3, DoD-8, DoD-9.
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| ▲ D-B1 | Coercion policy: (a) turn `enableImplicitConversion` off globally and add explicit `@Type(() => Number)` / boolean transforms to the query DTOs that need them; (b) keep implicit conversion, add strict per-field transforms that reject strings for booleans/numbers in bodies; (c) keep coercion and pin it as contract | **(a)** — correct by construction; the query DTOs needing conversion are few and get explicit, reviewable annotations; (b) leaves the hole open for every future field | Proposed |
-| D-B2 | Fixture repair: (a) upsert the study plan per (user, date); (b) distinct dates per call | **(a)** — the sibling-spec precedent | Proposed |
-| D-B3 | Bag-survival spec: (a) assert the merge contract; (b) delete the spec | **(a)** — the contract is real and worth pinning | Proposed |
-| ▲ D-B4 | Momentum `week.days`: (a) additive `days: string[]` (7, Monday-first); (b) replace `startDate`; (c) leave the client math (F-EP13K-01 accepted) | **(a)** — additive, removes the one D05-6 deviation | Proposed |
+| ▲ D-B1 | Coercion policy: (a) turn `enableImplicitConversion` off globally and add explicit `@Type(() => Number)` / boolean transforms to the query DTOs that need them; (b) keep implicit conversion, add strict per-field transforms that reject strings for booleans/numbers in bodies; (c) keep coercion and pin it as contract | **(a)** — correct by construction; the query DTOs needing conversion are few and get explicit, reviewable annotations; (b) leaves the hole open for every future field | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
+| D-B2 | Fixture repair: (a) upsert the study plan per (user, date); (b) distinct dates per call | **(a)** — the sibling-spec precedent | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
+| D-B3 | Bag-survival spec: (a) assert the merge contract; (b) delete the spec | **(a)** — the contract is real and worth pinning | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
+| ▲ D-B4 | Momentum `week.days`: (a) additive `days: string[]` (7, Monday-first); (b) replace `startDate`; (c) leave the client math (F-EP13K-01 accepted) | **(a)** — additive, removes the one D05-6 deviation | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
 
 ## Definition of Done
 

@@ -49,8 +49,8 @@ AC-E14-01; TR-E14-01; DoD-8, DoD-9.
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-A1 | Trigger set: (a) push on all branches + existing PR trigger; (b) push on `hfi/**` + `main`/`develop`; (c) manual `workflow_dispatch` only | **(a)** — branch naming can change; the job is already bounded (one runner, one Postgres) | Proposed |
-| D-A2 | Where the evidence rule lives: (a) implementer skill closeout (one line); (b) core.md; (c) a queue-lint check for "CI" wording | **(a)** — the implementer writes the claim; core.md is at its word budget | Proposed |
+| D-A1 | Trigger set: (a) push on all branches + existing PR trigger; (b) push on `hfi/**` + `main`/`develop`; (c) manual `workflow_dispatch` only | **(a)** — branch naming can change; the job is already bounded (one runner, one Postgres) | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
+| D-A2 | Where the evidence rule lives: (a) implementer skill closeout (one line); (b) core.md; (c) a queue-lint check for "CI" wording | **(a)** — the implementer writes the claim; core.md is at its word budget | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
 
 ## Definition of Done
 

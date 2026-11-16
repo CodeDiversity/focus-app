@@ -9,7 +9,7 @@
 
 - **What this changes:** CI that runs the live-database gate on delivery branches (EP14A); strict request validation, a zero-failure gated baseline and server-owned week dates (EP14B); deterministic E2E (EP14C); the four EP13 accessibility defects fixed and the axe allowlist removed (EP14D); a student-owned "hard" flag plus a light-work timing guard (EP14E).
 - **Why it improves it:** EP13's review proved the gates could be green without having run, and left a validation hole and an a11y truce behind (code); students get an honest say in what counts as hard, and easy work stops drifting late (product).
-- **Decisions needing you:** ▲ D-B1 (coercion policy), ▲ D-B4 (momentum `week.days`), ▲ D-E1…D-E3 (hard flag + guard); D14-1 (the epic ID) if you prefer another name.
+- **Decisions needing you:** none — every story decision and register row ratified by the user 2026-11-16 (recommended options).
 - **How to change this plan:** edit a Ruling cell in a story or in the register below; ask the planner for AC or queue changes.
 
 ## Execution queue
@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** None — plan review first (`reviewer`, `plan_review`, required by the planning checklist), then EP14A — implement.
+**Next substory:** EP14A — implement, once the plan review (in progress 2026-11-16, required by the planning checklist) returns Plan Ready. Push authorization for EP14A's scratch-branch proof granted (user, 2026-11-16).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -29,10 +29,10 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [EP14A](./EP14A-ci-runs-the-full-gate-on-delivery-branches.md) | Ready | None. Needs push authorization for the scratch-branch proof at implementation time. | Implement after the plan review | — |
-| [EP14B](./EP14B-api-contract-integrity.md) | Blocked | ▲ D-B1, ▲ D-B4 rulings; EP14A recommended first | User rules D-B1/D-B4, then implement | — |
+| [EP14B](./EP14B-api-contract-integrity.md) | Ready | ▲ D-B1, ▲ D-B4 ratified (user, 2026-11-16); EP14A first | Implement after EP14A | — |
 | [EP14C](./EP14C-e2e-reliability.md) | Ready | None | Implement after EP14B | — |
 | [EP14D](./EP14D-accessibility-debt-from-the-ep13-pass.md) | Ready | None | Implement after EP14C | — |
-| [EP14E](./EP14E-effort-aware-placement.md) | Needs refinement | EP14B (▲ D-B1); ▲ D-E1…D-E3; refiner pass (assignment-form UI, D13-14 rule) | Refine, then implement last | — |
+| [EP14E](./EP14E-effort-aware-placement.md) | Needs refinement | EP14B; ▲ D-E1…D-E3 ratified (user, 2026-11-16); refiner pass still required (assignment-form UI) | Refine, then implement last | — |
 
 Sequence (one writer): EP14A → EP14B → EP14C → EP14D → EP14E. Why: the CI trigger first makes every later child's gated evidence a real run; EP14B makes the baseline zero-failure before anything else lands on it; EP14E adds a migration and new body field, so it follows the validation policy it depends on.
 
@@ -77,8 +77,8 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)): D
 
 | ID | Decision | Status / provenance |
 |---|---|---|
-| D14-1 | **Epic ID.** Requested as "EP13B"; created as **EP14** because `EP13B` is a stable EP13 child ID (commit `f524310`, `artifacts/EP13B/`, F-EP13B-02) and `EP<nn><L>` is the child-story form in [id-conventions](../../../.agents/id-conventions.md). Separation from closed EP13 is preserved. | Proposed — user may override; a rename is mechanical. |
-| D14-2 | Milestone: a new **M7 — release 1.1.x hardening** for EP14 (M6 = EP13, closed). | Proposed — ratified by default at implementation start. |
+| D14-1 | **Epic ID.** Requested as "EP13B"; created as **EP14** because `EP13B` is a stable EP13 child ID (commit `f524310`, `artifacts/EP13B/`, F-EP13B-02) and `EP<nn><L>` is the child-story form in [id-conventions](../../../.agents/id-conventions.md). Separation from closed EP13 is preserved. | Ratified (user, 2026-11-16 — accepted by proceeding with EP14). |
+| D14-2 | Milestone: a new **M7 — release 1.1.x hardening** for EP14 (M6 = EP13, closed). | Ratified (user, 2026-11-16). |
 | D14-3 | Scope = the EP13R rulings verbatim: "Do next" → children, "Backlog" → register. | User decision 2026-11-16 ("ratify all of your findings on EP13R"). |
 | D14-4 | Backlog tracking: the `## Backlog` register below, `BL-<nn>-<nn>` IDs, queue-lint rule 6 (row shape), `queue-lint --backlog` (cross-epic listing), and the review ritual in [delivery-state](../../../.agents/delivery-state.md#backlog-register) + planner skill step 0. | User request 2026-11-16 ("make sure we have a way of tracking the backlogged items well"); landed with this breakdown. |
 

@@ -4,14 +4,14 @@
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 (D14-2)
 **Layer:** Backend + Frontend (migration, engine, assignment form)
-**Status:** Needs refinement — refiner pass for the assignment-form control and copy; ▲ D-E1…D-E3 need rulings; plan review required (new migration, planning-checklist rule)
+**Status:** Needs refinement — refiner pass for the assignment-form control and copy; ▲ D-E1…D-E3 ratified (user, 2026-11-16); plan review required (new migration, planning-checklist rule)
 **Dependencies:** EP14B (the new boolean body field must land under the strict-conversion policy, ▲ D-B1). Sources: EP13R D-R1 + D-R2 (user rulings 2026-11-16); F-EP13J-02, F-EP13J-04; closes V-13-5.
 
 ## Plan at a glance
 
 - **What this changes:** an optional per-assignment "hard" flag (Auto / Hard / Not hard) that placement uses in place of the D13-10 guess when set; and a guard so light work only prefers a LOW-energy window that sits in the same part of the day as the earliest free NORMAL window.
 - **Why it improves it:** the heuristic guesses what the student can simply say, and calibration can flip its 120-minute line (F-EP13J-02); without the guard, easy work can drift to a 22:00 LOW slot when 09:00 is free (F-EP13J-04) (product). Both stay deterministic, and the all-NORMAL identity (EP13J-AC3) must still hold (code).
-- **Decisions needing you:** ▲ D-E1 (persisted field shape), ▲ D-E2 (Auto stays the default), ▲ D-E3 (the guard rule).
+- **Decisions needing you:** none — D-E1…D-E3 ratified (user, 2026-11-16).
 - **How to change this plan:** edit a Ruling cell below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary
@@ -52,9 +52,9 @@ AC-E14-06; TR-E14-06; DoD-1–9.
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| ▲ D-E1 | Persisted shape: (a) nullable boolean `hard` (null = Auto); (b) nullable enum `effort` (LIGHT/NORMAL/HARD); (c) reuse `priority` | **(a)** — three honest states, one additive migration; (b) adds a NORMAL the engine has no use for; (c) conflates urgency with effort | Proposed |
-| ▲ D-E2 | Default: (a) Auto = D13-10 heuristic, labelled "Auto (based on type and size)"; (b) remove the heuristic, default Not hard | **(a)** — nobody's plan changes until they choose; V-13-5 closes as "student-overridable" | Proposed |
-| ▲ D-E3 (refines EP13J's D-J3) | Guard: (a) same-part-of-day rule via `windowHintOf`; (b) a new "no study after HH:mm" preference; (c) both | **(a)** — no new preference, deterministic, identity-preserving; (b) can come later if asked | Proposed |
+| ▲ D-E1 | Persisted shape: (a) nullable boolean `hard` (null = Auto); (b) nullable enum `effort` (LIGHT/NORMAL/HARD); (c) reuse `priority` | **(a)** — three honest states, one additive migration; (b) adds a NORMAL the engine has no use for; (c) conflates urgency with effort | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
+| ▲ D-E2 | Default: (a) Auto = D13-10 heuristic, labelled "Auto (based on type and size)"; (b) remove the heuristic, default Not hard | **(a)** — nobody's plan changes until they choose; V-13-5 closes as "student-overridable" | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
+| ▲ D-E3 (refines EP13J's D-J3) | Guard: (a) same-part-of-day rule via `windowHintOf`; (b) a new "no study after HH:mm" preference; (c) both | **(a)** — no new preference, deterministic, identity-preserving; (b) can come later if asked | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
 
 ## Definition of Done
 
