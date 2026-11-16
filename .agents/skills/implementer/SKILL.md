@@ -48,7 +48,7 @@ bundle. Match existing component/styling conventions; minimal diffs.
 
 ## Closeout (per child, in order)
 
-1. Every AC/check verified or honestly recorded open; never relabel unmet work.
+1. Every AC/check verified or honestly recorded open; never relabel unmet work. A gated-suite pass is evidence only with a CI run link or a local run command + result — "CI will run it" is not (EP14A, D-A2).
 2. Write `implementation.md`: AC-by-AC outcome (`<STORY>-AC<n>`), verification (command, cwd, result, tested state), changed paths, commit scope, deviations, findings with dispositions (or `Findings/deviations: None`). It is the only home for test counts. Close any checkpoint to a pointer.
 3. Update the story Status line, the queue row (state, next action, evidence = links + one-line verdict) and Active/Next fields; fill the sizing block's **Actual at closeout**.
 4. Stage owned paths explicitly, inspect the staged diff, **one commit per child** (code + records + queue row); never blanket-stage or bypass hooks. If blocked: `commit pending`, paths, reason.

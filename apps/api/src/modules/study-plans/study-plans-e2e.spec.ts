@@ -166,10 +166,12 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
   describe('the bag’s other keys survive a PUT', () => {
     it('the stored preferences column still carries the student’s unrelated keys', async () => {
       // The free-form profile bag (SP106) is written through PATCH
-      // /users/me — EP06 does not narrow it (D06-14).  That PATCH writes the
-      // `preferences` column verbatim (it replaces the column, it does not
-      // merge into it), so it is seeded **before** the study defaults are
-      // saved.
+      // /users/me — EP06 does not narrow it (D06-14). Since R-EP06-06 that
+      // PATCH **merges** into the column (users.service.ts), so the study
+      // defaults this student already saved above (sessionLengthMinutes 45,
+      // dailyCapMinutes 300) must survive it — EP14A (D-A4) pins the merge
+      // contract both ways: the unrelated key survives the PUT, and the saved
+      // defaults survive the PATCH.
       await agent
         .patch('/users/me')
         .set('Authorization', `Bearer ${student.accessToken}`)
@@ -184,7 +186,7 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
       });
       expect(stored?.preferences).toMatchObject({
         theme: 'dark',
-        studyDefaults: { ...DEFAULTS, sessionLengthMinutes: 45 },
+        studyDefaults: { ...DEFAULTS, sessionLengthMinutes: 45, dailyCapMinutes: 300 },
       });
     });
   });
@@ -540,8 +542,13 @@ describeIntegration('study planning end-to-end (real database, EP06A + EP06B)', 
           priority: 'MEDIUM',
         },
       });
-      const plan = await app.prisma.studyPlan.create({
-        data: { userId: session.id, date: new Date('2026-10-31T00:00:00.000Z'), targetHours: 1 },
+      // EP14A (D-A3): upsert per (user, date) — called twice per student, a
+      // second `create` collided on study_plans_userId_date_key.
+      const date = new Date('2026-10-31T00:00:00.000Z');
+      const plan = await app.prisma.studyPlan.upsert({
+        where: { userId_date: { userId: session.id, date } },
+        create: { userId: session.id, date, targetHours: 1 },
+        update: {},
       });
       return app.prisma.plannedSession.create({
         data: {

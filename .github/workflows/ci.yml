@@ -1,8 +1,10 @@
 name: CI
 
 on:
+  # EP14A (D-A1): every branch, so the DATABASE_URL-gated API suites run on
+  # the work under review — not only after it reaches main/develop.
   push:
-    branches: [main, develop]
+    branches: ['**']
   pull_request:
     branches: [main, develop]
 
