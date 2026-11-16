@@ -9,7 +9,7 @@
 
 ## Plan at a glance
 
-- **What this changes:** `.github/workflows/ci.yml` runs on pushes to every branch (delivery branches included), so the `DATABASE_URL`-gated API suites — already wired to the workflow's Postgres service — execute on the work being reviewed; plus one closeout rule that a gated-suite claim cites a run.
+- **What this changes:** `.github/workflows/ci.yml` runs on pushes to every branch (delivery branches included) and its backend-test step runs the gated suites single-worker (`--runInBand`, the mode every recorded zero-failure contract uses) with a non-empty JWT secret even when the repo secret is unset; plus one closeout rule that a gated-suite claim cites a run.
 - **Why it improves it:** for a week, eight EP13 records said "CI executes the gated suites" while CI only watched `main`/`develop`; the first real run found 8 failures (product). A gate that cannot see the branch is not a gate (code).
 - **Decisions needing you:** none ▲; D-A1/D-A2 auto-ratify at implementation start.
 - **How to change this plan:** edit a Ruling cell below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
@@ -32,18 +32,20 @@ AC-E14-01; TR-E14-01; DoD-8, DoD-9.
 ## Acceptance criteria
 
 1. A push to any branch (including `hfi/**` delivery branches) triggers `build-and-test`; pull requests to `main`/`develop` still trigger it.
-2. In that job the gated suites run against the workflow's Postgres service (`DATABASE_URL` set) and a failing gated test fails the job — verified by one deliberately red throwaway commit on a scratch branch, reverted.
-3. The implementer skill's closeout states that a gated-suite pass is recorded only with a CI run link or a local run command + result; "CI will run it" is not evidence.
+2. The backend-test step runs the gated suites **single-worker** (`--runInBand` — execution-mode parity with every recorded zero-failure run, R-EP14-02) against the workflow's Postgres service, and the job's `JWT_SECRET` falls back to a non-empty test value when the repo secret is unset.
+3. A failing gated test fails the job — verified on a scratch branch by (i) one deliberately red throwaway commit and (ii) a baseline run of this branch whose **only** failures are the four known R-EP13-03 tests (the known-red baseline, R-EP14-01). The first fully green CI run is EP14B's closeout evidence, not this story's.
+4. The implementer skill's closeout states that a gated-suite pass is recorded only with a CI run link or a local run command + result; "CI will run it" is not evidence.
 
 ## Tests
 
-- TR-E14-01: the scratch-branch red/green pair from EP14A-AC2, both run links recorded in the implementation record.
-- Static: `git diff` of `ci.yml` shows only the `on:` block changed.
+- TR-E14-01: the scratch-branch pair from EP14A-AC3 — the deliberate-red run and the known-red-baseline run (exactly the four R-EP13-03 failures), both links recorded.
+- Static: `git diff` of `ci.yml` is confined to the `on:` block, the backend-test step and the `JWT_SECRET` line (R-EP14-02 relaxed the only-`on:` pin).
 
 ## Technical notes
 
 - Inspected: `.github/workflows/ci.yml:3–7` (`push`/`pull_request` on `[main, develop]`), `:13–30` (Postgres 15 service, `DATABASE_URL`/`TEST_DATABASE_URL`), `:73–77` (`test:integration --runInBand`, then `test`).
-- Proposed: `on: push: branches: ['**']` plus the existing `pull_request` block.
+- Proposed: `on: push: branches: ['**']` plus the existing `pull_request` block; backend-test step → `pnpm --filter @studypilot/api test -- --runInBand`; `JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-only-test-secret' }}` (the `??` fallback in `test-http.ts:72` does not catch an empty string — R-EP14-02).
+- Known-red window (R-EP14-01, accepted): between EP14A and EP14B every push shows the four pre-existing R-EP13-03 failures; EP14B's AC2 removes them and owns the first true-green link.
 
 ### Decisions
 

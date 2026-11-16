@@ -33,14 +33,14 @@ AC-E14-06; TR-E14-06; DoD-1–9.
 
 1. Assignments carry an optional hard flag (Auto when unset); create/update accept it with validation; the response always includes it; existing rows read as Auto.
 2. When set, placement treats the assignment as demanding (Hard) or light (Not hard) regardless of type and size; Auto keeps D13-10 exactly; with every window NORMAL the output stays byte-identical (EP13J-AC3 preserved).
-3. Light work prefers a LOW window only if it lies in the same part of the day (`windowHintOf`) as the earliest free NORMAL gap; otherwise it takes that NORMAL gap; demanding work is unchanged; deterministic.
+3. **Within one day's gap list** (placement is day-centric — `placeBlock` scans a single date's free gaps, so days are never compared): light work prefers a LOW gap only if it lies in the same part of that day (`windowHintOf`) as that day's earliest free NORMAL gap; otherwise it takes that NORMAL gap. Which day a block lands on is decided by the existing per-day loop and budgets, unchanged. Demanding work is unchanged; deterministic (R-EP14-03).
 4. The assignment form offers the three choices with keyboard support and plain copy (no percentages, no blame), following the EP13N named-choice pattern.
 
 ## Tests
 
 - AC1: DTO matrix (true/false/null/omitted, wrong types → 400 under D-B1); migration default; ownership on update.
 - AC2: `energy.spec.ts` — a HOMEWORK marked Hard scans HIGH first, an EXAM marked Not hard scans LOW first, Auto unchanged; identity case extended with flags set.
-- AC3: the F-EP13J-04 scenario (09:00 NORMAL + 22:00 LOW → light work at 09:00); same-part-of-day LOW still preferred; determinism.
+- AC3: the F-EP13J-04 scenario (09:00 NORMAL + 22:00 LOW same day → light work at 09:00); same-part-of-day LOW still preferred; **cross-day**: Monday 22:00 LOW only + Tuesday 09:00 NORMAL → the Monday block still lands Monday 22:00 (day choice untouched, R-EP14-03); determinism.
 - AC4: form component tests (render, arrow keys, round-trip, 400 under the group).
 
 ## Technical notes
@@ -54,7 +54,7 @@ AC-E14-06; TR-E14-06; DoD-1–9.
 |---|---|---|---|
 | ▲ D-E1 | Persisted shape: (a) nullable boolean `hard` (null = Auto); (b) nullable enum `effort` (LIGHT/NORMAL/HARD); (c) reuse `priority` | **(a)** — three honest states, one additive migration; (b) adds a NORMAL the engine has no use for; (c) conflates urgency with effort | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
 | ▲ D-E2 | Default: (a) Auto = D13-10 heuristic, labelled "Auto (based on type and size)"; (b) remove the heuristic, default Not hard | **(a)** — nobody's plan changes until they choose; V-13-5 closes as "student-overridable" | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
-| ▲ D-E3 (refines EP13J's D-J3) | Guard: (a) same-part-of-day rule via `windowHintOf`; (b) a new "no study after HH:mm" preference; (c) both | **(a)** — no new preference, deterministic, identity-preserving; (b) can come later if asked | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
+| ▲ D-E3 (refines EP13J's D-J3) | Guard: (a) same-part-of-day rule via `windowHintOf`, applied within a single day's gap list (day choice never moves — placement is day-centric); (b) a new "no study after HH:mm" preference; (c) both | **(a)** — no new preference, deterministic, identity-preserving; the day-centric pin is R-EP14-03's correction inside the ratified option | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
 
 ## Definition of Done
 

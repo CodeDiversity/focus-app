@@ -18,4 +18,8 @@ Created 2026-11-16 from the user's rulings on [EP13R](../EP13/EP13R-follow-up-re
 
 ## Plan correction log
 
-None yet.
+| ID | Date | Finding (plan review pass 1, [plan-review.md](./plan-review.md)) | Correction | Status |
+|---|---|---|---|---|
+| C-EP14-01 | 2026-11-16 | R-EP14-01: EP14A's red/green CI pair unattainable before EP14B (four pre-existing gated failures red on every run). | EP14A-AC3 redefined to deliberate-red + known-red-baseline (only the four R-EP13-03 tests); the first true-green CI link moved to EP14B-AC2/closeout; known-red window recorded in EP14A. | Fixed in plan |
+| C-EP14-02 | 2026-11-16 | R-EP14-02: CI ran the gated suites in parallel `jest` while every zero-failure contract is `--runInBand`; parallel-mode flakes unowned; `ci.yml` JWT secret can be empty. | EP14A-AC2 pins the backend-test step to `--runInBand` and a non-empty `JWT_SECRET` fallback; the only-`on:`-block static test relaxed accordingly. | Fixed in plan |
+| C-EP14-03 | 2026-11-16 | R-EP14-03: D-E3(a) guard undefined across dates (Mon 22:00 LOW vs Tue 09:00 NORMAL could defer light work a day). | EP14E-AC3 pins day-centric semantics (single day's gap list; day choice untouched), adds the cross-day test, aligns epic AC6 wording; stays inside the ratified option. | Fixed in plan |

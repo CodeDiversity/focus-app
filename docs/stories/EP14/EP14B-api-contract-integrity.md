@@ -32,7 +32,7 @@ AC-E14-02, AC-E14-03; TR-E14-02, TR-E14-03; DoD-2, DoD-3, DoD-8, DoD-9.
 ## Acceptance criteria
 
 1. A request body with a wrong-typed boolean or number (`{ locked: "yes" }`, `{ locked: 1 }`, `{ plannedMinutes: "25" }`) returns 400 with the field-level `errors` map and writes nothing; query parameters that are legitimately numeric (`?limit=10`) still parse.
-2. The full gated API run (`DATABASE_URL=… npx jest --runInBand` on a freshly migrated DB) has **zero failures**: the lock happy-path and lock-scoping fixtures no longer collide on `study_plans_userId_date_key`, and the bag-survival spec asserts the PATCH /users/me **merge** contract (R-EP06-06).
+2. The full gated API run (`DATABASE_URL=… npx jest --runInBand` on a freshly migrated DB) has **zero failures**, and the first fully green CI run on this branch is linked in the implementation record (R-EP14-01 — EP14A hands the known-red baseline to this story): the lock happy-path and lock-scoping fixtures no longer collide on `study_plans_userId_date_key`, and the bag-survival spec asserts the PATCH /users/me **merge** contract (R-EP06-06).
 3. `GET /study-sessions/momentum` returns `week.days`: seven `YYYY-MM-DD` strings starting at `week.startDate`; the web week strip renders from it and `weekDates` is deleted; the payload is otherwise unchanged and `contracts.md` documents the field.
 
 ## Tests
@@ -65,5 +65,5 @@ AC-E14-02, AC-E14-03; TR-E14-02, TR-E14-03; DoD-2, DoD-3, DoD-8, DoD-9.
 - **Actual at closeout:** tbd.
 - **Files:** `apps/api/src/main.ts`, `apps/api/src/test/test-http.ts`, query DTOs found by grep (`list-study-sessions-query.dto.ts` et al.), `momentum.ts`, `types.ts`, `study-plans-e2e.spec.ts`, `study-plans-data-scoping.spec.ts`, new `validation-strictness.e2e-spec.ts`; web `entities/study-session/model/types.ts`, `features/momentum/{model/momentumCopy.ts, ui/MomentumWeekStrip.tsx}` + tests; `docs/stories/EP13/contracts.md` momentum row.
 - **Start context:** this story; the inspected lines above; R-EP13-03 in `docs/stories/EP13/artifacts/EP13/review-round-1.md`.
-- **Verification:** full gated run 0 failed; ungated API + web suites green; lint/typecheck.
+- **Verification:** full gated run 0 failed locally **and** a green CI run link (the run includes the gated suites via EP14A's step); ungated API + web suites green; lint/typecheck.
 - **Dependencies / exclusions:** E2E fixes → EP14C; CI trigger → EP14A.

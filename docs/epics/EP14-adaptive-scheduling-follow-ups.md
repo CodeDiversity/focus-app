@@ -46,7 +46,7 @@ Everything ruled Backlog in EP13R (energy quick setup, "drained today", placemen
 3. The momentum payload carries the week's seven civil dates; the client performs no date arithmetic for the week strip.
 4. The full E2E suite passes deterministically under parallel load on any calendar date.
 5. The four EP13M accessibility defects are fixed and the axe gate in `e2e/adaptive-scheduling.spec.ts` runs with no allowlist.
-6. A student can mark an assignment as hard (or not hard); placement uses that flag in place of the D13-10 heuristic when set; light work never moves to a LOW window later in the day than a free NORMAL window in the same part of the day.
+6. A student can mark an assignment as hard (or not hard); placement uses that flag in place of the D13-10 heuristic when set; on any given day, light work never takes a LOW window later in that day when a NORMAL window in the same part of that day is free (which day a block lands on is unchanged).
 7. Deferred items are tracked in a register whose shape is lint-enforced and reviewed at every breakdown and sign-off.
 
 ## Proposed Stories
