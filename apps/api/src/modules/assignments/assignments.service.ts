@@ -19,7 +19,8 @@ function toAssignmentResponse(row: Assignment) {
     actualHours: row.actualHours,
     status: row.status,
     priority: row.priority,
-    type: row.type, // SP-115G (D115-4): 11-key projection, `type` after `priority`.
+    type: row.type, // SP-115G (D115-4): `type` after `priority`.
+    hard: row.hard, // EP14E (D-E1): 12-key projection, `hard` after `type`; null = Auto.
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -93,6 +94,8 @@ export class AssignmentsService {
         ...(dto.priority != null ? { priority: dto.priority } : {}),
         // D115-2: `type` omitted or null stores null — no schema default.
         ...(dto.type != null ? { type: dto.type } : {}),
+        // EP14E (D-E1a): `hard` omitted or null stores null (Auto).
+        ...(dto.hard != null ? { hard: dto.hard } : {}),
         // status and omitted priority deliberately use schema defaults.
       },
     });
@@ -114,12 +117,17 @@ export class AssignmentsService {
    * - `status` (SP-121A, D121-2/3): the closed five-value `AssignmentStatus`
    *   enum; omitted/null keeps the stored status; a status-only body counts
    *   as a non-empty patch; any other value → field-level 400, no write.
+   * - `hard` (EP14E, D-E4): **the one field where null is a value** — an
+   *   explicit `null` returns the assignment to Auto (written as null), an
+   *   omitted key keeps the stored value; a hard-only body counts as a
+   *   non-empty patch. Presence is `!== undefined`, not `has()`.
    * - Unknown fields (`actualHours`, `courseId`, `userId`) → 400
    *   with a field-level `errors` map (whitelist + `forbidNonWhitelisted`).
    * - A missing, foreign, or malformed assignment id → uniform 404
    *   `Resource not found` (the ownership predicate is in the query; both
    *   cases are indistinguishable — no existence oracle).
-   * - Response: the updated 11-key projection (`type` after `priority`).
+   * - Response: the updated 12-key projection (`type` after `priority`,
+   *   `hard` after `type`).
    */
   async update(userId: string, id: string, dto: UpdateAssignmentDto) {
     // Defense in depth for non-HTTP callers: rerun the complete DTO rules,
@@ -145,7 +153,8 @@ export class AssignmentsService {
       !has(dto.estimatedHours) &&
       !has(dto.priority) &&
       !has(dto.type) && // SP-115G: a type-only patch is a non-empty body.
-      !has(dto.status) // SP-121A (D121-3): a status-only patch is a non-empty body.
+      !has(dto.status) && // SP-121A (D121-3): a status-only patch is a non-empty body.
+      dto.hard === undefined // EP14E (D-E4): `hard: null` is a write (Auto), so it counts.
     ) {
       throw new BadRequestException('At least one field must be provided');
     }
@@ -164,6 +173,7 @@ export class AssignmentsService {
       priority: has(dto.priority) ? dto.priority! : existing.priority,
       type: has(dto.type) ? dto.type! : existing.type,
       status: has(dto.status) ? dto.status! : existing.status,
+      hard: dto.hard !== undefined ? dto.hard : existing.hard,
     });
     this.assertDto(merged);
 
@@ -177,6 +187,7 @@ export class AssignmentsService {
       priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
       type?: 'HOMEWORK' | 'PAPER' | 'PROJECT' | 'QUIZ' | 'EXAM';
       status?: AssignmentStatus;
+      hard?: boolean | null;
     } = {};
     if (has(dto.title)) {
       data.title = merged.title!;
@@ -200,6 +211,10 @@ export class AssignmentsService {
       // SP-121A: the merged value equals the requested enum value here —
       // `has()` already excluded omitted/null.
       data.status = merged.status as AssignmentStatus;
+    }
+    if (dto.hard !== undefined) {
+      // EP14E (D-E4): null is written — it returns the assignment to Auto.
+      data.hard = dto.hard;
     }
 
     try {
@@ -358,6 +373,7 @@ export class AssignmentsService {
         status: string;
         priority: string;
         type: string | null;
+        hard: boolean | null;
         createdAt: Date;
         updatedAt: Date;
         course: { id: string; name: string; code: string; color: string } | null;
@@ -379,6 +395,7 @@ export class AssignmentsService {
         status: row.status,
         priority: row.priority,
         type: row.type,
+        hard: row.hard, // EP14E
         createdAt: row.createdAt.toISOString(),
         updatedAt: row.updatedAt.toISOString(),
         course: row.course

@@ -16,10 +16,12 @@ export interface CreateAssignmentRequest {
   estimatedHours?: number | null;
   priority?: AssignmentPriority | null;
   type?: AssignmentType | null;
+  /** EP14E (D-E1a): true = Hard, false = Not hard; null/omitted stores null (Auto). */
+  hard?: boolean | null;
   description?: string | null;
 }
 
-/** 201: 11-key projection (`type` after `priority`); 400: field errors; 404: uniform course miss. */
+/** 201: 12-key projection (`type` after `priority`, `hard` after `type`); 400: field errors; 404: uniform course miss. */
 export async function createAssignment(data: CreateAssignmentRequest): Promise<CourseAssignment> {
   const body: CreateAssignmentRequest = { title: data.title };
   if (data.courseId) body.courseId = data.courseId;
@@ -27,6 +29,8 @@ export async function createAssignment(data: CreateAssignmentRequest): Promise<C
   if (data.estimatedHours != null) body.estimatedHours = data.estimatedHours;
   if (data.priority) body.priority = data.priority;
   if (data.type) body.type = data.type;
+  // EP14E: `false` is a value ("Not hard"), so the check is on null, not truthiness.
+  if (data.hard != null) body.hard = data.hard;
   if (data.description) body.description = data.description;
   const response = await api.post<CourseAssignment>('/assignments', body);
   return response.data;
@@ -36,6 +40,9 @@ export async function createAssignment(data: CreateAssignmentRequest): Promise<C
  * Patch semantics: each field is optional; `null`/omitted keeps the stored value.
  * For `type` this is D115-3 — a null never clears an assignment type, so an
  * unset select sends no `type` key at all.
+ *
+ * `hard` (EP14E, D-E4) is the exception: unlike `type`, a `hard: null` **is**
+ * sent and means Auto (it clears the stored flag); only an omitted key keeps it.
  */
 export interface UpdateAssignmentRequest {
   title?: string;
@@ -43,11 +50,12 @@ export interface UpdateAssignmentRequest {
   estimatedHours?: number | null;
   priority?: AssignmentPriority | null;
   type?: AssignmentType | null;
+  hard?: boolean | null;
   description?: string | null;
   status?: AssignmentStatus | null;
 }
 
-/** 200: updated 11-key projection; 400: field errors; 404: uniform miss. */
+/** 200: updated 12-key projection; 400: field errors; 404: uniform miss. */
 export async function updateAssignment(
   assignmentId: string,
   data: UpdateAssignmentRequest

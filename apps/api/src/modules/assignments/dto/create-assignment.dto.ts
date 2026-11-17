@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsIn,
   IsISO8601,
   IsNumber,
@@ -55,6 +56,15 @@ export class CreateAssignmentDto {
   @IsOptional()
   @IsIn(['HOMEWORK', 'PAPER', 'PROJECT', 'QUIZ', 'EXAM'])
   type?: 'HOMEWORK' | 'PAPER' | 'PROJECT' | 'QUIZ' | 'EXAM' | null;
+
+  // EP14E (D-E1a): the student's "hard" flag; null/omitted stores null
+  // (Auto). `IsBoolean` is strict and the pipe never coerces (EP14B D-B1),
+  // so `'true'`/`1` are field-level 400s. The `| null` union emits design
+  // type `Object`, so no `@Transform` is needed (the file's other `| null`
+  // fields).
+  @IsOptional()
+  @IsBoolean({ message: 'hard must be true, false or null' })
+  hard?: boolean | null;
 
   @IsOptional()
   @IsString()

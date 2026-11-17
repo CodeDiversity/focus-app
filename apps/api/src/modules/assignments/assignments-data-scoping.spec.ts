@@ -13,6 +13,7 @@ const KEYS = [
   'status',
   'priority',
   'type', // SP-115G (D115-4): the 11-key projection gains `type`.
+  'hard', // EP14E (D-E1): the 12-key projection gains `hard`.
   'createdAt',
   'updatedAt',
 ].sort();
@@ -305,6 +306,37 @@ describeIntegration('Assignment create data scoping (SP-113A, real HTTP/Postgres
       })
     ).toEqual(before);
     expect(await app.prisma.assignment.count({ where: { userId: students[1].id } })).toBe(0);
+  });
+
+  it('student B cannot PATCH hard on student A assignment: uniform 404, row unchanged; the 12-key projection carries hard on create, list and patch (EP14E-AC1)', async () => {
+    const created = await post(0, { title: 'Flag locked', hard: false }).expect(201);
+    expect(Object.keys(created.body).sort()).toEqual(KEYS);
+    expect(created.body.hard).toBe(false);
+    const before = await app.prisma.assignment.findFirst({
+      where: ownedWhere(students[0].id, created.body.id),
+    });
+    for (const id of [created.body.id, uuid(), 'not-an-id']) {
+      const response = await patch(1, id, { hard: true }).expect(404);
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        message: 'Resource not found',
+        error: 'Not Found',
+      });
+    }
+    expect(
+      await app.prisma.assignment.findFirst({ where: ownedWhere(students[0].id, created.body.id) })
+    ).toEqual(before);
+    // The owner's list and patch projections carry the key.
+    const listed = await agent
+      .get('/assignments')
+      .set('Authorization', `Bearer ${students[0].token}`)
+      .expect(200);
+    const item = listed.body.find((a: { id: string }) => a.id === created.body.id);
+    expect(item).toMatchObject({ hard: false });
+    expect(Object.keys(item).sort()).toEqual([...KEYS, 'course', 'subtasks'].sort());
+    const patched = await patch(0, created.body.id, { hard: true }).expect(200);
+    expect(Object.keys(patched.body).sort()).toEqual(KEYS);
+    expect(patched.body.hard).toBe(true);
   });
 
   it('student B cannot PATCH status on student A assignment: uniform 404, A status unchanged (SP-121A)', async () => {

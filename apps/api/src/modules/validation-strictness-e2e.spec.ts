@@ -81,6 +81,34 @@ describeIntegration('Request-body validation strictness (integration, real datab
     expect(stored?.locked).toBe(false);
   });
 
+  it('a wrong-typed hard flag on POST /assignments and PATCH /assignments/:id is a field-level 400, nothing written (EP14E, D-B1)', async () => {
+    const before = await app.prisma.assignment.count({ where: { userId } });
+    for (const hard of ['true', 1, 'yes']) {
+      const created = await agent
+        .post('/assignments')
+        .set(auth())
+        .send({ title: 'Strict flag', hard })
+        .expect(HttpStatus.BAD_REQUEST);
+      expect(created.body.errors).toHaveProperty('hard');
+      const patched = await agent
+        .patch(`/assignments/${assignmentId}`)
+        .set(auth())
+        .send({ hard })
+        .expect(HttpStatus.BAD_REQUEST);
+      expect(patched.body.errors).toHaveProperty('hard');
+    }
+    expect(await app.prisma.assignment.count({ where: { userId } })).toBe(before);
+    const stored = await app.prisma.assignment.findUnique({ where: { id: assignmentId } });
+    expect(stored?.hard).toBeNull();
+    // The real boolean still works on both routes.
+    const ok = await agent
+      .patch(`/assignments/${assignmentId}`)
+      .set(auth())
+      .send({ hard: true })
+      .expect(HttpStatus.OK);
+    expect(ok.body.hard).toBe(true);
+  });
+
   it('a wrong-typed number body field is a field-level 400', async () => {
     const res = await agent
       .post('/study-sessions')

@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsIn,
   IsISO8601,
   IsNumber,
@@ -30,7 +31,9 @@ import {
  * `dueDate` strict persistable ISO-8601 datetime; `estimatedHours`
  * `0 < h ≤ 1000`; `priority` the 4-value enum; `type` (SP-115G) the 5-value
  * enum; `status` (SP-121A, D121-2) the closed 5-value `AssignmentStatus`
- * enum — PATCH-only, create still starts `PENDING` (D121-1).
+ * enum — PATCH-only, create still starts `PENDING` (D121-1); `hard`
+ * (EP14E, D-E4) a strict boolean where **null is a value** (Auto) and only an
+ * omitted key keeps the stored value.
  *
  * `title` preserves its raw type despite the global pipe's implicit
  * conversion (the create DTO's F113A-2 fix): a numeric title is not a title.
@@ -85,4 +88,12 @@ export class UpdateAssignmentDto {
   @IsOptional()
   @IsIn(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'SUBMITTED', 'GRADED'])
   status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SUBMITTED' | 'GRADED' | null;
+
+  // EP14E (D-E4): the one field where null is a value — an explicit `null`
+  // returns the assignment to Auto, an omitted key keeps the stored value;
+  // a hard-only body is a non-empty patch. Strict boolean, never coerced
+  // (EP14B D-B1).
+  @IsOptional()
+  @IsBoolean({ message: 'hard must be true, false or null' })
+  hard?: boolean | null;
 }

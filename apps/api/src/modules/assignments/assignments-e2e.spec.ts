@@ -17,6 +17,7 @@ const ASSIGNMENT_KEYS = [
   'status',
   'priority',
   'type', // SP-115G (D115-4): the 11-key projection gains `type`.
+  'hard', // EP14E (D-E1): the 12-key projection gains `hard` (null = Auto).
   'createdAt',
   'updatedAt',
 ].sort();
@@ -584,5 +585,83 @@ describeIntegration('quick assignment creation end-to-end (SP-113C, real databas
     await agent
       .delete('/assignments/00000000-0000-0000-0000-000000000000')
       .expect(HttpStatus.UNAUTHORIZED);
+  });
+
+  // ==================== the hard flag (EP14E-AC1, D-E1/D-E4) ====================
+
+  it('hard DTO matrix on create and patch: true/false/null/omitted accepted, wrong types 400 on errors.hard, PATCH null returns to Auto, omitted keeps (EP14E-AC1, D-E4)', async () => {
+    // Create: null and omitted both store null (Auto); the response always carries the key.
+    const omitted = await create(studentA, { title: 'Auto by omission', courseId: courseA }).expect(
+      HttpStatus.CREATED
+    );
+    expect(Object.keys(omitted.body).sort()).toEqual(ASSIGNMENT_KEYS);
+    expect(omitted.body.hard).toBeNull();
+    const explicitNull = await create(studentA, { title: 'Auto by null', hard: null }).expect(
+      HttpStatus.CREATED
+    );
+    expect(explicitNull.body.hard).toBeNull();
+    for (const hard of [true, false]) {
+      const typed = await create(studentA, { title: `Flagged ${hard}`, hard }).expect(
+        HttpStatus.CREATED
+      );
+      expect(typed.body.hard).toBe(hard);
+      const row = await app.prisma.assignment.findFirst({
+        where: { id: typed.body.id, userId: studentA.id },
+      });
+      expect(row?.hard).toBe(hard);
+    }
+
+    // Wrong types are field-level 400s on both routes — nothing written (EP14B D-B1).
+    const before = await app.prisma.assignment.count({ where: { userId: studentA.id } });
+    for (const hard of ['true', 1, 0, 'yes', []]) {
+      const created = await create(studentA, { title: 'Bad flag', hard }).expect(
+        HttpStatus.BAD_REQUEST
+      );
+      expect(created.body.errors).toHaveProperty('hard');
+      const patched = await patch(studentA, omitted.body.id, { hard }).expect(
+        HttpStatus.BAD_REQUEST
+      );
+      expect(patched.body.errors).toHaveProperty('hard');
+    }
+    expect(await app.prisma.assignment.count({ where: { userId: studentA.id } })).toBe(before);
+    expect(
+      (
+        await app.prisma.assignment.findFirst({
+          where: { id: omitted.body.id, userId: studentA.id },
+        })
+      )?.hard
+    ).toBeNull();
+
+    // PATCH { hard: true } alone is a valid non-empty body; omitting the key keeps the value;
+    // an explicit null returns the assignment to Auto (D-E4).
+    const flagged = await patch(studentA, omitted.body.id, { hard: true }).expect(HttpStatus.OK);
+    expect(Object.keys(flagged.body).sort()).toEqual(ASSIGNMENT_KEYS);
+    expect(flagged.body.hard).toBe(true);
+    const kept = await patch(studentA, omitted.body.id, { title: 'Renamed, flag kept' }).expect(
+      HttpStatus.OK
+    );
+    expect(kept.body).toMatchObject({ title: 'Renamed, flag kept', hard: true });
+    const cleared = await patch(studentA, omitted.body.id, { hard: null }).expect(HttpStatus.OK);
+    expect(cleared.body.hard).toBeNull();
+    const row = await app.prisma.assignment.findFirst({
+      where: { id: omitted.body.id, userId: studentA.id },
+    });
+    expect(row).toMatchObject({ title: 'Renamed, flag kept', hard: null });
+    // The course projection carries the key too (null here).
+    const refetched = await detail(studentA, courseA).expect(HttpStatus.OK);
+    expect(refetched.body.assignments).toContainEqual({ ...cleared.body, subtasks: [] });
+  });
+
+  it('a row inserted without hard reads back null (existing rows read as Auto) — migration 20261116130000_assignment_hard_flag', async () => {
+    // Insert the way a pre-EP14E writer would: no `hard` key at all.
+    const row = await app.prisma.assignment.create({
+      data: { userId: studentA.id, courseId: courseA, title: 'Pre-EP14E row' },
+      select: { id: true, hard: true },
+    });
+    expect(row.hard).toBeNull();
+    const refetched = await detail(studentA, courseA).expect(HttpStatus.OK);
+    const projected = refetched.body.assignments.find((a: { id: string }) => a.id === row.id);
+    expect(projected).toMatchObject({ id: row.id, hard: null });
+    expect(Object.keys(projected).sort()).toEqual(PROJECTED_ASSIGNMENT_KEYS);
   });
 });

@@ -211,6 +211,22 @@ describe('remaining work (domain, EP06B)', () => {
       expect(schedulable[0].courseCode).toBeNull();
     });
 
+    it('carries the EP14E hard flag only when supplied (pre-EP14E callers see the same shape)', () => {
+      const { schedulable } = classifyAssignments(
+        [facts({ id: 'h', hard: true }), facts({ id: 'n', hard: null }), facts({ id: 'u' })],
+        noConfirmed
+      );
+      expect(schedulable[0]).toMatchObject({ id: 'h', hard: true });
+      expect(schedulable[1]).toMatchObject({ id: 'n', hard: null });
+      expect('hard' in schedulable[2]).toBe(false);
+      // Flagged rows carry it too — one base object, one rule.
+      const { flagged } = classifyAssignments(
+        [facts({ id: 'f', estimatedHours: null, hard: false })],
+        noConfirmed
+      );
+      expect(flagged[0]).toMatchObject({ id: 'f', flagged: 'MISSING_ESTIMATE', hard: false });
+    });
+
     it('keeps the input order — the ordering is the comparator’s business (D06-22)', () => {
       const { schedulable } = classifyAssignments(
         [facts({ id: 'later' }), facts({ id: 'earlier' })],

@@ -18,6 +18,7 @@ const item: AssignmentInteractionItem = {
   status: 'PENDING',
   priority: 'MEDIUM',
   type: 'HOMEWORK',
+  hard: null,
   subtasks: [],
 };
 

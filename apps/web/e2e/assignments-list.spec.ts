@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import {
+  axeViolations,
   createAuthenticatedUserViaApi,
   createCourseViaApi,
   createSemesterViaApi,
@@ -75,6 +76,51 @@ test('creates from the empty list, keeps focus, and edits/deletes through the sh
   const deleteDialog = page.getByRole('dialog', { name: `Delete ${title}?` });
   await deleteDialog.getByRole('button', { name: `Delete ${title}` }).click();
   await expect(page.getByText('No assignments yet.')).toBeVisible();
+});
+
+test('creates an assignment marked Hard and reopens it with Hard checked; the dialog passes the axe gate with the effort group present (EP14E-AC4)', async ({
+  page,
+  request,
+}) => {
+  const { email } = await createAuthenticatedUserViaApi(request);
+  await loginViaUi(page, email);
+  await page.goto('/assignments');
+
+  await page.getByRole('button', { name: 'Add your first assignment' }).click();
+  const createDialog = page.getByRole('dialog', { name: 'Add an assignment' });
+  const title = `Hard assignment ${uniqueSuffix()}`;
+  await createDialog.getByLabel('Title').fill(title);
+
+  // The group: one legend, three segments, Auto preselected, helper copy exact.
+  const group = createDialog.getByRole('group', { name: 'How hard is this?' });
+  await expect(group.getByRole('radio', { name: 'Auto' })).toBeChecked();
+  await expect(group.getByText('Auto — based on the type and size.')).toBeVisible();
+  // The radios are visually hidden; the segment label is the click target.
+  // (`exact`: Playwright's default substring match would also hit "Not hard".)
+  await group.getByText('Hard', { exact: true }).click();
+  await expect(group.getByRole('radio', { name: 'Hard', exact: true })).toBeChecked();
+  await expect(
+    group.getByText('Planned for your high-energy times when you have them.')
+  ).toBeVisible();
+  // EP14D's no-allowlist gate, scanned with the dialog (and the group) open.
+  expect(await axeViolations(page)).toEqual([]);
+
+  await createDialog.getByRole('button', { name: 'Create assignment' }).click();
+  await expect(page.getByText('Assignment added. Showing 1 assignment.')).toBeVisible();
+
+  const row = page.locator('li').filter({ hasText: title });
+  await row.getByRole('button', { name: title, exact: true }).click();
+  const editDialog = page.getByRole('dialog', { name: 'Edit assignment' });
+  await expect(editDialog.getByRole('radio', { name: 'Hard', exact: true })).toBeChecked();
+  await expect(editDialog.getByRole('radio', { name: 'Auto' })).not.toBeChecked();
+  // Back to Auto round-trips as null (D-E4): reopen shows Auto again.
+  await editDialog.getByText('Auto', { exact: true }).click();
+  await editDialog.getByRole('button', { name: 'Save changes' }).click();
+  await expect(page.getByText('Assignment updated. Showing 1 assignment.')).toBeVisible();
+  await row.getByRole('button', { name: title, exact: true }).click();
+  await expect(
+    page.getByRole('dialog', { name: 'Edit assignment' }).getByRole('radio', { name: 'Auto' })
+  ).toBeChecked();
 });
 
 test('prefills the create course from the active filter and links the created row to its course', async ({
@@ -195,13 +241,18 @@ test.describe('mobile create surface', () => {
     for (let i = 0; i < count; i++) {
       const control = controls.nth(i);
       if (!(await control.isVisible())) continue;
-      const box = await control.boundingBox();
-      const name = await control.evaluate(
-        (el) => el.getAttribute('aria-label') ?? el.id ?? el.tagName
-      );
-      expect(box?.height ?? 0, `control ${name} is ≥ 44px tall at 375px`).toBeGreaterThanOrEqual(
-        44
-      );
+      // EP14E: the effort group's radios are visually hidden (`sr-only`, 1 px);
+      // the tap target is the segment label, so a radio is measured through
+      // its label. Every other control is measured directly.
+      const { name, height } = await control.evaluate((el) => {
+        const input = el as HTMLInputElement;
+        const target = input.type === 'radio' && input.labels?.length ? input.labels[0] : el;
+        return {
+          name: el.getAttribute('aria-label') ?? el.id ?? el.tagName,
+          height: target.getBoundingClientRect().height,
+        };
+      });
+      expect(height, `control ${name} is ≥ 44px tall at 375px`).toBeGreaterThanOrEqual(44);
     }
 
     const noHorizontalOverflow = await page.evaluate(

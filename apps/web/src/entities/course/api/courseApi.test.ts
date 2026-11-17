@@ -311,6 +311,7 @@ const detailCourse: CourseDetail = {
       status: 'PENDING',
       priority: 'MEDIUM',
       type: null,
+      hard: null,
       subtasks: [],
       createdAt: createdCourse.createdAt,
       updatedAt: createdCourse.updatedAt,

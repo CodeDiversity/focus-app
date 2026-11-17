@@ -42,6 +42,7 @@ const problemSet: CourseAssignment = {
   status: 'PENDING',
   priority: 'MEDIUM',
   type: 'HOMEWORK',
+  hard: null,
   subtasks: [],
   ...timestamps,
 };
@@ -55,6 +56,7 @@ const essay: CourseAssignment = {
   status: 'IN_PROGRESS',
   priority: 'HIGH',
   type: null,
+  hard: null,
   subtasks: [],
   ...timestamps,
 };
@@ -68,6 +70,7 @@ const labReport: CourseAssignment = {
   status: 'GRADED',
   priority: 'LOW',
   type: null,
+  hard: null,
   subtasks: [],
   ...timestamps,
 };

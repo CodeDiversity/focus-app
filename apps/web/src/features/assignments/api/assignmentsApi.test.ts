@@ -19,6 +19,7 @@ const payload: AssignmentListItem[] = [
     status: 'PENDING',
     priority: 'MEDIUM',
     type: 'HOMEWORK',
+    hard: null,
     createdAt: '2026-01-10T09:00:00.000Z',
     updatedAt: '2026-01-10T09:00:00.000Z',
     course: { id: 'c1', name: 'Calculus', code: 'MATH101', color: '#10b981' },

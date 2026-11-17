@@ -14,6 +14,7 @@ import { Button } from '@/shared/ui/Button';
 import { Dialog } from '@/shared/ui/Dialog';
 import { Input } from '@/shared/ui/Input';
 import { Select } from '@/shared/ui/Select';
+import { EffortChoice, effortOf, hardOf } from './EffortChoice';
 
 /** Parse date parts in local time, never as a UTC date-only string (D113B-3). */
 function localDate(value: string): Date {
@@ -63,9 +64,12 @@ const schema = z.object({
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
   /** `''` is the unset state on the wire it is omitted entirely (SP-115, D115-1). */
   type: z.union([z.enum(['HOMEWORK', 'PAPER', 'PROJECT', 'QUIZ', 'EXAM']), z.literal('')]),
+  /** EP14E: Auto / Hard / Not hard; `auto` is the wire `null` (omitted on create). */
+  effort: z.enum(['auto', 'hard', 'not-hard']),
   description: z.string().max(2000, 'Description must be 2000 characters or fewer').optional(),
 });
 type FormData = z.infer<typeof schema>;
+/** Server error keys, in the order they are mapped. */
 const FIELDS = [
   'courseId',
   'title',
@@ -73,8 +77,20 @@ const FIELDS = [
   'estimatedHours',
   'priority',
   'type',
+  'hard',
   'description',
 ] as const;
+/** Server key → form field; the server's `hard` (EP14E) lands on the `effort` group. */
+const FORM_FIELD: Record<(typeof FIELDS)[number], keyof FormData> = {
+  courseId: 'courseId',
+  title: 'title',
+  dueDate: 'dueDate',
+  estimatedHours: 'estimatedHours',
+  priority: 'priority',
+  type: 'type',
+  hard: 'effort',
+  description: 'description',
+};
 /** The five stored type identifiers in the D115-1 register order (option order). */
 const ASSIGNMENT_TYPES: AssignmentType[] = ['HOMEWORK', 'PAPER', 'PROJECT', 'QUIZ', 'EXAM'];
 /** Title-cased select option copy; the `value`s stay the API wire format (D115-1). */
@@ -131,6 +147,7 @@ export function AssignmentForm({
     setError,
     setValue,
     getValues,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -141,9 +158,11 @@ export function AssignmentForm({
       estimatedHours: assignment?.estimatedHours != null ? String(assignment.estimatedHours) : '',
       priority: assignment?.priority ?? 'MEDIUM',
       type: assignment?.type ?? '',
+      effort: effortOf(assignment?.hard),
       description: assignment?.description ?? '',
     },
   });
+  const effort = watch('effort');
 
   useEffect(() => {
     // The list's course picker resolves after mount; apply its filter prefill
@@ -168,6 +187,8 @@ export function AssignmentForm({
           estimatedHours: data.estimatedHours ? Number(data.estimatedHours) : null,
           // D115-3: a falsy (unset) select sends no key — never `type: null`.
           ...(data.type ? { type: data.type } : {}),
+          // EP14E (D-E4): always sent — `null` means Auto and clears a stored flag.
+          hard: hardOf(data.effort),
           description: data.description ?? '',
         });
       } else {
@@ -181,6 +202,8 @@ export function AssignmentForm({
           ...(data.dueDate ? { dueDate: localDate(data.dueDate).toISOString() } : {}),
           ...(data.estimatedHours ? { estimatedHours: Number(data.estimatedHours) } : {}),
           ...(data.type ? { type: data.type } : {}),
+          // EP14E: Auto omits the key (stores null); Hard/Not hard send the boolean.
+          ...(data.effort !== 'auto' ? { hard: hardOf(data.effort) } : {}),
           ...(data.description ? { description: data.description } : {}),
         });
       }
@@ -192,7 +215,7 @@ export function AssignmentForm({
         for (const field of FIELDS) {
           const message = getFieldError(apiError, field);
           if (message) {
-            setError(field, { type: 'server', message });
+            setError(FORM_FIELD[field], { type: 'server', message });
             mapped = true;
           }
         }
@@ -321,6 +344,18 @@ export function AssignmentForm({
               <option value="URGENT">Urgent</option>
             </Select>
           </div>
+          {/*
+           * EP14E (D-E5): the effort row — full width, below Type/Priority
+           * and above Description, always visible, never required. Auto is
+           * preselected, so Title → Create stays the whole required path.
+           */}
+          <EffortChoice
+            value={effort}
+            onChange={(value) => setValue('effort', value, { shouldDirty: true })}
+            disabled={isSubmitting}
+            error={errors.effort?.message}
+            idBase="assignment-effort"
+          />
           <div className="w-full">
             <label
               htmlFor="assignment-description"

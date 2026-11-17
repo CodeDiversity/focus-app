@@ -25,6 +25,7 @@ const ASSIGNMENT_KEYS = [
   'subtasks', // SP-120I (D120-5)
   'title',
   'type', // SP-115G (D115-4)
+  'hard', // EP14E (D-E1)
   'updatedAt',
 ].sort();
 

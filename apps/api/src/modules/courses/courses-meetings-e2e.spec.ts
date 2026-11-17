@@ -92,6 +92,7 @@ const ASSIGNMENT_KEYS = [
   'subtasks', // SP-120I (D120-5): the ordered 6-key subtask lists.
   'title',
   'type', // SP-115G (D115-4): the 11-key projection gains `type`.
+  'hard', // EP14E (D-E1): the 12-key projection gains `hard`.
   'updatedAt',
 ].sort();
 

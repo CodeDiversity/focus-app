@@ -149,6 +149,8 @@ export function classifyAssignments(
       ...(assignment.assignmentType !== undefined
         ? { assignmentType: assignment.assignmentType }
         : {}),
+      // EP14E (D-E1): the student's "hard" flag, same carry rule.
+      ...(assignment.hard !== undefined ? { hard: assignment.hard } : {}),
     };
 
     // The flagging rule (AC-E06-09, D06-25) — expressed here and nowhere

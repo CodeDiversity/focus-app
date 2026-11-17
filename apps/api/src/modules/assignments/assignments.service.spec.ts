@@ -32,6 +32,10 @@ const invalid: [string, unknown][] = [
   ['type', ''],
   ['description', 'x'.repeat(2001)],
   ['description', 42],
+  ['hard', 'yes'], // EP14E: strict boolean — never coerced (EP14B D-B1).
+  ['hard', 1],
+  ['hard', 'true'],
+  ['hard', []],
 ];
 
 describe('AssignmentsService (SP-113A)', () => {
@@ -52,6 +56,7 @@ describe('AssignmentsService (SP-113A)', () => {
           status: 'PENDING',
           priority: 'MEDIUM',
           type: null,
+          hard: null,
           createdAt: now,
           updatedAt: now,
           ...data,
@@ -61,7 +66,7 @@ describe('AssignmentsService (SP-113A)', () => {
     service = new AssignmentsService(prisma as unknown as PrismaService);
   });
 
-  it('returns exactly the 11-key projection (type after priority) and leaves defaults to Prisma', async () => {
+  it('returns exactly the 12-key projection (type after priority, hard after type) and leaves defaults to Prisma', async () => {
     expect(await service.create('student', { title: '  Essay  ' })).toEqual({
       id: 'assignment',
       title: 'Essay',
@@ -72,6 +77,7 @@ describe('AssignmentsService (SP-113A)', () => {
       status: 'PENDING',
       priority: 'MEDIUM',
       type: null,
+      hard: null,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     });
@@ -123,7 +129,7 @@ describe('AssignmentsService (SP-113A)', () => {
     expect(result).not.toHaveProperty('courseId');
   });
 
-  it('normalizes optional nulls, including courseId and type (D115-2)', async () => {
+  it('normalizes optional nulls, including courseId, type and hard (D115-2, EP14E D-E1a)', async () => {
     await service.create('student', {
       title: 'Essay',
       courseId: null,
@@ -132,11 +138,20 @@ describe('AssignmentsService (SP-113A)', () => {
       priority: null,
       type: null,
       description: null,
+      hard: null,
     });
     expect(prisma.course.findFirst).not.toHaveBeenCalled();
     expect(prisma.assignment.create).toHaveBeenCalledWith({
       data: { userId: 'student', title: 'Essay', courseId: null },
     });
+  });
+
+  it.each([true, false])('stores hard=%p when given and returns it (EP14E-AC1)', async (hard) => {
+    const result = await service.create('student', { title: 'Essay', hard });
+    expect(prisma.assignment.create).toHaveBeenCalledWith({
+      data: { userId: 'student', title: 'Essay', courseId: null, hard },
+    });
+    expect(result).toMatchObject({ hard });
   });
 
   it.each(['foreign', 'missing', ''])('course %p → uniform 404 and no write', async (courseId) => {
@@ -225,6 +240,7 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
     status: 'PENDING',
     priority: 'HIGH',
     type: 'HOMEWORK', // SP-115G: the stored type updates merge against.
+    hard: true, // EP14E: the stored flag omitted keys must keep (D-E4).
     createdAt: now,
     updatedAt: now,
   };
@@ -254,7 +270,7 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
     service = new AssignmentsService(prisma as unknown as PrismaService);
   });
 
-  it('updates only the provided fields, preserves the rest, returns the 11-key projection', async () => {
+  it('updates only the provided fields, preserves the rest, returns the 12-key projection', async () => {
     const result = await service.update('student', 'assignment', { title: '  New title  ' });
     expect(prisma.assignment.findFirst).toHaveBeenCalledWith({
       where: { id: 'assignment', userId: 'student' },
@@ -273,10 +289,42 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
       status: 'PENDING',
       priority: 'HIGH',
       type: 'HOMEWORK',
+      hard: true,
       createdAt: now.toISOString(),
       updatedAt: later.toISOString(),
     });
   });
+
+  it('hard: omitted keeps the stored value, explicit null writes null (Auto), hard-only is a non-empty body (EP14E D-E4)', async () => {
+    await service.update('student', 'assignment', { title: 'Kept', hard: undefined });
+    expect(prisma.assignment.update).toHaveBeenLastCalledWith({
+      where: { id: 'assignment', userId: 'student' },
+      data: { title: 'Kept' },
+    });
+    const cleared = await service.update('student', 'assignment', { hard: null });
+    expect(prisma.assignment.update).toHaveBeenLastCalledWith({
+      where: { id: 'assignment', userId: 'student' },
+      data: { hard: null },
+    });
+    expect(cleared).toMatchObject({ hard: null, title: 'Essay' });
+    const flipped = await service.update('student', 'assignment', { hard: false });
+    expect(prisma.assignment.update).toHaveBeenLastCalledWith({
+      where: { id: 'assignment', userId: 'student' },
+      data: { hard: false },
+    });
+    expect(flipped).toMatchObject({ hard: false });
+  });
+
+  it.each(['yes', 1, 'true', []])(
+    'service-level assertDto rejects hard=%p for non-HTTP callers with no query or write (EP14E)',
+    async (hard) => {
+      await expect(
+        service.update('student', 'assignment', { hard } as unknown as UpdateAssignmentDto)
+      ).rejects.toMatchObject({ response: { errors: { hard: expect.any(Array) } } });
+      expect(prisma.assignment.findFirst).not.toHaveBeenCalled();
+      expect(prisma.assignment.update).not.toHaveBeenCalled();
+    }
+  );
 
   it('replaces the stored type when patched with a valid value (D115-3)', async () => {
     const result = await service.update('student', 'assignment', { type: 'PAPER' });
@@ -345,6 +393,7 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
       status: 'IN_PROGRESS',
       priority: 'HIGH',
       type: 'HOMEWORK',
+      hard: true,
       createdAt: now.toISOString(),
       updatedAt: later.toISOString(),
     });
@@ -563,6 +612,9 @@ describe('UpdateAssignmentDto with production FieldValidationPipe', () => {
     ['status', 'completed'], // lowercase is not a stored value.
     ['status', 1],
     ['status', true],
+    ['hard', 'yes'], // EP14E: strict boolean (EP14B D-B1).
+    ['hard', 1],
+    ['hard', 'true'],
     ['actualHours', 5],
     ['courseId', 'own-course'],
     ['userId', 'other'],
@@ -570,6 +622,13 @@ describe('UpdateAssignmentDto with production FieldValidationPipe', () => {
     await expect(validate({ title: 'Essay', [field]: value })).rejects.toMatchObject({
       response: { errors: { [field]: expect.any(Array) } },
     });
+  });
+
+  it('accepts hard true / false / null and an omitted hard (EP14E-AC1)', async () => {
+    for (const hard of [true, false, null]) {
+      await expect(validate({ hard })).resolves.toMatchObject({ hard });
+    }
+    await expect(validate({ title: 'Essay' })).resolves.toBeInstanceOf(UpdateAssignmentDto);
   });
 
   it('accepts a valid partial DTO and explicit optional nulls', async () => {

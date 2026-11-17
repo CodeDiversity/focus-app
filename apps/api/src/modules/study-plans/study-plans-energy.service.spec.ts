@@ -128,4 +128,28 @@ describe('StudyPlansService EP13J energy-tagged availability (unit, mocked Prism
     // The blocked row sits outside every available window, so it changes nothing.
     expect({ ...tagged, generatedAt: '' }).toEqual({ ...untagged, generatedAt: '' });
   });
+
+  it('gatherPlanData maps Assignment.hard into the engine input: a HOMEWORK marked hard lands in the HIGH evening (EP14E-AC2)', async () => {
+    availabilitySlotFindMany.mockResolvedValue(slots('HIGH'));
+    assignmentFindMany.mockResolvedValue([
+      assignmentRow({ type: 'HOMEWORK', estimatedHours: 1, hard: true }),
+    ]);
+    const flagged = await service.preview(userId);
+    expect(fridayStarts(flagged)).toEqual(['18:00']);
+    expect(assignmentFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ select: expect.objectContaining({ hard: true }) })
+    );
+    // Auto (null / absent) keeps the D13-10 verdict: light work, NORMAL morning first.
+    for (const hard of [null, undefined]) {
+      assignmentFindMany.mockResolvedValue([
+        assignmentRow({ type: 'HOMEWORK', estimatedHours: 1, ...(hard === null ? { hard } : {}) }),
+      ]);
+      expect(fridayStarts(await service.preview(userId))).toEqual(['09:00']);
+    }
+    // Not hard on a PAPER: light work, so the HIGH window is no longer first.
+    assignmentFindMany.mockResolvedValue([
+      assignmentRow({ type: 'PAPER', estimatedHours: 1, hard: false }),
+    ]);
+    expect(fridayStarts(await service.preview(userId))).toEqual(['09:00']);
+  });
 });

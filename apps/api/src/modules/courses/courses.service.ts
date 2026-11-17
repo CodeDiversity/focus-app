@@ -69,6 +69,7 @@ type AssignmentRow = {
   status: string;
   priority: string;
   type: string | null; // SP-115G (D115-4)
+  hard: boolean | null; // EP14E (D-E1): null = Auto
   createdAt: Date;
   updatedAt: Date;
   tasks: SubtaskRow[]; // SP-120I (D120-5): the owned subtask rows.
@@ -108,6 +109,7 @@ function toAssignmentResponse(assignment: AssignmentRow) {
     status: assignment.status,
     priority: assignment.priority,
     type: assignment.type, // SP-115G (D115-4): `type` after `priority`.
+    hard: assignment.hard, // EP14E (D-E1): `hard` after `type`; null for pre-EP14E rows.
     createdAt: assignment.createdAt.toISOString(),
     updatedAt: assignment.updatedAt.toISOString(),
     subtasks: assignment.tasks.map((task) => toSubtaskResponse(task)),

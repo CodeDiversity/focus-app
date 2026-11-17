@@ -61,6 +61,9 @@ describe('AssignmentForm', () => {
     expect(screen.getByLabelText('Type')).toHaveFocus();
     await user.tab();
     expect(screen.getByLabelText('Priority')).toHaveFocus();
+    // EP14E: the effort group is one Tab stop (the checked radio, Auto).
+    await user.tab();
+    expect(screen.getByRole('radio', { name: 'Auto' })).toHaveFocus();
     await user.tab();
     expect(screen.getByLabelText('Description')).toHaveFocus();
     await user.tab();
@@ -320,6 +323,8 @@ describe('AssignmentForm', () => {
     await waitFor(() => expect(submit()).toBeDisabled());
     for (const label of ['Title', 'Due date', 'Estimated duration (hours)', 'Type', 'Priority'])
       expect(screen.getByLabelText(label)).toBeDisabled();
+    // EP14E: the effort group is disabled while submitting, too.
+    for (const radio of screen.getAllByRole('radio')) expect(radio).toBeDisabled();
     await user.tab();
     expect(screen.getByRole('dialog')).toContainElement(document.activeElement as HTMLElement);
     await user.click(submit());
@@ -339,6 +344,7 @@ describe('AssignmentForm', () => {
       status: 'PENDING',
       priority: 'HIGH',
       type: 'HOMEWORK',
+      hard: null,
       subtasks: [],
       createdAt: '2026-10-18T12:00:00.000Z',
       updatedAt: '2026-10-18T12:00:00.000Z',
@@ -408,6 +414,7 @@ describe('AssignmentForm', () => {
           dueDate: new Date(2026, 10, 1).toISOString(),
           estimatedHours: 5,
           type: 'QUIZ',
+          hard: null,
           description: 'New instructions',
         })
       );
@@ -432,6 +439,7 @@ describe('AssignmentForm', () => {
           dueDate: null,
           estimatedHours: null,
           type: 'HOMEWORK',
+          hard: null,
           description: '',
         })
       );
@@ -460,6 +468,7 @@ describe('AssignmentForm', () => {
             priority: 'HIGH',
             dueDate: null,
             estimatedHours: null,
+            hard: null, // EP14E (D-E4): Auto is sent as null on every edit.
             description: '',
           })
         );
@@ -546,6 +555,143 @@ describe('AssignmentForm', () => {
     });
   });
 
+  describe('effort flag — How hard is this? (EP14E-AC4, D-E4…D-E6)', () => {
+    const radio = (name: 'Auto' | 'Hard' | 'Not hard') => screen.getByRole('radio', { name });
+    const storedAssignment: CourseAssignment = {
+      id: 'assignment-1',
+      title: 'Problem Set 4',
+      description: null,
+      dueDate: null,
+      estimatedHours: null,
+      actualHours: null,
+      status: 'PENDING',
+      priority: 'MEDIUM',
+      type: null,
+      hard: null,
+      subtasks: [],
+      createdAt: '2026-10-18T12:00:00.000Z',
+      updatedAt: '2026-10-18T12:00:00.000Z',
+    };
+
+    it('renders the group between Priority and Description with Auto checked on create', () => {
+      renderForm();
+      const group = screen.getByRole('group', { name: 'How hard is this?' });
+      expect(
+        within(group)
+          .getAllByRole('radio')
+          .map((r) => r.getAttribute('value'))
+      ).toEqual(['auto', 'hard', 'not-hard']);
+      expect(radio('Auto')).toBeChecked();
+      // DOM order is Tab order: Priority, then the group, then Description.
+      const priority = screen.getByLabelText('Priority');
+      expect(
+        priority.compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+      expect(
+        group.compareDocumentPosition(description()) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+    });
+
+    it('Tab order is Type → Priority → effort group → Description', async () => {
+      const user = setupUser();
+      renderForm();
+      screen.getByLabelText('Type').focus();
+      await user.tab();
+      expect(screen.getByLabelText('Priority')).toHaveFocus();
+      await user.tab();
+      expect(radio('Auto')).toHaveFocus();
+      await user.tab();
+      expect(description()).toHaveFocus();
+    });
+
+    it('create with Auto omits the hard key', async () => {
+      const user = setupUser();
+      create.mockResolvedValue(storedAssignment);
+      renderForm();
+      await user.type(title(), 'Reading');
+      await user.click(submit());
+      await waitFor(() => expect(create).toHaveBeenCalledOnce());
+      expect(create.mock.calls[0][0]).not.toHaveProperty('hard');
+    });
+
+    it('create with Hard sends hard: true and Not hard sends hard: false', async () => {
+      const user = setupUser();
+      create.mockResolvedValue(storedAssignment);
+      const first = renderForm();
+      await user.type(title(), 'Reading');
+      await user.click(radio('Hard'));
+      await user.click(submit());
+      await waitFor(() =>
+        expect(create).toHaveBeenCalledWith(expect.objectContaining({ hard: true }))
+      );
+      first.unmount();
+      create.mockClear();
+      renderForm();
+      await user.type(title(), 'Reading');
+      await user.click(radio('Not hard'));
+      await user.click(submit());
+      await waitFor(() =>
+        expect(create).toHaveBeenCalledWith(expect.objectContaining({ hard: false }))
+      );
+    });
+
+    it.each([
+      [true, 'Hard'],
+      [false, 'Not hard'],
+      [null, 'Auto'],
+    ] as const)('edit of a stored hard: %p opens with %s selected', (hard, name) => {
+      renderForm({ assignment: { ...storedAssignment, hard } });
+      expect(radio(name)).toBeChecked();
+      expect(
+        screen.getAllByRole('radio').filter((r) => (r as HTMLInputElement).checked)
+      ).toHaveLength(1);
+    });
+
+    it('edit back to Auto sends hard: null; edit with Auto unchanged sends hard: null (idempotent)', async () => {
+      const user = setupUser();
+      update.mockResolvedValue(storedAssignment);
+      const first = renderForm({ assignment: { ...storedAssignment, hard: true } });
+      await user.click(radio('Auto'));
+      await user.click(editSubmit());
+      await waitFor(() =>
+        expect(update).toHaveBeenCalledWith('assignment-1', expect.objectContaining({ hard: null }))
+      );
+      first.unmount();
+      update.mockClear();
+      const second = renderForm({ assignment: storedAssignment });
+      await user.click(editSubmit());
+      await waitFor(() =>
+        expect(update).toHaveBeenCalledWith('assignment-1', expect.objectContaining({ hard: null }))
+      );
+      second.unmount();
+      update.mockClear();
+      renderForm({ assignment: storedAssignment });
+      await user.click(radio('Not hard'));
+      await user.click(editSubmit());
+      await waitFor(() =>
+        expect(update).toHaveBeenCalledWith(
+          'assignment-1',
+          expect.objectContaining({ hard: false })
+        )
+      );
+    });
+
+    it('a 400 with errors.hard renders the message under the group and keeps the selection', async () => {
+      const user = setupUser();
+      create.mockRejectedValue(failure(400, { hard: ['hard must be true, false or null'] }));
+      renderForm();
+      await user.type(title(), 'Reading');
+      await user.click(radio('Hard'));
+      await user.click(submit());
+      const message = await screen.findByText('hard must be true, false or null');
+      const group = screen.getByRole('group', { name: 'How hard is this?' });
+      expect(group).toContainElement(message);
+      expect(group.getAttribute('aria-describedby')?.split(' ')).toContain(message.id);
+      expect(radio('Hard')).toBeChecked();
+      expect(toast.error).not.toHaveBeenCalled();
+    });
+  });
+
   describe('cross-course create course select (SP-124C AC 1–5)', () => {
     const courses = [
       { id: 'course-1', code: 'MATH101', name: 'Calculus I' },
@@ -561,6 +707,7 @@ describe('AssignmentForm', () => {
       status: 'PENDING',
       priority: 'HIGH',
       type: 'HOMEWORK',
+      hard: null,
       subtasks: [],
       createdAt: '2026-10-18T12:00:00.000Z',
       updatedAt: '2026-10-18T12:00:00.000Z',

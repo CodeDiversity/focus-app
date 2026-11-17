@@ -200,6 +200,9 @@ model Assignment {
   // SP-115G (D115-1): optional closed assignment type. Stored identifiers,
   // nullable with no default — an omitted/untyped create stays null (D115-2).
   type        AssignmentType?
+  // EP14E (D-E1a): the student's own "is this demanding?" call. Null = Auto
+  // (the D13-10 type/size rule decides); true/false override it (D-E2).
+  hard        Boolean?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

@@ -4,7 +4,7 @@
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 (D14-2)
 **Layer:** Backend + Frontend (migration, engine, assignment form)
-**Status:** Ready — refined 2026-11-16 (technical + UI/UX); D-E1…D-E7 ruled; plan review pass 2 (Plan Ready) stands — the refinement changed no AC, contract or dependency
+**Status:** Implemented — awaiting parent review (implementer, 2026-11-16; record: [artifacts/EP14E/implementation.md](./artifacts/EP14E/implementation.md)); refined 2026-11-16 (technical + UI/UX); D-E1…D-E7 ruled; plan review pass 2 (Plan Ready) stands
 **Refined:** 2026-11-16 (refiner; technical grounding for every layer + UI/UX for the assignment-form control; AC text unchanged)
 **Dependencies:** EP14B (the new boolean body field must land under the strict-conversion policy, ▲ D-B1). Sources: EP13R D-R1 + D-R2 (user rulings 2026-11-16); F-EP13J-02, F-EP13J-04; closes V-13-5.
 
@@ -150,7 +150,7 @@ Design principle (user, 2026-11-16, binding): minimal and ADHD-friendly — fewe
 ## Sizing
 
 - **Outcome:** students decide what counts as hard, and easy work stops drifting late.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** one dispatch, one session (~95 tool calls, usage n/a); 4/4 ACs; 41 new API tests (gated 1625/0), 17 new web tests (1290/0), 1 new E2E case; two deviations recorded (F-EP14E-01 guard vs the `tagged` fixture, F-EP14E-02 `byEnergyPreference` exported for the D-E7 rank test). See the record.
 - **Files:** `schema.prisma` + migration `20261116130000_assignment_hard_flag`, assignments DTOs/service/response + `courses.service.ts` projection, `study-plans.service.ts` `gatherPlanData`, `remaining-work.ts` (carry the flag), `scheduler.ts`, `types.ts`, `energy.spec.ts`, `EffortChoice.tsx` + `AssignmentForm.tsx` + web types/entity api + tests, `contracts.md`.
 - **Start context:** this story; EP13J record (D-J1/D-J3); `scheduler.ts` energy section.
 - **Verification:** API + web suites, gated run (via EP14A CI), the journeys unchanged.

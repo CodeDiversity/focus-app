@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP14E — implement (Ready, refined 2026-11-16), then the parent index and the combined review.
+**Next substory:** None — all six children implemented; the parent index (`./artifacts/EP14/implementation.md`) is the next commit, then the combined review.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -33,7 +33,7 @@
 | [EP14C](./EP14C-e2e-reliability.md) | Implemented — awaiting parent review | None | None | `./artifacts/EP14C/implementation.md`; 3 full runs, 0 failures from its files; open: F-EP14C-02/-03 (BL-14-07/-08) |
 | [EP14F](./EP14F-plan-page-load-generate-race.md) | Implemented — awaiting parent review | None (promoted from BL-14-08, 2026-11-16). | None | `./artifacts/EP14F/implementation.md`; 4 clean full runs 47/2/5 (only EP14D's F-EP13M-01 pair red), 0 race failures; open: F-EP14F-01/-02 (E2E harness) |
 | [EP14D](./EP14D-accessibility-debt-from-the-ep13-pass.md) | Implemented — awaiting parent review | EP14F implemented (EP14D-AC4 needs the plan-page race fixed). | None | `./artifacts/EP14D/implementation.md`; axe gate with no allowlist: 3 fully green full runs (54/0), journeys 7/7 ×4; root causes: Dialog under StrictMode, mid-animation 44 px read; open: F-EP14D-03 (journey 5 flake) |
-| [EP14E](./EP14E-effort-aware-placement.md) | Ready | EP14B implemented; refined 2026-11-16; D-E1…D-E7 ruled (user grant). | Implement (last child), then write the parent index | — |
+| [EP14E](./EP14E-effort-aware-placement.md) | Implemented — awaiting parent review | EP14B implemented; D-E1…D-E7 ruled (user grant). | None (parent index written; combined review) | `./artifacts/EP14E/implementation.md`; gated 1625/0, web 1290/0, E2E full run green incl. the new Hard round-trip + axe case; open: F-EP14E-01/-02 (recorded deviations, parent review to note) |
 
 Sequence (one writer): EP14A → EP14B → EP14C → **EP14F** → EP14D → EP14E (EP14F inserted 2026-11-16 when BL-14-08 was promoted; letters are stable IDs, row order is execution order). Why: the CI trigger first makes every later child's gated evidence a real run; EP14B makes the baseline zero-failure before anything else lands on it; EP14E adds a migration and new body field, so it follows the validation policy it depends on.
 

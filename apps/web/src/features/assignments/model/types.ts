@@ -25,5 +25,7 @@ export interface AssignmentInteractionItem {
   status: AssignmentStatus;
   priority: AssignmentPriority;
   type: AssignmentType | null;
+  /** EP14E: the "hard" flag the edit form round-trips; null = Auto. */
+  hard: boolean | null;
   subtasks: Subtask[];
 }

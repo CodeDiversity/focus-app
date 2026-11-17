@@ -76,6 +76,7 @@ const homework: CourseAssignment = {
   status: 'IN_PROGRESS',
   priority: 'HIGH',
   type: null,
+  hard: null,
   subtasks: [],
   ...timestamps,
 };

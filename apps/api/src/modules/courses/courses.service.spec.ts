@@ -708,6 +708,7 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
             status: 'PENDING',
             priority: 'MEDIUM',
             type: null, // SP-115G: an untyped row projects `type: null` (D115-4).
+            hard: null, // EP14E: a pre-EP14E row reads as Auto (null).
             createdAt: new Date(),
             updatedAt: new Date(),
             tasks: [], // SP-120I: an assignment with no subtasks projects [].
@@ -717,7 +718,8 @@ describe('CoursesService (unit, mocked PrismaService)', () => {
       const result = await service.get('user-1', 'course-1');
       expect(result.assignments[0].dueDate).toBeNull();
       expect(result.assignments[0].type).toBeNull();
-      expect(Object.keys(result.assignments[0])).toHaveLength(12); // 11 + subtasks (D120-5)
+      expect(result.assignments[0].hard).toBeNull();
+      expect(Object.keys(result.assignments[0])).toHaveLength(13); // 12 + subtasks (D120-5)
       expect(result.assignments[0].subtasks).toEqual([]);
     });
 

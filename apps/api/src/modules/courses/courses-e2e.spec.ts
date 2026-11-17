@@ -351,6 +351,25 @@ describeIntegration('course management end-to-end (real database, SP-111C)', () 
       });
     });
 
+    it('GET /courses/:id: each assignment carries hard — null for a row written without it (EP14E-AC1)', async () => {
+      const row = await app.prisma.assignment.create({
+        data: { userId: studentA.id, courseId: courseIds.cs101, title: 'Pre-EP14E assignment' },
+        select: { id: true },
+      });
+      try {
+        const response = await agent
+          .get(`/courses/${courseIds.cs101}`)
+          .set('Authorization', `Bearer ${studentA.accessToken}`)
+          .expect(HttpStatus.OK);
+        expect(response.body.assignments).toHaveLength(1);
+        expect(response.body.assignments[0]).toMatchObject({ id: row.id, type: null, hard: null });
+        expect(Object.keys(response.body.assignments[0])).toContain('hard');
+      } finally {
+        // Later cases assert the journey's course has no assignments.
+        await app.prisma.assignment.deleteMany({ where: { id: row.id, userId: studentA.id } });
+      }
+    });
+
     it('PATCH name + instructor: the merged values persist on the wire and in the row', async () => {
       const response = await patchCourse(studentA, courseIds.cs101, {
         name: 'Advanced Computer Science I',

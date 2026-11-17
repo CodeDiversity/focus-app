@@ -98,14 +98,20 @@ function weeklyToDated(windows: WeeklyWindow[], date: string): DatedInterval[] {
  * EP13J (D-J1, refines D13-10) — *demanding* work: a PAPER, PROJECT or EXAM,
  * or more than two hours of remaining work at the start of the run. Read
  * from the input, never the in-run remainder, so the label is stable.
+ *
+ * EP14E (D-E1/D-E2): the student's own `hard` flag wins when set —
+ * `true` is demanding and `false` is light regardless of type and size;
+ * `null`/absent keeps the D13-10 rule exactly (Auto).
  */
 const DEMANDING_TYPES: ReadonlySet<string> = new Set(['PAPER', 'PROJECT', 'EXAM']);
 export const DEMANDING_REMAINING_MINUTES = 120;
 
 export function isDemanding(assignment: {
   assignmentType?: string | null;
+  hard?: boolean | null;
   remainingMinutes: number;
 }): boolean {
+  if (assignment.hard != null) return assignment.hard;
   return (
     (assignment.assignmentType != null && DEMANDING_TYPES.has(assignment.assignmentType)) ||
     assignment.remainingMinutes > DEMANDING_REMAINING_MINUTES
@@ -117,15 +123,42 @@ export function isDemanding(assignment: {
  * NORMAL, then LOW gaps; light work at LOW, then NORMAL, then HIGH. A stable
  * sort keeps earliest-first inside each level, so when every gap is NORMAL
  * the order is exactly placement v2's (EP13J-AC3).
+ *
+ * EP14E (D-E3, D-E7) — the light-work timing guard, applied **within one
+ * day's gap list** (`free` is a single date's earliest-first list, so days
+ * are never compared and which day a block lands on is untouched): the
+ * *anchor* is that day's earliest NORMAL gap that can host a legal block
+ * (≥ `minBlock`). A LOW gap keeps rank 0 only when it sits in the same part
+ * of the day (`windowHintOf`) as the anchor; otherwise it ranks after every
+ * NORMAL gap and still before HIGH (a preference, never a constraint). With
+ * no usable NORMAL gap the guard does not apply; with every gap NORMAL there
+ * is no LOW gap, so the output is identical (EP13J-AC3).
  */
 const DEMANDING_RANK: Record<EnergyLevelValue, number> = { HIGH: 0, NORMAL: 1, LOW: 2 };
 const LIGHT_RANK: Record<EnergyLevelValue, number> = { LOW: 0, NORMAL: 1, HIGH: 2 };
+const LIGHT_RANK_LOW_OFF_PART_OF_DAY = 1.5;
 
-function byEnergyPreference(free: DatedInterval[], demanding: boolean): DatedInterval[] {
+/** Exported for the domain spec only (EP14E-AC3 pins the D-E7 rank order). */
+export function byEnergyPreference(
+  free: DatedInterval[],
+  demanding: boolean,
+  minBlock: number
+): DatedInterval[] {
   const rank = demanding ? DEMANDING_RANK : LIGHT_RANK;
+  const anchor = demanding
+    ? undefined
+    : free.find((gap) => energyOf(gap) === 'NORMAL' && gap.endMinute - gap.startMinute >= minBlock);
+  const anchorPart = anchor ? windowHintOf(anchor.startMinute) : null;
+  const rankOf = (gap: DatedInterval): number => {
+    const level = energyOf(gap);
+    if (anchorPart !== null && level === 'LOW' && windowHintOf(gap.startMinute) !== anchorPart) {
+      return LIGHT_RANK_LOW_OFF_PART_OF_DAY;
+    }
+    return rank[level];
+  };
   return free
     .map((interval, index) => ({ interval, index }))
-    .sort((a, b) => rank[energyOf(a.interval)] - rank[energyOf(b.interval)] || a.index - b.index)
+    .sort((a, b) => rankOf(a.interval) - rankOf(b.interval) || a.index - b.index)
     .map(({ interval }) => interval);
 }
 
@@ -360,7 +393,9 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
     // constraint — every gap is still tried); critical work keeps the plain
     // earliest-first scan so feasibility is never traded for preference.
     const earliestFirst = freeFor(date, withBreakBuffers(placedSessions, date));
-    const free = preferEnergy ? byEnergyPreference(earliestFirst, item.demanding) : earliestFirst;
+    const free = preferEnergy
+      ? byEnergyPreference(earliestFirst, item.demanding, minBlock)
+      : earliestFirst;
     for (const interval of free) {
       const usable = Math.min(desired, interval.endMinute - interval.startMinute);
       // A gap that cannot host a legal block is skipped, not half-filled.

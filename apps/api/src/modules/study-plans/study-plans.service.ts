@@ -1010,6 +1010,7 @@ export class StudyPlansService {
         priority: true,
         createdAt: true,
         type: true,
+        hard: true, // EP14E (D-E1): the student's flag rides into the engine.
       },
     });
 
@@ -1069,6 +1070,7 @@ export class StudyPlansService {
       priority: a.priority as AssignmentFacts['priority'],
       createdAt: a.createdAt,
       assignmentType: a.type ?? null,
+      hard: a.hard ?? null, // EP14E (D-E1/D-E2): null = Auto (D13-10 decides).
     }));
 
     const { schedulable: classified } = classifyAssignments(

@@ -18,6 +18,7 @@ const ASSIGNMENT_KEYS = [
   'status',
   'priority',
   'type',
+  'hard', // EP14E (D-E1): the 12-key projection gains `hard`.
   'createdAt',
   'updatedAt',
 ].sort();

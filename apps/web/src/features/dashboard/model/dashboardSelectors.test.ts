@@ -19,6 +19,7 @@ function assignment(overrides: Partial<AssignmentListItem> & { id: string }): As
     status: 'PENDING',
     priority: 'MEDIUM',
     type: null,
+    hard: null,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
     course: null,

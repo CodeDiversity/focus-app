@@ -56,6 +56,7 @@ function makeAssignment(overrides: Partial<AssignmentListItem> = {}): Assignment
     status: 'PENDING',
     priority: 'MEDIUM',
     type: 'HOMEWORK',
+    hard: null,
     createdAt: '2026-10-01T12:00:00.000Z',
     updatedAt: '2026-10-01T12:00:00.000Z',
     course: { id: 'c1', name: 'Calculus', code: 'MATH101', color: '#10b981' },

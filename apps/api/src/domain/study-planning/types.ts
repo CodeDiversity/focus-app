@@ -107,6 +107,11 @@ export type AssignmentFacts = {
    * untyped). Only the calibration lookup reads it (`calibration.ts`).
    */
   assignmentType?: string | null;
+  /**
+   * EP14E (D-E1) — the student's own "hard" flag (`Assignment.hard`):
+   * `true`/`false` override the demanding rule, `null`/omitted = Auto.
+   */
+  hard?: boolean | null;
 };
 
 /**
@@ -153,6 +158,11 @@ export type ClassifiedAssignment = {
    * "demanding work" rule. Present only when the caller supplied it.
    */
   assignmentType?: string | null;
+  /**
+   * EP14E (D-E1) — the student's "hard" flag, carried for `isDemanding`.
+   * Present only when the caller supplied it; `null` = Auto.
+   */
+  hard?: boolean | null;
 };
 
 /**

@@ -60,6 +60,8 @@ export interface Assignment {
   priority: AssignmentPriority;
   /** Optional type (SP-115): null when unset; PATCH null/omit keeps a stored value (D115-3). */
   type: AssignmentType | null;
+  /** EP14E (D-E1/D-E4): the student's "hard" flag; null = Auto. PATCH `null` returns to Auto. */
+  hard: boolean | null;
   course: Course | null;
   createdAt: string;
   updatedAt: string;
@@ -68,8 +70,8 @@ export interface Assignment {
 /**
  * The assignment projection on the course detail route (SP-112, D112-3/D112-6,
  * plus SP-120 D120-5): `Assignment` minus nested `course`, plus ordered
- * `subtasks`. Direct POST/PATCH `/assignments` responses stay the 11-key
- * shape (no `subtasks` key); only `GET /courses/:id` adds it.
+ * `subtasks`. Direct POST/PATCH `/assignments` responses stay the 12-key
+ * shape (no `subtasks` key; `hard` after `type`, EP14E); only `GET /courses/:id` adds it.
  */
 export type CourseAssignment = Omit<Assignment, 'course'> & {
   /** Ordered checklist (D120-5): `orderIndex` asc, then `createdAt` asc. */
@@ -114,8 +116,8 @@ export interface Task {
 // (required `endTime`) is removed; import the entity type instead.
 
 /**
- * The cross-course assignment list projection (SP-122A, D122-6): the 11
- * assignment keys (`type` after `priority`) plus `course: { id, name, code,
+ * The cross-course assignment list projection (SP-122A, D122-6): the 12
+ * assignment keys (`type` after `priority`, `hard` after `type` — EP14E) plus `course: { id, name, code,
  * color } | null` and `subtasks: Subtask[]`. Returned by `GET /assignments`.
  */
 export interface AssignmentListItemCourse {
@@ -135,6 +137,7 @@ export interface AssignmentListItem {
   status: AssignmentStatus;
   priority: AssignmentPriority;
   type: AssignmentType | null;
+  hard: boolean | null; // EP14E
   createdAt: string;
   updatedAt: string;
   course: AssignmentListItemCourse | null;
