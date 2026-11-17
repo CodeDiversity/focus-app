@@ -21,7 +21,7 @@ only drops and deletes, then updates every pointer to the old surface.
 
 ## Scope
 
-**In:** migration `…_drop_availability_slots`; schema/relation removal; `modules/availability/**` deletion incl. tests and `app.module.ts`; web `pages/availability`, `features/availability`, `entities/availability` deletion; route redirect; `navGroups.ts` + header tests; calendar/dashboard links to `/availability`; E2E references; README schema/API lists; EP11 epic register note D11-10 (planner-owned text already recorded).
+**In:** migration `…_drop_availability_slots`; schema/relation removal; `modules/availability/**` deletion incl. tests and `app.module.ts`; web `pages/availability`, `features/availability`, `entities/availability` deletion; route redirect; `navGroups.ts` + header tests; calendar/dashboard links to `/availability`; E2E references incl. retargeting the `/availability` axe stop in `adaptive-scheduling.spec.ts:445–449` to `/calendar` (R-EP15-12); README schema/API lists; EP11 epic register note D11-10 (planner-owned text already recorded).
 **Out:** any new behaviour.
 
 ## Source requirement references

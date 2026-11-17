@@ -3,7 +3,7 @@
 **Epic:** [EP15: Schedule & Availability Redesign](../../epics/EP15-schedule-and-availability-redesign.md)
 **Milestone:** M8 — release 1.2 (D15-11, ratified 2026-11-16)
 **Epic dependency:** EP04, EP06, EP13 closed. **EP14 in flight** — implementation starts after the EP14 review unit passes (D15-11); planning, plan review and refiner passes proceed now.
-**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: **Plan Ready + Implementation Blocked** (see [history.md](./history.md)). **Plan review:** pass 1 ([plan-review.md](./plan-review.md)) Changes Required — R-EP15-01…06 corrected (C-EP15-01…09 in [history.md](./history.md)); pass 2 pending. No tracker sync.
+**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: **Plan Ready + Implementation Blocked** (see [history.md](./history.md)). **Plan review:** pass 1 ([plan-review-pass-1.md](./plan-review-pass-1.md)) Changes Required — R-EP15-01…09 closed; pass 2 ([plan-review.md](./plan-review.md)) Changes Required — R-EP15-10…16 corrected (C-EP15-10…16 in [history.md](./history.md)); pass 3 pending. No tracker sync.
 
 ## Plan at a glance
 
@@ -124,7 +124,7 @@ Epic-level decisions D15-1…D15-14 live in the [epic](../../epics/EP15-schedule
 | ID | Decision | Status / provenance |
 |---|---|---|
 | D15-15 | **Interim between EP15D and EP15I:** the old availability page keeps editing `availability_slots`, which no reader uses after EP15D; the table is dropped by EP15I. Accepted because the epic is one review unit on a development branch; nothing ships in between. | Planner, 2026-11-16. |
-| D15-18 | **Known windows (R-EP15-02):** EP15C ships a thin service adapter so typecheck and every suite stay green until EP15D; EP15D retires the slot-event assertions in `calendar.spec.ts` (test-only) and EP15I removes the "Manage availability" expectation with the links; EP15J rewrites the spec. Details in [contracts.md § Known windows](./contracts.md#known-windows-between-sequential-children-r-ep15-02). | Planner, 2026-11-16 (plan review pass 1). |
+| D15-18 | **Known windows (R-EP15-02):** EP15C ships a thin service adapter so typecheck and every suite stay green until EP15D; EP15D retires the slot-event assertions in `calendar.spec.ts` and re-points `helpers.ts` availability seeding to the schedule API (test-only); EP15I removes the "Manage availability" expectation with the links and retargets the `/availability` axe stop; EP15J rewrites the spec. Details in [contracts.md § Known windows](./contracts.md#known-windows-between-sequential-children-r-ep15-02). | Planner, 2026-11-16 (plan review pass 1). |
 | D15-16 | **Refiner gate (closed 2026-11-16 — one dispatch refined all three; D-E5…D-E8, D-G6…D-G11, D-H5…D-H8):** EP15E, EP15G and EP15H were `Needs refinement` — grid layout and hour range, free-time display threshold, the sheet's layout and weekday chips, the "More" disclosure, two-choice prompt copy, drag affordances and snapping are the refiner's, bound by D15-14. EP15F's small surface is specified in-story (EP13J precedent). | Planner skill UI/UX handoff rule. |
 | D15-17 | **Story-level ▲ rows auto-ratify** at implementation start unless edited — the user's ruling "ratify all of the proposed decisions" (2026-11-16) covers the breakdown's recommended options. | User ruling 2026-11-16, applied by the planner. |
 

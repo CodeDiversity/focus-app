@@ -29,22 +29,30 @@ Planned 2026-11-16 from the user's vision ("a calendar-like interface where stud
 
 | Pass | Date | Reviewed commit | Report | Verdict |
 |---|---|---|---|---|
-| 1 | 2026-11-16 | `a06838a` | [plan-review.md](./plan-review.md) | Changes Required — R-EP15-01…06 should-fix (planner), R-EP15-07…09 polish; no user ruling needed |
-| 2 | — | — | — | Pending (after the EP15E/G/H refiner passes) |
+| 1 | 2026-11-16 | `a06838a` | [plan-review-pass-1.md](./plan-review-pass-1.md) | Changes Required — R-EP15-01…06 should-fix (planner), R-EP15-07…09 polish; no user ruling needed |
+| 2 | 2026-11-16 | `bc48f54` | [plan-review.md](./plan-review.md) | Changes Required — R-EP15-01…09 closed; R-EP15-10…12 should-fix, R-EP15-13…16 polish (all planner) |
+| 3 | — | — | — | Pending (targeted re-check of C-EP15-10…16) |
 
 ## Plan correction log
 
 | ID | Date | Finding | Correction | Status |
 |---|---|---|---|---|
-| C-EP15-01 | 2026-11-16 | R-EP15-01: engine rules described the pre-EP14E hook; tier/guard interaction undefined. | contracts rule 3 = two tiers, EP14E `byEnergyPreference(free, demanding, minBlock)` unchanged within each tier; EP15C notes/AC3/AC4 name EP14E + `hard`; tier/guard test added to TR-E15-03; epic baseline refreshed. | Fixed in plan — awaiting re-review |
-| C-EP15-02 | 2026-11-16 | R-EP15-02: typecheck window EP15C→EP15D and E2E window EP15D→EP15J unrecorded; `save` dating loop uncited. | EP15C owns a thin service adapter (Scope/AC1); EP15D retires slot assertions and cites both loops; EP15E/EP15I texts aligned; D15-18 + contracts § Known windows. | Fixed in plan — awaiting re-review |
-| C-EP15-03 | 2026-11-16 | R-EP15-03: "just this day" edit order/partial failure; cross-day weekly drag undefined. | EP15G-AC2 create-then-cancel with partial-failure copy + test; D-G1 reworded; EP15H-AC2 cross-day = just-this-day, announced, no prompt; D-H4 added; invariants row. | Fixed in plan — awaiting re-review |
-| C-EP15-04 | 2026-11-16 | R-EP15-04: overlapping study blocks undefined. | contracts rule 2 D-J2 resolution (earlier start, tie `blockId`); EP15C-AC3 + overlap test; invariants row. | Fixed in plan — awaiting re-review |
-| C-EP15-05 | 2026-11-16 | R-EP15-05: no rollback statements. | Migration 1 rollback recorded; Migration 2 declared irreversible with the backup stance; EP15A-AC1 / EP15I-AC4 reference them. | Fixed in plan — awaiting re-review |
-| C-EP15-06 | 2026-11-16 | R-EP15-06: Plan health omitted from the Planning group. | EP15I-AC3/Tests/at-a-glance, epic baseline and D15-9 say Calendar, Plan, Plan health. | Fixed in plan — awaiting re-review |
+| C-EP15-01 | 2026-11-16 | R-EP15-01: engine rules described the pre-EP14E hook; tier/guard interaction undefined. | contracts rule 3 = two tiers, EP14E `byEnergyPreference(free, demanding, minBlock)` unchanged within each tier; EP15C notes/AC3/AC4 name EP14E + `hard`; tier/guard test added to TR-E15-03; epic baseline refreshed. | Fixed in plan — verified closed, plan review pass 2 ([plan-review.md](./plan-review.md), at `bc48f54`) |
+| C-EP15-02 | 2026-11-16 | R-EP15-02: typecheck window EP15C→EP15D and E2E window EP15D→EP15J unrecorded; `save` dating loop uncited. | EP15C owns a thin service adapter (Scope/AC1); EP15D retires slot assertions and cites both loops; EP15E/EP15I texts aligned; D15-18 + contracts § Known windows. | Fixed in plan — verified closed, plan review pass 2 ([plan-review.md](./plan-review.md), at `bc48f54`) |
+| C-EP15-03 | 2026-11-16 | R-EP15-03: "just this day" edit order/partial failure; cross-day weekly drag undefined. | EP15G-AC2 create-then-cancel with partial-failure copy + test; D-G1 reworded; EP15H-AC2 cross-day = just-this-day, announced, no prompt; D-H4 added; invariants row. | Fixed in plan — verified closed, plan review pass 2 ([plan-review.md](./plan-review.md), at `bc48f54`) |
+| C-EP15-04 | 2026-11-16 | R-EP15-04: overlapping study blocks undefined. | contracts rule 2 D-J2 resolution (earlier start, tie `blockId`); EP15C-AC3 + overlap test; invariants row. | Fixed in plan — verified closed, plan review pass 2 ([plan-review.md](./plan-review.md), at `bc48f54`) |
+| C-EP15-05 | 2026-11-16 | R-EP15-05: no rollback statements. | Migration 1 rollback recorded; Migration 2 declared irreversible with the backup stance; EP15A-AC1 / EP15I-AC4 reference them. | Fixed in plan — verified closed, plan review pass 2 ([plan-review.md](./plan-review.md), at `bc48f54`) |
+| C-EP15-06 | 2026-11-16 | R-EP15-06: Plan health omitted from the Planning group. | EP15I-AC3/Tests/at-a-glance, epic baseline and D15-9 say Calendar, Plan, Plan health. | Fixed in plan — verified closed, plan review pass 2 ([plan-review.md](./plan-review.md), at `bc48f54`) |
 | C-EP15-07 | 2026-11-16 | R-EP15-07 (polish): identity adapter unstated. | Hull-plus-gaps adapter rule in contracts rule 5 and EP15C-AC4. | Fixed in plan |
 | C-EP15-08 | 2026-11-16 | R-EP15-08 (polish): `createdAt::date` zone. | Assumption recorded (D-A2, contracts Migration 1). | Fixed in plan |
 | C-EP15-09 | 2026-11-16 | R-EP15-09 (polish): ▲ markers missing on material story rows. | ▲ added to D-A1, D-A4, D-B1, D-B2 (rulings unchanged under D15-17). | Fixed in plan |
+| C-EP15-10 | 2026-11-16 | R-EP15-10: EP15G-AC2 "always asks" conflicted with ▲ D-G10 (series-level edits skip the prompt); weekly→one-off body unspecified. | EP15G-AC2 carries the D-G10 exception + `PATCH { weekdays: null, endDate: null, effectiveFrom }` wiring; contracts § PATCH semantics sentence; EP15B test named. | Fixed in plan — awaiting re-review |
+| C-EP15-11 | 2026-11-16 | R-EP15-11: native `type="time"` cannot enter the ratified `24:00` sleep. | EP15F-AC2: `00:00` sleep = midnight, sent as `24:00`, shown as `00:00` with helper text (D-G6 mapping); TR-E15-06 test. | Fixed in plan — awaiting re-review |
+| C-EP15-12 | 2026-11-16 | R-EP15-12: E2E slot seeding (`helpers.ts:173–191`) and the `/availability` axe stop unrecorded in Known windows. | EP15D re-points seeding to the schedule API; EP15I retargets the axe stop; D15-18 and contracts § Known windows updated. | Fixed in plan — awaiting re-review |
+| C-EP15-13 | 2026-11-16 | R-EP15-13 (polish): `week.ts` bootstrap vs its own grep test. | Test allows exactly one `new Date(` inside `utcTodayGuess`. | Fixed in plan |
+| C-EP15-14 | 2026-11-16 | R-EP15-14 (polish): `shared/ui/Switch.tsx` ownerless. | EP15F owns it; EP15G reuses (D-G9 text aligned). | Fixed in plan |
+| C-EP15-15 | 2026-11-16 | R-EP15-15 (polish): EP15A baseline stale. | Line refs and last migration refreshed. | Fixed in plan |
+| C-EP15-16 | 2026-11-16 | R-EP15-16 (polish): "fills study blocks first" scope. | contracts rule 3: per day (placement is day-centric). | Fixed in plan |
 
 ## Superseded decisions
 

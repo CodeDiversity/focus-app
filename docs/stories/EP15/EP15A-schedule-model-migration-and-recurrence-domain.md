@@ -45,7 +45,7 @@ AC-E15-01 (default reader), AC-E15-03 (model), AC-E15-13 (copy); TR-E15-01; DoD-
 
 ## Technical notes
 
-- **Inspected:** `schema.prisma` (`AvailabilitySlot` L325–341, `ClassMeeting`, `PlannedSession`, `EnergyLevel` enum), `prisma/migrations/20261116120000_availability_slot_energy` (last migration), `common/lib/calendar-date.ts` (`addDays`, `dayOfWeekOf`, `parseCalendarDate`), `domain/study-planning/preferences.ts` (defensive-reader precedent, D06-14).
+- **Inspected:** `schema.prisma` (`AvailabilitySlot` L328–344 after EP14E, `ClassMeeting`, `PlannedSession`, `EnergyLevel` enum), `prisma/migrations/20261116130000_assignment_hard_flag` (last migration, EP14E), `common/lib/calendar-date.ts` (`addDays`, `dayOfWeekOf`, `parseCalendarDate`), `domain/study-planning/preferences.ts` (defensive-reader precedent, D06-14).
 - **Proposed:** the copy is a single `INSERT … SELECT` between `-- copy:start` / `-- copy:end` marker comments in `migration.sql`, so the gated test can execute exactly that statement against a seeded table. Ids via `gen_random_uuid()` (D-A3). The domain module lives beside `study-planning/` as `domain/schedule/` with its own `types.ts`.
 
 ### Decisions

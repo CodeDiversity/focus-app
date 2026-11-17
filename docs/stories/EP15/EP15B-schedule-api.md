@@ -42,7 +42,7 @@ AC-E15-01 (API half), AC-E15-03, AC-E15-04, AC-E15-06 (fields), AC-E15-14; TR-E1
 
 - Day bounds: defaults when no rows; PUT with 6, 8 or a duplicated weekday → 400; invalid pair on one day → 400 and no row changed (transaction); happy path round-trip incl. `24:00`.
 - Blocks POST matrix: each field's bad shape; STUDY-only fields on BUSY; `weekdays` empty array / out of range / duplicate; `endDate < startDate`; `endTime ≤ startTime`; title trimmed to null; foreign course 404.
-- PATCH: in-place cases; split case asserting original `endDate`, successor fields, exception move, response = successor; `effectiveFrom` after `endDate` → 400; `kind` in body → 400; empty body → 400.
+- PATCH: in-place cases; split case asserting original `endDate`, successor fields, exception move, response = successor; weekly → one-off via `{ weekdays: null, endDate: null, effectiveFrom }` (successor is a one-off on `effectiveFrom`; `weekdays: null` without `effectiveFrom` on a weekly block → 400); `effectiveFrom` after `endDate` → 400; `kind` in body → 400; empty body → 400.
 - DELETE: series delete cascades exceptions; `from` mid-series truncates; `from` past `endDate` → 204 no-op; occurrence cancel idempotent; cancel on one-off deletes; non-occurrence date → 400.
 - Ownership matrix across all routes (data-scoping spec like `availability-data-scoping.spec.ts`).
 

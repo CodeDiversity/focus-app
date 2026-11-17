@@ -22,7 +22,7 @@ reader (D15-15).
 
 ## Scope
 
-**In:** `modules/schedule/schedule-inputs.service.ts` (exported from `ScheduleModule`); `study-plans.service.ts` `gatherPlanData` on the seam, replacing EP15C's thin adapter (preview, save incl. its dating loop at `:1634–1644`, catch-up `:1409–1419`, today pass through); `calendar.service.ts` payload per contracts.md; removal of the slot-event assertions in `apps/web/e2e/calendar.spec.ts:180–215` (test-only, pointer to EP15J — contracts.md § Known windows); API contract docs; specs incl. V-15-1.
+**In:** `modules/schedule/schedule-inputs.service.ts` (exported from `ScheduleModule`); `study-plans.service.ts` `gatherPlanData` on the seam, replacing EP15C's thin adapter (preview, save incl. its dating loop at `:1634–1644`, catch-up `:1409–1419`, today pass through); `calendar.service.ts` payload per contracts.md; removal of the slot-event assertions in `apps/web/e2e/calendar.spec.ts:180–215` and re-pointing `apps/web/e2e/helpers.ts` availability seeding (`createAvailabilitySlotViaApi`, `:173–191`) to `PUT /schedule/day-bounds` / `POST /schedule/blocks` so the `adaptive-scheduling`, `catch-up` and `study-plan` journeys keep planning against the windows they seed (test-only, pointer to EP15J — contracts.md § Known windows, R-EP15-12); API contract docs; specs incl. V-15-1.
 **Out:** engine rules (EP15C), the web client (EP15E), dropping the old table (EP15I).
 
 ## Source requirement references

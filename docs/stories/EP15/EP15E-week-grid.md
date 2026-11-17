@@ -89,7 +89,7 @@ Framework: Vitest + Testing Library (jsdom), files beside the component (`*.test
 - `pages/calendar/lib/week.test.ts` (AC3):
   - "EP15E-AC3: addDays / mondayOf are pure civil-date functions (month/year rollover, leap day, Sunday → previous Monday)"
   - (`gridModel.test.ts`) "EP15E-AC3: dayHeaderLabel('2026-10-26') is 'Mon 26' via Date.UTC/getUTCDay only"
-  - "EP15E-AC3: the module uses no browser-local Date getters" (reads the source file and asserts `/\b(getDay|getDate|getMonth|getFullYear|getHours|setDate|setHours)\(/` and bare `new Date()` are absent; `Date.UTC` and `getUTC*` are allowed)
+  - "EP15E-AC3: the module uses no browser-local Date getters" (reads the source file and asserts `/\b(getDay|getDate|getMonth|getFullYear|getHours|setDate|setHours)\(/` is absent; `Date.UTC`, `getUTC*` and the single `new Date().toISOString()` inside `utcTodayGuess` are allowed — the test asserts that `new Date(` occurs exactly once and only in that function; R-EP15-13)
 - `pages/calendar/ui/CalendarPage.test.tsx` (extend):
   - "EP15E-AC3 (FU-EP04-01 a): headers are the profile zone's week for Pacific/Kiritimati vs browser Etc/GMT+12 — the response's from..to drive the seven headers"
   - "EP15E-AC3 (FU-EP04-01 b): every returned event renders in the column matching its civil date; none is dropped"
