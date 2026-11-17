@@ -2,16 +2,16 @@
 
 **Story ID:** EP15K
 **Parent epic:** [EP15: Schedule & Availability Redesign](../../epics/EP15-schedule-and-availability-redesign.md)
-**Milestone:** unscheduled (optional; outside the EP15 review unit EP15A–EP15J)
+**Milestone:** scheduled as its **own review unit after EP15's closure** (user, 2026-11-17); outside the closed EP15A–EP15J unit
 **Layer:** Frontend (+ one small API addition if D-K2 is ruled (a))
-**Status:** Blocked — optional; awaits the user's ruling on ▲ D-K1/D-K2 (D15-17's blanket ratification deliberately does **not** apply: this story exists to be ruled on, user order 2026-11-17)
+**Status:** Ready — scheduled by the user 2026-11-17 ("we can schedule it on its own after EP15 is closed out") after the ▲ decisions were presented for ruling; D-K1…D-K3 ratified as recommended (rulings below). Implement on dispatch; EP15 is closed.
 **Dependencies:** EP15H implemented (2026-11-17). Sources: the EP15H complexity flags the user asked to capture (implementation record Findings F-EP15H-03 and the two flags raised in review conversation, 2026-11-17); D15-14 (ADHD design ruleset); BL-15-05 (undo a cancelled occurrence).
 
 ## Plan at a glance
 
 - **What this changes:** dragging a weekly block never interrupts with a question — every weekly drop applies to that day only, immediately, said out loud, with a one-tap "Apply to every week from here" follow-up and a 10-second Undo; the study-block resize handle moves to the zone's visible bottom edge.
 - **Why it improves it:** EP15H shipped two rules a student must hold in their head — a same-day weekly drag **asks** ("Just this day / This and following") while a cross-day weekly drag silently applies "just this day". For ADHD users that asymmetry is the exact kind of inconsistent, interruption-heavy micro-decision D15-14 exists to avoid. One gesture → one predictable outcome → one calm follow-up action replaces a blocking dialog and a hidden rule (product); the pointer layer loses a whole modal flow (code).
-- **Decisions needing you:** **▲ D-K1** (drop the prompt in favour of act-then-offer), **▲ D-K2** (Undo needs a small restore-occurrence API — promotes BL-15-05). D-K3 is polish.
+- **Decisions needing you:** none — ▲ D-K1/D-K2 and D-K3 ratified (user, 2026-11-17); BL-15-05 promoted into this story by D-K2.
 - **How to change this plan:** rule the cells below; ask the planner to schedule it (it would slot after the EP15 combined review as its own unit) or to drop it — "Dropped" is a fine ruling for an optional story.
 
 ## Summary
@@ -40,9 +40,9 @@ no asymmetric rule to memorise, and a way back.
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| ▲ D-K1 | Weekly drop behaviour: (a) act-then-offer — always "just this day", announced, with an inline "Apply to every week from here" follow-up; no dialog (overrides D-H2/D-H4's shipped shape for gestures only); (b) keep as shipped (asymmetric: ask same-day, silent cross-day); (c) always ask, cross-day too | **(a)** — one gesture, one outcome, no interruption, nothing to memorise; the sheet keeps the question for deliberate edits. (c) makes the worst moment (mid-flow) worse; (b) keeps the hidden rule | Proposed — awaiting user |
-| ▲ D-K2 | Undo for drops: (a) a restore-occurrence inverse (delete the exception row; uniform 404 ownership; promotes BL-15-05) enabling a faithful 10 s Undo; (b) no Undo (act-then-offer only); (c) client-side "undo" that re-creates state via existing calls where possible and hides Undo where not | **(a)** — Undo is the safety net that makes (a) of D-K1 honest; (c) is sometimes-there UI, which is its own complexity | Proposed — awaiting user |
-| D-K3 | Study-block handle: (a) zone-bottom; (b) keep chip-bottom | **(a)** — the grab point where the eye expects it (F-EP15H-03) | Proposed — awaiting user |
+| ▲ D-K1 | Weekly drop behaviour: (a) act-then-offer — always "just this day", announced, with an inline "Apply to every week from here" follow-up; no dialog (overrides D-H2/D-H4's shipped shape for gestures only); (b) keep as shipped (asymmetric: ask same-day, silent cross-day); (c) always ask, cross-day too | **(a)** — one gesture, one outcome, no interruption, nothing to memorise; the sheet keeps the question for deliberate edits. (c) makes the worst moment (mid-flow) worse; (b) keeps the hidden rule | Ratified (a) (user, 2026-11-17 — scheduled the story as proposed after the ▲ rows were presented for ruling) |
+| ▲ D-K2 | Undo for drops: (a) a restore-occurrence inverse (delete the exception row; uniform 404 ownership; promotes BL-15-05) enabling a faithful 10 s Undo; (b) no Undo (act-then-offer only); (c) client-side "undo" that re-creates state via existing calls where possible and hides Undo where not | **(a)** — Undo is the safety net that makes (a) of D-K1 honest; (c) is sometimes-there UI, which is its own complexity | Ratified (a) (user, 2026-11-17 — same grant; promotes BL-15-05) |
+| D-K3 | Study-block handle: (a) zone-bottom; (b) keep chip-bottom | **(a)** — the grab point where the eye expects it (F-EP15H-03) | Ratified (a) (user, 2026-11-17 — same grant) |
 
 ## Definition of Done (if scheduled)
 
