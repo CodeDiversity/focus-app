@@ -1,5 +1,22 @@
-import type { CSSProperties } from 'react';
+import {
+  useCallback,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { CalendarEventChip } from './CalendarEventChip';
+import {
+  applyMove,
+  applyResize,
+  dateAtX,
+  dragStarted,
+  isNoOp,
+  minuteAtY,
+  PX_PER_MINUTE,
+  selectionFromDrag,
+  type ColumnRect,
+} from '@/features/schedule-blocks/lib/dragModel';
 import {
   axisHours,
   dayHeaderLabel,
@@ -35,7 +52,66 @@ export interface WeekGridProps {
    * open the day-bounds sheet (the grid's second entry point, EP15F-AC2).
    */
   onEditBounds?: () => void;
+  /**
+   * EP15H: pointer editing. When false or omitted nothing binds and nothing
+   * renders — EP15E behaviour exactly. Touch pointers are always ignored
+   * (D-H3); the sheet is the keyboard path for every gesture (AC-E15-10).
+   */
+  editable?: boolean;
+  /** EP15H-AC1: a drag-select across free/shaded cells released → open the create sheet pre-filled. */
+  onCreateRange?: (range: { date: string; startTime: string; endTime: string }) => void;
+  /**
+   * EP15H-AC2: an EVENT/STUDY_BLOCK chip dropped at a new place. A returned
+   * promise keeps the drop ghost (aria-busy) until it settles.
+   */
+  onMove?: (
+    event: CalendarEvent,
+    next: { date: string; startTime: string; endTime: string }
+  ) => void | Promise<void>;
+  /** EP15H-AC2: the bottom handle released at a new end. Promise semantics as `onMove`. */
+  onResize?: (event: CalendarEvent, next: { endTime: string }) => void | Promise<void>;
 }
+
+/**
+ * EP15H-AC3 (parity): the pointer layer is exactly these three callbacks —
+ * create ↔ the Add sheet, move ↔ Edit (Date/Start/End), resize ↔ Edit (End).
+ * Anything a gesture can do, the sheet can do.
+ */
+export const EDIT_CALLBACKS = ['onCreateRange', 'onMove', 'onResize'] as const;
+
+type MinuteSpan = { start: number; end: number };
+
+/** The in-flight drag (ref: no re-render per pixel) and its render state. */
+type DragState =
+  | {
+      kind: 'select';
+      date: string;
+      colTop: number;
+      anchorY: number;
+      startX: number;
+      startY: number;
+      started: boolean;
+      el: Element;
+      pointerId: number;
+      cleanup: () => void;
+    }
+  | {
+      kind: 'move' | 'resize';
+      event: CalendarEvent;
+      span: MinuteSpan;
+      date: string;
+      columns: ColumnRect[];
+      startX: number;
+      startY: number;
+      started: boolean;
+      el: Element;
+      pointerId: number;
+      cleanup: () => void;
+    };
+
+export type LiveDrag =
+  | { kind: 'select'; date: string; span: MinuteSpan }
+  | { kind: 'move' | 'resize'; eventId: string; date: string; span: MinuteSpan; busy?: boolean };
 
 const HATCH: CSSProperties = {
   backgroundImage:
@@ -59,12 +135,231 @@ export function WeekGrid({
   onOpenEvent,
   nowMinute,
   onEditBounds,
+  editable = false,
+  onCreateRange,
+  onMove,
+  onResize,
 }: WeekGridProps) {
   const allEvents = days.flatMap((d) => eventsByDay.get(d.date) ?? []);
   const range = hourRange(days, allEvents);
   const rows = rowCount(range);
   const hours = axisHours(range);
   const rowsStyle: CSSProperties = { gridTemplateRows: `repeat(${rows}, ${ROW_PX}px)` };
+
+  // ---- EP15H pointer layer ------------------------------------------------
+  // The drag lives in a ref (per-pixel math never re-renders the grid); one
+  // state drives the preview/ghost. Document-level move/up listeners follow
+  // the pointer wherever it goes; Escape cancels with nothing persisted.
+  const gridRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<DragState | null>(null);
+  const pendingRef = useRef(false);
+  const suppressClickRef = useRef(false);
+  const [live, setLive] = useState<LiveDrag | null>(null);
+
+  /** A click right after a completed or cancelled drag must not open details (D-H5). */
+  const openEvent = useCallback(
+    (event: CalendarEvent) => {
+      if (suppressClickRef.current) {
+        suppressClickRef.current = false;
+        return;
+      }
+      onOpenEvent(event);
+    },
+    [onOpenEvent]
+  );
+
+  const cancelDrag = useCallback(() => {
+    const d = dragRef.current;
+    if (!d) return;
+    if (d.started) suppressClickRef.current = true;
+    d.cleanup();
+    dragRef.current = null;
+    setLive(null);
+  }, []);
+
+  /** Resolve the drop; a promise keeps the ghost (`aria-busy`) until it settles. */
+  const settle = (outcome: void | Promise<void>) => {
+    if (outcome && typeof (outcome as Promise<void>).then === 'function') {
+      pendingRef.current = true;
+      setLive((l) => (l && l.kind !== 'select' ? { ...l, busy: true } : l));
+      void (outcome as Promise<void>)
+        .catch(() => undefined)
+        .finally(() => {
+          pendingRef.current = false;
+          setLive(null);
+        });
+    } else {
+      setLive(null);
+    }
+  };
+
+  const beginDrag = (
+    e: ReactPointerEvent<Element>,
+    make: (cleanup: () => void) => DragState
+  ): boolean => {
+    if (!editable || e.button !== 0 || e.pointerType === 'touch') return false;
+    if (dragRef.current || pendingRef.current) return false;
+    const onPointerMove = (ev: PointerEvent) => handleMove(ev);
+    const onPointerUp = (ev: PointerEvent) => handleUp(ev);
+    const onKeyDown = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') {
+        ev.stopPropagation();
+        cancelDrag();
+      }
+    };
+    const cleanup = () => {
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+      document.removeEventListener('keydown', onKeyDown, true);
+      try {
+        (e.target as Element).releasePointerCapture?.(e.pointerId);
+      } catch {
+        /* capture may already be gone */
+      }
+    };
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+    document.addEventListener('keydown', onKeyDown, true);
+    try {
+      (e.target as Element).setPointerCapture?.(e.pointerId);
+    } catch {
+      /* jsdom or an exotic target */
+    }
+    dragRef.current = make(cleanup);
+    return true;
+  };
+
+  const columnRects = (): ColumnRect[] => {
+    const nodes = gridRef.current?.querySelectorAll<HTMLElement>('[data-day]') ?? [];
+    return Array.from(nodes).map((el) => {
+      const rect = el.getBoundingClientRect();
+      return { date: el.dataset.day as string, left: rect.left, right: rect.right };
+    });
+  };
+
+  const handleMove = (e: PointerEvent) => {
+    const d = dragRef.current;
+    if (!d) return;
+    if (!d.started) {
+      if (!dragStarted(e.clientX - d.startX, e.clientY - d.startY)) return;
+      d.started = true;
+    }
+    if (d.kind === 'select') {
+      const anchor = minuteAtY(d.anchorY, d.colTop, range);
+      const current = minuteAtY(e.clientY, d.colTop, range);
+      const span = selectionFromDrag(anchor, current, range);
+      setLive(span ? { kind: 'select', date: d.date, span } : null);
+      return;
+    }
+    if (d.kind === 'move') {
+      const span = applyMove(d.span, (e.clientY - d.startY) / PX_PER_MINUTE, range);
+      const date = dateAtX(e.clientX, d.columns) ?? d.date;
+      setLive({ kind: 'move', eventId: d.event.id, date, span });
+      return;
+    }
+    const span = applyResize(d.span, d.span.end + (e.clientY - d.startY) / PX_PER_MINUTE, range);
+    setLive({ kind: 'resize', eventId: d.event.id, date: d.date, span });
+  };
+
+  const handleUp = (e: PointerEvent) => {
+    const d = dragRef.current;
+    if (!d) return;
+    d.cleanup();
+    dragRef.current = null;
+    if (!d.started) {
+      // Under 4 px this never was a drag: a chip press stays a click (details)
+      // and a free-cell press does nothing (D-H5).
+      setLive(null);
+      return;
+    }
+    suppressClickRef.current = true;
+    if (d.kind === 'select') {
+      const anchor = minuteAtY(d.anchorY, d.colTop, range);
+      const current = minuteAtY(e.clientY, d.colTop, range);
+      const span = selectionFromDrag(anchor, current, range);
+      setLive(null);
+      if (span && onCreateRange) {
+        onCreateRange({ date: d.date, startTime: timeOf(span.start), endTime: timeOf(span.end) });
+      }
+      return;
+    }
+    if (d.kind === 'move') {
+      const span = applyMove(d.span, (e.clientY - d.startY) / PX_PER_MINUTE, range);
+      const date = dateAtX(e.clientX, d.columns);
+      if (
+        !date ||
+        isNoOp(
+          { date: d.date, start: d.span.start, end: d.span.end },
+          { date, start: span.start, end: span.end }
+        ) ||
+        !onMove
+      ) {
+        setLive(null); // released outside every column, or nothing changed — revert
+        return;
+      }
+      settle(onMove(d.event, { date, startTime: timeOf(span.start), endTime: timeOf(span.end) }));
+      return;
+    }
+    const span = applyResize(d.span, d.span.end + (e.clientY - d.startY) / PX_PER_MINUTE, range);
+    if (span.end === d.span.end || !onResize) {
+      setLive(null);
+      return;
+    }
+    settle(onResize(d.event, { endTime: timeOf(span.end) }));
+  };
+
+  const onColumnPointerDown = (day: CalendarDay, e: ReactPointerEvent<HTMLDivElement>) => {
+    // Chips, captions and handles manage themselves — only bare cells select.
+    if ((e.target as Element).closest('button')) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    beginDrag(e, (cleanup) => ({
+      kind: 'select',
+      date: day.date,
+      colTop: rect.top,
+      anchorY: e.clientY,
+      startX: e.clientX,
+      startY: e.clientY,
+      started: false,
+      el: e.currentTarget,
+      pointerId: e.pointerId,
+      cleanup,
+    }));
+  };
+
+  const onChipPointerDown = (event: CalendarEvent, e: ReactPointerEvent<Element>) => {
+    if ((e.target as Element).closest('[data-resize-handle]')) return; // the handle resizes
+    beginDrag(e, (cleanup) => ({
+      kind: 'move',
+      event,
+      span: spanOf(event),
+      date: event.date,
+      columns: columnRects(),
+      startX: e.clientX,
+      startY: e.clientY,
+      started: false,
+      el: e.currentTarget,
+      pointerId: e.pointerId,
+      cleanup,
+    }));
+  };
+
+  const onHandlePointerDown = (event: CalendarEvent, e: ReactPointerEvent<Element>) => {
+    e.stopPropagation();
+    beginDrag(e, (cleanup) => ({
+      kind: 'resize',
+      event,
+      span: spanOf(event),
+      date: event.date,
+      columns: [],
+      startX: e.clientX,
+      startY: e.clientY,
+      started: false,
+      el: e.currentTarget,
+      pointerId: e.pointerId,
+      cleanup,
+    }));
+  };
+  // ---- end EP15H pointer layer --------------------------------------------
 
   return (
     <div className="overflow-x-auto" role="list" aria-label="Week view">
@@ -122,6 +417,7 @@ export function WeekGrid({
 
         {/* Hour grid */}
         <div
+          ref={gridRef}
           className="grid"
           style={{ gridTemplateColumns: `3.5rem repeat(${days.length}, minmax(112px, 1fr))` }}
         >
@@ -147,9 +443,14 @@ export function WeekGrid({
               events={eventsByDay.get(day.date) ?? []}
               range={range}
               rowsStyle={rowsStyle}
-              onOpenEvent={onOpenEvent}
+              onOpenEvent={openEvent}
               nowMinute={day.date === today ? nowMinute : undefined}
               onEditBounds={onEditBounds}
+              editable={editable}
+              live={live}
+              onColumnPointerDown={onColumnPointerDown}
+              onChipPointerDown={onChipPointerDown}
+              onHandlePointerDown={onHandlePointerDown}
             />
           ))}
         </div>
@@ -166,6 +467,11 @@ function DayColumn({
   onOpenEvent,
   nowMinute,
   onEditBounds,
+  editable,
+  live,
+  onColumnPointerDown,
+  onChipPointerDown,
+  onHandlePointerDown,
 }: {
   day: CalendarDay;
   events: CalendarEvent[];
@@ -174,6 +480,11 @@ function DayColumn({
   onOpenEvent: (event: CalendarEvent) => void;
   nowMinute?: number | null;
   onEditBounds?: () => void;
+  editable?: boolean;
+  live?: LiveDrag | null;
+  onColumnPointerDown?: (day: CalendarDay, e: ReactPointerEvent<HTMLDivElement>) => void;
+  onChipPointerDown?: (event: CalendarEvent, e: ReactPointerEvent<Element>) => void;
+  onHandlePointerDown?: (event: CalendarEvent, e: ReactPointerEvent<Element>) => void;
 }) {
   const wake = minutesOf(day.wakeTime);
   const sleep = minutesOf(day.sleepTime);
@@ -201,12 +512,34 @@ function DayColumn({
     ...layoutLanes(events).map<Positioned>((l) => ({ kind: 'chip', ...l, start: l.span.start })),
   ].sort((a, b) => a.start - b.start || (a.kind === 'zone' ? -1 : 1));
 
+  // EP15H: a chip is draggable only for the two block kinds, and only when
+  // the grid is editable (D-H7: no handles, no handlers otherwise).
+  const isDraggable = (event: CalendarEvent) =>
+    Boolean(editable) && (event.type === 'EVENT' || event.type === 'STUDY_BLOCK');
+  const liveFor = (event: CalendarEvent) =>
+    live && live.kind !== 'select' && live.eventId === event.id ? live : null;
+  const liveTimeOf = (event: CalendarEvent) => {
+    const l = liveFor(event);
+    return l ? `${timeOf(l.span.start)}–${timeOf(l.span.end)}` : null;
+  };
+  const ghost =
+    live && live.kind !== 'select' && live.date === day.date
+      ? rowSpan(live.span.start, live.span.end, range)
+      : null;
+  const preview =
+    live && live.kind === 'select' && live.date === day.date
+      ? rowSpan(live.span.start, live.span.end, range)
+      : null;
+
   return (
     <div
       role="listitem"
       aria-label={dayHeaderLabel(day.date)}
       data-day={day.date}
-      className="relative grid border-l border-border"
+      onPointerDown={
+        editable && onColumnPointerDown ? (e) => onColumnPointerDown(day, e) : undefined
+      }
+      className={`relative grid border-l border-border${editable ? ' cursor-crosshair' : ''}`}
       style={rowsStyle}
     >
       {/* Hour lines */}
@@ -288,12 +621,32 @@ function DayColumn({
               className="relative z-0 mx-0.5 rounded-md border border-dashed border-accent/60 bg-accent/5"
               style={{ gridRow: `${span.rowStart} / ${span.rowEnd}`, gridColumn: 1 }}
             >
-              <div className="absolute inset-x-0 top-0" style={{ height: chipRows * ROW_PX }}>
+              <div
+                className={`absolute inset-x-0 top-0${
+                  liveFor(event)
+                    ? ' transition-transform duration-base motion-reduce:transition-none'
+                    : ''
+                }`}
+                style={{ height: chipRows * ROW_PX }}
+              >
                 <CalendarEventChip
                   event={event}
                   onOpen={onOpenEvent}
                   layout="grid"
                   heightPx={chipRows * ROW_PX}
+                  draggable={isDraggable(event)}
+                  dragging={Boolean(liveFor(event))}
+                  liveTime={liveTimeOf(event)}
+                  onDragPointerDown={
+                    isDraggable(event) && onChipPointerDown
+                      ? (e) => onChipPointerDown(event, e)
+                      : undefined
+                  }
+                  onResizePointerDown={
+                    isDraggable(event) && onHandlePointerDown
+                      ? (e) => onHandlePointerDown(event, e)
+                      : undefined
+                  }
                 />
               </div>
             </div>
@@ -325,10 +678,53 @@ function DayColumn({
               onOpen={onOpenEvent}
               layout="grid"
               heightPx={span.rows * ROW_PX}
+              draggable={isDraggable(event)}
+              dragging={Boolean(liveFor(event))}
+              liveTime={liveTimeOf(event)}
+              onDragPointerDown={
+                isDraggable(event) && onChipPointerDown
+                  ? (e) => onChipPointerDown(event, e)
+                  : undefined
+              }
+              onResizePointerDown={
+                isDraggable(event) && onHandlePointerDown
+                  ? (e) => onHandlePointerDown(event, e)
+                  : undefined
+              }
             />
           </div>
         );
       })}
+
+      {/* EP15H: the live drag-select preview — discrete 15-minute steps are
+          the snap feedback (D-H8); screen-reader users hear only the result. */}
+      {preview && live?.kind === 'select' && (
+        <div
+          role="presentation"
+          data-testid="drag-preview"
+          className="pointer-events-none z-40 mx-0.5 rounded-md border-2 border-dashed border-accent bg-accent/15"
+          style={{ gridRow: `${preview.rowStart} / ${preview.rowEnd}`, gridColumn: 1 }}
+        >
+          <p className="px-1 pt-0.5 text-caption text-text">
+            {timeOf(live.span.start)} – {timeOf(live.span.end)}
+          </p>
+        </div>
+      )}
+      {/* EP15H: the move/resize ghost at the drop target; it stays, aria-busy,
+          while the drop's request runs, then the week refetches. */}
+      {ghost && live && live.kind !== 'select' && (
+        <div
+          role="presentation"
+          data-testid="drag-ghost"
+          aria-busy={live.busy || undefined}
+          className="pointer-events-none z-40 mx-0.5 rounded-md border-2 border-accent bg-accent/15"
+          style={{ gridRow: `${ghost.rowStart} / ${ghost.rowEnd}`, gridColumn: 1 }}
+        >
+          <p className="px-1 pt-0.5 text-caption text-text">
+            {timeOf(live.span.start)} – {timeOf(live.span.end)}
+          </p>
+        </div>
+      )}
 
       {/* 5. The "now" marker on today's column (D-E9): a 2 px accent line with a
           dot at the axis side, positioned to the minute (1 px ≈ 1 min). */}

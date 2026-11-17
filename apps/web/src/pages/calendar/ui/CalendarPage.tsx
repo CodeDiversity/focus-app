@@ -27,8 +27,13 @@ import { defaultStart } from '@/features/schedule-blocks/lib/defaults';
 import { addMinutesCapped } from '@/features/schedule-blocks/lib/blockForm';
 import {
   cancelOccurrence,
+  createScheduleBlock,
   deleteScheduleBlock,
+  updateScheduleBlock,
 } from '@/entities/schedule-block/api/scheduleBlockApi';
+import { WeeklyChoicePrompt } from '@/features/schedule-blocks/ui/WeeklyChoicePrompt';
+import { Dialog } from '@/shared/ui/Dialog';
+import { dayHeaderLabel } from '@/features/calendar/lib/gridModel';
 import type { DeleteChoice } from '@/features/calendar/ui/CalendarEventDetails';
 import { addDays, mondayOf, utcTodayGuess } from '../lib/week';
 
@@ -68,6 +73,36 @@ export function deleteAnnouncement(event: CalendarEvent, choice: DeleteChoice): 
 type BlockSheetState =
   | { mode: 'create'; initial: { date: string; startTime: string; endTime: string } }
   | { mode: 'edit'; event: CalendarEvent };
+
+/** EP15H: a drop's target — always a full dated span (a resize keeps date and start). */
+type DropTarget = { date: string; startTime: string; endTime: string };
+
+const weekdayOf = (date: string) => dayHeaderLabel(date).split(' ')[0];
+
+/** EP15H-AC3 — the announcement matrix for drops ("Moved to Tue 14:00–15:00"). */
+export function dropAnnouncement(
+  action: 'move' | 'resize',
+  next: DropTarget,
+  scope: 'one' | 'this-day' | 'following'
+): string {
+  const base =
+    action === 'move'
+      ? `Moved to ${weekdayOf(next.date)} ${next.startTime}–${next.endTime}`
+      : `Resized to ${next.startTime}–${next.endTime}`;
+  if (scope === 'this-day') return `${base} for this day`;
+  if (scope === 'following') return `${base} for this and following weeks`;
+  return base;
+}
+
+/** EP15H-AC2 (D-H4) — a weekly item dragged to another day, said out loud. */
+export function crossDayAnnouncement(title: string, next: DropTarget): string {
+  return `Moved this day's ${title} to ${weekdayOf(next.date)} ${next.startTime}–${next.endTime}; other weeks unchanged`;
+}
+
+const DROP_FAIL_COPY = {
+  move: "We couldn't move this. Try again.",
+  resize: "We couldn't resize this. Try again.",
+} as const;
 
 /** Below Tailwind's `sm` breakpoint (640px) the agenda replaces the week
  * grid (D129A-01, D129A-07 — same props shape as WeekGrid). */
@@ -131,6 +166,17 @@ export function CalendarPage() {
   // save or removal — the dialog restores focus only on its cancel paths.
   const [blockSheet, setBlockSheet] = useState<BlockSheetState | null>(null);
   const blockTriggerRef = useRef<HTMLElement | null>(null);
+
+  // EP15H (D-H6): a weekly item dropped on its own day asks the same two-choice
+  // question the sheet asks, in one shared Dialog; `finish` releases the grid's
+  // ghost when the flow ends (answered, Back or Escape).
+  const [dropPrompt, setDropPrompt] = useState<{
+    event: CalendarEvent;
+    next: DropTarget;
+    action: 'move' | 'resize';
+    finish: () => void;
+  } | null>(null);
+  const [dropBusy, setDropBusy] = useState(false);
   useEffect(() => {
     let cancelled = false;
     getDayBounds()
@@ -302,6 +348,135 @@ export function CalendarPage() {
     void fetchWeek(from, to, false);
   };
 
+  // ---- EP15H: pointer drops --------------------------------------------
+  /** The create gesture: the selection opens the same sheet "Add" opens (AC1). */
+  const handleCreateRange = (rangeSel: DropTarget) => {
+    blockTriggerRef.current = document.activeElement as HTMLElement | null;
+    setBlockSheet({ mode: 'create', initial: rangeSel });
+  };
+
+  /** EP15G's one-off POST body for a weekly item's "just this day" (same order, R-EP15-03). */
+  const oneOffBody = (event: CalendarEvent, next: DropTarget) => {
+    const kind = blockKindOf(event);
+    const defaultTitle = kind === 'STUDY' ? 'Study' : 'Busy';
+    return {
+      kind,
+      ...(event.title !== defaultTitle ? { title: event.title } : {}),
+      ...(kind === 'STUDY' && event.courseId ? { courseId: event.courseId } : {}),
+      ...(kind === 'STUDY' ? { energy: event.energy ?? 'NORMAL' } : {}),
+      startDate: next.date,
+      startTime: next.startTime,
+      endTime: next.endTime,
+    };
+  };
+
+  /** POST the one-off, then cancel the source occurrence; partial → the EP15G sentence. */
+  const thisDayDrop = async (
+    event: CalendarEvent,
+    next: DropTarget,
+    action: 'move' | 'resize',
+    announceDone: string
+  ) => {
+    const blockId = event.blockId;
+    if (!blockId) return;
+    try {
+      await createScheduleBlock(oneOffBody(event, next));
+    } catch (err) {
+      toast.error(getErrMsg(err) || DROP_FAIL_COPY[action]);
+      return;
+    }
+    try {
+      await cancelOccurrence(blockId, event.date);
+    } catch {
+      setAnnouncement(PARTIAL_SAVE_COPY);
+      void fetchWeek(from, to, false);
+      return;
+    }
+    setAnnouncement(announceDone);
+    void fetchWeek(from, to, false);
+  };
+
+  /**
+   * One drop, resolved (AC2): one-off → PATCH in place; weekly same-day →
+   * the two-choice prompt (D-H2/D-H6); weekly cross-day → always "just this
+   * day", announced, no prompt (D-H4). The returned promise keeps the grid's
+   * ghost until the flow settles.
+   */
+  const resolveDrop = async (
+    event: CalendarEvent,
+    next: DropTarget,
+    action: 'move' | 'resize'
+  ): Promise<void> => {
+    const blockId = event.blockId;
+    if (!blockId) return;
+    const weekly = event.recurring === true;
+    if (!weekly) {
+      const body =
+        action === 'resize'
+          ? { endTime: next.endTime }
+          : next.date === event.date
+            ? { startTime: next.startTime, endTime: next.endTime }
+            : { startDate: next.date, startTime: next.startTime, endTime: next.endTime };
+      try {
+        await updateScheduleBlock(blockId, body);
+      } catch (err) {
+        toast.error(getErrMsg(err) || DROP_FAIL_COPY[action]);
+        return;
+      }
+      setAnnouncement(dropAnnouncement(action, next, 'one'));
+      void fetchWeek(from, to, false);
+      return;
+    }
+    if (action === 'move' && next.date !== event.date) {
+      await thisDayDrop(event, next, action, crossDayAnnouncement(event.title, next));
+      return;
+    }
+    // Weekly, same day: ask before anything changes (D-H2).
+    await new Promise<void>((finish) => {
+      setDropPrompt({ event, next, action, finish });
+    });
+  };
+
+  const closeDropPrompt = () => {
+    if (dropBusy) return;
+    const p = dropPrompt;
+    setDropPrompt(null);
+    p?.finish(); // the ghost snaps back; nothing was requested
+  };
+
+  const answerDropPrompt = async (choice: 'this-day' | 'following') => {
+    const p = dropPrompt;
+    if (!p || !p.event.blockId) return;
+    setDropBusy(true);
+    try {
+      if (choice === 'this-day') {
+        await thisDayDrop(
+          p.event,
+          p.next,
+          p.action,
+          dropAnnouncement(p.action, p.next, 'this-day')
+        );
+      } else {
+        const body =
+          p.action === 'resize'
+            ? { endTime: p.next.endTime, effectiveFrom: p.event.date }
+            : { startTime: p.next.startTime, endTime: p.next.endTime, effectiveFrom: p.event.date };
+        try {
+          await updateScheduleBlock(p.event.blockId, body);
+          setAnnouncement(dropAnnouncement(p.action, p.next, 'following'));
+          void fetchWeek(from, to, false);
+        } catch (err) {
+          toast.error(getErrMsg(err) || DROP_FAIL_COPY[p.action]);
+        }
+      }
+    } finally {
+      setDropBusy(false);
+      setDropPrompt(null);
+      p.finish();
+    }
+  };
+  // ---- end EP15H ---------------------------------------------------------
+
   const eventsByDay = useMemo(
     () => (data ? groupByDay(data.events) : new Map<string, CalendarEvent[]>()),
     [data]
@@ -471,6 +646,16 @@ export function CalendarPage() {
             onOpenEvent={handleOpenEvent}
             nowMinute={nowMinute}
             onEditBounds={bounds ? openSheet : undefined}
+            editable={!isNarrow}
+            onCreateRange={handleCreateRange}
+            onMove={(event, next) => resolveDrop(event, next, 'move')}
+            onResize={(event, next) =>
+              resolveDrop(
+                event,
+                { date: event.date, startTime: event.startTime, endTime: next.endTime },
+                'resize'
+              )
+            }
           />
         )}
       </div>
@@ -481,6 +666,24 @@ export function CalendarPage() {
           onClose={() => setSheetOpen(false)}
           onSaved={handleBoundsSaved}
         />
+      )}
+
+      {dropPrompt && (
+        <Dialog
+          open
+          onClose={closeDropPrompt}
+          title="This repeats weekly"
+          size="sm"
+          busy={dropBusy}
+        >
+          <WeeklyChoicePrompt
+            question={dropPrompt.action === 'move' ? 'Move it for:' : 'Resize it for:'}
+            onThisDay={() => void answerDropPrompt('this-day')}
+            onFollowing={() => void answerDropPrompt('following')}
+            onBack={closeDropPrompt}
+            busy={dropBusy}
+          />
+        </Dialog>
       )}
 
       {blockSheet?.mode === 'create' && (

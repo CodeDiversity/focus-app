@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP15H — implement (Ready; EP15G implemented 2026-11-17 — the sheet it pre-fills and the `WeeklyChoicePrompt` it reuses exist; dispatch the implementer, who may continue into EP15I).
+**Next substory:** EP15I — implement (Queued → Ready; EP15G implemented 2026-11-17, EP15H implemented 2026-11-17 — the replacement editor exists; retire `/availability`, then EP15J).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (layer labels are scope, not concurrent roles).
 
@@ -35,8 +35,8 @@
 | [EP15E](./EP15E-week-grid.md) | Implemented — awaiting parent review | EP15D implemented (payload). Refined 2026-11-16 (D-E5…D-E8). | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15E/implementation.md) — green 2026-11-17 (web 1335/0, e2e see record); TR-E15-11 screen-reader step not executed; 0 open findings |
 | [EP15F](./EP15F-day-bounds-ui.md) | Implemented — awaiting parent review | EP15B + EP15E implemented. | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15F/implementation.md) — green 2026-11-17 (web 1363/0, e2e see record); TR-E15-11 screen-reader step not executed; 0 open findings |
 | [EP15G](./EP15G-add-edit-delete-blocks-via-form.md) | Implemented — awaiting parent review | EP15B + EP15E implemented. Refined 2026-11-16 (D-G6…D-G11; ▲ D-G10 ruled by user grant). | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15G/implementation.md) — green 2026-11-17 (web 1406/0; e2e not run in the worktree — see record); TR-E15-11 visual + screen-reader steps not executed; 0 open findings (F-EP15G-03/-04 noted) |
-| [EP15H](./EP15H-direct-manipulation-on-the-grid.md) | Ready | EP15G implemented 2026-11-17 (the form it pre-fills). Refined 2026-11-16 (D-H5…D-H8). | Implement next | — |
-| [EP15I](./EP15I-retire-availability-and-update-navigation.md) | Queued | EP15G implemented (the replacement editor exists). | Implement after EP15H | — |
+| [EP15H](./EP15H-direct-manipulation-on-the-grid.md) | Implemented — awaiting parent review | EP15G implemented 2026-11-17 (the form it pre-fills). Refined 2026-11-16 (D-H5…D-H8). | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15H/implementation.md) — green 2026-11-17 (web 1437/0; e2e not run in the worktree — drag journey is EP15J's); TR-E15-11 visual/VoiceOver steps not executed; 0 open findings (F-EP15H-02/-03 noted) |
+| [EP15I](./EP15I-retire-availability-and-update-navigation.md) | Ready | EP15G implemented (the replacement editor exists); EP15H implemented 2026-11-17. | Implement next | — |
 | [EP15J](./EP15J-cross-layer-e2e-and-parent-index.md) | Queued | EP15A–EP15I implemented. | Implement last; then the combined review | — |
 
 Sequence (one writer): EP15A → EP15B → EP15C → EP15D → EP15E → EP15F → EP15G → EP15H → EP15I → EP15J. Why: the model and its copy migration first so every later child verifies against migrated data; the API before the engine so the service wiring (EP15D) lands on both; the read-only grid before any editor; the form path (EP15G) before the pointer path (EP15H) so keyboard parity exists before drag; retirement only once the replacement editor is live; E2E last over the final state. **Interim (D15-15):** between EP15D and EP15I the old `/availability` page still edits `availability_slots`, which nothing reads any more — acceptable on the development branch because the epic ships as one review unit.

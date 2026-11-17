@@ -1,3 +1,4 @@
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import {
   BookOpen,
   Brain,
@@ -7,6 +8,7 @@ import {
   ClipboardList,
   FileText,
   GraduationCap,
+  GripHorizontal,
   Repeat,
 } from 'lucide-react';
 import type { CalendarEvent } from '@/entities/calendar/model/types';
@@ -24,6 +26,19 @@ export interface CalendarEventChipProps {
   layout?: 'week' | 'agenda' | 'grid';
   /** Rendered height of a grid chip, in px — selects the density tier (D-E8). */
   heightPx?: number;
+  /**
+   * EP15H (grid layout only): the chip can be dragged — `cursor-grab`, a
+   * pointer-only bottom resize handle (D-H7), and a live time while dragging.
+   */
+  draggable?: boolean;
+  /** EP15H: a drag is in flight — grabbing cursor, lifted shadow (D-H8). */
+  dragging?: boolean;
+  /** EP15H: overrides the time line while dragging ("14:00–15:00"). */
+  liveTime?: string | null;
+  /** EP15H: pointerdown on the chip body (a move may start; D-H5 decides). */
+  onDragPointerDown?: (e: ReactPointerEvent<HTMLElement>) => void;
+  /** EP15H: pointerdown on the bottom handle (a resize may start). */
+  onResizePointerDown?: (e: ReactPointerEvent<HTMLElement>) => void;
 }
 
 interface TypeMeta {
@@ -92,6 +107,11 @@ export function CalendarEventChip({
   onOpen,
   layout = 'week',
   heightPx,
+  draggable,
+  dragging,
+  liveTime,
+  onDragPointerDown,
+  onResizePointerDown,
 }: CalendarEventChipProps) {
   const meta = TYPE_META[event.type];
   const Icon = meta.icon;
@@ -140,14 +160,19 @@ export function CalendarEventChip({
     const tier = chipTier(heightPx ?? 60);
     const hideTime = tier !== 'full';
     const hideLabel = tier === 'mini';
+    // EP15H (D-H8): while dragging, the time line shows the live snapped
+    // range so the exact result is visible before release.
+    const shownTime = liveTime ?? timeText;
     return (
       <button
         type="button"
         onClick={() => onOpen(event)}
+        onPointerDown={draggable ? onDragPointerDown : undefined}
         data-tier={tier}
-        className={`group flex h-full w-full min-w-0 items-start gap-1.5 overflow-hidden rounded-md border px-1.5 py-1 text-left shadow-sm transition hover:border-accent hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 motion-reduce:transition-none ${
+        data-dragging={dragging || undefined}
+        className={`group relative flex h-full w-full min-w-0 items-start gap-1.5 overflow-hidden rounded-md border px-1.5 py-1 text-left shadow-sm transition hover:border-accent hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 motion-reduce:transition-none ${
           busy ? 'border-border-strong bg-surface-muted' : 'border-border bg-surface'
-        }`}
+        }${draggable ? ' cursor-grab' : ''}${dragging ? ' cursor-grabbing opacity-80 shadow-lg' : ''}`}
         style={{
           borderLeftWidth: 3,
           borderLeftColor: event.courseColor ?? (busy ? undefined : 'transparent'),
@@ -170,15 +195,28 @@ export function CalendarEventChip({
           )}
           {!showTitle && repeatMarker}
           <span
-            className={`${hideTime ? 'sr-only' : 'flex flex-wrap items-center gap-1'} text-xs text-text-muted`}
+            className={`${hideTime && !dragging ? 'sr-only' : 'flex flex-wrap items-center gap-1'} text-xs text-text-muted`}
           >
-            <span>{timeText}</span>
+            <span data-testid={dragging ? 'live-time' : undefined}>{shownTime}</span>
             {event.type === 'STUDY_BLOCK' && event.subtitle && (
               <span className="truncate">· {event.subtitle}</span>
             )}
             {markers}
           </span>
         </span>
+        {draggable && (
+          /* EP15H (D-H7): the bottom resize strip — pointer-only by design;
+             the keyboard equivalent is the sheet's End field. */
+          <span
+            aria-hidden="true"
+            tabIndex={-1}
+            data-resize-handle
+            onPointerDown={onResizePointerDown}
+            className="absolute inset-x-0 bottom-0 flex h-2 cursor-ns-resize items-center justify-center opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+          >
+            <GripHorizontal size={12} className="text-text-muted" />
+          </span>
+        )}
       </button>
     );
   }
