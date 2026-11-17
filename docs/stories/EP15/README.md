@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP15E — implement (Ready; EP15A–EP15D implemented 2026-11-17; the refined grid story — dispatch the implementer, who may continue into EP15F…EP15H in queue order).
+**Next substory:** EP15F — implement (Queued → EP15B + EP15E implemented 2026-11-17; the day-bounds prompt and sheet — dispatch the implementer, who may continue into EP15G…EP15H in queue order).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (layer labels are scope, not concurrent roles).
 
@@ -32,7 +32,7 @@
 | [EP15B](./EP15B-schedule-api.md) | Implemented — awaiting parent review | EP15A implemented. | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15B/implementation.md) — green 2026-11-17 (gated 1767/0, 104 new); 0 open findings; F-EP15B-01 fixed a latent `parseCalendarDate` 500 |
 | [EP15C](./EP15C-engine-day-bounds-and-preferred-study-blocks.md) | Implemented — awaiting parent review | EP15A implemented (shares the `domain/schedule` types). | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15C/implementation.md) — green 2026-11-17 (identity 15/15 vs the EP14E snapshot); 0 open findings; adapter carries windows as preferred (F-EP15C-01) |
 | [EP15D](./EP15D-planner-gathering-and-calendar-read-model.md) | Implemented — awaiting parent review | EP15A, EP15B, EP15C implemented. | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15D/implementation.md) — green 2026-11-17 (V-15-1 identity gated; `availability_slots` has no reader); 0 open findings |
-| [EP15E](./EP15E-week-grid.md) | Ready | EP15D implemented (payload). Refined 2026-11-16 (D-E5…D-E8). | Implement after EP15D | — |
+| [EP15E](./EP15E-week-grid.md) | Implemented — awaiting parent review | EP15D implemented (payload). Refined 2026-11-16 (D-E5…D-E8). | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15E/implementation.md) — green 2026-11-17 (web 1335/0, e2e see record); TR-E15-11 screen-reader step not executed; 0 open findings |
 | [EP15F](./EP15F-day-bounds-ui.md) | Queued | EP15B + EP15E implemented. | Implement after EP15E | — |
 | [EP15G](./EP15G-add-edit-delete-blocks-via-form.md) | Ready | EP15B + EP15E implemented. Refined 2026-11-16 (D-G6…D-G11; ▲ D-G10 ruled by user grant). | Implement after EP15F | — |
 | [EP15H](./EP15H-direct-manipulation-on-the-grid.md) | Ready | EP15G implemented (the form it pre-fills). Refined 2026-11-16 (D-H5…D-H8). | Implement after EP15G | — |

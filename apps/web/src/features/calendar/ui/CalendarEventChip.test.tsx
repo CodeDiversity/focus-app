@@ -136,34 +136,86 @@ describe('CalendarEventChip (SP-127B)', () => {
   });
 });
 
-describe('CalendarEventChip energy tag (EP13J-AC4, D-J6)', () => {
-  const available: CalendarEvent = {
+describe('CalendarEventChip — schedule blocks (EP15E-AC1)', () => {
+  const busy: CalendarEvent = {
     ...baseEvent,
-    id: 'availability:s1:2026-10-27',
-    type: 'AVAILABILITY',
-    title: 'Available',
-    subtitle: 'High energy',
+    id: 'event:b1:2026-10-27',
+    type: 'EVENT',
+    title: 'Dentist',
+    subtitle: null,
     courseId: null,
     courseName: null,
     courseColor: null,
-    link: '/availability',
+    link: null,
+    blockId: 'b1',
+    recurring: false,
+    energy: null,
+  };
+  const block: CalendarEvent = {
+    ...busy,
+    id: 'study-block:b2:2026-10-27',
+    type: 'STUDY_BLOCK',
+    title: 'Deep work',
+    subtitle: 'CS101',
+    blockId: 'b2',
+    recurring: true,
+    energy: 'HIGH',
   };
 
-  it('an available window shows its energy as text and in the accessible name', () => {
-    render(<CalendarEventChip event={available} onOpen={vi.fn()} />);
-    expect(screen.getByTestId('energy-tag')).toHaveTextContent('High energy');
+  it("EP15E-AC1: EVENT reads 'Busy' with the Briefcase icon; STUDY_BLOCK reads 'Study block' with the BookOpen icon", () => {
+    const { unmount } = render(<CalendarEventChip event={busy} onOpen={vi.fn()} />);
+    expect(screen.getByText('Busy')).toBeInTheDocument();
+    expect(screen.getByRole('button').querySelector('svg.lucide-briefcase')).not.toBeNull();
+    expect(screen.getByRole('button')).toHaveAccessibleName(/^Busy\b.*Dentist.*09:00/);
+    unmount();
+    render(<CalendarEventChip event={block} onOpen={vi.fn()} />);
+    expect(screen.getByText('Study block')).toBeInTheDocument();
+    expect(screen.getByRole('button').querySelector('svg.lucide-book-open')).not.toBeNull();
     expect(screen.getByRole('button')).toHaveAccessibleName(
-      /^Available\b.*High energy.*Available.*09:00/
+      /^Study block\b.*High energy.*Deep work.*repeats weekly.*09:00/
     );
   });
 
-  it('a Normal window (null subtitle) and other event types show no energy tag', () => {
-    const { unmount } = render(
-      <CalendarEventChip event={{ ...available, subtitle: null }} onOpen={vi.fn()} />
-    );
-    expect(screen.queryByTestId('energy-tag')).not.toBeInTheDocument();
+  it("EP15E-AC1: a recurring item shows the Repeat icon with sr-only 'repeats weekly'; a one-off shows none", () => {
+    const { unmount } = render(<CalendarEventChip event={block} onOpen={vi.fn()} />);
+    expect(screen.getByTestId('repeat-marker')).toBeInTheDocument();
+    expect(screen.getByText('repeats weekly')).toHaveClass('sr-only');
     unmount();
-    render(<CalendarEventChip event={baseEvent} onOpen={vi.fn()} />);
-    expect(screen.queryByTestId('energy-tag')).not.toBeInTheDocument();
+    render(<CalendarEventChip event={busy} onOpen={vi.fn()} />);
+    expect(screen.queryByTestId('repeat-marker')).toBeNull();
+    expect(screen.queryByText('repeats weekly')).toBeNull();
+  });
+
+  it("EP15E-AC1: STUDY_BLOCK energy HIGH/LOW shows the text tag 'High energy'/'Low energy'; NORMAL shows no tag (D-J6 carried over)", () => {
+    const { unmount } = render(<CalendarEventChip event={block} onOpen={vi.fn()} />);
+    expect(screen.getByTestId('energy-tag')).toHaveTextContent('High energy');
+    unmount();
+    const { unmount: u2 } = render(
+      <CalendarEventChip event={{ ...block, energy: 'LOW' }} onOpen={vi.fn()} />
+    );
+    expect(screen.getByTestId('energy-tag')).toHaveTextContent('Low energy');
+    u2();
+    const { unmount: u3 } = render(
+      <CalendarEventChip event={{ ...block, energy: 'NORMAL' }} onOpen={vi.fn()} />
+    );
+    expect(screen.queryByTestId('energy-tag')).toBeNull();
+    u3();
+    render(<CalendarEventChip event={{ ...busy, energy: 'HIGH' }} onOpen={vi.fn()} />);
+    expect(screen.queryByTestId('energy-tag')).toBeNull(); // energy is a study-block thing
+  });
+
+  it('EP15E-AC1 (EP14D D-D3 kept): the accessible name follows the visible order in week, agenda and grid layouts', () => {
+    const { unmount } = render(<CalendarEventChip event={busy} onOpen={vi.fn()} layout="week" />);
+    expect(screen.getByRole('button')).not.toHaveAttribute('aria-label');
+    expect(screen.getByRole('button')).toHaveAccessibleName(/^Busy\b.*Dentist.*09:00/);
+    unmount();
+    const { unmount: u2 } = render(
+      <CalendarEventChip event={busy} onOpen={vi.fn()} layout="agenda" />
+    );
+    expect(screen.getByRole('button')).toHaveAccessibleName(/^Busy\b.*09:00.*Dentist/);
+    u2();
+    render(<CalendarEventChip event={busy} onOpen={vi.fn()} layout="grid" heightPx={20} />);
+    expect(screen.getByRole('button')).not.toHaveAttribute('aria-label');
+    expect(screen.getByRole('button')).toHaveAccessibleName(/^Busy\b.*Dentist.*09:00–10:00/);
   });
 });

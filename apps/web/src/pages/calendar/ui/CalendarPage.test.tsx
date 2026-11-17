@@ -1,10 +1,12 @@
 import { StrictMode } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Providers } from '@/test/providers';
 import { CalendarPage } from './CalendarPage';
 import { listCalendarEvents } from '@/entities/calendar/api/calendarApi';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 vi.mock('@/entities/calendar/api/calendarApi', () => ({
   listCalendarEvents: vi.fn(),
@@ -56,11 +58,35 @@ const sampleEvent = {
   link: '/courses/c1',
 };
 
+const WEEK = [
+  '2026-10-26',
+  '2026-10-27',
+  '2026-10-28',
+  '2026-10-29',
+  '2026-10-30',
+  '2026-10-31',
+  '2026-11-01',
+];
+const daysOf = (dates: string[], wakeTime = '08:00', sleepTime = '23:00') =>
+  dates.map((date) => ({
+    date,
+    wakeTime,
+    sleepTime,
+    free: [{ startTime: wakeTime, endTime: sleepTime }],
+  }));
+const weekOf = (monday: string): string[] =>
+  Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(`${monday}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + i);
+    return d.toISOString().slice(0, 10);
+  });
+
 const payload = {
   timeZone: 'America/New_York',
   today: '2026-10-28',
   from: '2026-10-26',
   to: '2026-11-01',
+  days: daysOf(WEEK),
   events: [sampleEvent],
 };
 
@@ -105,7 +131,13 @@ describe('CalendarPage (SP-127B)', () => {
     renderPage();
     await screen.findByText('Calculus');
 
-    mocked.mockResolvedValue({ ...payload, from: '2026-10-19', to: '2026-10-25', events: [] });
+    mocked.mockResolvedValue({
+      ...payload,
+      from: '2026-10-19',
+      to: '2026-10-25',
+      days: daysOf(weekOf('2026-10-19')),
+      events: [],
+    });
     await validUser.click(screen.getByRole('button', { name: 'Previous week' }));
     await waitFor(() => expect(mocked).toHaveBeenCalledTimes(2));
 
@@ -132,10 +164,12 @@ describe('CalendarPage (SP-127B)', () => {
     expect(await screen.findByText(/Loading your calendar/i)).toBeInTheDocument();
   });
 
-  it('empty state', async () => {
+  it('empty state (EP15E-AC4 copy)', async () => {
     mocked.mockResolvedValue({ ...payload, events: [] });
     renderPage();
-    expect(await screen.findByText('No events this week')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Nothing on your calendar yet — it’s all free time')
+    ).toBeInTheDocument();
   });
 
   it('error state with retry', async () => {
@@ -151,7 +185,7 @@ describe('CalendarPage (SP-127B)', () => {
     renderPage();
     await screen.findByText('Calculus');
     const status = screen.getByRole('status');
-    expect(status).toHaveTextContent(/Showing 1 event/);
+    expect(status).toHaveTextContent(/Showing 1 item for .* · Your day 08:00–23:00/);
   });
 
   it('renders the agenda instead of the week grid at a narrow viewport (SP-129A)', async () => {
@@ -201,14 +235,17 @@ describe('CalendarPage (SP-127B)', () => {
     expect(entry).toHaveFocus();
   });
 
-  it('an empty week at a narrow viewport shows the page empty state, not an agenda (SP-129A, R129-002)', async () => {
+  it('an empty week at a narrow viewport shows the empty copy once above an agenda that still lists the days (EP15E-AC4 supersedes R129-002)', async () => {
     setNarrow(true);
     mocked.mockResolvedValue({ ...payload, events: [] });
     renderPage();
-    expect(await screen.findByText('No events this week')).toBeInTheDocument();
-    expect(screen.queryByRole('list', { name: 'Week agenda' })).not.toBeInTheDocument();
+    expect(
+      await screen.findByText('Nothing on your calendar yet — it’s all free time')
+    ).toBeInTheDocument();
+    const agenda = screen.getByRole('list', { name: 'Week agenda' });
+    expect(within(agenda).getAllByRole('listitem')).toHaveLength(7);
     expect(screen.queryByRole('list', { name: 'Week view' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('group')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Class/ })).not.toBeInTheDocument();
   });
 
   it('switches from the week view to the agenda after a live narrow resize (SP-129A, R129-005)', async () => {
@@ -219,5 +256,181 @@ describe('CalendarPage (SP-127B)', () => {
     });
     expect(screen.getByRole('list', { name: 'Week agenda' })).toBeInTheDocument();
     expect(screen.queryByRole('list', { name: 'Week view' })).not.toBeInTheDocument();
+  });
+
+  // ===================== EP15E — server-derived week (AC3) =====================
+
+  describe('EP15E-AC3: the week comes from the server (FU-EP04-01)', () => {
+    // Profile zone Pacific/Kiritimati (UTC+14) vs a browser at Etc/GMT+12 (UTC−12):
+    // 26 hours apart. The frozen clock is 2026-10-28T12:00Z, so the UTC guess is
+    // the week of 10-26 while the server's today is already Thursday 10-29.
+    const kiritimati = {
+      timeZone: 'Pacific/Kiritimati',
+      today: '2026-10-29',
+      from: '2026-10-26',
+      to: '2026-11-01',
+      days: daysOf(WEEK, '07:00', '22:00'),
+      events: [
+        { ...sampleEvent, id: 'e-thu', date: '2026-10-29', title: 'Thursday class' },
+        {
+          ...sampleEvent,
+          id: 'e-sun',
+          date: '2026-11-01',
+          title: 'Sunday class',
+          startTime: '20:00',
+          endTime: '21:00',
+        },
+      ],
+    };
+
+    it('EP15E-AC3 (FU-EP04-01 a): headers are the profile zone’s week — the response’s from..to drive the seven headers', async () => {
+      mocked.mockResolvedValue(kiritimati);
+      renderPage();
+      await screen.findByText('Thursday class');
+      expect(mocked).toHaveBeenCalledWith({ from: '2026-10-26', to: '2026-11-01' });
+      for (const name of ['Mon 26', 'Tue 27', 'Wed 28', 'Thu 29', 'Fri 30', 'Sat 31', 'Sun 1']) {
+        expect(screen.getByText(name, { exact: false })).toBeInTheDocument();
+      }
+    });
+
+    it('EP15E-AC3 (FU-EP04-01 b): every returned event renders in the column matching its civil date; none is dropped', async () => {
+      mocked.mockResolvedValue(kiritimati);
+      renderPage();
+      await screen.findByText('Thursday class');
+      const thu = document.querySelector('[data-day="2026-10-29"]') as HTMLElement;
+      const sun = document.querySelector('[data-day="2026-11-01"]') as HTMLElement;
+      expect(within(thu).getByRole('button', { name: /Thursday class/ })).toBeInTheDocument();
+      expect(within(sun).getByRole('button', { name: /Sunday class/ })).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /^Class\b/ })).toHaveLength(2);
+    });
+
+    it('EP15E-AC3 (FU-EP04-01 c): the marked column equals result.today', async () => {
+      mocked.mockResolvedValue(kiritimati);
+      renderPage();
+      await screen.findByText('Thursday class');
+      const marked = document.querySelector('[data-today]') as HTMLElement;
+      expect(marked).toHaveTextContent('Thu 29');
+      expect(marked).toHaveTextContent('(today)');
+    });
+
+    it('EP15E-AC3 (FU-EP04-01 d): Today requests mondayOf(result.today); previous/next request from−7/from+7 as civil strings', async () => {
+      mocked.mockResolvedValue(kiritimati);
+      renderPage();
+      await screen.findByText('Thursday class');
+      mocked.mockResolvedValue({
+        ...kiritimati,
+        from: '2026-10-19',
+        to: '2026-10-25',
+        days: daysOf(weekOf('2026-10-19')),
+        events: [],
+      });
+      await validUser.click(screen.getByRole('button', { name: 'Previous week' }));
+      await waitFor(() =>
+        expect(mocked).toHaveBeenLastCalledWith({ from: '2026-10-19', to: '2026-10-25' })
+      );
+      mocked.mockResolvedValue({
+        ...kiritimati,
+        from: '2026-10-12',
+        to: '2026-10-18',
+        days: daysOf(weekOf('2026-10-12')),
+        events: [],
+      });
+      await validUser.click(screen.getByRole('button', { name: 'Previous week' }));
+      await waitFor(() =>
+        expect(mocked).toHaveBeenLastCalledWith({ from: '2026-10-12', to: '2026-10-18' })
+      );
+      mocked.mockResolvedValue({
+        ...kiritimati,
+        from: '2026-10-19',
+        to: '2026-10-25',
+        days: daysOf(weekOf('2026-10-19')),
+        events: [],
+      });
+      await validUser.click(screen.getByRole('button', { name: 'Next week' }));
+      await waitFor(() =>
+        expect(mocked).toHaveBeenLastCalledWith({ from: '2026-10-19', to: '2026-10-25' })
+      );
+      mocked.mockResolvedValue(kiritimati);
+      await validUser.click(screen.getByRole('button', { name: 'Today' }));
+      await waitFor(() =>
+        expect(mocked).toHaveBeenLastCalledWith({ from: '2026-10-26', to: '2026-11-01' })
+      );
+    });
+
+    it('EP15E-AC3: when the first response’s today falls outside the guessed range, the page re-requests the week of today before rendering (D-E5)', async () => {
+      // The guess is the week of 10-26; the server says today is Monday 11-02.
+      const first = { ...payload, today: '2026-11-02', events: [] };
+      const second = {
+        ...payload,
+        today: '2026-11-02',
+        from: '2026-11-02',
+        to: '2026-11-08',
+        days: daysOf(weekOf('2026-11-02')),
+        events: [{ ...sampleEvent, id: 'nov', date: '2026-11-03', title: 'November class' }],
+      };
+      mocked.mockResolvedValueOnce(first).mockResolvedValueOnce(second);
+      renderPage();
+      await screen.findByText('November class');
+      expect(mocked).toHaveBeenNthCalledWith(1, { from: '2026-10-26', to: '2026-11-01' });
+      expect(mocked).toHaveBeenNthCalledWith(2, { from: '2026-11-02', to: '2026-11-08' });
+      expect(mocked).toHaveBeenCalledTimes(2);
+      expect(screen.getByText('Mon 2', { exact: false })).toBeInTheDocument();
+      expect(screen.queryByText('Mon 26', { exact: false })).not.toBeInTheDocument();
+    });
+
+    it('EP15E-AC3: the page module uses no browser-local Date getters', () => {
+      const source = readFileSync(join(__dirname, 'CalendarPage.tsx'), 'utf8');
+      expect(source).not.toMatch(
+        /\b(getDay|getDate|getMonth|getFullYear|getHours|setDate|setHours)\(/
+      );
+    });
+  });
+
+  // ===================== EP15E — states (AC4) =====================
+
+  describe('EP15E-AC4: states', () => {
+    it("EP15E-AC4: loading skeleton has seven column placeholders and an sr-only 'Loading your calendar…'", () => {
+      mocked.mockImplementation(() => new Promise(() => undefined));
+      renderPage();
+      expect(screen.getByText('Loading your calendar…')).toHaveClass('sr-only');
+      expect(screen.getAllByTestId('skeleton-column')).toHaveLength(7);
+      for (const el of document.querySelectorAll('[class*="animate-"]')) {
+        expect(el.className).toMatch(/motion-reduce:animate-none/);
+      }
+    });
+
+    it("EP15E-AC4: empty week shows 'Nothing on your calendar yet — it's all free time' with the grid (bounds shading) still rendered", async () => {
+      mocked.mockResolvedValue({ ...payload, events: [] });
+      renderPage();
+      expect(
+        await screen.findByText('Nothing on your calendar yet — it’s all free time')
+      ).toBeInTheDocument();
+      expect(screen.getByRole('list', { name: 'Week view' })).toBeInTheDocument();
+      expect(screen.getAllByRole('img', { name: 'Before your day starts' })).toHaveLength(7);
+      expect(screen.getAllByText('Free · 08:00–23:00')).toHaveLength(7);
+    });
+
+    it("EP15E-AC4: error state renders role alert and 'Try again' refetches", async () => {
+      mocked.mockRejectedValueOnce(new Error('Network Error')).mockResolvedValueOnce(payload);
+      renderPage();
+      expect(await screen.findByRole('alert')).toHaveTextContent('Network Error');
+      await validUser.click(screen.getByRole('button', { name: 'Try again' }));
+      expect(await screen.findByText('Calculus')).toBeInTheDocument();
+      expect(mocked).toHaveBeenCalledTimes(2);
+    });
+
+    it('EP15E-AC4: narrow viewport renders the agenda with bounds and free lines; wide renders the grid; a live resize switches', async () => {
+      setNarrow(true);
+      renderPage();
+      await screen.findByText('Calculus');
+      expect(screen.getAllByText('Day 08:00–23:00')).toHaveLength(7);
+      expect(screen.getAllByText('Free · 08:00–23:00').length).toBeGreaterThan(0);
+      await act(async () => {
+        setNarrow(false);
+      });
+      expect(screen.getByRole('list', { name: 'Week view' })).toBeInTheDocument();
+      expect(screen.queryByRole('list', { name: 'Week agenda' })).not.toBeInTheDocument();
+      expect(screen.getByRole('status')).toHaveTextContent('Your day 08:00–23:00');
+    });
   });
 });

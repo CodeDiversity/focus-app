@@ -13,6 +13,7 @@ const payload: CalendarEventsResult = {
   today: '2026-01-16',
   from: '2026-01-13',
   to: '2026-01-17',
+  days: [],
   events: [
     {
       id: 'class:m1:2026-01-16',

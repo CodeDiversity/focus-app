@@ -119,6 +119,7 @@ const calendarPayload: CalendarEventsResult = {
   today: TODAY,
   from: '2026-10-28',
   to: '2026-11-01',
+  days: [],
   events: [
     makeEvent(),
     makeEvent({ id: 'class:m2:2026-10-30', title: 'Physics lecture', startTime: '11:00' }),

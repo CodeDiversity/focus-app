@@ -7,14 +7,19 @@ import { getErrorMessage as getErrMsg } from '@/shared/lib/errors';
 import { formatDate as fmtDate } from '@/shared/lib/datetime';
 import { listCalendarEvents } from '@/entities/calendar/api/calendarApi';
 import type { CalendarEvent, CalendarEventsResult } from '@/entities/calendar/model/types';
-import { WeekView } from '@/features/calendar/ui/WeekView';
+import { WeekGrid } from '@/features/calendar/ui/WeekGrid';
 import { CalendarAgenda } from '@/features/calendar/ui/CalendarAgenda';
 import { CalendarEventDetails } from '@/features/calendar/ui/CalendarEventDetails';
+import { boundsSummary } from '@/features/calendar/lib/gridModel';
+import { addDays, mondayOf, utcTodayGuess } from '../lib/week';
 
 const NARROW_QUERY = '(max-width: 639px)';
 
+/** EP15E (AC4) — the empty-week copy, verbatim. */
+export const EMPTY_WEEK_COPY = 'Nothing on your calendar yet — it’s all free time';
+
 /** Below Tailwind's `sm` breakpoint (640px) the agenda replaces the week
- * grid (D129A-01, D129A-07 — same props shape as WeekView). */
+ * grid (D129A-01, D129A-07 — same props shape as WeekGrid). */
 function useNarrowViewport(): boolean {
   return useSyncExternalStore(
     (onChange) => {
@@ -24,22 +29,6 @@ function useNarrowViewport(): boolean {
     },
     () => window.matchMedia(NARROW_QUERY).matches
   );
-}
-
-function mondayOf(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay(); // 0 Sun .. 6 Sat
-  const diff = (day + 6) % 7; // Monday = 0 diff
-  d.setDate(d.getDate() - diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function formatYMD(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${dd}`;
 }
 
 function groupByDay(events: CalendarEvent[]): Map<string, CalendarEvent[]> {
@@ -52,8 +41,19 @@ function groupByDay(events: CalendarEvent[]): Map<string, CalendarEvent[]> {
   return map;
 }
 
+/** Civil-noon instant for the week label only (no local getters; the zone is the profile's). */
+const noonOf = (civil: string) => new Date(`${civil}T12:00:00Z`);
+
+/**
+ * The calendar page (SP-127B, EP15E). The visible week is anchored on a
+ * Monday civil date that comes from the **server** (AC-E15-09, FU-EP04-01):
+ * the first request guesses the UTC civil date's week (D-E5); if the
+ * response's `today` lies outside that range the page re-requests the week
+ * of `today` once before rendering; every later range derives from server
+ * strings by civil-date arithmetic. No browser-local Date getter is used.
+ */
 export function CalendarPage() {
-  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [anchorFrom, setAnchorFrom] = useState<string>(() => mondayOf(utcTodayGuess()));
   const [data, setData] = useState<CalendarEventsResult | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
@@ -63,30 +63,15 @@ export function CalendarPage() {
   const isNarrow = useNarrowViewport();
 
   const requestSeq = useRef(0);
-  const initialDoneRef = useRef(false);
+  const bootstrappedRef = useRef(false);
 
-  const weekStart = useMemo(() => mondayOf(selectedDate), [selectedDate]);
-  const from = formatYMD(weekStart);
-  const sunday = useMemo(() => {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() + 6);
-    return d;
-  }, [weekStart]);
-  const to = formatYMD(sunday);
-
-  const days = useMemo(() => {
-    const out: string[] = [];
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(weekStart);
-      d.setDate(d.getDate() + i);
-      out.push(formatYMD(d));
-    }
-    return out;
-  }, [weekStart]);
+  const from = anchorFrom;
+  const to = addDays(anchorFrom, 6);
 
   const fetchWeek = useCallback(async (f: string, t: string, initial: boolean) => {
     const seq = ++requestSeq.current;
     const isCurrent = () => seq === requestSeq.current;
+    let redirected = false;
     if (initial) {
       setIsLoading(true);
       setError(null);
@@ -96,13 +81,26 @@ export function CalendarPage() {
     try {
       const result = await listCalendarEvents({ from: f, to: t });
       if (!isCurrent()) return;
+      // D-E5: the bootstrap guess may straddle a zone boundary — follow the
+      // server's today once, before anything renders.
+      if (!bootstrappedRef.current) {
+        bootstrappedRef.current = true;
+        if (result.today < result.from || result.today > result.to) {
+          redirected = true;
+          setAnchorFrom(mondayOf(result.today));
+          return; // the effect refetches with the corrected range; stay loading
+        }
+      }
       setData(result);
       const count = result.events.length;
-      const weekLabel = `${fmtDate(new Date(`${result.from}T12:00:00Z`), result.timeZone)} – ${fmtDate(
-        new Date(`${result.to}T12:00:00Z`),
+      const weekLabel = `${fmtDate(noonOf(result.from), result.timeZone)} – ${fmtDate(
+        noonOf(result.to),
         result.timeZone
       )}`;
-      setStatusMessage(`Showing ${count} event${count === 1 ? '' : 's'} for ${weekLabel}.`);
+      const bounds = boundsSummary(result.days ?? []);
+      setStatusMessage(
+        `Showing ${count} item${count === 1 ? '' : 's'} for ${weekLabel}${bounds ? ` · ${bounds}` : ''}.`
+      );
     } catch (err) {
       if (!isCurrent()) return;
       const msg = getErrMsg(err) || 'We could not load your calendar. Try again.';
@@ -114,8 +112,8 @@ export function CalendarPage() {
     } finally {
       if (isCurrent()) {
         if (initial) {
-          setIsLoading(false);
-          initialDoneRef.current = true;
+          // Stay in the loading state while a bootstrap correction is in flight.
+          if (!redirected) setIsLoading(false);
         } else {
           setIsFetching(false);
         }
@@ -123,22 +121,22 @@ export function CalendarPage() {
     }
   }, []);
 
+  const hasData = data !== null;
   useEffect(() => {
-    const initial = !initialDoneRef.current;
-    void fetchWeek(from, to, initial);
+    void fetchWeek(from, to, !hasData);
+    // `hasData` is intentionally not a dependency: a range change decides
+    // initial-vs-refetch from the data present at that moment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [from, to, fetchWeek]);
 
-  const handlePrev = () => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() - 7);
-    setSelectedDate(d);
+  const handlePrev = () => setAnchorFrom(addDays(anchorFrom, -7));
+  const handleNext = () => setAnchorFrom(addDays(anchorFrom, 7));
+  const handleToday = () => {
+    if (!data) return;
+    const monday = mondayOf(data.today);
+    if (monday === anchorFrom) void fetchWeek(from, to, false);
+    else setAnchorFrom(monday);
   };
-  const handleNext = () => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() + 7);
-    setSelectedDate(d);
-  };
-  const handleToday = () => setSelectedDate(new Date());
   const handleRetry = () => {
     void fetchWeek(from, to, true);
   };
@@ -150,24 +148,41 @@ export function CalendarPage() {
 
   const timeZone = data?.timeZone ?? 'UTC';
   const weekRangeLabel = data
-    ? `${fmtDate(new Date(`${data.from}T12:00:00Z`), data.timeZone)} – ${fmtDate(
-        new Date(`${data.to}T12:00:00Z`),
+    ? `${fmtDate(noonOf(data.from), data.timeZone)} – ${fmtDate(noonOf(data.to), data.timeZone)} · ${
         data.timeZone
-      )} · ${data.timeZone}`
+      }`
     : `${from} – ${to}`;
 
-  if (isLoading) {
+  if (isLoading && !data) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl font-bold text-text mb-2">Calendar</h1>
         <p className="text-sm text-text-muted mb-6">Your week at a glance.</p>
         <div className="card p-4 sm:p-6">
           <div className="sr-only">Loading your calendar…</div>
-          <div className="grid grid-cols-7 gap-2 overflow-x-auto">
+          <div
+            className="grid grid-cols-[3.5rem_repeat(7,minmax(0,1fr))] gap-2 overflow-x-auto"
+            aria-hidden
+          >
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, j) => (
+                <div
+                  key={j}
+                  className="h-12 animate-pulse rounded-lg bg-surface-muted motion-reduce:animate-none"
+                />
+              ))}
+            </div>
             {Array.from({ length: 7 }).map((_, i) => (
-              <div key={i} className="min-w-[140px] space-y-2 rounded-lg border border-border p-2">
+              <div
+                key={i}
+                data-testid="skeleton-column"
+                className="space-y-2 rounded-lg border border-border p-2"
+              >
                 {Array.from({ length: 3 }).map((__, j) => (
-                  <div key={j} className="h-12 animate-pulse rounded-lg bg-surface-muted" />
+                  <div
+                    key={j}
+                    className="h-12 animate-pulse rounded-lg bg-surface-muted motion-reduce:animate-none"
+                  />
                 ))}
               </div>
             ))}
@@ -177,7 +192,7 @@ export function CalendarPage() {
     );
   }
 
-  if (error) {
+  if (error && !data) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl font-bold text-text mb-2">Calendar</h1>
@@ -192,6 +207,7 @@ export function CalendarPage() {
     );
   }
 
+  const days = data?.days ?? [];
   const isEmpty = (data?.events.length ?? 0) === 0;
 
   return (
@@ -226,6 +242,7 @@ export function CalendarPage() {
           >
             <ChevronRight size={18} aria-hidden />
           </button>
+          {/* Interim link until EP15I retires the availability page (D15-15). */}
           <Link to="/availability">
             <Button variant="outline" className="max-sm:min-h-[44px]">
               Manage availability
@@ -236,7 +253,13 @@ export function CalendarPage() {
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-medium text-text">{weekRangeLabel}</p>
-        {isFetching && <Loader2 className="animate-spin text-accent" size={16} aria-hidden />}
+        {isFetching && (
+          <Loader2
+            className="animate-spin text-accent motion-reduce:animate-none"
+            size={16}
+            aria-hidden
+          />
+        )}
       </div>
 
       <div className="card p-4 sm:p-6">
@@ -244,35 +267,33 @@ export function CalendarPage() {
           role="status"
           className="mb-3 flex min-h-5 items-center gap-2 text-xs font-medium uppercase tracking-wider text-text-muted"
         >
-          {isFetching && <Loader2 className="animate-spin text-accent" size={14} aria-hidden />}
+          {isFetching && (
+            <Loader2
+              className="animate-spin text-accent motion-reduce:animate-none"
+              size={14}
+              aria-hidden
+            />
+          )}
           {statusMessage}
         </div>
 
-        {isEmpty ? (
-          <div className="grid grid-cols-7 gap-2 overflow-x-auto">
-            <div className="col-span-7 py-8 text-center">
-              <p className="text-sm text-text">No events this week</p>
-              <p className="mt-1 text-sm text-text-muted">
-                Try another week, or add a course meeting or assignment.
-              </p>
-              <Link to="/availability" className="mt-3 inline-block text-sm text-accent underline">
-                Manage availability
-              </Link>
-            </div>
-          </div>
-        ) : isNarrow ? (
-          <CalendarAgenda
-            days={days}
-            eventsByDay={eventsByDay}
-            today={data?.today ?? ''}
-            onOpenEvent={setSelectedEvent}
-          />
+        {isNarrow ? (
+          <>
+            {isEmpty && <p className="mb-3 text-sm text-text-muted">{EMPTY_WEEK_COPY}</p>}
+            <CalendarAgenda
+              days={days}
+              eventsByDay={eventsByDay}
+              today={data?.today ?? ''}
+              onOpenEvent={setSelectedEvent}
+            />
+          </>
         ) : (
-          <WeekView
+          <WeekGrid
             days={days}
             eventsByDay={eventsByDay}
             today={data?.today ?? ''}
             onOpenEvent={setSelectedEvent}
+            emptyMessage={isEmpty ? EMPTY_WEEK_COPY : undefined}
           />
         )}
       </div>

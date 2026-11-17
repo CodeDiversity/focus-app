@@ -1,48 +1,35 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Brain,
-  Ban,
-  CalendarClock,
-  CheckCircle2,
-  ClipboardList,
-  FileText,
-  GraduationCap,
-} from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { Dialog } from '@/shared/ui/Dialog';
 import { formatDate } from '@/shared/lib/datetime';
 import type { CalendarEvent } from '@/entities/calendar/model/types';
+import { TYPE_META, typeLabel } from './CalendarEventChip';
 
 export interface CalendarEventDetailsProps {
   event: CalendarEvent;
   timeZone: string;
   onClose: () => void;
+  /** EP15E (D-E3): footer actions EP15G fills (edit / delete); rendered left of Close. */
+  actions?: ReactNode;
 }
 
-const TYPE_META: Record<CalendarEvent['type'], { icon: typeof GraduationCap; label: string }> = {
-  CLASS: { icon: GraduationCap, label: 'Class' },
-  ASSIGNMENT_DEADLINE: { icon: ClipboardList, label: 'Assignment' },
-  EXAM_DEADLINE: { icon: FileText, label: 'Exam' },
-  STUDY_SESSION: { icon: Brain, label: 'Study session' },
-  // EP13D: a session the plan proposes (not time logged).
-  PLANNED_SESSION: { icon: CalendarClock, label: 'Planned' },
-  AVAILABILITY: { icon: CheckCircle2, label: 'Available' },
-  BLOCKED_TIME: { icon: Ban, label: 'Blocked' },
-};
-
-function typeLabel(event: CalendarEvent): string {
-  const base = TYPE_META[event.type].label;
-  if (event.type === 'STUDY_SESSION' && event.focus) return `${base} (focus)`;
-  return base;
-}
+const ENERGY_TEXT = { HIGH: 'High energy', NORMAL: 'Normal', LOW: 'Low energy' } as const;
 
 /**
  * Details dialog (D127B-6): modal dialog copying the ArchiveCourseDialog pattern
  * (role="dialog", aria-modal, Escape closes, focus trap, focus returns to the
- * trigger). Fields: type, title, date, time, course (link), completed state,
- * focus flag.
+ * trigger). Fields: type, title, date, time, repeats (weekly blocks), course
+ * (link), energy (study blocks), completed state, focus flag. EP15E keeps it
+ * on the shared Dialog (D-E3) and adds the `actions` slot; the Close button
+ * stays last in DOM order.
  */
-export function CalendarEventDetails({ event, timeZone, onClose }: CalendarEventDetailsProps) {
+export function CalendarEventDetails({
+  event,
+  timeZone,
+  onClose,
+  actions,
+}: CalendarEventDetailsProps) {
   const meta = TYPE_META[event.type];
   const Icon = meta.icon;
   const label = typeLabel(event);
@@ -55,9 +42,10 @@ export function CalendarEventDetails({ event, timeZone, onClose }: CalendarEvent
   const clockLabel = event.endTime ? `${event.startTime} – ${event.endTime}` : event.startTime;
   const timeLabel = flex ? 'Anytime' : clockLabel;
   const isDeadline = event.type === 'ASSIGNMENT_DEADLINE' || event.type === 'EXAM_DEADLINE';
+  const isBlock = event.type === 'EVENT' || event.type === 'STUDY_BLOCK';
 
   return (
-    <Dialog open onClose={onClose} title={event.title}>
+    <Dialog open onClose={onClose} title={event.title} size="md">
       <dl className="space-y-3 text-sm">
         <div className="flex items-center gap-2">
           <dt className="font-medium text-text-muted">Type</dt>
@@ -78,6 +66,12 @@ export function CalendarEventDetails({ event, timeZone, onClose }: CalendarEvent
           <div>
             <dt className="font-medium text-text-muted">Suggested</dt>
             <dd className="text-text">{clockLabel}</dd>
+          </div>
+        )}
+        {isBlock && event.recurring && (
+          <div>
+            <dt className="font-medium text-text-muted">Repeats</dt>
+            <dd className="text-text">Weekly</dd>
           </div>
         )}
         {event.courseName && (
@@ -104,6 +98,12 @@ export function CalendarEventDetails({ event, timeZone, onClose }: CalendarEvent
             </dd>
           </div>
         )}
+        {event.type === 'STUDY_BLOCK' && (
+          <div>
+            <dt className="font-medium text-text-muted">Energy</dt>
+            <dd className="text-text">{ENERGY_TEXT[event.energy ?? 'NORMAL']}</dd>
+          </div>
+        )}
         {isDeadline && (
           <div>
             <dt className="font-medium text-text-muted">Status</dt>
@@ -118,7 +118,12 @@ export function CalendarEventDetails({ event, timeZone, onClose }: CalendarEvent
         )}
       </dl>
 
-      <div className="mt-6 flex justify-end">
+      <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
+        {actions && (
+          <div data-testid="details-actions" className="flex items-center gap-2">
+            {actions}
+          </div>
+        )}
         <Button type="button" variant="outline" onClick={onClose}>
           Close
         </Button>

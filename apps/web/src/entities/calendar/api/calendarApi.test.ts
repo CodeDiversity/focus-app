@@ -23,6 +23,15 @@ describe('calendarApi (SP-127B)', () => {
       today: '2026-10-28',
       from: '2026-10-26',
       to: '2026-11-01',
+      // EP15D/EP15E: days[] rides through untouched.
+      days: [
+        {
+          date: '2026-10-26',
+          wakeTime: '08:00',
+          sleepTime: '23:00',
+          free: [{ startTime: '08:00', endTime: '23:00' }],
+        },
+      ],
       events: [
         {
           id: 'class:m1:2026-10-27',

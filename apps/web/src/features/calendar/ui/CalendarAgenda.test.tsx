@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CalendarAgenda } from './CalendarAgenda';
 import { CalendarEventChip } from './CalendarEventChip';
-import type { CalendarEvent } from '@/entities/calendar/model/types';
+import type { CalendarDay, CalendarEvent } from '@/entities/calendar/model/types';
 
 const baseEvent: Omit<CalendarEvent, 'id' | 'type' | 'title'> = {
   subtitle: null,
@@ -24,7 +24,7 @@ function event(overrides: Partial<CalendarEvent> & { id: string }): CalendarEven
   return { ...baseEvent, ...overrides } as CalendarEvent;
 }
 
-const days = [
+const WEEK = [
   '2026-10-26',
   '2026-10-27',
   '2026-10-28',
@@ -33,6 +33,19 @@ const days = [
   '2026-10-31',
   '2026-11-01',
 ]; // Mon 26 – Sun 01
+// EP15E: the payload's days[] — bounds and free time exist every day.
+const days: CalendarDay[] = WEEK.map((date) => ({
+  date,
+  wakeTime: '08:00',
+  sleepTime: '23:00',
+  free:
+    date === '2026-10-26'
+      ? [
+          { startTime: '10:00', endTime: '12:00' },
+          { startTime: '12:00', endTime: '12:15' },
+        ]
+      : [{ startTime: '08:00', endTime: '23:00' }],
+}));
 
 const events: CalendarEvent[] = [
   event({ id: 'a', type: 'CLASS', title: 'Calculus', date: '2026-10-26', startTime: '09:00' }),
@@ -73,11 +86,17 @@ describe('CalendarAgenda (SP-129A)', () => {
       />
     );
 
-    // Only days with events are grouped (Mon 26, Sat 31); Tue–Fri and Sun omitted.
-    expect(screen.getByRole('heading', { name: 'Mon 26' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Sat 31' })).toBeInTheDocument();
-    for (const absent of ['Tue 27', 'Wed 28', 'Thu 29', 'Fri 30', 'Sun 1']) {
-      expect(screen.queryByRole('heading', { name: absent })).not.toBeInTheDocument();
+    // EP15E (D-E4): every day is listed — bounds and free time exist every day.
+    for (const name of [
+      'Mon 26',
+      'Tue 27',
+      'Wed 28 (today)',
+      'Thu 29',
+      'Fri 30',
+      'Sat 31',
+      'Sun 1',
+    ]) {
+      expect(screen.getByRole('heading', { name })).toBeInTheDocument();
     }
 
     // Exactly once: two Calculus/lab entries and two Physics entries via their
@@ -162,7 +181,7 @@ describe('CalendarAgenda (SP-129A)', () => {
     expect(text.indexOf('11:00')).toBeLessThan(text.indexOf('Physics'));
   });
 
-  it('an entirely empty payload renders no day groups and no entries (R129-002)', () => {
+  it('an entirely empty payload still lists the seven days with their bounds and free time, and no entries (EP15E supersedes R129-002)', () => {
     render(
       <CalendarAgenda
         days={days}
@@ -171,12 +190,57 @@ describe('CalendarAgenda (SP-129A)', () => {
         onOpenEvent={vi.fn()}
       />
     );
-    // D129A-05: the page owns the empty week; the agenda itself has nothing.
+    // D129A-05: the page owns the empty-week copy; the agenda shows the days as they are.
     const agenda = screen.getByRole('list', { name: 'Week agenda' });
-    expect(agenda).toBeInTheDocument();
-    expect(within(agenda).queryByRole('listitem')).not.toBeInTheDocument();
+    expect(within(agenda).getAllByRole('listitem')).toHaveLength(7);
     expect(within(agenda).queryByRole('button')).not.toBeInTheDocument();
-    expect(screen.queryByRole('heading')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Free · 08:00–23:00')).toHaveLength(6);
+  });
+
+  it("EP15E-AC4: lists all seven days, each with a bounds line 'Day 08:00–23:00', items and free lines in time order (D-E4)", () => {
+    render(
+      <CalendarAgenda
+        days={days}
+        eventsByDay={eventsByDay}
+        today="2026-10-28"
+        onOpenEvent={vi.fn()}
+      />
+    );
+    expect(screen.getAllByText('Day 08:00–23:00')).toHaveLength(7);
+    const mon = screen.getByRole('group', { name: /Mon 26/ });
+    const texts = Array.from(mon.children).map((c) => c.textContent ?? '');
+    // 09:00 class, then the 10:00–12:00 free line, then the 23:59 deadline.
+    expect(texts[0]).toMatch(/Class.*09:00.*Calculus/);
+    expect(texts[1]).toBe('Free · 10:00–12:00');
+    expect(texts[2]).toMatch(/Assignment.*23:59.*Lab report/);
+  });
+
+  it('EP15E-AC4: free lines use the same 30-minute threshold as the grid', () => {
+    render(
+      <CalendarAgenda
+        days={days}
+        eventsByDay={eventsByDay}
+        today="2026-10-28"
+        onOpenEvent={vi.fn()}
+      />
+    );
+    expect(screen.getByText('Free · 10:00–12:00')).toBeInTheDocument();
+    expect(screen.queryByText('Free · 12:00–12:15')).toBeNull();
+  });
+
+  it('EP15E-AC4: activating an item opens the same details dialog (hands the event up)', async () => {
+    const user = userEvent.setup();
+    const onOpen = vi.fn();
+    render(
+      <CalendarAgenda
+        days={days}
+        eventsByDay={eventsByDay}
+        today="2026-10-28"
+        onOpenEvent={onOpen}
+      />
+    );
+    await user.click(screen.getByRole('button', { name: /^Assignment\b.*23:59.*Lab report/ }));
+    expect(onOpen).toHaveBeenCalledWith(events[1]);
   });
 
   it('the week-layout chip keeps the title above the time (contrast check)', () => {
