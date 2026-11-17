@@ -1,7 +1,7 @@
 # EP15 — parent implementation index (review unit EP15A–EP15J)
 
 **Epic:** [EP15: Schedule & Availability Redesign](../../../../epics/EP15-schedule-and-availability-redesign.md) · **Breakdown:** [README](../../README.md) · **Contracts:** [contracts.md](../../contracts.md)
-**Written by:** EP15J's implementer, 2026-11-17 · **Status:** ready for the one combined review (review-cadence)
+**Written by:** EP15J's implementer, 2026-11-17 · **Status:** reviewed — combined review pass 1 **passed 2026-11-17** at `c3f0892` ([review.md](./review.md)); polish R-EP15-19…21 open (optional)
 **Baseline → final:** `ce87858` (EP15 Plan Ready, EP15A Ready) → the EP15J commit (the queue row's evidence link names it). EP15K is an **optional, unscheduled** story outside this unit (user order 2026-11-17).
 
 ## 1. Child inventory and Git scope

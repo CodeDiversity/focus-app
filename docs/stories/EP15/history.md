@@ -57,6 +57,20 @@ Planned 2026-11-16 from the user's vision ("a calendar-like interface where stud
 | C-EP15-16 | 2026-11-16 | R-EP15-16 (polish): "fills study blocks first" scope. | contracts rule 3: per day (placement is day-centric). | Fixed in plan |
 | C-EP15-17 | 2026-11-16 | R-EP15-14 residue, R-EP15-17, R-EP15-18 (plan review pass 3, polish). | `Switch.tsx` owned by EP15F in both Files lists; contracts weekly→one-off requires explicit `endDate: null`; EP15G wiring row 3 + at-a-glance carry D-G10; one midnight helper copy ("00:00 means midnight") in EP15F/EP15G; EP15F validates after the mapping. | Fixed in plan (polish; no re-review) |
 
+## Implementation review history
+
+| Pass | Date | Reviewed commit | Report | Verdict |
+|---|---|---|---|---|
+| 1 | 2026-11-17 | `c3f0892` | [artifacts/EP15/review.md](./artifacts/EP15/review.md) | **Pass** — no blocker or should-fix; polish R-EP15-19…21 open (optional). Reviewer re-ran all three gates: gated API `--runInBand` 85 suites 1778/0, web unit 1374/0, Playwright self-contained 62/0 (closing the external-stack-only disclosure of parent index § 6.1). |
+
+## Implementation correction log
+
+| ID | Date | Finding (original claim / consequence) | Disposition / closure evidence | Status |
+|---|---|---|---|---|
+| R-EP15-19 | 2026-11-17 | TR-E15-11 claims a recorded manual accessibility pass per surface; the screen-reader steps were executed on no surface and the EP15G/EP15H visual passes and OS reduce-motion toggle were not executed (no screen reader in the environment). Consequence: the screen-reader experience of the grid, sheets and drag announcements is unverified by a human. | Open (polish). Every child record carries verbatim VoiceOver/visual instructions; the review's DoD-11 section labels each step `Not executed — user instructions` as the DoD prescribes. Closure: a user-executed VoiceOver/visual pass recorded in the owning child records, or a recorded user waiver. ([review.md](./artifacts/EP15/review.md) § Findings) | Open — polish (user / planner) |
+| R-EP15-20 | 2026-11-17 | (= F-EP15I-01.) The gated API suite is documented as single-worker, but nothing enforces it; `npx jest` with `DATABASE_URL` set runs parallel workers on one database and fails spuriously. Consequence: a future runner can record false reds. | Open (polish). Closure: `maxWorkers: 1` when the gate env is present, or a package script encoding `--runInBand`, committed and recorded. ([review.md](./artifacts/EP15/review.md) § Findings) | Open — polish (planner) |
+| R-EP15-21 | 2026-11-17 | (= F-EP15J-02/-03.) Fixed e2e ports 4100/3100 and the config-derived throwaway DB name collide across worktrees; the pre-existing `adaptive-scheduling.spec.ts` journey 5 flakes under parallel machine load. Consequence: self-contained e2e runs are fragile with two concurrent sessions. | Open (polish). The reviewer's self-contained run at `c3f0892` passed 62/0 on free ports. Closure: env-derived ports/DB name (or per-worktree hash) and a serialization or longer wait for journey 5, committed and recorded. ([review.md](./artifacts/EP15/review.md) § Findings) | Open — polish (planner) |
+
 ## Superseded decisions
 
 None.
