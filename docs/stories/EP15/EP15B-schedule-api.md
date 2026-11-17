@@ -4,14 +4,14 @@
 **Parent epic:** [EP15: Schedule & Availability Redesign](../../epics/EP15-schedule-and-availability-redesign.md)
 **Milestone:** M8 (D15-11)
 **Layer:** Backend
-**Status:** Queued
+**Status:** Implemented — awaiting parent review (2026-11-17); record: [artifacts/EP15B/implementation.md](./artifacts/EP15B/implementation.md)
 **Dependencies:** EP15A implemented (models + recurrence domain). Epic decisions D15-3, D15-5 (ratified 2026-11-16).
 
 ## Plan at a glance
 
 - **What this changes:** a new `modules/schedule` with `GET/PUT /schedule/day-bounds`, `GET/POST/PATCH/DELETE /schedule/blocks`, `DELETE /schedule/blocks/:id?from=` and `DELETE /schedule/blocks/:id/occurrences/:date`, exactly as in contracts.md — including the server-side decision whether a weekly edit is in place or a split.
 - **Why it improves it:** students can say "I work this Saturday" and "from next week my shift changes" (product, AC-E15-03/04); the client never decides split-vs-update, so the two-choice UI (D15-14) stays two choices (code).
-- **Decisions needing you:** none ▲ — D-B1…D-B4 ratify by default (D15-17).
+- **Decisions needing you:** none — D-B1/D-B2 ratified by user grant 2026-11-16; D-B3/D-B4 ratified by default 2026-11-17 at implementation start.
 - **How to change this plan:** edit a Ruling cell below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary
@@ -57,8 +57,8 @@ AC-E15-01 (API half), AC-E15-03, AC-E15-04, AC-E15-06 (fields), AC-E15-14; TR-E1
 |---|---|---|---|
 | ▲ D-B1 | `kind` after create: (a) immutable (400); (b) mutable with STUDY-only fields cleared on → BUSY | **(a)** — the editor hides the toggle in edit mode (D15-14); a student who picked wrong deletes and re-adds in two taps | Ratified (user grant 2026-11-16 — blanket ratification of recommended options, D15-17) |
 | ▲ D-B2 | Who decides split vs in place: (a) the server, from `effectiveFrom` vs `startDate`; the client always sends the clicked date for weekly blocks; (b) separate `/split` endpoint the client chooses | **(a)** — the UI's two choices map 1:1 to "send `effectiveFrom`" or "cancel the occurrence" | Ratified (user grant 2026-11-16 — blanket ratification of recommended options, D15-17) |
-| D-B3 | Topology: (a) one `/schedule/*` module for bounds and blocks; (b) two modules | **(a)** — one owner for one surface | Proposed |
-| D-B4 | Day-bounds writes: (a) `PUT` replaces all seven; (b) `PATCH /schedule/day-bounds/:dayOfWeek` | **(a)** — the UI saves the whole sheet at once; one request, one transaction | Proposed |
+| D-B3 | Topology: (a) one `/schedule/*` module for bounds and blocks; (b) two modules | **(a)** — one owner for one surface | Ratified by default, 2026-11-17 (implementation start) |
+| D-B4 | Day-bounds writes: (a) `PUT` replaces all seven; (b) `PATCH /schedule/day-bounds/:dayOfWeek` | **(a)** — the UI saves the whole sheet at once; one request, one transaction | Ratified by default, 2026-11-17 (implementation start) |
 
 ## Definition of Done
 
@@ -67,7 +67,7 @@ AC-E15-01 (API half), AC-E15-03, AC-E15-04, AC-E15-06 (fields), AC-E15-14; TR-E1
 ## Sizing
 
 - **Outcome:** the student's bounds and blocks can be created, changed from a date, trimmed and cancelled per occurrence, safely.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** one window, one commit, 2026-11-17; files as planned plus `common/lib/calendar-date.ts` (+ spec; F-EP15B-01) and `test/test-http.ts` (harness wiring); 104 new tests (35 unit + 57 e2e + 8 data-scoping + 4 parser); gated API 1767/0, ungated 1218/0; 0 open findings (F-EP15B-01…03 fixed/resolved/worked around). Row in [efficiency.md](./artifacts/efficiency.md).
 - **Files:** `apps/api/src/modules/schedule/**` (new), `apps/api/src/app.module.ts`, `apps/api/src/modules/schedule/{schedule.service.spec,schedule-e2e.spec,schedule-data-scoping.spec}.ts` (new), `docs/stories/EP15/contracts.md`.
 - **Start context:** this story; contracts.md § API; `availability.service.ts` + its specs as the pattern; EP14B's validation policy.
 - **Verification:** `pnpm --filter @studypilot/api test` (gated, `--runInBand`) green; the ownership matrix and the split transaction test pass.

@@ -28,6 +28,12 @@ export function parseCalendarDate(value: string): Date | null {
     return null;
   }
   const date = new Date(`${value}T00:00:00.000Z`);
+  // An unparseable value (e.g. month 13) is an Invalid Date whose
+  // `toISOString()` throws — report it as "not a date" like every other
+  // miss (EP15B, F-EP15B-01).
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
   // The round-trip is the impossible-date check: 2026-02-30 rolls over to
   // 2026-03-02 and fails the equality, 2026-02-28 round-trips and passes.
   return date.toISOString().slice(0, 10) === value ? date : null;

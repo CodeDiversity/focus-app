@@ -1,4 +1,4 @@
-import { addDays, dayOfWeekOf, startOfMondayWeek } from './calendar-date';
+import { addDays, dayOfWeekOf, parseCalendarDate, startOfMondayWeek } from './calendar-date';
 
 /**
  * Unit spec for `YYYY-MM-DD` string arithmetic. These helpers assume a
@@ -26,6 +26,30 @@ describe('calendar-date helpers', () => {
 
     it('Sunday=`0` for `2026-02-01`', () => {
       expect(dayOfWeekOf('2026-02-01')).toBe(0);
+    });
+  });
+
+  describe('parseCalendarDate', () => {
+    it('returns the UTC-midnight Date for a valid YYYY-MM-DD', () => {
+      expect(parseCalendarDate('2026-11-17')?.toISOString()).toBe('2026-11-17T00:00:00.000Z');
+    });
+
+    it('returns null for an impossible day (the round-trip check)', () => {
+      expect(parseCalendarDate('2026-02-30')).toBeNull();
+    });
+
+    it('returns null, not a throw, for an unparseable month or day (EP15B, F-EP15B-01)', () => {
+      expect(() => parseCalendarDate('2026-13-01')).not.toThrow();
+      expect(parseCalendarDate('2026-13-01')).toBeNull();
+      expect(parseCalendarDate('2026-00-10')).toBeNull();
+      expect(parseCalendarDate('2026-01-00')).toBeNull();
+      expect(parseCalendarDate('2026-01-32')).toBeNull();
+    });
+
+    it('returns null for the wrong shape or a non-string', () => {
+      expect(parseCalendarDate('2026/11/17')).toBeNull();
+      expect(parseCalendarDate('17-11-2026')).toBeNull();
+      expect(parseCalendarDate(20261117 as unknown as string)).toBeNull();
     });
   });
 

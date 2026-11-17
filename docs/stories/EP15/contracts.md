@@ -85,6 +85,8 @@ model ScheduleBlockException {
 
 Ownership: every read/write carries the principal's `userId` (`where: { id, userId }` or `block: { userId }` for exceptions); missing, foreign and malformed ids are the uniform 404 `Resource not found`.
 
+**As implemented (EP15B, 2026-11-17):** `PUT /schedule/day-bounds` entry errors are keyed `days[<i>].<field>` (plus `days` for the one-per-weekday rule; unknown keys inside an entry are rejected like top-level ones). On `PATCH`, `title`, `courseId`, `endDate` and `weekdays` take an explicit `null` as a value; `null` on `energy`, `startDate`, `startTime`, `endTime` or `effectiveFrom` reads as omitted (a body holding only those is the empty-body 400). A split whose successor is a **one-off** (`weekdays: null`) drops the exceptions dated `≥ effectiveFrom` instead of moving them — a one-off has no occurrences to cancel, so a moved row would be unreachable. `kind` in a PATCH body is a 400 with the message `kind cannot be changed after a block is created; delete the block and add it again` (D-B1). `DELETE …/occurrences/:date` with a malformed `date`, and `?from=` malformed, are field-level 400s (`date` / `from`) checked before the ownership lookup; the uniform 404 still wins for a foreign block with a well-formed date.
+
 ## Calendar read model (`GET /calendar/events?from&to`, EP15D)
 
 ```ts

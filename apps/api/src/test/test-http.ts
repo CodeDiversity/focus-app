@@ -22,6 +22,7 @@ import { CalendarModule } from '../modules/calendar/calendar.module';
 import { AvailabilityModule } from '../modules/availability/availability.module';
 import { StudyPlansModule } from '../modules/study-plans/study-plans.module';
 import { StudySessionsModule } from '../modules/study-sessions/study-sessions.module';
+import { ScheduleModule } from '../modules/schedule/schedule.module';
 import { PrismaService } from '../modules/prisma/prisma.service';
 import { EMAIL_PROVIDER } from '../modules/email/email-provider';
 import { AllExceptionsFilter } from '../common/filters/all-exceptions.filter';
@@ -92,6 +93,8 @@ export async function createIntegrationApp(): Promise<IntegrationApp> {
       StudyPlansModule,
       // EP07A: the focus-session lifecycle routes the integration specs drive.
       StudySessionsModule,
+      // EP15B: the schedule routes the integration specs drive.
+      ScheduleModule,
     ],
   })
     .overrideProvider(EMAIL_PROVIDER)

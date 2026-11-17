@@ -11,6 +11,7 @@ import { CalendarModule } from './modules/calendar/calendar.module';
 import { AvailabilityModule } from './modules/availability/availability.module';
 import { StudyPlansModule } from './modules/study-plans/study-plans.module';
 import { StudySessionsModule } from './modules/study-sessions/study-sessions.module';
+import { ScheduleModule } from './modules/schedule/schedule.module';
 
 @Module({
   imports: [
@@ -36,6 +37,8 @@ import { StudySessionsModule } from './modules/study-sessions/study-sessions.mod
     StudyPlansModule,
     // EP07A: focus-session persistence & lifecycle API.
     StudySessionsModule,
+    // EP15B: day bounds + schedule blocks (D15-3), over the EP15A tables.
+    ScheduleModule,
   ],
 })
 export class AppModule {}
