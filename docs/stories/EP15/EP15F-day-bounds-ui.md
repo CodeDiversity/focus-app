@@ -31,7 +31,7 @@ AC-E15-01; TR-E15-06, TR-E15-11; DoD-2, DoD-4, DoD-5, DoD-6, DoD-7, DoD-8.
 ## Acceptance criteria
 
 1. While `GET /schedule/day-bounds` reports `configured: false`, the calendar shows a one-line banner ("Your days run 08:00–23:00 for now. When does your day usually start and end? **Set it**") with a dismiss control; dismissing hides it for the rest of the session; it is never a modal and nothing else is blocked; it disappears permanently once bounds are saved.
-2. The sheet opens from the banner and from the shaded region's label on the grid; "Same every day" is on by default with one wake/sleep pair pre-filled from the current (or default) values; switching it off reveals seven rows (Monday first) pre-filled; Save sends exactly seven entries via `PUT /schedule/day-bounds`; client validation mirrors the API (`HH:mm`, sleep after wake); a native `type="time"` input cannot enter `24:00`, so a sleep value of `00:00` means midnight and is sent as `24:00` and displayed back as `00:00` with the helper text "00:00 means midnight" (the D-G6 mapping; R-EP15-11); a 400 maps to the matching field.
+2. The sheet opens from the banner and from the shaded region's label on the grid; "Same every day" is on by default with one wake/sleep pair pre-filled from the current (or default) values; switching it off reveals seven rows (Monday first) pre-filled; Save sends exactly seven entries via `PUT /schedule/day-bounds`; client validation mirrors the API (`HH:mm`, sleep after wake); a native `type="time"` input cannot enter `24:00`, so a sleep value of `00:00` means midnight and is sent as `24:00` and displayed back as `00:00` with the helper text "00:00 means midnight" (the D-G6 mapping, one copy shared with EP15G — R-EP15-11/-18); client validation runs **after** the mapping (so `00:00` is never rejected as "before wake"); a 400 maps to the matching field.
 3. After a successful save the sheet closes, focus returns to its trigger, the week re-reads (shading and free time update), and the status region announces "Day start and end saved."; the sheet is the shared `Dialog` (focus trap, Escape, no stacked dialogs), every control is ≥ 44px on mobile, and the time inputs are native `type="time"`.
 
 ## Tests (TR-E15-06)
@@ -61,7 +61,7 @@ AC-E15-01; TR-E15-06, TR-E15-11; DoD-2, DoD-4, DoD-5, DoD-6, DoD-7, DoD-8.
 
 - **Outcome:** a student sets their day in two taps and sees the grid change.
 - **Actual at closeout:** tbd.
-- **Files:** `apps/web/src/entities/day-bounds/{api,model}/*` (new), `apps/web/src/features/day-bounds/ui/{DayBoundsBanner,DayBoundsSheet}.tsx` (new) + tests, `apps/web/src/pages/calendar/ui/CalendarPage.tsx` (banner slot, entry point).
+- **Files:** `apps/web/src/entities/day-bounds/{api,model}/*` (new), `apps/web/src/features/day-bounds/ui/{DayBoundsBanner,DayBoundsSheet}.tsx` (new) + tests, `apps/web/src/shared/ui/Switch.tsx` + `Switch.test.tsx` (new, owned here — R-EP15-14), `apps/web/src/pages/calendar/ui/CalendarPage.tsx` (banner slot, entry point).
 - **Start context:** this story; contracts.md § API (day bounds); `AvailabilitySlotForm.tsx` as the dialog pattern; EP15E's shaded-region label.
 - **Verification:** `pnpm --filter @studypilot/web test -- day-bounds calendar` green; manual: save with "same every day", reload, banner gone, shading moved.
 - **Dependencies / exclusions:** EP15B, EP15E. Blocks → EP15G.

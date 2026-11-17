@@ -53,6 +53,7 @@ Planned 2026-11-16 from the user's vision ("a calendar-like interface where stud
 | C-EP15-14 | 2026-11-16 | R-EP15-14 (polish): `shared/ui/Switch.tsx` ownerless. | EP15F owns it; EP15G reuses (D-G9 text aligned). | Fixed in plan |
 | C-EP15-15 | 2026-11-16 | R-EP15-15 (polish): EP15A baseline stale. | Line refs and last migration refreshed. | Fixed in plan |
 | C-EP15-16 | 2026-11-16 | R-EP15-16 (polish): "fills study blocks first" scope. | contracts rule 3: per day (placement is day-centric). | Fixed in plan |
+| C-EP15-17 | 2026-11-16 | R-EP15-14 residue, R-EP15-17, R-EP15-18 (plan review pass 3, polish). | `Switch.tsx` owned by EP15F in both Files lists; contracts weekly→one-off requires explicit `endDate: null`; EP15G wiring row 3 + at-a-glance carry D-G10; one midnight helper copy ("00:00 means midnight") in EP15F/EP15G; EP15F validates after the mapping. | Fixed in plan (polish; no re-review) |
 
 ## Superseded decisions
 
