@@ -23,6 +23,12 @@ Created 2026-11-16 from the user's rulings on [EP13R](../EP13/EP13R-follow-up-re
 | 1 | 2026-11-16 | `5682fe8` | [plan-review-pass-1.md](./plan-review-pass-1.md) | Changes Required — R-EP14-01…03 (all should-fix, planner-owned) |
 | 2 | 2026-11-16 | `966b109` | [plan-review.md](./plan-review.md) | **Plan Ready** — R-EP14-01…03 resolved (verified); R-EP14-04 open, polish only |
 
+## Implementation review history
+
+| Round | Date | Reviewed commit | Report | Verdict |
+|---|---|---|---|---|
+| 1 | 2026-11-16 | `08b6bd5` | [review.md](./artifacts/EP14/review.md) | Does not pass — R-EP14-05 (user: Secret scan), R-EP14-06 (implementer), R-EP14-07 (planner); R-EP14-08 polish; all code gates green |
+
 ## Plan correction log
 
 | ID | Date | Finding (plan review pass 1, [plan-review-pass-1.md](./plan-review-pass-1.md)) | Correction | Status |
@@ -33,3 +39,7 @@ Created 2026-11-16 from the user's rulings on [EP13R](../EP13/EP13R-follow-up-re
 | R-EP14-04 | 2026-11-16 | Plan review pass 2 ([plan-review.md](./plan-review.md)): three stale "red/green" summary echoes of the pre-C-EP14-01 evidence definition (README TR-E14-01 row; EP14A DoD and Sizing/Verification lines). | None yet — optional docs-only planner touch; normative texts (EP14A-AC3/Tests, EP14B-AC2) are already consistent. | Open — polish, does not block implementation |
 | P-EP14-01 | 2026-11-16 | BL-14-08 (plan-page load/generate race, F-EP14C-03) — trigger "before EP14D" fired when the user asked to finish EP14. | Promoted to [EP14F](./EP14F-plan-page-load-generate-race.md) (Ready, inserted before EP14D; AC-E14-04 co-owned; TR-E14-07). | Fixed in plan |
 | P-EP14-02 | 2026-11-16 | EP14E refiner pass (technical + UI/UX): D-E4 (PATCH `hard: null` = Auto), D-E5 (control row below Type/Priority), D-E6 (segmented Auto / Hard / Not hard + helper copy), D-E7 (guard anchor = earliest NORMAL gap ≥ minBlock). ▲ rows ruled by user grant ("finish EP14"). | No AC, contract or dependency changed → plan review pass 2 stands (planning-checklist: refining does not re-trigger). | Recorded |
+| C-EP14-04 | 2026-11-16 | R-EP14-05 (combined review round 1, [review.md](./artifacts/EP14/review.md)): no fully green CI run — the "Secret scan" step is red on every proof run (44006149869 at `08b6bd5` green at steps 1–17); flagged item unconfirmed (anonymous log 403; local gitleaks blocked in-session). EP14B-AC2 / AC-E14-02 clause unmet. | None possible without the user: read the step-18 log signed in (or authorize a local `gitleaks detect --redact`), then fix a real item or add a reviewed, narrowly scoped allowlist for a confirmed placeholder; link the fully green run in `artifacts/EP14B/implementation.md`. | Decision needed — user |
+| C-EP14-05 | 2026-11-16 | R-EP14-06: EP14B's named pipe-parity unit test (`test-http.ts` options ≡ `main.ts`) absent; four spec-local pipes still `enableImplicitConversion: true`. | Implementer fix dispatched (EP14B `fix`). | Addressed — awaiting re-review |
+| C-EP14-06 | 2026-11-16 | R-EP14-07: F-EP14D-03, F-EP14F-01, F-EP14F-02 deferred outside the register (AC-E14-07). | BL-14-09…11 added with triggers; queue-lint clean. | Addressed — awaiting re-review |
+| C-EP14-07 | 2026-11-16 | R-EP14-08 (polish): EP14E "pass unmodified" vs F-EP14E-01; EP14B test-file name; EP14D-AC1 `:100`→`:101`; D-D1 premise. | Four one-line story annotations (AC text itself untouched; the line-number drift is a note beside the frozen AC). | Addressed — awaiting re-review |

@@ -30,7 +30,7 @@ AC-E14-05; TR-E14-05; DoD-6, DoD-7, DoD-8.
 
 ## Acceptance criteria
 
-1. After Escape closes the assignment-create dialog (opened from the empty-list button) and the phone-width calendar event detail, focus is on the element that opened it — `e2e/assignments-list.spec.ts:23` and `e2e/calendar.spec.ts:100` pass.
+1. After Escape closes the assignment-create dialog (opened from the empty-list button) and the phone-width calendar event detail, focus is on the element that opened it — `e2e/assignments-list.spec.ts:23` and `e2e/calendar.spec.ts:100` pass. *(Line reference note, R-EP14-08c: the same test sits at `:101` after one comment line was added by EP14D.)*
 2. At 375px every interactive control in the assignment dialog is ≥ 44px tall — `e2e/assignments-list.spec.ts:168` passes.
 3. Success-badge text meets ≥ 4.5:1 against its background, and every calendar chip's accessible name contains its visible text in order (WCAG 2.5.3).
 4. `expectNoAxeViolations` in `e2e/adaptive-scheduling.spec.ts` has no `ignore` predicate, and all seven journeys stay green.
@@ -50,6 +50,8 @@ AC-E14-05; TR-E14-05; DoD-6, DoD-7, DoD-8.
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
 | D-D1 | Focus return: (a) fix each site so the trigger survives or a stable fallback (the list heading) is focused; (b) change `Dialog` to focus `document.body` fallback | **(a)** — the primitive is correct; the sites lose their trigger | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
+
+*Implementation note (F-EP14D-01, R-EP14-08d): D-D1's premise was wrong — both triggers survive; the cause was the shared `Dialog` re-capturing `document.activeElement` on its second `open` effect under `React.StrictMode`. Fixed in the primitive (capture only an element outside the dialog); the ruled outcome — focus returns to the opener — holds.*
 | D-D2 | Success contrast: (a) a darker `success-strong` text token for the badge (≈ rgb 21 101 52, ≥ 4.5:1 on the 10% tint); (b) a solid success background with white text; (c) raise caption size | **(a)** — smallest visual change, keeps the soft-badge look | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
 | D-D3 | Chip naming: (a) drop `aria-label` and let the name come from the visible content plus sr-only separators; (b) rewrite `aria-label` to the visible order | **(a)** — label-in-name holds by construction; anytime/energy text is already visible | Ratified (user, 2026-11-16, "ratify all decisions for the stories") |
 

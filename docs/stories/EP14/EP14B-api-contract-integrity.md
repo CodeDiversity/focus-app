@@ -39,7 +39,7 @@ AC-E14-02, AC-E14-03; TR-E14-02, TR-E14-03; DoD-2, DoD-3, DoD-8, DoD-9.
 
 - AC1: `validation-strictness.e2e-spec` (gated) — the three bodies above → 400 per field; `?limit=10` on GET /study-sessions → 200; unit: the pipe options pinned in `test-http.ts` equal `main.ts`.
 - AC2: the four named failing tests (R-EP13-03) green; full gated run recorded with its command.
-- AC3: `momentum.spec.ts` — `days` length 7, Monday first, across a month/year boundary; `MomentumWeekStrip.test.tsx` renders from `days` with no `Date` arithmetic (grep-guard test that `momentumCopy.ts` no longer exports `weekDates`).
+- AC3: `momentum.spec.ts` — `days` length 7, Monday first, across a month/year boundary; `MomentumCard.test.tsx` (the strip is rendered from `week.days`; delivered there, not in a separate `MomentumWeekStrip.test.tsx` — R-EP14-08b) with no `Date` arithmetic (grep-guard test that `momentumCopy.ts` no longer exports `weekDates`).
 
 ## Technical notes
 
