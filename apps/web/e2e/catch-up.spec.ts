@@ -4,7 +4,7 @@ import {
   authHeaders,
   createAssignmentViaApi,
   createAuthenticatedUserViaApi,
-  createAvailabilitySlotViaApi,
+  setDayBoundsViaApi,
   loginViaUi,
 } from './helpers';
 
@@ -67,14 +67,10 @@ async function createCatchUpUser(
   availability: { startTime: string; endTime: string } = { startTime: '08:00', endTime: '20:00' }
 ): Promise<CatchUpUser> {
   const { email, accessToken } = await createAuthenticatedUserViaApi(request);
-  for (let d = 0; d < 7; d++) {
-    await createAvailabilitySlotViaApi(request, accessToken, {
-      dayOfWeek: d,
-      startTime: availability.startTime,
-      endTime: availability.endTime,
-      isAvailable: true,
-    });
-  }
+  await setDayBoundsViaApi(request, accessToken, {
+    wakeTime: availability.startTime,
+    sleepTime: availability.endTime,
+  });
   const winRes = await request.get('/api/study-plans', { headers: authHeaders(accessToken) });
   expect(winRes.status()).toBe(200);
   const win = (await winRes.json()) as { from: string; to: string };

@@ -23,11 +23,7 @@ import { compareAssignments } from '../../domain/study-planning/ordering';
 import { schedule } from '../../domain/study-planning/scheduler';
 import { findConflicts } from '../../domain/study-planning/conflicts';
 import { replan } from '../../domain/study-planning/catch-up';
-import {
-  boundsFromWeeklyWindows,
-  windowsAsPreferred,
-} from '../../domain/study-planning/legacy-windows';
-import type { ReplanBusyInterval } from '../../domain/study-planning/catch-up';
+import { ScheduleInputsService } from '../schedule/schedule-inputs.service';
 import type {
   AssignmentFacts,
   AssignmentStatusValue,
@@ -39,8 +35,6 @@ import type {
   RemainingWorkFlag,
   StudyPreferences,
   UnfinishedAssignmentStatus,
-  PreferredInterval,
-  WeeklyWindow,
 } from '../../domain/study-planning/types';
 import { UpdateStudyPreferencesDto } from './dto/update-study-preferences.dto';
 import { SaveStudyPlanDto } from './dto/save-study-plan.dto';
@@ -406,29 +400,12 @@ function minutesToHHmm(min: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
-/**
- * EP15C interim adapter (contracts.md § Known windows, R-EP15-02): the
- * engine now takes dated `dayBounds` / `blocked` and a `preferred` list,
- * but the service still gathers weekly availability slots until EP15D wires
- * the real `scheduleInputs` seam. Former available windows become the
- * day's bounds (hull) plus their gaps as blocked time, and every available
- * window is also handed over as a preferred interval carrying its energy
- * tag — in the slot model an available window *was* a declared study
- * window, so this keeps EP13J/EP14E's energy placement byte-for-byte until
- * study blocks replace it (F-EP15C-01). EP15D deletes this function.
- */
-function legacyEngineInputs(data: {
-  days: string[];
-  available: WeeklyWindow[];
-  blocked: WeeklyWindow[];
-}): { dayBounds: DatedInterval[]; blocked: DatedInterval[]; preferred: PreferredInterval[] } {
-  const bounds = boundsFromWeeklyWindows(data.days, data.available, data.blocked);
-  return { ...bounds, preferred: windowsAsPreferred(data.days, data.available) };
-}
-
 @Injectable()
 export class StudyPlansService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly scheduleInputs: ScheduleInputsService
+  ) {}
 
   /**
    * EP13A — the one confirmed-time aggregation (closes the State-A seam,
@@ -1039,16 +1016,10 @@ export class StudyPlansService {
       },
     });
 
-    const slots = await this.prisma.availabilitySlot.findMany({ where: { userId } });
-
-    const courses = await this.prisma.course.findMany({
-      where: { userId, isActive: true },
-      include: { meetings: true },
-    });
-
-    const sessions = await this.prisma.studySession.findMany({
-      where: { userId, endTime: { not: null } },
-    });
+    // EP15D (AC-E15-08): day bounds, block occurrences, classes and busy
+    // time come through the one gathering seam the calendar reads too — the
+    // service no longer reads `availability_slots` (D15-15).
+    const inputs = await this.scheduleInputs.scheduleInputs(userId, days[0], days[days.length - 1]);
 
     // EP13A (AC-E13-01): confirmed study time is attributed per assignment
     // (State B) and feeds the classification below, so work already done is
@@ -1067,23 +1038,12 @@ export class StudyPlansService {
     // intervals for the engine and for save/confirm conflict checks — a kept
     // commitment can never be double-booked. The `completed`/`locked` tags
     // ride into `replan`, which derives its preserved counts from them.
+    // EP15D: the preserved rows' busy intervals now come from the seam
+    // (`inputs.busy`); this read serves the locked-minutes subtraction below.
     const plannedRows = await this.prisma.plannedSession.findMany({
       where: { studyPlan: { userId } },
       include: { studyPlan: { select: { date: true } } },
     });
-    const plannedBusy: ReplanBusyInterval[] = plannedRows
-      .filter((ps) => ps.status === 'COMPLETED' || ps.locked)
-      .map((ps) => {
-        const start = zoneParts(ps.startTime, timeZone);
-        const end = zoneParts(ps.endTime, timeZone);
-        return {
-          date: start.date,
-          startMinute: hhmmToMinutes(start.time),
-          endMinute: hhmmToMinutes(end.time),
-          completed: ps.status === 'COMPLETED',
-          locked: ps.locked,
-        };
-      });
 
     const facts: AssignmentFacts[] = assignments.map((a) => ({
       id: a.id,
@@ -1131,47 +1091,10 @@ export class StudyPlansService {
       })
       .filter((a) => a.remainingMinutes > 0);
 
-    const available: WeeklyWindow[] = [];
-    const blocked: WeeklyWindow[] = [];
-    for (const slot of slots) {
-      const w: WeeklyWindow = {
-        dayOfWeek: slot.dayOfWeek,
-        startMinute: hhmmToMinutes(slot.startTime),
-        endMinute: hhmmToMinutes(slot.endTime),
-      };
-      // EP13J (D-J4/D-J3): only available windows carry energy, and only a
-      // non-default level is attached — an all-NORMAL student feeds the
-      // engine exactly the pre-EP13J input (EP13J-AC3).
-      if (slot.isAvailable) {
-        available.push(slot.energy && slot.energy !== 'NORMAL' ? { ...w, energy: slot.energy } : w);
-      } else blocked.push(w);
-    }
-    const classes: WeeklyWindow[] = [];
-    for (const course of courses) {
-      for (const m of course.meetings) {
-        classes.push({
-          dayOfWeek: m.dayOfWeek,
-          startMinute: hhmmToMinutes(m.startTime),
-          endMinute: hhmmToMinutes(m.endTime),
-        });
-      }
-    }
-    // Confirmed study sessions stay untagged (they count towards neither
-    // preserved total); preserved planned sessions carry their tags (EP13A).
-    const busy: ReplanBusyInterval[] = [
-      ...sessions
-        .filter((s): s is typeof s & { endTime: Date } => s.endTime !== null)
-        .map((s) => {
-          const start = zoneParts(s.startTime, timeZone);
-          const end = zoneParts(s.endTime, timeZone);
-          return {
-            date: start.date,
-            startMinute: hhmmToMinutes(start.time),
-            endMinute: hhmmToMinutes(end.time),
-          };
-        }),
-      ...plannedBusy,
-    ];
+    // Engine inputs from the seam: bounds as the base, events dated, study
+    // blocks as the preferred tier (EP15C), classes weekly, busy = confirmed
+    // sessions (untagged) + preserved planned rows (tagged, EP13A).
+    const { dayBounds, blocked, preferred, classes, busy } = inputs;
 
     const titleById = new Map(assignments.map((a) => [a.id, a.title]));
     const dueById = new Map(
@@ -1182,8 +1105,9 @@ export class StudyPlansService {
       timeZone,
       preferences,
       days,
-      available,
+      dayBounds,
       blocked,
+      preferred,
       classes,
       busy,
       schedulable,
@@ -1201,9 +1125,11 @@ export class StudyPlansService {
     const output = schedule({
       days: data.days,
       assignments: data.schedulable,
-      ...legacyEngineInputs(data),
+      dayBounds: data.dayBounds,
+      blocked: data.blocked,
       classes: data.classes,
       busy: data.busy,
+      preferred: data.preferred,
       preferences: data.preferences,
     });
 
@@ -1301,9 +1227,11 @@ export class StudyPlansService {
     const output = replan({
       days: data.days,
       assignments: data.schedulable,
-      ...legacyEngineInputs(data),
+      dayBounds: data.dayBounds,
+      blocked: data.blocked,
       classes: data.classes,
       busy: data.busy,
+      preferred: data.preferred,
       missedSessions,
       preferences: data.preferences,
     });
@@ -1429,7 +1357,6 @@ export class StudyPlansService {
     }
 
     const classesDated: DatedInterval[] = [];
-    const blockedDated: DatedInterval[] = [];
     for (const date of affectedDates) {
       const dow = dayOfWeekOf(date);
       for (const w of data.classes) {
@@ -1437,12 +1364,9 @@ export class StudyPlansService {
           classesDated.push({ date, startMinute: w.startMinute, endMinute: w.endMinute });
         }
       }
-      for (const w of data.blocked) {
-        if (w.dayOfWeek === dow) {
-          blockedDated.push({ date, startMinute: w.startMinute, endMinute: w.endMinute });
-        }
-      }
     }
+    // EP15D: events arrive dated from the seam (a one-off blocks only its date).
+    const blockedDated = data.blocked.filter((b) => b.date >= dto.from && b.date <= dto.to);
 
     // `data.busy` already contains the preserved (completed/locked) planned
     // rows as busy intervals — gathered once in `gatherPlanData` (EP13A). The
@@ -1654,7 +1578,6 @@ export class StudyPlansService {
     }
 
     const classesDated: DatedInterval[] = [];
-    const blockedDated: DatedInterval[] = [];
     for (const date of affectedDates) {
       const dow = dayOfWeekOf(date);
       for (const w of data.classes) {
@@ -1662,12 +1585,9 @@ export class StudyPlansService {
           classesDated.push({ date, startMinute: w.startMinute, endMinute: w.endMinute });
         }
       }
-      for (const w of data.blocked) {
-        if (w.dayOfWeek === dow) {
-          blockedDated.push({ date, startMinute: w.startMinute, endMinute: w.endMinute });
-        }
-      }
     }
+    // EP15D: events arrive dated from the seam (a one-off blocks only its date).
+    const blockedDated = data.blocked.filter((b) => b.date >= dto.from && b.date <= dto.to);
     const busyDated = data.busy.filter((b) => b.date >= dto.from && b.date <= dto.to);
 
     const submitted = dto.sessions.map((s) => ({

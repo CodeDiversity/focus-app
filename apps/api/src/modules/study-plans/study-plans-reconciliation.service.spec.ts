@@ -3,6 +3,7 @@ import { HttpStatus, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RESOURCE_NOT_FOUND } from '../../common/ownership/ownership';
 import { StudyPlansService } from './study-plans.service';
+import { ScheduleInputsService } from '../schedule/schedule-inputs.service';
 
 /**
  * EP13C unit spec (mocked PrismaService, no database) — rolling
@@ -32,7 +33,8 @@ describe('StudyPlansService EP13C reconciliation + today (unit, mocked PrismaSer
   const userUpdateMany = jest.fn();
   const assignmentFindMany = jest.fn();
   const assignmentUpdateMany = jest.fn();
-  const availabilitySlotFindMany = jest.fn();
+  const dayBoundsFindMany = jest.fn();
+  const scheduleBlockFindMany = jest.fn();
   const courseFindMany = jest.fn();
   const studySessionFindMany = jest.fn();
   const studySessionGroupBy = jest.fn();
@@ -46,7 +48,8 @@ describe('StudyPlansService EP13C reconciliation + today (unit, mocked PrismaSer
   const prisma = {
     user: { findUnique: userFindUnique, updateMany: userUpdateMany },
     assignment: { findMany: assignmentFindMany, updateMany: assignmentUpdateMany },
-    availabilitySlot: { findMany: availabilitySlotFindMany },
+    dayBounds: { findMany: dayBoundsFindMany },
+    scheduleBlock: { findMany: scheduleBlockFindMany },
     course: { findMany: courseFindMany },
     studySession: {
       findMany: studySessionFindMany,
@@ -94,11 +97,12 @@ describe('StudyPlansService EP13C reconciliation + today (unit, mocked PrismaSer
     jest.clearAllMocks();
     jest.useFakeTimers().setSystemTime(now);
 
-    service = new StudyPlansService(prisma);
+    service = new StudyPlansService(prisma, new ScheduleInputsService(prisma));
 
     userFindUnique.mockResolvedValue({ timeZone: 'UTC', preferences: null });
     assignmentFindMany.mockResolvedValue([]);
-    availabilitySlotFindMany.mockResolvedValue([]);
+    dayBoundsFindMany.mockResolvedValue([]);
+    scheduleBlockFindMany.mockResolvedValue([]);
     courseFindMany.mockResolvedValue([]);
     studySessionFindMany.mockResolvedValue([]);
     studySessionGroupBy.mockResolvedValue([]);

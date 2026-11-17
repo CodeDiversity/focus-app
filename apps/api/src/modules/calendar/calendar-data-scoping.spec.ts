@@ -57,15 +57,29 @@ describeIntegration('calendar events data scoping (SP-127A)', () => {
         isFocusMode: true,
       },
     });
-    await app.prisma.availabilitySlot.create({
-      data: {
-        userId: studentA.id,
-        dayOfWeek: 1,
+    // EP15D: A's study block and day bounds (the former availability slot).
+    await agent
+      .post('/schedule/blocks')
+      .set('Authorization', `Bearer ${studentA.accessToken}`)
+      .send({
+        kind: 'STUDY',
+        startDate: '2026-10-01',
+        weekdays: [1],
         startTime: '09:00',
         endTime: '10:00',
-        isAvailable: true,
-      },
-    });
+      })
+      .expect(201);
+    await agent
+      .put('/schedule/day-bounds')
+      .set('Authorization', `Bearer ${studentA.accessToken}`)
+      .send({
+        days: [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+          dayOfWeek,
+          wakeTime: '06:00',
+          sleepTime: '21:00',
+        })),
+      })
+      .expect(200);
   }, 120000);
 
   afterAll(async () => {
@@ -93,8 +107,15 @@ describeIntegration('calendar events data scoping (SP-127A)', () => {
     for (const ev of rA.body.events) {
       expect(serializedB).not.toContain(ev.id);
     }
-    // B has no courses/assignments/sessions/slots -> empty events.
+    // B has no courses/assignments/sessions/blocks -> empty events, and B's
+    // days[] shows the defaults, never A's bounds (V-15-4).
     expect(rB.body.events).toEqual([]);
+    expect(rA.body.events.some((e: { type: string }) => e.type === 'STUDY_BLOCK')).toBe(true);
+    expect(rA.body.days[0]).toMatchObject({ wakeTime: '06:00', sleepTime: '21:00' });
+    for (const day of rB.body.days) {
+      expect(day).toMatchObject({ wakeTime: '08:00', sleepTime: '23:00' });
+      expect(day.free).toEqual([{ startTime: '08:00', endTime: '23:00' }]);
+    }
   });
 
   it('unauthenticated -> 401', async () => {

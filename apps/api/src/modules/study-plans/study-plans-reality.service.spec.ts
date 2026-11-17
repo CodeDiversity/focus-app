@@ -1,5 +1,6 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { StudyPlansService } from './study-plans.service';
+import { ScheduleInputsService } from '../schedule/schedule-inputs.service';
 
 /**
  * EP13A unit spec (mocked PrismaService, no database) — "plan generation
@@ -30,7 +31,8 @@ describe('StudyPlansService EP13A reality inputs (unit, mocked PrismaService)', 
   const assignmentFindMany = jest.fn();
   const assignmentUpdate = jest.fn();
   const assignmentUpdateMany = jest.fn();
-  const availabilitySlotFindMany = jest.fn();
+  const dayBoundsFindMany = jest.fn();
+  const scheduleBlockFindMany = jest.fn();
   const courseFindMany = jest.fn();
   const studySessionFindMany = jest.fn();
   const studySessionGroupBy = jest.fn();
@@ -46,7 +48,8 @@ describe('StudyPlansService EP13A reality inputs (unit, mocked PrismaService)', 
       update: assignmentUpdate,
       updateMany: assignmentUpdateMany,
     },
-    availabilitySlot: { findMany: availabilitySlotFindMany },
+    dayBounds: { findMany: dayBoundsFindMany },
+    scheduleBlock: { findMany: scheduleBlockFindMany },
     course: { findMany: courseFindMany },
     studySession: { findMany: studySessionFindMany, groupBy: studySessionGroupBy },
     // `updateMany` is EP13C's read-time reconciliation — a no-op here (no
@@ -61,7 +64,7 @@ describe('StudyPlansService EP13A reality inputs (unit, mocked PrismaService)', 
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-10-30T12:00:00.000Z'));
 
-    service = new StudyPlansService(prisma);
+    service = new StudyPlansService(prisma, new ScheduleInputsService(prisma));
 
     userFindUnique.mockResolvedValue({ timeZone: 'UTC', preferences: null });
     assignmentFindMany.mockResolvedValue([]);
@@ -72,14 +75,15 @@ describe('StudyPlansService EP13A reality inputs (unit, mocked PrismaService)', 
     plannedSessionUpdateMany.mockResolvedValue({ count: 0 });
     // Open availability every day, 09:00–17:00 (480 free minutes; the default
     // daily cap is 240), so placement never fails for lack of declared time.
-    availabilitySlotFindMany.mockResolvedValue(
+    // EP15D: the same window as day bounds (no study blocks).
+    dayBoundsFindMany.mockResolvedValue(
       [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
         dayOfWeek,
-        startTime: '09:00',
-        endTime: '17:00',
-        isAvailable: true,
+        wakeTime: '09:00',
+        sleepTime: '17:00',
       }))
     );
+    scheduleBlockFindMany.mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -204,12 +208,11 @@ describe('StudyPlansService EP13A reality inputs (unit, mocked PrismaService)', 
   it('locked and completed sessions are busy for the plain preview — the engine places around them (AC-E13-02)', async () => {
     // Availability narrowed to one hour a day, so the locked hour on the
     // first window day forces the proposal onto the next day.
-    availabilitySlotFindMany.mockResolvedValue(
+    dayBoundsFindMany.mockResolvedValue(
       [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
         dayOfWeek,
-        startTime: '09:00',
-        endTime: '10:00',
-        isAvailable: true,
+        wakeTime: '09:00',
+        sleepTime: '10:00',
       }))
     );
     assignmentFindMany.mockResolvedValue([assignmentRow({ estimatedHours: 2 })]);

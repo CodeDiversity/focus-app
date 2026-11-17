@@ -216,10 +216,7 @@ test('SP-128B: slots created on /availability appear on the calendar as availabl
   await expect(page.getByText('Blocked', { exact: true })).toBeVisible();
   await expect(page.getByText('Showing 2 time slots.')).toBeVisible();
 
-  // The calendar (SP-127A/127B read model) shows both recurring events.
-  await page.goto('/calendar');
-  await expect(page.getByRole('button', { name: /^Available\W.*Available\W*09:00/ })).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: /^Blocked\W.*Blocked time\W*20:00/ })
-  ).toBeVisible();
+  // EP15D: the calendar no longer renders availability slots (the read model
+  // emits EVENT / STUDY_BLOCK from schedule blocks instead); the calendar
+  // half of this journey is rewritten by EP15J (`schedule.spec.ts`).
 });

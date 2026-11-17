@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { StudyPlanController } from './study-plan.controller';
 import { StudyPlansController } from './study-plans.controller';
 import { StudyPlansService } from './study-plans.service';
+import { ScheduleModule } from '../schedule/schedule.module';
 
 /**
  * Study-plans module (EP06A + EP06B) — the study-planning surface.
@@ -13,6 +14,8 @@ import { StudyPlansService } from './study-plans.service';
  * API to this same module.
  */
 @Module({
+  // EP15D: the planner gathers its engine input through the shared seam.
+  imports: [ScheduleModule],
   controllers: [StudyPlansController, StudyPlanController],
   providers: [StudyPlansService],
   exports: [StudyPlansService],

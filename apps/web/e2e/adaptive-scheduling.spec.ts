@@ -6,7 +6,7 @@ import {
   axeViolations,
   createAssignmentViaApi,
   createAuthenticatedUserViaApi,
-  createAvailabilitySlotViaApi,
+  setDayBoundsViaApi,
   getServerWindow,
   loginViaUi,
   savePlanWeekViaApi,
@@ -43,13 +43,7 @@ interface Student {
 /** A fresh student with availability 08:00–20:00 every day and the server window. */
 async function newStudent(request: APIRequestContext): Promise<Student> {
   const { email, accessToken } = await createAuthenticatedUserViaApi(request);
-  for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
-    await createAvailabilitySlotViaApi(request, accessToken, {
-      dayOfWeek,
-      startTime: '08:00',
-      endTime: '20:00',
-    });
-  }
+  await setDayBoundsViaApi(request, accessToken, { wakeTime: '08:00', sleepTime: '20:00' });
   const win = await getServerWindow(request, accessToken);
   return { email, accessToken, ...win };
 }

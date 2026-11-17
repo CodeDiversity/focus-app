@@ -6,6 +6,7 @@ import { SaveStudyPlanDto } from './dto/save-study-plan.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RESOURCE_NOT_FOUND } from '../../common/ownership/ownership';
 import { StudyPlansService } from './study-plans.service';
+import { ScheduleInputsService } from '../schedule/schedule-inputs.service';
 
 /**
  * EP08 unit spec (mocked PrismaService, no database) — closes review finding
@@ -59,7 +60,8 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
   const assignmentCreate = jest.fn();
   const assignmentUpdate = jest.fn();
   const assignmentUpdateMany = jest.fn();
-  const availabilitySlotFindMany = jest.fn();
+  const dayBoundsFindMany = jest.fn();
+  const scheduleBlockFindMany = jest.fn();
   const courseFindMany = jest.fn();
   const studySessionFindMany = jest.fn();
   const studySessionGroupBy = jest.fn();
@@ -95,7 +97,8 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
       update: assignmentUpdate,
       updateMany: assignmentUpdateMany,
     },
-    availabilitySlot: { findMany: availabilitySlotFindMany },
+    dayBounds: { findMany: dayBoundsFindMany },
+    scheduleBlock: { findMany: scheduleBlockFindMany },
     course: { findMany: courseFindMany },
     studySession: {
       findMany: studySessionFindMany,
@@ -136,13 +139,14 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
     // deterministic too: 14:00Z is 10:00 EDT on 28–30 October 2026).
     jest.setSystemTime(new Date('2026-10-30T12:00:00.000Z'));
 
-    service = new StudyPlansService(prisma);
+    service = new StudyPlansService(prisma, new ScheduleInputsService(prisma));
 
     // Neutral empty-world defaults; individual tests override.
     userFindUnique.mockResolvedValue({ timeZone: 'UTC', preferences: null });
     assignmentFindMany.mockResolvedValue([]);
     assignmentFindUnique.mockResolvedValue({ userId });
-    availabilitySlotFindMany.mockResolvedValue([]);
+    dayBoundsFindMany.mockResolvedValue([]);
+    scheduleBlockFindMany.mockResolvedValue([]);
     courseFindMany.mockResolvedValue([]);
     studySessionFindMany.mockResolvedValue([]);
     studySessionGroupBy.mockResolvedValue([]);
@@ -833,8 +837,22 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
 
       // OVERLAPS_BLOCKED_TIME — an unavailable slot on 2026-11-02's weekday.
       const dow02 = new Date('2026-11-02T00:00:00.000Z').getUTCDay();
-      availabilitySlotFindMany.mockResolvedValue([
-        { dayOfWeek: dow02, startTime: '13:00', endTime: '14:00', isAvailable: false },
+      scheduleBlockFindMany.mockResolvedValue([
+        {
+          id: 'blk-busy',
+          userId,
+          kind: 'BUSY',
+          title: null,
+          courseId: null,
+          energy: 'NORMAL',
+          startDate: new Date('2026-10-01T00:00:00.000Z'),
+          endDate: null,
+          weekdays: 1 << dow02,
+          startTime: '13:00',
+          endTime: '14:00',
+          exceptions: [],
+          course: null,
+        },
       ]);
       const blockedBody = await expect409(
         service.catchUpConfirm(userId, dto([session('2026-11-02', '13:30', '14:30')]))
@@ -842,7 +860,8 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
       expect((blockedBody.conflicts as Array<{ reason: string }>)[0].reason).toBe(
         'OVERLAPS_BLOCKED_TIME'
       );
-      availabilitySlotFindMany.mockResolvedValue([]);
+      dayBoundsFindMany.mockResolvedValue([]);
+      scheduleBlockFindMany.mockResolvedValue([]);
 
       // OVERLAPS_PLANNED_SESSION — two submitted sessions on the same slot.
       const submittedBody = await expect409(

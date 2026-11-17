@@ -323,13 +323,15 @@ describeIntegration('catch-up recovery e2e (real database, EP08)', () => {
         endTime: '14:00',
       },
     });
-    await app.prisma.availabilitySlot.create({
+    // EP15D: a weekly BUSY block (the former blocked availability slot).
+    await app.prisma.scheduleBlock.create({
       data: {
         userId: conflictStudent.id,
-        dayOfWeek: dayOfWeekOf(addDaysCivil(from, 4)),
+        kind: 'BUSY',
+        startDate: new Date(`${from}T00:00:00.000Z`),
+        weekdays: 1 << dayOfWeekOf(addDaysCivil(from, 4)),
         startTime: '15:00',
         endTime: '16:00',
-        isAvailable: false,
       },
     });
   }, 120_000);
@@ -821,7 +823,7 @@ describeIntegration('catch-up recovery e2e (real database, EP08)', () => {
             date: addDaysCivil(from, 4),
             startTime: '15:30',
             endTime: '16:30',
-          }, // real blocked AvailabilitySlot
+          }, // real BUSY ScheduleBlock (EP15D)
           {
             assignmentId: conflictAssignment.id,
             date: addDaysCivil(from, 5),

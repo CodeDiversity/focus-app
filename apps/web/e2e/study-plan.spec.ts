@@ -4,7 +4,7 @@ import {
   authHeaders,
   createAssignmentViaApi,
   createAuthenticatedUserViaApi,
-  createAvailabilitySlotViaApi,
+  setDayBoundsViaApi,
   createCourseViaApi,
   createSemesterViaApi,
   getServerWindow,
@@ -47,15 +47,8 @@ test('journey: generate, edit, save, and survive a reload', async ({ page, reque
   });
   expect(meetingRes.status()).toBe(201);
 
-  // Availability windows on every weekday.
-  for (let d = 0; d < 7; d++) {
-    await createAvailabilitySlotViaApi(request, accessToken, {
-      dayOfWeek: d,
-      startTime: '08:00',
-      endTime: '20:00',
-      isAvailable: true,
-    });
-  }
+  // Day bounds on every weekday (EP15D).
+  await setDayBoundsViaApi(request, accessToken, { wakeTime: '08:00', sleepTime: '20:00' });
 
   // EP14C (D-M2 discipline): "today" is the server's, never the wall clock's.
   const { today } = await getServerWindow(request, accessToken);
@@ -151,14 +144,7 @@ test('deficit warning reports an assignment that cannot fit', async ({ page, req
     semesterId: semester.id,
   });
 
-  for (let d = 0; d < 7; d++) {
-    await createAvailabilitySlotViaApi(request, accessToken, {
-      dayOfWeek: d,
-      startTime: '08:00',
-      endTime: '09:00',
-      isAvailable: true,
-    });
-  }
+  await setDayBoundsViaApi(request, accessToken, { wakeTime: '08:00', sleepTime: '09:00' });
 
   // EP14C (D-M2 discipline): "today" is the server's, never the wall clock's.
   const { today } = await getServerWindow(request, accessToken);
@@ -196,14 +182,7 @@ test('flagged marker shows for an assignment with no estimate', async ({ page, r
     semesterId: semester.id,
   });
 
-  for (let d = 0; d < 7; d++) {
-    await createAvailabilitySlotViaApi(request, accessToken, {
-      dayOfWeek: d,
-      startTime: '08:00',
-      endTime: '20:00',
-      isAvailable: true,
-    });
-  }
+  await setDayBoundsViaApi(request, accessToken, { wakeTime: '08:00', sleepTime: '20:00' });
 
   // EP14C (D-M2 discipline): "today" is the server's, never the wall clock's.
   const { today } = await getServerWindow(request, accessToken);
@@ -305,14 +284,7 @@ test('conflict: a save naming a slot inside a class meeting is rejected with 409
     expect(mr.status()).toBe(201);
   }
 
-  for (let d = 0; d < 7; d++) {
-    await createAvailabilitySlotViaApi(request, accessToken, {
-      dayOfWeek: d,
-      startTime: '08:00',
-      endTime: '20:00',
-      isAvailable: true,
-    });
-  }
+  await setDayBoundsViaApi(request, accessToken, { wakeTime: '08:00', sleepTime: '20:00' });
 
   // EP14C (D-M2 discipline): "today" is the server's, never the wall clock's.
   const { today } = await getServerWindow(request, accessToken);

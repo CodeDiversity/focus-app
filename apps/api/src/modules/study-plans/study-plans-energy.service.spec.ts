@@ -1,19 +1,21 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { StudyPlansService } from './study-plans.service';
+import { ScheduleInputsService } from '../schedule/schedule-inputs.service';
 
 /**
  * EP13J unit spec (mocked PrismaService): availability energy reaches the
  * engine through the plan service (only non-NORMAL available windows are
  * tagged, D-J4), and an all-NORMAL student is unchanged (EP13J-AC3).
  */
-describe('StudyPlansService EP13J energy-tagged availability (unit, mocked PrismaService)', () => {
+describe('StudyPlansService EP13J energy-tagged study blocks (unit, mocked PrismaService; EP15D fixture)', () => {
   const userId = 'user-1';
 
   const userFindUnique = jest.fn();
   const assignmentFindMany = jest.fn();
   const assignmentUpdate = jest.fn();
   const assignmentUpdateMany = jest.fn();
-  const availabilitySlotFindMany = jest.fn();
+  const dayBoundsFindMany = jest.fn();
+  const scheduleBlockFindMany = jest.fn();
   const courseFindMany = jest.fn();
   const studySessionFindMany = jest.fn();
   const studySessionGroupBy = jest.fn();
@@ -29,7 +31,8 @@ describe('StudyPlansService EP13J energy-tagged availability (unit, mocked Prism
       update: assignmentUpdate,
       updateMany: assignmentUpdateMany,
     },
-    availabilitySlot: { findMany: availabilitySlotFindMany },
+    dayBounds: { findMany: dayBoundsFindMany },
+    scheduleBlock: { findMany: scheduleBlockFindMany },
     course: { findMany: courseFindMany },
     studySession: { findMany: studySessionFindMany, groupBy: studySessionGroupBy },
     // `updateMany` is EP13C's read-time reconciliation — a no-op here (no
@@ -44,7 +47,7 @@ describe('StudyPlansService EP13J energy-tagged availability (unit, mocked Prism
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-10-30T12:00:00.000Z'));
 
-    service = new StudyPlansService(prisma);
+    service = new StudyPlansService(prisma, new ScheduleInputsService(prisma));
 
     userFindUnique.mockResolvedValue({ timeZone: 'UTC', preferences: null });
     assignmentFindMany.mockResolvedValue([]);
@@ -55,14 +58,9 @@ describe('StudyPlansService EP13J energy-tagged availability (unit, mocked Prism
     plannedSessionUpdateMany.mockResolvedValue({ count: 0 });
     // Open availability every day, 09:00–17:00 (480 free minutes; the default
     // daily cap is 240), so placement never fails for lack of declared time.
-    availabilitySlotFindMany.mockResolvedValue(
-      [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
-        dayOfWeek,
-        startTime: '09:00',
-        endTime: '17:00',
-        isAvailable: true,
-      }))
-    );
+    // EP15D: default day bounds (08:00–23:00); every test sets its study blocks.
+    dayBoundsFindMany.mockResolvedValue([]);
+    scheduleBlockFindMany.mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -82,21 +80,39 @@ describe('StudyPlansService EP13J energy-tagged availability (unit, mocked Prism
     ...overrides,
   });
 
-  const slots = (energyFriday?: 'HIGH' | 'NORMAL' | 'LOW', energyMorning?: 'NORMAL') => [
-    ...[0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
-      dayOfWeek,
-      startTime: '09:00',
-      endTime: '10:00',
-      isAvailable: true,
-      ...(energyMorning ? { energy: energyMorning } : {}),
-    })),
-    {
-      dayOfWeek: 5, // Friday 2026-10-30
-      startTime: '18:00',
-      endTime: '20:00',
-      isAvailable: true,
-      ...(energyFriday ? { energy: energyFriday } : {}),
-    },
+  /** A weekly STUDY block row as the seam reads it (EP15D). */
+  const studyBlock = (
+    id: string,
+    weekdays: number,
+    startTime: string,
+    endTime: string,
+    energy: 'HIGH' | 'NORMAL' | 'LOW' = 'NORMAL'
+  ) => ({
+    id,
+    userId,
+    kind: 'STUDY',
+    title: null,
+    courseId: null,
+    energy,
+    startDate: new Date('2026-10-01T00:00:00.000Z'),
+    endDate: null,
+    weekdays,
+    startTime,
+    endTime,
+    exceptions: [],
+    course: null,
+  });
+
+  /**
+   * EP15D translation of the EP13J fixture: the former available windows are
+   * study blocks — a NORMAL 09:00–10:00 block every day and a Friday
+   * 18:00–20:00 block with the energy under test — inside the default
+   * 08:00–23:00 bounds. Study blocks form the preferred tier (EP15C), so
+   * the energy order plays out among them exactly as it did among windows.
+   */
+  const slots = (energyFriday: 'HIGH' | 'NORMAL' | 'LOW' = 'NORMAL') => [
+    studyBlock('blk-morning', 0b1111111, '09:00', '10:00'),
+    studyBlock('blk-friday', 1 << 5, '18:00', '20:00', energyFriday), // Friday 2026-10-30
   ];
 
   const fridayStarts = (preview: {
@@ -105,7 +121,7 @@ describe('StudyPlansService EP13J energy-tagged availability (unit, mocked Prism
 
   it('a PAPER lands in the HIGH evening window instead of the earlier NORMAL morning (EP13J-AC2)', async () => {
     assignmentFindMany.mockResolvedValue([assignmentRow({ type: 'PAPER', estimatedHours: 1 })]);
-    availabilitySlotFindMany.mockResolvedValue(slots('HIGH'));
+    scheduleBlockFindMany.mockResolvedValue(slots('HIGH'));
 
     const preview = await service.preview(userId);
 
@@ -117,20 +133,20 @@ describe('StudyPlansService EP13J energy-tagged availability (unit, mocked Prism
       assignmentRow({ type: 'PAPER', estimatedHours: 3 }),
       assignmentRow({ id: 'a-2', type: 'HOMEWORK', estimatedHours: 1 }),
     ]);
-    availabilitySlotFindMany.mockResolvedValue(slots());
+    scheduleBlockFindMany.mockResolvedValue(slots());
     const untagged = await service.preview(userId);
-    availabilitySlotFindMany.mockResolvedValue([
-      ...slots('NORMAL', 'NORMAL'),
-      // A blocked row with a non-default level carries no energy meaning.
-      { dayOfWeek: 2, startTime: '12:00', endTime: '13:00', isAvailable: false, energy: 'HIGH' },
+    scheduleBlockFindMany.mockResolvedValue([
+      ...slots('NORMAL'),
+      // A BUSY block's energy carries no meaning (contracts.md: never read).
+      { ...studyBlock('blk-busy', 1 << 2, '12:00', '13:00', 'HIGH'), kind: 'BUSY' },
     ]);
     const tagged = await service.preview(userId);
-    // The blocked row sits outside every available window, so it changes nothing.
+    // The busy block sits where nothing was placed, so it changes nothing.
     expect({ ...tagged, generatedAt: '' }).toEqual({ ...untagged, generatedAt: '' });
   });
 
   it('gatherPlanData maps Assignment.hard into the engine input: a HOMEWORK marked hard lands in the HIGH evening (EP14E-AC2)', async () => {
-    availabilitySlotFindMany.mockResolvedValue(slots('HIGH'));
+    scheduleBlockFindMany.mockResolvedValue(slots('HIGH'));
     assignmentFindMany.mockResolvedValue([
       assignmentRow({ type: 'HOMEWORK', estimatedHours: 1, hard: true }),
     ]);

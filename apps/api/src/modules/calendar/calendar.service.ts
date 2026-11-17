@@ -2,25 +2,32 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { validateSync } from 'class-validator';
 
 import { addDays, dayOfWeekOf } from '../../common/lib/calendar-date';
-import {
-  resolveTimeZone,
-  toCivilDate,
-  wallClockToInstant,
-  zoneParts,
-} from '../../common/lib/civil-date';
+import { toCivilDate, wallClockToInstant, zoneParts } from '../../common/lib/civil-date';
+import { dayBoundsFor, minutesToTime, timeToMinutes } from '../../domain/schedule/recurrence';
+import { freeIntervals } from '../../domain/study-planning/intervals';
+import type { DatedInterval } from '../../domain/study-planning/types';
 import { PrismaService } from '../prisma/prisma.service';
+import { ScheduleInputsService } from '../schedule/schedule-inputs.service';
 import { ListCalendarEventsQueryDto } from './dto/list-calendar-events-query.dto';
 
-interface CalendarEvent {
+/**
+ * EP15D (D15-3): `AVAILABILITY` and `BLOCKED_TIME` are gone; `EVENT` (a
+ * BUSY block occurrence) and `STUDY_BLOCK` (a STUDY block occurrence) take
+ * their place, and the payload gains `days[]` with the day's bounds and
+ * free time (contracts.md → *Calendar read model*).
+ */
+export type CalendarEventType =
+  | 'CLASS'
+  | 'ASSIGNMENT_DEADLINE'
+  | 'EXAM_DEADLINE'
+  | 'STUDY_SESSION'
+  | 'PLANNED_SESSION'
+  | 'EVENT'
+  | 'STUDY_BLOCK';
+
+export interface CalendarEvent {
   id: string;
-  type:
-    | 'CLASS'
-    | 'ASSIGNMENT_DEADLINE'
-    | 'EXAM_DEADLINE'
-    | 'STUDY_SESSION'
-    | 'PLANNED_SESSION'
-    | 'AVAILABILITY'
-    | 'BLOCKED_TIME';
+  type: CalendarEventType;
   title: string;
   subtitle: string | null;
   date: string;
@@ -40,6 +47,20 @@ interface CalendarEvent {
    * `null` for every non-planned event type.
    */
   anchor: 'FIXED' | 'FLEX_DAY' | null;
+  /** EP15D — the schedule block behind an `EVENT` / `STUDY_BLOCK`; `null` for every other type. */
+  blockId: string | null;
+  /** EP15D — `true` for an occurrence of a weekly block, `false` for a one-off; `null` otherwise. */
+  recurring: boolean | null;
+  /** EP15D — a `STUDY_BLOCK`'s energy; `null` for every other type. */
+  energy: 'HIGH' | 'NORMAL' | 'LOW' | null;
+}
+
+/** EP15D — one civil date of the range: its bounds and the free time left after everything on it. */
+export interface CalendarDay {
+  date: string;
+  wakeTime: string;
+  sleepTime: string;
+  free: { startTime: string; endTime: string }[];
 }
 
 export interface ListResult {
@@ -47,15 +68,13 @@ export interface ListResult {
   today: string;
   from: string;
   to: string;
+  /** EP15D — one entry per date in `[from, to]`, ascending (AC-E15-08). */
+  days: CalendarDay[];
   events: CalendarEvent[];
 }
 
-/** EP13J (D-J6) — the calendar's text tag for an available window's energy. */
-function energyTag(energy: string | undefined): string | null {
-  if (energy === 'HIGH') return 'High energy';
-  if (energy === 'LOW') return 'Low energy';
-  return null;
-}
+/** The non-block event types carry no block fields. */
+const NO_BLOCK = { blockId: null, recurring: null, energy: null } as const;
 
 // Range instants for study session overlap. Thin wrappers over the shared
 // wall-clock seam: midnight of `from`, and midnight of the day after `to`.
@@ -69,7 +88,10 @@ function rangeEndInstant(to: string, timeZone: string): Date {
 
 @Injectable()
 export class CalendarService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly scheduleInputs: ScheduleInputsService
+  ) {}
 
   async list(userId: string, query: ListCalendarEventsQueryDto): Promise<ListResult> {
     // Defense in depth: rerun DTO rules.
@@ -114,12 +136,11 @@ export class CalendarService {
       });
     }
 
-    // Resolve zone from stored profile.
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { timeZone: true },
-    });
-    const timeZone = resolveTimeZone(user?.timeZone);
+    // EP15D: bounds, block occurrences, classes and busy time come through
+    // the one gathering seam the planner uses too (AC-E15-08); it resolves
+    // the profile zone from the stored user.
+    const inputs = await this.scheduleInputs.scheduleInputs(userId, from, to);
+    const { timeZone } = inputs;
 
     const today = toCivilDate(new Date(), timeZone);
 
@@ -143,10 +164,6 @@ export class CalendarService {
         startTime: { lt: rangeEnd },
         OR: [{ endTime: null }, { endTime: { gt: rangeStart } }],
       },
-    });
-
-    const slots = await this.prisma.availabilitySlot.findMany({
-      where: { userId },
     });
 
     /**
@@ -211,31 +228,56 @@ export class CalendarService {
             focus: false,
             link: `/courses/${course.id}`,
             anchor: null,
+            ...NO_BLOCK,
           });
         }
       }
-      // AVAILABILITY / BLOCKED_TIME from slots.
-      for (const slot of slots) {
-        if (slot.dayOfWeek !== dow) continue;
+    }
+
+    // EVENT / STUDY_BLOCK (EP15D): block occurrences after recurrence and
+    // exceptions, from the seam. Default titles are the server's (D-D3).
+    for (const o of inputs.occurrences) {
+      if (o.kind === 'BUSY') {
         events.push({
-          id: `${slot.isAvailable ? 'availability' : 'blocked'}:${slot.id}:${date}`,
-          type: slot.isAvailable ? 'AVAILABILITY' : 'BLOCKED_TIME',
-          title: slot.isAvailable ? 'Available' : 'Blocked time',
-          // EP13J (D-J6): a non-default energy rides as a text tag on an
-          // available window; NORMAL (and every blocked row) stays null, so
-          // pre-EP13J payloads are unchanged.
-          subtitle: slot.isAvailable ? energyTag(slot.energy) : null,
-          date,
-          startTime: slot.startTime,
-          endTime: slot.endTime,
+          id: `event:${o.blockId}:${o.date}`,
+          type: 'EVENT',
+          title: o.title ?? 'Busy',
+          subtitle: null,
+          date: o.date,
+          startTime: minutesToTime(o.startMinute),
+          endTime: minutesToTime(o.endMinute),
           courseId: null,
           courseName: null,
           courseColor: null,
           assignmentId: null,
           completed: false,
           focus: false,
-          link: '/availability',
+          link: null,
           anchor: null,
+          blockId: o.blockId,
+          recurring: o.recurring,
+          energy: null,
+        });
+      } else {
+        events.push({
+          id: `study-block:${o.blockId}:${o.date}`,
+          type: 'STUDY_BLOCK',
+          title: o.title ?? 'Study',
+          subtitle: o.course?.code ?? null,
+          date: o.date,
+          startTime: minutesToTime(o.startMinute),
+          endTime: minutesToTime(o.endMinute),
+          courseId: o.course?.id ?? null,
+          courseName: o.course?.name ?? null,
+          courseColor: o.course?.color ?? null,
+          assignmentId: null,
+          completed: false,
+          focus: false,
+          link: null,
+          anchor: null,
+          blockId: o.blockId,
+          recurring: o.recurring,
+          energy: o.energy,
         });
       }
     }
@@ -262,6 +304,7 @@ export class CalendarService {
         focus: false,
         link: a.courseId ? `/courses/${a.courseId}` : '/assignments',
         anchor: null,
+        ...NO_BLOCK,
       });
     }
 
@@ -291,6 +334,7 @@ export class CalendarService {
         focus: s.isFocusMode,
         link: null,
         anchor: null,
+        ...NO_BLOCK,
       });
     }
 
@@ -322,8 +366,51 @@ export class CalendarService {
         link: null,
         // EP13H: the anchor travels so flex sessions can render day-level.
         anchor: ps.anchor,
+        ...NO_BLOCK,
       });
     }
+
+    // days[] (EP15D, AC-E15-08): the day's bounds and what is free once
+    // events, classes, busy time and the current FIXED planned sessions
+    // (D-D1 — flex sessions occupy no clock time) are taken out — the same
+    // `freeIntervals` over the same seam inputs the planner reads (V-15-1).
+    const placed: DatedInterval[] = [];
+    for (const ps of plannedSessions) {
+      if (ps.anchor !== 'FIXED') continue;
+      if (ps.status !== 'SCHEDULED' && ps.status !== 'IN_PROGRESS') continue;
+      const date = ps.studyPlan.date.toISOString().slice(0, 10);
+      const start = zoneParts(ps.startTime, timeZone);
+      const end = zoneParts(ps.endTime, timeZone);
+      placed.push({
+        date,
+        startMinute: timeToMinutes(start.time) ?? 0,
+        endMinute: timeToMinutes(end.time) ?? 0,
+      });
+    }
+    const days: CalendarDay[] = dates.map((date) => {
+      const bound = dayBoundsFor(inputs.bounds.days, date);
+      const dow = dayOfWeekOf(date);
+      const classesDated: DatedInterval[] = inputs.classes
+        .filter((w) => w.dayOfWeek === dow)
+        .map((w) => ({ date, startMinute: w.startMinute, endMinute: w.endMinute }));
+      const free = freeIntervals({
+        date,
+        base: { kind: 'declared', windows: [bound] },
+        blocked: inputs.blocked,
+        classes: classesDated,
+        busy: inputs.busy,
+        placed,
+      });
+      return {
+        date,
+        wakeTime: minutesToTime(bound.startMinute),
+        sleepTime: minutesToTime(bound.endMinute),
+        free: free.map((f) => ({
+          startTime: minutesToTime(f.startMinute),
+          endTime: minutesToTime(f.endMinute),
+        })),
+      };
+    });
 
     // Sort: date asc, then — EP13H — the day's flexible planned sessions
     // first (they are day-level items, like all-day events; their suggested
@@ -342,6 +429,7 @@ export class CalendarService {
       today,
       from,
       to,
+      days,
       events,
     };
   }

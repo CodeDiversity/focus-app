@@ -169,34 +169,33 @@ export async function createAssignmentViaApi(
   return (await response.json()) as { id: string; title: string };
 }
 
-/** Creates an availability slot via the real API (201) and returns the created row. */
-export async function createAvailabilitySlotViaApi(
+/**
+ * EP15D (R-EP15-12): sets the student's day bounds via the real API (200) —
+ * the same wake/sleep pair on all seven weekdays. Replaces the former
+ * `createAvailabilitySlotViaApi` loops: the planner no longer reads
+ * availability slots, so journeys that need planning time declare it here.
+ */
+export async function setDayBoundsViaApi(
   request: APIRequestContext,
   accessToken: string,
-  data: { dayOfWeek: number; startTime: string; endTime: string; isAvailable?: boolean }
+  bounds: { wakeTime: string; sleepTime: string } = { wakeTime: '08:00', sleepTime: '20:00' }
 ): Promise<{
-  id: string;
-  dayOfWeek: number;
-  startTime: string;
-  endTime: string;
-  isAvailable: boolean;
+  configured: boolean;
+  days: { dayOfWeek: number; wakeTime: string; sleepTime: string }[];
 }> {
   let response;
   try {
-    response = await request.post('/api/availability-slots', {
+    response = await request.put('/api/schedule/day-bounds', {
       headers: authHeaders(accessToken),
-      data,
+      data: { days: [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({ dayOfWeek, ...bounds })) },
     });
   } catch (error) {
-    throw describeSetupFailure('/availability-slots', error);
+    throw describeSetupFailure('/schedule/day-bounds', error);
   }
-  requireStatus(response, [201]);
+  requireStatus(response, [200]);
   return (await response.json()) as {
-    id: string;
-    dayOfWeek: number;
-    startTime: string;
-    endTime: string;
-    isAvailable: boolean;
+    configured: boolean;
+    days: { dayOfWeek: number; wakeTime: string; sleepTime: string }[];
   };
 }
 

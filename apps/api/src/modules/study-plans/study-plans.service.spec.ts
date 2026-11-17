@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RESOURCE_NOT_FOUND } from '../../common/ownership/ownership';
 import { STUDY_PREFERENCE_DEFAULTS } from '../../domain/study-planning/preferences';
 import { StudyPlansService } from './study-plans.service';
+import { ScheduleInputsService } from '../schedule/schedule-inputs.service';
 import { UpdateStudyPreferencesDto } from './dto/update-study-preferences.dto';
 
 /**
@@ -62,7 +63,7 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new StudyPlansService(prisma);
+    service = new StudyPlansService(prisma, new ScheduleInputsService(prisma));
     userUpdateMany.mockResolvedValue({ count: 1 });
   });
 
