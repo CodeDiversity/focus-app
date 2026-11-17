@@ -55,8 +55,8 @@ AC-E15-01 (API half), AC-E15-03, AC-E15-04, AC-E15-06 (fields), AC-E15-14; TR-E1
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| ▲ D-B1 | `kind` after create: (a) immutable (400); (b) mutable with STUDY-only fields cleared on → BUSY | **(a)** — the editor hides the toggle in edit mode (D15-14); a student who picked wrong deletes and re-adds in two taps | Proposed |
-| ▲ D-B2 | Who decides split vs in place: (a) the server, from `effectiveFrom` vs `startDate`; the client always sends the clicked date for weekly blocks; (b) separate `/split` endpoint the client chooses | **(a)** — the UI's two choices map 1:1 to "send `effectiveFrom`" or "cancel the occurrence" | Proposed |
+| ▲ D-B1 | `kind` after create: (a) immutable (400); (b) mutable with STUDY-only fields cleared on → BUSY | **(a)** — the editor hides the toggle in edit mode (D15-14); a student who picked wrong deletes and re-adds in two taps | Ratified (user grant 2026-11-16 — blanket ratification of recommended options, D15-17) |
+| ▲ D-B2 | Who decides split vs in place: (a) the server, from `effectiveFrom` vs `startDate`; the client always sends the clicked date for weekly blocks; (b) separate `/split` endpoint the client chooses | **(a)** — the UI's two choices map 1:1 to "send `effectiveFrom`" or "cancel the occurrence" | Ratified (user grant 2026-11-16 — blanket ratification of recommended options, D15-17) |
 | D-B3 | Topology: (a) one `/schedule/*` module for bounds and blocks; (b) two modules | **(a)** — one owner for one surface | Proposed |
 | D-B4 | Day-bounds writes: (a) `PUT` replaces all seven; (b) `PATCH /schedule/day-bounds/:dayOfWeek` | **(a)** — the UI saves the whole sheet at once; one request, one transaction | Proposed |
 

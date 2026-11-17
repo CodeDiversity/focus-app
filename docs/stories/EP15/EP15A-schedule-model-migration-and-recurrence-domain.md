@@ -52,11 +52,10 @@ AC-E15-01 (default reader), AC-E15-03 (model), AC-E15-13 (copy); TR-E15-01; DoD-
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| ▲ D-A1 | Weekday storage: (a) `Int` bitmask (bit n = weekday n); (b) `Int[]`; (c) a join table | **(a)** — one column, indexable, trivially validated; the API exposes an array | Proposed |
+| ▲ D-A1 | Weekday storage: (a) `Int` bitmask (bit n = weekday n); (b) `Int[]`; (c) a join table | **(a)** — one column, indexable, trivially validated; the API exposes an array | Ratified (user grant 2026-11-16 — blanket ratification of recommended options, D15-17) |
 | D-A2 | `startDate` for migrated weekly rows: (a) `createdAt::date`; (b) a fixed sentinel date; (c) the earliest semester start | **(a)** — the honest first date the student had the slot; the planner only looks forward. Assumption (R-EP15-08): the cast runs in the database session zone (UTC), not the profile zone — at worst one civil day late for a slot created near local midnight, visible only on the migration day; accepted | Proposed |
 | D-A3 | Row ids in the copy: (a) `gen_random_uuid()` (Postgres 13+ built-in); (b) application-generated via a Prisma script | **(a)** — one SQL file, replayable; CI's Postgres service version is unverified — if < 13, fall back to `md5(random()::text || clock_timestamp()::text)::uuid` in the same statement | Proposed |
-| ▲ D-A4 | Midnight end: (a) the literal `"24:00"` allowed in `sleepTime`/`endTime` (string compare stays chronological: `"24:00" > "23:59"`); (b) a boolean `endsAtMidnight` | **(a)** — one representation, no extra column (D15-4) | Proposed |
-
+| ▲ D-A4 | Midnight end: (a) the literal `"24:00"` allowed in `sleepTime`/`endTime` (string compare stays chronological: `"24:00" > "23:59"`); (b) a boolean `endsAtMidnight` | **(a)** — one representation, no extra column (D15-4) | Ratified (user grant 2026-11-16 — blanket ratification of recommended options, D15-17) |
 ## Definition of Done
 
 1 (functional), 3 (`userId` preserved on every copied row), 8 (TR-E15-01), 9 (migration documented in contracts.md and the API README schema list). 2/4/5/6/7 N/A (no HTTP, no UI). 10–11 via the EP15 combined review.

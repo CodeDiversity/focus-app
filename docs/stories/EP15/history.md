@@ -21,7 +21,7 @@ Planned 2026-11-16 from the user's vision ("a calendar-like interface where stud
 
 **Outcome:** **Plan Ready** (planner gate) **+ Implementation Blocked** — EP14's review unit has not passed (D15-11). **Plan review required** (two migrations and a persisted-data contract; ten children) — dispatch before EP15A starts.
 
-**Refiner handoff (D15-16):** EP15E (grid), EP15G (block sheet), EP15H (direct manipulation).
+**Refiner handoff (D15-16):** EP15E (grid), EP15G (block sheet), EP15H (direct manipulation). **Closed 2026-11-16:** one refiner dispatch settled all three (D-E5…D-E8, D-G6…D-G11, D-H5…D-H8); AC text unchanged; ▲ D-G10 and the ▲ story rows D-A1/D-A4/D-B1/D-B2 ruled under the user's blanket grant (D15-17); recorded assumptions: default start hour reads the browser clock for *today* only (a default, not date arithmetic); edit mode pre-fills from `GET /schedule/blocks`; grid `role="list"` kept for current locators; the plan page's `WeekGrid` is not borrowed.
 
 **Backlog review (planner step 0, 2026-11-16):** `queue-lint --backlog` listed BL-14-01…05, BL-14-07, BL-14-08. BL-14-01 dropped as superseded by EP15 study blocks (D15-7); BL-14-02's trigger re-pointed at EP15's exceptions table; the rest stamped, triggers unchanged. New rows BL-15-01…06.
 

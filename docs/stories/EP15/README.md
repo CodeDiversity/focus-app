@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP15A — implement once the EP14 review unit has passed (D15-11). Until then: dispatch the plan review (required), then the refiner passes for EP15E, EP15G and EP15H (D15-16).
+**Next substory:** EP15A — implement once the EP14 review unit has passed (D15-11) and plan review pass 2 is Plan Ready. Refiner passes for EP15E/G/H done 2026-11-16.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (layer labels are scope, not concurrent roles).
 
@@ -32,10 +32,10 @@
 | [EP15B](./EP15B-schedule-api.md) | Queued | EP15A implemented. | Implement after EP15A | — |
 | [EP15C](./EP15C-engine-day-bounds-and-preferred-study-blocks.md) | Queued | EP15A implemented (shares the `domain/schedule` types). | Implement after EP15B | — |
 | [EP15D](./EP15D-planner-gathering-and-calendar-read-model.md) | Queued | EP15A, EP15B, EP15C implemented. | Implement after EP15C | — |
-| [EP15E](./EP15E-week-grid.md) | Needs refinement | EP15D implemented (payload). Refiner: grid layout, hour range, free-time display threshold, copy (D15-16). | Refine now; implement after EP15D | — |
+| [EP15E](./EP15E-week-grid.md) | Ready | EP15D implemented (payload). Refined 2026-11-16 (D-E5…D-E8). | Implement after EP15D | — |
 | [EP15F](./EP15F-day-bounds-ui.md) | Queued | EP15B + EP15E implemented. | Implement after EP15E | — |
-| [EP15G](./EP15G-add-edit-delete-blocks-via-form.md) | Needs refinement | EP15B + EP15E implemented. Refiner: sheet layout, weekday chips, "More" disclosure, two-choice prompt copy (D15-16). | Refine now; implement after EP15F | — |
-| [EP15H](./EP15H-direct-manipulation-on-the-grid.md) | Needs refinement | EP15G implemented (the form it pre-fills). Refiner: drag affordances, snapping, live announcements (D15-16). | Refine now; implement after EP15G | — |
+| [EP15G](./EP15G-add-edit-delete-blocks-via-form.md) | Ready | EP15B + EP15E implemented. Refined 2026-11-16 (D-G6…D-G11; ▲ D-G10 ruled by user grant). | Implement after EP15F | — |
+| [EP15H](./EP15H-direct-manipulation-on-the-grid.md) | Ready | EP15G implemented (the form it pre-fills). Refined 2026-11-16 (D-H5…D-H8). | Implement after EP15G | — |
 | [EP15I](./EP15I-retire-availability-and-update-navigation.md) | Queued | EP15G implemented (the replacement editor exists). | Implement after EP15H | — |
 | [EP15J](./EP15J-cross-layer-e2e-and-parent-index.md) | Queued | EP15A–EP15I implemented. | Implement last; then the combined review | — |
 
@@ -125,7 +125,7 @@ Epic-level decisions D15-1…D15-14 live in the [epic](../../epics/EP15-schedule
 |---|---|---|
 | D15-15 | **Interim between EP15D and EP15I:** the old availability page keeps editing `availability_slots`, which no reader uses after EP15D; the table is dropped by EP15I. Accepted because the epic is one review unit on a development branch; nothing ships in between. | Planner, 2026-11-16. |
 | D15-18 | **Known windows (R-EP15-02):** EP15C ships a thin service adapter so typecheck and every suite stay green until EP15D; EP15D retires the slot-event assertions in `calendar.spec.ts` (test-only) and EP15I removes the "Manage availability" expectation with the links; EP15J rewrites the spec. Details in [contracts.md § Known windows](./contracts.md#known-windows-between-sequential-children-r-ep15-02). | Planner, 2026-11-16 (plan review pass 1). |
-| D15-16 | **Refiner gate:** EP15E, EP15G and EP15H are `Needs refinement` — grid layout and hour range, free-time display threshold, the sheet's layout and weekday chips, the "More" disclosure, two-choice prompt copy, drag affordances and snapping are the refiner's, bound by D15-14. EP15F's small surface is specified in-story (EP13J precedent). | Planner skill UI/UX handoff rule. |
+| D15-16 | **Refiner gate (closed 2026-11-16 — one dispatch refined all three; D-E5…D-E8, D-G6…D-G11, D-H5…D-H8):** EP15E, EP15G and EP15H were `Needs refinement` — grid layout and hour range, free-time display threshold, the sheet's layout and weekday chips, the "More" disclosure, two-choice prompt copy, drag affordances and snapping are the refiner's, bound by D15-14. EP15F's small surface is specified in-story (EP13J precedent). | Planner skill UI/UX handoff rule. |
 | D15-17 | **Story-level ▲ rows auto-ratify** at implementation start unless edited — the user's ruling "ratify all of the proposed decisions" (2026-11-16) covers the breakdown's recommended options. | User ruling 2026-11-16, applied by the planner. |
 
 ## Verification tasks
