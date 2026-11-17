@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP15A — implement (Ready; dispatch the implementer, who may continue into EP15B…EP15D in queue order).
+**Next substory:** EP15B — implement (Queued → its dependency EP15A is implemented 2026-11-17; dispatch the implementer, who may continue into EP15C…EP15D in queue order).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (layer labels are scope, not concurrent roles).
 
@@ -28,7 +28,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP15A](./EP15A-schedule-model-migration-and-recurrence-domain.md) | Ready | None — EP14 review unit passed 2026-11-16 (D15-11 met); plan review pass 3 Plan Ready (`dc5b20b`); ▲ D-A1/D-A4 ruled. | Implement first | — |
+| [EP15A](./EP15A-schedule-model-migration-and-recurrence-domain.md) | Implemented — awaiting parent review | None — EP14 review unit passed 2026-11-16 (D15-11 met); plan review pass 3 Plan Ready (`dc5b20b`); ▲ D-A1/D-A4 ruled. | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15A/implementation.md) — green 2026-11-17 (gated 1663/0, 33 new); 0 open findings |
 | [EP15B](./EP15B-schedule-api.md) | Queued | EP15A implemented. | Implement after EP15A | — |
 | [EP15C](./EP15C-engine-day-bounds-and-preferred-study-blocks.md) | Queued | EP15A implemented (shares the `domain/schedule` types). | Implement after EP15B | — |
 | [EP15D](./EP15D-planner-gathering-and-calendar-read-model.md) | Queued | EP15A, EP15B, EP15C implemented. | Implement after EP15C | — |

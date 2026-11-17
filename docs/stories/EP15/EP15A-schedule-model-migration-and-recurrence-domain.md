@@ -4,14 +4,14 @@
 **Parent epic:** [EP15: Schedule & Availability Redesign](../../epics/EP15-schedule-and-availability-redesign.md)
 **Milestone:** M8 (D15-11)
 **Layer:** Backend (persistence + pure domain)
-**Status:** Ready — EP14 review unit passed 2026-11-16 (D15-11 met); plan review pass 3 Plan Ready
+**Status:** Implemented — awaiting parent review (2026-11-17); record: [artifacts/EP15A/implementation.md](./artifacts/EP15A/implementation.md)
 **Dependencies:** none inside EP15. Epic decisions D15-2, D15-4, D15-5, D15-13 (ratified 2026-11-16).
 
 ## Plan at a glance
 
 - **What this changes:** three new tables (`day_bounds`, `schedule_blocks`, `schedule_block_exceptions`) with Prisma models; one migration that also copies every `availability_slots` row into `schedule_blocks`; a pure domain module `apps/api/src/domain/schedule/` that expands blocks into dated occurrences and reads day bounds with defaults.
 - **Why it improves it:** every later child verifies against real migrated data instead of empty tables (product continuity, AC-E15-13); recurrence and defaults are one tested pure function instead of logic scattered across the calendar and planner services (code).
-- **Decisions needing you:** none ▲ — D-A1…D-A4 ratify by default (D15-17).
+- **Decisions needing you:** none — D-A1/D-A4 ratified by user grant 2026-11-16; D-A2/D-A3 ratified by default 2026-11-17 at implementation start.
 - **How to change this plan:** edit a Ruling cell below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary
@@ -53,8 +53,8 @@ AC-E15-01 (default reader), AC-E15-03 (model), AC-E15-13 (copy); TR-E15-01; DoD-
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
 | ▲ D-A1 | Weekday storage: (a) `Int` bitmask (bit n = weekday n); (b) `Int[]`; (c) a join table | **(a)** — one column, indexable, trivially validated; the API exposes an array | Ratified (user grant 2026-11-16 — blanket ratification of recommended options, D15-17) |
-| D-A2 | `startDate` for migrated weekly rows: (a) `createdAt::date`; (b) a fixed sentinel date; (c) the earliest semester start | **(a)** — the honest first date the student had the slot; the planner only looks forward. Assumption (R-EP15-08): the cast runs in the database session zone (UTC), not the profile zone — at worst one civil day late for a slot created near local midnight, visible only on the migration day; accepted | Proposed |
-| D-A3 | Row ids in the copy: (a) `gen_random_uuid()` (Postgres 13+ built-in); (b) application-generated via a Prisma script | **(a)** — one SQL file, replayable; CI's Postgres service version is unverified — if < 13, fall back to `md5(random()::text || clock_timestamp()::text)::uuid` in the same statement | Proposed |
+| D-A2 | `startDate` for migrated weekly rows: (a) `createdAt::date`; (b) a fixed sentinel date; (c) the earliest semester start | **(a)** — the honest first date the student had the slot; the planner only looks forward. Assumption (R-EP15-08): the cast runs in the database session zone (UTC), not the profile zone — at worst one civil day late for a slot created near local midnight, visible only on the migration day; accepted | Ratified by default, 2026-11-17 (user: "ratify any outstanding decisions") |
+| D-A3 | Row ids in the copy: (a) `gen_random_uuid()` (Postgres 13+ built-in); (b) application-generated via a Prisma script | **(a)** — one SQL file, replayable; CI's Postgres service version is unverified — if < 13, fall back to `md5(random()::text || clock_timestamp()::text)::uuid` in the same statement | Ratified by default, 2026-11-17 (user: "ratify any outstanding decisions"); CI Postgres is ≥ 13 (see F-EP15A-01), fallback not needed |
 | ▲ D-A4 | Midnight end: (a) the literal `"24:00"` allowed in `sleepTime`/`endTime` (string compare stays chronological: `"24:00" > "23:59"`); (b) a boolean `endsAtMidnight` | **(a)** — one representation, no extra column (D15-4) | Ratified (user grant 2026-11-16 — blanket ratification of recommended options, D15-17) |
 ## Definition of Done
 
@@ -63,7 +63,7 @@ AC-E15-01 (default reader), AC-E15-03 (model), AC-E15-13 (copy); TR-E15-01; DoD-
 ## Sizing
 
 - **Outcome:** the schedule tables exist with the students' data in them, and recurrence is one pure, tested function.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** one window, one commit, 2026-11-17; files as planned plus root `README.md` (schema list, F-EP15A-03); 33 new tests (32 domain + 1 gated); gated API 1663/0, ungated 1178/0; 0 open findings (F-EP15A-01…03 closed/noted). Row in [efficiency.md](./artifacts/efficiency.md).
 - **Files:** `apps/api/prisma/schema.prisma`, `apps/api/prisma/migrations/<ts>_schedule_blocks_and_day_bounds/migration.sql` (new), `apps/api/src/domain/schedule/{types,recurrence}.ts` (new) + `recurrence.spec.ts` (new), `apps/api/src/modules/schedule/schedule-migration.e2e.spec.ts` (new, gated), `docs/stories/EP15/contracts.md` (migration note).
 - **Start context:** this story; contracts.md "Data model" and "Recurrence semantics"; `calendar-date.ts`; `preferences.ts` as the reader precedent.
 - **Verification:** `pnpm --filter @studypilot/api db:generate && pnpm --filter @studypilot/api typecheck && pnpm --filter @studypilot/api test` (gated suites with `DATABASE_URL`, `--runInBand`) — all green; the round-trip test passes against a seeded database.

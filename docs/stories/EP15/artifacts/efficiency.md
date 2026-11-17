@@ -10,3 +10,4 @@ Schema: see `.agents/context-efficiency.md`. `n/a` when the runtime does not exp
 | 2026-11-16 | EP15 | reviewer (plan_review pass 2) | default | n/a / n/a | ~35 | 0 | Changes Required: R-EP15-01…09 closed; R-EP15-10…12 should-fix, 13…16 polish |
 | 2026-11-16 | EP15 | reviewer (plan_review pass 3) | default | n/a / n/a | ~24 | 0 | **Plan Ready** at `8a29fbc`; R-EP15-10…16 closed; polish R-EP15-17/18 + R-EP15-14 residue |
 | 2026-11-16 | EP15 | planner (live session, corrections) | default | n/a / n/a | ~12 | 0 | C-EP15-01…16 applied across two correction commits (`960fb60`, `8a29fbc`) |
+| 2026-11-17 | EP15A | implementer (live session) | default | n/a / n/a | ~32 | 0 | implemented: schema + migration (copy verified by a rolled-back gated round-trip), pure `domain/schedule`; D-A2/D-A3 ratified by default; gated 1663/0; 0 open findings |

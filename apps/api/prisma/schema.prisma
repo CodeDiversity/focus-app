@@ -48,6 +48,8 @@ model User {
   studyPlans        StudyPlan[]
   availabilitySlots AvailabilitySlot[]
   classMeetings     ClassMeeting[] // SP-112A (D112-1)
+  dayBounds         DayBounds[]     // EP15A (D15-1, D15-13)
+  scheduleBlocks    ScheduleBlock[] // EP15A (D15-5)
 
   @@map("users")
 }
@@ -152,6 +154,7 @@ model Course {
   // Relations
   assignments Assignment[]
   meetings    ClassMeeting[] // SP-112A (D112-2): recurring weekly schedule
+  studyBlocks ScheduleBlock[] // EP15A: study blocks tied to this course (D15-6)
 
   @@unique([userId, code])
   @@map("courses")
@@ -341,6 +344,70 @@ model AvailabilitySlot {
 
   @@unique([userId, dayOfWeek, startTime])
   @@map("availability_slots")
+}
+
+// ============================================
+// SCHEDULE (EP15A) — day bounds, events and study blocks
+// ============================================
+// EP15 replaces "declare your free slots" with "wake-to-sleep minus what is
+// on the calendar" (D15-1). `availability_slots` stays until EP15I drops it
+// (D15-15); Migration 1 copies every slot into `schedule_blocks`.
+
+enum ScheduleBlockKind {
+  BUSY
+  STUDY
+}
+
+// Per-weekday wake/sleep (D15-1, D15-4, D15-13). A missing row reads as the
+// default 08:00–23:00 (`domain/schedule/recurrence.ts` `readDayBounds`).
+model DayBounds {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayOfWeek Int      // 0–6, Sunday = 0 (schema convention)
+  wakeTime  String   // HH:mm, 00:00–23:59
+  sleepTime String   // HH:mm, strictly after wakeTime; "24:00" allowed (midnight end, D15-4 / D-A4)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, dayOfWeek])
+  @@map("day_bounds")
+}
+
+// A student-created block: BUSY (event) or STUDY (study block). One-off or
+// weekly (D15-5). Weekdays are a bitmask, bit n = weekday n (D-A1).
+model ScheduleBlock {
+  id         String            @id @default(uuid())
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind       ScheduleBlockKind
+  title      String?           // ≤ 60 chars after trim; null → UI shows "Busy" / "Study"
+  courseId   String?           // STUDY only; the student's own course
+  course     Course?           @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  energy     EnergyLevel       @default(NORMAL) // STUDY only; BUSY rows stay NORMAL and are never read
+  startDate  DateTime          @db.Date // one-off: the date; weekly: the first date of the series
+  endDate    DateTime?         @db.Date // weekly only; null = open-ended
+  weekdays   Int?              // bitmask, bit n = weekday n (Sunday = bit 0); null = one-off
+  startTime  String            // HH:mm
+  endTime    String            // HH:mm, strictly after startTime; "24:00" allowed
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  exceptions ScheduleBlockException[]
+
+  @@index([userId, startDate])
+  @@map("schedule_blocks")
+}
+
+// A cancelled occurrence of a weekly block (D15-5). Ownership through the
+// block (PlannedSession precedent).
+model ScheduleBlockException {
+  id      String        @id @default(uuid())
+  blockId String
+  block   ScheduleBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  date    DateTime      @db.Date
+
+  @@unique([blockId, date])
+  @@map("schedule_block_exceptions")
 }
 
 model StudyPlan {
