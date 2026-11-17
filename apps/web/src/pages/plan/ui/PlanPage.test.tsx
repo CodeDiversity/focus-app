@@ -350,4 +350,73 @@ describe('PlanPage', () => {
       '/plan/health'
     );
   });
+
+  // -------------------------------------------------------------------------
+  // EP14F — a late saved-plan read never overrides a newer action (TR-E14-07)
+  // -------------------------------------------------------------------------
+
+  it('a saved-plan read that resolves after Generate leaves the preview on screen (EP14F-AC1)', async () => {
+    let resolveList: (plan: typeof emptySaved) => void = () => {};
+    mockedList.mockReturnValue(
+      new Promise<typeof emptySaved>((resolve) => {
+        resolveList = resolve;
+      }) as never
+    );
+    mockedPreview.mockResolvedValue(previewFixture as never);
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() => expect(mockedList).toHaveBeenCalled());
+
+    // The student acts while the mount-time read is still in flight.
+    await user.click(screen.getByRole('button', { name: /generate plan/i }));
+    await waitFor(() => expect(mockedPreview).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /save plan/i })).toBeInTheDocument()
+    );
+
+    // The late read resolves with "no sessions" — it must not flip the page back.
+    resolveList(emptySaved);
+    await waitFor(() => expect(screen.getAllByText('Essay').length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('plan-initial')).not.toBeInTheDocument();
+    expect(screen.queryByText('No plan yet.')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /save plan/i })).toBeInTheDocument();
+  });
+
+  it('a saved-plan read that resolves before any action sets saved (EP14F-AC1)', async () => {
+    mockedList.mockResolvedValue(savedFixture as never);
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Essay')).toBeInTheDocument());
+    expect(screen.queryByTestId('plan-initial')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /save plan/i })).not.toBeInTheDocument();
+  });
+
+  it('a saved-plan read that resolves before any action sets initial (EP14F-AC1)', async () => {
+    mockedList.mockResolvedValue(emptySaved as never);
+    renderPage();
+    await waitFor(() => expect(screen.getByTestId('plan-initial')).toBeInTheDocument());
+    expect(screen.getByText('No plan yet.')).toBeInTheDocument();
+  });
+
+  it('Try again after a failed read sets the mode from the retry result (EP14F-AC2)', async () => {
+    mockedList.mockRejectedValueOnce(new Error('boom'));
+    mockedPreview.mockResolvedValue(previewFixture as never);
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument()
+    );
+
+    // The student has acted (Generate) — the guard is armed — but a retry is
+    // student-initiated, so its result still owns the mode.
+    await user.click(screen.getByRole('button', { name: /generate plan/i }));
+    await waitFor(() => expect(mockedPreview).toHaveBeenCalled());
+
+    mockedList.mockResolvedValueOnce(savedFixture as never);
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+    await waitFor(() => expect(mockedList).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getByText('Essay')).toBeInTheDocument());
+    // Saved mode, not preview: no "Save plan" action and no empty state.
+    expect(screen.queryByRole('button', { name: /save plan/i })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('plan-initial')).not.toBeInTheDocument();
+  });
 });

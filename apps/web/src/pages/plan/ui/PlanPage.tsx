@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button } from '@/shared/ui/Button';
@@ -73,6 +73,15 @@ export function PlanPage() {
   const [isLoadingSaved, setIsLoadingSaved] = useState(true);
 
   /**
+   * EP14F (D-F1): set once the student acts ("Generate plan"). The mount-time
+   * saved-plan read may resolve after that click; it then keeps its data but
+   * must not set the page mode — a fast action is never undone by the page's
+   * own loading (F-EP14C-03). Same in-flight-guard idea as `requestSeq` on
+   * the calendar and availability pages.
+   */
+  const actedRef = useRef(false);
+
+  /**
    * EP13E (D-E10): today's plan is the page's first meaningful content and
    * has its **own** query — a slow or failing saved-plan read must never
    * hide the one next action (AC-1). EP13D's card is reused unchanged.
@@ -88,13 +97,20 @@ export function PlanPage() {
   const planHealthQuery = usePlanHealthQuery();
   const movedWorkForward = (planHealthQuery.data?.rolledForwardCount ?? 0) > 0;
 
-  const loadSaved = useCallback(async () => {
+  /**
+   * Reads the saved plan. `commitMode: true` (a student-initiated retry) always
+   * sets the mode from the result; the mount-time read only does so when the
+   * student has not acted yet by the time it resolves (EP14F-AC1/AC2).
+   */
+  const loadSaved = useCallback(async ({ commitMode = false } = {}) => {
     setIsLoadingSaved(true);
     setLoadError(null);
     try {
       const plan = await listStudyPlan();
       setSavedPlan(plan);
-      setMode(hasSessions(plan) ? 'saved' : 'initial');
+      if (commitMode || !actedRef.current) {
+        setMode(hasSessions(plan) ? 'saved' : 'initial');
+      }
     } catch (err) {
       setLoadError(getErrorMessage(err) || 'We could not load your saved plan. Try again.');
     } finally {
@@ -107,6 +123,7 @@ export function PlanPage() {
   }, [loadSaved]);
 
   const handleGenerate = useCallback(async () => {
+    actedRef.current = true;
     setIsGenerating(true);
     setPreviewError(null);
     setConflicts([]);
@@ -234,7 +251,10 @@ export function PlanPage() {
       ) : loadError ? (
         <div role="alert" className="card border border-danger/30 bg-danger/10 p-6">
           <p className="text-sm text-danger">{loadError}</p>
-          <Button className="mt-4 max-sm:min-h-[44px]" onClick={() => void loadSaved()}>
+          <Button
+            className="mt-4 max-sm:min-h-[44px]"
+            onClick={() => void loadSaved({ commitMode: true })}
+          >
             Try again
           </Button>
         </div>

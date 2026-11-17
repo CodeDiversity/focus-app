@@ -4,7 +4,7 @@
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 (D14-2)
 **Layer:** Frontend (one page, one test file)
-**Status:** Ready — promoted from BL-14-08 (planner, 2026-11-16); no UI decisions (behaviour fix, no visual change)
+**Status:** Implemented — awaiting parent review (implementer, 2026-11-16); record: [artifacts/EP14F/implementation.md](./artifacts/EP14F/implementation.md). Promoted from BL-14-08 (planner, 2026-11-16); no UI decisions (behaviour fix, no visual change)
 **Dependencies:** none. Source: F-EP14C-03 (EP14C record), BL-14-08 ("before EP14D"). Unblocks EP14D-AC4.
 
 ## Plan at a glance
@@ -50,7 +50,7 @@ AC-E14-04 (E2E deterministic — product half of F-EP14C-03); TR-E14-07; DoD-1, 
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-F1 | (a) the late read commits data but not mode once the student has acted (ref guard); (b) disable "Generate plan" until the saved read settles; (c) cancel the read on Generate | **(a)** — never block the one next action (EP13E D-E10 spirit); (b) adds a dead button for ADHD users; (c) throws away a useful read | Proposed |
+| D-F1 | (a) the late read commits data but not mode once the student has acted (ref guard); (b) disable "Generate plan" until the saved read settles; (c) cancel the read on Generate | **(a)** — never block the one next action (EP13E D-E10 spirit); (b) adds a dead button for ADHD users; (c) throws away a useful read | Ratified by default, 2026-11-16 |
 
 ## Definition of Done
 
@@ -59,7 +59,7 @@ AC-E14-04 (E2E deterministic — product half of F-EP14C-03); TR-E14-07; DoD-1, 
 ## Sizing
 
 - **Outcome:** a fast "Generate plan" click is never undone by the page's own loading.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** as planned — 2 files (`PlanPage.tsx` ref guard, 4 new cases in `PlanPage.test.tsx`), no visual change; web unit 1268/0; 6 full parallel E2E runs (4 clean at 47/2/5, 2 aborted by cross-session port contention), 0 race-attributable failures; findings F-EP14F-01/-02 (E2E harness, not product).
 - **Files:** `apps/web/src/pages/plan/ui/PlanPage.tsx`, `apps/web/src/pages/plan/ui/PlanPage.test.tsx`.
 - **Start context:** this story; F-EP14C-03 in `docs/stories/EP14/artifacts/EP14C/implementation.md`; `PlanPage.tsx:91–123`.
 - **Verification:** `pnpm --filter @studypilot/web test -- PlanPage` green; `pnpm test:e2e` ×3 with the counts recorded.

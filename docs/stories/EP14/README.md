@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP14F — implement (the plan-page race promoted from BL-14-08), then EP14D.
+**Next substory:** EP14D — implement (EP14F implemented 2026-11-16; its race is fixed, so EP14D-AC4's seven journeys can be gated).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -31,7 +31,7 @@
 | [EP14A](./EP14A-ci-runs-the-full-gate-on-delivery-branches.md) | Implemented — awaiting parent review | None. | None (known-red window closed by EP14B) | `./artifacts/EP14A/implementation.md`; runs 43908087082 (baseline) / 43908098549 (red); open: F-EP14A-01 |
 | [EP14B](./EP14B-api-contract-integrity.md) | Implemented — awaiting parent review | EP14A implemented. | User: unblock F-EP14B-02 (Secret scan) for the fully-green CI clause | `./artifacts/EP14B/implementation.md`; gated 1584/0; CI run 43910951890 backend+frontend green, Secret scan red; open: F-EP14B-02 |
 | [EP14C](./EP14C-e2e-reliability.md) | Implemented — awaiting parent review | None | None | `./artifacts/EP14C/implementation.md`; 3 full runs, 0 failures from its files; open: F-EP14C-02/-03 (BL-14-07/-08) |
-| [EP14F](./EP14F-plan-page-load-generate-race.md) | Ready | None (promoted from BL-14-08, 2026-11-16). | Implement before EP14D | — |
+| [EP14F](./EP14F-plan-page-load-generate-race.md) | Implemented — awaiting parent review | None (promoted from BL-14-08, 2026-11-16). | None | `./artifacts/EP14F/implementation.md`; 4 clean full runs 47/2/5 (only EP14D's F-EP13M-01 pair red), 0 race failures; open: F-EP14F-01/-02 (E2E harness) |
 | [EP14D](./EP14D-accessibility-debt-from-the-ep13-pass.md) | Ready | EP14F implemented (EP14D-AC4 needs the plan-page race fixed). | Implement after EP14F | — |
 | [EP14E](./EP14E-effort-aware-placement.md) | Needs refinement | EP14B; ▲ D-E1…D-E3 ratified (user, 2026-11-16); refiner pass still required (assignment-form UI) | Refine, then implement last | — |
 

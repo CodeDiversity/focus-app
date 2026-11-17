@@ -9,3 +9,4 @@ Schema: see `.agents/context-efficiency.md`. `n/a` when the runtime does not exp
 | 2026-11-16 | EP14A | implementer (live session) | default | n/a / n/a | ~15 | 0 | implemented; 4/4 ACs; CI trigger+runInBand+JWT fallback; red+baseline runs recorded; F-EP14A-01 |
 | 2026-11-16 | EP14B | implementer (live session) | default | n/a / n/a | ~45 | 0 | implemented; EP14B-AC1/EP14B-AC3 done, EP14B-AC2 partial (gated 1584/0 local + CI backend/frontend green; Secret scan red, F-EP14B-02); F-EP14B-01 fixed |
 | 2026-11-16 | EP14C | implementer (live session) | default | n/a / n/a | ~40 | 0 | implemented; 3/3 ACs; 3 full runs 0 failures from its files; logout race reproduced + fixed; 2 product races registered (BL-14-07/-08) |
+| 2026-11-16 | EP14F | implementer (dispatched) | default | n/a / n/a | ~45 | 0 | implemented; 3/3 ACs; `actedRef` guard (D-F1a); 4 clean full E2E runs 0 race failures (2 more aborted by cross-session port contention); F-EP14F-01/-02 (harness) |
