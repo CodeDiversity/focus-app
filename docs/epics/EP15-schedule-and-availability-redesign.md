@@ -1,7 +1,7 @@
 # EP15: Schedule & Availability Redesign
 
 **Epic ID:** EP15
-**Status:** Broken down (planner, 2026-11-16) — see [docs/stories/EP15](../stories/EP15/README.md). All D15 decisions **ratified by the user 2026-11-16** ("ratify all of the proposed decisions"). Plan review required (new migrations; more than eight children) and not yet run. Implementation starts after the EP14 review unit passes (D15-11). No tracker sync.
+**Status:** Broken down (planner, 2026-11-16) — see [docs/stories/EP15](../stories/EP15/README.md). All D15 decisions **ratified by the user 2026-11-16** ("ratify all of the proposed decisions"). Plan review passed at pass 3 (Plan Ready, 2026-11-16, `dc5b20b`). EP14's review unit passed 2026-11-16, so D15-11's gate is met — **implementation may start with EP15A**. No tracker sync.
 **Release:** 1.2 (post-1.1.x hardening)
 **Priority:** High / P0
 **Labels:** `studypilot`, `adhd`, `schedule`

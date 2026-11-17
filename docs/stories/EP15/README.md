@@ -2,8 +2,8 @@
 
 **Epic:** [EP15: Schedule & Availability Redesign](../../epics/EP15-schedule-and-availability-redesign.md)
 **Milestone:** M8 — release 1.2 (D15-11, ratified 2026-11-16)
-**Epic dependency:** EP04, EP06, EP13 closed. **EP14 in flight** — implementation starts after the EP14 review unit passes (D15-11); planning, plan review and refiner passes proceed now.
-**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: **Plan Ready + Implementation Blocked** (see [history.md](./history.md)). **Plan review:** pass 1 ([plan-review-pass-1.md](./plan-review-pass-1.md)) Changes Required — R-EP15-01…09 closed; pass 2 ([plan-review-pass-2.md](./plan-review-pass-2.md)) Changes Required — R-EP15-10…16 corrected (C-EP15-10…16 in [history.md](./history.md)); pass 3 ([plan-review.md](./plan-review.md)) **Plan Ready** — R-EP15-10…13, 15, 16 closed; polish R-EP15-14 (residue), 17, 18 optional. No tracker sync.
+**Epic dependency:** EP04, EP06, EP13 closed. **EP14 closed** — combined review round 2 passed 2026-11-16 (`1786732`), so D15-11's gate is met and implementation may start.
+**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: **Plan Ready** (Implementation Blocked lifted 2026-11-16 — EP14 closed) (see [history.md](./history.md)). **Plan review:** pass 1 ([plan-review-pass-1.md](./plan-review-pass-1.md)) Changes Required — R-EP15-01…09 closed; pass 2 ([plan-review-pass-2.md](./plan-review-pass-2.md)) Changes Required — R-EP15-10…16 corrected (C-EP15-10…16 in [history.md](./history.md)); pass 3 ([plan-review.md](./plan-review.md)) **Plan Ready** — R-EP15-10…13, 15, 16 closed; polish R-EP15-14 (residue), 17, 18 optional. No tracker sync.
 
 ## Plan at a glance
 
@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP15A — implement once the EP14 review unit has passed (D15-11) and plan review pass 2 is Plan Ready. Refiner passes for EP15E/G/H done 2026-11-16.
+**Next substory:** EP15A — implement (Ready; dispatch the implementer, who may continue into EP15B…EP15D in queue order).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (layer labels are scope, not concurrent roles).
 
@@ -28,7 +28,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP15A](./EP15A-schedule-model-migration-and-recurrence-domain.md) | Blocked | EP14 review unit not yet passed (D15-11). Plan review pending. | Implement first once unblocked | — |
+| [EP15A](./EP15A-schedule-model-migration-and-recurrence-domain.md) | Ready | None — EP14 review unit passed 2026-11-16 (D15-11 met); plan review pass 3 Plan Ready (`dc5b20b`); ▲ D-A1/D-A4 ruled. | Implement first | — |
 | [EP15B](./EP15B-schedule-api.md) | Queued | EP15A implemented. | Implement after EP15A | — |
 | [EP15C](./EP15C-engine-day-bounds-and-preferred-study-blocks.md) | Queued | EP15A implemented (shares the `domain/schedule` types). | Implement after EP15B | — |
 | [EP15D](./EP15D-planner-gathering-and-calendar-read-model.md) | Queued | EP15A, EP15B, EP15C implemented. | Implement after EP15C | — |

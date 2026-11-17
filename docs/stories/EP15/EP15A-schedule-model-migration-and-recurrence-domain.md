@@ -4,7 +4,7 @@
 **Parent epic:** [EP15: Schedule & Availability Redesign](../../epics/EP15-schedule-and-availability-redesign.md)
 **Milestone:** M8 (D15-11)
 **Layer:** Backend (persistence + pure domain)
-**Status:** Blocked — EP14 review unit not yet passed (D15-11); plan review pending (new migration)
+**Status:** Ready — EP14 review unit passed 2026-11-16 (D15-11 met); plan review pass 3 Plan Ready
 **Dependencies:** none inside EP15. Epic decisions D15-2, D15-4, D15-5, D15-13 (ratified 2026-11-16).
 
 ## Plan at a glance
