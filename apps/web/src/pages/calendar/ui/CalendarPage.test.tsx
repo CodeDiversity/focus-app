@@ -15,7 +15,27 @@ vi.mock('@/entities/day-bounds/api/dayBoundsApi', () => ({
   getDayBounds: vi.fn(),
   putDayBounds: vi.fn(),
 }));
+vi.mock('@/entities/schedule-block/api/scheduleBlockApi', () => ({
+  listScheduleBlocks: vi.fn(),
+  createScheduleBlock: vi.fn(),
+  updateScheduleBlock: vi.fn(),
+  deleteScheduleBlock: vi.fn(),
+  cancelOccurrence: vi.fn(),
+}));
+vi.mock('@/entities/course/api/courseApi', () => ({ listCourses: vi.fn() }));
 import { getDayBounds, putDayBounds } from '@/entities/day-bounds/api/dayBoundsApi';
+import {
+  cancelOccurrence,
+  createScheduleBlock,
+  deleteScheduleBlock,
+  listScheduleBlocks,
+} from '@/entities/schedule-block/api/scheduleBlockApi';
+import {
+  EMPTY_WEEK_COPY,
+  PARTIAL_SAVE_COPY,
+  deleteAnnouncement,
+  saveAnnouncement,
+} from './CalendarPage';
 
 const mocked = vi.mocked(listCalendarEvents);
 const mockedBounds = vi.mocked(getDayBounds);
@@ -106,6 +126,49 @@ const payload = {
 };
 
 const validUser = userEvent.setup();
+
+/** EP15G fixtures: a weekly Busy occurrence and a one-off Study block. */
+const busyEvent = {
+  ...sampleEvent,
+  id: 'event:b1:2026-10-29',
+  type: 'EVENT' as const,
+  title: 'Work shift',
+  subtitle: null,
+  date: '2026-10-29',
+  startTime: '13:00',
+  endTime: '17:00',
+  courseId: null,
+  courseName: null,
+  courseColor: null,
+  link: null,
+  blockId: 'b1',
+  recurring: true,
+  energy: null,
+};
+const studyEvent = {
+  ...busyEvent,
+  id: 'study-block:b2:2026-10-30',
+  type: 'STUDY_BLOCK' as const,
+  title: 'Study',
+  date: '2026-10-30',
+  blockId: 'b2',
+  recurring: false,
+  energy: 'NORMAL' as const,
+};
+const blockRow = (id: string, weekdays: number[] | null) => ({
+  id,
+  kind: 'BUSY' as const,
+  title: 'Work shift',
+  courseId: null,
+  energy: null,
+  startDate: '2026-10-01',
+  endDate: null,
+  weekdays,
+  startTime: '13:00',
+  endTime: '17:00',
+  createdAt: 'x',
+  updatedAt: 'x',
+});
 
 const renderPage = () =>
   render(
@@ -541,6 +604,192 @@ describe('CalendarPage (SP-127B)', () => {
       await waitFor(() =>
         expect(screen.getByRole('status')).not.toHaveTextContent('Day start and end saved.')
       );
+    });
+  });
+
+  // ===================== EP15G — add / edit / remove blocks =====================
+
+  describe('EP15G: the block sheet from the calendar', () => {
+    beforeEach(() => {
+      vi.mocked(listScheduleBlocks).mockResolvedValue([blockRow('b1', [4]), blockRow('b2', null)]);
+      vi.mocked(createScheduleBlock).mockResolvedValue(blockRow('b9', null));
+      vi.mocked(deleteScheduleBlock).mockResolvedValue(undefined);
+      vi.mocked(cancelOccurrence).mockResolvedValue(undefined);
+      mocked.mockResolvedValue({ ...payload, events: [sampleEvent, busyEvent, studyEvent] });
+    });
+
+    it("EP15G-AC1: the toolbar 'Add' opens the sheet with date = result.today when in view, else the week's Monday", async () => {
+      renderPage();
+      await screen.findByText('Calculus');
+      const add = screen.getByRole('button', { name: 'Add' });
+      expect(screen.getAllByRole('button')[0]).toBe(add); // first in the toolbar
+      add.focus();
+      await validUser.click(add);
+      const sheet = await screen.findByRole('dialog', { name: 'Add to calendar' });
+      expect(within(sheet).getByLabelText('Date')).toHaveValue('2026-10-28'); // today, in view
+      await validUser.keyboard('{Escape}');
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(add).toHaveFocus();
+
+      mocked.mockResolvedValue({
+        ...payload,
+        from: '2026-11-02',
+        to: '2026-11-08',
+        days: daysOf(weekOf('2026-11-02'), '07:30', '22:00'),
+        events: [],
+      });
+      const fetchesBefore = mocked.mock.calls.length;
+      await validUser.click(screen.getByRole('button', { name: 'Next week' }));
+      await waitFor(() => expect(mocked.mock.calls.length).toBe(fetchesBefore + 1));
+      await screen.findByText(EMPTY_WEEK_COPY);
+      await validUser.click(screen.getByRole('button', { name: 'Add' }));
+      const next = await screen.findByRole('dialog', { name: 'Add to calendar' });
+      expect(within(next).getByLabelText('Date')).toHaveValue('2026-11-02'); // the week's Monday
+      expect(within(next).getByLabelText('Start')).toHaveValue('08:00'); // wake 07:30 rounded up
+      expect(within(next).getByLabelText('End')).toHaveValue('09:00');
+    });
+
+    it("EP15G-AC3: at a narrow viewport the same 'Add' is present and the agenda entry's details carry Edit and Remove", async () => {
+      narrow = true;
+      renderPage();
+      await screen.findByText('Calculus');
+      expect(screen.getByRole('list', { name: 'Week agenda' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument();
+      await validUser.click(screen.getByRole('button', { name: /Work shift/ }));
+      const dialog = await screen.findByRole('dialog', { name: 'Work shift' });
+      expect(within(dialog).getByRole('button', { name: 'Edit' })).toBeInTheDocument();
+      expect(within(dialog).getByRole('button', { name: 'Remove' })).toBeInTheDocument();
+      // A class keeps only its course link — no Edit / Remove.
+      await validUser.click(within(dialog).getByRole('button', { name: 'Close' }));
+      await validUser.click(screen.getByRole('button', { name: /Calculus/ }));
+      const classDialog = await screen.findByRole('dialog', { name: 'Calculus' });
+      expect(within(classDialog).queryByRole('button', { name: 'Edit' })).toBeNull();
+      expect(within(classDialog).queryByRole('button', { name: 'Remove' })).toBeNull();
+    });
+
+    it('EP15G-AC2: delete wirings — one-off → DELETE /schedule/blocks/:id; weekly this-day → DELETE …/occurrences/:date; weekly following → DELETE ?from=date; each refetches', async () => {
+      renderPage();
+      await screen.findByText('Calculus');
+      const fetches = () => mocked.mock.calls.length;
+
+      // one-off Study block → DELETE the row
+      let before = fetches();
+      const studyChip = screen.getByRole('button', { name: /^Study block\b/ });
+      studyChip.focus();
+      await validUser.click(studyChip);
+      await validUser.click(await screen.findByRole('button', { name: 'Remove' }));
+      await validUser.click(screen.getByRole('button', { name: 'Yes, remove' }));
+      await waitFor(() => expect(deleteScheduleBlock).toHaveBeenCalledWith('b2'));
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      await waitFor(() => expect(fetches()).toBe(before + 1));
+      expect(screen.getByRole('status')).toHaveTextContent('Study block removed');
+      await waitFor(() => expect(studyChip).toHaveFocus());
+
+      // weekly → just this day → cancel the occurrence
+      before = fetches();
+      await validUser.click(screen.getByRole('button', { name: /Work shift/ }));
+      await validUser.click(await screen.findByRole('button', { name: 'Remove' }));
+      await validUser.click(screen.getByRole('button', { name: 'Just this day' }));
+      await waitFor(() => expect(cancelOccurrence).toHaveBeenCalledWith('b1', '2026-10-29'));
+      await waitFor(() => expect(fetches()).toBe(before + 1));
+      expect(screen.getByRole('status')).toHaveTextContent('Removed for this day');
+
+      // weekly → this and following → DELETE ?from=
+      before = fetches();
+      await validUser.click(screen.getByRole('button', { name: /Work shift/ }));
+      await validUser.click(await screen.findByRole('button', { name: 'Remove' }));
+      await validUser.click(screen.getByRole('button', { name: 'This and following' }));
+      await waitFor(() =>
+        expect(deleteScheduleBlock).toHaveBeenLastCalledWith('b1', { from: '2026-10-29' })
+      );
+      await waitFor(() => expect(fetches()).toBe(before + 1));
+      expect(screen.getByRole('status')).toHaveTextContent('Removed for this and following weeks');
+
+      // a failed removal keeps the dialog open with its footer restored
+      vi.mocked(deleteScheduleBlock).mockRejectedValueOnce(new Error('Network Error'));
+      await validUser.click(screen.getByRole('button', { name: /^Study block\b/ }));
+      await validUser.click(await screen.findByRole('button', { name: 'Remove' }));
+      await validUser.click(screen.getByRole('button', { name: 'Yes, remove' }));
+      expect(await screen.findByRole('button', { name: 'Remove' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+    });
+
+    it("EP15G-AC4: announcements — 'Busy added', 'Study block added', 'Busy updated', 'Study block updated for this day', 'Study block updated for this and following weeks', 'Busy removed', 'Removed for this day', 'Removed for this and following weeks'", async () => {
+      expect(saveAnnouncement({ kind: 'BUSY', action: 'created' })).toBe('Busy added');
+      expect(saveAnnouncement({ kind: 'STUDY', action: 'created' })).toBe('Study block added');
+      expect(saveAnnouncement({ kind: 'BUSY', action: 'updated' })).toBe('Busy updated');
+      expect(saveAnnouncement({ kind: 'STUDY', action: 'this-day' })).toBe(
+        'Study block updated for this day'
+      );
+      expect(saveAnnouncement({ kind: 'STUDY', action: 'following' })).toBe(
+        'Study block updated for this and following weeks'
+      );
+      expect(saveAnnouncement({ kind: 'BUSY', action: 'this-day-partial' })).toBe(
+        PARTIAL_SAVE_COPY
+      );
+      expect(deleteAnnouncement(busyEvent, 'all')).toBe('Busy removed');
+      expect(deleteAnnouncement(studyEvent, 'all')).toBe('Study block removed');
+      expect(deleteAnnouncement(busyEvent, 'this-day')).toBe('Removed for this day');
+      expect(deleteAnnouncement(busyEvent, 'following')).toBe(
+        'Removed for this and following weeks'
+      );
+
+      // End to end on the page: create → "Busy added", refetch, focus back on Add.
+      renderPage();
+      await screen.findByText('Calculus');
+      const add = screen.getByRole('button', { name: 'Add' });
+      add.focus();
+      await validUser.click(add);
+      const before = mocked.mock.calls.length;
+      await validUser.click(await screen.findByRole('button', { name: 'Save' }));
+      await waitFor(() => expect(createScheduleBlock).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      expect(screen.getByRole('status')).toHaveTextContent('Busy added');
+      await waitFor(() => expect(mocked.mock.calls.length).toBe(before + 1));
+      await waitFor(() => expect(add).toHaveFocus());
+      // The prefix clears on the next week change (same rule as EP15F).
+      await validUser.click(screen.getByRole('button', { name: 'Next week' }));
+      await waitFor(() => expect(screen.getByRole('status')).not.toHaveTextContent('Busy added'));
+    });
+
+    it("EP15G-AC2: partial failure announces exactly 'Saved your change, but the original block is still showing for this day — remove it from its details.' and the refetched week shows both items", async () => {
+      vi.mocked(cancelOccurrence).mockRejectedValue(new Error('Network Error'));
+      const newOneOff = {
+        ...busyEvent,
+        id: 'event:b9:2026-10-29',
+        blockId: 'b9',
+        recurring: false,
+        startTime: '12:00',
+      };
+      renderPage();
+      await screen.findByText('Calculus');
+      const chip = screen.getByRole('button', { name: /Work shift/ });
+      chip.focus();
+      await validUser.click(chip);
+      await validUser.click(await screen.findByRole('button', { name: 'Edit' }));
+      const sheet = await screen.findByRole('dialog', { name: 'Edit Work shift' });
+      expect(screen.getAllByRole('dialog')).toHaveLength(1); // details closed, sheet open
+      await waitFor(() => expect(within(sheet).queryByText('Loading…')).toBeNull());
+      expect(within(sheet).getByLabelText('Title (optional)')).toHaveValue('Work shift');
+      fireEvent.change(within(sheet).getByLabelText('Start'), { target: { value: '12:00' } });
+      mocked.mockResolvedValue({
+        ...payload,
+        events: [sampleEvent, busyEvent, studyEvent, newOneOff],
+      });
+      await validUser.click(within(sheet).getByRole('button', { name: 'Save' }));
+      await validUser.click(await screen.findByRole('button', { name: 'Just this day' }));
+      await waitFor(() => expect(cancelOccurrence).toHaveBeenCalledWith('b1', '2026-10-29'));
+      expect(createScheduleBlock).toHaveBeenCalledWith({
+        kind: 'BUSY',
+        title: 'Work shift',
+        startDate: '2026-10-29',
+        startTime: '12:00',
+        endTime: '17:00',
+      });
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      expect(screen.getByRole('status')).toHaveTextContent(PARTIAL_SAVE_COPY);
+      expect(await screen.findAllByRole('button', { name: /Work shift/ })).toHaveLength(2);
+      await waitFor(() => expect(chip).toHaveFocus());
     });
   });
 });

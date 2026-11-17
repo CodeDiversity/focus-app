@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { getErrorMessage as getErrMsg } from '@/shared/lib/errors';
 import { formatDate as fmtDate } from '@/shared/lib/datetime';
@@ -16,12 +16,58 @@ import { getDayBounds } from '@/entities/day-bounds/api/dayBoundsApi';
 import type { DayBoundsResult } from '@/entities/day-bounds/model/types';
 import { DayBoundsBanner } from '@/features/day-bounds/ui/DayBoundsBanner';
 import { DayBoundsSheet } from '@/features/day-bounds/ui/DayBoundsSheet';
+import {
+  BlockSheet,
+  KIND_LABEL,
+  blockKindOf,
+  isBlockEvent,
+  type BlockSaveResult,
+} from '@/features/schedule-blocks/ui/BlockSheet';
+import { defaultStart } from '@/features/schedule-blocks/lib/defaults';
+import { addMinutesCapped } from '@/features/schedule-blocks/lib/blockForm';
+import {
+  cancelOccurrence,
+  deleteScheduleBlock,
+} from '@/entities/schedule-block/api/scheduleBlockApi';
+import type { DeleteChoice } from '@/features/calendar/ui/CalendarEventDetails';
 import { addDays, mondayOf, utcTodayGuess } from '../lib/week';
 
 const NARROW_QUERY = '(max-width: 639px)';
 
 /** EP15E (AC4) — the empty-week copy, verbatim. */
 export const EMPTY_WEEK_COPY = 'Nothing on your calendar yet — it’s all free time';
+
+/** EP15G-AC2 — the partial "just this day" outcome, verbatim. */
+export const PARTIAL_SAVE_COPY =
+  'Saved your change, but the original block is still showing for this day — remove it from its details.';
+
+/** EP15G-AC4 — the announcement matrix for saves. */
+export function saveAnnouncement(result: BlockSaveResult): string {
+  const label = KIND_LABEL[result.kind];
+  switch (result.action) {
+    case 'created':
+      return `${label} added`;
+    case 'updated':
+      return `${label} updated`;
+    case 'this-day':
+      return `${label} updated for this day`;
+    case 'following':
+      return `${label} updated for this and following weeks`;
+    case 'this-day-partial':
+      return PARTIAL_SAVE_COPY;
+  }
+}
+
+/** EP15G-AC4 — the announcement matrix for removals. */
+export function deleteAnnouncement(event: CalendarEvent, choice: DeleteChoice): string {
+  if (choice === 'this-day') return 'Removed for this day';
+  if (choice === 'following') return 'Removed for this and following weeks';
+  return `${KIND_LABEL[blockKindOf(event)]} removed`;
+}
+
+type BlockSheetState =
+  | { mode: 'create'; initial: { date: string; startTime: string; endTime: string } }
+  | { mode: 'edit'; event: CalendarEvent };
 
 /** Below Tailwind's `sm` breakpoint (640px) the agenda replaces the week
  * grid (D129A-01, D129A-07 — same props shape as WeekGrid). */
@@ -79,6 +125,12 @@ export function CalendarPage() {
     sheetTriggerRef.current = document.activeElement as HTMLElement | null;
     setSheetOpen(true);
   };
+
+  // EP15G: the one editor for events and study blocks. The trigger (the
+  // "Add" button or the chip whose details opened) gets focus back after a
+  // save or removal — the dialog restores focus only on its cancel paths.
+  const [blockSheet, setBlockSheet] = useState<BlockSheetState | null>(null);
+  const blockTriggerRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
     let cancelled = false;
     getDayBounds()
@@ -197,6 +249,59 @@ export function CalendarPage() {
     void fetchWeek(from, to, true);
   };
 
+  const focusBlockTrigger = () => {
+    window.setTimeout(() => blockTriggerRef.current?.focus(), 0);
+  };
+  /** EP15G-AC1: "Add" — today when it is in view, else the week's Monday; next whole hour inside the day's bounds. */
+  const openCreate = () => {
+    if (!data) return;
+    blockTriggerRef.current = document.activeElement as HTMLElement | null;
+    const inView = data.today >= data.from && data.today <= data.to;
+    const date = inView ? data.today : data.from;
+    const day = data.days.find((d) => d.date === date);
+    const startTime = defaultStart(
+      inView,
+      day?.wakeTime ?? '08:00',
+      day?.sleepTime ?? '23:00',
+      nowMinute
+    );
+    setBlockSheet({
+      mode: 'create',
+      initial: { date, startTime, endTime: addMinutesCapped(startTime, 60) },
+    });
+  };
+  const handleOpenEvent = (event: CalendarEvent) => {
+    blockTriggerRef.current = document.activeElement as HTMLElement | null;
+    setSelectedEvent(event);
+  };
+  const handleEdit = (event: CalendarEvent) => {
+    setSelectedEvent(null); // one dialog at a time
+    setBlockSheet({ mode: 'edit', event });
+  };
+  const handleBlockSaved = (result: BlockSaveResult) => {
+    setBlockSheet(null);
+    setAnnouncement(saveAnnouncement(result));
+    focusBlockTrigger();
+    void fetchWeek(from, to, false);
+  };
+  /** EP15G-AC2 wiring 6–8: one-off → DELETE; this day → cancel the occurrence; following → DELETE ?from=. */
+  const handleDelete = async (event: CalendarEvent, choice: DeleteChoice) => {
+    const blockId = event.blockId;
+    if (!blockId) return;
+    try {
+      if (choice === 'this-day') await cancelOccurrence(blockId, event.date);
+      else if (choice === 'following') await deleteScheduleBlock(blockId, { from: event.date });
+      else await deleteScheduleBlock(blockId);
+    } catch (err) {
+      toast.error(getErrMsg(err) || "We couldn't remove this. Try again.");
+      throw err; // the details dialog restores its footer
+    }
+    setSelectedEvent(null);
+    setAnnouncement(deleteAnnouncement(event, choice));
+    focusBlockTrigger();
+    void fetchWeek(from, to, false);
+  };
+
   const eventsByDay = useMemo(
     () => (data ? groupByDay(data.events) : new Map<string, CalendarEvent[]>()),
     [data]
@@ -279,6 +384,15 @@ export function CalendarPage() {
           <p className="text-sm text-text-muted">Your week at a glance.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          {/* EP15G: the one primary action (D15-14 rule 1) — serves the grid and the agenda. */}
+          <Button
+            variant="primary"
+            leftIcon={<Plus size={16} />}
+            className="max-sm:min-h-[44px]"
+            onClick={openCreate}
+          >
+            Add
+          </Button>
           <Button variant="secondary" className="max-sm:min-h-[44px]" onClick={handleToday}>
             Today
           </Button>
@@ -347,14 +461,14 @@ export function CalendarPage() {
             days={days}
             eventsByDay={eventsByDay}
             today={data?.today ?? ''}
-            onOpenEvent={setSelectedEvent}
+            onOpenEvent={handleOpenEvent}
           />
         ) : (
           <WeekGrid
             days={days}
             eventsByDay={eventsByDay}
             today={data?.today ?? ''}
-            onOpenEvent={setSelectedEvent}
+            onOpenEvent={handleOpenEvent}
             nowMinute={nowMinute}
             onEditBounds={bounds ? openSheet : undefined}
           />
@@ -369,11 +483,34 @@ export function CalendarPage() {
         />
       )}
 
+      {blockSheet?.mode === 'create' && (
+        <BlockSheet
+          mode="create"
+          initial={blockSheet.initial}
+          onSaved={handleBlockSaved}
+          onClose={() => setBlockSheet(null)}
+        />
+      )}
+      {blockSheet?.mode === 'edit' && (
+        <BlockSheet
+          mode="edit"
+          block={blockSheet.event}
+          onSaved={handleBlockSaved}
+          onClose={() => setBlockSheet(null)}
+        />
+      )}
+
       {selectedEvent && (
         <CalendarEventDetails
           event={selectedEvent}
           timeZone={timeZone}
           onClose={() => setSelectedEvent(null)}
+          onEdit={isBlockEvent(selectedEvent) ? () => handleEdit(selectedEvent) : undefined}
+          onDelete={
+            isBlockEvent(selectedEvent)
+              ? (choice) => handleDelete(selectedEvent, choice)
+              : undefined
+          }
         />
       )}
     </section>

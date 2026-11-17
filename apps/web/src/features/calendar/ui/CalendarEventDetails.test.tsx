@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Providers } from '@/test/providers';
 import { CalendarEventDetails } from './CalendarEventDetails';
 import type { CalendarEvent } from '@/entities/calendar/model/types';
@@ -196,5 +197,104 @@ describe('CalendarEventDetails (SP-127B)', () => {
     expect(screen.getByTestId('details-actions')).toContainElement(
       screen.getByRole('button', { name: 'Edit' })
     );
+  });
+
+  // ============ EP15G — Edit / Remove in the actions slot (D-G5) ============
+
+  it('EP15G-AC2: EVENT/STUDY_BLOCK details show Edit and Remove; other kinds show neither', () => {
+    const view = render(
+      <Providers initialEntries={['/calendar']}>
+        <CalendarEventDetails
+          event={busy}
+          timeZone="America/New_York"
+          onClose={vi.fn()}
+          onEdit={vi.fn()}
+          onDelete={vi.fn()}
+        />
+      </Providers>
+    );
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove' })).toBeInTheDocument();
+    const names = screen.getAllByRole('button').map((b) => b.textContent);
+    expect(names).toEqual(['Remove', 'Edit', 'Close']);
+    view.unmount();
+    render(
+      <Providers initialEntries={['/calendar']}>
+        <CalendarEventDetails
+          event={event}
+          timeZone="America/New_York"
+          onClose={vi.fn()}
+          onEdit={vi.fn()}
+          onDelete={vi.fn()}
+        />
+      </Providers>
+    );
+    expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Remove' })).toBeNull();
+  });
+
+  it("EP15G-AC2: Remove on a one-off swaps the footer to 'Remove this? Yes, remove / No' (D-G5); Yes calls onDelete({ mode: 'all' }); No restores the footer", async () => {
+    const user = userEvent.setup();
+    const onDelete = vi.fn().mockResolvedValue(undefined);
+    const onEdit = vi.fn();
+    render(
+      <Providers initialEntries={['/calendar']}>
+        <CalendarEventDetails
+          event={{ ...busy, recurring: false }}
+          timeZone="America/New_York"
+          onClose={vi.fn()}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      </Providers>
+    );
+    await user.click(screen.getByRole('button', { name: 'Remove' }));
+    const confirm = screen.getByTestId('details-confirm');
+    expect(confirm).toHaveTextContent('Remove this?');
+    expect(screen.queryByRole('button', { name: 'Close' })).toBeNull(); // one footer at a time
+    expect(screen.getAllByRole('dialog')).toHaveLength(1); // never a stacked dialog
+    expect(screen.getByRole('button', { name: 'No' })).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: 'No' }));
+    expect(screen.queryByTestId('details-confirm')).toBeNull();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Remove' })).toHaveFocus());
+    expect(onDelete).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Remove' }));
+    await user.click(screen.getByRole('button', { name: 'Yes, remove' }));
+    expect(onDelete).toHaveBeenCalledWith('all');
+    // Edit hands off to the page.
+    await waitFor(() => expect(screen.queryByTestId('details-confirm')).toBeNull());
+  });
+
+  it("EP15G-AC2: Remove on a weekly item swaps the footer to the prompt 'This repeats weekly. Remove it for:'; the two answers call onDelete with 'this-day' / 'following'", async () => {
+    const user = userEvent.setup();
+    const onDelete = vi.fn().mockResolvedValue(undefined);
+    const onClose = vi.fn();
+    render(
+      <Providers initialEntries={['/calendar']}>
+        <CalendarEventDetails
+          event={{ ...busy, recurring: true }}
+          timeZone="America/New_York"
+          onClose={onClose}
+          onEdit={vi.fn()}
+          onDelete={onDelete}
+        />
+      </Providers>
+    );
+    await user.click(screen.getByRole('button', { name: 'Remove' }));
+    const prompt = screen.getByTestId('weekly-choice-prompt');
+    expect(prompt).toHaveTextContent('This repeats weekly. Remove it for:');
+    expect(screen.getByRole('button', { name: 'Just this day' })).toHaveFocus();
+    // Escape on the prompt is Back, not close.
+    await user.keyboard('{Escape}');
+    expect(screen.queryByTestId('weekly-choice-prompt')).toBeNull();
+    expect(onClose).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Remove' }));
+    await user.click(screen.getByRole('button', { name: 'Just this day' }));
+    expect(onDelete).toHaveBeenLastCalledWith('this-day');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Remove' })).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: 'Remove' }));
+    await user.click(screen.getByRole('button', { name: 'This and following' }));
+    expect(onDelete).toHaveBeenLastCalledWith('following');
+    expect(onDelete).toHaveBeenCalledTimes(2);
   });
 });

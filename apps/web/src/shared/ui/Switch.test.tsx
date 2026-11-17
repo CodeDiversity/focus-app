@@ -48,4 +48,20 @@ describe('Switch (EP15F, shared primitive)', () => {
     expect(sw.className).toMatch(/max-sm:min-h-\[44px\]/);
     expect(sw.className).toMatch(/motion-reduce:transition-none/);
   });
+
+  it('EP15G-AC4: role switch, aria-checked, label association, Space/Enter toggle, 44px on narrow', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(<Switch label="Repeats weekly" checked={false} onCheckedChange={onChange} />);
+    const sw = screen.getByRole('switch', { name: 'Repeats weekly' });
+    expect(sw).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByText('Repeats weekly').tagName).toBe('LABEL');
+    expect(screen.getByText('Repeats weekly')).toHaveAttribute('for', sw.id);
+    sw.focus();
+    await user.keyboard(' ');
+    await user.keyboard('{Enter}');
+    expect(onChange).toHaveBeenCalledTimes(2);
+    expect(onChange).toHaveBeenNthCalledWith(1, true);
+    expect(sw.className).toMatch(/max-sm:min-h-\[44px\]/);
+  });
 });

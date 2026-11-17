@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP15G — implement (Ready; EP15B + EP15E implemented 2026-11-17, EP15F implemented 2026-11-17; the block sheet — dispatch the implementer, who may continue into EP15H).
+**Next substory:** EP15H — implement (Ready; EP15G implemented 2026-11-17 — the sheet it pre-fills and the `WeeklyChoicePrompt` it reuses exist; dispatch the implementer, who may continue into EP15I).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (layer labels are scope, not concurrent roles).
 
@@ -34,8 +34,8 @@
 | [EP15D](./EP15D-planner-gathering-and-calendar-read-model.md) | Implemented — awaiting parent review | EP15A, EP15B, EP15C implemented. | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15D/implementation.md) — green 2026-11-17 (V-15-1 identity gated; `availability_slots` has no reader); 0 open findings |
 | [EP15E](./EP15E-week-grid.md) | Implemented — awaiting parent review | EP15D implemented (payload). Refined 2026-11-16 (D-E5…D-E8). | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15E/implementation.md) — green 2026-11-17 (web 1335/0, e2e see record); TR-E15-11 screen-reader step not executed; 0 open findings |
 | [EP15F](./EP15F-day-bounds-ui.md) | Implemented — awaiting parent review | EP15B + EP15E implemented. | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15F/implementation.md) — green 2026-11-17 (web 1363/0, e2e see record); TR-E15-11 screen-reader step not executed; 0 open findings |
-| [EP15G](./EP15G-add-edit-delete-blocks-via-form.md) | Ready | EP15B + EP15E implemented. Refined 2026-11-16 (D-G6…D-G11; ▲ D-G10 ruled by user grant). | Implement after EP15F | — |
-| [EP15H](./EP15H-direct-manipulation-on-the-grid.md) | Ready | EP15G implemented (the form it pre-fills). Refined 2026-11-16 (D-H5…D-H8). | Implement after EP15G | — |
+| [EP15G](./EP15G-add-edit-delete-blocks-via-form.md) | Implemented — awaiting parent review | EP15B + EP15E implemented. Refined 2026-11-16 (D-G6…D-G11; ▲ D-G10 ruled by user grant). | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15G/implementation.md) — green 2026-11-17 (web 1406/0; e2e not run in the worktree — see record); TR-E15-11 visual + screen-reader steps not executed; 0 open findings (F-EP15G-03/-04 noted) |
+| [EP15H](./EP15H-direct-manipulation-on-the-grid.md) | Ready | EP15G implemented 2026-11-17 (the form it pre-fills). Refined 2026-11-16 (D-H5…D-H8). | Implement next | — |
 | [EP15I](./EP15I-retire-availability-and-update-navigation.md) | Queued | EP15G implemented (the replacement editor exists). | Implement after EP15H | — |
 | [EP15J](./EP15J-cross-layer-e2e-and-parent-index.md) | Queued | EP15A–EP15I implemented. | Implement last; then the combined review | — |
 
