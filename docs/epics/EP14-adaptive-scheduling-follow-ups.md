@@ -51,7 +51,7 @@ Everything ruled Backlog in EP13R (energy quick setup, "drained today", placemen
 
 ## Proposed Stories
 
-See [the breakdown README](../stories/EP14/README.md): EP14A (CI), EP14B (API contract integrity), EP14C (E2E reliability), EP14D (accessibility debt), EP14E (effort-aware placement).
+See [the breakdown README](../stories/EP14/README.md): EP14A (CI), EP14B (API contract integrity), EP14C (E2E reliability), EP14D (accessibility debt), EP14E (effort-aware placement), EP14F (plan-page load/generate race — promoted from BL-14-08, 2026-11-16).
 
 ## Technical Notes
 
