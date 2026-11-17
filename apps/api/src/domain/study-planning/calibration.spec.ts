@@ -11,6 +11,7 @@ import {
 import type { CalibrationSample, FinishedAssignmentFacts } from './calibration';
 import { classifyAssignments } from './remaining-work';
 import { schedule } from './scheduler';
+import { boundsFromWeeklyWindows } from './legacy-windows';
 import type { AssignmentFacts, SchedulerInput, StudyPreferences } from './types';
 
 /**
@@ -327,13 +328,14 @@ describe('estimate calibration (domain, EP13L)', () => {
         new Map(),
         calibrated ? papersTakeTwice : undefined
       );
+      // EP15C: weekly fixture through the weekly→bounds adapter (no study blocks).
       const input: SchedulerInput = {
         days,
         assignments: schedulable,
-        availability: openEvenings(),
-        blocked: [],
+        ...boundsFromWeeklyWindows(days, openEvenings(), []),
         classes: [],
         busy: [],
+        preferred: [],
         preferences: PREFS,
       };
       return { remaining: schedulable[0].remainingMinutes, out: schedule(input) };

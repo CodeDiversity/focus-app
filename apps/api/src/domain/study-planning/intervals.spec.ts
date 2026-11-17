@@ -3,6 +3,7 @@ import {
   mergeIntervals,
   minutesBetween,
   overlaps,
+  preferredPieces,
   subtractIntervals,
 } from './intervals';
 import type { DatedInterval } from './types';
@@ -207,6 +208,75 @@ describe('interval algebra (domain, EP06C)', () => {
       for (let i = 1; i < out.length; i++) {
         expect(out[i].startMinute).toBeGreaterThanOrEqual(out[i - 1].endMinute);
       }
+    });
+  });
+
+  describe('EP15C — preferred keys in the algebra (D-C1)', () => {
+    const MON = '2026-11-02';
+
+    it('touching pieces with different preferred keys stay apart; equal (energy, key) merge', () => {
+      expect(
+        mergeIntervals([
+          { date: MON, startMinute: 540, endMinute: 600, preferredKey: 'a' },
+          { date: MON, startMinute: 600, endMinute: 660, preferredKey: 'b' },
+          { date: MON, startMinute: 660, endMinute: 720, preferredKey: 'b' },
+          { date: MON, startMinute: 720, endMinute: 780 },
+        ])
+      ).toEqual([
+        { date: MON, startMinute: 540, endMinute: 600, preferredKey: 'a' },
+        { date: MON, startMinute: 600, endMinute: 720, preferredKey: 'b' },
+        { date: MON, startMinute: 720, endMinute: 780 },
+      ]);
+    });
+
+    it('subtraction keeps each remainder’s key and course', () => {
+      expect(
+        subtractIntervals(
+          [{ date: MON, startMinute: 540, endMinute: 720, preferredKey: 'a', courseId: 'c1' }],
+          [{ date: MON, startMinute: 600, endMinute: 630 }]
+        )
+      ).toEqual([
+        { date: MON, startMinute: 540, endMinute: 600, preferredKey: 'a', courseId: 'c1' },
+        { date: MON, startMinute: 630, endMinute: 720, preferredKey: 'a', courseId: 'c1' },
+      ]);
+    });
+
+    it('preferredPieces splits free gaps at block edges; outside pieces keep the input shape', () => {
+      const free = [
+        { date: MON, startMinute: 480, endMinute: 700 },
+        { date: MON, startMinute: 800, endMinute: 900 },
+      ];
+      const pieces = preferredPieces(
+        free,
+        [
+          {
+            date: MON,
+            startMinute: 600,
+            endMinute: 660,
+            preferredKey: 'b1',
+            energy: 'HIGH',
+            courseId: 'c1',
+          },
+          { date: MON, startMinute: 850, endMinute: 1000, preferredKey: 'b2' },
+          { date: '2026-11-03', startMinute: 480, endMinute: 700, preferredKey: 'other-day' },
+        ],
+        MON
+      );
+      expect(pieces).toEqual([
+        { date: MON, startMinute: 480, endMinute: 600 },
+        {
+          date: MON,
+          startMinute: 600,
+          endMinute: 660,
+          energy: 'HIGH',
+          preferredKey: 'b1',
+          courseId: 'c1',
+        },
+        { date: MON, startMinute: 660, endMinute: 700 },
+        { date: MON, startMinute: 800, endMinute: 850 },
+        { date: MON, startMinute: 850, endMinute: 900, energy: 'NORMAL', preferredKey: 'b2' },
+      ]);
+      expect(preferredPieces(free, [], MON)).toBe(free);
     });
   });
 });

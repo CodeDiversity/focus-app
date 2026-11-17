@@ -112,6 +112,12 @@ export type AssignmentFacts = {
    * `true`/`false` override the demanding rule, `null`/omitted = Auto.
    */
   hard?: boolean | null;
+  /**
+   * EP15C — the owning course, carried only when supplied (like
+   * `assignmentType`) so a course-tied study block can serve its course
+   * first (contracts.md engine rule 4, D-C3).
+   */
+  courseId?: string | null;
 };
 
 /**
@@ -163,6 +169,12 @@ export type ClassifiedAssignment = {
    * Present only when the caller supplied it; `null` = Auto.
    */
   hard?: boolean | null;
+  /**
+   * EP15C — the owning course, carried only when supplied (like
+   * `assignmentType`) so a course-tied study block can serve its course
+   * first (contracts.md engine rule 4, D-C3).
+   */
+  courseId?: string | null;
 };
 
 /**
@@ -224,7 +236,24 @@ export type DatedInterval = {
    * levels, so a free interval's energy is always unambiguous.
    */
   energy?: EnergyLevelValue;
+  /**
+   * EP15C (D-C1) — the study block this piece lies inside, when any. The
+   * algebra merges only pieces with equal (energy, preferredKey), so a
+   * block's span survives subtraction exactly like energy does. Omitted =
+   * not preferred.
+   */
+  preferredKey?: string;
+  /** EP15C — the course the preferred block is tied to (rule 4). Omitted = none. */
+  courseId?: string | null;
 };
+
+/**
+ * EP15C — a study block after recurrence expansion: a dated interval with
+ * the block's energy, its id as `preferredKey` and an optional course tie.
+ * Rule 2 intersects the day's free time with these; rule 3 scans the
+ * resulting preferred pieces first.
+ */
+export type PreferredInterval = DatedInterval & { preferredKey: string };
 
 /**
  * The base the day's free intervals are computed from (see the shared
@@ -306,10 +335,18 @@ export type AssignmentScheduleResult = {
 export type SchedulerInput = {
   days: string[];
   assignments: SchedulableAssignment[];
-  availability: WeeklyWindow[];
-  blocked: WeeklyWindow[];
+  /**
+   * EP15C (D15-1): the day's base — one `[wake, sleep)` interval per day in
+   * `days` (a day with none, or a zero-minute one, has no free time).
+   * Replaces the pre-EP15 `availability: WeeklyWindow[]`.
+   */
+  dayBounds: DatedInterval[];
+  /** EP15C: events after recurrence expansion — dated, a one-off blocks only its date. */
+  blocked: DatedInterval[];
   classes: WeeklyWindow[];
   busy: DatedInterval[];
+  /** EP15C (D15-6): study blocks after expansion — a ranking preference, never a constraint. */
+  preferred: PreferredInterval[];
   preferences: StudyPreferences;
 };
 

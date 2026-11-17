@@ -1,8 +1,9 @@
 import { replan } from './catch-up';
+import { boundsFromWeeklyWindows } from './legacy-windows';
 import { schedule } from './scheduler';
 import { classifyAssignments } from './remaining-work';
 import type { ReplanInput, ReplanBusyInterval, MissedSession } from './catch-up';
-import type { AssignmentFacts, StudyPreferences } from './types';
+import type { AssignmentFacts, StudyPreferences, WeeklyWindow } from './types';
 
 /**
  * EP08B domain unit spec (pure, no clock, no zone, no DB): deterministic
@@ -45,17 +46,30 @@ describe('deterministic workload rescheduling (domain, EP08B)', () => {
     ...overrides,
   });
 
-  const baseInput = (overrides: Partial<ReplanInput> = {}): ReplanInput => ({
-    days: DAYS,
-    assignments: [],
-    availability: [{ dayOfWeek: 5, startMinute: 540, endMinute: 720 }], // Friday
-    blocked: [],
-    classes: [],
-    busy: [],
-    missedSessions: [],
-    preferences: PREFS,
-    ...overrides,
-  });
+  /** Weekly fixtures reach `replan` through the EP15C weekly→bounds adapter (no study blocks). */
+  type LegacyReplanInput = Omit<ReplanInput, 'dayBounds' | 'blocked' | 'preferred'> & {
+    availability: WeeklyWindow[];
+    blocked: WeeklyWindow[];
+  };
+  const baseInput = (overrides: Partial<LegacyReplanInput> = {}): ReplanInput => {
+    const legacy: LegacyReplanInput = {
+      days: DAYS,
+      assignments: [],
+      availability: [{ dayOfWeek: 5, startMinute: 540, endMinute: 720 }], // Friday
+      blocked: [],
+      classes: [],
+      busy: [],
+      missedSessions: [],
+      preferences: PREFS,
+      ...overrides,
+    };
+    const { availability, blocked, ...rest } = legacy;
+    return {
+      ...rest,
+      ...boundsFromWeeklyWindows(legacy.days, availability, blocked),
+      preferred: [],
+    };
+  };
 
   describe('reuse of EP06 schedule()', () => {
     it('produces the same sessions as calling schedule() directly with the same inputs', () => {
@@ -66,10 +80,11 @@ describe('deterministic workload rescheduling (domain, EP08B)', () => {
       const direct = schedule({
         days: input.days,
         assignments: schedulable,
-        availability: input.availability,
+        dayBounds: input.dayBounds,
         blocked: input.blocked,
         classes: input.classes,
         busy: input.busy,
+        preferred: input.preferred,
         preferences: input.preferences,
       });
       expect(replanOut.sessions).toEqual(direct.sessions);

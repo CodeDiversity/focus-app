@@ -23,6 +23,10 @@ import { compareAssignments } from '../../domain/study-planning/ordering';
 import { schedule } from '../../domain/study-planning/scheduler';
 import { findConflicts } from '../../domain/study-planning/conflicts';
 import { replan } from '../../domain/study-planning/catch-up';
+import {
+  boundsFromWeeklyWindows,
+  windowsAsPreferred,
+} from '../../domain/study-planning/legacy-windows';
 import type { ReplanBusyInterval } from '../../domain/study-planning/catch-up';
 import type {
   AssignmentFacts,
@@ -35,6 +39,7 @@ import type {
   RemainingWorkFlag,
   StudyPreferences,
   UnfinishedAssignmentStatus,
+  PreferredInterval,
   WeeklyWindow,
 } from '../../domain/study-planning/types';
 import { UpdateStudyPreferencesDto } from './dto/update-study-preferences.dto';
@@ -399,6 +404,26 @@ function minutesToHHmm(min: number): string {
   const h = Math.floor(min / 60);
   const m = min % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+/**
+ * EP15C interim adapter (contracts.md § Known windows, R-EP15-02): the
+ * engine now takes dated `dayBounds` / `blocked` and a `preferred` list,
+ * but the service still gathers weekly availability slots until EP15D wires
+ * the real `scheduleInputs` seam. Former available windows become the
+ * day's bounds (hull) plus their gaps as blocked time, and every available
+ * window is also handed over as a preferred interval carrying its energy
+ * tag — in the slot model an available window *was* a declared study
+ * window, so this keeps EP13J/EP14E's energy placement byte-for-byte until
+ * study blocks replace it (F-EP15C-01). EP15D deletes this function.
+ */
+function legacyEngineInputs(data: {
+  days: string[];
+  available: WeeklyWindow[];
+  blocked: WeeklyWindow[];
+}): { dayBounds: DatedInterval[]; blocked: DatedInterval[]; preferred: PreferredInterval[] } {
+  const bounds = boundsFromWeeklyWindows(data.days, data.available, data.blocked);
+  return { ...bounds, preferred: windowsAsPreferred(data.days, data.available) };
 }
 
 @Injectable()
@@ -1176,8 +1201,7 @@ export class StudyPlansService {
     const output = schedule({
       days: data.days,
       assignments: data.schedulable,
-      availability: data.available,
-      blocked: data.blocked,
+      ...legacyEngineInputs(data),
       classes: data.classes,
       busy: data.busy,
       preferences: data.preferences,
@@ -1277,8 +1301,7 @@ export class StudyPlansService {
     const output = replan({
       days: data.days,
       assignments: data.schedulable,
-      availability: data.available,
-      blocked: data.blocked,
+      ...legacyEngineInputs(data),
       classes: data.classes,
       busy: data.busy,
       missedSessions,

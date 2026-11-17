@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP15C — implement (Queued → its dependency EP15A is implemented 2026-11-17; EP15B implemented 2026-11-17; dispatch the implementer, who may continue into EP15D in queue order).
+**Next substory:** EP15D — implement (Queued → EP15A, EP15B and EP15C implemented 2026-11-17; dispatch the implementer).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (layer labels are scope, not concurrent roles).
 
@@ -30,7 +30,7 @@
 |---|---|---|---|---|
 | [EP15A](./EP15A-schedule-model-migration-and-recurrence-domain.md) | Implemented — awaiting parent review | None — EP14 review unit passed 2026-11-16 (D15-11 met); plan review pass 3 Plan Ready (`dc5b20b`); ▲ D-A1/D-A4 ruled. | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15A/implementation.md) — green 2026-11-17 (gated 1663/0, 33 new); 0 open findings |
 | [EP15B](./EP15B-schedule-api.md) | Implemented — awaiting parent review | EP15A implemented. | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15B/implementation.md) — green 2026-11-17 (gated 1767/0, 104 new); 0 open findings; F-EP15B-01 fixed a latent `parseCalendarDate` 500 |
-| [EP15C](./EP15C-engine-day-bounds-and-preferred-study-blocks.md) | Queued | EP15A implemented (shares the `domain/schedule` types). | Implement after EP15B | — |
+| [EP15C](./EP15C-engine-day-bounds-and-preferred-study-blocks.md) | Implemented — awaiting parent review | EP15A implemented (shares the `domain/schedule` types). | Awaits the combined EP15 review after EP15J | [implementation.md](./artifacts/EP15C/implementation.md) — green 2026-11-17 (identity 15/15 vs the EP14E snapshot); 0 open findings; adapter carries windows as preferred (F-EP15C-01) |
 | [EP15D](./EP15D-planner-gathering-and-calendar-read-model.md) | Queued | EP15A, EP15B, EP15C implemented. | Implement after EP15C | — |
 | [EP15E](./EP15E-week-grid.md) | Ready | EP15D implemented (payload). Refined 2026-11-16 (D-E5…D-E8). | Implement after EP15D | — |
 | [EP15F](./EP15F-day-bounds-ui.md) | Queued | EP15B + EP15E implemented. | Implement after EP15E | — |

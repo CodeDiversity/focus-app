@@ -7,6 +7,7 @@ import type {
   DatedInterval,
   FlaggedAssignment,
   PlannedSessionProposal,
+  PreferredInterval,
   SchedulableAssignment,
   StudyPreferences,
   WeeklyWindow,
@@ -57,10 +58,12 @@ export type ReplanInput = {
   /** Confirmed minutes keyed by assignment id; used only when `assignments`
    *  are raw facts. Defaults to an empty map. */
   confirmedByAssignment?: ReadonlyMap<string, number>;
-  availability: WeeklyWindow[];
-  blocked: WeeklyWindow[];
+  /** EP15C: the engine's base and dated inputs, passed through unchanged. */
+  dayBounds: DatedInterval[];
+  blocked: DatedInterval[];
   classes: WeeklyWindow[];
   busy: ReplanBusyInterval[] | DatedInterval[];
+  preferred: PreferredInterval[];
   missedSessions: MissedSession[];
   preferences: StudyPreferences;
 };
@@ -130,10 +133,11 @@ export function replan(input: ReplanInput): ReplanOutput {
   const output = schedule({
     days: input.days,
     assignments: schedulable,
-    availability: input.availability,
+    dayBounds: input.dayBounds,
     blocked: input.blocked,
     classes: input.classes,
     busy: busy as unknown as DatedInterval[],
+    preferred: input.preferred,
     preferences: input.preferences,
   });
 

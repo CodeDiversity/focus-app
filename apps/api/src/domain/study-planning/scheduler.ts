@@ -1,5 +1,5 @@
 import { compareAssignments } from './ordering';
-import { energyOf, freeIntervals } from './intervals';
+import { energyOf, freeIntervals, preferredPieces } from './intervals';
 import type {
   AssignmentScheduleResult,
   DatedInterval,
@@ -67,6 +67,24 @@ import type {
  *    leaves no slack, in which case all of its blocks are `FIXED` and keep
  *    EP06's clock-commitment semantics. Flex blocks carry an honest
  *    `windowHint` derived from the slot the engine suggested.
+ *
+ * EP15C (D15-1, D15-6; contracts.md § Engine input) changes the **inputs**
+ * and adds one ranking key, leaving every rule above untouched:
+ *
+ * 7. **Base = day bounds.** A day's free time starts from its `[wake,
+ *    sleep)` bound (`dayBounds`, dated), minus `blocked` (events, dated —
+ *    a one-off blocks only its date), classes, busy and placed time. A day
+ *    with no bound has no free time.
+ * 8. **Preferred tier.** The day's free gaps are split at the edges of the
+ *    student's study blocks (`preferred`); pieces inside a block carry its
+ *    energy and key, pieces outside are NORMAL and unkeyed. Placement
+ *    scans the preferred tier first, then the rest; **within** each tier
+ *    EP14E's `byEnergyPreference` applies unchanged (D-C2). Critical work
+ *    ignores energy but still fills the preferred tier first. Inside a
+ *    course-tied piece the rotation serves that course's assignments
+ *    first (D-C3; feasibility still wins). Study blocks never change a
+ *    day's free minutes (AC-E15-07). With `preferred` empty the output is
+ *    byte-identical to the EP14E engine (EP15C-AC4).
  */
 
 /** Convert a weekly window list into dated intervals for one civil date. */
@@ -233,16 +251,38 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
   const sessions: PlannedSessionProposal[] = [];
   const placedSessions: DatedInterval[] = []; // every session placed so far
 
-  /** The day's free intervals, given everything placed so far. */
+  /** The day's free intervals, given everything placed so far (rule 7). */
   const freeFor = (date: string, placed: DatedInterval[]): DatedInterval[] =>
     freeIntervals({
       date,
-      base: { kind: 'declared', windows: weeklyToDated(input.availability, date) },
-      blocked: weeklyToDated(input.blocked, date),
+      base: { kind: 'declared', windows: input.dayBounds },
+      blocked: input.blocked,
       classes: weeklyToDated(input.classes, date),
       busy: input.busy,
       placed,
     });
+
+  /**
+   * Rule 8 — the gap scan order for one day: preferred pieces first, then
+   * the rest; EP14E's energy order (or the plain earliest-first scan for
+   * critical work) inside each tier. With no study blocks the preferred
+   * tier is empty and the result is exactly the pre-EP15 order.
+   */
+  const rankGaps = (
+    free: DatedInterval[],
+    date: string,
+    demanding: boolean,
+    preferEnergy: boolean
+  ): DatedInterval[] => {
+    const pieces = preferredPieces(free, input.preferred, date);
+    const preferredTier = pieces.filter((gap) => gap.preferredKey !== undefined);
+    const otherTier = pieces.filter((gap) => gap.preferredKey === undefined);
+    if (!preferEnergy) return [...preferredTier, ...otherTier];
+    return [
+      ...byEnergyPreference(preferredTier, demanding, minBlock),
+      ...byEnergyPreference(otherTier, demanding, minBlock),
+    ];
+  };
 
   // The free minutes of each day **before** this run places anything. They
   // are the density denominator (rule 2) and the capacity estimate the
@@ -366,22 +406,90 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
     return minutes;
   };
 
+  /** Rule 4 — the desired block length for `item` on a day with `budget` left. */
+  const desiredFor = (item: Progress, budget: number): number =>
+    Math.min(preferences.sessionLengthMinutes, item.remaining, maxBlock, budget);
+
+  /**
+   * The first gap of the day's ranked scan that can host a legal block for
+   * `item`, or `null`. EP13J (D-J3): energy reorders the scan (a
+   * preference, never a constraint — every gap is still tried); critical
+   * work keeps the plain earliest-first scan so feasibility is never traded
+   * for preference. EP15C rule 8 adds the preferred tier in front.
+   */
+  const pickGap = (
+    item: Progress,
+    date: string,
+    desired: number,
+    preferEnergy: boolean
+  ): DatedInterval | null => {
+    const earliestFirst = freeFor(date, withBreakBuffers(placedSessions, date));
+    for (const interval of rankGaps(earliestFirst, date, item.demanding, preferEnergy)) {
+      // A gap that cannot host a legal block is skipped, not half-filled.
+      if (Math.min(desired, interval.endMinute - interval.startMinute) >= minBlock) {
+        return interval;
+      }
+    }
+    return null;
+  };
+
+  /** Commit a block for `item` at the start of `interval`. Returns the minutes placed. */
+  const commitBlock = (
+    item: Progress,
+    date: string,
+    interval: DatedInterval,
+    desired: number,
+    budgetLeft: Map<string, number>
+  ): number => {
+    const budget = budgetLeft.get(date) ?? 0;
+    const usable = Math.min(desired, interval.endMinute - interval.startMinute);
+    const block: PlannedSessionProposal = {
+      assignmentId: item.assignment.id,
+      assignmentTitle: item.assignment.title,
+      date,
+      startMinute: interval.startMinute,
+      endMinute: interval.startMinute + usable,
+      durationMinutes: usable,
+      // EP13G rule 6: day-anchored by default. The post-pass below pins
+      // the blocks of any assignment whose deadline leaves no slack.
+      anchor: 'FLEX_DAY',
+      windowHint: windowHintOf(interval.startMinute),
+    };
+    sessions.push(block);
+    placedSessions.push({
+      date,
+      startMinute: block.startMinute,
+      endMinute: block.endMinute,
+    });
+    budgetLeft.set(date, budget - usable);
+    item.remaining -= usable;
+    item.placedMinutes += usable;
+    item.lastBlock = block;
+    return usable;
+  };
+
   /**
    * Place one block for `item` on `date` if the rules allow. Returns the
    * minutes placed (`0` when nothing could be placed on this day).
+   *
+   * EP15C rule 8 (D-C3) — the course tie: when the gap this item would
+   * take lies inside a study block tied to **another** candidate's course,
+   * that candidate takes the gap instead (comparator order among several)
+   * and `item` is retried on what is left. Only the turn order inside the
+   * tied piece changes; the rotation, budgets and every other rule are
+   * untouched, and critical work (`preferEnergy = false`) never defers.
    */
   const placeBlock = (
     item: Progress,
     date: string,
     budgetLeft: Map<string, number>,
-    preferEnergy = true
+    preferEnergy = true,
+    courseCandidates: Progress[] = []
   ): number => {
     const budget = budgetLeft.get(date) ?? 0;
     if (budget <= 0 || item.remaining <= 0) return 0;
 
-    // Rule 4 — the desired length, bounded by the session length, what is
-    // left of the work, the day's remaining budget and the maximum.
-    const desired = Math.min(preferences.sessionLengthMinutes, item.remaining, maxBlock, budget);
+    const desired = desiredFor(item, budget);
 
     // A tail shorter than the minimum is never placed on its own: it merges
     // into the previous block or it is reported as a deficit (rule 4).
@@ -389,44 +497,35 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
       return tryMergeTail(item, Math.min(item.remaining, maxBlock), budgetLeft);
     }
 
-    // EP13J (D-J3): energy reorders the scan (a preference, never a
-    // constraint — every gap is still tried); critical work keeps the plain
-    // earliest-first scan so feasibility is never traded for preference.
-    const earliestFirst = freeFor(date, withBreakBuffers(placedSessions, date));
-    const free = preferEnergy
-      ? byEnergyPreference(earliestFirst, item.demanding, minBlock)
-      : earliestFirst;
-    for (const interval of free) {
-      const usable = Math.min(desired, interval.endMinute - interval.startMinute);
-      // A gap that cannot host a legal block is skipped, not half-filled.
-      if (usable < minBlock) continue;
+    const gap = pickGap(item, date, desired, preferEnergy);
+    if (!gap) return 0;
 
-      const block: PlannedSessionProposal = {
-        assignmentId: item.assignment.id,
-        assignmentTitle: item.assignment.title,
-        date,
-        startMinute: interval.startMinute,
-        endMinute: interval.startMinute + usable,
-        durationMinutes: usable,
-        // EP13G rule 6: day-anchored by default. The post-pass below pins
-        // the blocks of any assignment whose deadline leaves no slack.
-        anchor: 'FLEX_DAY',
-        windowHint: windowHintOf(interval.startMinute),
-      };
-      sessions.push(block);
-      placedSessions.push({
-        date,
-        startMinute: block.startMinute,
-        endMinute: block.endMinute,
-      });
-      budgetLeft.set(date, budget - usable);
-      item.remaining -= usable;
-      item.placedMinutes += usable;
-      item.lastBlock = block;
-      return usable;
+    if (
+      preferEnergy &&
+      gap.courseId !== undefined &&
+      gap.courseId !== null &&
+      gap.courseId !== (item.assignment.courseId ?? null)
+    ) {
+      const owner = courseCandidates.find(
+        (candidate) =>
+          candidate !== item &&
+          candidate.remaining > 0 &&
+          (candidate.assignment.courseId ?? null) === gap.courseId
+      );
+      if (owner) {
+        const ownerDesired = desiredFor(owner, budget);
+        if (
+          ownerDesired >= minBlock &&
+          Math.min(ownerDesired, gap.endMinute - gap.startMinute) >= minBlock
+        ) {
+          commitBlock(owner, date, gap, ownerDesired, budgetLeft);
+          // The gap is taken; `item` tries again on what the day has left.
+          return placeBlock(item, date, budgetLeft, preferEnergy, courseCandidates);
+        }
+      }
     }
 
-    return 0;
+    return commitBlock(item, date, gap, desired, budgetLeft);
   };
 
   // ---------------------------------------------------------------------
@@ -459,7 +558,16 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
     while (candidates.length > 0 && (budgetLeft.get(date) ?? 0) > 0) {
       if (cursor >= candidates.length) cursor = 0;
       const item = candidates[cursor];
-      const placed = placeBlock(item, date, budgetLeft);
+      const placed = placeBlock(item, date, budgetLeft, true, candidates);
+      // EP15C (D-C3): a course tie may have served another candidate out of
+      // turn; one that is now done leaves the rotation without disturbing
+      // the others' order.
+      for (let i = candidates.length - 1; i >= 0; i -= 1) {
+        if (candidates[i] !== item && candidates[i].remaining <= 0) {
+          candidates.splice(i, 1);
+          if (i < cursor) cursor -= 1;
+        }
+      }
       if (placed === 0 || item.remaining <= 0) {
         // This assignment is done for today (or done entirely): drop it from
         // the rotation without disturbing the others' turn order.

@@ -151,6 +151,8 @@ export function classifyAssignments(
         : {}),
       // EP14E (D-E1): the student's "hard" flag, same carry rule.
       ...(assignment.hard !== undefined ? { hard: assignment.hard } : {}),
+      // EP15C: the owning course, same carry rule (engine rule 4).
+      ...(assignment.courseId !== undefined ? { courseId: assignment.courseId } : {}),
     };
 
     // The flagging rule (AC-E06-09, D06-25) — expressed here and nowhere

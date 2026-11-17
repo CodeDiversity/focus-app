@@ -1,4 +1,4 @@
-import type { DatedInterval, EnergyLevelValue, FreeIntervalBase } from './types';
+import type { DatedInterval, EnergyLevelValue, FreeIntervalBase, PreferredInterval } from './types';
 
 /** EP13J (D-J2) — a window without a level is NORMAL. */
 export function energyOf(interval: { energy?: EnergyLevelValue }): EnergyLevelValue {
@@ -7,16 +7,40 @@ export function energyOf(interval: { energy?: EnergyLevelValue }): EnergyLevelVa
 
 const ENERGY_TIE_ORDER: Record<EnergyLevelValue, number> = { HIGH: 0, NORMAL: 1, LOW: 2 };
 
-/** Copy an interval's span, keeping its energy only when it has one (pre-EP13J shapes stay byte-identical). */
+/**
+ * Copy an interval's span, keeping its energy, `preferredKey` and `courseId`
+ * only when it has them (pre-EP13J / pre-EP15 shapes stay byte-identical).
+ */
 function piece(
-  source: { energy?: EnergyLevelValue },
+  source: { energy?: EnergyLevelValue; preferredKey?: string; courseId?: string | null },
   date: string,
   startMinute: number,
   endMinute: number
 ): DatedInterval {
-  return source.energy !== undefined
-    ? { date, startMinute, endMinute, energy: source.energy }
-    : { date, startMinute, endMinute };
+  const out: DatedInterval = { date, startMinute, endMinute };
+  if (source.energy !== undefined) out.energy = source.energy;
+  if (source.preferredKey !== undefined) out.preferredKey = source.preferredKey;
+  if (source.courseId !== undefined) out.courseId = source.courseId;
+  return out;
+}
+
+/** EP15C (D-C1): two pieces merge only when energy **and** preferred key agree. */
+function sameClass(a: DatedInterval, b: DatedInterval): boolean {
+  return energyOf(a) === energyOf(b) && a.preferredKey === b.preferredKey;
+}
+
+/**
+ * The tie order among same-start intervals. Two preferred blocks: the
+ * lexically smaller key wins (contracts.md rule 2, R-EP15-04). Otherwise
+ * the EP13J D-J2 energy order, then key (an unkeyed piece first).
+ */
+function classOrder(a: DatedInterval, b: DatedInterval): number {
+  const ka = a.preferredKey ?? '';
+  const kb = b.preferredKey ?? '';
+  const byKey = ka < kb ? -1 : ka > kb ? 1 : 0;
+  if (a.preferredKey !== undefined && b.preferredKey !== undefined && byKey !== 0) return byKey;
+  const byEnergy = ENERGY_TIE_ORDER[energyOf(a)] - ENERGY_TIE_ORDER[energyOf(b)];
+  return byEnergy !== 0 ? byEnergy : byKey;
 }
 
 /**
@@ -40,7 +64,11 @@ function piece(
  * touching pair of different levels stays two intervals; an overlapping pair
  * of different levels is made disjoint — the earlier-starting interval keeps
  * its span and the later one is clipped to begin where it ends. With every
- * interval at the default level this is exactly the pre-EP13J behaviour. */
+ * interval at the default level this is exactly the pre-EP13J behaviour.
+ *
+ * EP15C (D-C1): the same rule keyed on (energy, `preferredKey`) — two
+ * pieces of different study blocks never merge, and overlapping blocks
+ * resolve the D-J2 way (earlier start keeps its span; tie by key). */
 export function mergeIntervals(intervals: DatedInterval[]): DatedInterval[] {
   // Group by date so intervals on different days never merge.
   const byDate = new Map<string, DatedInterval[]>();
@@ -55,16 +83,12 @@ export function mergeIntervals(intervals: DatedInterval[]): DatedInterval[] {
 
   const result: DatedInterval[] = [];
   for (const [date, list] of byDate) {
-    const sorted = [...list].sort(
-      (a, b) =>
-        a.startMinute - b.startMinute ||
-        ENERGY_TIE_ORDER[energyOf(a)] - ENERGY_TIE_ORDER[energyOf(b)]
-    );
+    const sorted = [...list].sort((a, b) => a.startMinute - b.startMinute || classOrder(a, b));
     for (const interval of sorted) {
       const last = result.length > 0 ? result[result.length - 1] : null;
       // Only merge into the last result entry when it is on the same date.
       if (last && last.date === date && interval.startMinute <= last.endMinute) {
-        if (energyOf(interval) === energyOf(last)) {
+        if (sameClass(interval, last)) {
           if (interval.endMinute > last.endMinute) {
             last.endMinute = interval.endMinute;
           }
@@ -187,4 +211,44 @@ export function freeIntervals(input: {
   // Ensure sorted, disjoint, merged (subtractIntervals already merges, but
   // be explicit and re-merge for safety).
   return mergeIntervals(free);
+}
+
+/**
+ * EP15C — the day's preferred pieces (contracts.md engine rule 2): every
+ * free interval is split at the edges of the study blocks on that date; a
+ * piece inside a block carries the block's energy, `preferredKey` and
+ * `courseId`; a piece outside carries nothing (NORMAL, not preferred — its
+ * shape is byte-identical to the input piece). Overlapping blocks are first
+ * made disjoint by `mergeIntervals` (D-J2: earlier start keeps its span,
+ * tie by `blockId`; the later block's remainder keeps its own key), so the
+ * split is total and order-independent (R-EP15-04). With no blocks the
+ * result **is** `free`.
+ */
+export function preferredPieces(
+  free: DatedInterval[],
+  preferred: PreferredInterval[],
+  date: string
+): DatedInterval[] {
+  const blocks = mergeIntervals(preferred.filter((p) => p.date === date));
+  if (blocks.length === 0) return free;
+  const out: DatedInterval[] = [];
+  for (const gap of free) {
+    let cursor = gap.startMinute;
+    for (const block of blocks) {
+      if (block.endMinute <= cursor || block.startMinute >= gap.endMinute) continue;
+      if (block.startMinute > cursor) {
+        out.push(piece(gap, gap.date, cursor, block.startMinute));
+      }
+      const start = Math.max(cursor, block.startMinute);
+      const end = Math.min(gap.endMinute, block.endMinute);
+      const inside = piece(gap, gap.date, start, end);
+      inside.energy = energyOf(block);
+      inside.preferredKey = block.preferredKey as string;
+      if (block.courseId !== undefined && block.courseId !== null) inside.courseId = block.courseId;
+      out.push(inside);
+      cursor = end;
+    }
+    if (cursor < gap.endMinute) out.push(piece(gap, gap.date, cursor, gap.endMinute));
+  }
+  return out;
 }

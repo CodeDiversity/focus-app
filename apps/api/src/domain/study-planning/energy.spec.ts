@@ -1,5 +1,6 @@
 import { freeIntervals, mergeIntervals, subtractIntervals } from './intervals';
 import { byEnergyPreference, isDemanding, schedule } from './scheduler';
+import { boundsFromWeeklyWindows, windowsAsPreferred } from './legacy-windows';
 import type {
   DatedInterval,
   EnergyLevelValue,
@@ -65,16 +66,36 @@ describe('energy-aware placement (domain, EP13J)', () => {
     ...(energy ? { energy } : {}),
   });
 
-  const input = (overrides: Partial<SchedulerInput> = {}): SchedulerInput => ({
-    days: WEEK,
-    assignments: [],
-    availability: everyMorning,
-    blocked: [],
-    classes: [],
-    busy: [],
-    preferences: PREFS,
-    ...overrides,
-  });
+  /**
+   * EP15C: these EP13J/EP14E pins keep their weekly fixtures and reach the
+   * engine through the interim adapter — hull bounds plus every former
+   * window as a preferred interval carrying its energy tag. Every window is
+   * then one tier, which is exactly the case EP15C-AC3 freezes: *within a
+   * tier* `byEnergyPreference` applies unchanged. The new two-tier and
+   * course-tie behaviour is pinned in `preferred.spec.ts`.
+   */
+  type LegacyInput = Omit<SchedulerInput, 'dayBounds' | 'blocked' | 'preferred'> & {
+    availability: WeeklyWindow[];
+    blocked: WeeklyWindow[];
+  };
+  const input = (overrides: Partial<LegacyInput> = {}): SchedulerInput => {
+    const legacy: LegacyInput = {
+      days: WEEK,
+      assignments: [],
+      availability: everyMorning,
+      blocked: [],
+      classes: [],
+      busy: [],
+      preferences: PREFS,
+      ...overrides,
+    };
+    const { availability, blocked, ...rest } = legacy;
+    return {
+      ...rest,
+      ...boundsFromWeeklyWindows(legacy.days, availability, blocked),
+      preferred: windowsAsPreferred(legacy.days, availability),
+    };
+  };
 
   const fridaySessions = (out: ReturnType<typeof schedule>) =>
     out.sessions.filter((s) => s.date === FRIDAY);

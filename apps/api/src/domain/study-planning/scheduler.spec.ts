@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { schedule } from './scheduler';
-import type { SchedulerInput } from './types';
+import { boundsFromWeeklyWindows } from './legacy-windows';
+import type { SchedulerInput, WeeklyWindow } from './types';
 import type { SchedulableAssignment } from './types';
 import type { StudyPreferences } from './types';
 
@@ -43,24 +44,41 @@ describe('scheduling engine (domain, EP06C)', () => {
     ...overrides,
   });
 
-  const input = (overrides: Partial<SchedulerInput> = {}): SchedulerInput => ({
-    days: [
-      '2026-10-30',
-      '2026-10-31',
-      '2026-11-01',
-      '2026-11-02',
-      '2026-11-03',
-      '2026-11-04',
-      '2026-11-05',
-    ],
-    assignments: [],
-    availability: [{ dayOfWeek: 5, startMinute: 540, endMinute: 720 }], // Friday 09:00-12:00
-    blocked: [],
-    classes: [],
-    busy: [],
-    preferences: PREFS,
-    ...overrides,
-  });
+  /**
+   * Fixtures stay in the pre-EP15 weekly shape and reach the engine through
+   * the EP15C weekly→bounds adapter (hull + gaps, no study blocks) — so every
+   * expectation below is also an EP15C-AC4 identity check.
+   */
+  type LegacyInput = Omit<SchedulerInput, 'dayBounds' | 'blocked' | 'preferred'> & {
+    availability: WeeklyWindow[];
+    blocked: WeeklyWindow[];
+  };
+  const input = (overrides: Partial<LegacyInput> = {}): SchedulerInput => {
+    const legacy: LegacyInput = {
+      days: [
+        '2026-10-30',
+        '2026-10-31',
+        '2026-11-01',
+        '2026-11-02',
+        '2026-11-03',
+        '2026-11-04',
+        '2026-11-05',
+      ],
+      assignments: [],
+      availability: [{ dayOfWeek: 5, startMinute: 540, endMinute: 720 }], // Friday 09:00-12:00
+      blocked: [],
+      classes: [],
+      busy: [],
+      preferences: PREFS,
+      ...overrides,
+    };
+    const { availability, blocked, ...rest } = legacy;
+    return {
+      ...rest,
+      ...boundsFromWeeklyWindows(legacy.days, availability, blocked),
+      preferred: [],
+    };
+  };
 
   // Helper: dayOfWeek for a date string.
   const dow = (date: string) => new Date(`${date}T00:00:00Z`).getUTCDay();

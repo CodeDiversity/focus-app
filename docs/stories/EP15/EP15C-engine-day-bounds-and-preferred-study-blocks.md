@@ -4,14 +4,14 @@
 **Parent epic:** [EP15: Schedule & Availability Redesign](../../epics/EP15-schedule-and-availability-redesign.md)
 **Milestone:** M8 (D15-11)
 **Layer:** Backend (pure domain)
-**Status:** Queued
+**Status:** Implemented — awaiting parent review (2026-11-17); record: [artifacts/EP15C/implementation.md](./artifacts/EP15C/implementation.md)
 **Dependencies:** EP15A implemented (shares `domain/schedule` types). Epic decisions D15-1, D15-6, D15-7, D15-8 (ratified 2026-11-16).
 
 ## Plan at a glance
 
 - **What this changes:** `SchedulerInput` takes `dayBounds` (dated) as the base, `blocked` as dated intervals, and a new `preferred` list (study blocks with energy and optional course); placement scans the preferred tier first and applies EP14E's energy order and light-work guard unchanged within each tier; inside a course-tied gap that course's work goes first; a thin adapter keeps the planning service compiling until EP15D. With no study blocks and bounds equal to the old windows the output is byte-identical to today's (EP14E) engine.
 - **Why it improves it:** the planner finally places into the whole free day and honours the blocks the student said they would keep (product, AC-E15-02/05/06/07); the change is one base swap plus one ranking key on top of an unchanged algebra, pinned by an identity test (code).
-- **Decisions needing you:** none ▲ — D-C1…D-C3 ratify by default (D15-17).
+- **Decisions needing you:** none — D-C1…D-C3 ratified by default 2026-11-17 at implementation start.
 - **How to change this plan:** edit a Ruling cell below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary
@@ -57,9 +57,9 @@ AC-E15-02, AC-E15-05, AC-E15-06, AC-E15-07, AC-E15-14; TR-E15-03; V-15-3; DoD-8.
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-C1 | Carrying preference through the algebra: (a) `preferredKey` on `DatedInterval`, merge only equal (energy, key) — the EP13J D-J2 mechanism extended; (b) a parallel map re-derived by intersection | **(a)** — one algebra, already proven for energy | Proposed |
-| D-C2 | Ranking order: (a) preferred → energy → earliest; (b) energy → preferred → earliest | **(a)** — "fill my study blocks first" is the student's explicit intent; energy is a heuristic | Proposed |
-| D-C3 | Course tie: (a) candidate reorder inside the tied piece only, feasibility first; (b) hard reservation (only that course may use the piece) | **(a)** — a reservation would leave the block empty when the course has no work (D15-6) | Proposed |
+| D-C1 | Carrying preference through the algebra: (a) `preferredKey` on `DatedInterval`, merge only equal (energy, key) — the EP13J D-J2 mechanism extended; (b) a parallel map re-derived by intersection | **(a)** — one algebra, already proven for energy | Ratified by default, 2026-11-17 (implementation start) |
+| D-C2 | Ranking order: (a) preferred → energy → earliest; (b) energy → preferred → earliest | **(a)** — "fill my study blocks first" is the student's explicit intent; energy is a heuristic | Ratified by default, 2026-11-17 (implementation start) |
+| D-C3 | Course tie: (a) candidate reorder inside the tied piece only, feasibility first; (b) hard reservation (only that course may use the piece) | **(a)** — a reservation would leave the block empty when the course has no work (D15-6) | Ratified by default, 2026-11-17 (implementation start) |
 
 ## Definition of Done
 
@@ -68,7 +68,7 @@ AC-E15-02, AC-E15-05, AC-E15-06, AC-E15-07, AC-E15-14; TR-E15-03; V-15-3; DoD-8.
 ## Sizing
 
 - **Outcome:** the engine places into the whole free day, honours study blocks first, and proves it changed nothing else.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** one window, one commit, 2026-11-17; files as planned plus `legacy-windows.ts` (shared adapter), `identity-fixtures.ts` + `identity.snapshot.json`, `remaining-work.ts` (`courseId` carry); 43 new tests (23 preferred + 17 identity + 3 algebra), 342 pre-existing domain/service cases unchanged; gated API 1810/0, ungated 1261/0; 0 open findings (F-EP15C-01 resolved, -02 fixed, -03 noted for the planner). Row in [efficiency.md](./artifacts/efficiency.md).
 - **Files:** `apps/api/src/domain/study-planning/{types,intervals,scheduler}.ts`, `catch-up.ts` (pass-through), `{intervals,scheduler,energy,catch-up}.spec.ts` (+ a new `preferred.spec.ts`), `apps/api/src/modules/study-plans/study-plans.service.ts` (thin adapter only).
 - **Start context:** this story; contracts.md § Engine input; `scheduler.ts` ranking hook; EP13J story's Review note (merge hazard).
 - **Verification:** `pnpm --filter @studypilot/api test` (full, gated) green with the adapter in place; identity, tier/guard, overlap and determinism tests pass; `typecheck` green.
