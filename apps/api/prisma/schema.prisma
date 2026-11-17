@@ -46,7 +46,6 @@ model User {
   tasks             Task[]
   studySessions     StudySession[]
   studyPlans        StudyPlan[]
-  availabilitySlots AvailabilitySlot[]
   classMeetings     ClassMeeting[] // SP-112A (D112-1)
   dayBounds         DayBounds[]     // EP15A (D15-1, D15-13)
   scheduleBlocks    ScheduleBlock[] // EP15A (D15-5)
@@ -160,8 +159,8 @@ model Course {
   @@map("courses")
 }
 
-// SP-112A (D112-1): recurring class meetings — the `AvailabilitySlot`
-// precedent for weekly times: `dayOfWeek` 0–6 (Sunday=0 … Saturday=6) plus
+// SP-112A (D112-1): recurring class meetings — the weekly-time convention:
+// `dayOfWeek` 0–6 (Sunday=0 … Saturday=6) plus
 // `startTime`/`endTime` as `HH:mm` 24-hour strings; `endTime` is strictly
 // after `startTime` on the same day (no midnight wrap in the MVP, enforced
 // by the API — the schema stores the strings).  `courseId` cascades
@@ -328,29 +327,12 @@ enum EnergyLevel {
   LOW
 }
 
-model AvailabilitySlot {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  dayOfWeek   Int      // 0-6 (Sunday-Saturday)
-  startTime   String   // HH:mm format
-  endTime     String   // HH:mm format
-  isAvailable Boolean  @default(true)
-  // EP13J (D-J5): energy of an available window; placement prefers HIGH for
-  // demanding work and LOW for light work. Ignored on blocked rows (D-J4).
-  energy      EnergyLevel @default(NORMAL)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([userId, dayOfWeek, startTime])
-  @@map("availability_slots")
-}
 
 // ============================================
 // SCHEDULE (EP15A) — day bounds, events and study blocks
 // ============================================
 // EP15 replaces "declare your free slots" with "wake-to-sleep minus what is
-// on the calendar" (D15-1). `availability_slots` stays until EP15I drops it
+// on the calendar" (D15-1). `availability_slots` was dropped by EP15I
 // (D15-15); Migration 1 copies every slot into `schedule_blocks`.
 
 enum ScheduleBlockKind {

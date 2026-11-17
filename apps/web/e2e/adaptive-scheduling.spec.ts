@@ -436,11 +436,12 @@ test('journey 7 — information architecture: redirects, nav, nothing count-led 
     expect(text, path).not.toMatch(/\d+\s*%\s*(complete|done|on track)/i);
   }
 
-  // The remaining EP13 surfaces pass axe too: availability (EP13J) and the
-  // preferences form (EP13N/EP13K).
-  await page.goto('/availability');
+  // The remaining surfaces pass axe too: the calendar (EP15I retired the
+  // availability page and redirected its route here) and the preferences
+  // form (EP13N/EP13K).
+  await page.goto('/calendar');
   await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
-  await expectNoAxeViolations(page, '/availability');
+  await expectNoAxeViolations(page, '/calendar');
   await page.goto('/profile');
   await expect(page.getByRole('group', { name: 'Your goals' })).toBeVisible();
   await expectNoAxeViolations(page, '/profile (preferences)');

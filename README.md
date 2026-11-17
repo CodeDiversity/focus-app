@@ -330,9 +330,8 @@ The database schema is defined in `apps/api/prisma/schema.prisma`. Key models:
 - **Assignment**: Assignments with due dates
 - **Task**: Individual tasks
 - **StudySession**: Study tracking
-- **AvailabilitySlot**: User availability
 - **DayBounds**: Per-weekday wake/sleep times (EP15; default 08:00–23:00 when missing)
-- **ScheduleBlock**: Student-created events (BUSY) and study blocks (STUDY), one-off or weekly; migrated from `AvailabilitySlot`, which EP15I retires
+- **ScheduleBlock**: Student-created events (BUSY) and study blocks (STUDY), one-off or weekly; migrated from the retired availability slots (EP15A copy; EP15I dropped `availability_slots` — irreversible, pre-drop backup stance in docs/stories/EP15/contracts.md § Data model)
 - **ScheduleBlockException**: A cancelled occurrence of a weekly `ScheduleBlock`
 - **StudyPlan**: Daily study plans
 - **ScheduledTask**: Tasks scheduled in study plans

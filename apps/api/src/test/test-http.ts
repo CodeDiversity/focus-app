@@ -19,7 +19,6 @@ import { SemestersModule } from '../modules/semesters/semesters.module';
 import { CoursesModule } from '../modules/courses/courses.module';
 import { AssignmentsModule } from '../modules/assignments/assignments.module';
 import { CalendarModule } from '../modules/calendar/calendar.module';
-import { AvailabilityModule } from '../modules/availability/availability.module';
 import { StudyPlansModule } from '../modules/study-plans/study-plans.module';
 import { StudySessionsModule } from '../modules/study-sessions/study-sessions.module';
 import { ScheduleModule } from '../modules/schedule/schedule.module';
@@ -87,8 +86,6 @@ export async function createIntegrationApp(): Promise<IntegrationApp> {
       CoursesModule,
       AssignmentsModule,
       CalendarModule,
-      // SP-128A: the availability-slots routes the integration specs drive.
-      AvailabilityModule,
       // EP06A: the study-preferences routes the integration specs drive.
       StudyPlansModule,
       // EP07A: the focus-session lifecycle routes the integration specs drive.

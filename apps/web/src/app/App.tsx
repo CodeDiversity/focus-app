@@ -10,7 +10,6 @@ import { AssignmentsPage } from '@/pages/assignments/ui/AssignmentsPage';
 import { FocusPage } from '@/pages/focus/ui/FocusPage';
 import { StudyHistoryPage } from '@/pages/focus/history/ui/StudyHistoryPage';
 import { CalendarPage } from '@/pages/calendar/ui/CalendarPage';
-import { AvailabilityPage } from '@/pages/availability/ui/AvailabilityPage';
 import { PlanPage } from '@/pages/plan/ui/PlanPage';
 import { PlanHealthPage } from '@/pages/plan-health/ui/PlanHealthPage';
 import { PlanHealthView } from '@/features/plan-health/ui/PlanHealthView';
@@ -59,10 +58,9 @@ function App() {
           <Route path="/focus/history" element={<StudyHistoryPage />} />
           {/* SP-127B: weekly academic calendar */}
           <Route path="/calendar" element={<CalendarPage />} />
-          {/* SP-128B: study availability settings (D404-12: its own
-              /availability page, inside ProtectedRoute, rendered within the
-              standard Layout like the other pages) */}
-          <Route path="/availability" element={<AvailabilityPage />} />
+          {/* EP15I (D-I1): the old availability page is retired — bookmarks
+              and muscle memory land on the calendar, which owns the editor. */}
+          <Route path="/availability" element={<Navigate to="/calendar" replace />} />
           <Route path="/plan" element={<PlanPage />} />
           {/* EP13E (D-E1): the informational plan-health view and, nested
               under it, EP08E's regeneration preview/edit/confirm/decline

@@ -4,7 +4,7 @@
 **Parent epic:** [EP15: Schedule & Availability Redesign](../../epics/EP15-schedule-and-availability-redesign.md)
 **Milestone:** M8 (D15-11)
 **Layer:** Backend + Frontend (removal, one migration, nav)
-**Status:** Queued
+**Status:** Implemented — awaiting parent review (2026-11-17); record: [artifacts/EP15I/implementation.md](./artifacts/EP15I/implementation.md)
 **Dependencies:** EP15G implemented (the replacement editor exists for both kinds). Epic decisions D15-3, D15-9 (ratified 2026-11-16); amends EP11 D11-4/D11-6/D11-8 (recorded there as D11-10).
 
 ## Plan at a glance
@@ -50,8 +50,8 @@ AC-E15-13 (retire half); TR-E15-09; DoD-8, DoD-9.
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-I1 | `/availability` route: (a) permanent redirect to `/calendar`; (b) remove the route (falls to the `*` → `/` redirect) | **(a)** — bookmarks and muscle memory land on the right surface; one line | Proposed |
-| D-I2 | Drop timing: (a) in this child, after EP15G exists; (b) in EP15A with the copy | **(a)** — D15-15's interim keeps the old editor usable until the new one is live | Proposed |
+| D-I1 | `/availability` route: (a) permanent redirect to `/calendar`; (b) remove the route (falls to the `*` → `/` redirect) | **(a)** — bookmarks and muscle memory land on the right surface; one line | Ratified by default, 2026-11-17 (implementation start; user instruction to ratify all per story) |
+| D-I2 | Drop timing: (a) in this child, after EP15G exists; (b) in EP15A with the copy | **(a)** — D15-15's interim keeps the old editor usable until the new one is live | Ratified by default, 2026-11-17 (implementation start; user instruction to ratify all per story) |
 
 ## Definition of Done
 
@@ -60,7 +60,7 @@ AC-E15-13 (retire half); TR-E15-09; DoD-8, DoD-9.
 ## Sizing
 
 - **Outcome:** the old availability surface and table are gone, and every path leads to the calendar.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** one window, one commit, 2026-11-17; files as planned plus comment rewording for the AC2 search and the deletion of EP15A's now-unrunnable round-trip spec (replaced by the drop spec); gated API 1778/0 single-worker on a throwaway DB (no secret env), web 1374/0; e2e specs edited but not executed in this worktree (EP15J runs the stack); F-EP15I-01 (parallel gated runs race) noted. Row in [efficiency.md](./artifacts/efficiency.md).
 - **Files:** `apps/api/prisma/schema.prisma`, `apps/api/prisma/migrations/<ts>_drop_availability_slots/migration.sql` (new), `apps/api/src/app.module.ts`, deletions listed in Scope, `apps/web/src/app/App.tsx`, `apps/web/src/widgets/header/ui/navGroups.ts` + header tests, `apps/web/src/pages/calendar/ui/CalendarPage.tsx`, `apps/web/e2e/*.spec.ts`, `README.md`, `docs/stories/EP15/contracts.md`.
 - **Start context:** this story; contracts.md § Data model (Migration 2); `navGroups.ts`; `App.tsx`.
 - **Verification:** `pnpm db:generate && pnpm typecheck && pnpm lint && pnpm test` green at the root; the EP15I-AC2 search command output recorded.

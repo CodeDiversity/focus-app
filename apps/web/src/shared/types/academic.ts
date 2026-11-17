@@ -33,7 +33,7 @@ export interface Course {
  */
 export interface ClassMeeting {
   id: string;
-  /** 0–6, Sunday=0 … Saturday=6 (D112-1, the `AvailabilitySlot` precedent). */
+  /** 0–6, Sunday=0 … Saturday=6 (D112-1). */
   dayOfWeek: number;
   /** 24-hour `HH:mm`, exactly as stored (recurring time of day — no time-zone). */
   startTime: string;

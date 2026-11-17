@@ -171,9 +171,9 @@ export async function createAssignmentViaApi(
 
 /**
  * EP15D (R-EP15-12): sets the student's day bounds via the real API (200) —
- * the same wake/sleep pair on all seven weekdays. Replaces the former
- * `createAvailabilitySlotViaApi` loops: the planner no longer reads
- * availability slots, so journeys that need planning time declare it here.
+ * the same wake/sleep pair on all seven weekdays. Replaced the retired
+ * slot-seeding loops: the planner reads day bounds and schedule blocks, so
+ * journeys that need planning time declare it here.
  */
 export async function setDayBoundsViaApi(
   request: APIRequestContext,

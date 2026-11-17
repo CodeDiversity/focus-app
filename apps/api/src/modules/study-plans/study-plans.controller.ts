@@ -9,8 +9,8 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
  * Study-preferences endpoints (EP06A, D06-4) — the study-planning surface's
  * preferences half: `GET /study-preferences` and `PUT /study-preferences`.
  *
- * The paths are **top-level** (the `availability` module's
- * `/availability-slots` precedent), not nested under `/users`: the study
+ * The paths are **top-level** (the D404-11 precedent), not nested under
+ * `/users`: the study
  * defaults are a domain surface, while the generic profile bag stays a
  * profile concern (and is deliberately left open — D06-14).
  *

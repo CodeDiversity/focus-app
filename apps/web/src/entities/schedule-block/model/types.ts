@@ -5,9 +5,8 @@
 
 export type ScheduleBlockKind = 'BUSY' | 'STUDY';
 
-/** EP13J's energy enum, re-exported here until EP15I deletes the availability entity. */
-export type { EnergyLevel } from '@/entities/availability/model/types';
-import type { EnergyLevel } from '@/entities/availability/model/types';
+/** EP13J's energy enum — moved here when EP15I deleted the availability entity. */
+export type EnergyLevel = 'HIGH' | 'NORMAL' | 'LOW';
 
 /** The `ScheduleBlock` response shape — `userId` is never exposed. */
 export interface ScheduleBlock {

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { ChevronLeft, ChevronRight, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
@@ -587,12 +586,6 @@ export function CalendarPage() {
           >
             <ChevronRight size={18} aria-hidden />
           </button>
-          {/* Interim link until EP15I retires the availability page (D15-15). */}
-          <Link to="/availability">
-            <Button variant="outline" className="max-sm:min-h-[44px]">
-              Manage availability
-            </Button>
-          </Link>
         </div>
       </div>
 

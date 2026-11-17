@@ -8,7 +8,7 @@ export { type StudyPreferences } from '@/entities/study-preferences/model/types'
 
 /**
  * Study-preferences client (EP06E; EP06A owns the endpoints). Top-level routes,
- * not nested under `/users` (the `/availability-slots` precedent). Plain axios
+ * not nested under `/users` (D404-11). Plain axios
  * over the shared transport (D404-10 — no RTK Query).
  *
  * `GET /study-preferences` → the effective four values (defaults filled in).

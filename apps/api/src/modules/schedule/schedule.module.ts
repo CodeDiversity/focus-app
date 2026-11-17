@@ -8,7 +8,7 @@ import { ScheduleInputsService } from './schedule-inputs.service';
  * surface — day bounds and schedule blocks over the EP15A tables. The
  * calendar read model and the planner (EP15D) consume the stored rows
  * through the shared gathering seam `ScheduleInputsService`; the EP15F/EP15G editors consume these
- * routes. `/availability-slots` stays untouched until EP15I retires it.
+ * routes. The old availability surface was retired by EP15I.
  */
 @Module({
   controllers: [ScheduleController],

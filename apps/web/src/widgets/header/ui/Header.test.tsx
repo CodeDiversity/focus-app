@@ -294,10 +294,8 @@ describe('Header desktop grouped navigation (EP11A)', () => {
       'href',
       '/profile'
     );
-    expect(within(menu).getByRole('menuitem', { name: 'Availability' })).toHaveAttribute(
-      'href',
-      '/availability'
-    );
+    // EP15I: Availability is retired — the account menu lost its shortcut.
+    expect(within(menu).queryByRole('menuitem', { name: 'Availability' })).not.toBeInTheDocument();
     expect(within(menu).getByRole('menuitem', { name: 'Verify email' })).toHaveAttribute(
       'href',
       '/verify-email'
@@ -497,10 +495,13 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
       'href',
       '/calendar'
     );
-    expect(within(planning).getByRole('link', { name: 'Availability' })).toHaveAttribute(
-      'href',
-      '/availability'
-    );
+    // EP15I (D11-10): Planning is exactly Calendar, Plan, Plan health.
+    expect(within(planning).queryByRole('link', { name: 'Availability' })).not.toBeInTheDocument();
+    expect(
+      within(planning)
+        .getAllByRole('link')
+        .map((l) => l.textContent)
+    ).toEqual(['Calendar', 'Plan', 'Plan health']);
     // Ratified EP06F contract entry (plan-review PR-001); drawer/desktop parity.
     expect(within(planning).getByRole('link', { name: 'Plan' })).toHaveAttribute('href', '/plan');
     // EP13E (D-E13): plan health replaces the never-linked /catch-up entry.
@@ -626,9 +627,8 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
 
     expect(within(nav).queryByRole('link', { name: 'Profile' })).not.toBeInTheDocument();
     expect(within(nav).queryByRole('link', { name: 'Verify email' })).not.toBeInTheDocument();
-    expect(within(nav).getAllByRole('link', { name: 'Availability' })).toHaveLength(1);
-    // D11-8 duplicate pair asserted deliberately: Planning canonical + Account shortcut.
-    expect(within(dialog).getAllByRole('link', { name: 'Availability' })).toHaveLength(2);
+    // EP15I: the D11-8 duplicate pair is gone with the page it pointed at.
+    expect(within(dialog).queryAllByRole('link', { name: 'Availability' })).toHaveLength(0);
 
     // No dropdown triggers in the drawer; headings are labels only.
     expect(
@@ -669,12 +669,12 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
 
     const dialog = getDrawer();
     // Trap order guard (story risk note): close, Home, Dashboard, Academics ×3,
-    // Planning ×4 (incl. Plan and EP13E's Plan health), Focus ×2 (EP13E),
-    // Profile, Availability, Verify email, Logout.
+    // Planning ×3 (EP15I removed Availability), Focus ×2 (EP13E),
+    // Profile, Verify email, Logout.
     const focusables = dialog.querySelectorAll(
       'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
     );
-    expect(focusables).toHaveLength(16);
+    expect(focusables).toHaveLength(14);
     const logout = within(dialog).getByRole('button', { name: 'Logout' });
     expect(focusables[focusables.length - 1]).toBe(logout);
 

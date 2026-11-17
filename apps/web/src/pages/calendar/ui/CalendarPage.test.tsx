@@ -253,6 +253,9 @@ describe('CalendarPage (SP-127B)', () => {
     expect(
       await screen.findByText('Nothing on your calendar yet — it’s all free time')
     ).toBeInTheDocument();
+    // EP15I-AC3: the calendar's own Add is the CTA — no "Manage availability" link remains.
+    expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Manage availability' })).toBeNull();
   });
 
   it('error state with retry', async () => {

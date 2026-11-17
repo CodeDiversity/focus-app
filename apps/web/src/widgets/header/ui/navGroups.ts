@@ -6,7 +6,6 @@ import {
   CalendarDays,
   CalendarRange,
   ClipboardList,
-  Clock,
   GraduationCap,
   History,
   Home,
@@ -50,7 +49,7 @@ export interface NavSection {
 }
 
 export interface AccountMenuItem {
-  /** 'profile' | 'availability' | 'verify-email' | 'logout'. */
+  /** 'profile' | 'verify-email' | 'logout'. */
   id: string;
   label: string;
   icon: LucideIcon;
@@ -80,10 +79,9 @@ export const authenticatedNavGroups: NavSection[] = [
     label: 'Planning',
     icon: CalendarDays,
     items: [
+      // EP15I (D11-10): Availability is retired — the calendar owns day
+      // bounds, events and study blocks; only this entry was removed.
       { id: 'calendar', label: 'Calendar', icon: Calendar, to: '/calendar' },
-      // Canonical home is the Planning group; the account menu also exposes a
-      // secondary shortcut to the same route (D11-8).
-      { id: 'availability', label: 'Availability', icon: Clock, to: '/availability' },
       { id: 'plan', label: 'Plan', icon: CalendarCheck, to: '/plan' },
       // EP13E (D-E13): the informational plan-health view. It replaces the
       // standalone `/catch-up` entry, which never appeared in the nav at all.
@@ -113,7 +111,6 @@ export function getNavGroups(isAuthenticated: boolean): NavSection[] {
 
 export const accountMenuItems: AccountMenuItem[] = [
   { id: 'profile', label: 'Profile', icon: User, to: '/profile' },
-  { id: 'availability', label: 'Availability', icon: Clock, to: '/availability' },
   {
     id: 'verify-email',
     label: 'Verify email',
