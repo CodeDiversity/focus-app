@@ -30,6 +30,11 @@ export interface WeekGridProps {
    * marker is drawn across today's column at that minute. Omit to draw none.
    */
   nowMinute?: number | null;
+  /**
+   * EP15F: when given, the "Day starts / Day ends" captions become buttons that
+   * open the day-bounds sheet (the grid's second entry point, EP15F-AC2).
+   */
+  onEditBounds?: () => void;
 }
 
 const HATCH: CSSProperties = {
@@ -47,7 +52,14 @@ const HATCH: CSSProperties = {
  * the all-day row above the hours. Nothing is conveyed by colour alone and
  * nothing here is interactive except the chips (D-E2).
  */
-export function WeekGrid({ days, eventsByDay, today, onOpenEvent, nowMinute }: WeekGridProps) {
+export function WeekGrid({
+  days,
+  eventsByDay,
+  today,
+  onOpenEvent,
+  nowMinute,
+  onEditBounds,
+}: WeekGridProps) {
   const allEvents = days.flatMap((d) => eventsByDay.get(d.date) ?? []);
   const range = hourRange(days, allEvents);
   const rows = rowCount(range);
@@ -137,6 +149,7 @@ export function WeekGrid({ days, eventsByDay, today, onOpenEvent, nowMinute }: W
               rowsStyle={rowsStyle}
               onOpenEvent={onOpenEvent}
               nowMinute={day.date === today ? nowMinute : undefined}
+              onEditBounds={onEditBounds}
             />
           ))}
         </div>
@@ -152,6 +165,7 @@ function DayColumn({
   rowsStyle,
   onOpenEvent,
   nowMinute,
+  onEditBounds,
 }: {
   day: CalendarDay;
   events: CalendarEvent[];
@@ -159,6 +173,7 @@ function DayColumn({
   rowsStyle: CSSProperties;
   onOpenEvent: (event: CalendarEvent) => void;
   nowMinute?: number | null;
+  onEditBounds?: () => void;
 }) {
   const wake = minutesOf(day.wakeTime);
   const sleep = minutesOf(day.sleepTime);
@@ -207,36 +222,26 @@ function DayColumn({
         ) : null;
       })}
 
-      {/* 1. Outside-bounds shading */}
+      {/* 1. Outside-bounds shading (EP15F: the caption is a button when the
+          sheet can be opened — it sits beside the img, never inside it, so
+          it stays reachable). */}
       {before && (
-        <div
-          role="img"
-          aria-label="Before your day starts"
-          className="relative bg-surface-muted"
-          style={{ ...HATCH, gridRow: `${before.rowStart} / ${before.rowEnd}`, gridColumn: 1 }}
-        >
-          <span
-            aria-hidden
-            className="absolute bottom-0.5 left-1 bg-surface-muted px-0.5 text-caption text-text-muted"
-          >
-            Day starts {day.wakeTime}
-          </span>
-        </div>
+        <ShadedRegion
+          span={before}
+          name="Before your day starts"
+          caption={`Day starts ${day.wakeTime}`}
+          edge="bottom"
+          onEditBounds={onEditBounds}
+        />
       )}
       {after && (
-        <div
-          role="img"
-          aria-label="After your day ends"
-          className="relative bg-surface-muted"
-          style={{ ...HATCH, gridRow: `${after.rowStart} / ${after.rowEnd}`, gridColumn: 1 }}
-        >
-          <span
-            aria-hidden
-            className="absolute left-1 top-0.5 bg-surface-muted px-0.5 text-caption text-text-muted"
-          >
-            Day ends {day.sleepTime}
-          </span>
-        </div>
+        <ShadedRegion
+          span={after}
+          name="After your day ends"
+          caption={`Day ends ${day.sleepTime}`}
+          edge="top"
+          onEditBounds={onEditBounds}
+        />
       )}
 
       {/* 2. Free pieces */}
@@ -344,6 +349,60 @@ function DayColumn({
             />
           </div>
         )}
+    </div>
+  );
+}
+
+function ShadedRegion({
+  span,
+  name,
+  caption,
+  edge,
+  onEditBounds,
+}: {
+  span: { rowStart: number; rowEnd: number };
+  name: string;
+  caption: string;
+  edge: 'top' | 'bottom';
+  onEditBounds?: () => void;
+}) {
+  const place = edge === 'bottom' ? 'bottom-0.5 left-1' : 'left-1 top-0.5';
+  if (!onEditBounds) {
+    return (
+      <div
+        role="img"
+        aria-label={name}
+        className="relative bg-surface-muted"
+        style={{ ...HATCH, gridRow: `${span.rowStart} / ${span.rowEnd}`, gridColumn: 1 }}
+      >
+        <span
+          aria-hidden
+          className={`absolute ${place} bg-surface-muted px-0.5 text-caption text-text-muted`}
+        >
+          {caption}
+        </span>
+      </div>
+    );
+  }
+  return (
+    <div
+      className="relative"
+      style={{ gridRow: `${span.rowStart} / ${span.rowEnd}`, gridColumn: 1 }}
+    >
+      <div
+        role="img"
+        aria-label={name}
+        className="absolute inset-0 bg-surface-muted"
+        style={HATCH}
+      />
+      <button
+        type="button"
+        onClick={onEditBounds}
+        className={`absolute ${place} rounded bg-surface-muted px-0.5 text-caption text-text-muted underline-offset-2 hover:text-text hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring`}
+      >
+        {caption}
+        <span className="sr-only">, change</span>
+      </button>
     </div>
   );
 }

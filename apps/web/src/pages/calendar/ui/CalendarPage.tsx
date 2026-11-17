@@ -12,6 +12,10 @@ import { CalendarAgenda } from '@/features/calendar/ui/CalendarAgenda';
 import { CalendarEventDetails } from '@/features/calendar/ui/CalendarEventDetails';
 import { boundsSummary } from '@/features/calendar/lib/gridModel';
 import { nowMinutesIn } from '@/features/calendar/lib/now';
+import { getDayBounds } from '@/entities/day-bounds/api/dayBoundsApi';
+import type { DayBoundsResult } from '@/entities/day-bounds/model/types';
+import { DayBoundsBanner } from '@/features/day-bounds/ui/DayBoundsBanner';
+import { DayBoundsSheet } from '@/features/day-bounds/ui/DayBoundsSheet';
 import { addDays, mondayOf, utcTodayGuess } from '../lib/week';
 
 const NARROW_QUERY = '(max-width: 639px)';
@@ -62,6 +66,30 @@ export function CalendarPage() {
   const [statusMessage, setStatusMessage] = useState('');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const isNarrow = useNarrowViewport();
+
+  // EP15F: the day-bounds read drives the first-run banner; the sheet edits
+  // them where they are seen (D15-14 rule 7). A failed read just means no
+  // banner — the calendar itself never depends on it.
+  const [bounds, setBounds] = useState<DayBoundsResult | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
+  /** The element that opened the sheet; a successful save returns focus to it (EP15F-AC3). */
+  const sheetTriggerRef = useRef<HTMLElement | null>(null);
+  const openSheet = () => {
+    sheetTriggerRef.current = document.activeElement as HTMLElement | null;
+    setSheetOpen(true);
+  };
+  useEffect(() => {
+    let cancelled = false;
+    getDayBounds()
+      .then((result) => {
+        if (!cancelled) setBounds(result);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const requestSeq = useRef(0);
   const bootstrappedRef = useRef(false);
@@ -142,8 +170,23 @@ export function CalendarPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [from, to, fetchWeek]);
 
-  const handlePrev = () => setAnchorFrom(addDays(anchorFrom, -7));
-  const handleNext = () => setAnchorFrom(addDays(anchorFrom, 7));
+  const handlePrev = () => {
+    setAnnouncement('');
+    setAnchorFrom(addDays(anchorFrom, -7));
+  };
+  const handleNext = () => {
+    setAnnouncement('');
+    setAnchorFrom(addDays(anchorFrom, 7));
+  };
+  const handleBoundsSaved = (saved: DayBoundsResult) => {
+    setBounds(saved);
+    setSheetOpen(false);
+    setAnnouncement('Day start and end saved.');
+    // The dialog restores focus only on cancel paths; a save is a commit, so
+    // the page returns focus to the trigger itself once the dialog is gone.
+    window.setTimeout(() => sheetTriggerRef.current?.focus(), 0);
+    void fetchWeek(from, to, false); // shading and free time re-read (EP15F-AC3)
+  };
   const handleToday = () => {
     if (!data) return;
     const monday = mondayOf(data.today);
@@ -287,8 +330,10 @@ export function CalendarPage() {
               aria-hidden
             />
           )}
-          {statusMessage}
+          {announcement ? `${announcement} ${statusMessage}` : statusMessage}
         </div>
+
+        <DayBoundsBanner bounds={bounds} onOpen={openSheet} />
 
         {/* EP15E (D-E12, user ruling 2026-11-17): the empty-week copy is one
             full-width line above the view, not a note in one column. */}
@@ -311,9 +356,18 @@ export function CalendarPage() {
             today={data?.today ?? ''}
             onOpenEvent={setSelectedEvent}
             nowMinute={nowMinute}
+            onEditBounds={bounds ? openSheet : undefined}
           />
         )}
       </div>
+
+      {sheetOpen && bounds && (
+        <DayBoundsSheet
+          bounds={bounds}
+          onClose={() => setSheetOpen(false)}
+          onSaved={handleBoundsSaved}
+        />
+      )}
 
       {selectedEvent && (
         <CalendarEventDetails

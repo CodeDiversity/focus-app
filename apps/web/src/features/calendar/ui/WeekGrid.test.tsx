@@ -323,6 +323,25 @@ describe('WeekGrid (EP15E)', () => {
     expect(short).toHaveAccessibleName(/Low energy/);
   });
 
+  it('EP15F-AC2: with onEditBounds the shaded captions are buttons that open the sheet; the img keeps its name', async () => {
+    const user = userEvent.setup();
+    const onEdit = vi.fn();
+    render(
+      <WeekGrid
+        days={days()}
+        eventsByDay={new Map()}
+        today="2026-10-28"
+        onOpenEvent={vi.fn()}
+        onEditBounds={onEdit}
+      />
+    );
+    const mon = column('2026-10-26');
+    expect(within(mon).getByRole('img', { name: 'Before your day starts' })).toBeInTheDocument();
+    await user.click(within(mon).getByRole('button', { name: /^Day starts 08:00/ }));
+    await user.click(within(mon).getByRole('button', { name: /^Day ends 23:00/ }));
+    expect(onEdit).toHaveBeenCalledTimes(2);
+  });
+
   it('EP15E-AC2: free pieces and shaded regions are not focusable (D-E2)', () => {
     renderGrid([], days({ '2026-10-26': { free: [{ startTime: '14:00', endTime: '16:00' }] } }));
     const mon = column('2026-10-26');

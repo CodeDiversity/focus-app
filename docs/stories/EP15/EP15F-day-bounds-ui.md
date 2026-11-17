@@ -4,14 +4,14 @@
 **Parent epic:** [EP15: Schedule & Availability Redesign](../../epics/EP15-schedule-and-availability-redesign.md)
 **Milestone:** M8 (D15-11)
 **Layer:** Frontend
-**Status:** Queued — small surface specified in-story (D15-16, EP13J precedent), bound by D15-14
+**Status:** Implemented — awaiting parent review (2026-11-17); record: [artifacts/EP15F/implementation.md](./artifacts/EP15F/implementation.md)
 **Dependencies:** EP15B (API) and EP15E (the grid the sheet is opened from) implemented. Epic decisions D15-13, D15-14 (ratified 2026-11-16).
 
 ## Plan at a glance
 
 - **What this changes:** a dismissible banner on the calendar while bounds are unconfigured, and one small sheet — "Same every day" on by default with a single wake/sleep pair, or seven rows when switched off — that saves all seven bounds in one request; the grid's shaded regions re-render on save.
 - **Why it improves it:** the student sets their day in two taps and is never blocked or nagged (product, AC-E15-01, D15-14); bounds are edited where they are seen, nothing new in Settings (D15-14 rule 7).
-- **Decisions needing you:** none ▲ — D-F1…D-F3 ratify by default (D15-17).
+- **Decisions needing you:** none — D-F1…D-F3 ratified by default 2026-11-17 at implementation start.
 - **How to change this plan:** edit a Ruling cell below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary
@@ -49,9 +49,9 @@ AC-E15-01; TR-E15-06, TR-E15-11; DoD-2, DoD-4, DoD-5, DoD-6, DoD-7, DoD-8.
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-F1 | Dismiss persistence: (a) session-scoped (`sessionStorage`), no server field; (b) a `User.preferences` key | **(a)** — the nudge returns next visit until bounds are set, which is the point; no settings sprawl (D15-14) | Proposed |
-| D-F2 | "Same every day" semantics: (a) a client-only switch that expands one pair to seven rows on save; the API stays seven-entry `PUT`; (b) an API flag | **(a)** — one contract, the simplification lives where the student sees it | Proposed |
-| D-F3 | Pre-fill: (a) the current effective values (defaults when unconfigured); (b) empty inputs | **(a)** — a student who only wants to change the evening edits one field | Proposed |
+| D-F1 | Dismiss persistence: (a) session-scoped (`sessionStorage`), no server field; (b) a `User.preferences` key | **(a)** — the nudge returns next visit until bounds are set, which is the point; no settings sprawl (D15-14) | Ratified by default, 2026-11-17 (implementation start; user: "ratify any remaining choices") |
+| D-F2 | "Same every day" semantics: (a) a client-only switch that expands one pair to seven rows on save; the API stays seven-entry `PUT`; (b) an API flag | **(a)** — one contract, the simplification lives where the student sees it | Ratified by default, 2026-11-17 (implementation start; user: "ratify any remaining choices") |
+| D-F3 | Pre-fill: (a) the current effective values (defaults when unconfigured); (b) empty inputs | **(a)** — a student who only wants to change the evening edits one field | Ratified by default, 2026-11-17 (implementation start; user: "ratify any remaining choices") |
 
 ## Definition of Done
 
@@ -60,7 +60,7 @@ AC-E15-01; TR-E15-06, TR-E15-11; DoD-2, DoD-4, DoD-5, DoD-6, DoD-7, DoD-8.
 ## Sizing
 
 - **Outcome:** a student sets their day in two taps and sees the grid change.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** one window, one commit, 2026-11-17; files as planned; 23 new tests; web unit 1363/0, e2e 55/0; visual pass (banner + sheet) fixed F-EP15F-01; F-EP15F-03 (two stacked banners on an empty week) noted for the refiner; TR-E15-11 screen-reader step not executed (instruction recorded). Row in [efficiency.md](./artifacts/efficiency.md).
 - **Files:** `apps/web/src/entities/day-bounds/{api,model}/*` (new), `apps/web/src/features/day-bounds/ui/{DayBoundsBanner,DayBoundsSheet}.tsx` (new) + tests, `apps/web/src/shared/ui/Switch.tsx` + `Switch.test.tsx` (new, owned here — R-EP15-14), `apps/web/src/pages/calendar/ui/CalendarPage.tsx` (banner slot, entry point).
 - **Start context:** this story; contracts.md § API (day bounds); `AvailabilitySlotForm.tsx` as the dialog pattern; EP15E's shaded-region label.
 - **Verification:** `pnpm --filter @studypilot/web test -- day-bounds calendar` green; manual: save with "same every day", reload, banner gone, shading moved.

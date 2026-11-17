@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Providers } from '@/test/providers';
 import { CalendarPage } from './CalendarPage';
@@ -11,8 +11,23 @@ import { join } from 'node:path';
 vi.mock('@/entities/calendar/api/calendarApi', () => ({
   listCalendarEvents: vi.fn(),
 }));
+vi.mock('@/entities/day-bounds/api/dayBoundsApi', () => ({
+  getDayBounds: vi.fn(),
+  putDayBounds: vi.fn(),
+}));
+import { getDayBounds, putDayBounds } from '@/entities/day-bounds/api/dayBoundsApi';
 
 const mocked = vi.mocked(listCalendarEvents);
+const mockedBounds = vi.mocked(getDayBounds);
+const mockedPut = vi.mocked(putDayBounds);
+const defaultBounds = {
+  configured: false,
+  days: [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+    dayOfWeek,
+    wakeTime: '08:00',
+    sleepTime: '23:00',
+  })),
+};
 
 // jsdom has no matchMedia; stub it for the viewport switch. `narrow` drives
 // both the initial snapshot and change events (SP-129A tests). The listener
@@ -112,9 +127,14 @@ describe('CalendarPage (SP-127B)', () => {
     mediaListeners.clear();
     narrow = false;
     installMatchMedia();
+    window.sessionStorage.clear();
     mocked.mockResolvedValue(payload);
+    mockedBounds.mockResolvedValue({ ...defaultBounds, configured: true });
   });
   afterEach(() => {
+    // Unmount before restoring the matchMedia mock: a late render (a resolving
+    // fetch) after restore would call an undefined matchMedia (EP15F flake fix).
+    cleanup();
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -443,6 +463,84 @@ describe('CalendarPage (SP-127B)', () => {
       expect(screen.getByRole('list', { name: 'Week view' })).toBeInTheDocument();
       expect(screen.queryByRole('list', { name: 'Week agenda' })).not.toBeInTheDocument();
       expect(screen.getByRole('status')).toHaveTextContent('Your day 08:00–23:00');
+    });
+  });
+
+  // ===================== EP15F — day bounds banner and sheet =====================
+
+  describe('EP15F: day-bounds banner and sheet', () => {
+    it('EP15F-AC1: the banner shows only while configured is false; Dismiss hides it for the session; nothing is blocked', async () => {
+      mockedBounds.mockResolvedValue(defaultBounds);
+      renderPage();
+      await screen.findByText('Calculus');
+      const banner = await screen.findByTestId('day-bounds-banner');
+      expect(banner).toHaveTextContent('Your days run 08:00–23:00 for now.');
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Today' })).toBeEnabled();
+      await validUser.click(screen.getByRole('button', { name: 'Dismiss' }));
+      expect(screen.queryByTestId('day-bounds-banner')).toBeNull();
+      expect(window.sessionStorage.getItem('sp.dayBoundsBannerDismissed')).toBe('1');
+    });
+
+    it('EP15F-AC1: no banner once bounds are configured', async () => {
+      renderPage();
+      await screen.findByText('Calculus');
+      await waitFor(() => expect(mockedBounds).toHaveBeenCalled());
+      expect(screen.queryByTestId('day-bounds-banner')).toBeNull();
+    });
+
+    it('EP15F-AC2/AC3: the sheet opens from the banner and from a shaded caption; saving closes it, announces, re-reads the week and hides the banner; focus returns to the trigger', async () => {
+      mockedBounds.mockResolvedValue(defaultBounds);
+      const saved = {
+        configured: true,
+        days: defaultBounds.days.map((d) => ({ ...d, wakeTime: '07:00' })),
+      };
+      mockedPut.mockResolvedValue(saved);
+      renderPage();
+      await screen.findByText('Calculus');
+      const setIt = await screen.findByRole('button', { name: 'Set it' });
+      setIt.focus();
+      await validUser.click(setIt);
+      const dialog = await screen.findByRole('dialog', {
+        name: 'When does your day start and end?',
+      });
+      expect(within(dialog).getByLabelText('Day starts')).toHaveValue('08:00');
+      await validUser.keyboard('{Escape}');
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(setIt).toHaveFocus();
+
+      const caption = screen.getAllByRole('button', { name: /^Day starts 08:00/ })[0];
+      caption.focus();
+      await validUser.click(caption);
+      const sheet = await screen.findByRole('dialog', {
+        name: 'When does your day start and end?',
+      });
+      fireEvent.change(within(sheet).getByLabelText('Day starts'), { target: { value: '07:00' } });
+      const callsBefore = mocked.mock.calls.length;
+      await validUser.click(within(sheet).getByRole('button', { name: 'Save' }));
+      await waitFor(() => expect(mockedPut).toHaveBeenCalledTimes(1));
+      expect(mockedPut.mock.calls[0][0]).toHaveLength(7);
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      expect(screen.getByRole('status')).toHaveTextContent('Day start and end saved.');
+      await waitFor(() => expect(mocked.mock.calls.length).toBe(callsBefore + 1));
+      expect(screen.queryByTestId('day-bounds-banner')).toBeNull();
+      expect(caption).toHaveFocus();
+    });
+
+    it('EP15F-AC3: the announcement clears on the next week change', async () => {
+      mockedBounds.mockResolvedValue(defaultBounds);
+      mockedPut.mockResolvedValue({ ...defaultBounds, configured: true });
+      renderPage();
+      await screen.findByText('Calculus');
+      await validUser.click(await screen.findByRole('button', { name: 'Set it' }));
+      await validUser.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() =>
+        expect(screen.getByRole('status')).toHaveTextContent('Day start and end saved.')
+      );
+      await validUser.click(screen.getByRole('button', { name: 'Next week' }));
+      await waitFor(() =>
+        expect(screen.getByRole('status')).not.toHaveTextContent('Day start and end saved.')
+      );
     });
   });
 });
