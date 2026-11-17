@@ -327,3 +327,105 @@ export async function tabTo(
   }
   return { found: false, path };
 }
+
+// ---------------------------------------------------------------------------
+// EP15J — schedule & calendar helpers (D-J1: seeding through the public API).
+// ---------------------------------------------------------------------------
+
+/** Weekday 0…6 (Sunday = 0) of a civil `YYYY-MM-DD`, by UTC arithmetic only. */
+export function civilWeekday(dateStr: string): number {
+  return new Date(`${dateStr}T00:00:00.000Z`).getUTCDay();
+}
+
+/** The Monday that starts the week of `dateStr` (Sunday belongs to the previous Monday). */
+export function civilMondayOf(dateStr: string): string {
+  return addCivilDays(dateStr, -((civilWeekday(dateStr) + 6) % 7));
+}
+
+export interface ScheduleBlockRow {
+  id: string;
+  kind: 'BUSY' | 'STUDY';
+  title: string | null;
+  courseId: string | null;
+  energy: 'HIGH' | 'NORMAL' | 'LOW' | null;
+  startDate: string;
+  endDate: string | null;
+  weekdays: number[] | null;
+  startTime: string;
+  endTime: string;
+}
+
+/** `POST /api/schedule/blocks` (201) — an event (BUSY) or study block (STUDY), one-off or weekly. */
+export async function createScheduleBlockViaApi(
+  request: APIRequestContext,
+  accessToken: string,
+  body: {
+    kind: 'BUSY' | 'STUDY';
+    title?: string;
+    courseId?: string;
+    energy?: 'HIGH' | 'NORMAL' | 'LOW';
+    startDate: string;
+    endDate?: string;
+    weekdays?: number[];
+    startTime: string;
+    endTime: string;
+  }
+): Promise<ScheduleBlockRow> {
+  let response;
+  try {
+    response = await request.post('/api/schedule/blocks', {
+      headers: authHeaders(accessToken),
+      data: body,
+    });
+  } catch (error) {
+    throw describeSetupFailure('/schedule/blocks', error);
+  }
+  requireStatus(response, [201]);
+  return (await response.json()) as ScheduleBlockRow;
+}
+
+export interface CalendarWeek {
+  timeZone: string;
+  today: string;
+  from: string;
+  to: string;
+  days: {
+    date: string;
+    wakeTime: string;
+    sleepTime: string;
+    free: { startTime: string; endTime: string }[];
+  }[];
+  events: {
+    id: string;
+    type: string;
+    title: string;
+    date: string;
+    startTime: string;
+    endTime: string | null;
+    blockId?: string | null;
+    recurring?: boolean | null;
+    anchor?: 'FIXED' | 'FLEX_DAY' | null;
+    assignmentId: string | null;
+  }[];
+}
+
+/** `GET /api/calendar/events?from&to` — the server-owned read model (EP15D). */
+export async function getCalendarWeekViaApi(
+  request: APIRequestContext,
+  accessToken: string,
+  from: string,
+  to: string
+): Promise<CalendarWeek> {
+  const res = await request.get(`/api/calendar/events?from=${from}&to=${to}`, {
+    headers: authHeaders(accessToken),
+  });
+  requireStatus(res, [200]);
+  return (await res.json()) as CalendarWeek;
+}
+
+/** `HH:mm` → minutes (`24:00` → 1440). */
+export const minutesOfTime = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
+
+/** `[aStart, aEnd)` and `[bStart, bEnd)` share any minute. */
+export const overlaps = (aStart: string, aEnd: string, bStart: string, bEnd: string) =>
+  minutesOfTime(aStart) < minutesOfTime(bEnd) && minutesOfTime(bStart) < minutesOfTime(aEnd);

@@ -4,7 +4,7 @@
 **Parent epic:** [EP15: Schedule & Availability Redesign](../../epics/EP15-schedule-and-availability-redesign.md)
 **Milestone:** M8 (D15-11)
 **Layer:** Integration
-**Status:** Queued
+**Status:** Implemented — awaiting parent review (2026-11-17); record: [artifacts/EP15J/implementation.md](./artifacts/EP15J/implementation.md); parent index: [artifacts/EP15/implementation.md](./artifacts/EP15/implementation.md)
 **Dependencies:** EP15A–EP15I implemented.
 
 ## Plan at a glance
@@ -49,7 +49,7 @@ AC-E15-01, AC-E15-02, AC-E15-05, AC-E15-06, AC-E15-08, AC-E15-10, AC-E15-11 (cro
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-J1 | Seeding: (a) through the public API per test user; (b) direct database rows | **(a)** — exercises the contract; EP14C's isolation model holds | Proposed |
+| D-J1 | Seeding: (a) through the public API per test user; (b) direct database rows | **(a)** — exercises the contract; EP14C's isolation model holds | Ratified by default, 2026-11-17 (implementation start; user instruction to ratify all per story) |
 
 ## Definition of Done
 
@@ -58,7 +58,7 @@ AC-E15-01, AC-E15-02, AC-E15-05, AC-E15-06, AC-E15-08, AC-E15-10, AC-E15-11 (cro
 ## Sizing
 
 - **Outcome:** the calendar-planner agreement is proven end to end and the reviewer has one index.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** one window, one commit, 2026-11-17; `schedule.spec.ts` 7 tests + `calendar.spec.ts` rewrite (5) + helpers; three consecutive full Playwright runs 62/0 (external-stack mode — ports held by another session, env file not read); one product fix (F-EP15J-01 caption target size, owning child EP15F); F-EP15J-02/-03 noted; no CI link exists (recorded). Row in [efficiency.md](./artifacts/efficiency.md).
 - **Files:** `apps/web/e2e/schedule.spec.ts` (new), `apps/web/e2e/calendar.spec.ts`, `apps/web/e2e/adaptive-scheduling.spec.ts`, `apps/web/e2e/helpers.ts`, `docs/stories/EP15/artifacts/EP15/implementation.md` (new).
 - **Start context:** this story; the nine child records; `helpers.ts`; EP14C's record for the date-proof and login-user patterns.
 - **Verification:** `pnpm test:e2e` three consecutive runs, zero failures from `schedule.spec.ts`/`calendar.spec.ts`; `pnpm test` green; CI run link.

@@ -794,7 +794,9 @@ function ShadedRegion({
       <button
         type="button"
         onClick={onEditBounds}
-        className={`absolute ${place} rounded bg-surface-muted px-0.5 text-caption text-text-muted underline-offset-2 hover:text-text hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring`}
+        // EP15J (F-EP15J-01, WCAG 2.2 target size): at least 24 × 24 px — a
+        // chip can sit right against this caption, so spacing cannot excuse it.
+        className={`absolute ${place} inline-flex min-h-6 min-w-6 items-center rounded bg-surface-muted px-1 text-caption text-text-muted underline-offset-2 hover:text-text hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring`}
       >
         {caption}
         <span className="sr-only">, change</span>
