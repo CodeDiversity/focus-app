@@ -1,15 +1,12 @@
-import { ArgumentMetadata, BadRequestException, ValidationPipe } from '@nestjs/common';
+import { ArgumentMetadata, BadRequestException } from '@nestjs/common';
+import { FieldValidationPipe } from '../../../common/pipes/validation.pipe';
+import { FIELD_VALIDATION_PIPE_OPTIONS } from '../../../common/pipes/validation-pipe-options';
 import { RegisterDto } from './register.dto';
 
-// Mirrors the global pipe configured in main.ts so these tests exercise
-// the exact validation the endpoint applies.
+// The production pipe and its shared options (R-EP14-06), so these tests
+// exercise the exact validation the endpoint applies.
 const validate = async (payload: unknown): Promise<RegisterDto> => {
-  const pipe = new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    transformOptions: { enableImplicitConversion: true },
-  });
+  const pipe = new FieldValidationPipe(FIELD_VALIDATION_PIPE_OPTIONS);
   const metadata: ArgumentMetadata = {
     type: 'body',
     metatype: RegisterDto,

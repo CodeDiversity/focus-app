@@ -173,11 +173,13 @@ describe('AuthController', () => {
   });
 });
 
-import { INestApplication, ValidationPipe, BadRequestException } from '@nestjs/common';
+import { INestApplication, BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AddressInfo } from 'net';
 import { EmailVerificationService } from './email-verification.service';
 import { AllExceptionsFilter } from '../../common/filters/all-exceptions.filter';
+import { FieldValidationPipe } from '../../common/pipes/validation.pipe';
+import { FIELD_VALIDATION_PIPE_OPTIONS } from '../../common/pipes/validation-pipe-options';
 import { RecoveryRateLimitStore } from './recovery-rate-limit.store';
 
 describe('AuthController HTTP verification contracts', () => {
@@ -212,14 +214,9 @@ describe('AuthController HTTP verification contracts', () => {
       ],
     }).compile();
     app = module.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-        transformOptions: { enableImplicitConversion: true },
-      })
-    );
+    // Production pipe + options (R-EP14-06): these contracts run the exact
+    // validation main.ts applies.
+    app.useGlobalPipes(new FieldValidationPipe(FIELD_VALIDATION_PIPE_OPTIONS));
     app.useGlobalFilters(new AllExceptionsFilter());
     await app.listen(0, '127.0.0.1');
     base = `http://127.0.0.1:${(app.getHttpServer().address() as AddressInfo).port}`;

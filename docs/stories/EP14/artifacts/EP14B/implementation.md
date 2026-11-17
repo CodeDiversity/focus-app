@@ -1,9 +1,9 @@
 # EP14B implementation record
 
 **Story:** [EP14B — API Contract Integrity](../../EP14B-api-contract-integrity.md)
-**Status:** Implemented — awaiting parent review (one AC clause open: F-EP14B-02)
+**Status:** Implemented — awaiting parent review (one AC clause open: F-EP14B-02; R-EP14-06 fixed — awaiting re-review)
 **Date:** 2026-11-16
-**Commit scope:** `apps/api/src/{main.ts, test/test-http.ts}` (D-B1a), the two gated specs' seeders + bag-survival spec (D-B2/D-B3), new `src/modules/validation-strictness-e2e.spec.ts`, momentum `week.days` (API domain/types/specs; web types, `momentumCopy.ts`, `MomentumWeekStrip.tsx` + fixtures), `docs/stories/EP13/contracts.md` momentum row, `ProfilePage.test.tsx` (F-EP14B-01), this record, story/queue rows, `efficiency.md`.
+**Commit scope:** `apps/api/src/{main.ts, test/test-http.ts}` (D-B1a), the two gated specs' seeders + bag-survival spec (D-B2/D-B3), new `src/modules/validation-strictness-e2e.spec.ts`, fix round: `src/common/pipes/validation-pipe-options{,.spec}.ts` + the spec-local pipe copies (see below), momentum `week.days` (API domain/types/specs; web types, `momentumCopy.ts`, `MomentumWeekStrip.tsx` + fixtures), `docs/stories/EP13/contracts.md` momentum row, `ProfilePage.test.tsx` (F-EP14B-01), this record, story/queue rows, `efficiency.md`.
 
 Decisions applied: D-B1…D-B4 as ratified by the user (2026-11-16).
 
@@ -33,3 +33,24 @@ Decisions applied: D-B1…D-B4 as ratified by the user (2026-11-16).
 
 1. **F-EP14B-01 fixed inside EP14B** — outside the story's named scope, but EP14B-AC2's CI clause could not be met without it; test-only, one fixture line.
 2. **Proof commits via a temporary index** (the delivery branch was never moved); scratch branches deleted after the runs.
+
+## Fix round (R-EP14-06) — 2026-11-16
+
+**Finding:** [review.md](../EP14/review.md) R-EP14-06 (should-fix) — EP14B-AC1's named unit test ("the pipe options pinned in `test-http.ts` equal `main.ts`") did not exist, and spec-local pipe copies still carried `enableImplicitConversion: true`. **Disposition: fixed — awaiting re-review.**
+
+**What changed (preferred closure: one shared constant + a pinning spec):**
+
+- New `apps/api/src/common/pipes/validation-pipe-options.ts` — `FIELD_VALIDATION_PIPE_OPTIONS` (frozen `ValidationPipeOptions`: `whitelist`, `forbidNonWhitelisted`, `transform`, `transformOptions.enableImplicitConversion: false`), carrying the D-B1a / R-EP13-03 rationale that was duplicated in two comment blocks.
+- `apps/api/src/main.ts` and `apps/api/src/test/test-http.ts` now `new FieldValidationPipe(FIELD_VALIDATION_PIPE_OPTIONS)` — parity by construction; no inline literal remains in either file.
+- New `apps/api/src/common/pipes/validation-pipe-options.spec.ts` (5 tests, no DB): deep-equals the constant to the strict policy; asserts it is frozen; asserts `FieldValidationPipe` adopts it unchanged (`validatorOptions`, `transformOptions`, `isTransformEnabled`); and reads `main.ts` + `test/test-http.ts` as source to assert each imports the constant, constructs the pipe from it, and contains no `enableImplicitConversion:` literal or `new …ValidationPipe({` — so re-inlining in either file fails the suite.
+- Spec-local copies aligned to production (all import the constant; no "intentionally differs" comment was needed — none exercised coercion): `assignments.service.spec.ts` (4 × `new FieldValidationPipe(...)`), `auth.controller.spec.ts` (stock `ValidationPipe` → `FieldValidationPipe(FIELD_VALIDATION_PIPE_OPTIONS)`), `study-plans-recovery-catch-up.service.spec.ts` (6 × `plainToInstance(..., FIELD_VALIDATION_PIPE_OPTIONS.transformOptions)`; its "runs with `enableImplicitConversion`" comment corrected — nested descent comes from `@Type`). Also aligned, beyond the finding's named list because their comment claimed to "mirror main.ts" and would otherwise be false: the five `modules/auth/dto/*.dto.spec.ts` (string-only DTOs; same one-line change).
+
+**Verification (cwd `apps/api`, tested state = this commit's content):**
+
+- Touched suites: `npx jest src/common/pipes src/modules/assignments/assignments.service.spec.ts src/modules/auth/auth.controller.spec.ts src/modules/auth/dto src/modules/study-plans/study-plans-recovery-catch-up.service.spec.ts` → **10 suites, 381 passed, 0 failed**.
+- Ungated: `npx jest` → **52 of 80 suites, 1146 passed, 0 failed** (484 gated skipped).
+- Gated: `createdb postgres_fix_oak`; `DATABASE_URL=postgresql://<local user>@localhost:5432/postgres_fix_oak npx prisma migrate deploy` then `… npx jest --runInBand` → **80 suites, 1630 passed, 0 failed (1625 at EP14E + 5 new)**; `dropdb postgres_fix_oak` afterwards. (A first attempt with a user-less URL failed at `migrate deploy` with Prisma P1010 before any test ran — environment, not code.) `DATABASE_URL` shell-only; no `.env*` read or written.
+- `npx prettier --check`, `npx eslint --max-warnings 0` on the 12 changed files, `npx tsc --noEmit -p tsconfig.json` → clean.
+
+Findings/deviations: none new. Scope note: five `auth/dto` specs changed beyond the finding's named files (reason above; one line each).
+

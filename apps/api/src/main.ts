@@ -4,6 +4,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { appCorsOptions } from './common/cors';
 import cookieParser = require('cookie-parser');
 import { FieldValidationPipe } from './common/pipes/validation.pipe';
+import { FIELD_VALIDATION_PIPE_OPTIONS } from './common/pipes/validation-pipe-options';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,19 +12,10 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // Global validation pipe (D106-6: field-level errors).
-  app.useGlobalPipes(
-    new FieldValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-      transformOptions: {
-        // EP14B (D-B1a, R-EP13-03): no implicit coercion — a wrong-typed body
-        // field (locked: "yes") must 400, never silently convert. Query
-        // params that need numbers carry explicit @Transform(Number).
-        enableImplicitConversion: false,
-      },
-    })
-  );
+  // Options are the shared constant (R-EP14-06): the test harness builds its
+  // pipe from the same object, so the gated strictness specs prove what
+  // production enforces.
+  app.useGlobalPipes(new FieldValidationPipe(FIELD_VALIDATION_PIPE_OPTIONS));
 
   // Uniform error-response shape for every failure
   app.useGlobalFilters(new AllExceptionsFilter());

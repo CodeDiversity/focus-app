@@ -1,5 +1,6 @@
 import { BadRequestException, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { FIELD_VALIDATION_PIPE_OPTIONS } from '../../common/pipes/validation-pipe-options';
 
 import { SaveStudyPlanDto } from './dto/save-study-plan.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -607,9 +608,11 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
 
     /**
      * Build the DTO exactly as the HTTP path delivers it: the global
-     * `FieldValidationPipe` (main.ts) runs `plainToInstance` with
-     * `enableImplicitConversion` before the service ever sees the body, so
-     * nested sessions arrive as `SaveStudyPlanSessionDto` instances — not
+     * `FieldValidationPipe` (main.ts) runs `plainToInstance` with the shared
+     * `FIELD_VALIDATION_PIPE_OPTIONS.transformOptions` (R-EP14-06; no implicit
+     * coercion — nested descent comes from `@Type`, not coercion) before the
+     * service ever sees the body, so nested sessions arrive as
+     * `SaveStudyPlanSessionDto` instances — not
      * plain literals. `class-validator` only descends into nested instances
      * (plain literals collapse to an `unknownValue` constraint), so a unit
      * test that handed the service raw literals would pin behavior no HTTP
@@ -619,9 +622,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
       plainToInstance(
         SaveStudyPlanDto,
         { ...window, sessions },
-        {
-          enableImplicitConversion: true,
-        }
+        FIELD_VALIDATION_PIPE_OPTIONS.transformOptions
       );
 
     const session = (date: string, startTime: string, endTime: string, assignmentId = 'a-1') => ({
@@ -883,7 +884,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
           plainToInstance(
             SaveStudyPlanDto,
             { ...window, to: '2026-11-04', sessions: [session('2026-10-30', '10:00', '11:00')] },
-            { enableImplicitConversion: true }
+            FIELD_VALIDATION_PIPE_OPTIONS.transformOptions
           )
         ),
         'to'
@@ -975,7 +976,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
               },
             ],
           },
-          { enableImplicitConversion: true }
+          FIELD_VALIDATION_PIPE_OPTIONS.transformOptions
         )
       );
 
@@ -1014,7 +1015,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
             to: '2026-11-05',
             sessions: [{ assignmentId: 'a-1', date: '2026-10-31', startTime, endTime }],
           },
-          { enableImplicitConversion: true }
+          FIELD_VALIDATION_PIPE_OPTIONS.transformOptions
         );
 
       // A locked row in the window collides with the submitted slot → 409.
@@ -1071,7 +1072,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
             },
           ],
         },
-        { enableImplicitConversion: true }
+        FIELD_VALIDATION_PIPE_OPTIONS.transformOptions
       );
 
     beforeEach(() => {
@@ -1158,7 +1159,7 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
               },
             ],
           },
-          { enableImplicitConversion: true }
+          FIELD_VALIDATION_PIPE_OPTIONS.transformOptions
         );
 
       // Fixed → the EP06 409.

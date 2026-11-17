@@ -1,6 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { FieldValidationPipe } from '../../common/pipes/validation.pipe';
+import { FIELD_VALIDATION_PIPE_OPTIONS } from '../../common/pipes/validation-pipe-options';
 import { PrismaService } from '../prisma/prisma.service';
 import { AssignmentsService } from './assignments.service';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
@@ -181,12 +182,7 @@ describe('AssignmentsService (SP-113A)', () => {
 });
 
 describe('CreateAssignmentDto with production FieldValidationPipe', () => {
-  const pipe = new FieldValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    transformOptions: { enableImplicitConversion: true },
-  });
+  const pipe = new FieldValidationPipe(FIELD_VALIDATION_PIPE_OPTIONS);
   const validate = (body: Record<string, unknown>) =>
     pipe.transform(body, {
       type: 'body',
@@ -576,12 +572,7 @@ describe('AssignmentsService update/delete (SP-114D)', () => {
 });
 
 describe('UpdateAssignmentDto with production FieldValidationPipe', () => {
-  const pipe = new FieldValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    transformOptions: { enableImplicitConversion: true },
-  });
+  const pipe = new FieldValidationPipe(FIELD_VALIDATION_PIPE_OPTIONS);
   const validate = (body: Record<string, unknown>) =>
     pipe.transform(body, {
       type: 'body',
@@ -1111,12 +1102,7 @@ describe('AssignmentsService subtasks (SP-120I)', () => {
 });
 
 describe('CreateSubtaskDto with production FieldValidationPipe', () => {
-  const pipe = new FieldValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    transformOptions: { enableImplicitConversion: true },
-  });
+  const pipe = new FieldValidationPipe(FIELD_VALIDATION_PIPE_OPTIONS);
   const validate = (body: Record<string, unknown>) =>
     pipe.transform(body, { type: 'body', metatype: CreateSubtaskDto });
 
@@ -1160,12 +1146,7 @@ describe('CreateSubtaskDto with production FieldValidationPipe', () => {
 });
 
 describe('UpdateSubtaskDto with production FieldValidationPipe', () => {
-  const pipe = new FieldValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    transformOptions: { enableImplicitConversion: true },
-  });
+  const pipe = new FieldValidationPipe(FIELD_VALIDATION_PIPE_OPTIONS);
   const validate = (body: Record<string, unknown>) =>
     pipe.transform(body, { type: 'body', metatype: UpdateSubtaskDto });
 

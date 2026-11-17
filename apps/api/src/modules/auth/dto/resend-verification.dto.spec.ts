@@ -1,13 +1,14 @@
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
+import { FieldValidationPipe } from '../../../common/pipes/validation.pipe';
+import { FIELD_VALIDATION_PIPE_OPTIONS } from '../../../common/pipes/validation-pipe-options';
 import { ResendVerificationDto } from './resend-verification.dto';
 
 const validate = (payload: unknown) =>
-  new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    transformOptions: { enableImplicitConversion: true },
-  }).transform(payload, { type: 'body', metatype: ResendVerificationDto });
+  // Production pipe + shared options (R-EP14-06).
+  new FieldValidationPipe(FIELD_VALIDATION_PIPE_OPTIONS).transform(payload, {
+    type: 'body',
+    metatype: ResendVerificationDto,
+  });
 
 describe('ResendVerificationDto', () => {
   it('accepts and normalizes a trimmed mixed-case email', async () => {

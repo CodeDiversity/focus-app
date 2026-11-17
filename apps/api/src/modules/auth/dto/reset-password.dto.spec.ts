@@ -1,14 +1,15 @@
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
+import { FieldValidationPipe } from '../../../common/pipes/validation.pipe';
+import { FIELD_VALIDATION_PIPE_OPTIONS } from '../../../common/pipes/validation-pipe-options';
 import { ResetPasswordDto } from './reset-password.dto';
 import { INVALID_RESET_MESSAGE } from '../password-reset.service';
 
 const validate = (payload: unknown) =>
-  new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    transformOptions: { enableImplicitConversion: true },
-  }).transform(payload, { type: 'body', metatype: ResetPasswordDto });
+  // Production pipe + shared options (R-EP14-06).
+  new FieldValidationPipe(FIELD_VALIDATION_PIPE_OPTIONS).transform(payload, {
+    type: 'body',
+    metatype: ResetPasswordDto,
+  });
 
 const rawToken = 'a'.repeat(43);
 const goodPassword = 'Password123';

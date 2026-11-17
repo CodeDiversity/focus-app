@@ -27,6 +27,7 @@ import { EMAIL_PROVIDER } from '../modules/email/email-provider';
 import { AllExceptionsFilter } from '../common/filters/all-exceptions.filter';
 import { appCorsOptions } from '../common/cors';
 import { FieldValidationPipe } from '../common/pipes/validation.pipe';
+import { FIELD_VALIDATION_PIPE_OPTIONS } from '../common/pipes/validation-pipe-options';
 
 /**
  * Test-only JWT secret. Integration specs sign/verify tokens with it; CI
@@ -99,20 +100,9 @@ export async function createIntegrationApp(): Promise<IntegrationApp> {
 
   const app = moduleRef.createNestApplication();
   app.use(cookieParser());
-  // D106-6: field-validation pipe (parity with main.ts).
-  app.useGlobalPipes(
-    new FieldValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-      transformOptions: {
-        // EP14B (D-B1a, R-EP13-03): no implicit coercion — a wrong-typed body
-        // field (locked: "yes") must 400, never silently convert. Query
-        // params that need numbers carry explicit @Transform(Number).
-        enableImplicitConversion: false,
-      },
-    })
-  );
+  // D106-6: field-validation pipe — parity with main.ts by construction: both
+  // build from FIELD_VALIDATION_PIPE_OPTIONS (R-EP14-06).
+  app.useGlobalPipes(new FieldValidationPipe(FIELD_VALIDATION_PIPE_OPTIONS));
   app.useGlobalFilters(new AllExceptionsFilter());
   // main.ts parity: CORS with the limiter's Retry-After exposed (SP-105F).
   app.enableCors(appCorsOptions());
