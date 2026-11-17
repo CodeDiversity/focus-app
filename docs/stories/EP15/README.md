@@ -3,7 +3,7 @@
 **Epic:** [EP15: Schedule & Availability Redesign](../../epics/EP15-schedule-and-availability-redesign.md)
 **Milestone:** M8 — release 1.2 (D15-11, ratified 2026-11-16)
 **Epic dependency:** EP04, EP06, EP13 closed. **EP14 in flight** — implementation starts after the EP14 review unit passes (D15-11); planning, plan review and refiner passes proceed now.
-**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: **Plan Ready + Implementation Blocked** (see [history.md](./history.md)). **Plan review:** pass 1 ([plan-review-pass-1.md](./plan-review-pass-1.md)) Changes Required — R-EP15-01…09 closed; pass 2 ([plan-review.md](./plan-review.md)) Changes Required — R-EP15-10…16 corrected (C-EP15-10…16 in [history.md](./history.md)); pass 3 pending. No tracker sync.
+**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: **Plan Ready + Implementation Blocked** (see [history.md](./history.md)). **Plan review:** pass 1 ([plan-review-pass-1.md](./plan-review-pass-1.md)) Changes Required — R-EP15-01…09 closed; pass 2 ([plan-review-pass-2.md](./plan-review-pass-2.md)) Changes Required — R-EP15-10…16 corrected (C-EP15-10…16 in [history.md](./history.md)); pass 3 ([plan-review.md](./plan-review.md)) **Plan Ready** — R-EP15-10…13, 15, 16 closed; polish R-EP15-14 (residue), 17, 18 optional. No tracker sync.
 
 ## Plan at a glance
 
