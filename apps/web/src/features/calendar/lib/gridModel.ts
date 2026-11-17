@@ -10,8 +10,12 @@ import type { CalendarDay, CalendarEvent } from '@/entities/calendar/model/types
 export const PX_PER_HOUR = 60;
 export const ROW_MINUTES = 15;
 export const ROW_PX = PX_PER_HOUR / (60 / ROW_MINUTES);
-/** Free pieces shorter than this are drawn but not captioned (D-E7). */
-export const FREE_LABEL_MIN = 30;
+/**
+ * Free pieces shorter than this are drawn but not captioned. D-E7 ruled 30
+ * minutes; the user raised it to 60 on 2026-11-17 (D-E7 override) so a day
+ * broken by short items does not read as a wall of "Free" captions.
+ */
+export const FREE_LABEL_MIN = 60;
 /** The grid never shows less than this range (D-E1). */
 export const MIN_RANGE_START = 8 * 60;
 export const MIN_RANGE_END = 22 * 60;
@@ -172,7 +176,7 @@ export function layoutLanes(events: CalendarEvent[]): LaidOut[] {
   return out;
 }
 
-/** A free piece is captioned only from 30 minutes (D-E7). */
+/** A free piece is captioned only from `FREE_LABEL_MIN` minutes (D-E7, overridden to 60). */
 export function isLabelledFree(startMinute: number, endMinute: number): boolean {
   return endMinute - startMinute >= FREE_LABEL_MIN;
 }

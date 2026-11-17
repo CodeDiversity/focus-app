@@ -135,7 +135,8 @@ test('SP-129A: at a phone viewport the week renders as the day-grouped agenda', 
   const weekList = page.getByRole('list', { name: 'Week view' });
   await expect(agenda).toBeVisible();
   // EP14D (D-D3): agenda order is type, time, title (time on its own line above the title).
-  const entry = page.getByRole('button', { name: new RegExp(`^Class\\W*09:00\\W*${course.name}`) });
+  // EP15E (D-E10): the agenda chip reads "Class: 09:00–10:00, <course>".
+  const entry = page.getByRole('button', { name: new RegExp(`^Class\\W*09:00.*${course.name}`) });
   await expect(entry).toBeVisible();
   // The type label's text content is "Class" plus a screen-reader-only ":" (EP14D, D-D3).
   await expect(page.getByText(/^Class:?$/).first()).toBeVisible();

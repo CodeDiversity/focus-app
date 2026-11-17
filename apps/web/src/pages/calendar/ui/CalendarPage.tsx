@@ -11,6 +11,7 @@ import { WeekGrid } from '@/features/calendar/ui/WeekGrid';
 import { CalendarAgenda } from '@/features/calendar/ui/CalendarAgenda';
 import { CalendarEventDetails } from '@/features/calendar/ui/CalendarEventDetails';
 import { boundsSummary } from '@/features/calendar/lib/gridModel';
+import { nowMinutesIn } from '@/features/calendar/lib/now';
 import { addDays, mondayOf, utcTodayGuess } from '../lib/week';
 
 const NARROW_QUERY = '(max-width: 639px)';
@@ -64,6 +65,18 @@ export function CalendarPage() {
 
   const requestSeq = useRef(0);
   const bootstrappedRef = useRef(false);
+
+  // EP15E (D-E9): the "now" marker's minute in the profile zone, refreshed
+  // every minute. Read through Intl — no browser-local getters.
+  const timeZoneForNow = data?.timeZone ?? null;
+  const [nowMinute, setNowMinute] = useState<number | null>(null);
+  useEffect(() => {
+    if (!timeZoneForNow) return;
+    const tick = () => setNowMinute(nowMinutesIn(timeZoneForNow, new Date()));
+    tick();
+    const id = window.setInterval(tick, 60_000);
+    return () => window.clearInterval(id);
+  }, [timeZoneForNow]);
 
   const from = anchorFrom;
   const to = addDays(anchorFrom, 6);
@@ -277,23 +290,27 @@ export function CalendarPage() {
           {statusMessage}
         </div>
 
+        {/* EP15E (D-E12, user ruling 2026-11-17): the empty-week copy is one
+            full-width line above the view, not a note in one column. */}
+        {isEmpty && (
+          <p className="mb-3 rounded-lg border border-dashed border-border-strong px-3 py-2 text-center text-sm text-text-muted">
+            {EMPTY_WEEK_COPY}
+          </p>
+        )}
         {isNarrow ? (
-          <>
-            {isEmpty && <p className="mb-3 text-sm text-text-muted">{EMPTY_WEEK_COPY}</p>}
-            <CalendarAgenda
-              days={days}
-              eventsByDay={eventsByDay}
-              today={data?.today ?? ''}
-              onOpenEvent={setSelectedEvent}
-            />
-          </>
+          <CalendarAgenda
+            days={days}
+            eventsByDay={eventsByDay}
+            today={data?.today ?? ''}
+            onOpenEvent={setSelectedEvent}
+          />
         ) : (
           <WeekGrid
             days={days}
             eventsByDay={eventsByDay}
             today={data?.today ?? ''}
             onOpenEvent={setSelectedEvent}
-            emptyMessage={isEmpty ? EMPTY_WEEK_COPY : undefined}
+            nowMinute={nowMinute}
           />
         )}
       </div>

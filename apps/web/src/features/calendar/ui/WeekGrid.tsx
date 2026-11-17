@@ -25,8 +25,11 @@ export interface WeekGridProps {
   eventsByDay: Map<string, CalendarEvent[]>;
   today: string;
   onOpenEvent: (event: CalendarEvent) => void;
-  /** Shown in the middle column's all-day cell when the week has no items (page-owned copy). */
-  emptyMessage?: string;
+  /**
+   * EP15E (D-E9): the current minute of the day in the profile zone; a thin
+   * marker is drawn across today's column at that minute. Omit to draw none.
+   */
+  nowMinute?: number | null;
 }
 
 const HATCH: CSSProperties = {
@@ -44,13 +47,12 @@ const HATCH: CSSProperties = {
  * the all-day row above the hours. Nothing is conveyed by colour alone and
  * nothing here is interactive except the chips (D-E2).
  */
-export function WeekGrid({ days, eventsByDay, today, onOpenEvent, emptyMessage }: WeekGridProps) {
+export function WeekGrid({ days, eventsByDay, today, onOpenEvent, nowMinute }: WeekGridProps) {
   const allEvents = days.flatMap((d) => eventsByDay.get(d.date) ?? []);
   const range = hourRange(days, allEvents);
   const rows = rowCount(range);
   const hours = axisHours(range);
   const rowsStyle: CSSProperties = { gridTemplateRows: `repeat(${rows}, ${ROW_PX}px)` };
-  const middle = days[Math.floor(days.length / 2)]?.date;
 
   return (
     <div className="overflow-x-auto" role="list" aria-label="Week view">
@@ -101,9 +103,6 @@ export function WeekGrid({ days, eventsByDay, today, onOpenEvent, emptyMessage }
                 {allDay.map((event) => (
                   <CalendarEventChip key={event.id} event={event} onOpen={onOpenEvent} />
                 ))}
-                {emptyMessage && day.date === middle && (
-                  <p className="py-1 text-center text-sm text-text-muted">{emptyMessage}</p>
-                )}
               </div>
             );
           })}
@@ -137,6 +136,7 @@ export function WeekGrid({ days, eventsByDay, today, onOpenEvent, emptyMessage }
               range={range}
               rowsStyle={rowsStyle}
               onOpenEvent={onOpenEvent}
+              nowMinute={day.date === today ? nowMinute : undefined}
             />
           ))}
         </div>
@@ -151,12 +151,14 @@ function DayColumn({
   range,
   rowsStyle,
   onOpenEvent,
+  nowMinute,
 }: {
   day: CalendarDay;
   events: CalendarEvent[];
   range: { start: number; end: number };
   rowsStyle: CSSProperties;
   onOpenEvent: (event: CalendarEvent) => void;
+  nowMinute?: number | null;
 }) {
   const wake = minutesOf(day.wakeTime);
   const sleep = minutesOf(day.sleepTime);
@@ -269,8 +271,9 @@ function DayColumn({
           const { event, span: s } = item;
           const span = rowSpan(s.start, s.end, range);
           if (!span) return null;
-          // Up to 75 px of chip (label, title, time + tags) at the zone's top; the rest is zone.
-          const chipRows = Math.min(span.rows, 5);
+          // Up to 90 px of chip (label, title, time · course, energy pill) at the
+          // zone's top (D-E11); the rest is zone.
+          const chipRows = Math.min(span.rows, 6);
           return (
             <div
               key={event.id}
@@ -321,6 +324,26 @@ function DayColumn({
           </div>
         );
       })}
+
+      {/* 5. The "now" marker on today's column (D-E9): a 2 px accent line with a
+          dot at the axis side, positioned to the minute (1 px ≈ 1 min). */}
+      {nowMinute !== undefined &&
+        nowMinute !== null &&
+        nowMinute >= range.start &&
+        nowMinute < range.end && (
+          <div
+            role="img"
+            aria-label={`Now, ${timeOf(nowMinute)}`}
+            data-now={nowMinute}
+            className="pointer-events-none absolute inset-x-0 z-30 h-0.5 bg-accent"
+            style={{ top: `${nowMinute - range.start}px` }}
+          >
+            <span
+              aria-hidden
+              className="absolute -left-1 -top-1 h-2.5 w-2.5 rounded-full bg-accent"
+            />
+          </div>
+        )}
     </div>
   );
 }

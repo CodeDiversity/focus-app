@@ -244,24 +244,83 @@ describe('WeekGrid (EP15E)', () => {
     ).toBeInTheDocument();
   });
 
-  it("EP15E-AC2: free pieces ≥ 30 min read 'Free · 14:00–16:00'; shorter pieces are drawn with aria-hidden and no text", () => {
+  it("EP15E-AC2: free pieces ≥ 60 min read 'Free · 14:00–16:00'; shorter pieces are drawn with aria-hidden and no text (D-E7 overridden)", () => {
     renderGrid(
       [],
       days({
         '2026-10-26': {
           free: [
             { startTime: '14:00', endTime: '16:00' },
-            { startTime: '17:00', endTime: '17:15' },
+            { startTime: '17:00', endTime: '17:45' },
           ],
         },
       })
     );
     const mon = column('2026-10-26');
     expect(within(mon).getByText('Free · 14:00–16:00')).toBeInTheDocument();
-    const short = mon.querySelector('[data-free="17:00-17:15"]') as HTMLElement;
+    // 45 minutes: below the user's 60-minute caption threshold (D-E7 override).
+    const short = mon.querySelector('[data-free="17:00-17:45"]') as HTMLElement;
     expect(short).toHaveAttribute('aria-hidden', 'true');
     expect(short.textContent).toBe('');
-    expect(short.style.gridRow).toBe('41 / 42');
+    expect(short.style.gridRow).toBe('41 / 44');
+  });
+
+  it('EP15E (D-E9): a now marker is drawn on today’s column at the given minute and nowhere else; none outside the range or when omitted', () => {
+    const { unmount } = render(
+      <WeekGrid
+        days={days()}
+        eventsByDay={new Map()}
+        today="2026-10-28"
+        onOpenEvent={vi.fn()}
+        nowMinute={14 * 60 + 5}
+      />
+    );
+    const marker = screen.getByRole('img', { name: 'Now, 14:05' });
+    expect(column('2026-10-28')).toContainElement(marker);
+    expect(marker.style.top).toBe(`${14 * 60 + 5 - 420}px`); // range starts 07:00
+    expect(document.querySelectorAll('[data-now]')).toHaveLength(1);
+    unmount();
+    render(
+      <WeekGrid
+        days={days()}
+        eventsByDay={new Map()}
+        today="2026-10-28"
+        onOpenEvent={vi.fn()}
+        nowMinute={3 * 60}
+      />
+    );
+    expect(screen.queryByRole('img', { name: /^Now,/ })).toBeNull();
+    render(
+      <WeekGrid days={days()} eventsByDay={new Map()} today="2026-10-28" onOpenEvent={vi.fn()} />
+    );
+    expect(screen.queryByRole('img', { name: /^Now,/ })).toBeNull();
+  });
+
+  it('EP15E (D-E11): the energy pill is visible on a study-block chip of 90 px or more and sr-only on a shorter one', () => {
+    renderGrid([
+      ev({
+        id: 'tall',
+        type: 'STUDY_BLOCK',
+        title: 'Deep work',
+        energy: 'HIGH',
+        startTime: '18:00',
+        endTime: '20:00',
+      }),
+      ev({
+        id: 'short',
+        type: 'STUDY_BLOCK',
+        title: 'Quick',
+        energy: 'LOW',
+        startTime: '09:00',
+        endTime: '10:00',
+        date: '2026-10-27',
+      }),
+    ]);
+    const tall = screen.getByRole('button', { name: /Deep work/ });
+    expect(within(tall).getByTestId('energy-tag')).not.toHaveClass('sr-only');
+    const short = screen.getByRole('button', { name: /Quick/ });
+    expect(within(short).getByTestId('energy-tag')).toHaveClass('sr-only');
+    expect(short).toHaveAccessibleName(/Low energy/);
   });
 
   it('EP15E-AC2: free pieces and shaded regions are not focusable (D-E2)', () => {

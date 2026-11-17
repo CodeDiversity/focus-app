@@ -1,7 +1,7 @@
 # EP15E implementation record
 
 **Story:** [EP15E — The Week Grid: Hour Axis, Day Bounds, Free Time](../../EP15E-week-grid.md)
-**Status:** Implemented — awaiting parent review
+**Status:** Implemented — awaiting parent review (amended 2026-11-17, see Addendum)
 **Date:** 2026-11-17
 **Commit scope:** `apps/web/src/entities/calendar/model/types.ts`; new `pages/calendar/lib/week.ts` (+ test), `features/calendar/lib/gridModel.ts` (+ test), `features/calendar/ui/WeekGrid.tsx` (+ test); `WeekView.tsx` deleted; `CalendarEventChip.tsx`, `CalendarEventDetails.tsx`, `CalendarAgenda.tsx`, `pages/calendar/ui/CalendarPage.tsx` (+ their tests); `days: []` added to two foreign fixtures (`features/calendar/api/calendarApi.test.ts`, `pages/dashboard/ui/DashboardPage.test.tsx`) and the `days` case in `entities/calendar/api/calendarApi.test.ts`; this record; story Status/rulings/sizing; README row + Next; `efficiency.md`. No `index.css` / `tailwind.config.js` change; no new shared primitive; no API change.
 
@@ -58,3 +58,17 @@ Decisions applied: D-E1…D-E8 (ratified by default 2026-11-17 at implementation
 2. **Study-block zones and timed chips render as one time-sorted sequence** rather than two layers in DOM order, so keyboard order is start order (AC4); z-index preserves the visual layering D-E6 asks for.
 3. **The zone chip may be 75 px, not 60 px** (F-EP15E-01) so the three-line full tier plus course code fits.
 4. **No `WeekView.dayHeader` alias kept**; the page, agenda and grid import `dayHeaderLabel` from `gridModel` as the story specifies.
+
+## Addendum — user-ruled amendments (2026-11-17, second commit)
+
+After the first visual pass the user ruled five changes (D-E7 override, D-E9…D-E12 in the story's Decisions table):
+
+| Change | Where | Test |
+|---|---|---|
+| Free-time caption threshold 30 → 60 min (outline unchanged) | `gridModel.ts` `FREE_LABEL_MIN`; agenda free lines follow | `gridModel.test.ts`, `WeekGrid.test.tsx`, `CalendarAgenda.test.tsx` |
+| "Now" marker on today's column, profile-zone minute via `Intl`, refreshed every minute (D-E9) | new `features/calendar/lib/now.ts`; `WeekGrid` `nowMinute`; page effect | `now.test.ts` (2), `WeekGrid.test.tsx` (1), `CalendarPage.test.tsx` (1) |
+| Agenda chip shows the range (D-E10) | `CalendarEventChip.tsx` `timeTextOf` | chip + agenda tests; `apps/web/e2e/calendar.spec.ts` agenda regex loosened |
+| Energy pill visible from 90 px, sr-only below; zone chip up to 6 rows (D-E11) | `CalendarEventChip.tsx`, `WeekGrid.tsx` | `WeekGrid.test.tsx` (1) — closes F-EP15E-02 |
+| Empty-week copy as one full-width line above the view (D-E12) | `CalendarPage.tsx`; `WeekGrid` lost `emptyMessage` | `CalendarPage.test.tsx` |
+
+Verification (final content): web unit **116 files, 1340 passed, 0 failed** (two consecutive full runs after a single non-reproducible 3-test failure during the edit; the page suite then passed 5/5 in isolation); `tsc`, eslint, prettier ✓; Playwright **55 passed (21.9s)**. F-EP15E-02 and -03 are closed by D-E11 / D-E10. The CalendarPage grep test still pins the absence of browser-local Date getters (the marker reads `Intl.DateTimeFormat`).

@@ -66,7 +66,9 @@ export function energyTagOf(event: CalendarEvent): string | null {
 /** Time text: "Anytime" for a day-anchored planned session, else the clock (range in the grid). */
 function timeTextOf(event: CalendarEvent, layout: 'week' | 'agenda' | 'grid'): string {
   if (event.anchor === 'FLEX_DAY') return 'Anytime';
-  if (layout === 'grid' && event.endTime) return `${event.startTime}–${event.endTime}`;
+  // EP15E (D-E10, user ruling 2026-11-17): the grid and the agenda show the
+  // range, so a four-hour shift and a fifteen-minute errand never read alike.
+  if (layout !== 'week' && event.endTime) return `${event.startTime}–${event.endTime}`;
   return event.startTime;
 }
 
@@ -101,6 +103,10 @@ export function CalendarEventChip({
   const showTitle = meta.defaultTitle === undefined || event.title !== meta.defaultTitle;
   const busy = event.type === 'EVENT';
 
+  // EP15E (D-E11, user ruling 2026-11-17): in the grid the energy pill is
+  // visible only when the chip is tall enough for a fourth line (≥ 90 px);
+  // below that it stays in the accessible name (sr-only) and in the dialog.
+  const energyVisible = layout !== 'grid' || (heightPx ?? 60) >= 90;
   const markers = (
     <>
       {event.completed && (
@@ -112,7 +118,11 @@ export function CalendarEventChip({
       {energyTag && (
         <span
           data-testid="energy-tag"
-          className="inline-flex items-center gap-0.5 whitespace-nowrap rounded-full bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-text"
+          className={
+            energyVisible
+              ? 'inline-flex items-center gap-0.5 whitespace-nowrap rounded-full bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium text-text'
+              : 'sr-only'
+          }
         >
           {energyTag}
         </span>

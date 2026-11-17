@@ -215,7 +215,7 @@ describe('CalendarAgenda (SP-129A)', () => {
     expect(texts[2]).toMatch(/Assignment.*23:59.*Lab report/);
   });
 
-  it('EP15E-AC4: free lines use the same 30-minute threshold as the grid', () => {
+  it('EP15E-AC4: free lines use the same 60-minute threshold as the grid (D-E7 overridden)', () => {
     render(
       <CalendarAgenda
         days={days}
@@ -226,6 +226,10 @@ describe('CalendarAgenda (SP-129A)', () => {
     );
     expect(screen.getByText('Free · 10:00–12:00')).toBeInTheDocument();
     expect(screen.queryByText('Free · 12:00–12:15')).toBeNull();
+    // D-E10: agenda chips show the range, so lengths are comparable at a glance.
+    expect(
+      screen.getByRole('button', { name: /^Class\b.*09:00–10:00.*Calculus/ })
+    ).toBeInTheDocument();
   });
 
   it('EP15E-AC4: activating an item opens the same details dialog (hands the event up)', async () => {

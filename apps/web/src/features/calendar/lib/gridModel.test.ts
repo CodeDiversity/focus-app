@@ -119,9 +119,10 @@ describe('gridModel (EP15E, pure)', () => {
     expect(out[0].laneCount).toBe(1);
   });
 
-  it('EP15E-AC2: isLabelledFree — 30 minutes is labelled, 29 is not (D-E7)', () => {
-    expect(isLabelledFree(600, 630)).toBe(true);
-    expect(isLabelledFree(600, 629)).toBe(false);
+  it('EP15E-AC2: isLabelledFree — 60 minutes is labelled, 59 is not (D-E7 overridden by the user, 2026-11-17)', () => {
+    expect(isLabelledFree(600, 660)).toBe(true);
+    expect(isLabelledFree(600, 659)).toBe(false);
+    expect(isLabelledFree(600, 630)).toBe(false);
   });
 
   it('EP15E-AC1: chipTier — ≥ 60 full, 30–59 compact, < 30 mini (D-E8)', () => {

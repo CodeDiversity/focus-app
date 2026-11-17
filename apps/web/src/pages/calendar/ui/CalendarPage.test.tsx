@@ -408,6 +408,18 @@ describe('CalendarPage (SP-127B)', () => {
       expect(screen.getByRole('list', { name: 'Week view' })).toBeInTheDocument();
       expect(screen.getAllByRole('img', { name: 'Before your day starts' })).toHaveLength(7);
       expect(screen.getAllByText('Free · 08:00–23:00')).toHaveLength(7);
+      // D-E12 (user, 2026-11-17): one full-width line above the view, not inside a column.
+      const copy = screen.getByText('Nothing on your calendar yet — it’s all free time');
+      expect(screen.getByRole('list', { name: 'Week view' })).not.toContainElement(copy);
+      expect(copy.className).toMatch(/text-center/);
+    });
+
+    it('EP15E (D-E9): the now marker is drawn on today’s column in the profile zone', async () => {
+      renderPage();
+      await screen.findByText('Calculus');
+      // Frozen clock 2026-10-28T12:00 local; the marker reads the profile zone through Intl.
+      expect(screen.getByRole('img', { name: /^Now, \d\d:\d\d$/ })).toBeInTheDocument();
+      expect(document.querySelectorAll('[data-now]')).toHaveLength(1);
     });
 
     it("EP15E-AC4: error state renders role alert and 'Try again' refetches", async () => {

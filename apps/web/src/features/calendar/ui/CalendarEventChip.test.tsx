@@ -212,7 +212,8 @@ describe('CalendarEventChip — schedule blocks (EP15E-AC1)', () => {
     const { unmount: u2 } = render(
       <CalendarEventChip event={busy} onOpen={vi.fn()} layout="agenda" />
     );
-    expect(screen.getByRole('button')).toHaveAccessibleName(/^Busy\b.*09:00.*Dentist/);
+    // D-E10 (user, 2026-11-17): the agenda shows the range too.
+    expect(screen.getByRole('button')).toHaveAccessibleName(/^Busy\b.*09:00–10:00.*Dentist/);
     u2();
     render(<CalendarEventChip event={busy} onOpen={vi.fn()} layout="grid" heightPx={20} />);
     expect(screen.getByRole('button')).not.toHaveAttribute('aria-label');
