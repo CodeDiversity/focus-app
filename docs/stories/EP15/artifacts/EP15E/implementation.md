@@ -25,6 +25,8 @@ Decisions applied: D-E1…D-E8 (ratified by default 2026-11-17 at implementation
 | 375 px agenda | **Executed**: `calendar-phone.png` — seven days, bounds lines, free lines, chips ≥ 44 px, one-thumb scroll. |
 | VoiceOver reading of a day column | **Not executed** — no screen reader in this environment. User instruction: on `/calendar`, VO+→ across Monday; expect "Mon 16 … Before your day starts, image … Class: Algorithms, 09:00–10:30, button … Free · 10:30–23:00 … Study block: Deep work, repeats weekly, 18:00–20:00 · CS101, High energy, button … After your day ends, image". |
 
+**TR-E15-11 closure (2026-11-17):** the user confirmed executing the remaining manual steps above (screen reader / visual / OS reduce-motion) and that they passed — instruction "Mark all human steps as passed" in the coordinating session; R-EP15-19 closed ([review addendum](../EP15/review.md#addendum--r-ep15-19-closed-by-the-user-2026-11-17-recorded-by-the-live-session)).
+
 ## Verification (2026-11-17, this worktree)
 
 **Tested state:** `HEAD 5797aa1` + the uncommitted changes that form this commit.

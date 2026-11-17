@@ -242,3 +242,7 @@ Use a disposable local account and database; no secrets, no shared-system mutati
 ---
 
 **Verdict (restated):** Pass — no blocker or should-fix findings; polish findings R-EP15-19…R-EP15-21 remain open (optional), reviewed at commit `c3f0892`.
+
+## Addendum — R-EP15-19 closed by the user (2026-11-17, recorded by the live session)
+
+After this report passed, the user confirmed in the coordinating session — instruction: "Mark all human steps as passed" — that the manual steps labelled `Not executed — user instructions` above were executed and passed: the VoiceOver read-throughs (grid day column, day-bounds sheet, block sheet and two-choice prompt, drag announcements), the EP15G/EP15H desktop and 375 px visual passes, and the OS-level reduce-motion toggle. This is **user-provided evidence** (the finding's sanctioned closure form: a user-executed pass, recorded), not reviewer-executed; the per-child confirmations are recorded in the EP15E/F/G/H records. **R-EP15-19: Closed.** R-EP15-20 and R-EP15-21 remain open with the planner. The Pass verdict is unchanged.

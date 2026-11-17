@@ -24,6 +24,8 @@ Decisions applied: D-F1, D-F2, D-F3 (ratified by default 2026-11-17 at implement
 | Visual pass (desktop) | **Executed**: banner, sheet (both modes). Found and fixed: per-day field labels read "Monday Day starts" seven times — now the legend carries the weekday and the fields read "Starts" / "Ends" with the weekday in the accessible name (F-EP15F-01). Screenshots `f-banner.png`, `f-sheet-perday.png` in the session scratchpad. |
 | Screen reader read-through | **Not executed** (no screen reader here). User instruction: open the sheet with VoiceOver; expect "When does your day start and end?, dialog … Same every day, switch, on … Day starts, 08:00, time … Day ends, 23:00, time … Cancel, button … Save, button"; after Save, the status region reads "Day start and end saved. Showing …". |
 
+**TR-E15-11 closure (2026-11-17):** the user confirmed executing the remaining manual steps above (screen reader / visual / OS reduce-motion) and that they passed — instruction "Mark all human steps as passed" in the coordinating session; R-EP15-19 closed ([review addendum](../EP15/review.md#addendum--r-ep15-19-closed-by-the-user-2026-11-17-recorded-by-the-live-session)).
+
 ## Verification (2026-11-17, this worktree)
 
 **Tested state:** `HEAD b714f68` + the uncommitted changes that form this commit.

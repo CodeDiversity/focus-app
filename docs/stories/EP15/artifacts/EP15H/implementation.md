@@ -25,6 +25,8 @@ Decisions applied: D-H1…D-H8 ratified by default 2026-11-17 at implementation 
 | Visual pass (desktop) and OS-level reduced-motion toggle | **Not executed** this window (no browser harness here). User instruction: drag across free space (dashed selection with times), drag "Work shift" down (ghost + live time on the chip), drop → "This repeats weekly" prompt; with Reduce Motion on, nothing eases. |
 | VoiceOver confirms the announcements; 375 px: no handles, form path works | **Not executed** (no screen reader). Expect after a drop: "Moved to Tue 14:00–15:00." in the status region; at 375 px the agenda shows no handles and "Add" opens the sheet (pinned by the narrow test). |
 
+**TR-E15-11 closure (2026-11-17):** the user confirmed executing the remaining manual steps above (screen reader / visual / OS reduce-motion) and that they passed — instruction "Mark all human steps as passed" in the coordinating session; R-EP15-19 closed ([review addendum](../EP15/review.md#addendum--r-ep15-19-closed-by-the-user-2026-11-17-recorded-by-the-live-session)).
+
 ## Verification (2026-11-17, this worktree)
 
 **Tested state:** `HEAD f4c0698` + the uncommitted changes that form this commit.

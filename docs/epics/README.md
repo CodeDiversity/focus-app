@@ -25,7 +25,7 @@
 | EP12 | Tech Debt Cleanup | [EP12-tech-debt-cleanup.md](./EP12-tech-debt-cleanup.md) | Cross-cutting (EP04, EP05, EP06, EP10B) | Pending creation |
 | EP13 | Adaptive Scheduling for ADHD | [EP13-adaptive-scheduling-for-adhd.md](./EP13-adaptive-scheduling-for-adhd.md) | EP06, EP07, EP08 | Pending creation |
 | EP14 | Adaptive Scheduling Follow-ups (post-EP13 hardening) | [EP14-adaptive-scheduling-follow-ups.md](./EP14-adaptive-scheduling-follow-ups.md) | EP13 (closed) | Not synced (no tracker sync, user decision 2026-11-15) |
-| EP15 | Schedule & Availability Redesign (calendar-first availability, day bounds, events, study blocks) | [EP15-schedule-and-availability-redesign.md](./EP15-schedule-and-availability-redesign.md) | EP04, EP06, EP13, EP14 (all closed; EP14 combined review passed 2026-11-16) | Not synced (no tracker sync) |
+| EP15 | Schedule & Availability Redesign (calendar-first availability, day bounds, events, study blocks) — **closed 2026-11-17** (combined review passed, `c9b6ef2`) | [EP15-schedule-and-availability-redesign.md](./EP15-schedule-and-availability-redesign.md) | EP04, EP06, EP13, EP14 (all closed; EP14 combined review passed 2026-11-16) | Not synced (no tracker sync) |
 
 Epics synced to Jira (project STUDY, site adhdstudy.atlassian.net) on 2026-10-11, labeled `studypilot`, `mvp`. EP01, EP02, EP03 and EP04 have story breakdowns (see [docs/stories/EP01](../stories/EP01/README.md), [docs/stories/EP02](../stories/EP02/README.md), [docs/stories/EP03](../stories/EP03/README.md), [docs/stories/EP04](../stories/EP04/README.md)); EP02 covers all six proposed stories — SP-110 (story 1, complete 2026-10-21), SP-111 (stories 2–4, complete 2026-10-22) and SP-112 (stories 5–6, complete 2026-10-23); the epic is complete. EP04 is broken down (planned 2026-10-28) as SP-127 (weekly academic calendar), SP-128 (study availability and unavailable blocks) and SP-129 (mobile agenda view).
 
@@ -65,7 +65,7 @@ evidence, and unexecuted steps are labelled as user instructions. See the
 | M5 | EP10, EP11 | Visual design system & refresh + navigation & IA (MVP polish; cross-cutting) |
 | M6 | EP13 | Adaptive scheduling for ADHD (release 1.1; user-approved 2026-11-14) |
 | M7 | EP14 | Release 1.1.x hardening — trustworthy gates, accessibility debt, student-owned effort (proposed 2026-11-16, D14-2) |
-| M8 | EP15 | Release 1.2 — calendar-first schedule: day bounds, events, study blocks, free time the planner reads (ratified 2026-11-16, D15-11) |
+| M8 | EP15 | Release 1.2 — calendar-first schedule: day bounds, events, study blocks, free time the planner reads (ratified 2026-11-16, D15-11; **delivered 2026-11-17** — combined review passed) |
 
 Cross-cutting technical tasks, such as initial NestJS setup, Prisma migrations, CI, error handling, and deployment, should be tracked as technical stories or tasks linked to the appropriate milestone.
 

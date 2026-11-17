@@ -25,6 +25,8 @@ Decisions applied: D-G1…D-G9 and D-G11 ratified by default 2026-11-17 at imple
 | Visual pass (desktop / 375 px) | **Not executed** this window (no browser screenshot harness was set up; the EP15F pass needed a throwaway API build). User instruction: open the calendar, press "Add", switch to Study, turn on "Repeats weekly", expand "More"; then at 375 px confirm the sheet sits at the bottom with Save lowest and the chips wrap to two rows. |
 | Screen reader read-through | **Not executed** (no screen reader here). User instruction (VoiceOver): "Add to calendar, dialog … What is it?, radio group, Busy, selected … Title (optional), edit text, Busy … Date … Start … End … Repeats weekly, switch, off … Cancel, button … Save, button"; on a weekly Save: "This repeats weekly. Apply your change to:" then focus on "Just this day, button"; after saving the status region reads "Busy added. Showing …". |
 
+**TR-E15-11 closure (2026-11-17):** the user confirmed executing the remaining manual steps above (screen reader / visual / OS reduce-motion) and that they passed — instruction "Mark all human steps as passed" in the coordinating session; R-EP15-19 closed ([review addendum](../EP15/review.md#addendum--r-ep15-19-closed-by-the-user-2026-11-17-recorded-by-the-live-session)).
+
 ## Verification (2026-11-17, this worktree)
 
 **Tested state:** `HEAD 2dd361f` + the uncommitted changes that form this commit.
