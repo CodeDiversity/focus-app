@@ -4,7 +4,7 @@
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 (D14-2)
 **Layer:** Backend + Frontend (migration, engine, assignment form)
-**Status:** Implemented — awaiting parent review (implementer, 2026-11-16; record: [artifacts/EP14E/implementation.md](./artifacts/EP14E/implementation.md)); refined 2026-11-16 (technical + UI/UX); D-E1…D-E7 ruled; plan review pass 2 (Plan Ready) stands
+**Status:** Reviewed — EP14 combined review round 2 passes (reviewer, 2026-11-16, at `5e35f2b`; [artifacts/EP14/review.md](./artifacts/EP14/review.md)). Previously: Implemented — awaiting parent review (implementer, 2026-11-16; record: [artifacts/EP14E/implementation.md](./artifacts/EP14E/implementation.md)); refined 2026-11-16 (technical + UI/UX); D-E1…D-E7 ruled; plan review pass 2 (Plan Ready) stands
 **Refined:** 2026-11-16 (refiner; technical grounding for every layer + UI/UX for the assignment-form control; AC text unchanged)
 **Dependencies:** EP14B (the new boolean body field must land under the strict-conversion policy, ▲ D-B1). Sources: EP13R D-R1 + D-R2 (user rulings 2026-11-16); F-EP13J-02, F-EP13J-04; closes V-13-5.
 

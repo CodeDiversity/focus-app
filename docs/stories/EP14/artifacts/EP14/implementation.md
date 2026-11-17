@@ -3,6 +3,7 @@
 **Parent:** [EP14 README](../../README.md) · **Epic:** [EP14](../../../../epics/EP14-adaptive-scheduling-follow-ups.md) · **Plan baseline:** Plan Ready at `966b109` (pass 2, docs commit `08a07aa`)
 **Written by:** EP14E's implementer, 2026-11-16, per [review-cadence](../../../../../.agents/review-cadence.md). Every child is `Implemented — awaiting parent review`; nothing here is self-approved.
 **Review unit:** EP14A, EP14B, EP14C, EP14F, EP14D, EP14E (queue order). Report goes to `./review.md`.
+**Status:** Reviewed — round 1 ([review-round-1.md](./review-round-1.md), `08b6bd5`) does not pass; round 2 ([review.md](./review.md), `5e35f2b`) **passes** (reviewer, 2026-11-16). Counts below predate the R-EP14-06 fix round (gated now 1630/80) and the register additions BL-14-09…12 — see review.md R-EP14-09.
 
 ## 1. Child inventory and Git scope
 

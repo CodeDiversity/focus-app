@@ -4,7 +4,7 @@
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 (D14-2)
 **Layer:** Backend (+ one small frontend consumer change)
-**Status:** Implemented — awaiting parent review (2026-11-16); EP14B-AC2's "fully green CI" clause open (F-EP14B-02). Record: [`artifacts/EP14B/implementation.md`](./artifacts/EP14B/implementation.md)
+**Status:** Reviewed — EP14 combined review round 2 passes (reviewer, 2026-11-16, at `5e35f2b`; [artifacts/EP14/review.md](./artifacts/EP14/review.md)). Previously: Implemented — awaiting parent review (2026-11-16); EP14B-AC2's "fully green CI" clause waived by the user (C-EP14-04, 2026-11-16; Secret scan tracked as BL-14-12). Record: [`artifacts/EP14B/implementation.md`](./artifacts/EP14B/implementation.md)
 **Dependencies:** EP14A recommended first (so this story's gated evidence is a CI run). Sources: EP13R D-R14 and D-R8 (user rulings 2026-11-16), R-EP13-03, F-EP13K-01.
 
 ## Plan at a glance

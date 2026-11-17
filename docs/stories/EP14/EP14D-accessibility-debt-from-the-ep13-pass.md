@@ -4,7 +4,7 @@
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 (D14-2)
 **Layer:** Frontend (+ E2E gate)
-**Status:** Implemented — awaiting parent review (implementer, 2026-11-16); record: [artifacts/EP14D/implementation.md](./artifacts/EP14D/implementation.md)
+**Status:** Reviewed — EP14 combined review round 2 passes (reviewer, 2026-11-16, at `5e35f2b`; [artifacts/EP14/review.md](./artifacts/EP14/review.md)). Previously: Implemented — awaiting parent review (implementer, 2026-11-16); record: [artifacts/EP14D/implementation.md](./artifacts/EP14D/implementation.md)
 **Dependencies:** none. Sources: EP13R D-R9, D-R10, D-R11, D-R12 (user rulings 2026-11-16); F-EP13M-01, -02, -04, -05.
 
 ## Plan at a glance

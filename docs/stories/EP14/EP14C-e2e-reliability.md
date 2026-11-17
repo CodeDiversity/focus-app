@@ -4,7 +4,7 @@
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 (D14-2)
 **Layer:** Integration (E2E tests only)
-**Status:** Implemented — awaiting parent review (2026-11-16). Record: [`artifacts/EP14C/implementation.md`](./artifacts/EP14C/implementation.md)
+**Status:** Reviewed — EP14 combined review round 2 passes (reviewer, 2026-11-16, at `5e35f2b`; [artifacts/EP14/review.md](./artifacts/EP14/review.md)). Previously: Implemented — awaiting parent review (2026-11-16). Record: [`artifacts/EP14C/implementation.md`](./artifacts/EP14C/implementation.md)
 **Dependencies:** none (EP14D owns the a11y E2E failures). Source: EP13R D-R13 (user ruling 2026-11-16), F-EP13M-06.
 
 ## Plan at a glance

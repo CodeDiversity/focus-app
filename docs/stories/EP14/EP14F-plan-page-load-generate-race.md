@@ -4,7 +4,7 @@
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 (D14-2)
 **Layer:** Frontend (one page, one test file)
-**Status:** Implemented — awaiting parent review (implementer, 2026-11-16); record: [artifacts/EP14F/implementation.md](./artifacts/EP14F/implementation.md). Promoted from BL-14-08 (planner, 2026-11-16); no UI decisions (behaviour fix, no visual change)
+**Status:** Reviewed — EP14 combined review round 2 passes (reviewer, 2026-11-16, at `5e35f2b`; [artifacts/EP14/review.md](./artifacts/EP14/review.md)). Previously: Implemented — awaiting parent review (implementer, 2026-11-16); record: [artifacts/EP14F/implementation.md](./artifacts/EP14F/implementation.md). Promoted from BL-14-08 (planner, 2026-11-16); no UI decisions (behaviour fix, no visual change)
 **Dependencies:** none. Source: F-EP14C-03 (EP14C record), BL-14-08 ("before EP14D"). Unblocks EP14D-AC4.
 
 ## Plan at a glance

@@ -3,7 +3,7 @@
 **Epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 — release 1.1.x hardening (D14-2)
 **Origin:** user rulings on [EP13R](../EP13/EP13R-follow-up-register-and-triage.md), 2026-11-16 — every recommendation ratified: eight "Do next" items became the five children below, six "Backlog" items are tracked in the [Backlog register](#backlog).
-**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: see [history.md](./history.md). **Plan review:** pass 1 ([plan-review-pass-1.md](./plan-review-pass-1.md)) Changes Required — R-EP14-01…03 corrected (C-EP14-01…03 in [history.md](./history.md)); pass 2 ([plan-review.md](./plan-review.md)) **Plan Ready** (reviewer, 2026-11-16, at `966b109` — prior findings resolved; R-EP14-04 polish only).
+**Status:** Breakdown complete (planner, 2026-11-16). Quality gate: see [history.md](./history.md). **Plan review:** pass 1 ([plan-review-pass-1.md](./plan-review-pass-1.md)) Changes Required — R-EP14-01…03 corrected (C-EP14-01…03 in [history.md](./history.md)); pass 2 ([plan-review.md](./plan-review.md)) **Plan Ready** (reviewer, 2026-11-16, at `966b109` — prior findings resolved; R-EP14-04 polish only). **Implementation review:** round 1 ([review-round-1.md](./artifacts/EP14/review-round-1.md)) does not pass — R-EP14-05…08; round 2 ([artifacts/EP14/review.md](./artifacts/EP14/review.md)) **Passes** (reviewer, 2026-11-16, at `5e35f2b` — R-EP14-06/-07/-08 resolved, R-EP14-05 waived by the user (C-EP14-04 / BL-14-12), R-EP14-09 polish). EP14 unit **Reviewed**; open user item: BL-14-12.
 
 ## Plan at a glance
 
@@ -20,20 +20,20 @@
 
 **Active substory:** None.
 
-**Next substory:** None — parent index written ([artifacts/EP14/implementation.md](./artifacts/EP14/implementation.md)); combined review.
+**Next substory:** None — EP14 unit reviewed (round 2 pass, [artifacts/EP14/review.md](./artifacts/EP14/review.md)); remaining work is BL-14-12 (user, before any release tag or merge to `main`) and the EP15 queue.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
-**Final review:** one combined review for the EP14 unit (EP14A–EP14F) after EP14E; report at `./artifacts/EP14/review.md`.
+**Final review:** one combined review for the EP14 unit (EP14A–EP14F) after EP14E; report at `./artifacts/EP14/review.md` — **Passes** (round 2, reviewer, 2026-11-16, at `5e35f2b`); round 1 at `./artifacts/EP14/review-round-1.md`.
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP14A](./EP14A-ci-runs-the-full-gate-on-delivery-branches.md) | Implemented — awaiting parent review | None. | None (known-red window closed by EP14B) | `./artifacts/EP14A/implementation.md`; runs 43908087082 (baseline) / 43908098549 (red); open: F-EP14A-01 |
-| [EP14B](./EP14B-api-contract-integrity.md) | Implemented — awaiting parent review | EP14A implemented. | None — F-EP14B-02 waived by the user for sign-off (C-EP14-04); tracked as BL-14-12 | `./artifacts/EP14B/implementation.md`; gated 1584/0 → fix round R-EP14-06: shared `FIELD_VALIDATION_PIPE_OPTIONS` + parity spec, gated 1630/0 (awaiting re-review); CI run 43910951890 backend+frontend green, Secret scan red; open: F-EP14B-02 |
-| [EP14C](./EP14C-e2e-reliability.md) | Implemented — awaiting parent review | None | None | `./artifacts/EP14C/implementation.md`; 3 full runs, 0 failures from its files; open: F-EP14C-02/-03 (BL-14-07/-08) |
-| [EP14F](./EP14F-plan-page-load-generate-race.md) | Implemented — awaiting parent review | None (promoted from BL-14-08, 2026-11-16). | None | `./artifacts/EP14F/implementation.md`; 4 clean full runs 47/2/5 (only EP14D's F-EP13M-01 pair red), 0 race failures; open: F-EP14F-01/-02 (E2E harness) |
-| [EP14D](./EP14D-accessibility-debt-from-the-ep13-pass.md) | Implemented — awaiting parent review | EP14F implemented (EP14D-AC4 needs the plan-page race fixed). | None | `./artifacts/EP14D/implementation.md`; axe gate with no allowlist: 3 fully green full runs (54/0), journeys 7/7 ×4; root causes: Dialog under StrictMode, mid-animation 44 px read; open: F-EP14D-03 (journey 5 flake) |
-| [EP14E](./EP14E-effort-aware-placement.md) | Implemented — awaiting parent review | EP14B implemented; D-E1…D-E7 ruled (user grant). | None (parent index written; combined review) | `./artifacts/EP14E/implementation.md`; gated 1625/0, web 1290/0, E2E full run green incl. the new Hard round-trip + axe case; open: F-EP14E-01/-02 (recorded deviations, parent review to note) |
+| [EP14A](./EP14A-ci-runs-the-full-gate-on-delivery-branches.md) | Reviewed | None. | None | `./artifacts/EP14A/implementation.md`; runs 43908087082 (baseline) / 43908098549 (red); F-EP14A-01 recorded (step-level conclusions reviewer-confirmed); Reviewed — round 2 pass (reviewer, 2026-11-16, at `5e35f2b`) |
+| [EP14B](./EP14B-api-contract-integrity.md) | Reviewed | EP14A implemented. | None — the fully-green-CI clause is waived by the user (C-EP14-04); Secret scan tracked as BL-14-12 (user) | `./artifacts/EP14B/implementation.md`; gated 1584/0 → R-EP14-06 fix (shared pipe options + parity spec) gated 1630/0; CI 43910951890 backend+frontend green, Secret scan → BL-14-12; Reviewed — round 2 pass (2026-11-16, `5e35f2b`) |
+| [EP14C](./EP14C-e2e-reliability.md) | Reviewed | None | None | `./artifacts/EP14C/implementation.md`; 3 full runs, 0 failures from its files; F-EP14C-02/-03 → BL-14-07 / EP14F; Reviewed — round 2 pass (reviewer, 2026-11-16, at `5e35f2b`) |
+| [EP14F](./EP14F-plan-page-load-generate-race.md) | Reviewed | None (promoted from BL-14-08, 2026-11-16). | None | `./artifacts/EP14F/implementation.md`; 4 clean full runs 47/2/5 (only EP14D's F-EP13M-01 pair red), 0 race failures; F-EP14F-01/-02 → BL-14-10/-11; Reviewed — round 2 pass (reviewer, 2026-11-16, at `5e35f2b`) |
+| [EP14D](./EP14D-accessibility-debt-from-the-ep13-pass.md) | Reviewed | EP14F implemented (EP14D-AC4 needs the plan-page race fixed). | None | `./artifacts/EP14D/implementation.md`; axe gate with no allowlist: 3 fully green full runs (54/0), journeys 7/7 ×4; root causes: Dialog under StrictMode, mid-animation 44 px read; F-EP14D-03 → BL-14-09; Reviewed — round 2 pass (2026-11-16, `5e35f2b`) |
+| [EP14E](./EP14E-effort-aware-placement.md) | Reviewed | EP14B implemented; D-E1…D-E7 ruled (user grant). | None | `./artifacts/EP14E/implementation.md`; gated 1625/0, web 1290/0, E2E full run green incl. the new Hard round-trip + axe case; F-EP14E-01…03 noted by the review (AC text untouched); Reviewed — round 2 pass (2026-11-16, `5e35f2b`) |
 
 Sequence (one writer): EP14A → EP14B → EP14C → **EP14F** → EP14D → EP14E (EP14F inserted 2026-11-16 when BL-14-08 was promoted; letters are stable IDs, row order is execution order). Why: the CI trigger first makes every later child's gated evidence a real run; EP14B makes the baseline zero-failure before anything else lands on it; EP14E adds a migration and new body field, so it follows the validation policy it depends on.
 
