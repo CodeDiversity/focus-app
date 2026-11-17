@@ -24,7 +24,7 @@ details.
 
 ## Scope
 
-**In:** `pages/calendar`, `features/calendar/ui/{WeekGrid (new), CalendarAgenda, CalendarEventChip, CalendarEventDetails}`, `entities/calendar` types/API, week derivation from server dates, states, keyboard order, reduced motion, component tests; the existing `calendar.spec.ts` kept green at the journey level (full rewrite is EP15J).
+**In:** `pages/calendar`, `features/calendar/ui/{WeekGrid (new), CalendarAgenda, CalendarEventChip, CalendarEventDetails}`, `entities/calendar` types/API, week derivation from server dates, states, keyboard order, reduced motion, component tests; the existing `calendar.spec.ts` (minus the slot assertions EP15D retired) stays green at the journey level; its "Manage availability" expectation (`:22`) is removed by EP15I; the full rewrite is EP15J.
 **Out:** any write (EP15F/G/H), the Plan page's own week grid (`features/study-plan/ui/WeekGrid.tsx`, unchanged).
 
 ## Source requirement references

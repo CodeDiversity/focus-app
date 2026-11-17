@@ -29,13 +29,22 @@ Planned 2026-11-16 from the user's vision ("a calendar-like interface where stud
 
 | Pass | Date | Reviewed commit | Report | Verdict |
 |---|---|---|---|---|
-| — | — | — | — | Required; not yet run |
+| 1 | 2026-11-16 | `a06838a` | [plan-review.md](./plan-review.md) | Changes Required — R-EP15-01…06 should-fix (planner), R-EP15-07…09 polish; no user ruling needed |
+| 2 | — | — | — | Pending (after the EP15E/G/H refiner passes) |
 
 ## Plan correction log
 
 | ID | Date | Finding | Correction | Status |
 |---|---|---|---|---|
-| — | — | — | — | Empty — first plan |
+| C-EP15-01 | 2026-11-16 | R-EP15-01: engine rules described the pre-EP14E hook; tier/guard interaction undefined. | contracts rule 3 = two tiers, EP14E `byEnergyPreference(free, demanding, minBlock)` unchanged within each tier; EP15C notes/AC3/AC4 name EP14E + `hard`; tier/guard test added to TR-E15-03; epic baseline refreshed. | Fixed in plan — awaiting re-review |
+| C-EP15-02 | 2026-11-16 | R-EP15-02: typecheck window EP15C→EP15D and E2E window EP15D→EP15J unrecorded; `save` dating loop uncited. | EP15C owns a thin service adapter (Scope/AC1); EP15D retires slot assertions and cites both loops; EP15E/EP15I texts aligned; D15-18 + contracts § Known windows. | Fixed in plan — awaiting re-review |
+| C-EP15-03 | 2026-11-16 | R-EP15-03: "just this day" edit order/partial failure; cross-day weekly drag undefined. | EP15G-AC2 create-then-cancel with partial-failure copy + test; D-G1 reworded; EP15H-AC2 cross-day = just-this-day, announced, no prompt; D-H4 added; invariants row. | Fixed in plan — awaiting re-review |
+| C-EP15-04 | 2026-11-16 | R-EP15-04: overlapping study blocks undefined. | contracts rule 2 D-J2 resolution (earlier start, tie `blockId`); EP15C-AC3 + overlap test; invariants row. | Fixed in plan — awaiting re-review |
+| C-EP15-05 | 2026-11-16 | R-EP15-05: no rollback statements. | Migration 1 rollback recorded; Migration 2 declared irreversible with the backup stance; EP15A-AC1 / EP15I-AC4 reference them. | Fixed in plan — awaiting re-review |
+| C-EP15-06 | 2026-11-16 | R-EP15-06: Plan health omitted from the Planning group. | EP15I-AC3/Tests/at-a-glance, epic baseline and D15-9 say Calendar, Plan, Plan health. | Fixed in plan — awaiting re-review |
+| C-EP15-07 | 2026-11-16 | R-EP15-07 (polish): identity adapter unstated. | Hull-plus-gaps adapter rule in contracts rule 5 and EP15C-AC4. | Fixed in plan |
+| C-EP15-08 | 2026-11-16 | R-EP15-08 (polish): `createdAt::date` zone. | Assumption recorded (D-A2, contracts Migration 1). | Fixed in plan |
+| C-EP15-09 | 2026-11-16 | R-EP15-09 (polish): ▲ markers missing on material story rows. | ▲ added to D-A1, D-A4, D-B1, D-B2 (rulings unchanged under D15-17). | Fixed in plan |
 
 ## Superseded decisions
 

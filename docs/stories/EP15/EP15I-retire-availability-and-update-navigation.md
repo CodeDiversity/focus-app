@@ -9,7 +9,7 @@
 
 ## Plan at a glance
 
-- **What this changes:** a migration drops `availability_slots`; the `availability` API module, the `/availability` page and its entities/features are deleted; `/availability` redirects to `/calendar`; the Planning nav group becomes Calendar + Plan and the account menu loses Availability; "Manage availability" links become the calendar's own "Add"; docs updated.
+- **What this changes:** a migration drops `availability_slots`; the `availability` API module, the `/availability` page and its entities/features are deleted; `/availability` redirects to `/calendar`; the Planning nav group becomes Calendar + Plan + Plan health (Availability removed) and the account menu loses Availability; "Manage availability" links become the calendar's own "Add"; docs updated.
 - **Why it improves it:** one surface, one truth — the stale editor from the interim (D15-15) is gone (product, AC-E15-13); no dead code or dead table remains (code).
 - **Decisions needing you:** none ▲ — D-I1…D-I2 ratify by default (D15-17).
 - **How to change this plan:** edit a Ruling cell below, or ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
@@ -32,13 +32,13 @@ AC-E15-13 (retire half); TR-E15-09; DoD-8, DoD-9.
 
 1. The migration drops `availability_slots`; the `AvailabilitySlot` model, `EnergyLevel` usage on it and the `User.availabilitySlots` relation are removed; `db:generate`, typecheck and the full gated API suite are green.
 2. `apps/api/src/modules/availability/**` is deleted and unwired; `apps/web/src/{pages/availability,features/availability,entities/availability}/**` are deleted; a repository-wide search for `availability-slots`, `AvailabilitySlot`, `availabilitySlot` and `'/availability'` finds only the redirect route, historical records under `docs/stories/**/artifacts`, and closed story/plan texts.
-3. `/availability` renders `<Navigate to="/calendar" replace />`; `navGroups.ts` lists Planning = Calendar, Plan and the account menu has no Availability entry; header/drawer tests assert the new sets; every former "Manage availability" link or empty-state CTA on the calendar and dashboard points to the calendar's Add action or is removed.
-4. `apps/web/e2e/*` no longer references the availability page; the root README's schema and API sections and `docs/stories/EP15/contracts.md` record the drop.
+3. `/availability` renders `<Navigate to="/calendar" replace />`; `navGroups.ts` lists Planning = Calendar, Plan, Plan health (only Availability removed — D11-10) and the account menu has no Availability entry; header/drawer tests assert the new sets; every former "Manage availability" link or empty-state CTA on the calendar and dashboard points to the calendar's Add action or is removed.
+4. `apps/web/e2e/*` no longer references the availability page (incl. the "Manage availability" expectation at `calendar.spec.ts:22`); the root README's schema and API sections and `docs/stories/EP15/contracts.md` record the drop and its irreversibility stance (pre-drop backup; no reverse migration — contracts.md § Data model).
 
 ## Tests (TR-E15-09)
 
 - API: suite green after deletion; a schema test that `availability_slots` is absent after migrations run.
-- Web: route test for the redirect; `navGroups` snapshot/sets; header desktop + drawer tests for the Planning group and account menu; calendar empty-state test for the Add CTA.
+- Web: route test for the redirect; `navGroups` sets assert Planning = Calendar, Plan, Plan health exactly; header desktop + drawer tests for the Planning group and account menu; calendar empty-state test for the Add CTA.
 - Repo: the search in EP15I-AC2 as a verification command recorded in the implementation record.
 
 ## Technical notes

@@ -56,7 +56,7 @@ model ScheduleBlockException {
 
 `User` gains `dayBounds DayBounds[]` and `scheduleBlocks ScheduleBlock[]`; `Course` gains `studyBlocks ScheduleBlock[]`.
 
-**Migration 1 (EP15A, `…_schedule_blocks_and_day_bounds`):** creates the three tables and copies every `availability_slots` row into `schedule_blocks` — `kind` = `STUDY` when `isAvailable` else `BUSY`; `energy` kept for STUDY, `NORMAL` for BUSY; `weekdays` = `1 << dayOfWeek`; `startDate` = `createdAt::date` (D-A2); `title` null; times verbatim. `availability_slots` is left in place (the old API keeps serving it until EP15I). **Migration 2 (EP15I, `…_drop_availability_slots`):** drops `availability_slots` and the `AvailabilitySlot` model/relation. No other table changes.
+**Migration 1 (EP15A, `…_schedule_blocks_and_day_bounds`):** creates the three tables and copies every `availability_slots` row into `schedule_blocks` — `kind` = `STUDY` when `isAvailable` else `BUSY`; `energy` kept for STUDY, `NORMAL` for BUSY; `weekdays` = `1 << dayOfWeek`; `startDate` = `createdAt::date` (D-A2 — cast in the database session zone, UTC, not the profile zone; accepted: at worst one civil day late for a slot created near local midnight, visible only on the migration day — R-EP15-08); `title` null; times verbatim. `availability_slots` is left in place (the old API keeps serving it until EP15I). **Rollback of Migration 1:** `DROP TABLE schedule_block_exceptions, schedule_blocks, day_bounds; DROP TYPE "ScheduleBlockKind";` — a full restore, because `availability_slots` was never modified (R-EP15-05). **Migration 2 (EP15I, `…_drop_availability_slots`):** drops `availability_slots` and the `AvailabilitySlot` model/relation. No other table changes. **Migration 2 is irreversible by design** (R-EP15-05): one-off blocks, multi-weekday series and exceptions have no slot representation, so no reverse copy restores the table faithfully and none is provided. Stance: the deploy that applies Migration 2 takes a pre-drop backup (`pg_dump -t availability_slots`) first; recovery is restore-from-backup, never a reverse migration. EP15A-AC1 and EP15I-AC4 reference these statements.
 
 ## Recurrence semantics (pure domain `apps/api/src/domain/schedule/`, EP15A)
 
@@ -122,13 +122,13 @@ type SchedulerInput = {
 };
 ```
 
-Rules (all deterministic; added on top of EP13F/EP13G/EP13J, which are unchanged):
+Rules (all deterministic; added on top of EP13F/EP13G/EP13J/EP14E, which are unchanged — the current ranking hook is `byEnergyPreference(free, demanding, minBlock)` with EP14E's day-centric light-work guard, and `isDemanding` honours `Assignment.hard`; R-EP15-01):
 
 1. **Base = day bounds.** The day's free intervals are `freeIntervals({ base: { kind: 'declared', windows: dayBounds-for-day }, blocked, classes, busy, placed })`. A zero-minute day still yields `NO_AVAILABLE_TIME`.
-2. **Preferred pieces.** Free intervals are intersected with `preferred`; a piece inside a preferred interval carries `{ energy: block.energy, preferredKey: blockId, courseId }`, a piece outside carries no key and energy `NORMAL`. `mergeIntervals` merges only pieces with equal energy **and** equal `preferredKey` (extends EP13J D-J2).
-3. **Gap ranking** per day: preferred pieces before non-preferred; then EP13J's energy order (D-J3); then earliest-first. Critical work (EP13F rule 3) ignores energy but still fills preferred pieces first.
+2. **Preferred pieces.** Free intervals are intersected with `preferred`; a piece inside a preferred interval carries `{ energy: block.energy, preferredKey: blockId, courseId }`, a piece outside carries no key and energy `NORMAL`. `mergeIntervals` merges only pieces with equal energy **and** equal `preferredKey` (extends EP13J D-J2). **Overlapping study blocks** (R-EP15-04) resolve exactly as D-J2 resolves overlapping energy windows: the block with the earlier `startMinute` keeps its whole span (tie: the lexically smaller `blockId`); the later block's remainder, if any, keeps its own key. The rule is total, so pieces are stable across runs.
+3. **Gap ranking** per day, in two tiers (R-EP15-01): the **preferred tier** (pieces with a `preferredKey`) is scanned before the non-preferred tier; **within each tier** EP14E's `byEnergyPreference(free, demanding, minBlock)` applies unchanged — energy order per D-J3 and the light-work guard with its anchor (earliest NORMAL gap ≥ `minBlock`) computed **within that tier**; earliest-first inside a level. So for light work a LOW preferred evening piece still wins over a NORMAL non-preferred morning gap (the student asked for that block), while inside the non-preferred tier the guard keeps easy work from drifting late exactly as EP14E-AC3 specifies. Critical work (EP13F rule 3) ignores energy but still fills the preferred tier first.
 4. **Course tie.** Inside a piece whose `courseId` is set, the round-robin candidate order places that course's assignments first (comparator order within), then the rest; feasibility still wins.
-5. **Identity.** With `preferred` empty and `dayBounds` equal to the student's former available windows, output is byte-identical to the EP13J engine (EP15C-AC4) — the safety net for every existing test fixture.
+5. **Identity.** With `preferred` empty and the former available windows expressed as bounds, output is byte-identical to the **EP14E** engine, with `hard` flags present or not (EP15C-AC4) — the safety net for every existing test fixture. **Adapter rule** (R-EP15-07): a weekday with several former windows becomes `dayBounds` = their hull `[min start, max end)` plus the gaps between them appended to `blocked`, which reproduces the old free intervals exactly.
 6. Budgets, density, breaks, min/max, anchor partition and `windowHint` never read `preferred`.
 
 `conflicts.ts` and the save-time re-check keep the `whole-day` base (D15-8). EP08's `replan` passes the new input through unchanged.
@@ -137,6 +137,8 @@ Rules (all deterministic; added on top of EP13F/EP13G/EP13J, which are unchanged
 
 | Claim | Counterexample | Mechanism | Owning test |
 |---|---|---|---|
+| A "just this day" edit never loses the occurrence | The one-off create succeeds and the occurrence cancel then fails (network loss, 404) — or the reverse order fails after cancelling | EP15G-AC2 orders **create first, cancel second**; a failed create changes nothing (error in the sheet); a failed cancel leaves a visible duplicate for that day with an announcement naming the next step — never a hole | EP15G (TR-E15-07 partial-failure case) |
+| Overlapping study blocks never make placement order-dependent | Two STUDY blocks over the same hour with different energy/course | Rule 2's D-J2 resolution (earlier start keeps its span, tie by `blockId`) | EP15C (TR-E15-03 overlap test, V-15-3) |
 | A student never reads or writes another student's blocks, exceptions or bounds | `PATCH /schedule/blocks/<other's id>`; `DELETE …/occurrences/<date>` on a foreign block | Every query carries `userId` (direct, or `block: { userId }`); the loser gets the uniform 404 with no write | EP15B (TR-E15-02 ownership matrix) |
 | A study block cannot be tied to a course the student does not own | `POST /schedule/blocks { courseId: <foreign> }` | Scoped `course.findFirst({ id, userId })` before the write; miss → uniform 404 | EP15B |
 | The calendar's free time equals the planner's free time | A cancelled occurrence or a DST day computed differently on the two paths | One `scheduleInputs` helper + one `freeIntervals` call; V-15-1 compares both outputs on one fixture | EP15D (TR-E15-04) |
@@ -144,6 +146,11 @@ Rules (all deterministic; added on top of EP13F/EP13G/EP13J, which are unchanged
 | Migration loses no availability data | A slot with `energy HIGH` or `dayOfWeek 0` | Row-count and field-equality check on a seeded database | EP15A (TR-E15-01, V-15-2) |
 | Determinism | Two runs with events + study blocks | Total tie-breaks (`date`, `startMinute`, `blockId`); byte-identity test | EP15C (V-15-3) |
 | No colour-only meaning; keyboard parity for every grid action | A pointer-only drag-create | Form path for every action (EP15G) precedes the pointer path (EP15H); text/icon kind markers | EP15E/G/H (TR-E15-05…07), EP15J axe gate |
+
+## Known windows between sequential children (R-EP15-02)
+
+- **Typecheck:** EP15C changes `SchedulerInput`; EP15C itself ships a thin adapter inside `study-plans.service.ts` (the hull-plus-gaps rule above, `blocked` dated through the existing per-date loops, `preferred: []`) so `gatherPlanData`, `save` (`study-plans.service.ts:1634–1644` dating loop) and `catchUpConfirm` (`:1409–1419`) compile and every suite stays green; EP15D replaces the adapter with the seam. No red window.
+- **E2E:** `apps/web/e2e/calendar.spec.ts:180–215` asserts availability slots appear as `AVAILABILITY`/`BLOCKED_TIME` events; EP15D removes those assertions (test-only) with a pointer to EP15J, which rewrites the spec. `calendar.spec.ts:22` expects "Manage availability"; EP15I removes it together with the links (EP15I-AC4). No red window is left unowned.
 
 ## Code baseline
 

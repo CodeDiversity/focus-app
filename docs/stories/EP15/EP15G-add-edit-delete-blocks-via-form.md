@@ -32,14 +32,14 @@ AC-E15-03, AC-E15-04, AC-E15-06 (UI), AC-E15-10 (form + keyboard half), AC-E15-1
 ## Acceptance criteria
 
 1. "Add" opens the block sheet with: a Busy / Study toggle (default Busy); date (the viewed week's today or the selected day); start and end (next whole hour, one hour long); optional title with the placeholder "Busy" or "Study"; a "Repeats weekly" switch that, when on, shows seven weekday chips with the date's weekday pre-selected; a "More" disclosure holding "Ends on" (weekly only) and, for Study only, Course and Energy (default Normal). Save creates via `POST /schedule/blocks`; a 400 maps to its field; a foreign-course 404 shows the uniform message.
-2. From an `EVENT` or `STUDY_BLOCK` details dialog, Edit opens the same sheet pre-filled with the kind toggle hidden, and Delete is available in place (no second dialog). On a weekly item Save and Delete first ask one question — "Just this day" or "This and following" — and wire it as: just-this-day edit → cancel the occurrence then `POST` a one-off with the edited values (one action, one announcement); just-this-day delete → `DELETE …/occurrences/:date`; this-and-following edit → `PATCH` with `effectiveFrom` = the item's date; this-and-following delete → `DELETE ?from=` the item's date. A one-off item asks nothing.
+2. From an `EVENT` or `STUDY_BLOCK` details dialog, Edit opens the same sheet pre-filled with the kind toggle hidden, and Delete is available in place (no second dialog). On a weekly item Save and Delete first ask one question — "Just this day" or "This and following" — and wire it as: just-this-day edit → **`POST` the one-off with the edited values first, then** `DELETE …/occurrences/:date` (one action, one announcement; R-EP15-03): if the `POST` fails nothing has changed and the error shows in the sheet; if the cancel fails after the `POST` succeeded, the week re-reads showing both the original occurrence and the new block for that day and the status region says "Saved your change, but the original block is still showing for this day — remove it from its details."; just-this-day delete → `DELETE …/occurrences/:date`; this-and-following edit → `PATCH` with `effectiveFrom` = the item's date; this-and-following delete → `DELETE ?from=` the item's date. A one-off item asks nothing.
 3. Below `sm` the agenda has the same "Add" and opens the same sheet; its items open the same details with Edit and Delete; results are identical to the grid path.
 4. The sheet is the shared `Dialog` (focus trap, Escape, focus returns to the trigger); the weekday chips are a labelled checkbox group operable by keyboard; every control is ≥ 44px on mobile; duplicate submission is prevented; after any change the week re-reads and the status region announces the change ("Busy added", "Study block updated for this and following weeks", "Removed for this day").
 
 ## Tests (TR-E15-07)
 
 - Create: defaults (kind, date, hour, duration); weekly switch reveals chips with the pre-selected day; "More" hidden by default and Study-only fields absent for Busy; payload shape for one-off and weekly; 400 field mapping; 404 message.
-- Edit/delete: kind toggle hidden; one-off → no prompt; weekly → prompt; each of the four wirings issues exactly the specified requests in order; cancellation of the prompt changes nothing.
+- Edit/delete: kind toggle hidden; one-off → no prompt; weekly → prompt; each of the four wirings issues exactly the specified requests in order (create before cancel for just-this-day); partial failure: `POST` fails → no cancel issued, sheet error; cancel fails after `POST` → both items visible after refetch and the specified announcement; cancellation of the prompt changes nothing.
 - Agenda: Add present; sheet identical; details actions present.
 - Keyboard: chips group semantics, tab order, Escape, focus return; 44px on narrow; duplicate-submit guard; announcements.
 
@@ -52,7 +52,7 @@ AC-E15-03, AC-E15-04, AC-E15-06 (UI), AC-E15-10 (form + keyboard half), AC-E15-1
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-G1 | "Just this day" edit: (a) cancel the occurrence + create a one-off, as one client action; (b) a server endpoint | **(a)** — D15-5 as ratified; no new API | Proposed |
+| D-G1 | "Just this day" edit: (a) create the one-off **then** cancel the occurrence, as one client action (a failed cancel leaves a visible duplicate, never a hole — R-EP15-03); (b) a server endpoint | **(a)** — D15-5 as ratified; no new API | Proposed |
 | D-G2 | Default kind: (a) Busy; (b) last used | **(a)** — predictable; most additions are real-life commitments | Proposed |
 | D-G3 | Sheet container: (a) the shared `Dialog` (the refiner may style it as a bottom sheet below `sm`); (b) a new drawer primitive | **(a)** — one primitive, focus handling solved | Proposed |
 | D-G4 | Title: (a) optional with kind placeholder; (b) required | **(a)** — the kind is the title for most blocks (D15-14) | Proposed |

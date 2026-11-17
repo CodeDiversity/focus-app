@@ -32,13 +32,13 @@ AC-E15-10 (pointer half); TR-E15-08, TR-E15-11; DoD-5, DoD-6, DoD-8.
 ## Acceptance criteria
 
 1. Dragging across a day column's free or shaded cells shows a live selection snapped to 15 minutes and, on release, opens EP15G's sheet pre-filled with that date, start and end; Escape during the drag cancels with nothing persisted; a click without drag does nothing.
-2. Dragging an `EVENT` or `STUDY_BLOCK` chip moves it (same day or another day of the week) and dragging its bottom edge resizes it, both snapped to 15 minutes and clamped to the grid's visible range; a one-off item is saved on release via `PATCH`; a weekly item first shows EP15G's two-choice prompt and then follows exactly EP15G's wiring; other item kinds are not draggable and show no handles.
+2. Dragging an `EVENT` or `STUDY_BLOCK` chip moves it and dragging its bottom edge resizes it, both snapped to 15 minutes and clamped to the grid's visible range; a one-off item is saved on release via `PATCH` (same day or another day). For a weekly item: a **same-day** move or resize first shows EP15G's two-choice prompt and then follows exactly EP15G's wiring; a **cross-day** drag always behaves as "Just this day" without the prompt — `POST` a one-off on the new date, then cancel the source occurrence (EP15G's order) — and announces "Moved this day's <title> to <Day HH:mm–HH:mm>; other weeks unchanged"; changing a series' weekdays is done in the sheet's chips (R-EP15-03). Other item kinds are not draggable and show no handles.
 3. Every move or resize announces its result in the status region ("Moved to Tue 14:00–15:00") and re-reads the week; animations respect `prefers-reduced-motion`; every pointer action has the sheet as its keyboard equivalent and nothing is reachable only by pointer.
 
 ## Tests (TR-E15-08)
 
 - Select-to-create: pointer sequence → sheet opened with snapped values; Escape cancels; click-only does nothing.
-- Move/resize: one-off → one `PATCH` with snapped values; weekly → prompt first, then the EP15G wiring; non-draggable kinds have no handles/handlers; clamp at the grid edges.
+- Move/resize: one-off → one `PATCH` with snapped values; weekly same-day → prompt first, then the EP15G wiring; weekly cross-day → no prompt, `POST` then occurrence cancel, announcement text, series `weekdays` unchanged (Mon/Wed/Fri series, Wed dragged to Thu); non-draggable kinds have no handles/handlers; clamp at the grid edges.
 - Announcements and refetch; reduced-motion class; a grep-style assertion that no handler exists on the grid that lacks a sheet equivalent (list of actions ↔ sheet capabilities).
 
 ## Technical notes
@@ -51,7 +51,8 @@ AC-E15-10 (pointer half); TR-E15-08, TR-E15-11; DoD-5, DoD-6, DoD-8.
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
 | D-H1 | Snap: (a) 15 minutes; (b) 5; (c) 30 | **(a)** — matches the grid rows and the engine's typical block sizes; fewer fiddly targets (D15-14) | Proposed |
-| D-H2 | Weekly drag: (a) always ask the two-choice question before saving; (b) default to "this and following" silently | **(a)** — a silent series move is the kind of surprise that erodes trust | Proposed |
+| D-H2 | Weekly same-day drag: (a) always ask the two-choice question before saving; (b) default to "this and following" silently | **(a)** — a silent series move is the kind of surprise that erodes trust | Proposed |
+| D-H4 | Weekly cross-day drag: (a) always "Just this day" (one-off on the new date + cancel the source occurrence), announced, no prompt — a series' weekdays change only in the sheet; (b) ask the two-choice question and define "this and following" as a weekday swap in the successor | **(a)** — "this and following" has no defined meaning for a multi-weekday series (Mon/Wed/Fri, Wed → Thu); one gesture, one outcome, said out loud (D15-14) | Proposed |
 | D-H3 | Touch: (a) no touch gestures in v1 — below `sm` the agenda's form path is the editor; (b) long-press drag | **(a)** — scroll vs drag conflicts on phones; the form is two taps | Proposed |
 
 ## Definition of Done

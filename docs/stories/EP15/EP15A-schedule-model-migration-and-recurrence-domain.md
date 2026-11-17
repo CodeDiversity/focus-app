@@ -32,7 +32,7 @@ AC-E15-01 (default reader), AC-E15-03 (model), AC-E15-13 (copy); TR-E15-01; DoD-
 
 ## Acceptance criteria
 
-1. The migration creates `day_bounds`, `schedule_blocks` and `schedule_block_exceptions` exactly as specified in contracts.md (columns, enums, uniques, indexes, cascades); the Prisma models and the `User`/`Course` relations exist; `pnpm db:generate`, typecheck and every existing API suite stay green.
+1. The migration creates `day_bounds`, `schedule_blocks` and `schedule_block_exceptions` exactly as specified in contracts.md (columns, enums, uniques, indexes, cascades); the Prisma models and the `User`/`Course` relations exist; `pnpm db:generate`, typecheck and every existing API suite stay green; the rollback statement recorded in contracts.md (drop the three tables and the enum; `availability_slots` untouched) is documented beside the migration (DoD-9).
 2. The same migration copies every `availability_slots` row into `schedule_blocks`: `kind` = `STUDY` when `isAvailable` else `BUSY`; `energy` kept for STUDY and `NORMAL` for BUSY; `weekdays` = `1 << dayOfWeek`; `startDate` = `createdAt::date`; `title` null; times verbatim; `userId` preserved. On a seeded database the row count matches and every field pair matches (V-15-2). `availability_slots` is not modified.
 3. `expandBlocks(blocks, from, to)` is a pure function returning occurrences per contracts.md: one-off on its date only; weekly on set weekdays from `startDate` through `endDate` (open when null); exception dates skipped; `"24:00"` → 1440; sorted by `date`, `startMinute`, `blockId`; a DST transition date yields the same minutes as any other date.
 4. `readDayBounds(rows)` returns seven entries with `08:00`–`23:00` for any missing or invalid weekday and `configured` only when all seven rows exist; `dayBoundsFor(days, date)` returns the half-open `[wake, sleep)` interval for that civil date.
@@ -52,10 +52,10 @@ AC-E15-01 (default reader), AC-E15-03 (model), AC-E15-13 (copy); TR-E15-01; DoD-
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-A1 | Weekday storage: (a) `Int` bitmask (bit n = weekday n); (b) `Int[]`; (c) a join table | **(a)** — one column, indexable, trivially validated; the API exposes an array | Proposed |
-| D-A2 | `startDate` for migrated weekly rows: (a) `createdAt::date`; (b) a fixed sentinel date; (c) the earliest semester start | **(a)** — the honest first date the student had the slot; the planner only looks forward | Proposed |
+| ▲ D-A1 | Weekday storage: (a) `Int` bitmask (bit n = weekday n); (b) `Int[]`; (c) a join table | **(a)** — one column, indexable, trivially validated; the API exposes an array | Proposed |
+| D-A2 | `startDate` for migrated weekly rows: (a) `createdAt::date`; (b) a fixed sentinel date; (c) the earliest semester start | **(a)** — the honest first date the student had the slot; the planner only looks forward. Assumption (R-EP15-08): the cast runs in the database session zone (UTC), not the profile zone — at worst one civil day late for a slot created near local midnight, visible only on the migration day; accepted | Proposed |
 | D-A3 | Row ids in the copy: (a) `gen_random_uuid()` (Postgres 13+ built-in); (b) application-generated via a Prisma script | **(a)** — one SQL file, replayable; CI's Postgres service version is unverified — if < 13, fall back to `md5(random()::text || clock_timestamp()::text)::uuid` in the same statement | Proposed |
-| D-A4 | Midnight end: (a) the literal `"24:00"` allowed in `sleepTime`/`endTime` (string compare stays chronological: `"24:00" > "23:59"`); (b) a boolean `endsAtMidnight` | **(a)** — one representation, no extra column (D15-4) | Proposed |
+| ▲ D-A4 | Midnight end: (a) the literal `"24:00"` allowed in `sleepTime`/`endTime` (string compare stays chronological: `"24:00" > "23:59"`); (b) a boolean `endsAtMidnight` | **(a)** — one representation, no extra column (D15-4) | Proposed |
 
 ## Definition of Done
 

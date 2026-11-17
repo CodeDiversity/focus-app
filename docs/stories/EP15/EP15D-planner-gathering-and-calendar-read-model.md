@@ -22,7 +22,7 @@ reader (D15-15).
 
 ## Scope
 
-**In:** `modules/schedule/schedule-inputs.service.ts` (exported from `ScheduleModule`); `study-plans.service.ts` `gatherPlanData` on the seam (preview, save, catch-up, today pass through); `calendar.service.ts` payload per contracts.md; API contract docs; specs incl. V-15-1.
+**In:** `modules/schedule/schedule-inputs.service.ts` (exported from `ScheduleModule`); `study-plans.service.ts` `gatherPlanData` on the seam, replacing EP15C's thin adapter (preview, save incl. its dating loop at `:1634–1644`, catch-up `:1409–1419`, today pass through); `calendar.service.ts` payload per contracts.md; removal of the slot-event assertions in `apps/web/e2e/calendar.spec.ts:180–215` (test-only, pointer to EP15J — contracts.md § Known windows); API contract docs; specs incl. V-15-1.
 **Out:** engine rules (EP15C), the web client (EP15E), dropping the old table (EP15I).
 
 ## Source requirement references
@@ -31,7 +31,7 @@ AC-E15-02, AC-E15-05, AC-E15-07, AC-E15-08, AC-E15-09 (server), AC-E15-14; TR-E1
 
 ## Acceptance criteria
 
-1. `scheduleInputs(userId, from, to)` is the only code that turns `DayBounds`, `ScheduleBlock` (+ exceptions), `ClassMeeting`, `StudySession` and preserved `PlannedSession` rows into intervals; `gatherPlanData` uses it and no longer reads `availability_slots`; preview, save, catch-up preview/confirm and `today` keep their contracts and their existing suites stay green with fixtures moved to the new tables.
+1. `scheduleInputs(userId, from, to)` is the only code that turns `DayBounds`, `ScheduleBlock` (+ exceptions), `ClassMeeting`, `StudySession` and preserved `PlannedSession` rows into intervals; `gatherPlanData` uses it, EP15C's adapter is deleted, and the service no longer reads `availability_slots`; preview, save, catch-up preview/confirm and `today` keep their contracts and their existing suites stay green with fixtures moved to the new tables.
 2. `GET /calendar/events` returns `days[]` (one per date in range: `wakeTime`, `sleepTime`, `free[]`) and emits `EVENT` and `STUDY_BLOCK` events with `blockId`, `recurring` and (study) `energy`, course fields and default titles `Busy`/`Study`; `AVAILABILITY` and `BLOCKED_TIME` no longer appear; range cap, ownership and profile-zone semantics are unchanged.
 3. For one fixture containing a DST transition date, a cancelled weekly occurrence, a one-off event and a `24:00` bound, the calendar's `free` equals `freeIntervals` over the planner's inputs for the same dates with `placed` = the current FIXED `SCHEDULED`/`IN_PROGRESS` planned sessions (V-15-1), minute for minute.
 4. Every row the seam reads is scoped by `userId` (directly, or through `block`/`studyPlan`); a second student's blocks, bounds or exceptions never appear in either output (V-15-4).
@@ -46,7 +46,7 @@ AC-E15-02, AC-E15-05, AC-E15-07, AC-E15-08, AC-E15-09 (server), AC-E15-14; TR-E1
 
 ## Technical notes
 
-- **Inspected:** `study-plans.service.ts` `gatherPlanData` (~L1016–1150: slot → `available`/`blocked` weekly windows, classes, busy incl. preserved planned rows), `catch-up/confirm` dating loop (~L1399–1420), `calendar.service.ts` (`list`: range validation, zone resolution, slot expansion per date, planned-session filter, sort), `civil-date.ts` exports.
+- **Inspected:** `study-plans.service.ts` `gatherPlanData` (~L1016–1150: slot → `available`/`blocked` weekly windows, classes, busy incl. preserved planned rows), the two per-date dating loops — `catchUpConfirm` (~L1409–1419) and `save` (~L1634–1644) — both of which read `data.blocked` weekly and must take the seam's dated `blocked` instead, `calendar.service.ts` (`list`: range validation, zone resolution, slot expansion per date, planned-session filter, sort), `civil-date.ts` exports.
 - **Proposed:** the seam returns `{ timeZone, dayBounds, blocked, preferred, classes, busy }` (contracts.md); the calendar computes `free` via `freeIntervals` from `domain/study-planning/intervals.ts`; the catch-up dating loop uses `blocked` directly (already dated) instead of re-dating weekly windows.
 
 ### Decisions
