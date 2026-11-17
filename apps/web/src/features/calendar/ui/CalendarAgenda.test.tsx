@@ -82,22 +82,23 @@ describe('CalendarAgenda (SP-129A)', () => {
 
     // Exactly once: two Calculus/lab entries and two Physics entries via their
     // unique accessible names.
-    expect(screen.getAllByRole('button', { name: 'Class: Calculus, 09:00' })).toHaveLength(1);
-    expect(screen.getAllByRole('button', { name: 'Assignment: Lab report, 23:59' })).toHaveLength(
-      1
-    );
-    expect(screen.getAllByRole('button', { name: 'Class: Physics, 11:00' })).toHaveLength(1);
-    expect(screen.getAllByRole('button', { name: 'Assignment: Done essay, 12:00' })).toHaveLength(
-      1
-    );
+    // EP14D (D-D3): names come from the visible content, in the agenda's
+    // visible order (type, time, title).
+    expect(screen.getAllByRole('button', { name: /^Class\b.*09:00.*Calculus/ })).toHaveLength(1);
+    expect(
+      screen.getAllByRole('button', { name: /^Assignment\b.*23:59.*Lab report/ })
+    ).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: /^Class\b.*11:00.*Physics/ })).toHaveLength(1);
+    expect(
+      screen.getAllByRole('button', { name: /^Assignment\b.*12:00.*Done essay/ })
+    ).toHaveLength(1);
 
     // Within the Mon group, payload order (startTime order) is preserved.
     const monGroup = screen.getByRole('group', { name: /Mon 26/ });
     const monButtons = within(monGroup).getAllByRole('button');
-    expect(monButtons.map((b) => b.getAttribute('aria-label'))).toEqual([
-      'Class: Calculus, 09:00',
-      'Assignment: Lab report, 23:59',
-    ]);
+    expect(monButtons).toHaveLength(2);
+    expect(monButtons[0]).toHaveAccessibleName(/^Class\b.*09:00.*Calculus/);
+    expect(monButtons[1]).toHaveAccessibleName(/^Assignment\b.*23:59.*Lab report/);
   });
 
   it('shows the type label as text (not color only) and the Completed badge text', () => {
@@ -142,7 +143,7 @@ describe('CalendarAgenda (SP-129A)', () => {
         onOpenEvent={onOpen}
       />
     );
-    await user.click(screen.getByRole('button', { name: 'Class: Physics, 11:00' }));
+    await user.click(screen.getByRole('button', { name: /^Class\b.*11:00.*Physics/ }));
     expect(onOpen).toHaveBeenCalledWith(events[2]);
   });
 
@@ -155,7 +156,7 @@ describe('CalendarAgenda (SP-129A)', () => {
         onOpenEvent={vi.fn()}
       />
     );
-    const physics = screen.getByRole('button', { name: 'Class: Physics, 11:00' });
+    const physics = screen.getByRole('button', { name: /^Class\b.*11:00.*Physics/ });
     const text = physics.textContent ?? '';
     expect(text.indexOf('11:00')).toBeGreaterThanOrEqual(0);
     expect(text.indexOf('11:00')).toBeLessThan(text.indexOf('Physics'));

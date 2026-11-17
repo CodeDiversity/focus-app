@@ -28,7 +28,20 @@ describe('CalendarEventChip (SP-127B)', () => {
     expect(screen.getByText('Class')).toBeInTheDocument();
     expect(screen.getByText('Calculus')).toBeInTheDocument();
     expect(screen.getByText('09:00')).toBeInTheDocument();
-    expect(screen.getByRole('button')).toHaveAttribute('aria-label', 'Class: Calculus, 09:00');
+    // EP14D (D-D3): the name is the visible content — no aria-label.
+    expect(screen.getByRole('button')).not.toHaveAttribute('aria-label');
+    expect(screen.getByRole('button')).toHaveAccessibleName(/^Class\b.*Calculus.*09:00/);
+  });
+
+  it('EP14D-AC3 (D-D3): the accessible name starts with the visible type label and follows the visible order in both layouts', () => {
+    const { unmount } = render(<CalendarEventChip event={baseEvent} onOpen={vi.fn()} />);
+    expect(screen.getByRole('button')).not.toHaveAttribute('aria-label');
+    expect(screen.getByRole('button')).toHaveAccessibleName(/^Class\b.*Calculus.*09:00/);
+    unmount();
+
+    render(<CalendarEventChip event={baseEvent} onOpen={vi.fn()} layout="agenda" />);
+    expect(screen.getByRole('button')).not.toHaveAttribute('aria-label');
+    expect(screen.getByRole('button')).toHaveAccessibleName(/^Class\b.*09:00.*Calculus/);
   });
 
   it('completed deadline renders Completed badge', () => {
@@ -74,10 +87,7 @@ describe('CalendarEventChip (SP-127B)', () => {
     };
     const { unmount } = render(<CalendarEventChip event={planned} onOpen={vi.fn()} />);
     expect(screen.getByText('Planned')).toBeInTheDocument();
-    expect(screen.getByRole('button')).toHaveAttribute(
-      'aria-label',
-      'Planned: Problem set 3, 09:00'
-    );
+    expect(screen.getByRole('button')).toHaveAccessibleName(/^Planned\b.*Problem set 3.*09:00/);
     unmount();
 
     // A finished planned session reuses the established Completed badge.
@@ -102,7 +112,7 @@ describe('CalendarEventChip (SP-127B)', () => {
     const { unmount } = render(<CalendarEventChip event={flex} onOpen={vi.fn()} />);
     expect(screen.getByText('Anytime')).toBeInTheDocument();
     expect(screen.queryByText('09:00')).not.toBeInTheDocument();
-    expect(screen.getByRole('button')).toHaveAttribute('aria-label', 'Planned: Essay, anytime');
+    expect(screen.getByRole('button')).toHaveAccessibleName(/^Planned\b.*Essay.*Anytime/);
     unmount();
 
     render(<CalendarEventChip event={flex} onOpen={vi.fn()} layout="agenda" />);
@@ -142,9 +152,8 @@ describe('CalendarEventChip energy tag (EP13J-AC4, D-J6)', () => {
   it('an available window shows its energy as text and in the accessible name', () => {
     render(<CalendarEventChip event={available} onOpen={vi.fn()} />);
     expect(screen.getByTestId('energy-tag')).toHaveTextContent('High energy');
-    expect(screen.getByRole('button')).toHaveAttribute(
-      'aria-label',
-      'Available: Available, High energy, 09:00'
+    expect(screen.getByRole('button')).toHaveAccessibleName(
+      /^Available\b.*High energy.*Available.*09:00/
     );
   });
 

@@ -98,7 +98,15 @@ export function Dialog({
   // `onClose` (recreated each render) does not re-run it and reset focus.
   useEffect(() => {
     if (!open) return;
-    restoreFocusRef.current = document.activeElement as HTMLElement | null;
+    // EP14D (F-EP13M-01): under React.StrictMode the mount effect runs, cleans
+    // up and runs again; by the second run the first field inside the dialog
+    // already has focus, so capturing `activeElement` unconditionally made the
+    // restore target an element that unmounts with the dialog (focus then fell
+    // to <body>). Only an element *outside* the dialog can be the trigger.
+    const active = document.activeElement as HTMLElement | null;
+    if (!dialogRef.current?.contains(active)) {
+      restoreFocusRef.current = active;
+    }
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const first = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);

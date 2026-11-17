@@ -88,7 +88,8 @@ test('shows a seeded class meeting and assignment deadline on the right days and
   await expect(page.getByText(assignmentTitle)).toBeVisible();
 
   // Opening a chip shows the details dialog.
-  const chip = page.getByRole('button', { name: new RegExp(`Class: ${course.name}, 09:00`) });
+  // EP14D (D-D3): the chip's name is its visible content — type, title, time.
+  const chip = page.getByRole('button', { name: new RegExp(`^Class\\W*${course.name}\\W*09:00`) });
   await chip.click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
@@ -133,9 +134,11 @@ test('SP-129A: at a phone viewport the week renders as the day-grouped agenda', 
   const agenda = page.getByRole('list', { name: 'Week agenda' });
   const weekList = page.getByRole('list', { name: 'Week view' });
   await expect(agenda).toBeVisible();
-  const entry = page.getByRole('button', { name: `Class: ${course.name}, 09:00` });
+  // EP14D (D-D3): agenda order is type, time, title (time on its own line above the title).
+  const entry = page.getByRole('button', { name: new RegExp(`^Class\\W*09:00\\W*${course.name}`) });
   await expect(entry).toBeVisible();
-  await expect(page.getByText('Class', { exact: true })).toBeVisible();
+  // The type label's text content is "Class" plus a screen-reader-only ":" (EP14D, D-D3).
+  await expect(page.getByText(/^Class:?$/).first()).toBeVisible();
 
   // No horizontal scrolling at 375px.
   const widths = await page.evaluate(() => ({
@@ -215,6 +218,8 @@ test('SP-128B: slots created on /availability appear on the calendar as availabl
 
   // The calendar (SP-127A/127B read model) shows both recurring events.
   await page.goto('/calendar');
-  await expect(page.getByRole('button', { name: 'Available: Available, 09:00' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Blocked: Blocked time, 20:00' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Available\W.*Available\W*09:00/ })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: /^Blocked\W.*Blocked time\W*20:00/ })
+  ).toBeVisible();
 });

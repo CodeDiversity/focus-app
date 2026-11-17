@@ -11,7 +11,7 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 const variants = {
   neutral: 'bg-surface-muted text-text-muted',
   accent: 'bg-accent/10 text-accent',
-  success: 'bg-success/10 text-success',
+  success: 'bg-success/10 text-success-strong',
   warning: 'bg-warning/10 text-warning',
   danger: 'bg-danger/10 text-danger',
 };

@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -115,7 +116,7 @@ describe('CalendarPage (SP-127B)', () => {
 
   it('opens details dialog from a chip; Escape closes and focus returns', async () => {
     renderPage();
-    const chip = await screen.findByRole('button', { name: /Class: Calculus, 09:00/ });
+    const chip = await screen.findByRole('button', { name: /^Class\b.*Calculus.*09:00/ });
     chip.focus();
     await validUser.click(chip);
     const dialog = await screen.findByRole('dialog');
@@ -171,7 +172,26 @@ describe('CalendarPage (SP-127B)', () => {
   it('opens the details dialog from an agenda entry; Escape closes and focus returns (SP-129A)', async () => {
     setNarrow(true);
     renderPage();
-    const entry = await screen.findByRole('button', { name: /Class: Calculus, 09:00/ });
+    const entry = await screen.findByRole('button', { name: /^Class\b.*09:00.*Calculus/ });
+    entry.focus();
+    await validUser.click(entry);
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('Calculus');
+    await validUser.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(entry).toHaveFocus();
+  });
+
+  it('EP14D-AC1: under StrictMode (as the app mounts), Escape on the agenda detail returns focus to the entry (F-EP13M-01)', async () => {
+    setNarrow(true);
+    render(
+      <StrictMode>
+        <Providers initialEntries={['/calendar']}>
+          <CalendarPage />
+        </Providers>
+      </StrictMode>
+    );
+    const entry = await screen.findByRole('button', { name: /^Class\b.*09:00.*Calculus/ });
     entry.focus();
     await validUser.click(entry);
     const dialog = await screen.findByRole('dialog');

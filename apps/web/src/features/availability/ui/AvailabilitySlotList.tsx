@@ -76,7 +76,9 @@ export function AvailabilitySlotList({ slots, onEdit, onDelete }: AvailabilitySl
                       <span
                         className={
                           'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ' +
-                          (isAvailable ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger')
+                          (isAvailable
+                            ? 'bg-success/10 text-success-strong'
+                            : 'bg-danger/10 text-danger')
                         }
                       >
                         <BadgeIcon aria-hidden size={12} className="shrink-0" />

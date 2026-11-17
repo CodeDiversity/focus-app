@@ -23,7 +23,7 @@ export const STATUS_STYLES: Record<AssignmentStatus, string> = {
   PENDING: 'bg-surface-muted text-text-muted',
   IN_PROGRESS: 'bg-accent/10 text-accent',
   SUBMITTED: 'bg-accent/10 text-accent',
-  COMPLETED: 'bg-success/10 text-success',
+  COMPLETED: 'bg-success/10 text-success-strong',
   GRADED: 'bg-accent/10 text-accent',
 };
 
@@ -109,7 +109,7 @@ export const STATUS_SELECT_STYLES: Record<AssignmentStatus, string> = {
   PENDING: 'bg-surface-muted text-text-muted border-border',
   IN_PROGRESS: 'bg-accent/10 text-accent border-accent/30',
   SUBMITTED: 'bg-accent/10 text-accent border-accent/30',
-  COMPLETED: 'bg-success/10 text-success border-success/30',
+  COMPLETED: 'bg-success/10 text-success-strong border-success/30',
   GRADED: 'bg-accent/10 text-accent border-accent/30',
 };
 

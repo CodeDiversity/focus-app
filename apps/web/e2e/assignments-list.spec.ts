@@ -177,10 +177,32 @@ test.describe('mobile create surface', () => {
 
     await headerAdd.click();
     const dialog = page.getByRole('dialog', { name: 'Add an assignment' });
+    await expect(dialog).toBeVisible();
+    // EP14D (F-EP13M-02): the dialog opens with a 200 ms scale-95 → 100
+    // transition; a box measured mid-transition reads 44 × 0.95 = 41.8 px.
+    // Measure the settled layout, not the animation frame.
+    await page.waitForFunction(() =>
+      document.getAnimations().every((a) => a.playState === 'finished' || a.playState === 'idle')
+    );
     const courseBox = await dialog.getByLabel('Course').boundingBox();
     const submitBox = await dialog.getByRole('button', { name: 'Create assignment' }).boundingBox();
     expect(courseBox?.height ?? 0).toBeGreaterThanOrEqual(44);
     expect(submitBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+    // EP14D-AC2: every interactive control in the dialog, not just two.
+    const controls = dialog.locator('input, select, textarea, button, a[href]');
+    const count = await controls.count();
+    expect(count).toBeGreaterThan(2);
+    for (let i = 0; i < count; i++) {
+      const control = controls.nth(i);
+      if (!(await control.isVisible())) continue;
+      const box = await control.boundingBox();
+      const name = await control.evaluate(
+        (el) => el.getAttribute('aria-label') ?? el.id ?? el.tagName
+      );
+      expect(box?.height ?? 0, `control ${name} is ≥ 44px tall at 375px`).toBeGreaterThanOrEqual(
+        44
+      );
+    }
 
     const noHorizontalOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth + 1

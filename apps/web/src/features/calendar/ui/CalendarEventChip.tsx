@@ -46,9 +46,13 @@ function typeLabel(event: CalendarEvent): string {
 /**
  * One event chip (D127B-4): start time, title, type icon + text label. The
  * course color is a 3px left border only (secondary cue). A completed
- * deadline shows an additional "Completed" text badge. The accessible name
- * is "{type label}: {title}, {time}". The agenda layout (D129A-03) shows the
- * time above the title; the week layout keeps the title above the time.
+ * deadline shows an additional "Completed" text badge. The agenda layout
+ * (D129A-03) shows the time above the title; the week layout keeps the title
+ * above the time.
+ *
+ * EP14D (D-D3, F-EP13M-05): the accessible name is the visible content in its
+ * visible order — no `aria-label` — so WCAG 2.5.3 label-in-name holds by
+ * construction; screen-reader-only ":" and "," give it the old punctuation.
  */
 export function CalendarEventChip({ event, onOpen, layout = 'week' }: CalendarEventChipProps) {
   const meta = TYPE_META[event.type];
@@ -65,7 +69,6 @@ export function CalendarEventChip({ event, onOpen, layout = 'week' }: CalendarEv
     <button
       type="button"
       onClick={() => onOpen(event)}
-      aria-label={`${label}: ${event.title}${energyTag ? `, ${energyTag}` : ''}, ${flex ? 'anytime' : event.startTime}`}
       className="group flex w-full items-start gap-2 rounded-lg border border-border bg-surface p-2 text-left shadow-sm transition hover:border-accent hover:shadow focus:outline-none focus:ring-2 focus:ring-accent max-sm:min-h-[44px]"
       style={{ borderLeftWidth: 3, borderLeftColor: event.courseColor ?? 'transparent' }}
     >
@@ -74,9 +77,10 @@ export function CalendarEventChip({ event, onOpen, layout = 'week' }: CalendarEv
         <div className="flex items-center gap-1">
           <span className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">
             {label}
+            <span className="sr-only">:</span>
           </span>
           {event.completed && (
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success">
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-success/10 px-1.5 py-0.5 text-[10px] font-medium text-success-strong">
               <Check aria-hidden size={10} />
               Completed
             </span>
@@ -92,12 +96,18 @@ export function CalendarEventChip({ event, onOpen, layout = 'week' }: CalendarEv
         </div>
         {layout === 'agenda' ? (
           <>
-            <p className="text-xs text-text-muted">{timeText}</p>
+            <p className="text-xs text-text-muted">
+              {timeText}
+              <span className="sr-only">,</span>
+            </p>
             <p className="truncate text-sm font-medium text-text">{event.title}</p>
           </>
         ) : (
           <>
-            <p className="truncate text-sm font-medium text-text">{event.title}</p>
+            <p className="truncate text-sm font-medium text-text">
+              {event.title}
+              <span className="sr-only">,</span>
+            </p>
             <p className="text-xs text-text-muted">{timeText}</p>
           </>
         )}

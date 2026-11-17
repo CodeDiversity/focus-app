@@ -15,6 +15,8 @@
     --color-accent-hover: 17 94 89;
     --color-danger: 220 38 38;
     --color-success: 21 128 61;
+    /* EP14D (D-D2): success text on the 10% success tint — ≥ 4.5:1 for caption text. */
+    --color-success-strong: 21 101 52;
     --color-warning: 161 98 7;
     --color-focus-ring: 15 118 110;
 

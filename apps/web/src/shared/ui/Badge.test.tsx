@@ -19,6 +19,14 @@ describe('Badge', () => {
     expect(screen.getByText('Text')).toBeInTheDocument();
   });
 
+  it('success pairs the 10% tint with the strong text token (≥ 4.5:1 caption text; EP14D-AC3, D-D2)', () => {
+    render(<Badge variant="success">Done</Badge>);
+    const cls = screen.getByText('Done').closest('span')?.className ?? '';
+    expect(cls).toContain('bg-success/10');
+    expect(cls).toMatch(/\btext-success-strong\b/);
+    expect(cls).not.toMatch(/\btext-success\b(?!-)/);
+  });
+
   it('applies size classes', () => {
     render(<Badge size="md">M</Badge>);
     expect(screen.getByText('M').closest('span')?.className).toContain('text-body-sm');

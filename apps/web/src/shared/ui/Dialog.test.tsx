@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { StrictMode, useState } from 'react';
 import { Dialog } from './Dialog';
 
 describe('Dialog', () => {
@@ -81,6 +82,39 @@ describe('Dialog', () => {
     unmount();
     expect(trigger).toHaveFocus();
     trigger.remove();
+  });
+
+  it('restores focus to the trigger under StrictMode when the host unmounts the dialog on Escape (EP14D-AC1)', async () => {
+    // The app mounts under <React.StrictMode> (main.tsx): effects run, clean
+    // up and run again on mount. Both EP14D sites (assignment create, calendar
+    // event detail) render the dialog conditionally and unmount it on close.
+    function Host() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            open it
+          </button>
+          {open && (
+            <Dialog open onClose={() => setOpen(false)} title="T">
+              <input aria-label="First field" />
+            </Dialog>
+          )}
+        </>
+      );
+    }
+    const user = userEvent.setup();
+    render(
+      <StrictMode>
+        <Host />
+      </StrictMode>
+    );
+    const trigger = screen.getByRole('button', { name: 'open it' });
+    await user.click(trigger);
+    expect(screen.getByLabelText('First field')).toHaveFocus();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
   });
 
   it('applies size classes', () => {

@@ -4,7 +4,7 @@
 **Parent epic:** [EP14: Adaptive Scheduling Follow-ups](../../epics/EP14-adaptive-scheduling-follow-ups.md)
 **Milestone:** proposed M7 (D14-2)
 **Layer:** Frontend (+ E2E gate)
-**Status:** Ready
+**Status:** Implemented — awaiting parent review (implementer, 2026-11-16); record: [artifacts/EP14D/implementation.md](./artifacts/EP14D/implementation.md)
 **Dependencies:** none. Sources: EP13R D-R9, D-R10, D-R11, D-R12 (user rulings 2026-11-16); F-EP13M-01, -02, -04, -05.
 
 ## Plan at a glance
@@ -60,7 +60,7 @@ AC-E14-05; TR-E14-05; DoD-6, DoD-7, DoD-8.
 ## Sizing
 
 - **Outcome:** EP13's accessibility gate passes with no exclusions.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** 7 source files (`Dialog.tsx` StrictMode-safe restore capture, `success-strong` token in `index.css`/`tailwind.config.js`, `Badge.tsx` + three same-pairing sites, `CalendarEventChip.tsx` name from content), 6 unit-test files, 3 specs; web unit 1273/0; isolated-stack E2E: 3 fully green full runs (54/0), journeys 7/7 in 4 of 5 (one browser-clock flake, F-EP14D-03); the 44 px defect was a mid-animation measurement (F-EP14D-02); findings F-EP14D-01…03.
 - **Files:** `features/assignments/ui/AssignmentDialogs.tsx` (or the empty-state host), the calendar agenda/detail host, assignment form controls, `shared/ui/Badge.tsx`, `index.css`/`tailwind.config.js` (token), `features/calendar/ui/CalendarEventChip.tsx`, `e2e/adaptive-scheduling.spec.ts` + focused component tests.
 - **Start context:** this story; F-EP13M-01/-02/-04/-05 in `docs/stories/EP13/artifacts/EP13M/implementation.md`.
 - **Verification:** the three named E2E tests and all seven journeys green; web unit suite green.

@@ -91,24 +91,14 @@ async function finishFocusViaUi(page: Page, minutes: number): Promise<void> {
 }
 
 /**
- * The axe gate: no serious/critical WCAG A/AA violation on the current page,
- * except the one documented pre-EP13 pattern (F-EP13M-04): the shared `Badge`
- * success pairing `text-success` on `bg-success/10` (~4.3:1 for caption text),
- * which predates EP13 (SP-128B / EP05) and is reported, not restyled here
- * (D-M5); and F-EP13M-05, the SP-127B calendar chip's label-in-name mismatch
- * (`aria-label="{type}: {title}, {time}"`, identical at 9ffd854). Any other
- * violation — including any other contrast or naming failure — fails.
+ * The axe gate: no serious/critical WCAG A/AA violation on the current page —
+ * no exclusions. EP14D removed the two EP13M-era allowances (F-EP13M-04, the
+ * success badge contrast, fixed by the `success-strong` text token — D-D2;
+ * F-EP13M-05, the calendar chip's label-in-name mismatch, fixed by naming the
+ * chip from its visible content — D-D3).
  */
 async function expectNoAxeViolations(page: Page, surface: string): Promise<void> {
-  const violations = await axeViolations(page, {
-    ignore: (ruleId, html) =>
-      (ruleId === 'color-contrast' &&
-        html.includes('bg-success/10') &&
-        html.includes('text-success')) ||
-      (ruleId === 'label-content-name-mismatch' &&
-        html.startsWith('<button type="button" aria-label=') &&
-        html.includes('class="group flex w-full')),
-  });
+  const violations = await axeViolations(page);
   expect(violations, `axe on ${surface}:\n${violations.join('\n')}`).toEqual([]);
 }
 
@@ -280,7 +270,7 @@ test('journey 4 — a flex session is day-anchored: "Anytime", no clock conflict
   await loginViaUi(page, s.email);
   await page.goto('/calendar');
   await expect(
-    page.getByRole('button', { name: new RegExp(`${flex.title}.*anytime`) }).first()
+    page.getByRole('button', { name: new RegExp(`${flex.title}.*Anytime`) }).first()
   ).toBeVisible();
   await expectNoAxeViolations(page, '/calendar');
 

@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -224,6 +225,25 @@ describe('AssignmentsPage', () => {
       'href',
       '/courses'
     );
+  });
+
+  it('EP14D-AC1: under StrictMode (as the app mounts), Escape on the create dialog returns focus to the empty-state trigger (F-EP13M-01)', async () => {
+    mockedListAssignments.mockResolvedValue([] as never);
+    const user = userEvent.setup();
+    render(
+      <StrictMode>
+        <Providers initialEntries={['/assignments']}>
+          <AssignmentsPage />
+        </Providers>
+      </StrictMode>
+    );
+    const trigger = await screen.findByRole('button', { name: 'Add your first assignment' });
+    await user.click(trigger);
+    const dialog = await screen.findByRole('dialog', { name: 'Add an assignment' });
+    expect(within(dialog).getByRole('textbox', { name: /title/i })).toHaveFocus();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(trigger).toHaveFocus();
   });
 
   it('empty state with filters shows clear filters', async () => {
@@ -850,7 +870,7 @@ describe('AssignmentsPage presentation (SP-125)', () => {
     expect(select).toHaveClass('bg-surface-muted', 'text-text-muted');
 
     await user.selectOptions(select, 'COMPLETED');
-    expect(select).toHaveClass('bg-success/10', 'text-success');
+    expect(select).toHaveClass('bg-success/10', 'text-success-strong');
 
     resolvePatch({ ...item, status: 'COMPLETED' });
     await screen.findByText('Assignment marked as completed. Showing 1 assignment.');
