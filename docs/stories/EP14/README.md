@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** None — all six children implemented; the parent index (`./artifacts/EP14/implementation.md`) is the next commit, then the combined review.
+**Next substory:** None — parent index written ([artifacts/EP14/implementation.md](./artifacts/EP14/implementation.md)); combined review.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
