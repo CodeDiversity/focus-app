@@ -328,7 +328,9 @@ describe('CalendarPage drag wiring (EP15H)', () => {
     expect(restore).toBeLessThan(del);
     expect(del).toBeLessThan(patch);
     await waitFor(() =>
-      expect(status()).toHaveTextContent('Moved to Wed 10:00–11:00 for this and following weeks')
+      expect(status()).toHaveTextContent(
+        'Moved to Wed 10:00–11:00 for this and following weeks, on all its days'
+      )
     );
     expect(screen.queryByTestId('drop-followup')).toBeNull();
     await settle();
@@ -350,7 +352,9 @@ describe('CalendarPage drag wiring (EP15H)', () => {
         effectiveFrom: '2026-10-28',
       })
     );
-    expect(status()).toHaveTextContent('Resized to 09:00–10:30 for this and following weeks');
+    expect(status()).toHaveTextContent(
+      'Resized to 09:00–10:30 for this and following weeks, on all its days'
+    );
     await settle();
   });
 
@@ -384,6 +388,99 @@ describe('CalendarPage drag wiring (EP15H)', () => {
     expect(restore).toBeLessThan(del);
     expect(del).toBeLessThan(patch);
     expect(status()).toHaveTextContent('Moved to Thu 09:00–10:00 for this and following weeks');
+    await settle();
+  });
+
+  it('R-EP15K-04: a single-weekday series keeps the plain "for this and following weeks" sentence', async () => {
+    mockedList.mockResolvedValue([{ ...blockRow, weekdays: [3] }]);
+    await renderPage();
+    dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-28'), y: Y(10 * 60 + 5) });
+    await user.click(await screen.findByRole('button', { name: 'Apply to every week from here' }));
+    await waitFor(() =>
+      expect(status()).toHaveTextContent('Moved to Wed 10:00–11:00 for this and following weeks')
+    );
+    expect(status()).not.toHaveTextContent('on all its days');
+    await settle();
+  });
+
+  it('R-EP15K-01: cross-day Apply on a series whose first day is the dragged one, onto an earlier day, moves the series start so the dropped-on day keeps the block', async () => {
+    // Wed-only series starting this Wednesday; its first occurrence dragged to Tue.
+    mockedList.mockResolvedValue([{ ...blockRow, weekdays: [3], startDate: '2026-10-28' }]);
+    await renderPage();
+    dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-27'), y: Y(9 * 60 + 5) });
+    await user.click(await screen.findByRole('button', { name: 'Apply to every week from here' }));
+    await waitFor(() =>
+      expect(mockedUpdate).toHaveBeenCalledWith('b1', {
+        weekdays: [2],
+        startTime: '09:00',
+        endTime: '10:00',
+        effectiveFrom: '2026-10-27',
+        startDate: '2026-10-27',
+      })
+    );
+    await settle();
+  });
+
+  it('R-EP15K-01: cross-day Apply on a series whose last day is the dragged one, onto a later day, extends the series end so the dropped-on day keeps the block', async () => {
+    // Wed-only series ending this Wednesday; its last occurrence dragged to Thu.
+    mockedList.mockResolvedValue([{ ...blockRow, weekdays: [3], endDate: '2026-10-28' }]);
+    await renderPage();
+    dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-29'), y: Y(9 * 60 + 5) });
+    await user.click(await screen.findByRole('button', { name: 'Apply to every week from here' }));
+    await waitFor(() =>
+      expect(mockedUpdate).toHaveBeenCalledWith('b1', {
+        weekdays: [4],
+        startTime: '09:00',
+        endTime: '10:00',
+        effectiveFrom: '2026-10-28',
+        endDate: '2026-10-29',
+      })
+    );
+    await settle();
+  });
+
+  it('R-EP15K-05: an Apply failure says what state the week is in, per step', async () => {
+    await renderPage();
+    // Final PATCH fails → restore and delete happened → the day is back where it was.
+    mockedUpdate.mockRejectedValueOnce(new Error('Network Error'));
+    dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-28'), y: Y(10 * 60 + 5) });
+    await user.click(await screen.findByRole('button', { name: 'Apply to every week from here' }));
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        "We couldn't change every week — this day is back where it was. Try again."
+      )
+    );
+    await settle();
+    // Delete fails after the restore → both show.
+    mockedDelete.mockRejectedValueOnce(new Error('Network Error'));
+    dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-28'), y: Y(10 * 60 + 5) });
+    await user.click(await screen.findByRole('button', { name: 'Apply to every week from here' }));
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        "We couldn't change every week — this day shows twice; remove one from its details."
+      )
+    );
+    await settle();
+    // Restore fails first → nothing changed; the day's move stands.
+    mockedRestore.mockRejectedValueOnce(new Error('Network Error'));
+    dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-28'), y: Y(10 * 60 + 5) });
+    await user.click(await screen.findByRole('button', { name: 'Apply to every week from here' }));
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        "We couldn't change every week — your move for this day still stands."
+      )
+    );
+    await settle();
+  });
+
+  it('R-EP15K-03: the strip appears in a row that is always reserved, so the grid does not move', async () => {
+    await renderPage();
+    const row = screen.getByTestId('calendar-status-row');
+    expect(row.className).toContain('min-h-9');
+    dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-28'), y: Y(10 * 60 + 5) });
+    const followUp = await screen.findByTestId('drop-followup');
+    expect(row.contains(followUp)).toBe(true);
+    expect(row.contains(status())).toBe(true);
     await settle();
   });
 

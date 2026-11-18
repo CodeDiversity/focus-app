@@ -295,6 +295,63 @@ describeIntegration('schedule end-to-end (real database, EP15B)', () => {
       });
     });
 
+    // R-EP15K-01: the request bodies the calendar's cross-day "Apply to every
+    // week" sends at a series' edges must leave the dropped-on day occupied.
+    describe('cross-day Apply at series edges (R-EP15K-01)', () => {
+      const blockDates = async (blockId: string, from: string, to: string) => {
+        const res = await get(`/calendar/events?from=${from}&to=${to}`).expect(HttpStatus.OK);
+        return (res.body.events as { blockId?: string | null; date: string }[])
+          .filter((e) => e.blockId === blockId)
+          .map((e) => e.date);
+      };
+
+      it('first occurrence (Wed 11-18) → earlier Tue 11-17: in place, the start moves to 11-17', async () => {
+        const created = await post('/schedule/blocks', {
+          kind: 'BUSY',
+          startDate: '2026-11-18',
+          weekdays: [3],
+          startTime: '09:00',
+          endTime: '10:00',
+        }).expect(HttpStatus.CREATED);
+        const id = created.body.id;
+        await patch(`/schedule/blocks/${id}`, {
+          weekdays: [2],
+          startTime: '09:00',
+          endTime: '10:00',
+          effectiveFrom: '2026-11-17',
+          startDate: '2026-11-17',
+        }).expect(HttpStatus.OK);
+        expect(await blockDates(id, '2026-11-16', '2026-11-29')).toEqual([
+          '2026-11-17',
+          '2026-11-24',
+        ]);
+        await del(`/schedule/blocks/${id}`).expect(HttpStatus.NO_CONTENT);
+      });
+
+      it('last occurrence (Wed 11-18) → later Thu 11-19: the split successor ends 11-19', async () => {
+        const created = await post('/schedule/blocks', {
+          kind: 'BUSY',
+          startDate: '2026-11-04',
+          endDate: '2026-11-18',
+          weekdays: [3],
+          startTime: '09:00',
+          endTime: '10:00',
+        }).expect(HttpStatus.CREATED);
+        const id = created.body.id;
+        const res = await patch(`/schedule/blocks/${id}`, {
+          weekdays: [4],
+          startTime: '09:00',
+          endTime: '10:00',
+          effectiveFrom: '2026-11-18',
+          endDate: '2026-11-19',
+        }).expect(HttpStatus.OK);
+        expect(await blockDates(res.body.id, '2026-11-16', '2026-11-29')).toEqual(['2026-11-19']);
+        expect(await blockDates(id, '2026-11-09', '2026-11-22')).toEqual(['2026-11-11']);
+        await del(`/schedule/blocks/${id}`).expect(HttpStatus.NO_CONTENT);
+        await del(`/schedule/blocks/${res.body.id}`).expect(HttpStatus.NO_CONTENT);
+      });
+    });
+
     describe('PATCH (EP15B-AC3)', () => {
       it('empty body → 400', async () => {
         await patch(`/schedule/blocks/${weeklyId}`, {}).expect(HttpStatus.BAD_REQUEST);

@@ -46,3 +46,17 @@ Not executed in this session — no interactive browser; user instructions:
 4. Drag a one-off event; wait 10 s without touching the strip. Expected: the strip disappears. Repeat and Tab into the strip: it stays while focused.
 5. On a study block taller than 1.5 h, hover the zone: the resize grip shows at the zone's bottom edge; drag it to extend the block.
 6. With a screen reader: each drop announces one sentence; the strip's buttons are not read as status.
+
+## Fix round 1 (review pass 1, 2026-11-17)
+
+Review: [review.md](./review.md) — Changes Required (R-EP15K-01, -02 Should-fix; -03…-05 Polish).
+
+| Finding | Fix | Evidence |
+|---|---|---|
+| R-EP15K-01 — cross-day Apply at a series' first/last date left the dropped-on day empty | The PATCH body now also carries `startDate: effectiveFrom` when the target precedes the series start (in-place update), and `endDate: next.date` when the target follows the series end (split successor). | Page tests "R-EP15K-01 … moves the series start" / "… extends the series end" (exact bodies); DB-backed `schedule-e2e.spec.ts` "cross-day Apply at series edges" proves both bodies yield an occurrence on the dropped-on day via `GET /calendar/events`. |
+| R-EP15K-02 — manual pass not executed | **Open — user-owned.** No interactive browser in this session; the steps are in review.md § How to verify by hand. | — |
+| R-EP15K-03 — the strip shifted the grid | The status line and the strip share one reserved row (`min-h-9`), present whether or not the strip shows. | Page test "R-EP15K-03 … always reserved". |
+| R-EP15K-04 — multi-weekday Apply silently retimes the other days | Apply reads the series for same-day drops too; when the resulting series has more than one weekday the sentence ends ", on all its days". | Page tests (updated same-day move/resize sentences; new single-weekday test keeps the plain sentence). |
+| R-EP15K-05 — failure copy and the record's claim too broad | Step-specific failure sentences (`APPLY_FAIL_BY_STEP`); the F-EP15K-01 disposition above narrowed. | Page test "R-EP15K-05 … per step" (three steps). |
+
+Verification after the fix (working tree before commit, 2026-11-17): `npx jest --runInBand` (cwd `apps/api`, throwaway DB `studypilot_ep15k_fix`, dropped) → **85 suites, 1785/0**; `apps/web` `npx tsc --noEmit`, `npx eslint src --max-warnings=0` clean, `npx vitest run` → **124 files, 1387/0**. Playwright not re-run: no spec drags a chip; the row change adds no e2e-visible behaviour beyond the calendar spec's existing locators, which the reviewer may re-run.

@@ -125,6 +125,29 @@ const UNDO_FAIL_COPY = "We couldn't undo this. Try again.";
 const APPLY_FAIL_COPY = "We couldn't change every week. Try again.";
 
 /**
+ * R-EP15K-05: an "Apply to every week" failure says what the week now looks
+ * like, by the step that failed (the chain is read → restore → delete → PATCH).
+ */
+export const APPLY_FAIL_BY_STEP = {
+  beforeChange: "We couldn't change every week — your move for this day still stands.",
+  afterRestore:
+    "We couldn't change every week — this day shows twice; remove one from its details.",
+  afterDelete: "We couldn't change every week — this day is back where it was. Try again.",
+} as const;
+
+/** A follow-up failure whose sentence is already known (no server message overrides it). */
+class FollowUpFailure extends Error {}
+
+/** Run one step; a failure becomes the given sentence. */
+async function step<T>(run: () => Promise<T>, sentence: string): Promise<T> {
+  try {
+    return await run();
+  } catch {
+    throw new FollowUpFailure(sentence);
+  }
+}
+
+/**
  * EP15K: the inline follow-up a drop leaves behind. `undo` restores exactly
  * the prior state; `apply` (weekly only) turns "just this day" into the
  * series change. Each returns the sentence to announce, or `null` when it
@@ -462,7 +485,7 @@ export function CalendarPage() {
         void fetchWeek(from, to, false);
       }
     } catch (err) {
-      toast.error(getErrMsg(err) || failCopy);
+      toast.error(err instanceof FollowUpFailure ? err.message : getErrMsg(err) || failCopy);
       closeFollowUp();
       void fetchWeek(from, to, false);
     } finally {
@@ -484,22 +507,29 @@ export function CalendarPage() {
    * week from here on (F-EP15K-01). Same day → the time change from this
    * date; cross day → the series swaps the source weekday for the target's
    * from the earlier of the two dates, unless the target weekday is already
-   * in the series (then nothing changes and the sentence says why).
+   * in the series (then nothing changes and the sentence says why). At the
+   * series' edges the dates move too, so the dropped-on day always keeps the
+   * block (R-EP15K-01): an earlier target before `startDate` moves the start;
+   * a later target after `endDate` extends the end.
    */
   const applyEveryWeek =
     (event: CalendarEvent, next: DropTarget, action: 'move' | 'resize', createdId: string) =>
     async (): Promise<string | null> => {
       const blockId = event.blockId as string;
       const crossDay = action === 'move' && next.date !== event.date;
+      const series = await step(
+        async () => (await listScheduleBlocks()).find((b) => b.id === blockId),
+        APPLY_FAIL_BY_STEP.beforeChange
+      );
+      if (!series?.weekdays) throw new FollowUpFailure(APPLY_FAIL_BY_STEP.beforeChange);
       let body: Parameters<typeof updateScheduleBlock>[1];
+      let weekdays = series.weekdays;
       if (!crossDay) {
         body =
           action === 'resize'
             ? { endTime: next.endTime, effectiveFrom: event.date }
             : { startTime: next.startTime, endTime: next.endTime, effectiveFrom: event.date };
       } else {
-        const series = (await listScheduleBlocks()).find((b) => b.id === blockId);
-        if (!series?.weekdays) throw new Error(APPLY_FAIL_COPY);
         const source = weekdayNumberOf(event.date);
         const target = weekdayNumberOf(next.date);
         if (series.weekdays.includes(target)) {
@@ -508,17 +538,23 @@ export function CalendarPage() {
           setFollowUp((f) => (f ? { undo: f.undo } : f));
           return null;
         }
+        weekdays = [...series.weekdays.filter((d) => d !== source), target].sort((a, b) => a - b);
+        const effectiveFrom = next.date < event.date ? next.date : event.date;
         body = {
-          weekdays: [...series.weekdays.filter((d) => d !== source), target].sort((a, b) => a - b),
+          weekdays,
           startTime: next.startTime,
           endTime: next.endTime,
-          effectiveFrom: next.date < event.date ? next.date : event.date,
+          effectiveFrom,
+          ...(effectiveFrom < series.startDate ? { startDate: effectiveFrom } : {}),
+          ...(series.endDate !== null && next.date > series.endDate ? { endDate: next.date } : {}),
         };
       }
-      await restoreOccurrence(blockId, event.date);
-      await deleteScheduleBlock(createdId);
-      await updateScheduleBlock(blockId, body);
-      return dropAnnouncement(action, next, 'following');
+      await step(() => restoreOccurrence(blockId, event.date), APPLY_FAIL_BY_STEP.beforeChange);
+      await step(() => deleteScheduleBlock(createdId), APPLY_FAIL_BY_STEP.afterRestore);
+      await step(() => updateScheduleBlock(blockId, body), APPLY_FAIL_BY_STEP.afterDelete);
+      // R-EP15K-04: the new times apply to every weekday of the series.
+      const sentence = dropAnnouncement(action, next, 'following');
+      return weekdays.length > 1 ? `${sentence}, on all its days` : sentence;
     };
 
   /**
@@ -710,63 +746,70 @@ export function CalendarPage() {
       </div>
 
       <div className="card p-4 sm:p-6">
+        {/* R-EP15K-03: the status line and the follow-up strip share one
+            reserved row, so the grid never moves when the strip comes and goes. */}
         <div
-          role="status"
-          className="mb-3 flex min-h-5 items-center gap-2 text-xs font-medium uppercase tracking-wider text-text-muted"
+          data-testid="calendar-status-row"
+          className="mb-3 flex min-h-9 flex-wrap items-center justify-between gap-2"
         >
-          {isFetching && (
-            <Loader2
-              className="animate-spin text-accent motion-reduce:animate-none"
-              size={14}
-              aria-hidden
-            />
-          )}
-          {announcement ? `${announcement} ${statusMessage}` : statusMessage}
-        </div>
+          <div
+            role="status"
+            className="flex min-h-5 items-center gap-2 text-xs font-medium uppercase tracking-wider text-text-muted"
+          >
+            {isFetching && (
+              <Loader2
+                className="animate-spin text-accent motion-reduce:animate-none"
+                size={14}
+                aria-hidden
+              />
+            )}
+            {announcement ? `${announcement} ${statusMessage}` : statusMessage}
+          </div>
 
-        {/* EP15K (D-K1/D-K2): the follow-up strip — outside the live region,
+          {/* EP15K (D-K1/D-K2): the follow-up strip — outside the live region,
             so the sentence above is announced once and the controls are not
             read as status. Pointer or focus inside pauses its countdown. */}
-        {followUp && (
-          <div
-            role="group"
-            aria-label="Last change"
-            data-testid="drop-followup"
-            className="mb-3 flex flex-wrap items-center gap-2"
-            onFocus={() => setFollowUpFocused(true)}
-            onBlur={(e) => {
-              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
-                setFollowUpFocused(false);
-              }
-            }}
-            onPointerEnter={() => setFollowUpHovered(true)}
-            onPointerLeave={() => setFollowUpHovered(false)}
-          >
-            {followUp.apply && (
+          {followUp && (
+            <div
+              role="group"
+              aria-label="Last change"
+              data-testid="drop-followup"
+              className="flex flex-wrap items-center gap-2"
+              onFocus={() => setFollowUpFocused(true)}
+              onBlur={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                  setFollowUpFocused(false);
+                }
+              }}
+              onPointerEnter={() => setFollowUpHovered(true)}
+              onPointerLeave={() => setFollowUpHovered(false)}
+            >
+              {followUp.apply && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={followUpBusy}
+                  onClick={() => {
+                    const apply = followUp.apply;
+                    if (apply) void runFollowUp(apply, APPLY_FAIL_COPY);
+                  }}
+                >
+                  Apply to every week from here
+                </Button>
+              )}
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 disabled={followUpBusy}
-                onClick={() => {
-                  const apply = followUp.apply;
-                  if (apply) void runFollowUp(apply, APPLY_FAIL_COPY);
-                }}
+                onClick={() => void runFollowUp(followUp.undo, UNDO_FAIL_COPY)}
               >
-                Apply to every week from here
+                Undo
               </Button>
-            )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={followUpBusy}
-              onClick={() => void runFollowUp(followUp.undo, UNDO_FAIL_COPY)}
-            >
-              Undo
-            </Button>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
         <DayBoundsBanner bounds={bounds} onOpen={openSheet} />
 
