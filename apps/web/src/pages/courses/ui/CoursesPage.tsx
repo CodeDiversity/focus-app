@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/shared/ui/Button';
 import { Select } from '@/shared/ui/Select';
 import { Input } from '@/shared/ui/Input';
-import { Search, X } from 'lucide-react';
+import { CalendarRange, Search, X } from 'lucide-react';
 import { getErrorMessage } from '@/shared/lib/errors';
 import { listCourses, type CourseWithSemester } from '@/entities/course/api/courseApi';
 import { listSemesters, type SemesterWithCount } from '@/entities/semester/api/semesterApi';
@@ -104,9 +105,20 @@ export function CoursesPage() {
             Manage your courses, semesters, and class meetings.
           </p>
         </div>
-        <Button className="max-sm:min-h-[44px]" onClick={openCreate}>
-          Add Course
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* EP16D (AC4): Semesters lost its nav entry — a plain ghost-styled
+              link (not a Button in a Link: axe nested-interactive). */}
+          <Link
+            to="/semesters"
+            className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-body-sm font-medium text-text-muted hover:bg-surface-muted hover:text-text transition-colors duration-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 max-sm:min-h-[44px]"
+          >
+            <CalendarRange className="h-4 w-4" aria-hidden="true" />
+            Semesters
+          </Link>
+          <Button className="max-sm:min-h-[44px]" onClick={openCreate}>
+            Add Course
+          </Button>
+        </div>
       </div>
 
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">

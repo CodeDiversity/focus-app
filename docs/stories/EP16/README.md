@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP16D — implement (Ready; EP16A, EP16B, EP16C, EP16G implemented 2026-11-18).
+**Next substory:** EP16E — implement (Ready; EP16A, EP16B, EP16C, EP16D, EP16G implemented 2026-11-18).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -32,8 +32,8 @@
 | [EP16G](./EP16G-reset-student-data-on-logout.md) | Implemented — awaiting parent review | ▲ D-G1/D-G2 ratified (user, 2026-11-18). | None until the EP16 combined review | [implementation.md](./artifacts/EP16G/implementation.md) — green 2026-11-18 (web 1325/0, 4 new); F-EP16G-01/02 |
 | [EP16B](./EP16B-today-secondary-content.md) | Implemented — awaiting parent review | EP16A, EP16G implemented. D-B5…D-B10 ratified by default 2026-11-18. | None until the EP16 combined review | [implementation.md](./artifacts/EP16B/implementation.md) — green 2026-11-18 (web 1355/0, e2e 62/0 ×2 + one cold-start timeout); F-EP16B-01…03 |
 | [EP16C](./EP16C-one-planning-flow.md) | Implemented — awaiting parent review | EP16B implemented. D-C5…D-C10 ratified by default; D-C11/D-C12 added (user tweak grant) 2026-11-18. | None until the EP16 combined review | [implementation.md](./artifacts/EP16C/implementation.md) — green 2026-11-18 (web 1356/0, e2e 61/0 + 1 fixme ×2); F-EP16C-01…03 |
-| [EP16D](./EP16D-navigation-and-session-indicator.md) | Ready | EP16A implemented; EP16G implemented (EP16D-AC3 relies on its reset). Refined 2026-11-18 (D-D5…D-D8, non-▲); ACs 3–5 wording amended (A-EP16-02). | Implement after EP16C | — |
-| [EP16E](./EP16E-mobile-bottom-tab-bar.md) | Ready | EP16D implemented (shared current-session read, D-D8). Refined 2026-11-18 (D-E4…D-E7, non-▲). | Implement after EP16D | — |
+| [EP16D](./EP16D-navigation-and-session-indicator.md) | Implemented — awaiting parent review | D-D5…D-D8 ratified (user, 2026-11-18 — "ratify remaining"). | None until the EP16 combined review | [implementation.md](./artifacts/EP16D/implementation.md) — green 2026-11-18 (web 1396/0, e2e 61/0 + 1 planned skip); BL-14-07 reproduced + fixed; F-EP16D-01/02 |
+| [EP16E](./EP16E-mobile-bottom-tab-bar.md) | Ready | EP16D implemented (shared current-session read, D-D8). D-E4…D-E7 ratified (user, 2026-11-18 — "ratify remaining"). | Implement | — |
 | [EP16F](./EP16F-cross-layer-e2e-and-parent-index.md) | Queued | EP16A–EP16E and EP16G implemented. | Implement | — |
 
 Sequence (one writer): EP16A → **EP16G** → EP16B → EP16C → EP16D → EP16E → EP16F (EP16G inserted first on 2026-11-18 — a security fix goes before feature work, D16-19). Why: the landing page first so every later child verifies on the surface students will use; the secondary content before the plan flow because the plan note moves from `/plan` to Today and `/plan` is then rebuilt once; navigation after the pages it points at exist; the tab bar after the navigation contract it renders; E2E last over the final state. **Known windows** between children (nav labels, redirects, e2e URL assertions) are recorded in [contracts.md § Known windows](./contracts.md#known-windows-between-sequential-children) (D16-17).

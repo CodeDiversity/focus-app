@@ -4,6 +4,7 @@ import { Pause, Play, Sparkles, Square } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { Badge } from '@/shared/ui/Badge';
 import type { MomentumSummary, StudySession } from '@/entities/study-session/model/types';
+import { formatElapsed } from '@/entities/study-session/model/elapsed';
 import { dailyLine, runLine, weeklyLine } from '@/features/momentum/model/momentumCopy';
 import { MomentumWeekStrip } from '@/features/momentum/ui/MomentumWeekStrip';
 import type { BusyAction } from '../model/useFocusSession';
@@ -24,17 +25,6 @@ export interface FocusTimerProps {
    * spinner or an error.
    */
   momentum?: MomentumSummary;
-}
-
-function formatElapsed(seconds: number): string {
-  const s = Math.max(0, Math.floor(seconds));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  const mm = String(m).padStart(2, '0');
-  const ss = String(sec).padStart(2, '0');
-  if (h > 0) return `${h}:${mm}:${ss}`;
-  return `${mm}:${ss}`;
 }
 
 export function FocusTimer({

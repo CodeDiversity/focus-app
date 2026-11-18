@@ -14,6 +14,12 @@ vi.mock('@/entities/day-bounds/api/dayBoundsApi', () => ({
   getDayBounds: vi.fn().mockRejectedValue(new Error('not stubbed')),
   putDayBounds: vi.fn(),
 }));
+// EP16D: Layout mounts CurrentSessionProvider, which reads the current
+// session for a signed-in user on every pathname change.
+vi.mock('@/entities/study-session/api/studySessionApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/entities/study-session/api/studySessionApi')>()),
+  getCurrentStudySession: vi.fn().mockResolvedValue(null),
+}));
 import { useAuth } from '@/features/auth/model/AuthContext';
 
 type AuthContextType = ReturnType<typeof useAuth>;

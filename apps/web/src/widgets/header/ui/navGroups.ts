@@ -1,18 +1,13 @@
 import {
-  Activity,
   BookOpen,
+  Briefcase,
   Calendar,
   CalendarCheck,
-  CalendarDays,
-  CalendarRange,
   ClipboardList,
-  GraduationCap,
-  History,
   Home,
   LogOut,
   Sun,
   MailCheck,
-  Timer,
   User,
   type LucideIcon,
 } from 'lucide-react';
@@ -27,24 +22,24 @@ import {
  * branch on the presence of `items`.
  */
 export interface NavItem {
-  /** Stable key, e.g. 'semesters'. */
+  /** Stable key, e.g. 'assignments'. */
   id: string;
-  /** Display + accessible name, e.g. 'Semesters'. */
+  /** Display + accessible name, e.g. 'Assignments'. */
   label: string;
   /** Component reference; always rendered aria-hidden. */
   icon: LucideIcon;
-  /** Route, e.g. '/semesters'. */
+  /** Route, e.g. '/assignments'. */
   to: string;
 }
 
 export interface NavSection {
-  /** 'home' | 'today' | 'academics' | 'planning' | 'focus'. */
+  /** 'home' | 'today' | 'plan' | 'calendar' | 'work'. */
   id: string;
   label: string;
   icon: LucideIcon;
-  /** Present for single links (Home, Today). Omit for groups. */
+  /** Present for single links (Today, Plan, Calendar). Omit for groups. */
   to?: string;
-  /** Present for groups (Academics, Planning). Omit for single links. */
+  /** Present for groups (Work). Omit for single links. */
   items?: NavItem[];
 }
 
@@ -61,43 +56,21 @@ export interface AccountMenuItem {
   requiresUnverified?: boolean;
 }
 
+// EP16D (D16-6 (a)): four places to go — Today, Plan, Calendar, Work ▾.
+// Semesters, Study history and Plan health lost their entries; each removed
+// destination is reachable from the page a student would look for it on
+// (Courses → Semesters, Focus → Study history, /plan/health redirects).
 export const authenticatedNavGroups: NavSection[] = [
-  { id: 'home', label: 'Home', icon: Home, to: '/' },
-  // EP16A (D16-2): the landing entry is Today. EP16D restructures the groups.
   { id: 'today', label: 'Today', icon: Sun, to: '/today' },
+  { id: 'plan', label: 'Plan', icon: CalendarCheck, to: '/plan' },
+  { id: 'calendar', label: 'Calendar', icon: Calendar, to: '/calendar' },
   {
-    id: 'academics',
-    label: 'Academics',
-    icon: GraduationCap,
+    id: 'work',
+    label: 'Work',
+    icon: Briefcase,
     items: [
-      { id: 'semesters', label: 'Semesters', icon: CalendarRange, to: '/semesters' },
-      { id: 'courses', label: 'Courses', icon: BookOpen, to: '/courses' },
       { id: 'assignments', label: 'Assignments', icon: ClipboardList, to: '/assignments' },
-    ],
-  },
-  {
-    id: 'planning',
-    label: 'Planning',
-    icon: CalendarDays,
-    items: [
-      // EP15I (D11-10): Availability is retired — the calendar owns day
-      // bounds, events and study blocks; only this entry was removed.
-      { id: 'calendar', label: 'Calendar', icon: Calendar, to: '/calendar' },
-      { id: 'plan', label: 'Plan', icon: CalendarCheck, to: '/plan' },
-      // EP13E (D-E13): the informational plan-health view. It replaces the
-      // standalone `/catch-up` entry, which never appeared in the nav at all.
-      { id: 'plan-health', label: 'Plan health', icon: Activity, to: '/plan/health' },
-    ],
-  },
-  {
-    // EP13E (D-E13): focus mode and its history had no nav entry — the only
-    // link to the history lived inside a running timer.
-    id: 'focus',
-    label: 'Focus',
-    icon: Timer,
-    items: [
-      { id: 'focus-session', label: 'Focus session', icon: Timer, to: '/focus' },
-      { id: 'focus-history', label: 'Study history', icon: History, to: '/focus/history' },
+      { id: 'courses', label: 'Courses', icon: BookOpen, to: '/courses' },
     ],
   },
 ];

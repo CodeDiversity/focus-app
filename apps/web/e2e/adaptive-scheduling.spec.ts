@@ -418,21 +418,20 @@ test('journey 7 — information architecture: redirects, nav, nothing count-led 
   await page.goto('/catch-up/preview');
   await expect(page).toHaveURL(/\/plan\/proposal$/);
 
-  // Plan health and Focus are reachable from the nav.
+  // EP16D: the nav is Today · Plan · Calendar · Work ▾ {Assignments, Courses}.
   await page.goto('/dashboard');
-  await page.getByRole('button', { name: 'Planning' }).click();
+  await expect(page.getByRole('link', { name: 'Plan', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Work menu' }).click();
   await expect(
     page
-      .getByRole('menuitem', { name: 'Plan health' })
-      .or(page.getByRole('link', { name: 'Plan health' }))
+      .getByRole('menuitem', { name: 'Assignments' })
+      .or(page.getByRole('link', { name: 'Assignments' }))
       .first()
   ).toBeVisible();
-  await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Focus' }).click();
   await expect(
     page
-      .getByRole('menuitem', { name: 'Focus session' })
-      .or(page.getByRole('link', { name: 'Focus session' }))
+      .getByRole('menuitem', { name: 'Courses' })
+      .or(page.getByRole('link', { name: 'Courses' }))
       .first()
   ).toBeVisible();
   await page.keyboard.press('Escape');

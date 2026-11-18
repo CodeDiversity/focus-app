@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Timer as TimerIcon, Loader2 } from 'lucide-react';
+import { Timer as TimerIcon, History, Loader2 } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { FocusTimer } from '@/features/focus-session/ui/FocusTimer';
@@ -73,15 +73,28 @@ export function FocusPage() {
   }
 
   if (!session) {
+    // EP16D (D-D7): the heading row with Study history lives on the empty
+    // state only — the running timer stays distraction-free (D16-12) and the
+    // celebration keeps its own history link.
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
+        <div className="mb-6 flex items-center justify-between gap-2">
+          <h1 className="text-3xl font-bold text-text">Focus session</h1>
+          <Link
+            to="/focus/history"
+            className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-body-sm font-medium text-text-muted hover:bg-surface-muted hover:text-text transition-colors duration-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 max-sm:min-h-[44px]"
+          >
+            <History className="h-4 w-4" aria-hidden="true" />
+            Study history
+          </Link>
+        </div>
         <EmptyState
           icon={<TimerIcon size={40} />}
           title="No focus session in progress"
-          description="Start a session from an assignment to begin focusing."
+          description="Your next session is on Today."
           action={
-            <Link ref={emptyActionRef} to="/assignments">
-              <Button className="max-sm:min-h-[44px]">Go to assignments</Button>
+            <Link ref={emptyActionRef} to="/today">
+              <Button className="max-sm:min-h-[44px]">Go to Today</Button>
             </Link>
           }
         />

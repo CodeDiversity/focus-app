@@ -115,6 +115,14 @@ describe('CoursesPage list (AC 1, AC 2)', () => {
     expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
   });
 
+  it('header links to Semesters (/semesters) (EP16D-AC4)', async () => {
+    mockedListCourses.mockResolvedValue(allCourses);
+    renderPage();
+
+    await screen.findAllByRole('listitem');
+    expect(screen.getByRole('link', { name: 'Semesters' })).toHaveAttribute('href', '/semesters');
+  });
+
   it('renders the active courses in API order with chip, code, name, semester and credits (AC 2)', async () => {
     mockedListCourses.mockResolvedValue(allCourses);
     renderPage();

@@ -7,6 +7,11 @@ import {
   finishStudySession,
 } from '@/entities/study-session/api/studySessionApi';
 import type { StudySession } from '@/entities/study-session/model/types';
+import {
+  anchorFor,
+  elapsedSecondsAt,
+  type ElapsedAnchor,
+} from '@/entities/study-session/model/elapsed';
 
 export type BusyAction = 'pause' | 'resume' | 'finish' | null;
 
@@ -30,10 +35,7 @@ export function useFocusSession(): UseFocusSessionResult {
   const [session, setSession] = useState<StudySession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [anchor, setAnchor] = useState<{
-    elapsedSeconds: number;
-    responseInstant: number;
-  } | null>(null);
+  const [anchor, setAnchor] = useState<ElapsedAnchor | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [busyAction, setBusyAction] = useState<BusyAction>(null);
   const [transitionError, setTransitionError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export function useFocusSession(): UseFocusSessionResult {
   const applySession = useCallback((s: StudySession | null) => {
     setSession(s);
     if (s) {
-      setAnchor({ elapsedSeconds: s.elapsedSeconds, responseInstant: Date.now() });
+      setAnchor(anchorFor(s, Date.now()));
     } else {
       setAnchor(null);
     }
@@ -73,9 +75,7 @@ export function useFocusSession(): UseFocusSessionResult {
     return () => window.clearInterval(id);
   }, [session, anchor]);
 
-  const displayedElapsed = anchor
-    ? anchor.elapsedSeconds + Math.max(0, Math.floor((now - anchor.responseInstant) / 1000))
-    : 0;
+  const displayedElapsed = anchor ? elapsedSecondsAt(anchor, now) : 0;
 
   const clearTransitionError = useCallback(() => {
     setTransitionError(null);

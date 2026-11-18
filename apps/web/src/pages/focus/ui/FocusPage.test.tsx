@@ -11,6 +11,7 @@ import {
   getMomentum,
 } from '@/entities/study-session/api/studySessionApi';
 import { listAssignments } from '@/entities/assignment/api/assignmentApi';
+import { expectNoForbiddenWords } from '@/test/forbiddenWords';
 
 vi.mock('@/entities/study-session/api/studySessionApi', () => ({
   // EP13K: the momentum slice imports this client.
@@ -105,14 +106,46 @@ describe('FocusPage', () => {
     expect(screen.getByRole('button', { name: 'Resume' })).toBeInTheDocument();
   });
 
-  it('renders empty state with Go to assignments when no session', async () => {
+  it('renders the empty state pointing to Today with Go to Today', async () => {
     mockedCurrent.mockResolvedValue(null);
     renderPage();
     await waitFor(() =>
       expect(screen.getByText('No focus session in progress')).toBeInTheDocument()
     );
-    expect(screen.getByRole('link', { name: /go to assignments/i })).toBeInTheDocument();
+    expect(screen.getByText('Your next session is on Today.')).toBeInTheDocument();
+    const goToToday = screen.getByRole('link', { name: /go to today/i });
+    expect(goToToday).toHaveAttribute('href', '/today');
+    expect(screen.queryByRole('link', { name: /go to assignments/i })).not.toBeInTheDocument();
     expect(mockedPause).not.toHaveBeenCalled();
+  });
+
+  it('the empty state has an h1 "Focus session" and a Study history link to /focus/history', async () => {
+    mockedCurrent.mockResolvedValue(null);
+    renderPage();
+    await waitFor(() =>
+      expect(screen.getByText('No focus session in progress')).toBeInTheDocument()
+    );
+    expect(screen.getByRole('heading', { level: 1, name: 'Focus session' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Study history' })).toHaveAttribute(
+      'href',
+      '/focus/history'
+    );
+  });
+
+  it('moves focus to Go to Today when the empty state appears', async () => {
+    mockedCurrent.mockResolvedValue(null);
+    renderPage();
+    const goToToday = await screen.findByRole('link', { name: /go to today/i });
+    await waitFor(() => expect(goToToday).toHaveFocus());
+  });
+
+  it('passes the copy audit on the empty state', async () => {
+    mockedCurrent.mockResolvedValue(null);
+    const { container } = renderPage();
+    await waitFor(() =>
+      expect(screen.getByText('No focus session in progress')).toBeInTheDocument()
+    );
+    expectNoForbiddenWords(container);
   });
 
   it('renders assignment title and subtasks', async () => {

@@ -8,10 +8,11 @@ import {
   type KeyboardEvent,
   type RefObject,
 } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigationType } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { ChevronDown, Menu, User, X } from 'lucide-react';
 import { useAuth } from '@/features/auth/model/AuthContext';
+import { SessionIndicator } from '@/widgets/session-indicator/ui/SessionIndicator';
 import { Button } from '@/shared/ui/Button';
 import {
   accountMenuItems,
@@ -26,7 +27,7 @@ const FOCUSABLE_SELECTOR =
 
 const MENU_ITEM_SELECTOR = '[role="menuitem"]';
 
-type DesktopMenu = 'academics' | 'planning' | 'focus' | 'account';
+type DesktopMenu = 'work' | 'account';
 
 function navLinkClass(isActive: boolean, mobile: boolean) {
   return clsx(
@@ -402,6 +403,7 @@ function AccountMenu({
 export function Header() {
   const { isAuthenticated, logout, user } = useAuth();
   const location = useLocation();
+  const navigationType = useNavigationType();
 
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -413,11 +415,22 @@ export function Header() {
   // Single source for both surfaces (desktop nav + mobile drawer), EP11B.
   const navGroups = getNavGroups(isAuthenticated);
 
-  // Close the drawer and any desktop menu on route change.
+  // Close the drawer and any desktop menu on user-initiated route changes
+  // (PUSH/POP) only. A programmatic REPLACE redirect — the late post-login
+  // onboarding navigation (BL-14-07, D-D5) — must not close a menu the student
+  // just opened; every menu item and drawer link already closes its own
+  // surface on click.
+  useEffect(() => {
+    if (navigationType === 'REPLACE') return;
+    setOpen(false);
+    setOpenMenu(null);
+  }, [location.pathname, navigationType]);
+
+  // Logout, session expiry and account switch close both surfaces (D-D5).
   useEffect(() => {
     setOpen(false);
     setOpenMenu(null);
-  }, [location.pathname]);
+  }, [user?.id]);
 
   // Focus trap, scroll lock, restore focus for the mobile drawer.
   useEffect(() => {
@@ -483,6 +496,9 @@ export function Header() {
 
   return (
     <header className="bg-surface border-b border-border">
+      {/* EP16D (D-D6): the session strip precedes the logo row — and the
+          account trigger — in DOM, visual and tab order at every width. */}
+      <SessionIndicator />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4 min-h-16">
           {/* Logo */}
@@ -497,8 +513,8 @@ export function Header() {
           </Link>
 
           {/* Desktop navigation */}
-          {/* EP13E (D-E13): five sections since Focus joined — a tighter gap
-              at `md` keeps them on one row; `lg` keeps EP11's spacing. */}
+          {/* EP16D (D16-6): four entries — Today, Plan, Calendar, Work ▾ —
+              fit one row at `md` with gap-4; `lg` keeps EP11's spacing. */}
           <nav aria-label="Primary" className="hidden md:flex items-center gap-4 lg:gap-6">
             {navGroups.map((section) => {
               const Icon = section.icon;
