@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP16B — refine (`Needs refinement`, D16-15); the refiner may take EP16B–EP16E's UI passes together (shared surfaces). EP16A implemented 2026-11-17 on the user's instruction while EP15K awaits only R-EP15K-02 (user-owned manual pass).
+**Next substory:** EP16G — needs the user's ruling on ▲ D-G1 (security mechanism), then implement. EP16B–EP16E are refined and Ready (2026-11-18) and follow in queue order. EP15K's unit review passed 2026-11-18.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -29,19 +29,21 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [EP16A](./EP16A-today-page-and-landing-route.md) | Implemented — awaiting parent review | Started 2026-11-17 on user instruction (EP15K review pass 2: only R-EP15K-02, user-owned, open). | None until the EP16 combined review | [implementation.md](./artifacts/EP16A/implementation.md) — green 2026-11-17 (web 1321/0, e2e 62/0 ×3); F-EP16A-01…03 |
-| [EP16B](./EP16B-today-secondary-content.md) | Needs refinement | EP16A implemented. Refiner: Coming up row, classes line, momentum row layout and copy (D16-15). | Refine | — |
-| [EP16C](./EP16C-one-planning-flow.md) | Needs refinement | EP16B implemented (the plan note moves first); D16-4/D16-9 ratified. Refiner: proposal surface composition and copy (D16-15). | Refine | — |
-| [EP16D](./EP16D-navigation-and-session-indicator.md) | Needs refinement | EP16A implemented. Refiner: session indicator placement and copy; Work group icon (D16-15). | Refine | — |
-| [EP16E](./EP16E-mobile-bottom-tab-bar.md) | Needs refinement | EP16D implemented; ▲ D-E1 ratified (five flat tabs). Refiner: tab bar layout, labels, Focus-page behaviour (D16-15). | Refine | — |
-| [EP16F](./EP16F-cross-layer-e2e-and-parent-index.md) | Queued | EP16A–EP16E implemented. | Implement | — |
+| [EP16G](./EP16G-reset-student-data-on-logout.md) | Blocked | ▲ D-G1 `Proposed` (security mechanism). No other dependency. Queued first among the remaining children (D16-19). | User: rule D-G1; then implement | — |
+| [EP16B](./EP16B-today-secondary-content.md) | Ready | EP16A implemented; EP16G first (D16-19). Refined 2026-11-18 (D-B5…D-B10, non-▲). | Implement after EP16G | — |
+| [EP16C](./EP16C-one-planning-flow.md) | Ready | EP16B implemented (the plan note moves first). Refined 2026-11-18 (D-C5…D-C10, non-▲; multi-window, checkpoint S1–S5). | Implement after EP16B | — |
+| [EP16D](./EP16D-navigation-and-session-indicator.md) | Ready | EP16A implemented; EP16G implemented (EP16D-AC3 relies on its reset). Refined 2026-11-18 (D-D5…D-D8, non-▲); ACs 3–5 wording amended (A-EP16-02). | Implement after EP16C | — |
+| [EP16E](./EP16E-mobile-bottom-tab-bar.md) | Ready | EP16D implemented (shared current-session read, D-D8). Refined 2026-11-18 (D-E4…D-E7, non-▲). | Implement after EP16D | — |
+| [EP16F](./EP16F-cross-layer-e2e-and-parent-index.md) | Queued | EP16A–EP16E and EP16G implemented. | Implement | — |
 
-Sequence (one writer): EP16A → EP16B → EP16C → EP16D → EP16E → EP16F. Why: the landing page first so every later child verifies on the surface students will use; the secondary content before the plan flow because the plan note moves from `/plan` to Today and `/plan` is then rebuilt once; navigation after the pages it points at exist; the tab bar after the navigation contract it renders; E2E last over the final state. **Known windows** between children (nav labels, redirects, e2e URL assertions) are recorded in [contracts.md § Known windows](./contracts.md#known-windows-between-sequential-children) (D16-17).
+Sequence (one writer): EP16A → **EP16G** → EP16B → EP16C → EP16D → EP16E → EP16F (EP16G inserted first on 2026-11-18 — a security fix goes before feature work, D16-19). Why: the landing page first so every later child verifies on the surface students will use; the secondary content before the plan flow because the plan note moves from `/plan` to Today and `/plan` is then rebuilt once; navigation after the pages it points at exist; the tab bar after the navigation contract it renders; E2E last over the final state. **Known windows** between children (nav labels, redirects, e2e URL assertions) are recorded in [contracts.md § Known windows](./contracts.md#known-windows-between-sequential-children) (D16-17).
 
 ## Stories
 
 | Story | Outcome | Layer |
 |---|---|---|
 | [EP16A](./EP16A-today-page-and-landing-route.md) | `/today` with the hero and today's rows; every landing path resolves there; dashboard page removed; `features/dashboard` → `features/today`; day line without the IANA id; Button accessible name | Frontend |
+| [EP16G](./EP16G-reset-student-data-on-logout.md) | Every per-student cache (six RTK Query slices + onboarding) emptied on logout or account switch; registry guard | Frontend (store; security) |
 | [EP16B](./EP16B-today-secondary-content.md) | Plan note, compact momentum row, Coming up (merged deadlines), Classes today line; copy-audit helper | Frontend |
 | [EP16C](./EP16C-one-planning-flow.md) | One `PlanProposal` surface on the catch-up data path; `/plan` rebuilt; plan-health page and catch-up routes retired behind redirects | Frontend |
 | [EP16D](./EP16D-navigation-and-session-indicator.md) | Four-entry navigation; header session indicator; in-page links for Semesters and Study history; BL-14-07 fix | Frontend |
@@ -90,7 +92,7 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 |---|---|
 | 1 functional criteria | All children |
 | 2 invalid-input validation | N/A — no new inputs (the proposal reuses `PlanSessionEditor`'s validation) |
-| 3 student data scoping | N/A — no new reads; existing authenticated client (EP16D verifies the indicator's cache reset on logout) |
+| 3 student data scoping | **EP16G** (client caches reset on logout / account switch — D16-19); EP16D (indicator state, EP16D-AC3); others N/A — no new reads |
 | 4 actionable API errors | EP16C (confirm 409/rolled-over copy, reused) |
 | 5 loading/empty/error states | EP16A, EP16B, EP16C, EP16D |
 | 6 keyboard accessibility | EP16A, EP16B, EP16C, EP16D, EP16E |
@@ -114,6 +116,7 @@ Epic-level decisions D16-1…D16-14 live in the [epic](../../epics/EP16-today-fi
 | D16-16 | **Blanket ratification:** the user ratified every epic and story decision as recommended ("yes, ratify all", 2026-11-17), including ▲ D16-2, D16-4, D16-9 and EP16E D-E1. Rows added later by the refiner still need their own ruling unless the user extends the grant. | User ruling 2026-11-17. |
 | D16-17 | **Known windows** between children (nav label vs route, redirect-only entries, e2e URL assertions) are acceptable on the development branch because the epic ships as one review unit; each window is listed in contracts.md with the child that closes it. | EP15 D15-15/D15-18 precedent, 2026-11-17. |
 | D16-18 | **AC-E16-07 wording amended at breakdown:** the plan-note link opens `/plan` (see the week, replan from there), not the proposal directly — a curious click must not start a heavy proposal fetch. Epic text updated 2026-11-17 before any AC froze. | Planner, 2026-11-17; logged in history.md. |
+| D16-19 | **EP16G added (security), queued first:** the EP16D refiner found, and the planner verified in `store.ts` and `AuthContext.tsx`, that no per-student RTK Query or onboarding state is reset on logout. A second student on the same tab can therefore see the first student's cached data for up to 60 s (300 s for the session slice). The gap predates EP16, but EP16's surfaces read those caches. It adds a new security invariant, and the planning-checklist rule calls for a plan review of EP16G; a focused review of that one story is recommended. | Planner, 2026-11-18. |
 
 ## Verification tasks
 
@@ -130,11 +133,13 @@ Reviewed at every epic breakdown and every parent sign-off; list open rows acros
 | BL-16-03 | **Quick-capture assignment entry** — title-only add from Today, details later | 2026-11-17 product review (honourable mention) | The seven-field form is EP03's contract; a capture mode needs its own defaults decision | A user asks, or the Today "Add assignment" control's abandonment is observed in a usage check | planner | 2026-11-17 | Backlog |
 | BL-16-04 | **Reminders and notifications epic** — browser notifications for upcoming sessions; optional morning email digest | 2026-11-17 product review (#1); EP13 D13-8 | Needs the user's capability decision (scheduled jobs, notification permission) | The user approves the capability (D13-8) | user / planner | 2026-11-17 | Backlog |
 | BL-16-05 | **Focus-session upgrades** — end-of-target cue, built-in break, first-subtask start step, "park it" box | 2026-11-17 product review (#3) | Its own epic; reuses BL-16-04's permission if that lands first | EP16 has shipped, or a user asks | planner | 2026-11-17 | Backlog |
+| BL-16-06 | **"Overdue" wording on `/assignments` and course pages** (`AssignmentRow.tsx:220`, EP03 surfaces) — EP16's copy rule replaces it with "Past due" on Today only | EP16B refinement, 2026-11-18 | Outside EP16's surfaces; the EP03/EP05 copy and its tests are a separate change | The next story that touches the assignments list or course detail page, or a user asks for consistent wording | planner | 2026-11-18 | Backlog |
+| BL-16-07 | **Login double redirect** — `PublicRoute` sends a new student to `/today` before `LoginPage` redirects again to `/onboarding`, so Today flashes first (same root cause as BL-14-07) | EP16D refinement, 2026-11-18 | EP16D fixes the menu-closing symptom only (D-D5); removing the double redirect changes the login flow's contract | EP16D has shipped, or a user reports seeing Today before onboarding | planner | 2026-11-18 | Backlog |
 
 ## Final implementation review unit
 
 | Parent | In-scope children | Artifact paths | Index owner | Gate |
 |---|---|---|---|---|
-| [EP16](./README.md) | EP16A–EP16F | `./artifacts/EP16/` | EP16F's implementer writes the parent index | One combined EP16 review after EP16F |
+| [EP16](./README.md) | EP16A–EP16G | `./artifacts/EP16/` | EP16F's implementer writes the parent index | One combined EP16 review after EP16F |
 
 Child implementation completion unblocks dependents; only the passing combined review establishes sign-off.

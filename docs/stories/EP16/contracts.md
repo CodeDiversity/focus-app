@@ -94,7 +94,7 @@ states as `CatchUpPreview` renders them today.
 - Control: one link **Back to session** → `/focus`. Appearance announced once
   via `aria-live="polite"`; the tick is `aria-hidden` (a live mm:ss would
   chatter).
-- Logout clears it (existing RTK/store reset on logout — EP16D verifies).
+- Logout or an account switch clears it: the provider resets on a `user.id` change and drops responses from an earlier read (EP16D D-D8); the store-wide per-student cache reset is EP16G (D16-19). (Planner correction 2026-11-18: no store reset existed.)
 
 ## Navigation contract (AC-E16-09, AC-E16-11; D16-6 (a), D16-7)
 
@@ -123,7 +123,8 @@ renders the same contract on narrow viewports (shape per ▲ D-E1).
 | after EP16A, before EP16D | the nav's first entry is re-pointed to Today by EP16A, but Academics/Planning/Focus groups still exist; "Plan health" still opens the old page; "Home" (signed-in) redirects to Today | EP16D |
 | after EP16A, before EP16B | Today shows header + hero only (no deadlines, no classes, no momentum) | EP16B |
 | after EP16A, before EP16F | `apps/web/e2e/*` still `goto('/dashboard')` (works via redirect). EP16A re-pointed the exact-URL assertion `adaptive-scheduling.spec.ts:169` and the four post-login URL assertions (`helpers.ts:210`, `auth-journeys.spec.ts:109,143`, `login.spec.ts:59` — F-EP16A-02). Journey 6's momentum-card assertions became a Today badge check; the momentum-row assertion is owed by EP16F's `today.spec.ts` (F-EP16A-03). Full rewrite in EP16F | EP16A (minimal), EP16B (row), EP16F |
-| after EP16C, before EP16F | `catch-up.spec.ts` URL constants re-pointed by EP16C (`/plan/health` → `/plan`, `/plan/health/catch-up` → `/plan/proposal`; test ids kept); journeys that read plan-health headings are skipped with a `test.fixme` naming EP16F | EP16C (minimal), EP16F |
+| after EP16C, before EP16F | EP16C re-points every e2e journey whose content has a new home (refined 2026-11-18, D-C10): `catch-up.spec.ts` (`/plan/health` → `/plan`, `/plan/health/catch-up` → `/plan/proposal`; test ids kept), plus the "Generate plan" / "Save plan" / `/plan/health` steps in `adaptive-scheduling.spec.ts`, `schedule.spec.ts` and `study-plan.spec.ts` (test-only). Only `catch-up.spec.ts:616` (the plan-health page's own content) gets `test.fixme`, naming EP16F. EP16C-AC4's search expects hits in the retained `CatchUpPreview` payload type (`entities/study-plan`) and in `navGroups.ts` / `Header.test.tsx` "plan-health" until EP16D; EP16C-AC5's caller check excludes `studyPlanApi.test.ts` (the deprecated functions' contract test) | EP16C (minimal), EP16D (nav), EP16F |
+| after EP16D, before EP16F | `adaptive-scheduling.spec.ts:414-430` opens the removed Planning/Focus menus; EP16D re-points it to the new entries (test-only, refined 2026-11-18) | EP16D (minimal), EP16F |
 | after EP16D, before EP16E | on narrow viewports the drawer still lists the four primary entries | EP16E |
 
 ## Code baseline (inspected 2026-11-17)
@@ -140,4 +141,7 @@ renders the same contract on narrow viewports (shape per ▲ D-E1).
 - Courses: `pages/courses/ui/CoursesPage.tsx:100` (`h1`); History: `pages/focus/history/ui/StudyHistoryPage.tsx:127`.
 - Button: `shared/ui/Button.tsx:45-70` — while `isLoading` the children are replaced by an `aria-hidden` spinner, so the accessible name is lost (F-EP15G-03).
 - E2E: `apps/web/e2e/` — `helpers.ts:209`, `adaptive-scheduling.spec.ts` (`/dashboard` ×8, `/plan/health` ×3, `/catch-up` ×2), `auth-journeys.spec.ts` (`/dashboard` ×3), `catch-up.spec.ts` (`/plan/health*` ×12).
-- **Unverified:** whether an elapsed-seconds helper already exists outside `useFocusSession`; `Header.tsx` drawer section line numbers; whether the store resets RTK caches on logout (EP16D checks).
+- **Resolved at refinement (2026-11-18):**
+  - No elapsed helper exists: the arithmetic is inline in `useFocusSession.ts:76-78` and the formatter is private in `FocusTimer.tsx:29-38`, so EP16D extracts `entities/study-session/model/elapsed.ts`.
+  - The drawer is at `Header.tsx:577-748`; the route-change close is at `:416-420`.
+  - **No store reset on logout exists**, so EP16G adds one (D16-19).

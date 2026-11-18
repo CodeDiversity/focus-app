@@ -29,6 +29,8 @@ Planned 2026-11-17 from the product review the user requested ("what feels like 
 
 | ID | Date | Change | Why |
 |---|---|---|---|
+| A-EP16-02 | 2026-11-18 | EP16D-AC3/AC4/AC5 wording, from the refiner's code findings. AC3 no longer cites a store logout reset (none existed; EP16G adds it). AC4 puts **Study history** on the Focus empty state's new heading row (no Focus page header exists). AC5 names the real trigger, a late programmatic `replace` redirect, not a `user` identity change. Observable outcomes unchanged. | The ACs described mechanisms the code does not have; they are corrected before freeze so the implementer is not held to a false premise. |
+| A-EP16-03 | 2026-11-18 | EP16G added and queued first (D16-19). New invariant: no cross-student cached data. | Security finding, verified in code. The planning checklist calls for a plan review of the new invariant; a focused review of EP16G is recommended. |
 | A-EP16-01 | 2026-11-17 | AC-E16-07: the plan-note link opens `/plan` instead of the proposal surface (epic text updated; D16-18). | A curious click on an informational sentence must not start a proposal fetch and open an editor; `/plan` shows the week and offers Replan. |
 
 ## Plan review history
@@ -44,3 +46,13 @@ None required at breakdown (checklist rule). The user's 2026-11-17 instruction (
 ## Superseded decisions
 
 Decisions in other homes amended by EP16 (bidirectional references added 2026-11-17): EP11 D11-4/D11-6/D11-10 (→ D11-11 row), EP15 D15-9 (Planning group dissolved), EP13E D-E10/D-E13/D-E14, EP13K D-K9/D-K10, EP05 D05-6 (display only).
+
+**Refinement (2026-11-18):** two refiner dispatches (EP16B+C, EP16D+E) set all four stories Ready and added the non-▲ rows D-B5…10, D-C5…10, D-D5…8 and D-E4…7.
+
+Back-references for the planner:
+- EP16D D-D5 refines EP10C D10-11 (drawer close on route change; register in the EP10/EP11 records).
+- EP16E D-E5 refines EP11B's drawer labels.
+- EP16C D-C5 refines D16-10.
+- EP16B D-B6 refines D16-3 (badge look) and EP05B D05-18.
+
+Planner follow-ups applied the same day: contracts known windows (EP16C e2e specs, EP16D nav e2e), BL-16-06 ("Overdue" on EP03 surfaces), BL-16-07 (login double redirect) and EP16G (security).

@@ -355,7 +355,7 @@ surfaces make already enforces `userId` scoping server-side.
 | Claim | Counterexample | Mechanism | Owning test |
 |---|---|---|---|
 | Every former destination stays reachable | A redirect loop or a retired page with no inbound link | Route table with `replace` redirects; nav + in-page links enumerated in AC 9 | TR-E16-02, TR-E16-03 |
-| The session indicator never shows another student's session | Shared cache across logout/login | The read goes through the authenticated client; cache cleared on logout (existing RTK reset) — verify in EP16D | TR-E16-01 (EP16D) |
+| No student is ever shown another student's cached data (Today, calendar, assignments, momentum, onboarding, the session indicator) | Student A logs out; B signs in on the same tab within 60 s and is served A's cached Today plan | EP16G: a store listener resets every per-student RTK Query slice and the onboarding slice on logout and on an account switch, with a registry test; EP16D D-D8 resets the indicator's provider on a `user.id` change (D16-19; planner correction 2026-11-18 — no reset existed) | EP16G-AC1…AC4; EP16D-AC3 |
 | The single plan flow never deletes locked or completed sessions | Replan after locking a session removes it | `catch-up/confirm` replaces only `SCHEDULED && !locked` (EP13A) — unchanged, relied upon | TR-E16-03 (Replan preserves a locked session) |
 | Today never leads with a failure | A rolled-forward count or an overdue heading appears first | Region order fixed by AC 3; copy-audit test | TR-E16-05 |
 
