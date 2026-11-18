@@ -5,7 +5,7 @@ import { api } from '@/features/session/api/sessionApi';
 import { assignmentsApi } from '@/features/assignments/api/assignmentsApi';
 import { calendarApi } from '@/features/calendar/api/calendarApi';
 import { todayPlanApi } from '@/features/today-plan/api/todayPlanApi';
-import { planHealthApi } from '@/features/plan-health/api/planHealthApi';
+import { recoverySummaryApi } from '@/features/today/api/recoverySummaryApi';
 import { momentumApi } from '@/features/momentum/api/momentumApi';
 
 /**
@@ -26,7 +26,7 @@ export const PER_STUDENT_APIS = [
   assignmentsApi,
   calendarApi,
   todayPlanApi,
-  planHealthApi,
+  recoverySummaryApi,
   momentumApi,
 ] as const;
 

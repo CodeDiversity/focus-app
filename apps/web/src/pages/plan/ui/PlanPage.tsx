@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import toast from 'react-hot-toast';
 import { Button } from '@/shared/ui/Button';
 import { getErrorMessage } from '@/shared/lib/errors';
@@ -23,7 +23,6 @@ import { WorkloadWarnings } from '@/features/study-plan/ui/WorkloadWarnings';
 import { CalibrationNote } from '@/features/study-plan/ui/CalibrationNote';
 import { TodayPlanCard } from '@/features/today-plan/ui/TodayPlanCard';
 import { useTodayPlanQuery } from '@/features/today-plan/api/todayPlanApi';
-import { usePlanHealthQuery } from '@/features/plan-health/api/planHealthApi';
 import type { DashboardSectionStatus } from '@/features/today/ui/dashboardSection';
 
 type Mode = 'initial' | 'generating' | 'preview' | 'saved';
@@ -87,15 +86,6 @@ export function PlanPage() {
    * hide the one next action (AC-1). EP13D's card is reused unchanged.
    */
   const todayPlanQuery = useTodayPlanQuery();
-
-  /**
-   * EP13E (D-E11, D-E12): the returning-after-absence note. The signal is
-   * server truth — work actually moved forward (EP13C) — not an elapsed-days
-   * guess, and the sentence carries no numbers. The read is shared with the
-   * plan-health view through one RTK Query cache entry.
-   */
-  const planHealthQuery = usePlanHealthQuery();
-  const movedWorkForward = (planHealthQuery.data?.rolledForwardCount ?? 0) > 0;
 
   /**
    * Reads the saved plan. `commitMode: true` (a student-initiated retry) always
@@ -230,21 +220,7 @@ export function PlanPage() {
         onRetry={() => void todayPlanQuery.refetch()}
       />
 
-      {/*
-        EP13E (D-E11): the returning-after-absence note — one neutral
-        sentence, no numbers, with the detail one click away.
-      */}
-      {movedWorkForward && (
-        <p className="mb-6 text-sm text-text-muted" data-testid="moved-forward-note">
-          Some earlier sessions moved into your current plan — today&apos;s list is up to date.{' '}
-          <Link
-            to="/plan/health"
-            className="font-medium text-accent underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2"
-          >
-            See plan health
-          </Link>
-        </p>
-      )}
+      {/* EP16B-AC1: the moved-forward note now lives on Today (plan note). */}
 
       {isLoadingSaved ? (
         <WeekSkeleton />

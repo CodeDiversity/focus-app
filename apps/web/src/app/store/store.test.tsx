@@ -16,7 +16,7 @@ describe('store', () => {
     store.dispatch({ type: '@@test/no-op' });
     // SP-107C added the onboarding reducer alongside auth and the RTK Query api;
     // EP05A added the dashboard's two per-domain RTK Query slices; EP13D added
-    // the today read; EP13E added the shared plan-health read; EP13K the
+    // the today read; EP13E added the shared recovery-summary read (renamed by EP16B); EP13K the
     // shared momentum read.
     expect(Object.keys(store.getState()).sort()).toEqual([
       'api',
@@ -25,7 +25,7 @@ describe('store', () => {
       'calendarApi',
       'momentumApi',
       'onboarding',
-      'planHealthApi',
+      'recoverySummaryApi',
       'todayPlanApi',
     ]);
     expect(store.getState().api).toEqual(expect.objectContaining({ queries: {}, mutations: {} }));
@@ -72,7 +72,7 @@ describe('store', () => {
       </Provider>
     );
 
-    // EP13E: the planHealthApi slice joins auth, onboarding, api,
+    // EP13E: the plan-health (now EP16B `recoverySummaryApi`) slice joins auth, onboarding, api,
     // assignmentsApi, calendarApi and todayPlanApi; EP13K adds momentumApi,
     // so state has eight keys
     expect(getByTestId('state-size').textContent).toBe('8');

@@ -5,7 +5,7 @@ import { api } from '@/features/session/api/sessionApi';
 import { assignmentsApi } from '@/features/assignments/api/assignmentsApi';
 import { calendarApi } from '@/features/calendar/api/calendarApi';
 import { todayPlanApi } from '@/features/today-plan/api/todayPlanApi';
-import { planHealthApi } from '@/features/plan-health/api/planHealthApi';
+import { recoverySummaryApi } from '@/features/today/api/recoverySummaryApi';
 import { momentumApi } from '@/features/momentum/api/momentumApi';
 import { PER_STUDENT_APIS, resetOnUserChange } from './resetOnUserChange';
 
@@ -27,7 +27,7 @@ export function createAppStore() {
       [assignmentsApi.reducerPath]: assignmentsApi.reducer,
       [calendarApi.reducerPath]: calendarApi.reducer,
       [todayPlanApi.reducerPath]: todayPlanApi.reducer,
-      [planHealthApi.reducerPath]: planHealthApi.reducer,
+      [recoverySummaryApi.reducerPath]: recoverySummaryApi.reducer,
       [momentumApi.reducerPath]: momentumApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
@@ -44,7 +44,7 @@ export function createAppStore() {
           assignmentsApi.middleware,
           calendarApi.middleware,
           todayPlanApi.middleware,
-          planHealthApi.middleware,
+          recoverySummaryApi.middleware,
           momentumApi.middleware
         ),
   });

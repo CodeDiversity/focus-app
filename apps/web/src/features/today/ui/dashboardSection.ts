@@ -1,6 +1,4 @@
-import type { ReactNode } from 'react';
 import { formatDate } from '@/shared/lib/datetime';
-import type { AssignmentListItem } from '@/shared/types/academic';
 
 /**
  * EP05B — the shared dashboard vocabulary (D05-12 → Decisions #1, #3, #5,
@@ -31,65 +29,9 @@ export type DashboardSectionStatus = 'loading' | 'ready' | 'error';
  * the title, the description and the action **through this prop** (Decision
  * #14).
  */
-export interface DashboardEmptyState {
-  title: string;
-  description?: string;
-  action?: ReactNode;
-}
+/** EP16B (D16-3): Coming up shows at most five rows; "All assignments" carries the rest. */
+export const COMING_UP_LIMIT = 5;
 
-/** The props every section shares (Decisions #7, #14). */
-export interface DashboardSectionBaseProps {
-  /** Which of the section's three states to render. */
-  status: DashboardSectionStatus;
-  /** The query's error — rendered by the section's error state. */
-  error?: unknown;
-  /** Whether the query is in flight (the retry button's busy state). */
-  isFetching?: boolean;
-  /** Refetches **this** section's query. */
-  onRetry: () => void;
-  /** The empty state's content, supplied by the host. */
-  emptyState?: DashboardEmptyState;
-}
-
-/**
- * The props the two **assignment** sections share (D05-17, D05-18).
- *
- * `onOpenDetails` is the row → host callback: the row's title button calls it
- * exactly once with the row it rendered. The section never mounts the shared
- * assignment owner and never opens a dialog itself — the page host owns that
- * (one owner, one mount).
- */
-export interface DashboardAssignmentSectionProps extends DashboardSectionBaseProps {
-  /** The assignments payload — the section applies its own selector to it. */
-  rows: AssignmentListItem[];
-  /** The profile zone the due dates are displayed in (the payload's zone). */
-  timeZone: string;
-  /** D05-17: the row → host callback. */
-  onOpenDetails: (row: AssignmentListItem) => void;
-}
-
-/** Today's classes — the cap (D05-10). */
-export const CLASSES_LIMIT = 5;
-/** Upcoming deadlines — the cap (D05-10). */
-export const UPCOMING_DEADLINES_LIMIT = 5;
-/** Overdue assignments — the cap (D05-10). */
-export const OVERDUE_ASSIGNMENTS_LIMIT = 5;
-/** Today's study sessions — the cap (D05-10). */
-export const STUDY_SESSIONS_LIMIT = 3;
-
-/**
- * The title used when a host supplies **no** empty-state content. It is
- * deliberately generic: the section-specific copy belongs to the host (and to
- * EP05C), never to a section component (Decision #14).
- */
-export const EMPTY_STATE_FALLBACK_TITLE = 'Nothing to show';
-
-/**
- * The event's time range: `09:00 – 10:00`, or just `09:00` when the event
- * has no end (a point event). The times are already the student's
- * profile-zone `HH:mm` strings — the client performs **no** zone arithmetic
- * on them (D05-6).
- */
 export function eventTimeRange(startTime: string, endTime: string | null): string {
   return endTime ? `${startTime} – ${endTime}` : startTime;
 }

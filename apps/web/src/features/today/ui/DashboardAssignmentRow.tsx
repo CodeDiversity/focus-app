@@ -1,5 +1,5 @@
 import { isOverdueAssignment } from '@/entities/assignment/model/status';
-import { OVERDUE_LABEL, subtaskProgress } from '@/features/assignments/ui/assignmentPresentation';
+import { subtaskProgress } from '@/features/assignments/ui/assignmentPresentation';
 import type { AssignmentListItem } from '@/shared/types/academic';
 import { Badge } from '@/shared/ui/Badge';
 import { dueDateLabel } from './dashboardSection';
@@ -28,9 +28,16 @@ import { dueDateLabel } from './dashboardSection';
  * There is **no** status select, no overflow menu, no status badge, no
  * priority or type label, no "Due soon" badge and no subtask checklist. The
  * row mounts **no** dialog and **no** assignment owner (D05-17): the
- * "overdue" marking is the shared **text** badge, so it survives greyscale
- * and colour-vision deficiency.
+ * past-due marking is a **text** badge (EP16B: "Past due", neutral), so it
+ * survives greyscale and colour-vision deficiency. Since EP16B the row sits in
+ * a divided list (D-B6) and carries no card chrome of its own.
  */
+/**
+ * EP16B (D-B6, contracts § Copy rules): the past-due marker is the one text
+ * badge Today allows for late work — neutral, never red, never colour alone.
+ */
+export const PAST_DUE_LABEL = 'Past due';
+
 export interface DashboardAssignmentRowProps {
   /** The assignment the row renders. */
   assignment: AssignmentListItem;
@@ -50,7 +57,7 @@ export function DashboardAssignmentRow({
   const course = assignment.course;
 
   return (
-    <li className="rounded-xl border border-border bg-surface p-4 shadow-sm">
+    <li className="py-3 first:pt-0 last:pb-0">
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -60,7 +67,7 @@ export function DashboardAssignmentRow({
         >
           {assignment.title}
         </button>
-        {isOverdue ? <Badge variant="danger">{OVERDUE_LABEL}</Badge> : null}
+        {isOverdue ? <Badge variant="neutral">{PAST_DUE_LABEL}</Badge> : null}
       </div>
 
       <p className="mt-0.5 text-xs text-text-muted">

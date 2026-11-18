@@ -77,6 +77,10 @@ describe('TodayPage across two students (EP16G-AC3)', () => {
         });
       }
       if (config.url === '/courses') return ok(config, []);
+      if (config.url === '/assignments') return ok(config, []);
+      if (config.url === '/study-sessions/momentum') return ok(config, { hasHistory: false });
+      if (config.url === '/study-plans/recovery-summary')
+        return ok(config, { rolledForwardCount: 0 });
       throw new Error(`Unexpected request: ${config.url}`);
     };
   });

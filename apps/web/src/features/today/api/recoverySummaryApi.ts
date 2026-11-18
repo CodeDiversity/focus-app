@@ -4,8 +4,9 @@ import { getRecoverySummary } from '@/entities/study-plan/api/studyPlanApi';
 import type { RecoverySummary } from '@/entities/study-plan/model/types';
 
 /**
- * EP13E — the plan-health read (`GET /study-plans/recovery-summary`), shared
- * by the plan page's moved-forward note and the plan-health view (D-E12).
+ * EP16B (D-B5; formerly `planHealthApi`, EP13E) — the recovery-summary read
+ * (`GET /study-plans/recovery-summary`). Today's plan note is its reader;
+ * the plan-health view keeps importing it until EP16C deletes that view.
  *
  * A caching decorator over the entity client (D12C-1): the URL and payload
  * type stay owned by `entities/study-plan`. One cache entry serves both
@@ -18,15 +19,15 @@ import type { RecoverySummary } from '@/entities/study-plan/model/types';
  * describes. The endpoint takes no arguments — the client performs no date
  * arithmetic (D05-6).
  */
-export const planHealthApi = createApi({
-  reducerPath: 'planHealthApi',
+export const recoverySummaryApi = createApi({
+  reducerPath: 'recoverySummaryApi',
   baseQuery: entityBaseQuery<void, RecoverySummary>(getRecoverySummary),
   keepUnusedDataFor: 60,
   endpoints: (builder) => ({
-    planHealth: builder.query<RecoverySummary, void>({
+    recoverySummary: builder.query<RecoverySummary, void>({
       query: () => undefined,
     }),
   }),
 });
 
-export const { usePlanHealthQuery } = planHealthApi;
+export const { useRecoverySummaryQuery } = recoverySummaryApi;

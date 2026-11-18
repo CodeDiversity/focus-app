@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { EmptyState } from '@/shared/ui/EmptyState';
-import { usePlanHealthQuery } from '../api/planHealthApi';
+import { useRecoverySummaryQuery } from '@/features/today/api/recoverySummaryApi';
 import { MovedForwardList } from './MovedForwardList';
 import { UnfinishedWorkList } from './UnfinishedWorkList';
 
@@ -21,7 +21,7 @@ import { UnfinishedWorkList } from './UnfinishedWorkList';
  */
 export function PlanHealthView() {
   const navigate = useNavigate();
-  const query = usePlanHealthQuery();
+  const query = useRecoverySummaryQuery();
 
   const data = query.data;
   const rolledForward = data?.rolledForward ?? [];

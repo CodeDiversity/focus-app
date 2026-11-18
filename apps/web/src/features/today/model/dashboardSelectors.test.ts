@@ -5,7 +5,7 @@ import {
   limitRows,
   selectOverdueAssignments,
   selectTodayClasses,
-  selectTodayStudySessions,
+  selectComingUp,
   selectUpcomingAssignments,
 } from './dashboardSelectors';
 
@@ -159,18 +159,32 @@ describe('the calendar sets', () => {
 
     expect(selectTodayClasses(events, '2026-01-15').map((e) => e.id)).toEqual(['class-today']);
   });
+});
 
-  it('selects only the STUDY_SESSION events on the selected day and keeps the focus flag', () => {
-    const events = [
-      event('2026-01-15', { id: 'class-today', type: 'CLASS' }),
-      event('2026-01-15', { id: 'session-today', type: 'STUDY_SESSION', focus: true }),
-      event('2026-01-14', { id: 'session-yesterday', type: 'STUDY_SESSION' }),
-    ];
+describe('selectComingUp (EP16B-AC3, D-B2)', () => {
+  const now = '2026-10-30T12:00:00.000Z';
+  const rows = [
+    assignment({ id: 'soon', dueDate: '2026-11-02T12:00:00.000Z' }),
+    assignment({ id: 'late-1', dueDate: '2026-10-20T12:00:00.000Z' }),
+    assignment({ id: 'none' }),
+    assignment({ id: 'done', dueDate: '2026-10-01T12:00:00.000Z', status: 'COMPLETED' }),
+    assignment({ id: 'late-2', dueDate: '2026-10-28T12:00:00.000Z' }),
+    assignment({ id: 'later', dueDate: '2026-11-09T12:00:00.000Z' }),
+  ];
 
-    const sessions = selectTodayStudySessions(events, '2026-01-15');
+  it('past-due (endpoint order) then upcoming (endpoint order, null last), unfinished only', () => {
+    expect(selectComingUp(rows, now).map((r) => r.id)).toEqual([
+      'late-1',
+      'late-2',
+      'soon',
+      'none',
+      'later',
+    ]);
+  });
 
-    expect(sessions.map((e) => e.id)).toEqual(['session-today']);
-    expect(sessions[0].focus).toBe(true);
-    expect(sessions[0]).toBe(events[1]);
+  it('a row due exactly now is upcoming (the shared predicate is strictly before)', () => {
+    const edge = [assignment({ id: 'edge', dueDate: now })];
+    expect(selectComingUp(edge, now).map((r) => r.id)).toEqual(['edge']);
+    expect(selectComingUp(edge, now)[0]).toBe(edge[0]);
   });
 });

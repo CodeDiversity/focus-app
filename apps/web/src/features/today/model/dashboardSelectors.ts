@@ -28,14 +28,6 @@ export function selectTodayClasses(events: CalendarEvent[], today: string): Cale
 }
 
 /**
- * Today's study sessions: the `STUDY_SESSION` events on `today`. The events
- * are returned unchanged, so a session's `focus` flag survives the selection.
- */
-export function selectTodayStudySessions(events: CalendarEvent[], today: string): CalendarEvent[] {
-  return selectTodayEvents(events, today).filter((event) => event.type === 'STUDY_SESSION');
-}
-
-/**
  * The overdue assignments: unfinished **and** overdue (a non-null `dueDate`
  * strictly before `now` — the shared predicate's rule, no end-of-day grace).
  * Finished rows are never overdue.
@@ -57,6 +49,15 @@ export function selectUpcomingAssignments(
   now?: NowInput
 ): AssignmentListItem[] {
   return rows.filter((row) => isUnfinishedAssignment(row) && !isOverdueAssignment(row, now));
+}
+
+/**
+ * EP16B (D-B2) — Coming up: the unfinished assignments, past-due rows first,
+ * then the rest. Both halves keep the endpoint's `dueDate asc, nulls last`
+ * order, so no re-sort is needed (EP05A's no-client-sort rule).
+ */
+export function selectComingUp(rows: AssignmentListItem[], now?: NowInput): AssignmentListItem[] {
+  return [...selectOverdueAssignments(rows, now), ...selectUpcomingAssignments(rows, now)];
 }
 
 export interface LimitedRows<T> {

@@ -7,7 +7,7 @@ import { createAppStore } from './createAppStore';
  *
  * History: SP-107C added `onboarding` beside `auth` and the session RTK Query
  * `api`; EP05A added the per-domain `assignmentsApi` / `calendarApi` slices
- * (D05-1, D05-8); EP13D `todayPlanApi`; EP13E `planHealthApi`; EP13K
+ * (D05-1, D05-8); EP13D `todayPlanApi`; EP13E `planHealthApi` (EP16B: `recoverySummaryApi`); EP13K
  * `momentumApi`; EP16G the per-student reset (D16-19).
  */
 export const store = createAppStore();

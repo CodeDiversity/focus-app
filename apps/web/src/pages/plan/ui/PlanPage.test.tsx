@@ -19,7 +19,7 @@ vi.mock('@/entities/study-plan/api/studyPlanApi', () => ({
   listStudyPlan: vi.fn(),
   listRemainingWork: vi.fn(),
   // EP13D: the shared test store mounts `todayPlanApi`, which imports this
-  // module's `getTodayPlan`; EP13E adds `planHealthApi` over
+  // module's `getTodayPlan`; EP13E (now EP16B's `recoverySummaryApi`) adds a read over
   // `getRecoverySummary`. The mock must expose both.
   getTodayPlan: vi.fn(),
   getRecoverySummary: vi.fn(),
@@ -312,48 +312,17 @@ describe('PlanPage', () => {
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
   });
 
-  it('shows no return note when nothing moved forward', async () => {
-    renderPage();
-    await waitFor(() => expect(mockedPlanHealth).toHaveBeenCalled());
-    expect(screen.queryByTestId('moved-forward-note')).not.toBeInTheDocument();
-  });
-
-  it('shows one neutral, number-free return note when work moved forward (AC-4)', async () => {
+  it('EP16B-AC1: the plan page renders no moved-forward note (it lives on Today)', async () => {
     mockedPlanHealth.mockResolvedValue({
       ...emptyPlanHealth,
-      rolledForward: [
-        {
-          id: 'ps-1',
-          assignmentId: 'a-1',
-          assignmentTitle: 'Essay',
-          date: '2026-10-29',
-          startTime: '09:00',
-          endTime: '10:00',
-          durationMinutes: 60,
-          locked: false,
-        },
-      ],
       rolledForwardCount: 1,
       rolledForwardMinutes: 60,
     } as never);
     renderPage();
-
-    const note = await screen.findByTestId('moved-forward-note');
-    expect(note).toHaveTextContent(
-      "Some earlier sessions moved into your current plan — today's list is up to date."
-    );
-    // No counts, no percentages, no shaming terms (D13-9).
-    expect(note.textContent ?? '').not.toMatch(/\d/);
-    expect(note.textContent ?? '').not.toMatch(/missed|behind|failed|%/i);
-    expect(screen.getByRole('link', { name: 'See plan health' })).toHaveAttribute(
-      'href',
-      '/plan/health'
-    );
+    await screen.findByRole('heading', { name: /today's plan/i });
+    expect(screen.queryByTestId('moved-forward-note')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /plan health|your week/i })).toBeNull();
   });
-
-  // -------------------------------------------------------------------------
-  // EP14F — a late saved-plan read never overrides a newer action (TR-E14-07)
-  // -------------------------------------------------------------------------
 
   it('a saved-plan read that resolves after Generate leaves the preview on screen (EP14F-AC1)', async () => {
     let resolveList: (plan: typeof emptySaved) => void = () => {};

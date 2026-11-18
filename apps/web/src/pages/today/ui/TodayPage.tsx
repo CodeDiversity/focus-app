@@ -1,32 +1,42 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { listCourses, type CourseWithSemester } from '@/entities/course/api/courseApi';
 import { useAuth } from '@/features/auth/model/AuthContext';
+import { useAssignmentsQuery } from '@/features/assignments/api/assignmentsApi';
 import { useCalendarEventsQuery } from '@/features/calendar/api/calendarApi';
 import { useAssignmentActions } from '@/features/assignments/model/useAssignmentActions';
 import { AssignmentDialogs } from '@/features/assignments/ui/AssignmentDialogs';
+import { useMomentumQuery } from '@/features/momentum/api/momentumApi';
+import { useRecoverySummaryQuery } from '@/features/today/api/recoverySummaryApi';
 import { dashboardTodayRange } from '@/features/today/model/dashboardRange';
+import { selectComingUp, selectTodayClasses } from '@/features/today/model/dashboardSelectors';
 import { dayLine } from '@/features/today/model/dayLine';
+import { ClassesToday } from '@/features/today/ui/ClassesToday';
+import { ComingUp } from '@/features/today/ui/ComingUp';
 import { DashboardQuickActions } from '@/features/today/ui/DashboardQuickActions';
+import { MomentumRow } from '@/features/today/ui/MomentumRow';
+import { PlanNote } from '@/features/today/ui/PlanNote';
 import type { DashboardSectionStatus } from '@/features/today/ui/dashboardSection';
 import { TodayPlanCard } from '@/features/today-plan/ui/TodayPlanCard';
 import { useTodayPlanQuery } from '@/features/today-plan/api/todayPlanApi';
 import { getBrowserTimeZone } from '@/shared/lib/datetime';
 import { Button } from '@/shared/ui/Button';
 import type { AssignmentListItem } from '@/shared/types/academic';
+import type { CalendarEvent } from '@/entities/calendar/model/types';
 
 /**
- * EP16A — the Today page, the signed-in landing surface (D16-2). It replaces
- * the dashboard: one heading, the day line, a refresh control, the one
- * "Add assignment" quick action, the page's single live region, and the
- * next action (`TodayPlanCard`, EP13D) directly under the header. EP16B adds
- * the plan note, the momentum row, Coming up and Classes today below it.
+ * EP16A/EP16B — the Today page, the signed-in landing surface (D16-2).
+ *
+ * Regions, in order (contracts § Today region contract, D16-3): header, the
+ * page's single live region, the one next action (`TodayPlanCard`, EP13D),
+ * the plan note, the momentum row, Coming up, Classes today. Every secondary
+ * region renders nothing when it has nothing to say (D16-12 (10)); each has
+ * its own query and states, so a slow or failing read never hides the hero
+ * (AC-E16-02).
  *
  * Carried over from the dashboard (EP05B/EP05C): the request window is page
- * **state** (refresh recomputes it, so a tab left open across midnight
- * re-reads the server's "today"); the page mounts the shared assignment
- * owner exactly once (D05-17); the page has exactly one `role="status"`
- * region (D-D13).
+ * **state** (refresh recomputes it); the page mounts the shared assignment
+ * owner exactly once (D05-17); exactly one `role="status"` (D-D13).
  */
 const ACTION_SENTENCES: Record<'added' | 'updated' | 'deleted', string> = {
   added: 'Assignment added.',
@@ -34,8 +44,8 @@ const ACTION_SENTENCES: Record<'added' | 'updated' | 'deleted', string> = {
   deleted: 'Assignment deleted.',
 };
 
-/** No rows are shown on Today until EP16B; a stable empty list for the shared owner. */
-const NO_ROWS: AssignmentListItem[] = [];
+const NO_ASSIGNMENTS: AssignmentListItem[] = [];
+const NO_EVENTS: CalendarEvent[] = [];
 
 function sectionStatus(query: { isLoading: boolean; isError: boolean }): DashboardSectionStatus {
   if (query.isError) return 'error';
@@ -43,10 +53,22 @@ function sectionStatus(query: { isLoading: boolean; isError: boolean }): Dashboa
   return 'ready';
 }
 
-/** D-A2 — the live region describes what the page shows: today's sessions. */
-function sessionsSentence(count: number): string {
-  if (count === 0) return 'No sessions planned today';
-  return `${count} ${count === 1 ? 'session' : 'sessions'} planned today`;
+const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+/**
+ * D-B9 — the live region's sentence: the plan's sessions, then the classes
+ * and the coming-up rows only when there are any (uncapped totals, never a
+ * past-due count).
+ */
+export function todaySentence(sessions: number, classes: number, comingUp: number): string {
+  const parts = [
+    sessions === 0
+      ? 'No sessions planned today'
+      : `${count(sessions, 'session', 'sessions')} planned today`,
+  ];
+  if (classes > 0) parts.push(`${count(classes, 'class', 'classes')} today`);
+  if (comingUp > 0) parts.push(`${count(comingUp, 'assignment', 'assignments')} coming up`);
+  return parts.join(' · ');
 }
 
 export function TodayPage() {
@@ -57,6 +79,9 @@ export function TodayPage() {
 
   const calendarQuery = useCalendarEventsQuery(range);
   const todayPlanQuery = useTodayPlanQuery();
+  const assignmentsQuery = useAssignmentsQuery();
+  const momentumQuery = useMomentumQuery();
+  const recoveryQuery = useRecoverySummaryQuery();
 
   useEffect(() => {
     document.title = 'Today — StudyPilot';
@@ -70,12 +95,25 @@ export function TodayPage() {
       .catch(() => undefined);
   }, []);
 
+  const assignments = assignmentsQuery.data ?? NO_ASSIGNMENTS;
+  const calendar = calendarQuery.data;
+  const events = calendar?.events ?? NO_EVENTS;
+  const today = calendar?.today ?? '';
+  const timeZone = calendar?.timeZone ?? getBrowserTimeZone();
+
+  // The rows Coming up can show — uncapped, memoized on the payload, so the
+  // shared hook's items-identity effect does not run on every render.
+  const comingUp = useMemo(() => selectComingUp(assignments), [assignments]);
+  const classes = selectTodayClasses(events, today);
+
   const actions = useAssignmentActions({
-    items: NO_ROWS,
-    onChanged: (action) => setAnnouncement(ACTION_SENTENCES[action]),
-    // No assignment rows on Today until EP16B's Coming up — nothing to refresh.
-    onSubtaskChanged: () => undefined,
-    onSubtaskRefresh: () => undefined,
+    items: comingUp,
+    onChanged: (action) => {
+      setAnnouncement(ACTION_SENTENCES[action]);
+      void assignmentsQuery.refetch();
+    },
+    onSubtaskChanged: () => void assignmentsQuery.refetch(),
+    onSubtaskRefresh: () => void assignmentsQuery.refetch(),
     onFormOpen: () => setAnnouncement(''),
   });
 
@@ -87,13 +125,11 @@ export function TodayPage() {
     );
   }
 
-  const calendar = calendarQuery.data;
   const line = calendar ? dayLine(calendar.today, calendar.timeZone, getBrowserTimeZone()) : null;
-
   const plan = todayPlanQuery.data;
   const countSummary = todayPlanQuery.isLoading
     ? 'Loading your day…'
-    : sessionsSentence(plan?.sessions.length ?? 0);
+    : todaySentence(plan?.sessions.length ?? 0, classes.length, comingUp.length);
   const statusMessage = announcement ? `${announcement} · ${countSummary}` : countSummary;
 
   const handleRefresh = () => {
@@ -101,6 +137,9 @@ export function TodayPage() {
     if (next.from !== range.from || next.to !== range.to) setRange(next);
     else void calendarQuery.refetch();
     void todayPlanQuery.refetch();
+    void assignmentsQuery.refetch();
+    void momentumQuery.refetch();
+    void recoveryQuery.refetch();
   };
 
   return (
@@ -140,13 +179,45 @@ export function TodayPage() {
         {statusMessage}
       </div>
 
-      {/* The one next action — the first meaningful content (AC-E16-02). */}
+      {/* 1. The one next action — the first meaningful content (AC-E16-02). */}
       <TodayPlanCard
         plan={plan}
         status={sectionStatus(todayPlanQuery)}
         error={todayPlanQuery.error}
         isFetching={todayPlanQuery.isFetching}
         onRetry={() => void todayPlanQuery.refetch()}
+      />
+
+      {/* 2. The plan note (EP16B-AC1). */}
+      <PlanNote summary={recoveryQuery.data} status={sectionStatus(recoveryQuery)} />
+
+      {/* 3. The momentum row (EP16B-AC2). */}
+      <MomentumRow
+        momentum={momentumQuery.data}
+        status={sectionStatus(momentumQuery)}
+        error={momentumQuery.error}
+        isFetching={momentumQuery.isFetching}
+        onRetry={() => void momentumQuery.refetch()}
+      />
+
+      {/* 4. Coming up (EP16B-AC3). */}
+      <ComingUp
+        rows={assignments}
+        timeZone={timeZone}
+        status={sectionStatus(assignmentsQuery)}
+        error={assignmentsQuery.error}
+        isFetching={assignmentsQuery.isFetching}
+        onRetry={() => void assignmentsQuery.refetch()}
+        onOpenDetails={(row) => actions.openEdit(row)}
+      />
+
+      {/* 5. Classes today (EP16B-AC4). */}
+      <ClassesToday
+        events={events}
+        today={today}
+        status={sectionStatus(calendarQuery)}
+        isFetching={calendarQuery.isFetching}
+        onRetry={() => void calendarQuery.refetch()}
       />
 
       <AssignmentDialogs actions={actions} courses={courses} />
