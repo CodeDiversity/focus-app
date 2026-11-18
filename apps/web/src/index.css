@@ -14,6 +14,8 @@
     --color-accent: 15 118 110;
     --color-accent-hover: 17 94 89;
     --color-danger: 220 38 38;
+    /* EP16F (F-EP16F-04, EP14D D-D2 precedent): danger text on the 10% danger tint — ≥ 4.5:1 for caption text. */
+    --color-danger-strong: 185 28 28;
     --color-success: 21 128 61;
     /* EP14D (D-D2): success text on the 10% success tint — ≥ 4.5:1 for caption text. */
     --color-success-strong: 21 101 52;

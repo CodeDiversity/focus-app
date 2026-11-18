@@ -55,7 +55,7 @@ test('login with valid credentials reaches an authenticated page', async ({ page
   await page.getByRole('textbox', { name: 'Password' }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign In' }).click();
 
-  // Login lands on onboarding for new accounts (or dashboard once onboarded).
+  // Login lands on onboarding for new accounts (or Today once onboarded, EP16A).
   await expect(page).toHaveURL(/\/(onboarding|today)/, { timeout: 10_000 });
 });
 

@@ -41,6 +41,7 @@ export default {
         accent: 'rgb(var(--color-accent) / <alpha-value>)',
         'accent-hover': 'rgb(var(--color-accent-hover) / <alpha-value>)',
         danger: 'rgb(var(--color-danger) / <alpha-value>)',
+        'danger-strong': 'rgb(var(--color-danger-strong) / <alpha-value>)',
         success: 'rgb(var(--color-success) / <alpha-value>)',
         'success-strong': 'rgb(var(--color-success-strong) / <alpha-value>)',
         warning: 'rgb(var(--color-warning) / <alpha-value>)',

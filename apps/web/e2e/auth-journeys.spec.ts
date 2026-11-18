@@ -158,13 +158,13 @@ test('logout returns to /login and the protected route then redirects there', as
   await logoutViaMenu(page);
 
   // The protected route must not render while logged out.
-  await page.goto('/dashboard');
+  await page.goto('/today');
   await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
 });
 
 test('visiting a protected route while logged out redirects to /login', async ({ page }) => {
   // Fresh context: no session cookie exists, so boot restore finds no user
-  // and ProtectedRoute redirects instead of rendering the dashboard.
+  // and ProtectedRoute redirects instead of rendering Today.
   //
   // EP14C (F-EP14C-01): the redirect fires only after the boot-time
   // /api/auth/refresh answers. On a cold, fully parallel stack that answer
@@ -176,7 +176,7 @@ test('visiting a protected route while logged out redirects to /login', async ({
   const refreshAnswered = page.waitForResponse((r) => r.url().includes('/api/auth/refresh'), {
     timeout: 45_000,
   });
-  await page.goto('/dashboard');
+  await page.goto('/today');
   await refreshAnswered.catch(() => {
     throw new Error(
       'Boot-time /api/auth/refresh never answered — the API stalled, not the redirect.'

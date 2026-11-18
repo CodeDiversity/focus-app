@@ -429,3 +429,28 @@ export const minutesOfTime = (t: string) => Number(t.slice(0, 2)) * 60 + Number(
 /** `[aStart, aEnd)` and `[bStart, bEnd)` share any minute. */
 export const overlaps = (aStart: string, aEnd: string, bStart: string, bEnd: string) =>
   minutesOfTime(aStart) < minutesOfTime(bEnd) && minutesOfTime(bStart) < minutesOfTime(aEnd);
+
+// ---------------------------------------------------------------------------
+// EP16F — landing and onboarding helpers.
+// ---------------------------------------------------------------------------
+
+/**
+ * Marks onboarding complete through the real API (`PATCH /api/onboarding`),
+ * so a UI login lands on `/today` instead of the wizard (EP16A, D16-2). Every
+ * per-test account starts un-onboarded (EP14C D-C2).
+ */
+export async function completeOnboardingViaApi(
+  request: APIRequestContext,
+  accessToken: string
+): Promise<void> {
+  let response;
+  try {
+    response = await request.patch('/api/onboarding', {
+      headers: authHeaders(accessToken),
+      data: { completed: true },
+    });
+  } catch (error) {
+    throw describeSetupFailure('/onboarding', error);
+  }
+  requireStatus(response, [200]);
+}

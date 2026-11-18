@@ -2,16 +2,24 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
 
 import {
   authHeaders,
+  axeViolations,
+  civilWeekday,
   createAssignmentViaApi,
   createAuthenticatedUserViaApi,
+  createCourseViaApi,
+  createSemesterViaApi,
   setDayBoundsViaApi,
   loginViaUi,
 } from './helpers';
 
 /**
- * EP08F — cross-layer E2E for the whole catch-up & recovery flow (TR-E08-07)
- * against the self-contained EP09 stack, plus the durable narrow-viewport and
- * keyboard evidence for TR-E08-08 on the EP08D/EP08E surfaces.
+ * EP16F — the single plan flow end to end (TR-E16-03; AC-E16-06/07/08),
+ * rewritten from EP08F's `catch-up.spec.ts` (D-F1): `/plan` → **Plan /
+ * Replan my week** → `/plan/proposal` → **Use this plan** / **Not now**, with
+ * locks, conflicts, warnings, the retired-route redirect matrix (V-16-2) and
+ * the durable narrow-viewport + keyboard evidence (TR-E08-08 → TR-E16-04).
+ * The EP08F test ids (`catch-up-preservation`, `plan-week`,
+ * `plan-session-editor`) are preserved.
  *
  * Date-fixture discipline (EP06H lesson): the browser and this test process
  * never compute "today" from the wall clock. The window is read from the
@@ -260,6 +268,12 @@ async function tabUntil(
   return { found: false, path };
 }
 
+/** The axe gate: no serious/critical WCAG A/AA violation, no allowlist. */
+async function expectNoAxeViolations(page: Page, surface: string): Promise<void> {
+  const violations = await axeViolations(page);
+  expect(violations, `axe on ${surface}:\n${violations.join('\n')}`).toEqual([]);
+}
+
 test('journey: missed sessions → preview → edit → confirm → the saved plan survives a reload', async ({
   page,
   request,
@@ -312,6 +326,7 @@ test('journey: missed sessions → preview → edit → confirm → the saved pl
   await expect(page.getByRole('heading', { name: 'Moved forward into this plan' })).toBeVisible();
   await expect(page.getByText(essay.title).first()).toBeVisible();
   await expect(page.getByText(addDays(user.today, -2)).first()).toBeVisible();
+  await expectNoAxeViolations(page, '/plan/proposal (moved forward)');
 
   // AC 1b — assert against the server window.
   const preview = (await previewRes.json()) as CatchUpPreviewResponse;
@@ -436,7 +451,10 @@ test('decline leaves the plan unchanged (no confirm call, no persisted mutation)
   expect(await assignmentSnapshot(request, user.accessToken, assignment.id)).toBe(assignmentBefore);
 });
 
-test('a locked session survives confirm unchanged (fields + count)', async ({ page, request }) => {
+test('lock a session → Replan my week → What this plan keeps lists it → Use this plan → the locked session survives (AC-E16-06)', async ({
+  page,
+  request,
+}) => {
   const user = await createCatchUpUser(request);
   const assignment = await createAssignmentViaApi(request, user.accessToken, {
     title: `Locked ${uniqueSuffix()}`,
@@ -469,17 +487,28 @@ test('a locked session survives confirm unchanged (fields + count)', async ({ pa
   await loginViaUi(page, user.email);
   await savePreferencesViaUi(page);
 
-  // The preview reports the preserved locked session.
+  // /plan shows the saved week and offers Replan (a saved session exists).
+  await page.goto('/plan');
+  await expect(page.getByRole('heading', { level: 1, name: 'Plan' })).toBeVisible();
+  await expect(page.getByTestId('plan-week').getByText(assignment.title).first()).toBeVisible({
+    timeout: 15_000,
+  });
+  await expectNoAxeViolations(page, '/plan (saved week)');
   const [previewRes] = await Promise.all([
     waitForPreviewResponse(page),
-    page.goto('/plan/proposal'),
+    page.getByRole('button', { name: 'Replan my week' }).click(),
   ]);
+  await expect(page).toHaveURL(/\/plan\/proposal$/);
   await expect(page.getByRole('heading', { name: 'Your proposed week' })).toBeVisible();
+
+  // The preview reports the preserved locked session, and the surface says so.
   const preview = (await previewRes.json()) as CatchUpPreviewResponse;
   expect(preview.lockedPreserved).toBe(1);
+  await expect(page.getByRole('heading', { name: 'What this plan keeps' })).toBeVisible();
   await expect(page.getByTestId('catch-up-preservation')).toContainText(
     '1 locked session stays exactly where it is.'
   );
+  await expectNoAxeViolations(page, '/plan/proposal (locked kept)');
 
   // Confirm the regenerated proposal.
   await page.getByRole('button', { name: 'Use this plan' }).click();
@@ -614,9 +643,12 @@ test("a completed assignment's planned sessions are not reported as missed", asy
   await expect(page.getByText(done.title)).toHaveCount(0);
 });
 
-// EP16C (A-C4, D-C10): the "N minutes studied so far" total moved off the retired
-// plan-health page; EP16F re-homes this journey on Remaining work's Confirmed minutes.
-test.fixme('recorded confirmed time reaches the recovery summary', async ({ page, request }) => {
+// EP16C (A-C4, D-C10) → EP16F: the plan-health total is gone; the recorded
+// time now surfaces on /plan's Remaining work as the assignment's Confirmed minutes.
+test('recorded confirmed time reaches the recovery summary and Remaining work on /plan', async ({
+  page,
+  request,
+}) => {
   const user = await createCatchUpUser(request);
   const assignment = await createAssignmentViaApi(request, user.accessToken, {
     title: `Focus ${uniqueSuffix()}`,
@@ -650,9 +682,111 @@ test.fixme('recorded confirmed time reaches the recovery summary', async ({ page
   expect(summary.confirmedMinutes).toBe(45);
 
   await loginViaUi(page, user.email);
+  await page.goto('/plan');
+  const remaining = page.getByRole('region', { name: /^Remaining work/ });
+  await expect(remaining.getByText(assignment.title).first()).toBeVisible({ timeout: 15_000 });
+  await expect(remaining.getByText(/Confirmed\s*45 min/)).toBeVisible();
+  // The retired page's route lands here too (route matrix).
   await page.goto('/plan/health');
-  await expect(page.getByText('45 minutes studied so far')).toBeVisible();
-  await expect(page.getByText(assignment.title).first()).toBeVisible();
+  await expect(page).toHaveURL(/\/plan$/);
+});
+
+test('route matrix: every retired plan-health and catch-up route redirects (AC-E16-08, V-16-2)', async ({
+  page,
+  request,
+}) => {
+  const user = await createCatchUpUser(request);
+  await loginViaUi(page, user.email);
+  const matrix: [string, RegExp][] = [
+    ['/plan/health', /\/plan$/],
+    ['/plan/health/catch-up', /\/plan\/proposal$/],
+    ['/catch-up', /\/plan$/],
+    ['/catch-up/preview', /\/plan\/proposal$/],
+  ];
+  for (const [from, to] of matrix) {
+    await page.goto(from);
+    await expect(page, `${from} redirects`).toHaveURL(to);
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+  }
+  // Signed out, the same routes land on /login (protected group).
+  await page.context().clearCookies();
+  await page.goto('/plan/health');
+  await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });
+});
+
+test('a 409 on Use this plan marks the clashing rows and keeps the edits (AC-E16-06, D-C11)', async ({
+  page,
+  request,
+}) => {
+  const user = await createCatchUpUser(request);
+  const semester = await createSemesterViaApi(request, user.accessToken, {
+    name: `E2E Semester ${uniqueSuffix()}`,
+    startDate: '2026-01-05',
+    endDate: '2026-05-15',
+  });
+  const course = await createCourseViaApi(request, user.accessToken, {
+    code: `E2E-${crypto.randomUUID().slice(0, 8)}`,
+    name: `E2E Course ${uniqueSuffix()}`,
+    semesterId: semester.id,
+  });
+  const assignment = await createAssignmentViaApi(request, user.accessToken, {
+    title: `Clash ${uniqueSuffix()}`,
+    courseId: course.id,
+    dueDate: `${addDays(user.today, 5)}T12:00:00.000Z`,
+    estimatedHours: 1,
+  });
+
+  await loginViaUi(page, user.email);
+  const [previewRes] = await Promise.all([
+    waitForPreviewResponse(page),
+    page.goto('/plan/proposal'),
+  ]);
+  const preview = (await previewRes.json()) as CatchUpPreviewResponse;
+  const proposed = flattenProposed(preview);
+  expect(proposed.length).toBeGreaterThanOrEqual(1);
+  await expect(page.getByTestId('plan-session-editor')).toBeVisible();
+
+  // A flex ("Anytime") session has no clock to collide with (EP13G), so pin
+  // the first row to its suggested time first — the student's own choice.
+  const row = page.getByTestId('plan-session-editor').locator('article').first();
+  const pin = row.getByRole('button', { name: /^Pin to this time/ });
+  if ((await pin.count()) > 0) await pin.click();
+  await expect(row.getByRole('button', { name: /^Make flexible/ })).toBeVisible();
+  const target = {
+    date: await row.getByLabel('Day').inputValue(),
+    startTime: await row.getByLabel('Start time').inputValue(),
+    endTime: await row.getByLabel('End time').inputValue(),
+  };
+
+  // A class meeting lands on that slot AFTER the proposal was built — the
+  // confirm transaction must refuse it with a 409, not save it.
+  const meeting = await request.post(`/api/courses/${course.id}/meetings`, {
+    headers: authHeaders(user.accessToken),
+    data: {
+      dayOfWeek: civilWeekday(target.date),
+      startTime: target.startTime,
+      endTime: target.endTime,
+    },
+  });
+  expect(meeting.status()).toBe(201);
+
+  await page.getByRole('button', { name: 'Use this plan' }).click();
+
+  // Reported once, inline (D-C11): the summary names the clash, the row is
+  // marked, the edits stay, and nothing was saved.
+  const summary = page.getByTestId('conflict-summary');
+  await expect(summary).toBeVisible({ timeout: 15_000 });
+  await expect(summary).toContainText('Some sessions clash with your calendar');
+  await expect(summary).toContainText(target.date);
+  await expect(page.locator('[data-conflicted]')).toHaveCount(1);
+  await expect(page).toHaveURL(/\/plan\/proposal$/);
+  await expect(page.getByText('Plan saved.')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /move later 15 minutes/i })).toHaveCount(
+    proposed.length
+  );
+  const saved = await getPlanWindow(request, user.accessToken, preview.from, preview.to);
+  expect(flattenSaved(saved)).toHaveLength(0);
+  await expectNoAxeViolations(page, '/plan/proposal (409 conflict)');
 });
 
 test('EP04 calendar regression: an in-progress (null endTime) session still renders', async ({
@@ -683,10 +817,10 @@ test('EP04 calendar regression: an in-progress (null endTime) session still rend
   await expect(page.getByRole('button', { name: /Study session/ }).first()).toBeVisible();
 });
 
-test.describe('EP08 surfaces — narrow viewport + keyboard (TR-E08-08 durable evidence)', () => {
+test.describe('plan surfaces — narrow viewport + keyboard (TR-E08-08 → TR-E16-04 durable evidence)', () => {
   test.use({ viewport: { width: 320, height: 568 } });
 
-  test('/catch-up at 320px: no horizontal overflow, 44px target, keyboard path to the replan entry', async ({
+  test('/plan at 320px: no horizontal overflow, 44px target, keyboard path to the replan entry', async ({
     page,
     request,
   }) => {
@@ -735,7 +869,7 @@ test.describe('EP08 surfaces — narrow viewport + keyboard (TR-E08-08 durable e
     await expect(page).toHaveURL(/\/plan\/proposal/);
   });
 
-  test('/catch-up/preview at 320px: controls stack and stay tappable; the lock toggle is operable', async ({
+  test('/plan/proposal at 320px: controls stack and stay tappable; the lock toggle is operable', async ({
     page,
     request,
   }) => {

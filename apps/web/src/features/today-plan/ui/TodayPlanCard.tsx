@@ -167,11 +167,9 @@ export function TodayPlanCard({ plan, status, error, isFetching, onRetry }: Toda
                 <Sparkles aria-hidden size={16} className="shrink-0 text-success" />
                 Today&apos;s plan is done
               </p>
-              <p className="mt-1 text-sm text-text-muted">
-                {minutes > 0
-                  ? `${minutes} minutes studied today. Anything else is a bonus.`
-                  : 'Anything else today is a bonus.'}
-              </p>
+              {/* F-EP16F-03 (AC-E16-04): today's minutes appear once, in the
+                  header badge above — the done sentence does not repeat them. */}
+              <p className="mt-1 text-sm text-text-muted">Anything else today is a bonus.</p>
             </div>
           )}
 

@@ -165,12 +165,11 @@ test('journey 2 — miss a day and the plan quietly rolls forward (AC-E13-04)', 
   expect(summary.rolledForwardCount).toBe(1);
   expect(await previewMinutesFor(request, s.accessToken, reading.id)).toBe(60);
 
-  // No mandatory catch-up: the dashboard opens on today's plan, not a recovery screen.
+  // No mandatory catch-up: Today opens on today's plan, not a recovery screen
+  // (the /dashboard redirect itself is EP16F's today.spec.ts).
   await loginViaUi(page, s.email);
-  await page.goto('/dashboard');
-  // EP16A: the old route redirects to Today.
-  await expect(page).toHaveURL(/\/today$/);
-  // (The account's "Verify your email" banner is not dashboard content.)
+  await page.goto('/today');
+  // (The account's "Verify your email" banner is not Today content.)
   await expect(page.getByRole('heading', { name: "Today's plan" })).toBeVisible();
   const h2 = (await page.getByRole('heading', { level: 2 }).allTextContents()).filter(
     (t) => t !== 'Verify your email'
@@ -207,9 +206,9 @@ test('journey 3 — one-tap start from the plan, finish completes the planned se
   ]);
 
   await loginViaUi(page, s.email);
-  await page.goto('/dashboard');
+  await page.goto('/today');
   await expect(page.getByText(lab.title).first()).toBeVisible();
-  await expectNoAxeViolations(page, '/dashboard');
+  await expectNoAxeViolations(page, '/today');
 
   // Keyboard one-tap: Tab reaches "Start focus" with a visible ring; Enter starts.
   const walk = await tabTo(page, /^Start focus$/);
@@ -276,8 +275,8 @@ test('journey 4 — a flex session is day-anchored: "Anytime", no clock conflict
   ).toBeVisible();
   await expectNoAxeViolations(page, '/calendar');
 
-  // Start it from the dashboard at whatever time it is — flex sessions sort first.
-  await page.goto('/dashboard');
+  // Start it from Today at whatever time it is — flex sessions sort first.
+  await page.goto('/today');
   await expect(page.getByText('Anytime today').first()).toBeVisible();
   await page.getByRole('button', { name: 'Start focus' }).click();
   await expect(page).toHaveURL(/\/focus/);
@@ -317,7 +316,7 @@ test('journey 5 — micro-start counts, and absorption extends the running targe
   // Browser clock only (the server clock is never touched).
   await page.clock.install();
   await loginViaUi(page, s.email);
-  await page.goto('/dashboard');
+  await page.goto('/today');
   await page.getByRole('button', { name: `Just 10 min of ${problemSet.title}` }).click();
   await expect(page).toHaveURL(/\/focus/);
   const started = (await (
@@ -383,9 +382,8 @@ test('journey 6 — momentum updates after a finish, in minutes and days (AC-E13
   await expect(celebration.getByText('1 of 3 days this week')).toBeVisible();
   await expect(celebration).not.toContainText('%');
 
-  // Known window (EP16 contracts § Known windows): the dashboard's momentum
-  // card is retired by EP16A; Today's momentum row arrives in EP16B and
-  // EP16F's today.spec.ts asserts it. Today itself still shows the minutes.
+  // Today carries the minutes once, in the hero badge (AC-E16-04); the
+  // momentum row's own assertions live in today.spec.ts (EP16F).
   await page.goto('/today');
   await expect(page.getByText('25 min studied today')).toBeVisible();
   await expectNoAxeViolations(page, '/today');
@@ -419,7 +417,7 @@ test('journey 7 — information architecture: redirects, nav, nothing count-led 
   await expect(page).toHaveURL(/\/plan\/proposal$/);
 
   // EP16D: the nav is Today · Plan · Calendar · Work ▾ {Assignments, Courses}.
-  await page.goto('/dashboard');
+  await page.goto('/today');
   await expect(page.getByRole('link', { name: 'Plan', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Work menu' }).click();
   await expect(
@@ -437,7 +435,7 @@ test('journey 7 — information architecture: redirects, nav, nothing count-led 
   await page.keyboard.press('Escape');
 
   // No surface leads with a missed/rolled count.
-  for (const path of ['/dashboard', '/plan/proposal', '/plan']) {
+  for (const path of ['/today', '/plan/proposal', '/plan']) {
     await page.goto(path);
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
     const text = (await page.locator('main').first().textContent()) ?? '';

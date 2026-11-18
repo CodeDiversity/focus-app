@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1)
 **Layer:** Integration
-**Status:** Queued — specified in-story; implementation after EP16A–EP16E.
+**Status:** Implemented — awaiting parent review (2026-11-18). Record: [implementation.md](./artifacts/EP16F/implementation.md); parent index: [artifacts/EP16/implementation.md](./artifacts/EP16/implementation.md). Four defects found by the new journeys were fixed in their owning children (F-EP16F-02/03/04) and one deferred (F-EP16F-01 → BL-16-08).
 **Dependencies:** EP16A–EP16E implemented. Epic decisions D16-13, D16-17; verification tasks V-16-2, V-16-3.
 
 ## Plan at a glance
@@ -60,7 +60,7 @@ As AC1–AC4; run counts and the axe output recorded in the implementation recor
 ## Sizing
 
 - **Outcome:** the epic's journeys are green end to end on the final surfaces, and the reviewer has an index to start from.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** about one window, 2026-11-18. Three new/rewritten specs (19 journeys), five spec re-points, one helper; three product fixes in owning children with unit tests. Web 1429/0; self-contained e2e 73/0/0 ×3; API domain gate 291/0. Five findings (F-EP16F-01…05).
 - **Files:** `apps/web/e2e/today.spec.ts`, `navigation.spec.ts` (new), `plan-flow.spec.ts` (renamed from `catch-up.spec.ts`), `helpers.ts`, `adaptive-scheduling.spec.ts`, `auth-journeys.spec.ts`, `study-plan.spec.ts`, `docs/stories/EP16/artifacts/EP16/implementation.md` (new).
 - **Start context:** this story; contracts.md § Route matrix, § Known windows; `helpers.ts`; EP15J's record for the stack invocation.
 - **Verification:** `pnpm --filter @studypilot/web test:e2e` × 3 green; gated API run green; outputs recorded.

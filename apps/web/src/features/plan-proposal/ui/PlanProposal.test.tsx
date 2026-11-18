@@ -5,13 +5,20 @@ import { MemoryRouter } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { PlanProposal, proposalSummary } from './PlanProposal';
 import { expectNoForbiddenWords } from '@/test/forbiddenWords';
+import { Providers, makeTestStore } from '@/test/providers';
+import { todayPlanApi } from '@/features/today-plan/api/todayPlanApi';
+import { calendarApi } from '@/features/calendar/api/calendarApi';
+import { recoverySummaryApi } from '@/features/today/api/recoverySummaryApi';
 import {
   previewCatchUp,
   confirmCatchUpPlan,
   setPlannedSessionLock,
 } from '@/entities/study-plan/api/studyPlanApi';
 
-vi.mock('@/entities/study-plan/api/studyPlanApi', () => ({
+vi.mock('@/entities/study-plan/api/studyPlanApi', async (importOriginal) => ({
+  // F-EP16F-02: the surface now imports the RTK slices whose caches it resets,
+  // and those import the rest of the entity client.
+  ...(await importOriginal<typeof import('@/entities/study-plan/api/studyPlanApi')>()),
   previewCatchUp: vi.fn(),
   confirmCatchUpPlan: vi.fn(),
   setPlannedSessionLock: vi.fn(),
@@ -105,9 +112,11 @@ const catchUpPreviewFixture = {
 /** The deep-link case: mount the surface directly (no prior navigation). */
 function renderPreview() {
   return render(
-    <MemoryRouter>
-      <PlanProposal />
-    </MemoryRouter>
+    <Providers>
+      <MemoryRouter>
+        <PlanProposal />
+      </MemoryRouter>
+    </Providers>
   );
 }
 
@@ -484,6 +493,32 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     resolve();
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Plan saved.'));
     expect(navigate).toHaveBeenCalledWith('/today');
+  });
+
+  it("F-EP16F-02: Use this plan drops Today's cached plan, calendar and summary before navigating", async () => {
+    mockedConfirm.mockResolvedValue(undefined as never);
+    // Record every action the surface dispatches through the real store.
+    const store = makeTestStore();
+    const dispatched: string[] = [];
+    const realDispatch = store.dispatch;
+    store.dispatch = ((action: { type: string }) => {
+      dispatched.push(action.type);
+      return realDispatch(action);
+    }) as typeof store.dispatch;
+    const user = userEvent.setup();
+    render(
+      <Providers store={store}>
+        <MemoryRouter>
+          <PlanProposal />
+        </MemoryRouter>
+      </Providers>
+    );
+    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: /use this plan/i }));
+    await waitFor(() => expect(navigate).toHaveBeenCalledWith('/today'));
+    for (const api of [todayPlanApi, calendarApi, recoverySummaryApi]) {
+      expect(dispatched).toContain(api.util.resetApiState().type);
+    }
   });
 
   it('D-C12: the summary line states sessions and total time, and no h1/h2 carries a digit', async () => {

@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP16F — implement (Queued; EP16A–EP16E and EP16G implemented 2026-11-18).
+**Next substory:** None — EP16A–EP16G are implemented (2026-11-18); the **EP16 combined review** is the next action (index at `./artifacts/EP16/implementation.md`). The optional children EP16H–EP16K wait for the user's ▲ acceptance rulings (D16-20) and, if accepted, are implemented and reviewed with the unit.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -34,7 +34,7 @@
 | [EP16C](./EP16C-one-planning-flow.md) | Implemented — awaiting parent review | EP16B implemented. D-C5…D-C10 ratified by default; D-C11/D-C12 added (user tweak grant) 2026-11-18. | None until the EP16 combined review | [implementation.md](./artifacts/EP16C/implementation.md) — green 2026-11-18 (web 1356/0, e2e 61/0 + 1 fixme ×2); F-EP16C-01…03 |
 | [EP16D](./EP16D-navigation-and-session-indicator.md) | Implemented — awaiting parent review | D-D5…D-D8 ratified (user, 2026-11-18 — "ratify remaining"). | None until the EP16 combined review | [implementation.md](./artifacts/EP16D/implementation.md) — green 2026-11-18 (web 1396/0, e2e 61/0 + 1 planned skip); BL-14-07 reproduced + fixed; F-EP16D-01/02 |
 | [EP16E](./EP16E-mobile-bottom-tab-bar.md) | Implemented — awaiting parent review | D-E4…D-E7 ratified (user, 2026-11-18 — "ratify remaining"). | None until the EP16 combined review | [implementation.md](./artifacts/EP16E/implementation.md) — green 2026-11-18 (web 1428/0, e2e 61/0 + 1 planned skip incl. narrow journeys); F-EP16E-01 (deviation) /02 |
-| [EP16F](./EP16F-cross-layer-e2e-and-parent-index.md) | Queued | EP16A–EP16E and EP16G implemented. | Implement | — |
+| [EP16F](./EP16F-cross-layer-e2e-and-parent-index.md) | Implemented — awaiting parent review | EP16A–EP16E, EP16G implemented. | None until the EP16 combined review | [implementation.md](./artifacts/EP16F/implementation.md), [parent index](./artifacts/EP16/implementation.md) — green 2026-11-18 (web 1429/0; e2e 73/0/0 ×3; API gate 291/0); F-EP16F-01…05 (02–04 fixed) |
 | [EP16H](./EP16H-paused-session-nudge.md) | Queued | **Optional (D16-20)** — ▲ D-H1 awaiting the user's acceptance; EP16D implemented. ADHD value 7/10. | Accept or defer (user ruling on D-H1) | — |
 | [EP16I](./EP16I-target-in-session-strip.md) | Queued | **Optional (D16-20)** — ▲ D-I1 awaiting acceptance; EP16D implemented (after EP16H if both accepted — same file). ADHD value 6/10. | Accept or defer (user ruling on D-I1) | — |
 | [EP16J](./EP16J-start-next-session-from-focus.md) | Queued | **Optional (D16-20)** — ▲ D-J1 awaiting acceptance (planner recommends defer → BL-16-05); EP16D implemented. ADHD value 5/10. | Accept or defer (user ruling on D-J1) | — |

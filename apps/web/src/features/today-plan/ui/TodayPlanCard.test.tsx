@@ -183,9 +183,10 @@ describe('TodayPlanCard (EP13D)', () => {
     });
 
     expect(screen.getByText("Today's plan is done")).toBeInTheDocument();
-    expect(
-      screen.getByText('50 minutes studied today. Anything else is a bonus.')
-    ).toBeInTheDocument();
+    expect(screen.getByText('Anything else today is a bonus.')).toBeInTheDocument();
+    // AC-E16-04 (F-EP16F-03): the minutes appear once — in the badge, not again in the sentence.
+    expect(screen.getAllByText(/50 min/)).toHaveLength(1);
+    expect(screen.getByText('50 min studied today')).toBeInTheDocument();
   });
 
   it('renders the loading and error states with a retry', async () => {

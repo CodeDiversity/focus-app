@@ -11,6 +11,12 @@ import { WorkloadWarnings } from '@/features/study-plan/ui/WorkloadWarnings';
 import { CalibrationNote } from '@/features/study-plan/ui/CalibrationNote';
 import { formatMinutes } from '@/features/study-plan/lib/formatMinutes';
 import { weekLine } from '@/features/study-plan/lib/weekLine';
+import { todayPlanApi } from '@/features/today-plan/api/todayPlanApi';
+import { calendarApi } from '@/features/calendar/api/calendarApi';
+import { recoverySummaryApi } from '@/features/today/api/recoverySummaryApi';
+// RD7: sanctioned features → app import for typed dispatch hook
+// eslint-disable-next-line import/no-restricted-paths
+import { useAppDispatch } from '@/app/store/hooks';
 import { useProposal } from '../model/useProposal';
 import { WhatThisKeepsCard } from './WhatThisKeepsCard';
 import { MovedForwardList } from './MovedForwardList';
@@ -42,6 +48,7 @@ export function proposalSummary(sessionCount: number, totalMinutes: number): str
 
 export function PlanProposal() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const {
     preview,
@@ -54,7 +61,18 @@ export function PlanProposal() {
     confirm,
     setEdited,
     onLockedChange,
-  } = useProposal({ onConfirmed: () => navigate('/today') });
+  } = useProposal({
+    onConfirmed: () => {
+      // F-EP16F-02: the confirm writes through the entity client, not RTK
+      // Query, so the caches Today reads (today's plan, the calendar's
+      // events, the plan note's summary) would serve the pre-plan result for
+      // up to 60 s. Drop them before landing on Today.
+      dispatch(todayPlanApi.util.resetApiState());
+      dispatch(calendarApi.util.resetApiState());
+      dispatch(recoverySummaryApi.util.resetApiState());
+      navigate('/today');
+    },
+  });
 
   // Focus the heading on entry and whenever a reload settles (the control that
   // had focus — Try again / Create new plan — is gone by then).
@@ -186,10 +204,11 @@ export function PlanProposal() {
                   className="mt-4 card border border-danger/30 bg-danger/10 p-4"
                   data-testid="conflict-summary"
                 >
-                  <p className="text-sm font-medium text-danger">
+                  {/* F-EP16F-04: `danger-strong` keeps 4.5:1 on the 10% danger tint. */}
+                  <p className="text-sm font-medium text-danger-strong">
                     Some sessions clash with your calendar. Adjust them and try again:
                   </p>
-                  <ul className="mt-2 space-y-1 text-sm text-danger">
+                  <ul className="mt-2 space-y-1 text-sm text-danger-strong">
                     {conflicts.map((c, i) => (
                       <li key={i}>
                         {c.date} {c.startTime} — {CONFLICT_REASON_LABEL[c.reason] ?? c.reason}
