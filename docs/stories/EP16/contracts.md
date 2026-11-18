@@ -122,6 +122,8 @@ renders the same contract on narrow viewports (shape per ▲ D-E1).
 
 ## Known windows between sequential children (D16-17)
 
+**All closed by EP16F (2026-11-18):** `today.spec.ts` and `navigation.spec.ts` added; `catch-up.spec.ts` → `plan-flow.spec.ts` (D-F1) with the `test.fixme` re-homed on Remaining work; every `goto('/dashboard')` re-pointed; the nav block asserts the EP16D contract. The rows below are kept as history.
+
 | Window | What is temporarily true | Closed by |
 |---|---|---|
 | after EP16A, before EP16D | the nav's first entry is re-pointed to Today by EP16A, but Academics/Planning/Focus groups still exist; "Plan health" still opens the old page; "Home" (signed-in) redirects to Today | EP16D |

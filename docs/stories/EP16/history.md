@@ -41,7 +41,10 @@ None required at breakdown (checklist rule). The user's 2026-11-17 instruction (
 
 | ID | Date | Finding | Correction | Status |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| F-EP16F-01 | 2026-11-18 | EP16F's V-16-3 check: at 360×640 the unverified-email banner (EP01 surface) pushes Today's hero to y ≈ 817 for every new student. | Not an EP16 surface → BL-16-08; `today.spec.ts` records the measurement as an annotation and asserts AC-E16-02 with the banner dismissed. | Deferred — BL-16-08 |
+| F-EP16F-02 | 2026-11-18 | After **Use this plan**, Today showed "No plan for today yet": the confirm writes through the entity client, so the RTK `todayPlan`/`calendar`/`recoverySummary` caches served the pre-plan result (≤ 60 s). Found by `today.spec.ts` (b); invisible to unit tests. | Fixed in the owning child (EP16C): `PlanProposal` resets the three caches before navigating; unit test + e2e. | Fixed in code |
+| F-EP16F-03 | 2026-11-18 | AC-E16-04 "minutes appear once": the hero's done block repeated the badge's minutes ("25 minutes studied today. Anything else is a bonus."). Found by `today.spec.ts` (c). | Fixed in the owning child (EP16A hero / EP13D copy): the done sentence is "Anything else today is a bonus."; the badge alone carries the minutes. | Fixed in code |
+| F-EP16F-04 | 2026-11-18 | axe on the proposal's 409 state: `text-danger` on `bg-danger/10` fails 4.5:1 (serious ×2) — unreachable by any earlier axe stop. | Fixed in the owning child (EP16C): `danger-strong` token (EP14D D-D2 precedent) on the conflict summary. Other `text-danger`-on-tint blocks (TodayPlanCard/Focus error states) are unexercised by axe and flagged for the combined review. | Fixed in code |
 
 ## Superseded decisions
 
@@ -58,3 +61,5 @@ Back-references for the planner:
 Planner follow-ups applied the same day: contracts known windows (EP16C e2e specs, EP16D nav e2e), BL-16-06 ("Overdue" on EP03 surfaces), BL-16-07 (login double redirect) and EP16G (security).
 
 **User rulings 2026-11-18:** "D-G1 ratify all" — EP16G's ▲ D-G1 (a) and D-G2 (a) ratified; the user instructed implementation to continue directly ("Continue to implement EP16G, and then also implement EP16B this turn"), so the plan review the checklist calls for on the new security invariant (D16-19) was **not run** — recorded as the user's decision; the EP16 combined review covers EP16G.
+
+**Optional children (2026-11-18, D16-20):** after EP16E the user asked for an ADHD review of the shipped EP16 code and stories for the upgrades, optional for the epic, each with a 1–10 ADHD value score. Planner (live session) added EP16H (paused-session nudge, 7/10), EP16I (target in the strip, 6/10), EP16J (start from Focus, 5/10) and EP16K (phone-first proposal, 8/10), each gated by a ▲ acceptance row; BL-16-03 (quick capture) re-ranked 8/10 without a new story. Refinement is required only for EP16K if accepted.
