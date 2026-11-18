@@ -390,7 +390,7 @@ describe('TodayPage (EP16A)', () => {
     todaySessions = [];
     renderPage();
     const link = await screen.findByRole('link', { name: 'Plan my week' });
-    expect(link).toHaveAttribute('href', '/plan');
+    expect(link).toHaveAttribute('href', '/plan/proposal');
     expect(screen.getByText('No plan for today yet')).toBeInTheDocument();
   });
 

@@ -2,16 +2,11 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { PlanHealthPage } from '@/pages/plan-health/ui/PlanHealthPage';
-import { PlanHealthView } from '@/features/plan-health/ui/PlanHealthView';
-import { CatchUpPreview } from '@/features/catch-up/ui/CatchUpPreview';
+import { PlanProposalPage } from '@/pages/plan/proposal/ui/PlanProposalPage';
 
-vi.mock('@/features/plan-health/ui/PlanHealthView', () => ({
-  PlanHealthView: () => <div data-testid="plan-health-view-mock" />,
-}));
-
-vi.mock('@/features/catch-up/ui/CatchUpPreview', () => ({
-  CatchUpPreview: () => <div data-testid="catch-up-preview-mock" />,
+vi.mock('@/features/plan-proposal/ui/PlanProposal', () => ({
+  PROPOSAL_TITLE: 'Your proposed week',
+  PlanProposal: () => <div data-testid="plan-proposal-mock" />,
 }));
 
 function LocationProbe() {
@@ -28,46 +23,57 @@ function LocationProbe() {
 }
 
 /**
- * EP13E (D-E2) — the legacy `/catch-up` entry points. The route config
- * mirrors `App.tsx`; only these four routes matter to the redirect contract.
+ * EP16C-AC4 — the retired plan-health and catch-up entry points. The route
+ * config mirrors `App.tsx`; every old path lands directly on its final target.
  */
 function renderAt(entry: string) {
   return render(
     <MemoryRouter initialEntries={['/today', entry]} initialIndex={1}>
       <LocationProbe />
       <Routes>
-        <Route path="/plan/health" element={<PlanHealthPage />}>
-          <Route index element={<PlanHealthView />} />
-          <Route path="catch-up" element={<CatchUpPreview />} />
-        </Route>
-        <Route path="/catch-up" element={<Navigate to="/plan/health" replace />} />
-        <Route path="/catch-up/preview" element={<Navigate to="/plan/health/catch-up" replace />} />
+        <Route path="/plan" element={<div data-testid="plan-page-mock" />} />
+        <Route path="/plan/proposal" element={<PlanProposalPage />} />
+        <Route path="/plan/health" element={<Navigate to="/plan" replace />} />
+        <Route path="/plan/health/catch-up" element={<Navigate to="/plan/proposal" replace />} />
+        <Route path="/catch-up" element={<Navigate to="/plan" replace />} />
+        <Route path="/catch-up/preview" element={<Navigate to="/plan/proposal" replace />} />
       </Routes>
     </MemoryRouter>
   );
 }
 
-describe('legacy catch-up routes', () => {
-  it('/catch-up lands on plan health', () => {
-    renderAt('/catch-up');
-    expect(screen.getByTestId('pathname')).toHaveTextContent('/plan/health');
-    expect(screen.getByTestId('plan-health-view-mock')).toBeInTheDocument();
+describe('retired plan-health and catch-up routes (EP16C-AC4)', () => {
+  it('/plan/health lands on /plan', () => {
+    renderAt('/plan/health');
+    expect(screen.getByTestId('pathname')).toHaveTextContent('/plan');
+    expect(screen.getByTestId('plan-page-mock')).toBeInTheDocument();
   });
 
-  it('/catch-up/preview lands on the nested regeneration preview', () => {
+  it('/plan/health/catch-up lands on /plan/proposal', () => {
+    renderAt('/plan/health/catch-up');
+    expect(screen.getByTestId('pathname')).toHaveTextContent('/plan/proposal');
+    expect(screen.getByTestId('plan-proposal-mock')).toBeInTheDocument();
+  });
+
+  it('/catch-up lands on /plan', () => {
+    renderAt('/catch-up');
+    expect(screen.getByTestId('pathname')).toHaveTextContent('/plan');
+  });
+
+  it('/catch-up/preview lands on /plan/proposal', () => {
     renderAt('/catch-up/preview');
-    expect(screen.getByTestId('pathname')).toHaveTextContent('/plan/health/catch-up');
-    expect(screen.getByTestId('catch-up-preview-mock')).toBeInTheDocument();
+    expect(screen.getByTestId('pathname')).toHaveTextContent('/plan/proposal');
+  });
+
+  it('/plan/proposal renders the proposal surface', () => {
+    renderAt('/plan/proposal');
+    expect(screen.getByTestId('plan-proposal-mock')).toBeInTheDocument();
   });
 
   it('replaces history so Back does not bounce through the old path', async () => {
     const user = userEvent.setup();
     renderAt('/catch-up');
-    expect(screen.getByTestId('pathname')).toHaveTextContent('/plan/health');
-
-    // With `replace`, the legacy entry is gone: Back reaches the page the
-    // student came from. Without it, Back would land on `/catch-up` and
-    // redirect straight forward again.
+    expect(screen.getByTestId('pathname')).toHaveTextContent('/plan');
     await user.click(screen.getByRole('button', { name: 'back' }));
     expect(screen.getByTestId('pathname')).toHaveTextContent('/today');
   });

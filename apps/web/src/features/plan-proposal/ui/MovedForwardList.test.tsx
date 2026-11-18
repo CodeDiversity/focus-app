@@ -19,7 +19,9 @@ const sessions: MissedSession[] = [
 describe('MovedForwardList', () => {
   it('renders moved-forward sessions with the locked badge', () => {
     render(<MovedForwardList sessions={sessions} />);
-    expect(screen.getByRole('heading', { name: 'Moved forward' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Moved forward into this plan' })
+    ).toBeInTheDocument();
     expect(screen.getByText('Essay')).toBeInTheDocument();
     expect(screen.getByText('2026-10-29')).toBeInTheDocument();
     expect(screen.getByText('09:00 – 10:00')).toBeInTheDocument();
@@ -33,7 +35,9 @@ describe('MovedForwardList', () => {
     expect(
       screen.getByText('These sessions were rescheduled for you. Nothing was lost.')
     ).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Moved forward' }).textContent).not.toMatch(/\d/);
+    expect(
+      screen.getByRole('heading', { name: 'Moved forward into this plan' }).textContent
+    ).not.toMatch(/\d/);
     expect(container.textContent).not.toMatch(/missed|behind|failed|%/i);
   });
 

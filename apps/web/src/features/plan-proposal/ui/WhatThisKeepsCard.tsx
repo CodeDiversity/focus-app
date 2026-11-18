@@ -5,7 +5,7 @@ import { formatMinutes } from '@/features/study-plan/lib/formatMinutes';
 import type { MissedSession } from '@/entities/study-plan/model/types';
 import { CatchUpLockToggle } from './CatchUpLockToggle';
 
-export interface CatchUpPreservationCardProps {
+export interface WhatThisKeepsCardProps {
   lockedPreserved: number;
   completedPreserved: number;
   /** The preview's locked missed sessions — the only per-session lock data the client has. */
@@ -15,26 +15,26 @@ export interface CatchUpPreservationCardProps {
 }
 
 /**
- * "What stays as it is" (EP08E decisions 5/6): the preservation indicators
+ * "What this plan keeps" (EP16C, formerly EP08E's "What stays as it is"): the preservation indicators
  * for replanning — neutral, factual count lines (D08-8) plus a read-only
  * card per locked session shown in the preview. Locked sessions are never
  * rendered as editable rows in `PlanSessionEditor`; the card carries the
  * explicit lock toggle (decision 7).
  */
-export function CatchUpPreservationCard({
+export function WhatThisKeepsCard({
   lockedPreserved,
   completedPreserved,
   lockedSessions,
   onLockedChange,
   className,
-}: CatchUpPreservationCardProps) {
+}: WhatThisKeepsCardProps) {
   if (lockedPreserved === 0 && completedPreserved === 0 && lockedSessions.length === 0) {
     return null;
   }
 
   return (
     <Card className={className} padding="md" data-testid="catch-up-preservation">
-      <h2 className="text-lg font-semibold text-text">What stays as it is</h2>
+      <h2 className="text-lg font-semibold text-text">What this plan keeps</h2>
       <ul className="mt-2 space-y-1 text-sm text-text-muted">
         {lockedPreserved > 0 ? (
           <li>
@@ -98,4 +98,4 @@ export function CatchUpPreservationCard({
   );
 }
 
-export default CatchUpPreservationCard;
+export default WhatThisKeepsCard;

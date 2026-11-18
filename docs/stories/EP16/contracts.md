@@ -70,17 +70,21 @@ window as page state (EP05B), the day-line "no client date arithmetic" rule
 | Saved week on `/plan` | `listStudyPlan()` | unchanged |
 | Remaining work on `/plan` | `listRemainingWork()` | unchanged |
 
-`previewStudyPlan()` and `saveStudyPlan()` lose their last caller in EP16C;
+`previewStudyPlan()` and `saveStudyPlan()` lost their last caller in EP16C (shipped 2026-11-18);
 they stay in the entity client marked `@deprecated` with a pointer to
-BL-16-01 (V-16-4 checks nothing else calls them).
+BL-16-01 (V-16-4 recorded in EP16C's implementation record).
 
-Proposal surface composition (EP16C; refiner settles layout):
-header (`h1`, window line, **Use this plan**, **Not now**) → `PlanWeek` →
-`PlanSessionEditor` → conflict summary → **What this plan keeps** (renamed
+Proposal surface composition (**as shipped by EP16C, 2026-11-18**; D-C6, D-C12):
+header (`h1` "Your proposed week", window line per D-C5, one-line summary "N
+sessions · about X this week", **Use this plan**, **Not now**) → rolled-over
+banner → `CalibrationNote` → `PlanWeek` → `PlanSessionEditor` → conflict
+summary → **What this plan keeps** (`WhatThisKeepsCard`, ex
 `CatchUpPreservationCard`, with the lock toggles) → **Moved forward into this
-plan** (`MovedForwardList`, from plan-health) → `CalibrationNote` →
-`WorkloadWarnings`. Empty proposal ("Nothing new to schedule") and rolled-over
-states as `CatchUpPreview` renders them today.
+plan** (`MovedForwardList`) → `WorkloadWarnings`. Empty proposal ("Nothing new
+to schedule"), error ("We couldn't build a plan proposal. Try again.") and
+rolled-over ("This proposal's week has ended. Create a new plan for this
+week.") states; a 409 is reported once, by the inline conflict summary (D-C11 —
+no duplicate toast). Confirm lands on `/today`; Not now on `/plan`.
 
 ## Session indicator (AC-E16-10; D16-11)
 

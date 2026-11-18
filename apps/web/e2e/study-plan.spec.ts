@@ -77,8 +77,9 @@ test('journey: generate, edit, save, and survive a reload', async ({ page, reque
 
   await page.goto('/plan');
 
-  // Generate.
-  await page.getByRole('button', { name: /generate plan/i }).click();
+  // EP16C: Plan my week opens the proposal surface.
+  await page.getByRole('button', { name: /^(Plan|Replan) my week$/ }).click();
+  await expect(page).toHaveURL(/\/plan\/proposal$/);
   await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 15_000 });
 
   // Seven days rendered.
@@ -116,12 +117,14 @@ test('journey: generate, edit, save, and survive a reload', async ({ page, reque
   const deleteBtn = page.getByRole('button', { name: /delete session/i }).last();
   await deleteBtn.click();
 
-  // Save.
-  await page.getByRole('button', { name: /save plan/i }).click();
+  // Confirm — EP16C: Use this plan lands on Today.
+  await page.getByRole('button', { name: 'Use this plan' }).click();
   await expect(page.getByText('Plan saved.')).toBeVisible({ timeout: 15_000 });
+  await expect(page).toHaveURL(/\/today$/);
 
-  // Saved week renders.
-  await expect(page.getByTestId('plan-week')).toBeVisible();
+  // Saved week renders on /plan.
+  await page.goto('/plan');
+  await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 15_000 });
   await expect(page.getByTestId('plan-week').getByText(a1.title)).toBeVisible();
 
   // Reload and assert saved plan still there.
@@ -163,7 +166,7 @@ test('deficit warning reports an assignment that cannot fit', async ({ page, req
   await expect(page.getByText('Study preferences saved.')).toBeVisible();
 
   await page.goto('/plan');
-  await page.getByRole('button', { name: /generate plan/i }).click();
+  await page.getByRole('button', { name: /^(Plan|Replan) my week$/ }).click();
   await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText(/do not fit/i)).toBeVisible({ timeout: 15_000 });
 });

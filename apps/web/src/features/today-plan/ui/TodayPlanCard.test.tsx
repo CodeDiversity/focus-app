@@ -164,9 +164,12 @@ describe('TodayPlanCard (EP13D)', () => {
     });
 
     expect(screen.getByText('No plan for today yet')).toBeInTheDocument();
-    // EP16A-AC3: the empty state's primary reads "Plan my week" (D-A3: /plan until EP16C).
+    // EP16A-AC3 / EP16C: the empty state's primary reads "Plan my week" → the proposal.
     expect(screen.getByRole('button', { name: 'Plan my week' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Plan my week' })).toHaveAttribute('href', '/plan');
+    expect(screen.getByRole('link', { name: 'Plan my week' })).toHaveAttribute(
+      'href',
+      '/plan/proposal'
+    );
   });
 
   it('celebrates a finished day without grading the student', async () => {

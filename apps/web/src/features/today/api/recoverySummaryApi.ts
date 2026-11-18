@@ -5,13 +5,11 @@ import type { RecoverySummary } from '@/entities/study-plan/model/types';
 
 /**
  * EP16B (D-B5; formerly `planHealthApi`, EP13E) — the recovery-summary read
- * (`GET /study-plans/recovery-summary`). Today's plan note is its reader;
- * the plan-health view keeps importing it until EP16C deletes that view.
+ * (`GET /study-plans/recovery-summary`). Today's plan note is its only reader
+ * (the plan-health view was retired by EP16C).
  *
  * A caching decorator over the entity client (D12C-1): the URL and payload
- * type stay owned by `entities/study-plan`. One cache entry serves both
- * surfaces, so walking from `/plan` to `/plan/health` costs no second
- * request.
+ * type stay owned by `entities/study-plan`.
  *
  * `keepUnusedDataFor: 60` mirrors `todayPlanApi`: the payload describes a
  * server-derived "today" (the rolled-forward window is the last 7 days

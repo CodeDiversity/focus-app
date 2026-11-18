@@ -11,9 +11,7 @@ import { FocusPage } from '@/pages/focus/ui/FocusPage';
 import { StudyHistoryPage } from '@/pages/focus/history/ui/StudyHistoryPage';
 import { CalendarPage } from '@/pages/calendar/ui/CalendarPage';
 import { PlanPage } from '@/pages/plan/ui/PlanPage';
-import { PlanHealthPage } from '@/pages/plan-health/ui/PlanHealthPage';
-import { PlanHealthView } from '@/features/plan-health/ui/PlanHealthView';
-import { CatchUpPreview } from '@/features/catch-up/ui/CatchUpPreview';
+import { PlanProposalPage } from '@/pages/plan/proposal/ui/PlanProposalPage';
 import { CourseDetailPage } from '@/pages/courses/ui/CourseDetailPage';
 import { ProfilePage } from '@/pages/profile/ui/ProfilePage';
 import { OnboardingPage } from '@/pages/onboarding/ui/OnboardingPage';
@@ -65,21 +63,14 @@ function App() {
               and muscle memory land on the calendar, which owns the editor. */}
           <Route path="/availability" element={<Navigate to="/calendar" replace />} />
           <Route path="/plan" element={<PlanPage />} />
-          {/* EP13E (D-E1): the informational plan-health view and, nested
-              under it, EP08E's regeneration preview/edit/confirm/decline
-              surface (deep-linking /plan/health/catch-up self-fetches). */}
-          <Route path="/plan/health" element={<PlanHealthPage />}>
-            <Route index element={<PlanHealthView />} />
-            <Route path="catch-up" element={<CatchUpPreview />} />
-          </Route>
-          {/* EP13E (D-E2): EP08's standalone catch-up entry is folded into
-              plan health. The old paths keep working for bookmarks and
-              `replace` keeps Back from bouncing between old and new. */}
-          <Route path="/catch-up" element={<Navigate to="/plan/health" replace />} />
-          <Route
-            path="/catch-up/preview"
-            element={<Navigate to="/plan/health/catch-up" replace />}
-          />
+          {/* EP16C (D16-4, D16-5, D-C1): the one proposal surface. Plan health
+              and the standalone catch-up entry are retired; every old path
+              lands directly on its final target with `replace`. */}
+          <Route path="/plan/proposal" element={<PlanProposalPage />} />
+          <Route path="/plan/health" element={<Navigate to="/plan" replace />} />
+          <Route path="/plan/health/catch-up" element={<Navigate to="/plan/proposal" replace />} />
+          <Route path="/catch-up" element={<Navigate to="/plan" replace />} />
+          <Route path="/catch-up/preview" element={<Navigate to="/plan/proposal" replace />} />
           <Route path="/profile" element={<ProfilePage />} />
           {/* SP-107C: onboarding wizard (D107-3: inside ProtectedRoute,
               rendered within the standard Layout like all existing pages) */}

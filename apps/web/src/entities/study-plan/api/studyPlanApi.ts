@@ -43,11 +43,19 @@ export {
  * `GET /study-plans` (no query parameters) → `SavedPlan` (server names the
  * window — D06-23).
  */
+/**
+ * @deprecated Unused by the web client since EP16C (D16-4): every proposal uses
+ * `previewCatchUp` / `confirmCatchUpPlan`. Removal of the API pair: BL-16-01.
+ */
 export async function previewStudyPlan(): Promise<PlanPreview> {
   const response = await api.post<PlanPreview>('/study-plans/preview');
   return response.data;
 }
 
+/**
+ * @deprecated Unused by the web client since EP16C (D16-4): every proposal uses
+ * `previewCatchUp` / `confirmCatchUpPlan`. Removal of the API pair: BL-16-01.
+ */
 export async function saveStudyPlan(
   from: string,
   to: string,

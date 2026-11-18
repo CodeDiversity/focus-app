@@ -140,7 +140,7 @@ describe('PlanSessionEditor', () => {
     const user = userEvent.setup();
     render(<PlanSessionEditor sessions={[flexSession]} days={days} onChange={onChange} />);
 
-    await user.click(screen.getByRole('button', { name: /pin essay to 19:00/i }));
+    await user.click(screen.getByRole('button', { name: /pin to this time: essay, 19:00/i }));
     const next = onChange.mock.calls[0][0];
     expect(next[0].anchor).toBe('FIXED');
     expect(next[0].windowHint).toBeNull();
@@ -151,7 +151,7 @@ describe('PlanSessionEditor', () => {
     const user = userEvent.setup();
     render(<PlanSessionEditor sessions={sessions} days={days} onChange={onChange} />);
 
-    await user.click(screen.getByRole('button', { name: /make essay flexible/i }));
+    await user.click(screen.getByRole('button', { name: /make flexible: essay/i }));
     const next = onChange.mock.calls[0][0];
     expect(next[0].anchor).toBe('FLEX_DAY');
     // 09:00 start → morning.

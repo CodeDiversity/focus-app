@@ -24,11 +24,8 @@ import { TodayPlanRow, isStartable } from './TodayPlanRow';
  * → the done block; error → "Try again". No compliance percentage and no
  * blaming copy anywhere (D13-9).
  */
-/**
- * EP16A (D-A3): where "Plan my week" leads. `/plan` until EP16C ships the
- * proposal surface, which re-points this one constant to `/plan/proposal`.
- */
-export const PLAN_MY_WEEK_HREF = '/plan';
+/** EP16A (D-A3) / EP16C: where "Plan my week" leads — the one proposal surface. */
+export const PLAN_MY_WEEK_HREF = '/plan/proposal';
 
 export interface TodayPlanCardProps {
   plan?: TodayPlan;

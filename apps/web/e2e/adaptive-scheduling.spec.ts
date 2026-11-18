@@ -126,7 +126,9 @@ test('journey 1 — do the work and the plan shrinks (AC-E13-01)', async ({ page
   // …and the plan page shows the shrunken work.
   await loginViaUi(page, s.email);
   await page.goto('/plan');
-  await page.getByRole('button', { name: /generate plan/i }).click();
+  // EP16C: one planning action opens the proposal surface.
+  await page.getByRole('button', { name: /^(Plan|Replan) my week$/ }).click();
+  await expect(page).toHaveURL(/\/plan\/proposal$/);
   await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 15_000 });
   await expect(
     page.getByTestId('plan-session-editor').getByText(essay.title).first()
@@ -175,14 +177,19 @@ test('journey 2 — miss a day and the plan quietly rolls forward (AC-E13-04)', 
   );
   expect(h2[0]).toBe("Today's plan");
 
-  // Plan health is informational: rows, no count in any heading.
-  await page.goto('/plan/health');
-  await expect(page.getByRole('heading', { name: 'Moved forward' })).toBeVisible();
+  // EP16C: the moved-forward context now lives on the proposal; no count in any h1/h2.
+  await page.goto('/plan/proposal');
+  await expect(page.getByRole('heading', { name: 'Moved forward into this plan' })).toBeVisible({
+    timeout: 15_000,
+  });
   await expect(page.getByText(reading.title).first()).toBeVisible();
-  for (const heading of await page.getByRole('heading').allTextContents()) {
+  for (const heading of await page.getByRole('heading', { level: 1 }).allTextContents()) {
     expect(heading).not.toMatch(/\d/);
   }
-  await expectNoAxeViolations(page, '/plan/health');
+  for (const heading of await page.getByRole('heading', { level: 2 }).allTextContents()) {
+    expect(heading).not.toMatch(/\d/);
+  }
+  await expectNoAxeViolations(page, '/plan/proposal');
 });
 
 test('journey 3 — one-tap start from the plan, finish completes the planned session (AC-E13-03/05)', async ({
@@ -407,9 +414,9 @@ test('journey 7 — information architecture: redirects, nav, nothing count-led 
 
   await loginViaUi(page, s.email);
   await page.goto('/catch-up');
-  await expect(page).toHaveURL(/\/plan\/health$/);
+  await expect(page).toHaveURL(/\/plan$/);
   await page.goto('/catch-up/preview');
-  await expect(page).toHaveURL(/\/plan\/health\/catch-up$/);
+  await expect(page).toHaveURL(/\/plan\/proposal$/);
 
   // Plan health and Focus are reachable from the nav.
   await page.goto('/dashboard');
@@ -431,7 +438,7 @@ test('journey 7 — information architecture: redirects, nav, nothing count-led 
   await page.keyboard.press('Escape');
 
   // No surface leads with a missed/rolled count.
-  for (const path of ['/dashboard', '/plan/health', '/plan']) {
+  for (const path of ['/dashboard', '/plan/proposal', '/plan']) {
     await page.goto(path);
     await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
     const text = (await page.locator('main').first().textContent()) ?? '';

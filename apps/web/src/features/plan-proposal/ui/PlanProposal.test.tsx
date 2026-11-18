@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { CatchUpPreview } from './CatchUpPreview';
+import { PlanProposal, proposalSummary } from './PlanProposal';
+import { expectNoForbiddenWords } from '@/test/forbiddenWords';
 import {
   previewCatchUp,
   confirmCatchUpPlan,
@@ -98,36 +99,38 @@ const catchUpPreviewFixture = {
   ],
   lockedPreserved: 1,
   completedPreserved: 2,
+  calibration: [],
 };
 
-/** The deep-link case: mount the view directly (no prior navigation). */
+/** The deep-link case: mount the surface directly (no prior navigation). */
 function renderPreview() {
   return render(
     <MemoryRouter>
-      <CatchUpPreview />
+      <PlanProposal />
     </MemoryRouter>
   );
 }
 
-describe('CatchUpPreview', () => {
+describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockedPreview.mockResolvedValue(catchUpPreviewFixture as never);
     mockedLock.mockResolvedValue({ id: 'ps-1', locked: false } as never);
   });
 
-  it('fetches the preview on mount and renders proposed sessions grouped by day', async () => {
+  it('fetches previewCatchUp on mount and renders proposed sessions grouped by day', async () => {
     const { container } = renderPreview();
     await waitFor(() => expect(mockedPreview).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.getByTestId('plan-week')).toBeInTheDocument());
     // Grouped by day: the week grid with its day columns, and the editor row.
     expect(container.querySelectorAll('[data-testid="plan-week"] section')).toHaveLength(7);
     expect(screen.getByTestId('plan-session-editor')).toHaveTextContent('Essay');
-    // The window line names the server-proposed window.
-    expect(screen.getByText(/2026-10-30 – 2026-11-05 · America\/New_York/)).toBeInTheDocument();
+    // The window line names the server-proposed window without a raw zone id (D-C5).
+    expect(screen.getByText(/Oct 30, 2026 – Nov 5, 2026/)).toBeInTheDocument();
+    expect(screen.queryByText(/America\/New_York/)).toBeNull();
   });
 
-  it('editing a proposed session then confirming posts the exact save body (incl. the anchor)', async () => {
+  it('editing a proposed session then Use this plan posts the exact confirm body (incl. the anchor)', async () => {
     mockedConfirm.mockResolvedValue({} as never);
     const user = userEvent.setup();
     renderPreview();
@@ -163,7 +166,7 @@ describe('CatchUpPreview', () => {
     ]);
   });
 
-  it("'Not now' makes no request and returns to plan health (EP13E D-E14)", async () => {
+  it('"Not now" navigates to /plan and makes no confirm call', async () => {
     const user = userEvent.setup();
     renderPreview();
     await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
@@ -172,7 +175,7 @@ describe('CatchUpPreview', () => {
     await user.click(screen.getByRole('button', { name: /not now/i }));
     expect(mockedConfirm).not.toHaveBeenCalled();
     expect(mockedPreview).toHaveBeenCalledTimes(callsBefore);
-    expect(navigate).toHaveBeenCalledWith('/plan/health');
+    expect(navigate).toHaveBeenCalledWith('/plan');
   });
 
   it('a 409 conflict marks the offending rows and lists reasons; edits are preserved', async () => {
@@ -206,7 +209,7 @@ describe('CatchUpPreview', () => {
     expect(row).toHaveTextContent('09:15 – 10:15');
   });
 
-  it('WINDOW_ROLLED_OVER shows the banner and “Create new plan” re-runs the preview', async () => {
+  it('WINDOW_ROLLED_OVER shows the banner and "Create new plan" re-runs the preview, focus returns to the h1', async () => {
     mockedConfirm.mockRejectedValue({
       response: {
         data: {
@@ -223,7 +226,7 @@ describe('CatchUpPreview', () => {
 
     await user.click(screen.getByRole('button', { name: /use this plan/i }));
     await waitFor(() =>
-      expect(screen.getByText(/the plan week has rolled over/i)).toBeInTheDocument()
+      expect(screen.getByText(/this proposal's week has ended/i)).toBeInTheDocument()
     );
     expect(screen.getByRole('alert')).toBeInTheDocument();
     // The proposal is gone — only the regeneration affordance remains.
@@ -232,6 +235,7 @@ describe('CatchUpPreview', () => {
     await user.click(screen.getByRole('button', { name: /create new plan/i }));
     await waitFor(() => expect(mockedPreview).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    expect(screen.getByRole('heading', { level: 1, name: 'Your proposed week' })).toHaveFocus();
   });
 
   it('a 400 field error surfaces the server message via the getErrorMessage toast path', async () => {
@@ -256,11 +260,13 @@ describe('CatchUpPreview', () => {
     );
   });
 
-  it('shows the skeleton with aria-busy while generating', () => {
+  it('shows the week skeleton with aria-busy while loading, and only Not now in the header', () => {
     mockedPreview.mockReturnValue(new Promise(() => {}) as never);
     renderPreview();
     expect(document.querySelector('[aria-busy="true"]')).toBeTruthy();
     expect(screen.queryByTestId('plan-session-editor')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /use this plan/i })).toBeNull();
+    expect(screen.getByRole('button', { name: /not now/i })).toBeInTheDocument();
   });
 
   it('shows the empty state when no sessions are proposed', async () => {
@@ -279,25 +285,30 @@ describe('CatchUpPreview', () => {
         "Your unfinished work didn't need any new sessions this week. Check the workload warnings below."
       )
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /back to plan health/i })).toBeInTheDocument();
+    // D-C8: no second "go back" control — Not now in the header does that; Use this plan stays (A-C5).
+    expect(screen.queryByRole('button', { name: /back to/i })).toBeNull();
+    expect(screen.getByRole('button', { name: /use this plan/i })).toBeInTheDocument();
     expect(screen.queryByTestId('plan-session-editor')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('proposal-summary')).toBeNull();
   });
 
-  it('shows the danger card with “Try again” when the preview fetch fails', async () => {
+  it('a failed preview shows the error card; Try again re-runs it and focus returns to the h1', async () => {
     mockedPreview.mockRejectedValueOnce(new Error('boom'));
     const user = userEvent.setup();
     renderPreview();
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
     expect(
-      screen.getByText(/we couldn't build a catch-up plan\. try again\./i)
+      screen.getByText(/we couldn't build a plan proposal\. try again\./i)
     ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /back to/i })).toBeNull();
 
     await user.click(screen.getByRole('button', { name: /try again/i }));
     await waitFor(() => expect(mockedPreview).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    expect(screen.getByRole('heading', { level: 1, name: 'Your proposed week' })).toHaveFocus();
   });
 
-  it('renders locked preview sessions as read-only cards, never as editor rows', async () => {
+  it('renders locked preview sessions in "What this plan keeps", never as editor rows', async () => {
     const { getByTestId } = renderPreview();
     await waitFor(() => expect(getByTestId('plan-session-editor')).toBeInTheDocument());
     // The locked missed session is only in the preservation card…
@@ -358,8 +369,8 @@ describe('CatchUpPreview', () => {
     await user.click(screen.getByRole('button', { name: /use this plan/i }));
     await waitFor(() => expect(screen.getByTestId('conflict-summary')).toBeInTheDocument());
     expect(screen.getByTestId('conflict-summary')).toHaveTextContent(/overlaps a class/i);
-    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Confirm rejected'));
-    expect(toast.error).not.toHaveBeenCalledWith(expect.stringContaining('lock'));
+    // D-C11: the inline summary is the one message — no conflict toast at all.
+    expect(toast.error).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: /keep "lab report" locked/i })).toBeNull();
     expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument();
   });
@@ -371,7 +382,7 @@ describe('CatchUpPreview', () => {
     await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
 
     // Focus entered on the heading; Tab reaches the header controls.
-    const heading = screen.getByRole('heading', { name: /catch-up plan/i, level: 1 });
+    const heading = screen.getByRole('heading', { name: /your proposed week/i, level: 1 });
     expect(document.activeElement).toBe(heading);
     await user.tab();
     expect(screen.getByRole('button', { name: /use this plan/i })).toHaveFocus();
@@ -398,16 +409,145 @@ describe('CatchUpPreview', () => {
     );
   });
 
-  it('copy contains no blaming terms', async () => {
+  it('moves focus to the h1 "Your proposed week" on entry', async () => {
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    expect(screen.getByRole('heading', { level: 1, name: 'Your proposed week' })).toHaveFocus();
+  });
+
+  it('"Moved forward into this plan" lists missedSessions and is absent when empty; "What this plan keeps" is absent when nothing is kept', async () => {
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Moved forward into this plan' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'What this plan keeps' })
+    ).toBeInTheDocument();
+    cleanup();
+    mockedPreview.mockResolvedValue({
+      ...catchUpPreviewFixture,
+      missedSessions: [],
+      lockedPreserved: 0,
+      completedPreserved: 0,
+    } as never);
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    expect(
+      screen.queryByRole('heading', { level: 2, name: 'Moved forward into this plan' })
+    ).toBeNull();
+    expect(screen.queryByRole('heading', { level: 2, name: 'What this plan keeps' })).toBeNull();
+  });
+
+  it('section order: calibration, week, editor, keeps, moved forward, warnings (D-C6)', async () => {
+    mockedPreview.mockResolvedValue({
+      ...catchUpPreviewFixture,
+      calibration: [{ assignmentType: 'ESSAY', multiplier: 1.5, samples: 4 }],
+    } as never);
     const { container } = renderPreview();
     await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
-    const text = container.textContent ?? '';
-    // D08-8: neutral/encouraging only — the summary names missed sessions,
-    // this surface never shames.
-    expect(text).not.toMatch(/you missed/i);
-    expect(text).not.toMatch(/you(’'ve| have|'?ve)? failed/i);
-    expect(text).not.toMatch(/you'(re| are) behind/i);
-    expect(text).not.toMatch(/punitive/i);
-    expect(text).not.toMatch(/shame/i);
+    const markers = Array.from(
+      container.querySelectorAll(
+        '[data-testid="calibration-note"], [data-testid="plan-week"], [data-testid="plan-session-editor"], [data-testid="catch-up-preservation"], [aria-labelledby="proposal-moved-heading"], [data-testid="workload-warnings"]'
+      )
+    ).map((el) => el.getAttribute('data-testid') ?? el.getAttribute('aria-labelledby'));
+    expect(markers.filter(Boolean)).toEqual(
+      [
+        'calibration-note',
+        'plan-week',
+        'plan-session-editor',
+        'catch-up-preservation',
+        'proposal-moved-heading',
+        'workload-warnings',
+      ].filter((m) => markers.includes(m))
+    );
+    expect(markers.indexOf('plan-week')).toBeLessThan(markers.indexOf('plan-session-editor'));
+    expect(markers.indexOf('plan-session-editor')).toBeLessThan(
+      markers.indexOf('catch-up-preservation')
+    );
+    expect(markers.indexOf('catch-up-preservation')).toBeLessThan(
+      markers.indexOf('proposal-moved-heading')
+    );
+  });
+
+  it('confirm success toasts "Plan saved." and navigates to /today; while confirming Use this plan is busy and Not now stays enabled', async () => {
+    let resolve!: () => void;
+    mockedConfirm.mockReturnValue(new Promise<void>((r) => (resolve = r)) as never);
+    const user = userEvent.setup();
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: /use this plan/i }));
+    const confirmBtn = screen.getByRole('button', { name: /use this plan/i });
+    expect(confirmBtn).toBeDisabled();
+    expect(confirmBtn).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('button', { name: /not now/i })).toBeEnabled();
+    resolve();
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Plan saved.'));
+    expect(navigate).toHaveBeenCalledWith('/today');
+  });
+
+  it('D-C12: the summary line states sessions and total time, and no h1/h2 carries a digit', async () => {
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    expect(screen.getByTestId('proposal-summary')).toHaveTextContent(
+      '1 session · about 1 h this week'
+    );
+    expect(proposalSummary(3, 150)).toBe('3 sessions · about 2 h 30 min this week');
+    expect(proposalSummary(1, 45)).toBe('1 session · about 45 min this week');
+    for (const h of screen
+      .getAllByRole('heading')
+      .filter((el) => ['H1', 'H2'].includes(el.tagName))) {
+      expect(h.textContent).not.toMatch(/\d/);
+    }
+  });
+
+  it('copy audit — ready, conflict, empty, error and rolled-over states carry no forbidden word', async () => {
+    const user = userEvent.setup();
+    // ready
+    let view = renderPreview();
+    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    expectNoForbiddenWords(view.container);
+    // conflict
+    mockedConfirm.mockRejectedValueOnce({
+      response: {
+        data: {
+          statusCode: 409,
+          conflicts: [
+            { sessionIndex: 0, date: '2026-10-30', startTime: '09:00', reason: 'OVERLAPS_CLASS' },
+          ],
+        },
+      },
+    } as never);
+    await user.click(screen.getByRole('button', { name: /use this plan/i }));
+    await waitFor(() => expect(screen.getByTestId('conflict-summary')).toBeInTheDocument());
+    expectNoForbiddenWords(view.container);
+    // rolled over
+    mockedConfirm.mockRejectedValueOnce({
+      response: { data: { error: 'WINDOW_ROLLED_OVER' } },
+    } as never);
+    await user.click(screen.getByRole('button', { name: /use this plan/i }));
+    await waitFor(() =>
+      expect(screen.getByText(/this proposal's week has ended/i)).toBeInTheDocument()
+    );
+    expectNoForbiddenWords(view.container);
+    cleanup();
+    // empty
+    mockedPreview.mockResolvedValueOnce({
+      ...catchUpPreviewFixture,
+      days: catchUpPreviewFixture.days.map((d) => ({ ...d, sessions: [] })),
+      missedSessions: [],
+      lockedPreserved: 0,
+      completedPreserved: 0,
+      warnings: [],
+    } as never);
+    view = renderPreview();
+    await waitFor(() => expect(screen.getByText('Nothing new to schedule')).toBeInTheDocument());
+    expectNoForbiddenWords(view.container);
+    cleanup();
+    // error
+    mockedPreview.mockRejectedValueOnce(new Error('boom'));
+    view = renderPreview();
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    expectNoForbiddenWords(view.container);
   });
 });

@@ -181,8 +181,10 @@ test('EP15J-AC1(b): a weekly Busy shrinks free time and the plan never overlaps 
 
   // Generate the plan through the UI, then check the planner's placements.
   await page.goto('/plan');
-  await page.getByRole('button', { name: 'Generate plan' }).click();
-  await expect(page.getByRole('button', { name: 'Save plan' })).toBeVisible();
+  await page.getByRole('button', { name: /^(Plan|Replan) my week$/ }).click();
+  await expect(page.getByRole('button', { name: 'Use this plan' })).toBeVisible({
+    timeout: 15_000,
+  });
   const preview = await previewViaApi(request, student.accessToken);
   const sessions = preview.days.flatMap((d) => d.sessions.map((s) => ({ ...s, date: d.date })));
   expect(sessions.length).toBeGreaterThan(0);
@@ -257,8 +259,10 @@ test("EP15J-AC1(c): a Study block tied to a course is filled first with that cou
   expect(cal.days[0].free.map((f) => `${f.startTime}-${f.endTime}`)).toEqual(['08:00-22:00']);
 
   await page.goto('/plan');
-  await page.getByRole('button', { name: 'Generate plan' }).click();
-  await expect(page.getByRole('button', { name: 'Save plan' })).toBeVisible();
+  await page.getByRole('button', { name: /^(Plan|Replan) my week$/ }).click();
+  await expect(page.getByRole('button', { name: 'Use this plan' })).toBeVisible({
+    timeout: 15_000,
+  });
   const preview = await previewViaApi(request, student.accessToken);
   const day = preview.days.find((d) => d.date === blockDay);
   expect(day, 'the plan covers tomorrow').toBeTruthy();

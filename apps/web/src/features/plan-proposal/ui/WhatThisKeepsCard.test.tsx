@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { ComponentProps } from 'react';
 import { render, screen } from '@testing-library/react';
-import { CatchUpPreservationCard } from './CatchUpPreservationCard';
+import { WhatThisKeepsCard } from './WhatThisKeepsCard';
 import type { MissedSession } from '@/entities/study-plan/model/types';
 
 // The per-card lock toggle calls the entity client; stub it at the boundary.
@@ -20,7 +20,7 @@ const lockedSession: MissedSession = {
   locked: true,
 };
 
-function renderCard(overrides: Partial<ComponentProps<typeof CatchUpPreservationCard>> = {}) {
+function renderCard(overrides: Partial<ComponentProps<typeof WhatThisKeepsCard>> = {}) {
   const props = {
     lockedPreserved: 0,
     completedPreserved: 0,
@@ -28,10 +28,10 @@ function renderCard(overrides: Partial<ComponentProps<typeof CatchUpPreservation
     onLockedChange: vi.fn(),
     ...overrides,
   };
-  return render(<CatchUpPreservationCard {...props} />);
+  return render(<WhatThisKeepsCard {...props} />);
 }
 
-describe('CatchUpPreservationCard', () => {
+describe('WhatThisKeepsCard (EP16C, ex CatchUpPreservationCard)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -39,7 +39,7 @@ describe('CatchUpPreservationCard', () => {
   it('renders the counts from lockedPreserved/completedPreserved (neutral copy)', () => {
     renderCard({ lockedPreserved: 2, completedPreserved: 3 });
     expect(screen.getByTestId('catch-up-preservation')).toBeInTheDocument();
-    expect(screen.getByText('What stays as it is')).toBeInTheDocument();
+    expect(screen.getByText('What this plan keeps')).toBeInTheDocument();
     expect(screen.getByText('2 locked sessions stay exactly where they are.')).toBeInTheDocument();
     expect(screen.getByText('3 completed sessions are kept unchanged.')).toBeInTheDocument();
   });

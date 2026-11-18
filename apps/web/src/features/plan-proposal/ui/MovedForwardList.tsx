@@ -6,7 +6,8 @@ export interface MovedForwardListProps {
 }
 
 /**
- * EP13E (D-E4, D-E6) — the "Moved forward" section of the plan-health view.
+ * EP13E (D-E4, D-E6) — the "Moved forward" list, now the proposal's
+ * "Moved forward into this plan" context section (EP16C, D16-5).
  *
  * The heading never carries a number: the rows are the detail, and a count in
  * the heading would turn an informational section into a backlog tally
@@ -16,9 +17,9 @@ export function MovedForwardList({ sessions }: MovedForwardListProps) {
   if (sessions.length === 0) return null;
 
   return (
-    <section aria-labelledby="plan-health-moved-heading" className="mb-6">
-      <h2 id="plan-health-moved-heading" className="mb-1 text-lg font-semibold text-text">
-        Moved forward
+    <section aria-labelledby="proposal-moved-heading" className="mb-6">
+      <h2 id="proposal-moved-heading" className="mb-1 text-lg font-semibold text-text">
+        Moved forward into this plan
       </h2>
       <p className="mb-2 text-sm text-text-muted">
         These sessions were rescheduled for you. Nothing was lost.

@@ -264,7 +264,8 @@ export function PlanSessionEditor({
                 Delete
               </Button>
               {/* EP13H (D-H4): the pin/unpin toggle — two labelled actions,
-                  not a switch. Unpinning derives the hint from the suggested
+                  not a switch. EP16C (F-EP16C-01, WCAG 2.5.3): the accessible
+                  name starts with the visible text so voice control matches. Unpinning derives the hint from the suggested
                   start so it can never disagree with the slot (D-H6). */}
               {s.anchor === 'FLEX_DAY' ? (
                 <Button
@@ -275,7 +276,7 @@ export function PlanSessionEditor({
                     updateAt(i, { anchor: 'FIXED', windowHint: null });
                     setAnnouncement(`${s.assignmentTitle} pinned to ${s.startTime}`);
                   }}
-                  aria-label={`Pin ${s.assignmentTitle} to ${s.startTime}`}
+                  aria-label={`Pin to this time: ${s.assignmentTitle}, ${s.startTime}`}
                 >
                   Pin to this time
                 </Button>
@@ -293,7 +294,7 @@ export function PlanSessionEditor({
                       `${s.assignmentTitle} made flexible — start it anytime that day`
                     );
                   }}
-                  aria-label={`Make ${s.assignmentTitle} flexible`}
+                  aria-label={`Make flexible: ${s.assignmentTitle}`}
                 >
                   Make flexible
                 </Button>
