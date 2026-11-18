@@ -9,8 +9,8 @@ import {
   GraduationCap,
   History,
   Home,
-  LayoutDashboard,
   LogOut,
+  Sun,
   MailCheck,
   Timer,
   User,
@@ -38,11 +38,11 @@ export interface NavItem {
 }
 
 export interface NavSection {
-  /** 'home' | 'dashboard' | 'academics' | 'planning'. */
+  /** 'home' | 'today' | 'academics' | 'planning' | 'focus'. */
   id: string;
   label: string;
   icon: LucideIcon;
-  /** Present for single links (Home, Dashboard). Omit for groups. */
+  /** Present for single links (Home, Today). Omit for groups. */
   to?: string;
   /** Present for groups (Academics, Planning). Omit for single links. */
   items?: NavItem[];
@@ -63,7 +63,8 @@ export interface AccountMenuItem {
 
 export const authenticatedNavGroups: NavSection[] = [
   { id: 'home', label: 'Home', icon: Home, to: '/' },
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },
+  // EP16A (D16-2): the landing entry is Today. EP16D restructures the groups.
+  { id: 'today', label: 'Today', icon: Sun, to: '/today' },
   {
     id: 'academics',
     label: 'Academics',

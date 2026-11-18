@@ -122,7 +122,7 @@ renders the same contract on narrow viewports (shape per ▲ D-E1).
 |---|---|---|
 | after EP16A, before EP16D | the nav's first entry is re-pointed to Today by EP16A, but Academics/Planning/Focus groups still exist; "Plan health" still opens the old page; "Home" (signed-in) redirects to Today | EP16D |
 | after EP16A, before EP16B | Today shows header + hero only (no deadlines, no classes, no momentum) | EP16B |
-| after EP16A, before EP16F | `apps/web/e2e/*` still `goto('/dashboard')` (works via redirect); the exact-URL assertion `adaptive-scheduling.spec.ts:169` and the `helpers.ts:209` comment are re-pointed by EP16A (test-only edits); full rewrite in EP16F | EP16A (minimal), EP16F |
+| after EP16A, before EP16F | `apps/web/e2e/*` still `goto('/dashboard')` (works via redirect). EP16A re-pointed the exact-URL assertion `adaptive-scheduling.spec.ts:169` and the four post-login URL assertions (`helpers.ts:210`, `auth-journeys.spec.ts:109,143`, `login.spec.ts:59` — F-EP16A-02). Journey 6's momentum-card assertions became a Today badge check; the momentum-row assertion is owed by EP16F's `today.spec.ts` (F-EP16A-03). Full rewrite in EP16F | EP16A (minimal), EP16B (row), EP16F |
 | after EP16C, before EP16F | `catch-up.spec.ts` URL constants re-pointed by EP16C (`/plan/health` → `/plan`, `/plan/health/catch-up` → `/plan/proposal`; test ids kept); journeys that read plan-health headings are skipped with a `test.fixme` naming EP16F | EP16C (minimal), EP16F |
 | after EP16D, before EP16E | on narrow viewports the drawer still lists the four primary entries | EP16E |
 

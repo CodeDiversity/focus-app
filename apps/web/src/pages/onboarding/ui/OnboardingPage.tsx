@@ -21,7 +21,7 @@ import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
  * placement as all existing pages). On load it loads the onboarding state —
  * from the onboarding slice if already fetched, else `GET /onboarding` — and:
  *
- * - `completed` → redirect to `/dashboard` (AC-107-05): covers both the
+ * - `completed` → redirect to `/today` (AC-107-05; EP16A re-pointed it from `/dashboard`): covers both the
  *   login entry and a completed/skipped student's direct `/onboarding` URL
  *   (AC-107-07); the wizard never re-appears.
  * - otherwise → render the wizard at the stored `step` (resume at the first
@@ -48,9 +48,9 @@ export function OnboardingPage() {
     }
   }, [dispatch, status]);
 
-  // AC 1 / AC 5 / AC 7: terminal state → the dashboard, never the wizard.
+  // AC 1 / AC 5 / AC 7: terminal state → Today (EP16A), never the wizard.
   if (status === 'ready' && completed) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/today" replace />;
   }
 
   // AC 4 (D107-4): skip records terminal completion; the `completed` flip

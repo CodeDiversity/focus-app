@@ -206,8 +206,8 @@ export async function loginViaUi(page: Page, email: string): Promise<void> {
   await page.getByRole('textbox', { name: 'Password' }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign In' }).click();
   // Login routes new accounts to /onboarding (onboarding incomplete) and
-  // onboarded accounts to the `from` path or /dashboard.
-  await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 10_000 });
+  // onboarded accounts to the `from` path or /today (EP16A).
+  await expect(page).toHaveURL(/\/(onboarding|today)/, { timeout: 10_000 });
 }
 
 // ---------------------------------------------------------------------------

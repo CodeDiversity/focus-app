@@ -124,12 +124,12 @@ describe('AuthContext', () => {
 
     const store = makeStore();
     render(
-      <MemoryRouter initialEntries={['/dashboard']}>
+      <MemoryRouter initialEntries={['/today']}>
         <Provider store={store}>
           <AuthProvider>
             <NavProbe />
             <Routes>
-              <Route path="/dashboard" element={<div>Dashboard page</div>} />
+              <Route path="/today" element={<div>Today page</div>} />
               <Route path="/login" element={<div>Login page</div>} />
             </Routes>
           </AuthProvider>
@@ -137,7 +137,7 @@ describe('AuthContext', () => {
       </MemoryRouter>
     );
 
-    expect(await screen.findByText('Dashboard page')).toBeInTheDocument();
+    expect(await screen.findByText('Today page')).toBeInTheDocument();
 
     api.defaults.adapter = async (config: InternalAxiosRequestConfig) => {
       const response = {
@@ -158,7 +158,7 @@ describe('AuthContext', () => {
       expect(screen.getByTestId('nav-path')).toHaveTextContent('/login');
     });
     expect(screen.getByTestId('nav-expired')).toHaveTextContent('true');
-    expect(screen.getByTestId('nav-from')).toHaveTextContent('/dashboard');
+    expect(screen.getByTestId('nav-from')).toHaveTextContent('/today');
     expect(tokenStore.getToken()).toBeNull();
   });
 

@@ -11,7 +11,7 @@ import { DashboardQuickActions } from './DashboardQuickActions';
 const renderQuickActions = () => {
   const onAddAssignment = vi.fn();
   const view = render(
-    <Providers initialEntries={['/dashboard']}>
+    <Providers initialEntries={['/today']}>
       <DashboardQuickActions onAddAssignment={onAddAssignment} />
     </Providers>
   );
@@ -29,8 +29,10 @@ describe('DashboardQuickActions (EP05C)', () => {
     expect(trigger).toHaveTextContent('Add assignment');
     // The `Plus` icon is decorative — the accessible name stays exact.
     expect(container.querySelector('svg.lucide-plus')).not.toBeNull();
-    // The primary variant.
-    expect(trigger.className).toContain('bg-accent');
+    // EP16A (D16-12 (8)): one primary control per screen — Today's is the
+    // hero's Start focus, so the quick action is the outline variant.
+    expect(trigger.classList.contains('bg-accent')).toBe(false);
+    expect(trigger.className).toContain('border');
   });
 
   it("does not render the placeholder's other quick actions", () => {

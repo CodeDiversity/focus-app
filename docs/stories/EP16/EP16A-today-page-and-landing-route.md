@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1)
 **Layer:** Frontend
-**Status:** Blocked — ▲ D16-2 `Proposed` (landing route); EP15K's review unit must pass first (D16-1). Specified in-story; no refiner pass (D16-15).
+**Status:** Implemented — awaiting parent review (2026-11-17); record: [artifacts/EP16A/implementation.md](./artifacts/EP16A/implementation.md)
 **Dependencies:** none inside EP16. Epic decisions D16-2 (▲, pending), D16-10, D16-12, D16-13, D16-14 (Button item).
 
 ## Plan at a glance
@@ -68,7 +68,7 @@ AC-E16-01, AC-E16-02 (primary); AC-E16-04 (removal half), AC-E16-05 (control kep
 ## Sizing
 
 - **Outcome:** a signed-in student always lands on Today and can start their next session from it; the dashboard is gone.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** one window, one commit, 2026-11-17. Files as planned, plus four unit tests re-pointed from `/dashboard` as an arbitrary path and three more e2e post-login assertions (F-EP16A-02). Web 1321/0; Playwright 62/0 × 3. Row in [efficiency.md](./artifacts/efficiency.md).
 - **Files:** `apps/web/src/pages/today/ui/TodayPage.tsx` (new, + test), `apps/web/src/features/today/**` (renamed from `features/dashboard`, minus the four sections + empty states), `apps/web/src/features/today/model/dayLine.ts` (new, + test), `apps/web/src/app/App.tsx`, `apps/web/src/app/appRoutes.test.tsx`, `apps/web/src/widgets/public-route/ui/PublicRoute.tsx`, `apps/web/src/pages/login/ui/LoginPage.tsx`, `apps/web/src/pages/verify-email/ui/VerifyEmailPage.tsx`, `apps/web/src/pages/onboarding/ui/OnboardingPage.tsx`, `apps/web/src/pages/home/ui/HomePage.tsx`, `apps/web/src/widgets/header/ui/navGroups.ts` (one entry) + header tests, `apps/web/src/features/today-plan/ui/TodayPlanCard.tsx` (+ test), `apps/web/src/shared/ui/Button.tsx` (+ test), `apps/web/e2e/adaptive-scheduling.spec.ts:169`, `apps/web/e2e/helpers.ts:209`; deletions: `apps/web/src/pages/dashboard/**`.
 - **Start context:** this story; contracts.md § Route matrix, § Today region contract (rows 0–1), § Known windows; `DashboardPage.tsx`, `TodayPlanCard.tsx`, `App.tsx`.
 - **Verification:** `pnpm --filter @studypilot/web typecheck && pnpm --filter @studypilot/web lint && pnpm --filter @studypilot/web test` green; the AC4 search output recorded; manual: sign in → lands on `/today`; visit `/dashboard` → `/today`.

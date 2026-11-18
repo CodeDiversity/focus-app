@@ -154,7 +154,7 @@ export const advanceOnboarding = createAsyncThunk<
 /**
  * Records terminal completion (`PATCH /onboarding { completed: true }`) —
  * the "Skip for now" path (D107-4) and the step-3 finish (SP-107E). The
- * page redirects to `/dashboard` once `completed` is set.
+ * page redirects to `/today` once `completed` is set.
  */
 export const completeOnboarding = createAsyncThunk<
   OnboardingState,

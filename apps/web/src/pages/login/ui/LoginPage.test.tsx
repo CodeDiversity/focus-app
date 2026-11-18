@@ -58,7 +58,7 @@ const renderLogin = (state?: unknown) =>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/dashboard" element={<div>Dashboard page</div>} />
+            <Route path="/today" element={<div>Today page</div>} />
             <Route path="/profile" element={<div>Profile page</div>} />
             <Route path="/onboarding" element={<div>Onboarding page</div>} />
           </Routes>
@@ -92,7 +92,7 @@ describe('LoginPage', () => {
     mockedReset.mockResolvedValue({ message: 'Password updated. Please sign in.' });
     // SP-107C: the post-login onboarding fetch defaults to a *completed*
     // state so the pre-existing cases keep asserting the original
-    // `from`/`/dashboard` navigation; the not-completed branch gets its own
+    // `from`/`/today` navigation; the not-completed branch gets its own
     // cases below.
     mockedGetOnboarding.mockResolvedValue({
       step: 1,
@@ -119,7 +119,7 @@ describe('LoginPage', () => {
     await waitFor(() =>
       expect(mockedToast.error).toHaveBeenCalledWith('Invalid email or password')
     );
-    expect(screen.queryByText('Dashboard page')).not.toBeInTheDocument();
+    expect(screen.queryByText('Today page')).not.toBeInTheDocument();
   });
 
   it('completes the entire form with keyboard only', async () => {
@@ -146,7 +146,7 @@ describe('LoginPage', () => {
       email: 'ada@example.com',
       password: 'Password123',
     });
-    expect(await screen.findByText('Dashboard page')).toBeInTheDocument();
+    expect(await screen.findByText('Today page')).toBeInTheDocument();
   });
 
   it('uses a responsive single-column layout that fits mobile widths', async () => {
@@ -211,7 +211,7 @@ describe('LoginPage', () => {
     // The state fetch runs, sees the incomplete wizard, and routes there.
     await waitFor(() => expect(mockedGetOnboarding).toHaveBeenCalledTimes(1));
     expect(await screen.findByText('Onboarding page')).toBeInTheDocument();
-    expect(screen.queryByText('Dashboard page')).not.toBeInTheDocument();
+    expect(screen.queryByText('Today page')).not.toBeInTheDocument();
   });
 
   it('routes to the original destination after login when onboarding is completed', async () => {

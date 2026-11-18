@@ -124,7 +124,7 @@ describe('Step3Course optional label and finish-without-a-course (AC-1)', () => 
     expect(mockedUpdateState).toHaveBeenCalledTimes(1);
     expect(mockedCreateCourse).not.toHaveBeenCalled();
     // The slice's `completed` flip is what drives the page's redirect to
-    // /dashboard (SP-107C) — the component never navigates itself.
+    // /today (SP-107C) — the component never navigates itself.
     await waitFor(() => expect(store.getState().onboarding.completed).toBe(true));
   });
 
@@ -178,7 +178,7 @@ describe('Step3Course add-course submit (AC-3)', () => {
       semesterId: 'sem-1',
     });
 
-    // The terminal state flips — the page redirects to /dashboard on it.
+    // The terminal state flips — the page redirects to /today on it.
     await waitFor(() => expect(store.getState().onboarding.completed).toBe(true));
     expect(store.getState().onboarding.error).toBeNull();
   });

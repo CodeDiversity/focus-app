@@ -38,7 +38,7 @@ export function LoginPage() {
 
   // Get redirect path from location state
   const from =
-    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || '/dashboard';
+    (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || '/today';
 
   const sessionExpired = Boolean(
     (

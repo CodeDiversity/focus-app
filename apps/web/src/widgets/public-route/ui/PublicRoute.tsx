@@ -12,9 +12,9 @@ export function PublicRoute() {
     );
   }
 
-  // If user is authenticated, redirect to dashboard
+  // An authenticated student lands on Today (EP16A, D16-2).
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/today" replace />;
   }
 
   return <Outlet />;

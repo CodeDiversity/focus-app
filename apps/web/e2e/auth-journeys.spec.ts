@@ -105,8 +105,8 @@ async function loginViaUi(page: Page, email: string): Promise<void> {
   await page.getByRole('textbox', { name: 'Password' }).fill(PASSWORD);
   await page.getByRole('button', { name: 'Sign In' }).click();
   // Login routes new accounts to /onboarding (onboarding incomplete) and
-  // onboarded accounts to the `from` path or /dashboard.
-  await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 10_000 });
+  // onboarded accounts to the `from` path or /today (EP16A).
+  await expect(page).toHaveURL(/\/(onboarding|today)/, { timeout: 10_000 });
 }
 
 test('registering a new account through the UI leads to an authenticated session', async ({
@@ -140,7 +140,7 @@ test('a logged-in session survives a page reload', async ({ page, request }) => 
   // Boot restore re-establishes the user from the httpOnly session cookie;
   // the protected route must not bounce back to /login.
   await page.reload();
-  await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 10_000 });
+  await expect(page).toHaveURL(/\/(onboarding|today)/, { timeout: 10_000 });
   await page.getByRole('button', { name: /open account menu/i }).click();
   await expect(page.getByRole('menuitem', { name: 'Logout' })).toBeVisible();
 });

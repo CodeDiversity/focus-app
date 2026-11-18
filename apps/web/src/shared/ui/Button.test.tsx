@@ -26,6 +26,28 @@ describe('Button', () => {
     expect(button).toHaveAttribute('aria-busy', 'true');
   });
 
+  // EP16A-AC5 (BL-15-09 item, F-EP15G-03): a loading button keeps its name.
+  it('keeps its accessible name while loading (children stay in the accessibility tree, visually hidden)', () => {
+    render(<Button isLoading>Start focus</Button>);
+    const button = screen.getByRole('button', { name: 'Start focus' });
+    expect(button).toHaveAttribute('aria-busy', 'true');
+    const label = screen.getByText('Start focus');
+    expect(label).toHaveClass('sr-only');
+    expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('shows its icons and visible label again once loading ends', () => {
+    const { rerender } = render(
+      <Button isLoading leftIcon={<span>L</span>}>
+        Save
+      </Button>
+    );
+    expect(screen.queryByText('L')).toBeNull();
+    rerender(<Button leftIcon={<span>L</span>}>Save</Button>);
+    expect(screen.getByText('L')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save' })).not.toHaveAttribute('aria-busy');
+  });
+
   it('is disabled when passed the disabled prop', () => {
     render(<Button disabled>Locked</Button>);
     expect(screen.getByRole('button')).toBeDisabled();

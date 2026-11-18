@@ -58,7 +58,7 @@ function renderGuards(initialEntry: string) {
         <LocationProbe />
         <Routes>
           <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<div>Dashboard content</div>} />
+            <Route path="/today" element={<div>Today content</div>} />
             <Route path="/profile" element={<div>Profile content</div>} />
           </Route>
           <Route element={<PublicRoute />}>
@@ -101,29 +101,29 @@ describe('route guards — boot session restore', () => {
     vi.clearAllMocks();
   });
 
-  it('pending boot refresh shows the spinner and stays on /dashboard', async () => {
+  it('pending boot refresh shows the spinner and stays on /today', async () => {
     pendingRefresh();
 
-    const { container } = renderGuards('/dashboard');
+    const { container } = renderGuards('/today');
 
     // The guard must hold the session-restoring spinner, not redirect.
-    expect(screen.getByTestId('nav-path')).toHaveTextContent('/dashboard');
+    expect(screen.getByTestId('nav-path')).toHaveTextContent('/today');
     expect(spinner(container)).not.toBeNull();
     expect(screen.queryByText('Login form')).not.toBeInTheDocument();
-    expect(screen.queryByText('Dashboard content')).not.toBeInTheDocument();
+    expect(screen.queryByText('Today content')).not.toBeInTheDocument();
     expect(mockedRefresh).toHaveBeenCalledTimes(1);
   });
 
   it('resolved boot refresh renders the protected outlet', async () => {
     const refresh = pendingRefresh();
 
-    const { container, store } = renderGuards('/dashboard');
+    const { container, store } = renderGuards('/today');
     expect(spinner(container)).not.toBeNull();
 
     await refresh.resolve();
 
-    expect(await screen.findByText('Dashboard content')).toBeInTheDocument();
-    expect(screen.getByTestId('nav-path')).toHaveTextContent('/dashboard');
+    expect(await screen.findByText('Today content')).toBeInTheDocument();
+    expect(screen.getByTestId('nav-path')).toHaveTextContent('/today');
     expect(spinner(container)).toBeNull();
     expect(store.getState().auth.user).toMatchObject({ id: 'user-1' });
   });
@@ -149,7 +149,7 @@ describe('PublicRoute — boot session restore', () => {
     vi.clearAllMocks();
   });
 
-  it('PublicRoute holds the spinner during restore and does not redirect to /dashboard', async () => {
+  it('PublicRoute holds the spinner during restore and does not redirect to /today', async () => {
     const refresh = pendingRefresh();
 
     const { container } = renderGuards('/login');
@@ -162,8 +162,8 @@ describe('PublicRoute — boot session restore', () => {
     await refresh.resolve();
 
     await waitFor(() => {
-      expect(screen.getByTestId('nav-path')).toHaveTextContent('/dashboard');
+      expect(screen.getByTestId('nav-path')).toHaveTextContent('/today');
     });
-    expect(await screen.findByText('Dashboard content')).toBeInTheDocument();
+    expect(await screen.findByText('Today content')).toBeInTheDocument();
   });
 });

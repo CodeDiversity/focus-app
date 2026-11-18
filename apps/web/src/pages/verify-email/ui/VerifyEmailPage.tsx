@@ -173,9 +173,9 @@ export function VerifyEmailPage() {
         </section>
         <Link
           className="inline-block underline rounded focus-visible:ring-2"
-          to={isAuthenticated ? '/dashboard' : '/login'}
+          to={isAuthenticated ? '/today' : '/login'}
         >
-          {isAuthenticated ? 'Back to dashboard' : 'Go to login'}
+          {isAuthenticated ? 'Back to Today' : 'Go to login'}
         </Link>
         {user && (
           <p className="text-sm text-text-muted break-words">

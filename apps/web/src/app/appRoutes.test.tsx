@@ -33,7 +33,7 @@ function LocationProbe() {
  */
 function renderAt(entry: string) {
   return render(
-    <MemoryRouter initialEntries={['/dashboard', entry]} initialIndex={1}>
+    <MemoryRouter initialEntries={['/today', entry]} initialIndex={1}>
       <LocationProbe />
       <Routes>
         <Route path="/plan/health" element={<PlanHealthPage />}>
@@ -69,6 +69,6 @@ describe('legacy catch-up routes', () => {
     // student came from. Without it, Back would land on `/catch-up` and
     // redirect straight forward again.
     await user.click(screen.getByRole('button', { name: 'back' }));
-    expect(screen.getByTestId('pathname')).toHaveTextContent('/dashboard');
+    expect(screen.getByTestId('pathname')).toHaveTextContent('/today');
   });
 });

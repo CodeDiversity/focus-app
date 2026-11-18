@@ -56,7 +56,7 @@ test('login with valid credentials reaches an authenticated page', async ({ page
   await page.getByRole('button', { name: 'Sign In' }).click();
 
   // Login lands on onboarding for new accounts (or dashboard once onboarded).
-  await expect(page).toHaveURL(/\/(onboarding|dashboard)/, { timeout: 10_000 });
+  await expect(page).toHaveURL(/\/(onboarding|today)/, { timeout: 10_000 });
 });
 
 test('login with a wrong password shows an error and stays on /login', async ({

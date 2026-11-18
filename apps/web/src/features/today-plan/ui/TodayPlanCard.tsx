@@ -5,10 +5,7 @@ import { Badge } from '@/shared/ui/Badge';
 import { Button } from '@/shared/ui/Button';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { getErrorMessage } from '@/shared/lib/errors';
-import {
-  eventTimeRange,
-  type DashboardSectionStatus,
-} from '@/features/dashboard/ui/dashboardSection';
+import { eventTimeRange, type DashboardSectionStatus } from '@/features/today/ui/dashboardSection';
 import { sessionTimeLabel } from '@/entities/study-plan/model/sessionTimeLabel';
 import { useStartPlannedSession } from '../model/useStartPlannedSession';
 import { TodayPlanRow, isStartable } from './TodayPlanRow';
@@ -23,10 +20,16 @@ import { TodayPlanRow, isStartable } from './TodayPlanRow';
  * header. The page keeps its one `role="status"` live region (D-D13); this
  * card adds none and uses `role="alert"` only for start failures.
  *
- * Every state is the story's copy: no plan → "Generate a plan"; nothing left
+ * Every state is the story's copy: no plan → "Plan my week" (EP16A); nothing left
  * → the done block; error → "Try again". No compliance percentage and no
  * blaming copy anywhere (D13-9).
  */
+/**
+ * EP16A (D-A3): where "Plan my week" leads. `/plan` until EP16C ships the
+ * proposal surface, which re-points this one constant to `/plan/proposal`.
+ */
+export const PLAN_MY_WEEK_HREF = '/plan';
+
 export interface TodayPlanCardProps {
   plan?: TodayPlan;
   status: DashboardSectionStatus;
@@ -100,10 +103,10 @@ export function TodayPlanCard({ plan, status, error, isFetching, onRetry }: Toda
         <EmptyState
           icon={<CalendarClock aria-hidden size={32} />}
           title="No plan for today yet"
-          description="Generate a plan to get a next step for today."
+          description="Plan your week to get a next step for today."
           action={
-            <Link to="/plan">
-              <Button className="max-sm:min-h-[44px]">Generate a plan</Button>
+            <Link to={PLAN_MY_WEEK_HREF}>
+              <Button className="max-sm:min-h-[44px]">Plan my week</Button>
             </Link>
           }
         />

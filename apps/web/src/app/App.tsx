@@ -3,7 +3,7 @@ import { Layout } from '@/widgets/layout/ui/Layout';
 import { HomePage } from '@/pages/home/ui/HomePage';
 import { LoginPage } from '@/pages/login/ui/LoginPage';
 import { RegisterPage } from '@/pages/register/ui/RegisterPage';
-import { DashboardPage } from '@/pages/dashboard/ui/DashboardPage';
+import { TodayPage } from '@/pages/today/ui/TodayPage';
 import { SemestersPage } from '@/pages/semesters/ui/SemestersPage';
 import { CoursesPage } from '@/pages/courses/ui/CoursesPage';
 import { AssignmentsPage } from '@/pages/assignments/ui/AssignmentsPage';
@@ -40,7 +40,10 @@ function App() {
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
+          {/* EP16A (D16-2): Today is the signed-in landing surface; the old
+              dashboard route redirects for bookmarks and muscle memory. */}
+          <Route path="/today" element={<TodayPage />} />
+          <Route path="/dashboard" element={<Navigate to="/today" replace />} />
           {/* SP-110B: semester management page (D110-4: inside ProtectedRoute,
               rendered within the standard Layout like all existing pages) */}
           <Route path="/semesters" element={<SemestersPage />} />

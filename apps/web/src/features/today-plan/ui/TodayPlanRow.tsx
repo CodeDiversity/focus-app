@@ -1,7 +1,7 @@
 import type { TodaySession } from '@/entities/study-plan/model/types';
 import { Badge } from '@/shared/ui/Badge';
 import { Button } from '@/shared/ui/Button';
-import { eventTimeRange } from '@/features/dashboard/ui/dashboardSection';
+import { eventTimeRange } from '@/features/today/ui/dashboardSection';
 import { sessionTimeLabel } from '@/entities/study-plan/model/sessionTimeLabel';
 
 /**

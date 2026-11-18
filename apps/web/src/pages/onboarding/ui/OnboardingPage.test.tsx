@@ -90,7 +90,7 @@ const renderPage = (seed?: Partial<OnboardingState>, user: User = storedStudent)
         <AuthProvider>
           <Routes>
             <Route path="/onboarding" element={<OnboardingPage />} />
-            <Route path="/dashboard" element={<div>Dashboard page</div>} />
+            <Route path="/today" element={<div>Today page</div>} />
           </Routes>
         </AuthProvider>
       </MemoryRouter>
@@ -164,14 +164,14 @@ describe('OnboardingPage resume and terminal redirect (AC 1, 5, 7)', () => {
     mockedLogout.mockResolvedValue();
   });
 
-  it('redirects a completed student to /dashboard and never renders the wizard', async () => {
+  it('redirects a completed student to /today and never renders the wizard', async () => {
     renderPage({
       step: 2,
       completed: true,
       completedAt: '2026-10-18T12:00:00.000Z',
     });
 
-    expect(await screen.findByText('Dashboard page')).toBeInTheDocument();
+    expect(await screen.findByText('Today page')).toBeInTheDocument();
     expect(screen.queryByText(/set up studypilot/i)).not.toBeInTheDocument();
   });
 
@@ -225,7 +225,7 @@ describe('OnboardingPage footer controls (AC 4, 5)', () => {
     expect(await screen.findByRole('button', { name: /skip for now/i })).toBeInTheDocument();
   });
 
-  it('records terminal completion on skip and redirects to /dashboard (AC-107-04)', async () => {
+  it('records terminal completion on skip and redirects to /today (AC-107-04)', async () => {
     mockedUpdateState.mockResolvedValue({
       step: 2,
       completed: true,
@@ -238,7 +238,7 @@ describe('OnboardingPage footer controls (AC 4, 5)', () => {
     await validUser.click(await screen.findByRole('button', { name: /skip for now/i }));
 
     await waitFor(() => expect(mockedUpdateState).toHaveBeenCalledWith({ completed: true }));
-    expect(await screen.findByText('Dashboard page')).toBeInTheDocument();
+    expect(await screen.findByText('Today page')).toBeInTheDocument();
     expect(store.getState().onboarding.completed).toBe(true);
   });
 
@@ -253,7 +253,7 @@ describe('OnboardingPage footer controls (AC 4, 5)', () => {
 
     expect(await screen.findByText('We could not save your setup. Try again.')).toBeInTheDocument();
     // No redirect: the student stays in the wizard to retry.
-    expect(screen.queryByText('Dashboard page')).not.toBeInTheDocument();
+    expect(screen.queryByText('Today page')).not.toBeInTheDocument();
     expect(store.getState().onboarding.completed).toBe(false);
   });
 

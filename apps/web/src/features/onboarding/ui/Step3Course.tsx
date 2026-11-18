@@ -47,7 +47,7 @@ type Step3FormData = z.infer<typeof step3Schema>;
  * onboarding semester (D107-8, read from the onboarding slice — read-only
  * context line, no semester picker in M1); on `201` the onboarding is
  * recorded complete. Either way the slice's `completed` flips and the page
- * redirects to `/dashboard` (AC-107-05; the redirect itself is SP-107C's).
+ * redirects to `/today` (AC-107-05; the redirect itself is SP-107C's).
  *
  * Failure handling (AC 4): a create `400` renders its field-level `errors`
  * under the matching inputs; a `409` duplicate code renders its message on
@@ -100,7 +100,7 @@ export function Step3Course() {
       // not throw on rejection), so the result is matched explicitly.
       const result = await dispatch(completeOnboarding());
       // Success: the slice's `completed` flips (the page redirects to
-      // /dashboard) and the error clears. On a failed retry the marker stays
+      // /today) and the error clears. On a failed retry the marker stays
       // — the student can retry again (the shell keeps displaying the error).
       if (!completeOnboarding.rejected.match(result)) {
         setPendingCompletion(false);
@@ -173,7 +173,7 @@ export function Step3Course() {
         return;
       }
       // Success: the slice's `completed` flips and the page redirects to
-      // /dashboard (the terminal state is SP-107C's redirect).
+      // /today (the terminal state is SP-107C's redirect).
       setPendingCompletion(false);
     } catch (err: unknown) {
       handleCreateError(err);

@@ -39,7 +39,7 @@ export function DashboardQuickActions({ onAddAssignment }: DashboardQuickActions
   return (
     <Button
       type="button"
-      variant="primary"
+      variant="outline"
       data-assignment-focus="add"
       className="max-sm:min-h-[44px]"
       onClick={onAddAssignment}

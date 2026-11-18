@@ -1,6 +1,6 @@
 import { CheckCircle2, TrendingUp } from 'lucide-react';
 import type { MomentumSummary } from '@/entities/study-session/model/types';
-import type { DashboardSectionStatus } from '@/features/dashboard/ui/dashboardSection';
+import type { DashboardSectionStatus } from '@/features/today/ui/dashboardSection';
 import { Badge } from '@/shared/ui/Badge';
 import { Button } from '@/shared/ui/Button';
 import { EmptyState } from '@/shared/ui/EmptyState';

@@ -59,11 +59,11 @@ describe('Header desktop grouped navigation (EP11A)', () => {
     vi.clearAllMocks();
   });
 
-  it('renders Home and Dashboard as single links plus Academics/Planning menu triggers', () => {
-    renderAuthenticated('/dashboard');
+  it('renders Home and Today as single links plus Academics/Planning menu triggers', () => {
+    renderAuthenticated('/today');
 
     expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
-    expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/dashboard');
+    expect(screen.getByRole('link', { name: 'Today' })).toHaveAttribute('href', '/today');
 
     const academics = screen.getByRole('button', { name: 'Academics menu' });
     expect(academics).toHaveAttribute('aria-haspopup', 'menu');
@@ -120,12 +120,12 @@ describe('Header desktop grouped navigation (EP11A)', () => {
     expect(screen.queryByRole('button', { name: 'Academics menu' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Planning menu' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Open account menu' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Dashboard' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Today' })).not.toBeInTheDocument();
   });
 
   it('opens the Academics menu on click with menu semantics', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
 
     const trigger = screen.getByRole('button', { name: 'Academics menu' });
     await user.click(trigger);
@@ -148,7 +148,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
 
   it('keeps only one menu open at a time', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
 
     const academics = screen.getByRole('button', { name: 'Academics menu' });
     const planning = screen.getByRole('button', { name: 'Planning menu' });
@@ -166,7 +166,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
 
   it('closes on outside mousedown', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
 
     await user.click(screen.getByRole('button', { name: 'Academics menu' }));
     expect(screen.getByRole('menu', { name: 'Academics' })).toBeInTheDocument();
@@ -177,7 +177,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
 
   it('closes on Escape and restores focus to the trigger', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
 
     const trigger = screen.getByRole('button', { name: 'Academics menu' });
     await user.click(trigger);
@@ -190,7 +190,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
 
   it('toggles the menu with Enter and Space on the trigger', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
 
     const trigger = screen.getByRole('button', { name: 'Academics menu' });
     trigger.focus();
@@ -212,7 +212,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
 
   it('opens with ArrowDown focusing the first item and ArrowUp focusing the last', async () => {
     const user = setupUser();
-    const { unmount } = renderAuthenticated('/dashboard');
+    const { unmount } = renderAuthenticated('/today');
 
     const trigger = screen.getByRole('button', { name: 'Academics menu' });
     trigger.focus();
@@ -220,7 +220,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
     expect(screen.getByRole('menuitem', { name: 'Semesters' })).toHaveFocus();
 
     unmount();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
     const planning = screen.getByRole('button', { name: 'Planning menu' });
     planning.focus();
     await user.keyboard('{ArrowUp}');
@@ -230,7 +230,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
 
   it('cycles items with ArrowUp/ArrowDown and supports Home/End', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
 
     await user.click(screen.getByRole('button', { name: 'Academics menu' }));
     const semesters = screen.getByRole('menuitem', { name: 'Semesters' });
@@ -254,7 +254,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
 
   it('activates the focused item with Enter and Space', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
 
     await user.click(screen.getByRole('button', { name: 'Academics menu' }));
     expect(screen.getByRole('menuitem', { name: 'Semesters' })).toHaveFocus();
@@ -269,7 +269,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
 
   it('closes when Tab moves focus out without restoring the trigger', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
 
     const trigger = screen.getByRole('button', { name: 'Academics menu' });
     await user.click(trigger);
@@ -282,7 +282,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
 
   it('shows account menu contents for an unverified user', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
 
     const trigger = screen.getByRole('button', { name: 'Open account menu' });
     expect(trigger).toHaveTextContent('A');
@@ -305,7 +305,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
 
   it('hides Verify email in the account menu for a verified user', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard', {
+    renderAuthenticated('/today', {
       ...sessionUser,
       emailVerifiedAt: '2026-01-01T00:00:00.000Z',
     });
@@ -320,7 +320,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
 
   it('supports keyboard navigation inside the account menu', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
 
     await user.click(screen.getByRole('button', { name: 'Open account menu' }));
     expect(screen.getByRole('menuitem', { name: 'Profile' })).toHaveFocus();
@@ -346,7 +346,7 @@ describe('Header desktop grouped navigation (EP11A)', () => {
     expect(semesters).toHaveClass('text-accent');
     expect(screen.getByRole('menuitem', { name: 'Courses' })).not.toHaveClass('text-accent');
     expect(screen.getByRole('menuitem', { name: 'Assignments' })).not.toHaveClass('text-accent');
-    expect(screen.getByRole('link', { name: 'Dashboard' })).not.toHaveClass('text-accent');
+    expect(screen.getByRole('link', { name: 'Today' })).not.toHaveClass('text-accent');
   });
 
   it('highlights the Academics trigger for nested course routes only', () => {
@@ -355,14 +355,14 @@ describe('Header desktop grouped navigation (EP11A)', () => {
     expect(screen.getByRole('button', { name: 'Academics menu' })).toHaveClass('font-semibold');
 
     unmount();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
     expect(screen.getByRole('button', { name: 'Academics menu' })).not.toHaveClass('text-accent');
   });
 
   it('marks the active single link and keeps Home for authenticated users', () => {
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
 
-    const dashboard = screen.getByRole('link', { name: 'Dashboard' });
+    const dashboard = screen.getByRole('link', { name: 'Today' });
     expect(dashboard).toHaveAttribute('aria-current', 'page');
     expect(dashboard).toHaveClass('text-accent');
     expect(screen.getByRole('link', { name: 'Home' })).not.toHaveClass('text-accent');
@@ -416,7 +416,7 @@ describe('Header mobile drawer', () => {
 
     // Click a link inside the drawer (scoped: the CSS-hidden desktop nav also
     // renders a Dashboard link in jsdom).
-    await user.click(within(dialog).getByRole('link', { name: 'Dashboard' }));
+    await user.click(within(dialog).getByRole('link', { name: 'Today' }));
     expect(screen.queryByRole('dialog', { name: 'Primary navigation' })).not.toBeInTheDocument();
   });
 
@@ -456,7 +456,7 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
 
   it('renders grouped sections, headings, single links and the Account section for an authenticated user', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
     await user.click(screen.getByRole('button', { name: 'Open menu' }));
 
     const dialog = getDrawer();
@@ -471,10 +471,7 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
 
     // Single links render directly in the drawer.
     expect(within(dialog).getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
-    expect(within(dialog).getByRole('link', { name: 'Dashboard' })).toHaveAttribute(
-      'href',
-      '/dashboard'
-    );
+    expect(within(dialog).getByRole('link', { name: 'Today' })).toHaveAttribute('href', '/today');
 
     const academics = within(dialog).getByRole('region', { name: 'Academics' });
     expect(within(academics).getByRole('link', { name: 'Semesters' })).toHaveAttribute(
@@ -556,7 +553,7 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
 
   it('shows Verify email only for an unverified user', async () => {
     const user = setupUser();
-    const { unmount } = renderAuthenticated('/dashboard');
+    const { unmount } = renderAuthenticated('/today');
     await user.click(screen.getByRole('button', { name: 'Open menu' }));
     const account = within(getDrawer()).getByRole('region', { name: 'Account' });
     expect(within(account).getByRole('link', { name: 'Verify email' })).toHaveAttribute(
@@ -565,7 +562,7 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
     );
 
     unmount();
-    renderAuthenticated('/dashboard', {
+    renderAuthenticated('/today', {
       ...sessionUser,
       emailVerifiedAt: '2026-01-01T00:00:00.000Z',
     });
@@ -580,7 +577,7 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
 
   it('shows the identity row with avatar initials and name', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
     await user.click(screen.getByRole('button', { name: 'Open menu' }));
 
     const account = within(getDrawer()).getByRole('region', { name: 'Account' });
@@ -598,9 +595,7 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
     const semesters = within(dialog).getByRole('link', { name: 'Semesters' });
     expect(semesters).toHaveAttribute('aria-current', 'page');
     expect(semesters).toHaveClass('text-accent');
-    expect(within(dialog).getByRole('link', { name: 'Dashboard' })).not.toHaveAttribute(
-      'aria-current'
-    );
+    expect(within(dialog).getByRole('link', { name: 'Today' })).not.toHaveAttribute('aria-current');
     expect(within(dialog).getByRole('link', { name: 'Courses' })).not.toHaveAttribute(
       'aria-current'
     );
@@ -619,7 +614,7 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
 
   it('keeps account actions out of the primary list and headings non-interactive', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
     await user.click(screen.getByRole('button', { name: 'Open menu' }));
 
     const dialog = getDrawer();
@@ -644,11 +639,11 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
 
   it('applies 44px rows and 20px aria-hidden icons in the drawer', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
     await user.click(screen.getByRole('button', { name: 'Open menu' }));
 
     const dialog = getDrawer();
-    const dashboard = within(dialog).getByRole('link', { name: 'Dashboard' });
+    const dashboard = within(dialog).getByRole('link', { name: 'Today' });
     expect(dashboard).toHaveClass('min-h-[44px]');
     const dashboardIcon = dashboard.querySelector('svg') as SVGSVGElement;
     expect(dashboardIcon).toHaveClass('h-5', 'w-5');
@@ -664,7 +659,7 @@ describe('Header mobile drawer grouped sections (EP11B)', () => {
 
   it('traps focus inside the drawer after the grouped sections were added', async () => {
     const user = setupUser();
-    renderAuthenticated('/dashboard');
+    renderAuthenticated('/today');
     await user.click(screen.getByRole('button', { name: 'Open menu' }));
 
     const dialog = getDrawer();

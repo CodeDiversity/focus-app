@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP16A — blocked until EP15K's review unit passes (D16-1); then dispatch the implementer. Refiner first for EP16B, EP16C, EP16D, EP16E (D16-15) — may run now, in parallel with EP15K's implementation, since the refiner writes only story files.
+**Next substory:** EP16B — refine (`Needs refinement`, D16-15); the refiner may take EP16B–EP16E's UI passes together (shared surfaces). EP16A implemented 2026-11-17 on the user's instruction while EP15K awaits only R-EP15K-02 (user-owned manual pass).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -28,7 +28,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP16A](./EP16A-today-page-and-landing-route.md) | Blocked | EP15K review unit not yet passed (D16-1). Decisions ratified 2026-11-17. Specified in-story; no refiner pass needed. | Implement after EP15K's review | — |
+| [EP16A](./EP16A-today-page-and-landing-route.md) | Implemented — awaiting parent review | Started 2026-11-17 on user instruction (EP15K review pass 2: only R-EP15K-02, user-owned, open). | None until the EP16 combined review | [implementation.md](./artifacts/EP16A/implementation.md) — green 2026-11-17 (web 1321/0, e2e 62/0 ×3); F-EP16A-01…03 |
 | [EP16B](./EP16B-today-secondary-content.md) | Needs refinement | EP16A implemented. Refiner: Coming up row, classes line, momentum row layout and copy (D16-15). | Refine | — |
 | [EP16C](./EP16C-one-planning-flow.md) | Needs refinement | EP16B implemented (the plan note moves first); D16-4/D16-9 ratified. Refiner: proposal surface composition and copy (D16-15). | Refine | — |
 | [EP16D](./EP16D-navigation-and-session-indicator.md) | Needs refinement | EP16A implemented. Refiner: session indicator placement and copy; Work group icon (D16-15). | Refine | — |

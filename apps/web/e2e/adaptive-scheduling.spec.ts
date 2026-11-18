@@ -166,7 +166,8 @@ test('journey 2 — miss a day and the plan quietly rolls forward (AC-E13-04)', 
   // No mandatory catch-up: the dashboard opens on today's plan, not a recovery screen.
   await loginViaUi(page, s.email);
   await page.goto('/dashboard');
-  await expect(page).toHaveURL(/\/dashboard$/);
+  // EP16A: the old route redirects to Today.
+  await expect(page).toHaveURL(/\/today$/);
   // (The account's "Verify your email" banner is not dashboard content.)
   await expect(page.getByRole('heading', { name: "Today's plan" })).toBeVisible();
   const h2 = (await page.getByRole('heading', { level: 2 }).allTextContents()).filter(
@@ -362,8 +363,9 @@ test('journey 6 — momentum updates after a finish, in minutes and days (AC-E13
   expect(((await before.json()) as { hasHistory: boolean }).hasHistory).toBe(false);
 
   await loginViaUi(page, s.email);
-  await page.goto('/dashboard');
-  await expect(page.getByText('No sessions yet')).toBeVisible();
+  // EP16A: the start lives on Today. (The momentum card's empty state is gone;
+  // EP16B's momentum row renders nothing before the first session — D16-8.)
+  await page.goto('/today');
   await page.getByRole('button', { name: 'Start focus' }).click();
   await expect(page).toHaveURL(/\/focus/);
   await finishFocusViaUi(page, 25);
@@ -374,11 +376,12 @@ test('journey 6 — momentum updates after a finish, in minutes and days (AC-E13
   await expect(celebration.getByText('1 of 3 days this week')).toBeVisible();
   await expect(celebration).not.toContainText('%');
 
-  await page.goto('/dashboard');
-  const card = page.getByRole('region', { name: 'Your momentum' });
-  await expect(card.getByText('25 of 60 min today')).toBeVisible();
-  await expect(card).not.toContainText('%');
-  await expectNoAxeViolations(page, '/dashboard (momentum)');
+  // Known window (EP16 contracts § Known windows): the dashboard's momentum
+  // card is retired by EP16A; Today's momentum row arrives in EP16B and
+  // EP16F's today.spec.ts asserts it. Today itself still shows the minutes.
+  await page.goto('/today');
+  await expect(page.getByText('25 min studied today')).toBeVisible();
+  await expectNoAxeViolations(page, '/today');
 
   const after = (await (
     await request.get('/api/study-sessions/momentum', { headers: authHeaders(s.accessToken) })

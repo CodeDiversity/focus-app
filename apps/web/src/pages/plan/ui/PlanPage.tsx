@@ -24,7 +24,7 @@ import { CalibrationNote } from '@/features/study-plan/ui/CalibrationNote';
 import { TodayPlanCard } from '@/features/today-plan/ui/TodayPlanCard';
 import { useTodayPlanQuery } from '@/features/today-plan/api/todayPlanApi';
 import { usePlanHealthQuery } from '@/features/plan-health/api/planHealthApi';
-import type { DashboardSectionStatus } from '@/features/dashboard/ui/dashboardSection';
+import type { DashboardSectionStatus } from '@/features/today/ui/dashboardSection';
 
 type Mode = 'initial' | 'generating' | 'preview' | 'saved';
 

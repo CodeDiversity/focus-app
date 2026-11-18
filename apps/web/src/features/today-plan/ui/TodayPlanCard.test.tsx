@@ -60,10 +60,10 @@ function LocationProbe() {
 function renderCard(props: Partial<React.ComponentProps<typeof TodayPlanCard>> = {}) {
   const onRetry = props.onRetry ?? vi.fn();
   const utils = render(
-    <Providers initialEntries={['/dashboard']}>
+    <Providers initialEntries={['/today']}>
       <Routes>
         <Route
-          path="/dashboard"
+          path="/today"
           element={
             <>
               <TodayPlanCard status="ready" plan={plan()} {...props} onRetry={onRetry} />
@@ -164,8 +164,9 @@ describe('TodayPlanCard (EP13D)', () => {
     });
 
     expect(screen.getByText('No plan for today yet')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Generate a plan' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Generate a plan' })).toHaveAttribute('href', '/plan');
+    // EP16A-AC3: the empty state's primary reads "Plan my week" (D-A3: /plan until EP16C).
+    expect(screen.getByRole('button', { name: 'Plan my week' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Plan my week' })).toHaveAttribute('href', '/plan');
   });
 
   it('celebrates a finished day without grading the student', async () => {

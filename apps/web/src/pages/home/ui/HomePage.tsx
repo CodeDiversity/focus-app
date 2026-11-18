@@ -1,9 +1,14 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/shared/ui/Button';
 import { useAuth } from '@/features/auth/model/AuthContext';
 
 export function HomePage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // EP16A (D16-2): a signed-in student's home is Today. While the session is
+  // being restored, render nothing rather than flash the marketing page.
+  if (isLoading) return null;
+  if (isAuthenticated) return <Navigate to="/today" replace />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-surface-muted">
@@ -18,8 +23,8 @@ export function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {isAuthenticated ? (
-              <Link to="/dashboard">
-                <Button size="lg">Go to Dashboard</Button>
+              <Link to="/today">
+                <Button size="lg">Go to Today</Button>
               </Link>
             ) : (
               <>
