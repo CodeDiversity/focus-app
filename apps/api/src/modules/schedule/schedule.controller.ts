@@ -90,4 +90,18 @@ export class ScheduleController {
   ) {
     await this.scheduleService.cancelOccurrence(user.id, id, date);
   }
+
+  /**
+   * PUT /schedule/blocks/:id/occurrences/:date — restore a cancelled
+   * occurrence (EP15K D-K2; the inverse of the DELETE above, idempotent).
+   */
+  @Put('blocks/:id/occurrences/:date')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async restoreOccurrence(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Param('date') date: string
+  ) {
+    await this.scheduleService.restoreOccurrence(user.id, id, date);
+  }
 }

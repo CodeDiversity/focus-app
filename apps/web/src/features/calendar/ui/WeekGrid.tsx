@@ -1,3 +1,4 @@
+import { GripHorizontal } from 'lucide-react';
 import {
   useCallback,
   useRef,
@@ -618,7 +619,7 @@ function DayColumn({
               data-start={s.start}
               data-end={s.end}
               data-kind="STUDY_BLOCK"
-              className="relative z-0 mx-0.5 rounded-md border border-dashed border-accent/60 bg-accent/5"
+              className="group relative z-0 mx-0.5 rounded-md border border-dashed border-accent/60 bg-accent/5"
               style={{ gridRow: `${span.rowStart} / ${span.rowEnd}`, gridColumn: 1 }}
             >
               <div
@@ -642,13 +643,24 @@ function DayColumn({
                       ? (e) => onChipPointerDown(event, e)
                       : undefined
                   }
-                  onResizePointerDown={
-                    isDraggable(event) && onHandlePointerDown
-                      ? (e) => onHandlePointerDown(event, e)
-                      : undefined
-                  }
+                  showResizeHandle={false}
                 />
               </div>
+              {/* EP15K (D-K3, F-EP15H-03): the zone's resize strip sits on the
+                  zone's visible bottom edge — where the block ends — not under
+                  the ≤ 90 px chip. Pointer-only; the keyboard equivalent is the
+                  sheet's End field (EP15H D-H7). */}
+              {isDraggable(event) && onHandlePointerDown && (
+                <span
+                  aria-hidden="true"
+                  tabIndex={-1}
+                  data-resize-handle
+                  onPointerDown={(e) => onHandlePointerDown(event, e)}
+                  className="absolute inset-x-0 bottom-0 z-10 flex h-2 cursor-ns-resize items-center justify-center opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"
+                >
+                  <GripHorizontal size={12} className="text-text-muted" />
+                </span>
+              )}
             </div>
           );
         }

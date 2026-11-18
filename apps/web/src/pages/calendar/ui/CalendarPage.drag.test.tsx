@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Providers } from '@/test/providers';
-import { CalendarPage, PARTIAL_SAVE_COPY } from './CalendarPage';
+import { CalendarPage, FOLLOW_UP_MS, PARTIAL_SAVE_COPY } from './CalendarPage';
 import { EDIT_CALLBACKS, type WeekGridProps } from '@/features/calendar/ui/WeekGrid';
 import { listCalendarEvents } from '@/entities/calendar/api/calendarApi';
 
@@ -17,6 +17,7 @@ vi.mock('@/entities/schedule-block/api/scheduleBlockApi', () => ({
   updateScheduleBlock: vi.fn(),
   deleteScheduleBlock: vi.fn(),
   cancelOccurrence: vi.fn(),
+  restoreOccurrence: vi.fn(),
 }));
 vi.mock('@/entities/course/api/courseApi', () => ({ listCourses: vi.fn() }));
 vi.mock('react-hot-toast', () => ({ default: { error: vi.fn(), success: vi.fn() } }));
@@ -24,6 +25,9 @@ import { getDayBounds } from '@/entities/day-bounds/api/dayBoundsApi';
 import {
   cancelOccurrence,
   createScheduleBlock,
+  deleteScheduleBlock,
+  listScheduleBlocks,
+  restoreOccurrence,
   updateScheduleBlock,
 } from '@/entities/schedule-block/api/scheduleBlockApi';
 import toast from 'react-hot-toast';
@@ -32,6 +36,9 @@ const mocked = vi.mocked(listCalendarEvents);
 const mockedCreate = vi.mocked(createScheduleBlock);
 const mockedUpdate = vi.mocked(updateScheduleBlock);
 const mockedCancel = vi.mocked(cancelOccurrence);
+const mockedRestore = vi.mocked(restoreOccurrence);
+const mockedDelete = vi.mocked(deleteScheduleBlock);
+const mockedList = vi.mocked(listScheduleBlocks);
 
 // ---- viewport harness (same shape as CalendarPage.test.tsx) ----
 let narrow = false;
@@ -195,9 +202,14 @@ describe('CalendarPage drag wiring (EP15H)', () => {
         sleepTime: '23:00',
       })),
     });
-    mockedCreate.mockResolvedValue(blockRow);
+    // The "just this day" one-off the drop creates (its id is what Undo /
+    // Apply delete).
+    mockedCreate.mockResolvedValue({ ...blockRow, id: 'b9', weekdays: null });
     mockedUpdate.mockResolvedValue(blockRow);
     mockedCancel.mockResolvedValue(undefined);
+    mockedRestore.mockResolvedValue(undefined);
+    mockedDelete.mockResolvedValue(undefined);
+    mockedList.mockResolvedValue([blockRow]);
   });
   afterEach(() => {
     cleanup();
@@ -268,23 +280,15 @@ describe('CalendarPage drag wiring (EP15H)', () => {
     await settle();
   });
 
-  it("EP15H-AC2: weekly same-day move → a Dialog titled 'This repeats weekly' with the prompt 'Move it for:'; 'Just this day' → POST then occurrence cancel; 'This and following' → PATCH with effectiveFrom = date; Back/Escape reverts with no request (D-H6)", async () => {
-    await renderPage();
-    // Back first: nothing may be requested.
-    dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-28'), y: Y(10 * 60 + 5) });
-    const dialog = await screen.findByRole('dialog', { name: 'This repeats weekly' });
-    expect(within(dialog).getByText('Move it for:')).toBeInTheDocument();
-    await user.click(within(dialog).getByRole('button', { name: 'Back' }));
-    expect(screen.queryByRole('dialog')).toBeNull();
-    expect(mockedCreate).not.toHaveBeenCalled();
-    expect(mockedUpdate).not.toHaveBeenCalled();
-    expect(mockedCancel).not.toHaveBeenCalled();
-    await settle();
+  const strip = () => screen.getByTestId('drop-followup');
+  const order = (...mocks: { mock: { invocationCallOrder: number[] } }[]) =>
+    mocks.map((m) => m.mock.invocationCallOrder[0]);
 
-    // Just this day → POST the one-off first, then cancel the occurrence.
+  it("EP15K-AC1/AC4: weekly same-day move → no dialog; POST the one-off then cancel the occurrence; one sentence announced; the strip offers 'Apply to every week from here' and 'Undo' outside the live region", async () => {
+    await renderPage();
     dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-28'), y: Y(10 * 60 + 5) });
-    await user.click(await screen.findByRole('button', { name: 'Just this day' }));
     await waitFor(() => expect(mockedCancel).toHaveBeenCalledWith('b1', '2026-10-28'));
+    expect(screen.queryByRole('dialog')).toBeNull();
     expect(mockedCreate).toHaveBeenCalledWith({
       kind: 'BUSY',
       title: 'Work shift',
@@ -292,17 +296,25 @@ describe('CalendarPage drag wiring (EP15H)', () => {
       startTime: '10:00',
       endTime: '11:00',
     });
-    expect(mockedCreate.mock.invocationCallOrder[0]).toBeLessThan(
-      mockedCancel.mock.invocationCallOrder[0]
+    const [create, cancel] = order(mockedCreate, mockedCancel);
+    expect(create).toBeLessThan(cancel);
+    expect(mockedUpdate).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(status()).toHaveTextContent('Moved to Wed 10:00–11:00 for this day')
     );
-    expect(status()).toHaveTextContent('Moved to Wed 10:00–11:00 for this day');
+    const followUp = strip();
+    expect(
+      within(followUp).getByRole('button', { name: 'Apply to every week from here' })
+    ).toBeVisible();
+    expect(within(followUp).getByRole('button', { name: 'Undo' })).toBeVisible();
+    expect(status().contains(followUp)).toBe(false); // no controls inside the live region
     await settle();
+  });
 
-    // This and following → one PATCH with effectiveFrom.
-    mockedCreate.mockClear();
-    mockedCancel.mockClear();
+  it('EP15K-AC1: Apply (same-day move) → restore the occurrence, delete the one-off, then PATCH the series from this date (F-EP15K-01 order); announced; the strip closes', async () => {
+    await renderPage();
     dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-28'), y: Y(10 * 60 + 5) });
-    await user.click(await screen.findByRole('button', { name: 'This and following' }));
+    await user.click(await screen.findByRole('button', { name: 'Apply to every week from here' }));
     await waitFor(() =>
       expect(mockedUpdate).toHaveBeenCalledWith('b1', {
         startTime: '10:00',
@@ -310,20 +322,28 @@ describe('CalendarPage drag wiring (EP15H)', () => {
         effectiveFrom: '2026-10-28',
       })
     );
-    expect(mockedCreate).not.toHaveBeenCalled();
-    expect(status()).toHaveTextContent('Moved to Wed 10:00–11:00 for this and following weeks');
+    expect(mockedRestore).toHaveBeenCalledWith('b1', '2026-10-28');
+    expect(mockedDelete).toHaveBeenCalledWith('b9');
+    const [restore, del, patch] = order(mockedRestore, mockedDelete, mockedUpdate);
+    expect(restore).toBeLessThan(del);
+    expect(del).toBeLessThan(patch);
+    await waitFor(() =>
+      expect(status()).toHaveTextContent('Moved to Wed 10:00–11:00 for this and following weeks')
+    );
+    expect(screen.queryByTestId('drop-followup')).toBeNull();
     await settle();
   });
 
-  it("EP15H-AC2: weekly same-day resize → the same prompt with 'Resize it for:'", async () => {
+  it('EP15K-AC1: weekly same-day resize → no dialog; Apply → PATCH { endTime, effectiveFrom }', async () => {
     await renderPage();
     const handle = chipFor(/Work shift/).querySelector('[data-resize-handle]')!;
     firePointer(handle, 'pointerdown', { clientX: colX('2026-10-28'), clientY: Y(10 * 60) });
     firePointer(handle, 'pointermove', { clientX: colX('2026-10-28'), clientY: Y(10 * 60 + 30) });
     firePointer(handle, 'pointerup', { clientX: colX('2026-10-28'), clientY: Y(10 * 60 + 30) });
-    const dialog = await screen.findByRole('dialog', { name: 'This repeats weekly' });
-    expect(within(dialog).getByText('Resize it for:')).toBeInTheDocument();
-    await user.click(within(dialog).getByRole('button', { name: 'This and following' }));
+    await waitFor(() => expect(mockedCancel).toHaveBeenCalledWith('b1', '2026-10-28'));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await waitFor(() => expect(status()).toHaveTextContent('Resized to 09:00–10:30 for this day'));
+    await user.click(screen.getByRole('button', { name: 'Apply to every week from here' }));
     await waitFor(() =>
       expect(mockedUpdate).toHaveBeenCalledWith('b1', {
         endTime: '10:30',
@@ -334,11 +354,11 @@ describe('CalendarPage drag wiring (EP15H)', () => {
     await settle();
   });
 
-  it('EP15H-AC2: weekly cross-day drag (Mon/Wed/Fri series, Wed → Thu) → no prompt; POST one-off on Thu, then DELETE …/occurrences/<Wed date>; series weekdays untouched (no PATCH); announces "Moved this day\'s Work shift to Thu 09:00–10:00; other weeks unchanged"', async () => {
+  it('EP15K-AC1: weekly cross-day drag (Mon/Wed/Fri, Wed → Thu) → no dialog, "just this day" announced; Apply reads the series and swaps Wed for Thu from this week: PATCH { weekdays: [1, 4, 5], startTime, endTime, effectiveFrom }', async () => {
     await renderPage();
     dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-29'), y: Y(9 * 60 + 5) });
     await waitFor(() => expect(mockedCancel).toHaveBeenCalledWith('b1', '2026-10-28'));
-    expect(screen.queryByRole('dialog')).toBeNull(); // no prompt (D-H4)
+    expect(screen.queryByRole('dialog')).toBeNull();
     expect(mockedCreate).toHaveBeenCalledWith({
       kind: 'BUSY',
       title: 'Work shift',
@@ -346,11 +366,106 @@ describe('CalendarPage drag wiring (EP15H)', () => {
       startTime: '09:00',
       endTime: '10:00',
     });
-    expect(mockedUpdate).not.toHaveBeenCalled();
-    expect(status()).toHaveTextContent(
-      "Moved this day's Work shift to Thu 09:00–10:00; other weeks unchanged"
+    await waitFor(() =>
+      expect(status()).toHaveTextContent(
+        "Moved this day's Work shift to Thu 09:00–10:00; other weeks unchanged"
+      )
     );
+    await user.click(screen.getByRole('button', { name: 'Apply to every week from here' }));
+    await waitFor(() =>
+      expect(mockedUpdate).toHaveBeenCalledWith('b1', {
+        weekdays: [1, 4, 5],
+        startTime: '09:00',
+        endTime: '10:00',
+        effectiveFrom: '2026-10-28',
+      })
+    );
+    const [restore, del, patch] = order(mockedRestore, mockedDelete, mockedUpdate);
+    expect(restore).toBeLessThan(del);
+    expect(del).toBeLessThan(patch);
+    expect(status()).toHaveTextContent('Moved to Thu 09:00–10:00 for this and following weeks');
     await settle();
+  });
+
+  it('EP15K-AC1: cross-day Apply onto a weekday the series already has (Wed → Fri) changes nothing and says so in one sentence', async () => {
+    await renderPage();
+    dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-30'), y: Y(9 * 60 + 5) });
+    await waitFor(() => expect(mockedCancel).toHaveBeenCalledWith('b1', '2026-10-28'));
+    await user.click(await screen.findByRole('button', { name: 'Apply to every week from here' }));
+    await waitFor(() =>
+      expect(status()).toHaveTextContent('This already repeats on Fri — change it from its details')
+    );
+    expect(mockedRestore).not.toHaveBeenCalled();
+    expect(mockedDelete).not.toHaveBeenCalled();
+    expect(mockedUpdate).not.toHaveBeenCalled();
+    // The day's move stands, and Undo is still offered.
+    expect(within(strip()).getByRole('button', { name: 'Undo' })).toBeVisible();
+    await settle();
+  });
+
+  it('EP15K-AC2: Undo restores exactly the prior state — one-off move → PATCH back; weekly "just this day" → restore the occurrence, then delete the one-off', async () => {
+    await renderPage();
+    // One-off move Thu 13:00 → 14:00, then Undo.
+    const chip = chipFor(/Errand/);
+    firePointer(chip, 'pointerdown', { clientX: colX('2026-10-29'), clientY: Y(13 * 60 + 5) });
+    firePointer(chip, 'pointermove', { clientX: colX('2026-10-29'), clientY: Y(14 * 60 + 5) });
+    firePointer(chip, 'pointerup', { clientX: colX('2026-10-29'), clientY: Y(14 * 60 + 5) });
+    await waitFor(() => expect(status()).toHaveTextContent('Moved to Thu 14:00–15:00'));
+    expect(
+      within(strip()).queryByRole('button', { name: 'Apply to every week from here' })
+    ).toBeNull();
+    await user.click(within(strip()).getByRole('button', { name: 'Undo' }));
+    await waitFor(() =>
+      expect(mockedUpdate).toHaveBeenLastCalledWith('b2', { startTime: '13:00', endTime: '14:00' })
+    );
+    await waitFor(() => expect(status()).toHaveTextContent('Undone — back to Thu 13:00–14:00'));
+    expect(screen.queryByTestId('drop-followup')).toBeNull();
+    await settle();
+
+    // Weekly "just this day", then Undo.
+    dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-28'), y: Y(10 * 60 + 5) });
+    await user.click(await screen.findByRole('button', { name: 'Undo' }));
+    await waitFor(() => expect(mockedDelete).toHaveBeenCalledWith('b9'));
+    expect(mockedRestore).toHaveBeenCalledWith('b1', '2026-10-28');
+    const [restore, del] = order(mockedRestore, mockedDelete);
+    expect(restore).toBeLessThan(del);
+    await waitFor(() => expect(status()).toHaveTextContent('Undone — back to Wed 09:00–10:00'));
+    await settle();
+  });
+
+  it('EP15K-AC2: a failed Undo toasts, refetches the week and closes the strip', async () => {
+    await renderPage();
+    mockedRestore.mockRejectedValueOnce(new Error('Network Error'));
+    dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-28'), y: Y(10 * 60 + 5) });
+    await user.click(await screen.findByRole('button', { name: 'Undo' }));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Network Error'));
+    expect(mockedDelete).not.toHaveBeenCalled(); // stop at the first failure — nothing is lost
+    expect(screen.queryByTestId('drop-followup')).toBeNull();
+    await settle();
+  });
+
+  it('EP15K-AC2: the strip closes after 10 seconds, and the timer waits while focus is inside it', async () => {
+    await renderPage();
+    dragChip(chipFor(/Work shift/), Y(9 * 60 + 5), { x: colX('2026-10-28'), y: Y(10 * 60 + 5) });
+    await screen.findByTestId('drop-followup');
+    // The suite fakes only Date; a second useFakeTimers call is ignored, so
+    // swap to a timer-faking install for the countdown checks.
+    vi.useRealTimers();
+    vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+    vi.setSystemTime(new Date('2026-10-28T12:00:00'));
+    // Re-arm the countdown on the fake clock (hover in and out).
+    fireEvent.pointerEnter(strip());
+    fireEvent.pointerLeave(strip());
+    // Focus inside pauses the countdown.
+    act(() => within(strip()).getByRole('button', { name: 'Undo' }).focus());
+    act(() => vi.advanceTimersByTime(FOLLOW_UP_MS + 1000));
+    expect(screen.getByTestId('drop-followup')).toBeInTheDocument();
+    // Focus leaves → a fresh 10 s, then it closes.
+    act(() => (document.activeElement as HTMLElement).blur());
+    act(() => vi.advanceTimersByTime(FOLLOW_UP_MS - 100));
+    expect(screen.getByTestId('drop-followup')).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(200));
+    expect(screen.queryByTestId('drop-followup')).toBeNull();
   });
 
   it('EP15H-AC2: cross-day POST fails → no cancel, toast, chip reverts; cancel fails after POST → refetch shows both and the EP15G-AC2 partial sentence is announced', async () => {
@@ -386,7 +501,7 @@ describe('CalendarPage drag wiring (EP15H)', () => {
     await settle();
   });
 
-  it('EP15H-AC2: a no-op drop (same place) issues no request and no prompt', async () => {
+  it('EP15H-AC2: a no-op drop (same place) issues no request, no prompt and no strip', async () => {
     await renderPage();
     const chip = chipFor(/Work shift/);
     firePointer(chip, 'pointerdown', { clientX: colX('2026-10-28'), clientY: Y(9 * 60 + 5) });
@@ -397,6 +512,7 @@ describe('CalendarPage drag wiring (EP15H)', () => {
     expect(mockedCreate).not.toHaveBeenCalled();
     expect(mockedUpdate).not.toHaveBeenCalled();
     expect(mockedCancel).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('drop-followup')).toBeNull();
     await settle();
   });
 
@@ -410,8 +526,8 @@ describe('CalendarPage drag wiring (EP15H)', () => {
     ];
     expect(parity.map((p) => p.gesture)).toEqual([...EDIT_CALLBACKS]);
     expect(EDIT_CALLBACKS).toEqual(['onCreateRange', 'onMove', 'onResize']);
-    // Weekly choices: the drop prompt reuses the sheet's own WeeklyChoicePrompt
-    // (same two answers), so no fourth outcome exists. Type-level pin:
+    // Weekly drops (EP15K D-K1): "just this day" always, with the series change
+    // as a follow-up — the same two outcomes the sheet's prompt offers. Pin:
     const pin: ReadonlyArray<keyof WeekGridProps> = EDIT_CALLBACKS;
     expect(pin).toHaveLength(3);
   });

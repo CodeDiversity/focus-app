@@ -2,13 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   cancelOccurrence,
   createScheduleBlock,
+  restoreOccurrence,
   deleteScheduleBlock,
   listScheduleBlocks,
   updateScheduleBlock,
 } from './scheduleBlockApi';
 
 vi.mock('@/shared/api/httpClient', () => ({
-  default: { get: vi.fn(), post: vi.fn(), patch: vi.fn(), delete: vi.fn() },
+  default: { get: vi.fn(), post: vi.fn(), patch: vi.fn(), put: vi.fn(), delete: vi.fn() },
 }));
 import api from '@/shared/api/httpClient';
 
@@ -70,6 +71,12 @@ describe('scheduleBlockApi (EP15G over EP15B)', () => {
     vi.mocked(api.delete).mockResolvedValue({} as never);
     await cancelOccurrence('b1', '2026-11-03');
     expect(api.delete).toHaveBeenCalledWith('/schedule/blocks/b1/occurrences/2026-11-03');
+  });
+
+  it('EP15K-AC2: restoreOccurrence PUTs /schedule/blocks/:id/occurrences/:date (the cancel inverse)', async () => {
+    vi.mocked(api.put).mockResolvedValue({} as never);
+    await restoreOccurrence('b1', '2026-11-03');
+    expect(api.put).toHaveBeenCalledWith('/schedule/blocks/b1/occurrences/2026-11-03');
   });
 
   it('EP15G-AC1: listScheduleBlocks GETs /schedule/blocks and returns the API order', async () => {

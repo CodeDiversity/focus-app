@@ -514,6 +514,36 @@ describeIntegration('schedule end-to-end (real database, EP15B)', () => {
         ).toBe(2);
       });
 
+      // EP15K (D-K2): PUT is the inverse of the cancel — the occurrence comes back.
+      it('occurrence restore deletes exactly that exception, is idempotent, and 400s on a non-occurrence', async () => {
+        await del(`/schedule/blocks/${seriesId}/occurrences/2026-11-26`).expect(
+          HttpStatus.NO_CONTENT
+        );
+        expect(
+          await app.prisma.scheduleBlockException.count({ where: { blockId: seriesId } })
+        ).toBe(3);
+        await put(`/schedule/blocks/${seriesId}/occurrences/2026-11-26`, {}).expect(
+          HttpStatus.NO_CONTENT
+        );
+        await put(`/schedule/blocks/${seriesId}/occurrences/2026-11-26`, {}).expect(
+          HttpStatus.NO_CONTENT
+        );
+        const rows = await app.prisma.scheduleBlockException.findMany({
+          where: { blockId: seriesId },
+          orderBy: { date: 'asc' },
+        });
+        expect(rows.map((e) => e.date.toISOString().slice(0, 10))).toEqual([
+          '2026-11-19',
+          '2026-12-15',
+        ]);
+        for (const date of ['2026-11-18', '2026-13-01']) {
+          const res = await put(`/schedule/blocks/${seriesId}/occurrences/${date}`, {}).expect(
+            HttpStatus.BAD_REQUEST
+          );
+          expect(res.body.errors.date).toBeDefined();
+        }
+      });
+
       it('a date that is not an occurrence → 400 (wrong weekday, before start, after end, malformed)', async () => {
         for (const date of ['2026-11-18', '2026-11-12', '2027-01-05', '2026-13-01', 'tomorrow']) {
           const res = await del(`/schedule/blocks/${seriesId}/occurrences/${date}`).expect(
@@ -595,6 +625,9 @@ describeIntegration('schedule end-to-end (real database, EP15B)', () => {
     await agent.delete(`/schedule/blocks/${uuidv4()}`).expect(HttpStatus.UNAUTHORIZED);
     await agent
       .delete(`/schedule/blocks/${uuidv4()}/occurrences/2026-11-20`)
+      .expect(HttpStatus.UNAUTHORIZED);
+    await agent
+      .put(`/schedule/blocks/${uuidv4()}/occurrences/2026-11-20`)
       .expect(HttpStatus.UNAUTHORIZED);
   });
 });

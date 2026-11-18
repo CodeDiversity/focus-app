@@ -65,3 +65,11 @@ export async function deleteScheduleBlock(
 export async function cancelOccurrence(id: string, date: string): Promise<void> {
   await api.delete(`/schedule/blocks/${id}/occurrences/${date}`);
 }
+
+/**
+ * PUT /schedule/blocks/:id/occurrences/:date — restore one cancelled
+ * occurrence (EP15K D-K2, the inverse of `cancelOccurrence`; idempotent).
+ */
+export async function restoreOccurrence(id: string, date: string): Promise<void> {
+  await api.put(`/schedule/blocks/${id}/occurrences/${date}`);
+}

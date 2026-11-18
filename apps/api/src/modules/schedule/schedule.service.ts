@@ -638,6 +638,43 @@ export class ScheduleService {
     });
   }
 
+  /**
+   * PUT /schedule/blocks/:id/occurrences/:date — restore one occurrence
+   * (EP15K D-K2; promotes BL-15-05): the documented inverse of
+   * `cancelOccurrence`. Weekly: delete that date's exception row — a date
+   * with no exception is already an occurrence, so a repeat stays a 204.
+   * One-off whose `startDate === date`: it exists, a no-op 204 (a cancelled
+   * one-off is deleted, so its id is the uniform 404). Any other date → 400,
+   * the same occurrence test the cancel uses.
+   */
+  async restoreOccurrence(userId: string, blockId: string, date: string): Promise<void> {
+    if (typeof date !== 'string' || parseCalendarDate(date) === null) {
+      throwFieldErrors({ date: ['date must be a valid YYYY-MM-DD date'] });
+    }
+
+    const existing = await this.prisma.scheduleBlock.findFirst({
+      where: { id: blockId, userId },
+      select: ROW_SELECT,
+    });
+    if (!existing) throw new NotFoundException(RESOURCE_NOT_FOUND);
+
+    if (existing.weekdays === null) {
+      if (formatCalendarDate(existing.startDate) !== date) {
+        throwFieldErrors({ date: ['date is not an occurrence of this block'] });
+      }
+      return;
+    }
+
+    const occurs = expandBlocks([toDomainBlock(existing, [])], date, date).length === 1;
+    if (!occurs) throwFieldErrors({ date: ['date is not an occurrence of this block'] });
+
+    // Scoped by construction: `existing` was found through `userId` above,
+    // and the exception rows are reachable only through their block.
+    await this.prisma.scheduleBlockException.deleteMany({
+      where: { blockId, date: toDate(date) },
+    });
+  }
+
   // -------------------------------------------------------------------------
 
   /** A `courseId` must be the student's own course; the miss is the uniform 404. */

@@ -28,11 +28,11 @@ import {
   cancelOccurrence,
   createScheduleBlock,
   deleteScheduleBlock,
+  listScheduleBlocks,
+  restoreOccurrence,
   updateScheduleBlock,
 } from '@/entities/schedule-block/api/scheduleBlockApi';
-import { WeeklyChoicePrompt } from '@/features/schedule-blocks/ui/WeeklyChoicePrompt';
-import { Dialog } from '@/shared/ui/Dialog';
-import { dayHeaderLabel } from '@/features/calendar/lib/gridModel';
+import { dayHeaderLabel, weekdayNumberOf } from '@/features/calendar/lib/gridModel';
 import type { DeleteChoice } from '@/features/calendar/ui/CalendarEventDetails';
 import { addDays, mondayOf, utcTodayGuess } from '../lib/week';
 
@@ -103,6 +103,38 @@ const DROP_FAIL_COPY = {
   resize: "We couldn't resize this. Try again.",
 } as const;
 
+/**
+ * EP15K-AC2 — how long the follow-up strip (Undo, and for weekly items
+ * "Apply to every week from here") stays after a drop. The countdown waits
+ * while the pointer or keyboard focus is inside the strip (WCAG 2.2.1), and
+ * restarts in full when it leaves.
+ */
+export const FOLLOW_UP_MS = 10_000;
+
+/** EP15K-AC2 — the Undo outcome, one plain sentence ("Undone — back to Thu 13:00–14:00"). */
+export function undoneAnnouncement(event: CalendarEvent): string {
+  return `Undone — back to ${weekdayOf(event.date)} ${event.startTime}–${event.endTime}`;
+}
+
+/** EP15K-AC1 — a cross-day "every week" swap onto a weekday the series already has. */
+export function alreadyRepeatsAnnouncement(date: string): string {
+  return `This already repeats on ${weekdayOf(date)} — change it from its details`;
+}
+
+const UNDO_FAIL_COPY = "We couldn't undo this. Try again.";
+const APPLY_FAIL_COPY = "We couldn't change every week. Try again.";
+
+/**
+ * EP15K: the inline follow-up a drop leaves behind. `undo` restores exactly
+ * the prior state; `apply` (weekly only) turns "just this day" into the
+ * series change. Each returns the sentence to announce, or `null` when it
+ * already reported a failure.
+ */
+type FollowUp = {
+  undo: () => Promise<string | null>;
+  apply?: () => Promise<string | null>;
+};
+
 /** Below Tailwind's `sm` breakpoint (640px) the agenda replaces the week
  * grid (D129A-01, D129A-07 — same props shape as WeekGrid). */
 function useNarrowViewport(): boolean {
@@ -166,16 +198,24 @@ export function CalendarPage() {
   const [blockSheet, setBlockSheet] = useState<BlockSheetState | null>(null);
   const blockTriggerRef = useRef<HTMLElement | null>(null);
 
-  // EP15H (D-H6): a weekly item dropped on its own day asks the same two-choice
-  // question the sheet asks, in one shared Dialog; `finish` releases the grid's
-  // ghost when the flow ends (answered, Back or Escape).
-  const [dropPrompt, setDropPrompt] = useState<{
-    event: CalendarEvent;
-    next: DropTarget;
-    action: 'move' | 'resize';
-    finish: () => void;
-  } | null>(null);
-  const [dropBusy, setDropBusy] = useState(false);
+  // EP15K (D-K1/D-K2): no question after a gesture — a drop applies, is said
+  // out loud, and leaves one calm follow-up strip (Undo; for weekly items also
+  // "Apply to every week from here") that closes after FOLLOW_UP_MS.
+  const [followUp, setFollowUp] = useState<FollowUp | null>(null);
+  const [followUpBusy, setFollowUpBusy] = useState(false);
+  const [followUpFocused, setFollowUpFocused] = useState(false);
+  const [followUpHovered, setFollowUpHovered] = useState(false);
+  const followUpPaused = followUpFocused || followUpHovered;
+  useEffect(() => {
+    if (!followUp || followUpPaused || followUpBusy) return;
+    const t = window.setTimeout(() => setFollowUp(null), FOLLOW_UP_MS);
+    return () => window.clearTimeout(t);
+  }, [followUp, followUpPaused, followUpBusy]);
+  const closeFollowUp = () => {
+    setFollowUp(null);
+    setFollowUpFocused(false);
+    setFollowUpHovered(false);
+  };
   useEffect(() => {
     let cancelled = false;
     getDayBounds()
@@ -268,10 +308,12 @@ export function CalendarPage() {
   }, [from, to, fetchWeek]);
 
   const handlePrev = () => {
+    closeFollowUp();
     setAnnouncement('');
     setAnchorFrom(addDays(anchorFrom, -7));
   };
   const handleNext = () => {
+    closeFollowUp();
     setAnnouncement('');
     setAnchorFrom(addDays(anchorFrom, 7));
   };
@@ -286,6 +328,7 @@ export function CalendarPage() {
   };
   const handleToday = () => {
     if (!data) return;
+    closeFollowUp();
     const monday = mondayOf(data.today);
     if (monday === anchorFrom) void fetchWeek(from, to, false);
     else setAnchorFrom(monday);
@@ -324,6 +367,7 @@ export function CalendarPage() {
     setBlockSheet({ mode: 'edit', event });
   };
   const handleBlockSaved = (result: BlockSaveResult) => {
+    closeFollowUp();
     setBlockSheet(null);
     setAnnouncement(saveAnnouncement(result));
     focusBlockTrigger();
@@ -341,6 +385,7 @@ export function CalendarPage() {
       toast.error(getErrMsg(err) || "We couldn't remove this. Try again.");
       throw err; // the details dialog restores its footer
     }
+    closeFollowUp();
     setSelectedEvent(null);
     setAnnouncement(deleteAnnouncement(event, choice));
     focusBlockTrigger();
@@ -369,37 +414,120 @@ export function CalendarPage() {
     };
   };
 
-  /** POST the one-off, then cancel the source occurrence; partial → the EP15G sentence. */
+  /**
+   * POST the one-off, then cancel the source occurrence; partial → the EP15G
+   * sentence. Resolves to the created one-off's id when both steps succeeded
+   * (Undo and Apply delete it), else `null`.
+   */
   const thisDayDrop = async (
     event: CalendarEvent,
     next: DropTarget,
     action: 'move' | 'resize',
     announceDone: string
-  ) => {
+  ): Promise<string | null> => {
     const blockId = event.blockId;
-    if (!blockId) return;
+    if (!blockId) return null;
+    let createdId: string;
     try {
-      await createScheduleBlock(oneOffBody(event, next));
+      createdId = (await createScheduleBlock(oneOffBody(event, next))).id;
     } catch (err) {
       toast.error(getErrMsg(err) || DROP_FAIL_COPY[action]);
-      return;
+      return null;
     }
     try {
       await cancelOccurrence(blockId, event.date);
     } catch {
       setAnnouncement(PARTIAL_SAVE_COPY);
       void fetchWeek(from, to, false);
-      return;
+      return null;
     }
     setAnnouncement(announceDone);
     void fetchWeek(from, to, false);
+    return createdId;
   };
 
   /**
-   * One drop, resolved (AC2): one-off → PATCH in place; weekly same-day →
-   * the two-choice prompt (D-H2/D-H6); weekly cross-day → always "just this
-   * day", announced, no prompt (D-H4). The returned promise keeps the grid's
-   * ghost until the flow settles.
+   * Run one follow-up step chain. On failure: toast, close the strip and
+   * re-read the week so the grid shows the truth. Ordering inside each chain
+   * puts "restore" first, so a mid-chain failure can at worst show a day
+   * twice — never lose one (F-EP15K-01).
+   */
+  const runFollowUp = async (step: () => Promise<string | null>, failCopy: string) => {
+    setFollowUpBusy(true);
+    try {
+      const sentence = await step();
+      if (sentence) {
+        setAnnouncement(sentence);
+        closeFollowUp();
+        void fetchWeek(from, to, false);
+      }
+    } catch (err) {
+      toast.error(getErrMsg(err) || failCopy);
+      closeFollowUp();
+      void fetchWeek(from, to, false);
+    } finally {
+      setFollowUpBusy(false);
+    }
+  };
+
+  /** Undo for a weekly "just this day": bring the occurrence back, then drop the one-off. */
+  const undoThisDay = (event: CalendarEvent, createdId: string) => async () => {
+    await restoreOccurrence(event.blockId as string, event.date);
+    await deleteScheduleBlock(createdId);
+    return undoneAnnouncement(event);
+  };
+
+  /**
+   * "Apply to every week from here" (EP15K-AC1). The occurrence is restored
+   * first: a PATCH split moves the source's exceptions dated ≥ effectiveFrom
+   * into the new series, so a still-cancelled day would stay cancelled every
+   * week from here on (F-EP15K-01). Same day → the time change from this
+   * date; cross day → the series swaps the source weekday for the target's
+   * from the earlier of the two dates, unless the target weekday is already
+   * in the series (then nothing changes and the sentence says why).
+   */
+  const applyEveryWeek =
+    (event: CalendarEvent, next: DropTarget, action: 'move' | 'resize', createdId: string) =>
+    async (): Promise<string | null> => {
+      const blockId = event.blockId as string;
+      const crossDay = action === 'move' && next.date !== event.date;
+      let body: Parameters<typeof updateScheduleBlock>[1];
+      if (!crossDay) {
+        body =
+          action === 'resize'
+            ? { endTime: next.endTime, effectiveFrom: event.date }
+            : { startTime: next.startTime, endTime: next.endTime, effectiveFrom: event.date };
+      } else {
+        const series = (await listScheduleBlocks()).find((b) => b.id === blockId);
+        if (!series?.weekdays) throw new Error(APPLY_FAIL_COPY);
+        const source = weekdayNumberOf(event.date);
+        const target = weekdayNumberOf(next.date);
+        if (series.weekdays.includes(target)) {
+          // Nothing changes; Undo stays available for the day's move.
+          setAnnouncement(alreadyRepeatsAnnouncement(next.date));
+          setFollowUp((f) => (f ? { undo: f.undo } : f));
+          return null;
+        }
+        body = {
+          weekdays: [...series.weekdays.filter((d) => d !== source), target].sort((a, b) => a - b),
+          startTime: next.startTime,
+          endTime: next.endTime,
+          effectiveFrom: next.date < event.date ? next.date : event.date,
+        };
+      }
+      await restoreOccurrence(blockId, event.date);
+      await deleteScheduleBlock(createdId);
+      await updateScheduleBlock(blockId, body);
+      return dropAnnouncement(action, next, 'following');
+    };
+
+  /**
+   * One drop, resolved (EP15K D-K1, overrides EP15H D-H2/D-H4 for gestures):
+   * one-off → PATCH in place; weekly (same day or another day) → always
+   * "just this day", immediately, announced, with no dialog. Every outcome
+   * leaves the follow-up strip: Undo, plus — for weekly items — "Apply to
+   * every week from here". The returned promise keeps the grid's ghost until
+   * the save settles.
    */
   const resolveDrop = async (
     event: CalendarEvent,
@@ -408,6 +536,7 @@ export function CalendarPage() {
   ): Promise<void> => {
     const blockId = event.blockId;
     if (!blockId) return;
+    closeFollowUp();
     const weekly = event.recurring === true;
     if (!weekly) {
       const body =
@@ -416,6 +545,17 @@ export function CalendarPage() {
           : next.date === event.date
             ? { startTime: next.startTime, endTime: next.endTime }
             : { startDate: next.date, startTime: next.startTime, endTime: next.endTime };
+      // The exact inverse: the same fields, back to the event's values.
+      const undoBody =
+        action === 'resize'
+          ? { endTime: event.endTime as string }
+          : next.date === event.date
+            ? { startTime: event.startTime, endTime: event.endTime as string }
+            : {
+                startDate: event.date,
+                startTime: event.startTime,
+                endTime: event.endTime as string,
+              };
       try {
         await updateScheduleBlock(blockId, body);
       } catch (err) {
@@ -424,55 +564,24 @@ export function CalendarPage() {
       }
       setAnnouncement(dropAnnouncement(action, next, 'one'));
       void fetchWeek(from, to, false);
+      setFollowUp({
+        undo: async () => {
+          await updateScheduleBlock(blockId, undoBody);
+          return undoneAnnouncement(event);
+        },
+      });
       return;
     }
-    if (action === 'move' && next.date !== event.date) {
-      await thisDayDrop(event, next, action, crossDayAnnouncement(event.title, next));
-      return;
-    }
-    // Weekly, same day: ask before anything changes (D-H2).
-    await new Promise<void>((finish) => {
-      setDropPrompt({ event, next, action, finish });
+    const crossDay = action === 'move' && next.date !== event.date;
+    const sentence = crossDay
+      ? crossDayAnnouncement(event.title, next)
+      : dropAnnouncement(action, next, 'this-day');
+    const createdId = await thisDayDrop(event, next, action, sentence);
+    if (!createdId) return;
+    setFollowUp({
+      undo: undoThisDay(event, createdId),
+      apply: applyEveryWeek(event, next, action, createdId),
     });
-  };
-
-  const closeDropPrompt = () => {
-    if (dropBusy) return;
-    const p = dropPrompt;
-    setDropPrompt(null);
-    p?.finish(); // the ghost snaps back; nothing was requested
-  };
-
-  const answerDropPrompt = async (choice: 'this-day' | 'following') => {
-    const p = dropPrompt;
-    if (!p || !p.event.blockId) return;
-    setDropBusy(true);
-    try {
-      if (choice === 'this-day') {
-        await thisDayDrop(
-          p.event,
-          p.next,
-          p.action,
-          dropAnnouncement(p.action, p.next, 'this-day')
-        );
-      } else {
-        const body =
-          p.action === 'resize'
-            ? { endTime: p.next.endTime, effectiveFrom: p.event.date }
-            : { startTime: p.next.startTime, endTime: p.next.endTime, effectiveFrom: p.event.date };
-        try {
-          await updateScheduleBlock(p.event.blockId, body);
-          setAnnouncement(dropAnnouncement(p.action, p.next, 'following'));
-          void fetchWeek(from, to, false);
-        } catch (err) {
-          toast.error(getErrMsg(err) || DROP_FAIL_COPY[p.action]);
-        }
-      }
-    } finally {
-      setDropBusy(false);
-      setDropPrompt(null);
-      p.finish();
-    }
   };
   // ---- end EP15H ---------------------------------------------------------
 
@@ -615,6 +724,50 @@ export function CalendarPage() {
           {announcement ? `${announcement} ${statusMessage}` : statusMessage}
         </div>
 
+        {/* EP15K (D-K1/D-K2): the follow-up strip — outside the live region,
+            so the sentence above is announced once and the controls are not
+            read as status. Pointer or focus inside pauses its countdown. */}
+        {followUp && (
+          <div
+            role="group"
+            aria-label="Last change"
+            data-testid="drop-followup"
+            className="mb-3 flex flex-wrap items-center gap-2"
+            onFocus={() => setFollowUpFocused(true)}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                setFollowUpFocused(false);
+              }
+            }}
+            onPointerEnter={() => setFollowUpHovered(true)}
+            onPointerLeave={() => setFollowUpHovered(false)}
+          >
+            {followUp.apply && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={followUpBusy}
+                onClick={() => {
+                  const apply = followUp.apply;
+                  if (apply) void runFollowUp(apply, APPLY_FAIL_COPY);
+                }}
+              >
+                Apply to every week from here
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={followUpBusy}
+              onClick={() => void runFollowUp(followUp.undo, UNDO_FAIL_COPY)}
+            >
+              Undo
+            </Button>
+          </div>
+        )}
+
         <DayBoundsBanner bounds={bounds} onOpen={openSheet} />
 
         {/* EP15E (D-E12, user ruling 2026-11-17): the empty-week copy is one
@@ -659,24 +812,6 @@ export function CalendarPage() {
           onClose={() => setSheetOpen(false)}
           onSaved={handleBoundsSaved}
         />
-      )}
-
-      {dropPrompt && (
-        <Dialog
-          open
-          onClose={closeDropPrompt}
-          title="This repeats weekly"
-          size="sm"
-          busy={dropBusy}
-        >
-          <WeeklyChoicePrompt
-            question={dropPrompt.action === 'move' ? 'Move it for:' : 'Resize it for:'}
-            onThisDay={() => void answerDropPrompt('this-day')}
-            onFollowing={() => void answerDropPrompt('following')}
-            onBack={closeDropPrompt}
-            busy={dropBusy}
-          />
-        </Dialog>
       )}
 
       {blockSheet?.mode === 'create' && (

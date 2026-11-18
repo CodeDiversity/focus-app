@@ -39,6 +39,12 @@ export interface CalendarEventChipProps {
   onDragPointerDown?: (e: ReactPointerEvent<HTMLElement>) => void;
   /** EP15H: pointerdown on the bottom handle (a resize may start). */
   onResizePointerDown?: (e: ReactPointerEvent<HTMLElement>) => void;
+  /**
+   * EP15K (D-K3): whether the chip renders its own bottom resize strip. A
+   * study-block zone passes `false` and draws the strip on the zone's edge,
+   * where the block visibly ends. Defaults to `draggable`.
+   */
+  showResizeHandle?: boolean;
 }
 
 interface TypeMeta {
@@ -112,6 +118,7 @@ export function CalendarEventChip({
   liveTime,
   onDragPointerDown,
   onResizePointerDown,
+  showResizeHandle,
 }: CalendarEventChipProps) {
   const meta = TYPE_META[event.type];
   const Icon = meta.icon;
@@ -204,7 +211,7 @@ export function CalendarEventChip({
             {markers}
           </span>
         </span>
-        {draggable && (
+        {draggable && (showResizeHandle ?? true) && (
           /* EP15H (D-H7): the bottom resize strip — pointer-only by design;
              the keyboard equivalent is the sheet's End field. */
           <span

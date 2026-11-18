@@ -197,13 +197,20 @@ export function chipTier(heightPx: number): ChipTier {
 
 const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-/** "Mon 26" for `2026-10-26`, via `Date.UTC` / `getUTCDay` only (no local getters). */
-export function dayHeaderLabel(civil: string): string {
+/**
+ * EP15K: the weekday number (Sunday = 0, the API's `weekdays` convention) of
+ * a civil date, via `Date.UTC` / `getUTCDay` only — calendar math, no zone.
+ */
+export function weekdayNumberOf(civil: string): number {
   const year = Number(civil.slice(0, 4));
   const month = Number(civil.slice(5, 7));
   const day = Number(civil.slice(8, 10));
-  const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
-  return `${WEEKDAY[weekday]} ${day}`;
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+}
+
+/** "Mon 26" for `2026-10-26`, via `Date.UTC` / `getUTCDay` only (no local getters). */
+export function dayHeaderLabel(civil: string): string {
+  return `${WEEKDAY[weekdayNumberOf(civil)]} ${Number(civil.slice(8, 10))}`;
 }
 
 /** "Your day 08:00–23:00" when all seven bounds agree, else "Day bounds vary by weekday". */

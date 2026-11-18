@@ -3,6 +3,7 @@ import {
   axisHours,
   chipTier,
   dayHeaderLabel,
+  weekdayNumberOf,
   hourRange,
   isLabelledFree,
   layoutLanes,
@@ -130,6 +131,20 @@ describe('gridModel (EP15E, pure)', () => {
     expect(chipTier(59)).toBe('compact');
     expect(chipTier(30)).toBe('compact');
     expect(chipTier(29)).toBe('mini');
+  });
+
+  it('EP15K: weekdayNumberOf uses the API convention (Sunday = 0) for every day of a week', () => {
+    expect(
+      [
+        '2026-10-25',
+        '2026-10-26',
+        '2026-10-27',
+        '2026-10-28',
+        '2026-10-29',
+        '2026-10-30',
+        '2026-10-31',
+      ].map(weekdayNumberOf)
+    ).toEqual([0, 1, 2, 3, 4, 5, 6]);
   });
 
   it("EP15E-AC3: dayHeaderLabel('2026-10-26') is 'Mon 26' via Date.UTC/getUTCDay only", () => {

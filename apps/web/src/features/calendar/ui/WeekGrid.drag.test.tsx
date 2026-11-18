@@ -199,21 +199,39 @@ describe('WeekGrid drag (EP15H)', () => {
     expect(onCreateRange).not.toHaveBeenCalled();
   });
 
-  it('EP15H-AC2: EVENT and STUDY_BLOCK chips carry cursor-grab and a bottom resize handle (aria-hidden, tabIndex -1); CLASS chips carry neither', () => {
+  it('EP15H-AC2 + EP15K-AC3: EVENT chips carry the bottom handle inside the chip; STUDY_BLOCK zones carry it on the zone edge, not the chip; CLASS chips carry neither', () => {
     renderGrid([base, studyBlock, classEvent]);
     const busyChip = screen.getByRole('button', { name: /Work shift/ });
     const studyChip = screen.getByRole('button', { name: /Study block/ });
     const classChip = screen.getByRole('button', { name: /Calculus/ });
-    for (const chip of [busyChip, studyChip]) {
-      expect(chip.className).toContain('cursor-grab');
-      const handle = chip.querySelector('[data-resize-handle]')!;
+    const zone = document.querySelector<HTMLElement>('[data-kind="STUDY_BLOCK"]')!;
+    expect(busyChip.className).toContain('cursor-grab');
+    expect(studyChip.className).toContain('cursor-grab');
+    const busyHandle = busyChip.querySelector('[data-resize-handle]')!;
+    expect(studyChip.querySelector('[data-resize-handle]')).toBeNull();
+    const zoneHandle = zone.querySelector(':scope > [data-resize-handle]')!;
+    for (const handle of [busyHandle, zoneHandle]) {
       expect(handle).not.toBeNull();
       expect(handle).toHaveAttribute('aria-hidden', 'true');
       expect(handle).toHaveAttribute('tabindex', '-1');
       expect(handle.className).toContain('cursor-ns-resize');
+      expect(handle.className).toContain('bottom-0');
     }
     expect(classChip.className).not.toContain('cursor-grab');
     expect(classChip.querySelector('[data-resize-handle]')).toBeNull();
+  });
+
+  it('EP15K-AC3: a tall study block (09:00–12:00) resizes from the zone’s bottom edge, past the 90 px chip', () => {
+    const tall = { ...studyBlock, endTime: '12:00' };
+    const { onResize, onMove } = renderGrid([tall]);
+    const zone = document.querySelector<HTMLElement>('[data-kind="STUDY_BLOCK"]')!;
+    const handle = zone.querySelector(':scope > [data-resize-handle]')!;
+    firePointer(handle, 'pointerdown', { clientX: 360, clientY: Y(720) });
+    firePointer(handle, 'pointermove', { clientX: 360, clientY: Y(720) + 60 });
+    expect(screen.getByTestId('drag-ghost')).toHaveTextContent('09:00 – 13:00');
+    firePointer(handle, 'pointerup', { clientX: 360, clientY: Y(720) + 60 });
+    expect(onResize).toHaveBeenCalledWith(tall, { endTime: '13:00' });
+    expect(onMove).not.toHaveBeenCalled();
   });
 
   it('EP15H-AC2: dragging an EVENT 60 px down calls onMove(event, { date, startTime +1 h, endTime +1 h }) after release; the ghost shows the live time while dragging', () => {

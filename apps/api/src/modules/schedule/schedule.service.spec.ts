@@ -534,4 +534,45 @@ describe('ScheduleService (unit, mocked PrismaService)', () => {
       expect(block.deleteMany).toHaveBeenCalledTimes(1);
     });
   });
+
+  // EP15K (D-K2): the documented inverse of cancelOccurrence.
+  describe('restoreOccurrence', () => {
+    it('malformed date → 400 before any lookup; scoped miss → uniform 404', async () => {
+      const errors = await errorsOf(service.restoreOccurrence(userId, 'block-1', '2026-02-30'));
+      expect(errors.date).toBeDefined();
+      expect(block.findFirst).not.toHaveBeenCalled();
+      block.findFirst.mockResolvedValue(null);
+      await expect(service.restoreOccurrence(userId, 'block-1', '2026-11-18')).rejects.toThrow(
+        new NotFoundException(RESOURCE_NOT_FOUND)
+      );
+      expect(block.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 'block-1', userId } })
+      );
+    });
+
+    it('weekly: an occurrence date deletes its exception (idempotent); a non-occurrence → 400', async () => {
+      block.findFirst.mockResolvedValue(row());
+      exception.deleteMany.mockResolvedValue({ count: 1 });
+      await service.restoreOccurrence(userId, 'block-1', '2026-11-18'); // a Wednesday
+      expect(exception.deleteMany).toHaveBeenCalledWith({
+        where: { blockId: 'block-1', date: new Date('2026-11-18T00:00:00.000Z') },
+      });
+      exception.deleteMany.mockResolvedValue({ count: 0 });
+      await expect(service.restoreOccurrence(userId, 'block-1', '2026-11-18')).resolves.toBe(
+        undefined
+      );
+      const errors = await errorsOf(service.restoreOccurrence(userId, 'block-1', '2026-11-17')); // a Tuesday
+      expect(errors.date).toEqual(['date is not an occurrence of this block']);
+      expect(exception.deleteMany).toHaveBeenCalledTimes(2);
+    });
+
+    it('one-off: its own date is a no-op 204; another date → 400; nothing is written', async () => {
+      block.findFirst.mockResolvedValue(row({ weekdays: null }));
+      await service.restoreOccurrence(userId, 'block-1', '2026-11-16');
+      const errors = await errorsOf(service.restoreOccurrence(userId, 'block-1', '2026-11-17'));
+      expect(errors.date).toEqual(['date is not an occurrence of this block']);
+      expect(exception.deleteMany).not.toHaveBeenCalled();
+      expect(block.deleteMany).not.toHaveBeenCalled();
+    });
+  });
 });

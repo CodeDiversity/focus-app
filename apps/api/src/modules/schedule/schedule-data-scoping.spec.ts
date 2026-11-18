@@ -181,6 +181,22 @@ describeIntegration('Schedule data scoping (integration, real database, EP15B)',
     );
   });
 
+  // EP15K (D-K2): B restoring A's cancelled occurrence is the same uniform 404.
+  it('B’s occurrence restore on A’s blocks → uniform 404, A’s exception survives', async () => {
+    const before = await snapshotA();
+    for (const path of [
+      `/schedule/blocks/${aWeeklyId}/occurrences/2026-11-18`,
+      `/schedule/blocks/${aOneOffId}/occurrences/2026-11-20`,
+    ]) {
+      const res = await agent.put(path).set(auth(studentB)).expect(HttpStatus.NOT_FOUND);
+      expect(res.body.message).toBe('Resource not found');
+    }
+    expect(await snapshotA()).toBe(before);
+    expect(await app.prisma.scheduleBlockException.count({ where: { blockId: aWeeklyId } })).toBe(
+      1
+    );
+  });
+
   it('B cannot tie a block to A’s course on create or on patch → uniform 404, nothing written', async () => {
     const before = await app.prisma.scheduleBlock.count({ where: { userId: studentB.id } });
     const create = await agent
@@ -225,6 +241,7 @@ describeIntegration('Schedule data scoping (integration, real database, EP15B)',
         () => agent.delete(`/schedule/blocks/${encoded}?from=2026-11-23`).set(auth(studentA)),
         () =>
           agent.delete(`/schedule/blocks/${encoded}/occurrences/2026-11-23`).set(auth(studentA)),
+        () => agent.put(`/schedule/blocks/${encoded}/occurrences/2026-11-23`).set(auth(studentA)),
       ]) {
         const res = await call().expect(HttpStatus.NOT_FOUND);
         expect(res.body.message).toBe('Resource not found');

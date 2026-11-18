@@ -4,7 +4,7 @@
 **Parent epic:** [EP15: Schedule & Availability Redesign](../../epics/EP15-schedule-and-availability-redesign.md)
 **Milestone:** scheduled as its **own review unit after EP15's closure** (user, 2026-11-17); outside the closed EP15A–EP15J unit
 **Layer:** Frontend (+ one small API addition if D-K2 is ruled (a))
-**Status:** Ready — scheduled by the user 2026-11-17 ("we can schedule it on its own after EP15 is closed out") after the ▲ decisions were presented for ruling; D-K1…D-K3 ratified as recommended (rulings below). Implement on dispatch; EP15 is closed.
+**Status:** Implemented — awaiting review (2026-11-17; its own review unit); record: [artifacts/EP15K/implementation.md](./artifacts/EP15K/implementation.md)
 **Dependencies:** EP15H implemented (2026-11-17). Sources: the EP15H complexity flags the user asked to capture (implementation record Findings F-EP15H-03 and the two flags raised in review conversation, 2026-11-17); D15-14 (ADHD design ruleset); BL-15-05 (undo a cancelled occurrence).
 
 ## Plan at a glance
@@ -51,5 +51,6 @@ no asymmetric rule to memorise, and a way back.
 ## Sizing
 
 - **Outcome:** weekly drags never interrupt, never surprise, and can always be taken back.
-- **Estimate:** ~1 window. **Files:** `pages/calendar/ui/CalendarPage.tsx` (drop resolution + follow-up strip), `features/calendar/ui/WeekGrid.tsx` (zone handle), `features/schedule-blocks/*` (follow-up/undo wiring), and if D-K2 = (a): `apps/api/src/modules/schedule/*` (one route + spec), contracts.md § API.
+- **Estimate:** ~1 window.
+- **Actual at closeout:** one window, one commit, 2026-11-17; files as planned plus `gridModel.ts` (`weekdayNumberOf`) and `CalendarEventChip.tsx` (`showResizeHandle`); gated API 85 suites 1783/0 single-worker, web 124 files 1382/0, Playwright 62/0 × 3 (external-stack mode); F-EP15K-01…03 recorded. Row in [efficiency.md](./artifacts/efficiency.md). **Files:** `pages/calendar/ui/CalendarPage.tsx` (drop resolution + follow-up strip), `features/calendar/ui/WeekGrid.tsx` (zone handle), `features/schedule-blocks/*` (follow-up/undo wiring), and if D-K2 = (a): `apps/api/src/modules/schedule/*` (one route + spec), contracts.md § API.
 - **Dependencies / exclusions:** EP15H (shipped shape); does not touch the sheet's own prompt; not part of the EP15A–EP15J review unit.
