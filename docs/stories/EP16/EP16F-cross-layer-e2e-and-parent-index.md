@@ -50,8 +50,8 @@ As AC1–AC4; run counts and the axe output recorded in the implementation recor
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-F1 | `catch-up.spec.ts`: (a) rename to `plan-flow.spec.ts` and rewrite; (b) keep the name | **(a)** — the file name should say what it tests | Proposed |
-| D-F2 | 360 × 640 hero check: (a) Playwright `boundingBox()` ≤ viewport height without scroll; (b) screenshot comparison | **(a)** — deterministic, no snapshot tooling (EP11 out-of-scope precedent) | Proposed |
+| D-F1 | `catch-up.spec.ts`: (a) rename to `plan-flow.spec.ts` and rewrite; (b) keep the name | **(a)** — the file name should say what it tests | Ratified (user, 2026-11-17 — "ratify all") |
+| D-F2 | 360 × 640 hero check: (a) Playwright `boundingBox()` ≤ viewport height without scroll; (b) screenshot comparison | **(a)** — deterministic, no snapshot tooling (EP11 out-of-scope precedent) | Ratified (user, 2026-11-17 — "ratify all") |
 
 ## Definition of Done
 

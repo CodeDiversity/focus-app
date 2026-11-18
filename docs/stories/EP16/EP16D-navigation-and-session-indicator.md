@@ -56,10 +56,10 @@ AC-E16-09, AC-E16-10 (primary); AC-E16-01 (first nav entry), AC-E16-12. TR-E16-0
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-D1 | Indicator data source: (a) plain hook over the entity client, re-read on route change + visibility; (b) RTK Query endpoint with tag invalidation from focus-session mutations | **(a)** — D16-11; no polling, no new cache to keep coherent | Proposed |
-| D-D2 | Indicator on `/focus`: (a) hidden (the page is the timer); (b) shown everywhere | **(a)** — two timers on one screen is noise | Proposed |
-| D-D3 | Work group icon: (a) `Briefcase`; (b) `ClipboardList`; refiner picks | **(a)** | Proposed |
-| D-D4 | Failed `current` read: (a) silent (nothing renders); (b) a muted "couldn't check your session" line | **(a)** — the header must never carry an error surface | Proposed |
+| D-D1 | Indicator data source: (a) plain hook over the entity client, re-read on route change + visibility; (b) RTK Query endpoint with tag invalidation from focus-session mutations | **(a)** — D16-11; no polling, no new cache to keep coherent | Ratified (user, 2026-11-17 — "ratify all") |
+| D-D2 | Indicator on `/focus`: (a) hidden (the page is the timer); (b) shown everywhere | **(a)** — two timers on one screen is noise | Ratified (user, 2026-11-17 — "ratify all") |
+| D-D3 | Work group icon: (a) `Briefcase`; (b) `ClipboardList`; refiner picks | **(a)** | Ratified (user, 2026-11-17 — "ratify all") |
+| D-D4 | Failed `current` read: (a) silent (nothing renders); (b) a muted "couldn't check your session" line | **(a)** — the header must never carry an error surface | Ratified (user, 2026-11-17 — "ratify all") |
 
 ## Definition of Done
 

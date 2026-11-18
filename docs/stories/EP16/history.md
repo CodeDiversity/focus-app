@@ -15,11 +15,11 @@ Planned 2026-11-17 from the product review the user requested ("what feels like 
 | 5 | Code paths inspected; unverified disclosed | Pass — contracts § Code baseline with line references; three unverified items listed |
 | 6 | Feature risks/counterexamples and owning tests | Pass — epic invariants table (reachability, indicator tenancy, locked-session preservation, never-lead-with-failure) each with an owning TR |
 | 7 | Dependency mapping and sequence | Pass — queue order with rationale; EP15K-first ordering (D16-1); known windows (D16-17) |
-| 8 | Material (▲) decisions ruled or explicitly blocked | **Needs Decision** — ▲ D16-2, D16-4, D16-9 `Proposed` (EP16A and EP16C `Blocked`/`Needs refinement` accordingly); story ▲ D-E1 (EP16E) `Proposed` |
+| 8 | Material (▲) decisions ruled or explicitly blocked | Pass (updated 2026-11-17) — all ratified by the user ("ratify all", D16-16); initially Needs Decision on ▲ D16-2/D16-4/D16-9 and D-E1 |
 | 9 | Correction log complete | Pass — empty (first plan); the AC-E16-07 amendment is logged below |
 | 10 | Identifier consistency and at-a-glance blocks (`queue-lint` clean) | Pass — `node tools/queue-lint.mjs docs/stories/EP16` clean at breakdown |
 
-**Outcome:** **Needs Decision** (three epic ▲ rows, one story ▲ row) **+ Implementation Blocked** (EP15K's review unit first, D16-1). **Plan review:** not required by the checklist rule (no migration or persisted-data contract, no new security/consistency invariant, six children); the user may request one.
+**Outcome:** **Plan Ready** (updated 2026-11-17 after the user's "ratify all"; initially Needs Decision) **+ Implementation Blocked** (EP15K's review unit first, D16-1). **Plan review:** not required by the checklist rule (no migration or persisted-data contract, no new security/consistency invariant, six children); the user may request one.
 
 **Refiner handoff (D16-15):** EP16B, EP16C, EP16D, EP16E. May run before EP15K finishes.
 
@@ -33,7 +33,7 @@ Planned 2026-11-17 from the product review the user requested ("what feels like 
 
 ## Plan review history
 
-None required at breakdown.
+None required at breakdown (checklist rule). The user's 2026-11-17 instruction ("if you need to do a plan review, do that") was checked against the rule: no migration, no persisted-data contract, no new invariant, six children — not run.
 
 ## Plan correction log
 

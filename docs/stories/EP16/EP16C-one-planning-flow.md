@@ -55,10 +55,10 @@ AC-E16-06, AC-E16-07, AC-E16-08 (primary); AC-E16-12, AC-E16-13. TR-E16-01, TR-E
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-C1 | Proposal location: (a) its own route `/plan/proposal` (deep-linkable, Back returns to `/plan`, focus-to-`h1` on entry as EP08E did); (b) page state on `/plan` | **(a)** — the redirects from `/plan/health/catch-up` and `/catch-up/preview` need a target, and Back behaviour is predictable | Proposed |
-| D-C2 | Post-confirm landing: (a) `/today` + toast; (b) stay on `/plan` showing the saved week | **(a)** — D16-5; the next action is on Today | Proposed |
-| D-C3 | `UnfinishedWorkList`: (a) delete — `RemainingWorkSection` on `/plan` shows the same items with more detail; (b) move into the proposal | **(a)** — one list per question | Proposed |
-| D-C4 | Deprecated entity functions: (a) keep with `@deprecated` + BL-16-01 pointer; (b) delete now | **(a)** — the API still exists; deleting the client first would make BL-16-01's grep trivial but hide the dependency | Proposed |
+| D-C1 | Proposal location: (a) its own route `/plan/proposal` (deep-linkable, Back returns to `/plan`, focus-to-`h1` on entry as EP08E did); (b) page state on `/plan` | **(a)** — the redirects from `/plan/health/catch-up` and `/catch-up/preview` need a target, and Back behaviour is predictable | Ratified (user, 2026-11-17 — "ratify all") |
+| D-C2 | Post-confirm landing: (a) `/today` + toast; (b) stay on `/plan` showing the saved week | **(a)** — D16-5; the next action is on Today | Ratified (user, 2026-11-17 — "ratify all") |
+| D-C3 | `UnfinishedWorkList`: (a) delete — `RemainingWorkSection` on `/plan` shows the same items with more detail; (b) move into the proposal | **(a)** — one list per question | Ratified (user, 2026-11-17 — "ratify all") |
+| D-C4 | Deprecated entity functions: (a) keep with `@deprecated` + BL-16-01 pointer; (b) delete now | **(a)** — the API still exists; deleting the client first would make BL-16-01's grep trivial but hide the dependency | Ratified (user, 2026-11-17 — "ratify all") |
 
 ## Definition of Done
 

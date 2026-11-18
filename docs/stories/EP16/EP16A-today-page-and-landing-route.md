@@ -56,10 +56,10 @@ AC-E16-01, AC-E16-02 (primary); AC-E16-04 (removal half), AC-E16-05 (control kep
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-A1 | Folder rename: (a) `git mv features/dashboard features/today` in this child, exports unchanged; (b) leave the folder name; (c) rename exports too (`TodaySectionStatus`…) | **(a)** — the folder is named after a page this child deletes; renaming exports is churn without a reader benefit | Proposed |
-| D-A2 | Live-region count summary before EP16B: (a) "N sessions today" only; (b) keep the four-count sentence by keeping the queries | **(a)** — the sentence must describe what the page shows | Proposed |
-| D-A3 | **Plan my week** target before EP16C exists: (a) `/plan` now, `/plan/proposal` once EP16C lands (EP16C updates the one constant); (b) `/plan/proposal` immediately (404-to-home until EP16C) | **(a)** — never ship a dead link inside the review unit's windows | Proposed |
-| D-A4 | Button accessible name: (a) keep children rendered with `sr-only` while loading, spinner `aria-hidden`; (b) `aria-label` fallback from `children` text | **(a)** — no string extraction, works for icon+text children | Proposed |
+| D-A1 | Folder rename: (a) `git mv features/dashboard features/today` in this child, exports unchanged; (b) leave the folder name; (c) rename exports too (`TodaySectionStatus`…) | **(a)** — the folder is named after a page this child deletes; renaming exports is churn without a reader benefit | Ratified (user, 2026-11-17 — "ratify all") |
+| D-A2 | Live-region count summary before EP16B: (a) "N sessions today" only; (b) keep the four-count sentence by keeping the queries | **(a)** — the sentence must describe what the page shows | Ratified (user, 2026-11-17 — "ratify all") |
+| D-A3 | **Plan my week** target before EP16C exists: (a) `/plan` now, `/plan/proposal` once EP16C lands (EP16C updates the one constant); (b) `/plan/proposal` immediately (404-to-home until EP16C) | **(a)** — never ship a dead link inside the review unit's windows | Ratified (user, 2026-11-17 — "ratify all") |
+| D-A4 | Button accessible name: (a) keep children rendered with `sr-only` while loading, spinner `aria-hidden`; (b) `aria-label` fallback from `children` text | **(a)** — no string extraction, works for icon+text children | Ratified (user, 2026-11-17 — "ratify all") |
 
 ## Definition of Done
 

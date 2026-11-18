@@ -58,10 +58,10 @@ AC-E16-03, AC-E16-04, AC-E16-05 (primary); AC-E16-07 (note link); AC-E16-12. TR-
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-B1 | Plan-note link target: (a) `/plan` ("See your week"); (b) `/plan/proposal` directly | **(a)** — D16-18; an informational sentence must not launch a proposal | Proposed |
-| D-B2 | Coming up ordering helper: (a) a new pure `selectComingUp` composing the two existing selectors; (b) inline in the component | **(a)** — testable without DOM; EP05A precedent | Proposed |
-| D-B3 | Coming up loading/error: (a) one skeleton of three rows and one error line with Try again, the EP05B section pattern; (b) share the hero's states | **(a)** — the assignments query is independent of the plan query | Proposed |
-| D-B4 | `MomentumCard`: (a) delete if the Focus-page celebration does not import it (it imports `momentumCopy`, not the card — verify); (b) keep unused | **(a)** — no dead components | Proposed |
+| D-B1 | Plan-note link target: (a) `/plan` ("See your week"); (b) `/plan/proposal` directly | **(a)** — D16-18; an informational sentence must not launch a proposal | Ratified (user, 2026-11-17 — "ratify all") |
+| D-B2 | Coming up ordering helper: (a) a new pure `selectComingUp` composing the two existing selectors; (b) inline in the component | **(a)** — testable without DOM; EP05A precedent | Ratified (user, 2026-11-17 — "ratify all") |
+| D-B3 | Coming up loading/error: (a) one skeleton of three rows and one error line with Try again, the EP05B section pattern; (b) share the hero's states | **(a)** — the assignments query is independent of the plan query | Ratified (user, 2026-11-17 — "ratify all") |
+| D-B4 | `MomentumCard`: (a) delete if the Focus-page celebration does not import it (it imports `momentumCopy`, not the card — verify); (b) keep unused | **(a)** — no dead components | Ratified (user, 2026-11-17 — "ratify all") |
 
 ## Definition of Done
 

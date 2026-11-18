@@ -53,9 +53,9 @@ AC-E16-11 (primary); AC-E16-12. TR-E16-01, TR-E16-04, TR-E16-05. DoD-1, 5, 6, 7,
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| ▲ D-E1 | Work group in the bar: (a) one **Work** tab → `/assignments`, Courses reached via a header link on the Assignments page and the drawer; (b) five flat tabs — Today, Plan, Calendar, Assignments, Courses (the same contract flattened on mobile; desktop keeps the dropdown); (c) a Work tab that opens a two-item sheet | **(b)** — one tap, one outcome, no hidden state; five tabs fit 360 px with short labels; (c) re-creates the menu the bar exists to remove | Proposed |
-| D-E2 | Single primary landmark: (a) render header nav and bar conditionally via a shared media-query hook; (b) label the bar "Primary (mobile)" | **(a)** — one landmark named Primary at any width | Proposed |
-| D-E3 | Hide on `/focus`: (a) only while a session is active/paused; (b) always on `/focus` | **(a)** — the empty Focus page is a normal page | Proposed |
+| ▲ D-E1 | Work group in the bar: (a) one **Work** tab → `/assignments`, Courses reached via a header link on the Assignments page and the drawer; (b) five flat tabs — Today, Plan, Calendar, Assignments, Courses (the same contract flattened on mobile; desktop keeps the dropdown); (c) a Work tab that opens a two-item sheet | **(b)** — one tap, one outcome, no hidden state; five tabs fit 360 px with short labels; (c) re-creates the menu the bar exists to remove | Ratified (user, 2026-11-17 — "ratify all") |
+| D-E2 | Single primary landmark: (a) render header nav and bar conditionally via a shared media-query hook; (b) label the bar "Primary (mobile)" | **(a)** — one landmark named Primary at any width | Ratified (user, 2026-11-17 — "ratify all") |
+| D-E3 | Hide on `/focus`: (a) only while a session is active/paused; (b) always on `/focus` | **(a)** — the empty Focus page is a normal page | Ratified (user, 2026-11-17 — "ratify all") |
 
 ## Definition of Done
 

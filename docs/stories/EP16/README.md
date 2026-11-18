@@ -3,13 +3,13 @@
 **Epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 — release 1.3 (D16-1, ratified 2026-11-17)
 **Epic dependency:** EP11, EP13, EP15 closed. **Ordering:** EP15K (its own review unit, Ready in [EP15's queue](../EP15/README.md)) runs first (D16-1 ruling); EP16A starts after EP15K's review passes.
-**Status:** Breakdown complete (planner, 2026-11-17). Quality gate: **Needs Decision** (▲ D16-2, D16-4, D16-9 still `Proposed` — one ruling each; see [history.md](./history.md)) **+ Implementation Blocked** (EP15K first). Plan review: **not required** by the checklist rule (no migration, no new invariant, six children) unless you ask. No tracker sync.
+**Status:** Breakdown complete (planner, 2026-11-17). Quality gate: **Plan Ready** (all decisions ratified by the user 2026-11-17) **+ Implementation Blocked** (EP15K first, D16-1) — see [history.md](./history.md). Plan review: **not required** by the checklist rule (no migration, no new invariant, six children); the user's 2026-11-17 instruction made it conditional on need, so none was run. No tracker sync.
 
 ## Plan at a glance
 
 - **What this changes:** `/today` replaces the dashboard as the landing page (one next action, one deadlines list, one momentum row); planning becomes one action → one proposal → "Use this plan"; the plan-health page and the second planning flow retire behind redirects; navigation becomes Today · Plan · Calendar · Work ▾ with a header session indicator and a mobile bottom tab bar.
 - **Why it improves it:** a student with ADHD opens the app and sees one thing to do and one button to start it (product); two near-identical planning flows and a page with no content of its own are deleted, and the dashboard's six regions become three (code).
-- **Decisions needing you:** ▲ D16-2 (landing route), ▲ D16-4 (one data path for proposals), ▲ D16-9 (keep Plan and Calendar separate) — all recommended (a); story-level ▲ rows: EP16E D-E1 (tab bar shape).
+- **Decisions needing you:** none — every epic and story decision ratified by the user 2026-11-17 ("ratify all"; D16-16).
 - **How to change this plan:** edit a Ruling cell in a story or in the epic register; ask the planner for AC or queue changes. Corrections and the quality gate live in [history.md](./history.md); routes, copy rules and known windows in [contracts.md](./contracts.md).
 
 ## Execution queue
@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP16A — blocked until (1) ▲ D16-2 and ▲ D16-4 are ruled and (2) EP15K's review unit passes; then dispatch the implementer. Refiner first for EP16B, EP16C, EP16D, EP16E (D16-15) — may run now, in parallel with EP15K's implementation, since the refiner writes only story files.
+**Next substory:** EP16A — blocked until EP15K's review unit passes (D16-1); then dispatch the implementer. Refiner first for EP16B, EP16C, EP16D, EP16E (D16-15) — may run now, in parallel with EP15K's implementation, since the refiner writes only story files.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -28,11 +28,11 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP16A](./EP16A-today-page-and-landing-route.md) | Blocked | ▲ D16-2 Proposed; EP15K review unit not yet passed (D16-1). Specified in-story (reuses `TodayPlanCard`); no refiner pass needed. | User: rule D16-2; then implement after EP15K | — |
+| [EP16A](./EP16A-today-page-and-landing-route.md) | Blocked | EP15K review unit not yet passed (D16-1). Decisions ratified 2026-11-17. Specified in-story; no refiner pass needed. | Implement after EP15K's review | — |
 | [EP16B](./EP16B-today-secondary-content.md) | Needs refinement | EP16A implemented. Refiner: Coming up row, classes line, momentum row layout and copy (D16-15). | Refine | — |
-| [EP16C](./EP16C-one-planning-flow.md) | Needs refinement | EP16B implemented (the plan note moves first); ▲ D16-4 and ▲ D16-9 Proposed. Refiner: proposal surface composition and copy (D16-15). | User: rule D16-4, D16-9; refine | — |
+| [EP16C](./EP16C-one-planning-flow.md) | Needs refinement | EP16B implemented (the plan note moves first); D16-4/D16-9 ratified. Refiner: proposal surface composition and copy (D16-15). | Refine | — |
 | [EP16D](./EP16D-navigation-and-session-indicator.md) | Needs refinement | EP16A implemented. Refiner: session indicator placement and copy; Work group icon (D16-15). | Refine | — |
-| [EP16E](./EP16E-mobile-bottom-tab-bar.md) | Needs refinement | EP16D implemented; ▲ D-E1 Proposed (tab bar shape). Refiner: tab bar layout, labels, Focus-page behaviour (D16-15). | User: rule D-E1; refine | — |
+| [EP16E](./EP16E-mobile-bottom-tab-bar.md) | Needs refinement | EP16D implemented; ▲ D-E1 ratified (five flat tabs). Refiner: tab bar layout, labels, Focus-page behaviour (D16-15). | Refine | — |
 | [EP16F](./EP16F-cross-layer-e2e-and-parent-index.md) | Queued | EP16A–EP16E implemented. | Implement | — |
 
 Sequence (one writer): EP16A → EP16B → EP16C → EP16D → EP16E → EP16F. Why: the landing page first so every later child verifies on the surface students will use; the secondary content before the plan flow because the plan note moves from `/plan` to Today and `/plan` is then rebuilt once; navigation after the pages it points at exist; the tab bar after the navigation contract it renders; E2E last over the final state. **Known windows** between children (nav labels, redirects, e2e URL assertions) are recorded in [contracts.md § Known windows](./contracts.md#known-windows-between-sequential-children) (D16-17).
@@ -106,12 +106,12 @@ Shared DoD ([docs/epics/README.md](../../epics/README.md#definition-of-done)):
 
 ## Decision register
 
-Epic-level decisions D16-1…D16-14 live in the [epic](../../epics/EP16-today-first-simplification.md#decision-register). Ruled 2026-11-17: D16-1, D16-3, D16-5, D16-6, D16-7, D16-8. Still `Proposed` (▲): D16-2, D16-4, D16-9. Breakdown-level additions:
+Epic-level decisions D16-1…D16-14 live in the [epic](../../epics/EP16-today-first-simplification.md#decision-register). All ratified by the user 2026-11-17. Breakdown-level additions:
 
 | ID | Decision | Status / provenance |
 |---|---|---|
 | D16-15 | **Refiner gate:** EP16B (Coming up row, classes line, momentum row), EP16C (proposal composition and copy), EP16D (indicator placement/copy, Work icon) and EP16E (tab bar) are `Needs refinement`; EP16A reuses `TodayPlanCard` and is specified in-story. Refinement may run before EP15K finishes — it writes story files only. | Planner skill UI/UX handoff rule, 2026-11-17. |
-| D16-16 | **Story-level ▲ rows need a ruling** (no blanket grant recorded for EP16, unlike EP15's D15-17). Only EP16E D-E1 is ▲; the user may grant "ratify as recommended" for story rows in one sentence. | Core rule, 2026-11-17. |
+| D16-16 | **Blanket ratification:** the user ratified every epic and story decision as recommended ("yes, ratify all", 2026-11-17), including ▲ D16-2, D16-4, D16-9 and EP16E D-E1. Rows added later by the refiner still need their own ruling unless the user extends the grant. | User ruling 2026-11-17. |
 | D16-17 | **Known windows** between children (nav label vs route, redirect-only entries, e2e URL assertions) are acceptable on the development branch because the epic ships as one review unit; each window is listed in contracts.md with the child that closes it. | EP15 D15-15/D15-18 precedent, 2026-11-17. |
 | D16-18 | **AC-E16-07 wording amended at breakdown:** the plan-note link opens `/plan` (see the week, replan from there), not the proposal directly — a curious click must not start a heavy proposal fetch. Epic text updated 2026-11-17 before any AC froze. | Planner, 2026-11-17; logged in history.md. |
 
