@@ -1,55 +1,14 @@
 import type { ReactNode } from 'react';
-import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
-import authReducer from '@/features/session/model/authSlice';
-import onboardingReducer from '@/features/onboarding/model/onboardingSlice';
-import { api } from '@/features/session/api/sessionApi';
-import { assignmentsApi } from '@/features/assignments/api/assignmentsApi';
-import { calendarApi } from '@/features/calendar/api/calendarApi';
-import { todayPlanApi } from '@/features/today-plan/api/todayPlanApi';
-import { planHealthApi } from '@/features/plan-health/api/planHealthApi';
-import { momentumApi } from '@/features/momentum/api/momentumApi';
+import { createAppStore } from '@/app/store/createAppStore';
 
 /**
- * A fresh store per test, mirroring `src/app/store/store.ts` (auth + onboarding
- * + api + assignmentsApi + calendarApi + todayPlanApi reducers and their
- * middlewares) so
- * tests never share mutable session, onboarding or RTK Query cache state.
+ * EP16G: the test store is the app store — same reducers, same middleware,
+ * same logout/account-switch reset — built fresh per test.
  */
 export function makeTestStore() {
-  return configureStore({
-    reducer: {
-      auth: authReducer,
-      onboarding: onboardingReducer,
-      [api.reducerPath]: api.reducer,
-      [assignmentsApi.reducerPath]: assignmentsApi.reducer,
-      [calendarApi.reducerPath]: calendarApi.reducer,
-      [todayPlanApi.reducerPath]: todayPlanApi.reducer,
-      [planHealthApi.reducerPath]: planHealthApi.reducer,
-      [momentumApi.reducerPath]: momentumApi.reducer,
-    },
-    middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware({
-        serializableCheck: {
-          ignoredActions: [
-            api.reducerPath,
-            assignmentsApi.reducerPath,
-            calendarApi.reducerPath,
-            todayPlanApi.reducerPath,
-            planHealthApi.reducerPath,
-            momentumApi.reducerPath,
-          ],
-        },
-      }).concat(
-        api.middleware,
-        assignmentsApi.middleware,
-        calendarApi.middleware,
-        todayPlanApi.middleware,
-        planHealthApi.middleware,
-        momentumApi.middleware
-      ),
-  });
+  return createAppStore();
 }
 
 interface ProvidersProps {

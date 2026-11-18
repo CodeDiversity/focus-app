@@ -4,14 +4,14 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1)
 **Layer:** Frontend (store + auth wiring)
-**Status:** Blocked — ▲ D-G1 `Proposed` (security mechanism; needs the user's ruling). Specified in-story; no refiner pass needed. Queued **first** among the remaining EP16 children (D16-19).
+**Status:** Implemented — awaiting parent review (2026-11-18); record: [artifacts/EP16G/implementation.md](./artifacts/EP16G/implementation.md). ▲ D-G1 and D-G2 ratified (user, 2026-11-18).
 **Dependencies:** none. Source: EP16D refinement finding (2026-11-18), verified by the planner against the code at `d35970a`.
 
 ## Plan at a glance
 
 - **What this changes:** whenever the signed-in student becomes nobody (logout) or a different student (a session that resolves to another id), the web app empties every per-student cache: the six RTK Query slices (`api`, `assignmentsApi`, `calendarApi`, `todayPlanApi`, `planHealthApi`, `momentumApi`) and the onboarding slice. A registry test fails the build if a future slice is added to the store without joining the reset.
 - **Why it improves it:** today nothing resets those caches. `logout` (`AuthContext.tsx:259-269`) only dispatches `clearUser`; `store.ts` has no reset; the read slices keep data for 60 s (`keepUnusedDataFor: 60`; the session `api` keeps it for 300 s) and do not refetch on mount. So a second student who signs in on the same tab within that window can be shown the first student's Today plan, calendar, assignments, momentum or onboarding state. This is an academic-data exposure on shared computers (product, security; core.md § Security). One central reset replaces "every slice must remember to clean up" (code).
-- **Decisions needing you:** ▲ D-G1 — the reset mechanism (recommended: one store listener on the auth actions).
+- **Decisions needing you:** none — ▲ D-G1 and D-G2 ratified (user, 2026-11-18).
 - **How to change this plan:** edit a Ruling cell below; ask the planner for AC changes. AC text freezes when implementation starts.
 
 ## Summary
@@ -50,8 +50,8 @@ Shared DoD-3 (academic data scoped to the authenticated student); core.md § Sec
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| ▲ D-G1 | Reset mechanism: (a) one store listener middleware on `clearUser` / identity-changing `setUser`, resetting every registered slice; (b) a root-reducer wrapper that returns `undefined` state on logout (resets everything, incl. `auth` flags like the banner); (c) call `resetApiState` inside `AuthContext.logout` and `applyUser` | **(a)** — central, synchronous, covers both triggers wherever they are dispatched, and leaves `auth`'s own state rules alone; (c) misses any future dispatch path; (b) is blunt and would reset `auth` mid-logout | Proposed |
-| D-G2 | Registry: (a) explicit `PER_STUDENT_APIS` array + a completeness test against the store's reducer keys; (b) derive the list from the store at runtime | **(a)** — explicit and reviewable; the test gives (b)'s safety | Proposed |
+| ▲ D-G1 | Reset mechanism: (a) one store listener middleware on `clearUser` / identity-changing `setUser`, resetting every registered slice; (b) a root-reducer wrapper that returns `undefined` state on logout (resets everything, incl. `auth` flags like the banner); (c) call `resetApiState` inside `AuthContext.logout` and `applyUser` | **(a)** — central, synchronous, covers both triggers wherever they are dispatched, and leaves `auth`'s own state rules alone; (c) misses any future dispatch path; (b) is blunt and would reset `auth` mid-logout | Ratified (a) (user, 2026-11-18 — "D-G1 ratify all") |
+| D-G2 | Registry: (a) explicit `PER_STUDENT_APIS` array + a completeness test against the store's reducer keys; (b) derive the list from the store at runtime | **(a)** — explicit and reviewable; the test gives (b)'s safety | Ratified (a) (user, 2026-11-18) |
 
 ## Definition of Done
 
@@ -60,7 +60,7 @@ Shared DoD-3 (academic data scoped to the authenticated student); core.md § Sec
 ## Sizing
 
 - **Outcome:** no student can ever be shown another student's cached data after a logout or account switch on the same tab.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** under one window, one commit, 2026-11-18; files as planned plus `app/store/createAppStore.ts` (shared factory, F-EP16G-01); web 1325/0. Row in [efficiency.md](./artifacts/efficiency.md).
 - **Files:** `apps/web/src/app/store/store.ts`, `apps/web/src/app/store/resetOnUserChange.ts` (new: listener + `PER_STUDENT_APIS`), `apps/web/src/features/onboarding/model/onboardingSlice.ts` (export a reset action), tests as listed.
 - **Start context:** this story; `store.ts`, `authSlice.ts`, `AuthContext.tsx:85-95,259-269`, `onboardingSlice.ts`.
 - **Verification:** `npx vitest run` and `npx tsc --noEmit` in `apps/web`; the AC3 journey test green.

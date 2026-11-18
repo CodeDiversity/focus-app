@@ -56,3 +56,5 @@ Back-references for the planner:
 - EP16B D-B6 refines D16-3 (badge look) and EP05B D05-18.
 
 Planner follow-ups applied the same day: contracts known windows (EP16C e2e specs, EP16D nav e2e), BL-16-06 ("Overdue" on EP03 surfaces), BL-16-07 (login double redirect) and EP16G (security).
+
+**User rulings 2026-11-18:** "D-G1 ratify all" — EP16G's ▲ D-G1 (a) and D-G2 (a) ratified; the user instructed implementation to continue directly ("Continue to implement EP16G, and then also implement EP16B this turn"), so the plan review the checklist calls for on the new security invariant (D16-19) was **not run** — recorded as the user's decision; the EP16 combined review covers EP16G.

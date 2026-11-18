@@ -75,6 +75,9 @@ const onboardingSlice = createSlice({
     setOnboardingActionError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },
+    // EP16G: the signed-in student changed or left — forget their progress so
+    // the next student never inherits a `completed` flag or a step.
+    resetOnboarding: () => initialState,
   },
 });
 
@@ -83,6 +86,7 @@ export const {
   setOnboardingLoading,
   setOnboardingError,
   setOnboardingActionError,
+  resetOnboarding,
 } = onboardingSlice.actions;
 
 /**

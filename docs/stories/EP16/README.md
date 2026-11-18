@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP16G — needs the user's ruling on ▲ D-G1 (security mechanism), then implement. EP16B–EP16E are refined and Ready (2026-11-18) and follow in queue order. EP15K's unit review passed 2026-11-18.
+**Next substory:** EP16B — implement (Ready; EP16A and EP16G implemented).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -29,7 +29,7 @@
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
 | [EP16A](./EP16A-today-page-and-landing-route.md) | Implemented — awaiting parent review | Started 2026-11-17 on user instruction (EP15K review pass 2: only R-EP15K-02, user-owned, open). | None until the EP16 combined review | [implementation.md](./artifacts/EP16A/implementation.md) — green 2026-11-17 (web 1321/0, e2e 62/0 ×3); F-EP16A-01…03 |
-| [EP16G](./EP16G-reset-student-data-on-logout.md) | Blocked | ▲ D-G1 `Proposed` (security mechanism). No other dependency. Queued first among the remaining children (D16-19). | User: rule D-G1; then implement | — |
+| [EP16G](./EP16G-reset-student-data-on-logout.md) | Implemented — awaiting parent review | ▲ D-G1/D-G2 ratified (user, 2026-11-18). | None until the EP16 combined review | [implementation.md](./artifacts/EP16G/implementation.md) — green 2026-11-18 (web 1325/0, 4 new); F-EP16G-01/02 |
 | [EP16B](./EP16B-today-secondary-content.md) | Ready | EP16A implemented; EP16G first (D16-19). Refined 2026-11-18 (D-B5…D-B10, non-▲). | Implement after EP16G | — |
 | [EP16C](./EP16C-one-planning-flow.md) | Ready | EP16B implemented (the plan note moves first). Refined 2026-11-18 (D-C5…D-C10, non-▲; multi-window, checkpoint S1–S5). | Implement after EP16B | — |
 | [EP16D](./EP16D-navigation-and-session-indicator.md) | Ready | EP16A implemented; EP16G implemented (EP16D-AC3 relies on its reset). Refined 2026-11-18 (D-D5…D-D8, non-▲); ACs 3–5 wording amended (A-EP16-02). | Implement after EP16C | — |
