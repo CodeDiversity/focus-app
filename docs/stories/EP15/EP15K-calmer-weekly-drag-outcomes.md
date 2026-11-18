@@ -4,7 +4,7 @@
 **Parent epic:** [EP15: Schedule & Availability Redesign](../../epics/EP15-schedule-and-availability-redesign.md)
 **Milestone:** scheduled as its **own review unit after EP15's closure** (user, 2026-11-17); outside the closed EP15A–EP15J unit
 **Layer:** Frontend (+ one small API addition if D-K2 is ruled (a))
-**Status:** Implemented — awaiting review (2026-11-17; its own review unit); record: [artifacts/EP15K/implementation.md](./artifacts/EP15K/implementation.md)
+**Status:** Reviewed — own review unit passed 2026-11-18 ([review.md](./artifacts/EP15K/review.md): pass 2 + the user's manual-pass confirmation); record: [artifacts/EP15K/implementation.md](./artifacts/EP15K/implementation.md)
 **Dependencies:** EP15H implemented (2026-11-17). Sources: the EP15H complexity flags the user asked to capture (implementation record Findings F-EP15H-03 and the two flags raised in review conversation, 2026-11-17); D15-14 (ADHD design ruleset); BL-15-05 (undo a cancelled occurrence).
 
 ## Plan at a glance

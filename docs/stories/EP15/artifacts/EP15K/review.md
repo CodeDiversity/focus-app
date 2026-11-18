@@ -100,3 +100,8 @@ Prerequisites: a local stack against a disposable database and a throwaway stude
 11. **Failure copy (R-EP15K-05).** With the API stopped after a drop, tap Apply. Expected: "We couldn't change every week — your move for this day still stands." — *Not executed in a browser — user instructions; covered by jsdom test "R-EP15K-05 … per step"*
 12. **Negative / ownership.** As student B, `PUT /schedule/blocks/<A's block id>/occurrences/<date>` → 404 `Resource not found`, and A's cancellation survives; a malformed date → 400; no token → 401. — *Executed — 2026-11-17, gated API suite in throwaway DB `studypilot_ep15k_review2` (`schedule-data-scoping.spec.ts`, `schedule-e2e.spec.ts` green)*
 13. **Narrow viewport.** Below 640 px the agenda has no drag surface and no strip. — *Not executed in a browser — user instructions; covered by jsdom test `CalendarPage.drag.test.tsx` "below sm"*
+
+## Addendum — R-EP15K-02 closed by the user (2026-11-18, recorded by the live session)
+
+The user confirmed in chat on 2026-11-18: "Yes, EP15k walk through pass." That covers the **How to verify by hand** steps above (the drag and Apply flows, Undo and the 10 s window, the zone-edge resize grip, the reserved strip row at narrow desktop widths, and screen-reader announcements). It is the same closure path as R-EP15-19. With R-EP15K-02 closed, no blocker or should-fix remains, so the unit **passes**: pass 2's findings at `816bffa` plus this confirmation. This addendum records the confirmation; it does not change the report body.
+

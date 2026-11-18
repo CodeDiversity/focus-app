@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP15K — review (implemented 2026-11-17; its **own review unit** — dispatch the reviewer for `./artifacts/EP15K/review.md`). EP15A–EP15J are Reviewed and the epic is closed. After EP15K's review passes, EP16A is next ([EP16 queue](../EP16/README.md)).
+**Next substory:** None — EP15A–EP15K are Reviewed (EP15K's own unit passed 2026-11-18 on the user's manual-pass confirmation; [review.md](./artifacts/EP15K/review.md) + addendum). Next work is in the [EP16 queue](../EP16/README.md).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers (layer labels are scope, not concurrent roles).
 
@@ -38,7 +38,7 @@
 | [EP15H](./EP15H-direct-manipulation-on-the-grid.md) | Reviewed | EP15G implemented 2026-11-17 (the form it pre-fills). Refined 2026-11-16 (D-H5…D-H8). | None — combined review passed 2026-11-17 | [implementation.md](./artifacts/EP15H/implementation.md) — green 2026-11-17 (web 1437/0; e2e not run in the worktree — drag journey is EP15J's); TR-E15-11 visual/VoiceOver steps not executed; 0 open findings (F-EP15H-02/-03 noted) |
 | [EP15I](./EP15I-retire-availability-and-update-navigation.md) | Reviewed | EP15G implemented (the replacement editor exists); EP15H implemented 2026-11-17. | None — combined review passed 2026-11-17 | [implementation.md](./artifacts/EP15I/implementation.md) — green 2026-11-17 (gated API 1778/0, web 1374/0; e2e deferred to EP15J); EP15I-AC2 search clean; F-EP15I-01 noted |
 | [EP15J](./EP15J-cross-layer-e2e-and-parent-index.md) | Reviewed | EP15A–EP15I implemented 2026-11-17. | None — combined review passed 2026-11-17 ([review.md](./artifacts/EP15/review.md)) | [implementation.md](./artifacts/EP15J/implementation.md) — Playwright 62/0 × 3 (2026-11-17); F-EP15J-01 (caption target size) fixed; parent index [written](./artifacts/EP15/implementation.md) |
-| [EP15K](./EP15K-calmer-weekly-drag-outcomes.md) | Implemented — awaiting review | EP15H implemented; EP15 closed 2026-11-17. Its **own review unit** (outside the closed EP15A–EP15J unit). ▲ D-K1/D-K2 + D-K3 ratified (user, 2026-11-17); BL-15-05 promoted in by D-K2. | Reviewer: EP15K unit review | [implementation.md](./artifacts/EP15K/implementation.md) — green 2026-11-17 (API 1783/0, web 1382/0, e2e 62/0 ×3); F-EP15K-01…03 noted |
+| [EP15K](./EP15K-calmer-weekly-drag-outcomes.md) | Reviewed | Own review unit (outside EP15A–EP15J). ▲ D-K1/D-K2 + D-K3 ratified (user, 2026-11-17). | None — unit review passed 2026-11-18 | [review.md](./artifacts/EP15K/review.md) — pass 2 + user manual-pass confirmation 2026-11-18; R-EP15K-01…05 closed |
 
 Sequence (one writer): EP15A → EP15B → EP15C → EP15D → EP15E → EP15F → EP15G → EP15H → EP15I → EP15J. Why: the model and its copy migration first so every later child verifies against migrated data; the API before the engine so the service wiring (EP15D) lands on both; the read-only grid before any editor; the form path (EP15G) before the pointer path (EP15H) so keyboard parity exists before drag; retirement only once the replacement editor is live; E2E last over the final state. **Interim (D15-15):** between EP15D and EP15I the old `/availability` page still edits `availability_slots`, which nothing reads any more — acceptable on the development branch because the epic ships as one review unit.
 

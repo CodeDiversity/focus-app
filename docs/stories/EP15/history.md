@@ -71,6 +71,21 @@ Planned 2026-11-16 from the user's vision ("a calendar-like interface where stud
 | R-EP15-20 | 2026-11-17 | (= F-EP15I-01.) The gated API suite is documented as single-worker, but nothing enforces it; `npx jest` with `DATABASE_URL` set runs parallel workers on one database and fails spuriously. Consequence: a future runner can record false reds. | Open (polish). Closure: `maxWorkers: 1` when the gate env is present, or a package script encoding `--runInBand`, committed and recorded. ([review.md](./artifacts/EP15/review.md) § Findings) | Open — polish (planner) |
 | R-EP15-21 | 2026-11-17 | (= F-EP15J-02/-03.) Fixed e2e ports 4100/3100 and the config-derived throwaway DB name collide across worktrees; the pre-existing `adaptive-scheduling.spec.ts` journey 5 flakes under parallel machine load. Consequence: self-contained e2e runs are fragile with two concurrent sessions. | Open (polish). The reviewer's self-contained run at `c3f0892` passed 62/0 on free ports. Closure: env-derived ports/DB name (or per-worktree hash) and a serialization or longer wait for journey 5, committed and recorded. ([review.md](./artifacts/EP15/review.md) § Findings) | Open — polish (planner) |
 
+### EP15K (own review unit)
+
+| Pass | Date | Reviewed commit | Report | Verdict |
+|---|---|---|---|---|
+| 1 | 2026-11-17 | `bd4a155` | [artifacts/EP15K/review-round-1.md](./artifacts/EP15K/review-round-1.md) | Changes Required — R-EP15K-01, -02 should-fix; -03…-05 polish |
+| 2 | 2026-11-17 | `816bffa` | [artifacts/EP15K/review.md](./artifacts/EP15K/review.md) | Changes Required only on R-EP15K-02 (user-owned); all others closed → **Pass** on the user's confirmation 2026-11-18 (review addendum) |
+
+| ID | Date | Finding (original claim / consequence) | Disposition / closure evidence | Status |
+|---|---|---|---|---|
+| R-EP15K-01 | 2026-11-17 | Cross-day "Apply to every week" at a series' first or last date left the dropped-on day empty: an in-place update kept the old `startDate`, and a split successor had zero occurrences. | Fixed in `816bffa`. The PATCH carries `startDate` (earlier target before the start) or `endDate` (later target after the end). Page tests assert the exact bodies; a DB-backed `schedule-e2e.spec.ts` case proves an occurrence on the dropped-on day; the reviewer's scratch reproduction passes 2/2 (pass 2). | Closed |
+| R-EP15K-02 | 2026-11-17 | The TR-E15-11-style manual pass was not executed, so the visual handle position, hover pause and screen-reader output had only jsdom evidence. | The user confirmed on 2026-11-18 ("Yes, EP15k walk through pass") the review's How to verify by hand steps (review addendum). | Closed — user-confirmed 2026-11-18 |
+| R-EP15K-03 | 2026-11-17 | The strip shifted the grid when it appeared and disappeared. | Fixed in `816bffa`: the status line and strip share one reserved `min-h-9` row; test added. The narrow-desktop wrap residual is covered by the user's manual confirmation. | Closed |
+| R-EP15K-04 | 2026-11-17 | Multi-weekday Apply changed the other days' times without saying so. | Fixed in `816bffa`: the sentence ends ", on all its days" when the series has more than one weekday; tests added. | Closed |
+| R-EP15K-05 | 2026-11-17 | The failure copy was generic, and the record overstated "at worst shows twice". | Fixed in `816bffa`: step-specific `APPLY_FAIL_BY_STEP` sentences, the record narrowed, a three-step test added. | Closed |
+
 ## Superseded decisions
 
 None.
