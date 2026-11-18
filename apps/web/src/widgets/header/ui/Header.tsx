@@ -13,6 +13,7 @@ import { clsx } from 'clsx';
 import { ChevronDown, Menu, User, X } from 'lucide-react';
 import { useAuth } from '@/features/auth/model/AuthContext';
 import { SessionIndicator } from '@/widgets/session-indicator/ui/SessionIndicator';
+import { MD_UP_QUERY, useMediaQuery } from '@/shared/lib/useMediaQuery';
 import { Button } from '@/shared/ui/Button';
 import {
   accountMenuItems,
@@ -404,6 +405,10 @@ export function Header() {
   const { isAuthenticated, logout, user } = useAuth();
   const location = useLocation();
   const navigationType = useNavigationType();
+  // EP16E (D-E2): the desktop nav and account trigger render only at `md`+,
+  // so exactly one "Primary" landmark — and one "Open account menu" control —
+  // exists at any width (the bottom tab bar owns narrow viewports).
+  const isMdUp = useMediaQuery(MD_UP_QUERY, true);
 
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -515,78 +520,95 @@ export function Header() {
           {/* Desktop navigation */}
           {/* EP16D (D16-6): four entries — Today, Plan, Calendar, Work ▾ —
               fit one row at `md` with gap-4; `lg` keeps EP11's spacing. */}
-          <nav aria-label="Primary" className="hidden md:flex items-center gap-4 lg:gap-6">
-            {navGroups.map((section) => {
-              const Icon = section.icon;
-              if (section.items) {
-                const menu = section.id as DesktopMenu;
+          {isMdUp && (
+            <nav aria-label="Primary" className="hidden md:flex items-center gap-4 lg:gap-6">
+              {navGroups.map((section) => {
+                const Icon = section.icon;
+                if (section.items) {
+                  const menu = section.id as DesktopMenu;
+                  return (
+                    <NavMenu
+                      key={section.id}
+                      section={{ ...section, items: section.items }}
+                      open={openMenu === menu}
+                      isActive={isGroupActive(section, location.pathname)}
+                      onToggle={() => toggleMenu(menu)}
+                      onClose={closeMenu}
+                    />
+                  );
+                }
                 return (
-                  <NavMenu
+                  <NavLink
                     key={section.id}
-                    section={{ ...section, items: section.items }}
-                    open={openMenu === menu}
-                    isActive={isGroupActive(section, location.pathname)}
-                    onToggle={() => toggleMenu(menu)}
-                    onClose={closeMenu}
-                  />
+                    to={section.to ?? '/'}
+                    end
+                    className={({ isActive }) => navLinkClass(isActive, false)}
+                  >
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                    {section.label}
+                  </NavLink>
                 );
-              }
-              return (
-                <NavLink
-                  key={section.id}
-                  to={section.to ?? '/'}
-                  end
-                  className={({ isActive }) => navLinkClass(isActive, false)}
-                >
-                  <Icon className="h-4 w-4" aria-hidden="true" />
-                  {section.label}
-                </NavLink>
-              );
-            })}
-          </nav>
+              })}
+            </nav>
+          )}
 
           {/* Desktop auth area */}
-          <div className="hidden md:flex items-center gap-3">
-            {isAuthenticated ? (
-              <AccountMenu
-                open={openMenu === 'account'}
-                name={name}
-                initials={initials}
-                items={visibleAccountItems}
-                onToggle={() => toggleMenu('account')}
-                onClose={closeMenu}
-                onLogout={() => void logout()}
-              />
-            ) : (
-              <>
-                <Link to="/login">
-                  <Button variant="outline" size="sm">
-                    Login
-                  </Button>
-                </Link>
-                <Link to="/register">
-                  <Button variant="primary" size="sm">
-                    Get Started
-                  </Button>
-                </Link>
-              </>
-            )}
-          </div>
+          {isMdUp && (
+            <div className="hidden md:flex items-center gap-3">
+              {isAuthenticated ? (
+                <AccountMenu
+                  open={openMenu === 'account'}
+                  name={name}
+                  initials={initials}
+                  items={visibleAccountItems}
+                  onToggle={() => toggleMenu('account')}
+                  onClose={closeMenu}
+                  onLogout={() => void logout()}
+                />
+              ) : (
+                <>
+                  <Link to="/login">
+                    <Button variant="outline" size="sm">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button variant="primary" size="sm">
+                      Get Started
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
 
-          {/* Mobile hamburger */}
-          <div className="md:hidden">
-            <Button
-              ref={hamburgerRef}
-              variant="ghost"
-              size="sm"
-              aria-label={open ? 'Close menu' : 'Open menu'}
-              aria-expanded={open}
-              aria-controls="mobile-nav"
-              onClick={() => setOpen((v) => !v)}
-            >
-              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-          </div>
+          {/* Mobile menu button. Signed in it opens the Account drawer (D-E5)
+              and is gated at md+ so its name never duplicates the desktop
+              account trigger's; signed out it keeps the EP11 drawer and the
+              CSS-only hide. */}
+          {(!isMdUp || !isAuthenticated) && (
+            <div className="md:hidden">
+              <Button
+                ref={hamburgerRef}
+                variant="ghost"
+                size="sm"
+                aria-label={
+                  isAuthenticated
+                    ? open
+                      ? 'Close account menu'
+                      : 'Open account menu'
+                    : open
+                      ? 'Close menu'
+                      : 'Open menu'
+                }
+                aria-expanded={open}
+                aria-controls="mobile-nav"
+                onClick={() => setOpen((v) => !v)}
+              >
+                {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -606,7 +628,8 @@ export function Header() {
             id="mobile-nav"
             role="dialog"
             aria-modal="true"
-            aria-label="Primary navigation"
+            aria-label={isAuthenticated ? undefined : 'Primary navigation'}
+            aria-labelledby={isAuthenticated ? 'mobile-nav-title' : undefined}
             tabIndex={-1}
             className={clsx(
               'absolute inset-y-0 right-0 w-80 max-w-[85vw] bg-surface shadow-lg transition-transform duration-base ease-standard',
@@ -615,76 +638,73 @@ export function Header() {
           >
             <div className="flex flex-col h-full overflow-y-auto p-4 gap-2">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-lg font-semibold text-text">Menu</span>
+                {/* EP16E (D-E5): the signed-in drawer holds only account
+                    items — the tab bar owns primary navigation on phones. */}
+                <span id="mobile-nav-title" className="text-lg font-semibold text-text">
+                  {isAuthenticated ? 'Account' : 'Menu'}
+                </span>
                 <Button
                   variant="ghost"
                   size="sm"
-                  aria-label="Close menu"
+                  aria-label={isAuthenticated ? 'Close account menu' : 'Close menu'}
                   onClick={() => setOpen(false)}
                 >
                   <X className="h-5 w-5" />
                 </Button>
               </div>
-              <nav aria-label="Primary" className="flex flex-col gap-1">
-                {navGroups.map((section) => {
-                  const SectionIcon = section.icon;
-                  if (!section.items) {
+              {!isAuthenticated && (
+                <nav aria-label="Primary" className="flex flex-col gap-1">
+                  {navGroups.map((section) => {
+                    const SectionIcon = section.icon;
+                    if (!section.items) {
+                      return (
+                        <NavLink
+                          key={section.id}
+                          to={section.to ?? '/'}
+                          end
+                          onClick={() => setOpen(false)}
+                          className={({ isActive }) => navLinkClass(isActive, true)}
+                        >
+                          <SectionIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                          {section.label}
+                        </NavLink>
+                      );
+                    }
+                    const headingId = `mobile-nav-${section.id}-heading`;
                     return (
-                      <NavLink
+                      <section
                         key={section.id}
-                        to={section.to ?? '/'}
-                        end
-                        onClick={() => setOpen(false)}
-                        className={({ isActive }) => navLinkClass(isActive, true)}
+                        aria-labelledby={headingId}
+                        className="flex flex-col gap-1"
                       >
-                        <SectionIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
-                        {section.label}
-                      </NavLink>
+                        <h2
+                          id={headingId}
+                          className="mt-3 mb-1 px-2 text-xs font-semibold uppercase tracking-wide text-text-muted"
+                        >
+                          {section.label}
+                        </h2>
+                        {section.items.map((item) => {
+                          const ItemIcon = item.icon;
+                          return (
+                            <NavLink
+                              key={item.id}
+                              to={item.to}
+                              end
+                              onClick={() => setOpen(false)}
+                              className={({ isActive }) => navLinkClass(isActive, true)}
+                            >
+                              <ItemIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                              {item.label}
+                            </NavLink>
+                          );
+                        })}
+                      </section>
                     );
-                  }
-                  const headingId = `mobile-nav-${section.id}-heading`;
-                  return (
-                    <section
-                      key={section.id}
-                      aria-labelledby={headingId}
-                      className="flex flex-col gap-1"
-                    >
-                      <h2
-                        id={headingId}
-                        className="mt-3 mb-1 px-2 text-xs font-semibold uppercase tracking-wide text-text-muted"
-                      >
-                        {section.label}
-                      </h2>
-                      {section.items.map((item) => {
-                        const ItemIcon = item.icon;
-                        return (
-                          <NavLink
-                            key={item.id}
-                            to={item.to}
-                            end
-                            onClick={() => setOpen(false)}
-                            className={({ isActive }) => navLinkClass(isActive, true)}
-                          >
-                            <ItemIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
-                            {item.label}
-                          </NavLink>
-                        );
-                      })}
-                    </section>
-                  );
-                })}
-              </nav>
+                  })}
+                </nav>
+              )}
               {isAuthenticated && (
-                <section
-                  aria-labelledby="mobile-nav-account-heading"
-                  className="mt-4 flex flex-col gap-1 border-t border-border pt-4"
-                >
-                  <h2
-                    id="mobile-nav-account-heading"
-                    className="mb-1 px-2 text-xs font-semibold uppercase tracking-wide text-text-muted"
-                  >
-                    Account
-                  </h2>
+                <section aria-labelledby="mobile-nav-title" className="flex flex-col gap-1">
                   <div className="flex items-center gap-3 px-2 py-1">
                     <span
                       aria-hidden="true"

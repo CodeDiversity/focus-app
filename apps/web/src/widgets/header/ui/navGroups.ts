@@ -75,6 +75,16 @@ export const authenticatedNavGroups: NavSection[] = [
   },
 ];
 
+// EP16E (▲ D-E1 (b)): the bottom tab bar flattens the same contract to five
+// tabs — Work's children become top-level. Derived, so phone and desktop
+// cannot drift.
+export const mobileTabItems: NavItem[] = authenticatedNavGroups.flatMap(
+  (section) =>
+    section.items ?? [
+      { id: section.id, label: section.label, icon: section.icon, to: section.to as string },
+    ]
+);
+
 export const unauthenticatedNavGroups: NavSection[] = [
   { id: 'home', label: 'Home', icon: Home, to: '/' },
 ];

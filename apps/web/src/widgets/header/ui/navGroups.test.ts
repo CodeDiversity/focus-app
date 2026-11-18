@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { accountMenuItems, authenticatedNavGroups, unauthenticatedNavGroups } from './navGroups';
+import {
+  accountMenuItems,
+  authenticatedNavGroups,
+  mobileTabItems,
+  unauthenticatedNavGroups,
+} from './navGroups';
 
 describe('navGroups contract (EP16D-AC1, AC-E16-09)', () => {
   it('authenticatedNavGroups is exactly Today, Plan, Calendar and Work {Assignments, Courses}', () => {
@@ -64,6 +69,22 @@ describe('navGroups contract (EP16D-AC1, AC-E16-09)', () => {
         requiresUnverified: undefined,
       },
     ]);
+  });
+
+  it('mobileTabItems flattens the contract to Today, Plan, Calendar, Assignments, Courses (EP16E, D-E1 (b))', () => {
+    expect(mobileTabItems.map((i) => ({ id: i.id, label: i.label, to: i.to }))).toEqual([
+      { id: 'today', label: 'Today', to: '/today' },
+      { id: 'plan', label: 'Plan', to: '/plan' },
+      { id: 'calendar', label: 'Calendar', to: '/calendar' },
+      { id: 'assignments', label: 'Assignments', to: '/assignments' },
+      { id: 'courses', label: 'Courses', to: '/courses' },
+    ]);
+    // Derived from the grouped contract, never a second hand-written list.
+    expect(mobileTabItems).toEqual(
+      authenticatedNavGroups.flatMap(
+        (s) => s.items ?? [{ id: s.id, label: s.label, icon: s.icon, to: s.to as string }]
+      )
+    );
   });
 
   it('every section is a link xor a group', () => {

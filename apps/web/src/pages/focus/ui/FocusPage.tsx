@@ -8,6 +8,7 @@ import { AbsorbNextOffer } from '@/features/focus-session/ui/AbsorbNextOffer';
 import { FocusAssignmentPanel } from '@/features/focus-session/ui/FocusAssignmentPanel';
 import { FinishSessionDialog } from '@/features/focus-session/ui/FinishSessionDialog';
 import { useFocusSession } from '@/features/focus-session/model/useFocusSession';
+import { useCurrentSession } from '@/widgets/session-indicator/model/useCurrentSession';
 import { useLazyMomentumQuery } from '@/features/momentum/api/momentumApi';
 
 export function FocusPage() {
@@ -26,6 +27,9 @@ export function FocusPage() {
   } = useFocusSession();
 
   const [finishDialogOpen, setFinishDialogOpen] = useState(false);
+  // EP16E-AC4: finishing happens without a route change, so the shared
+  // current-session state (tab bar, header strip) is refreshed explicitly.
+  const { refresh: refreshSharedSession } = useCurrentSession();
   /**
    * EP13K (D-K8) — momentum is read only after a finish, so the celebration
    * never shows the pre-finish numbers; a failed or pending read leaves the
@@ -138,6 +142,7 @@ export function FocusPage() {
         onFinished={(completed) => {
           applySession(completed);
           setFinishDialogOpen(false);
+          refreshSharedSession();
           if (completed.durationMinutes >= 1) {
             void fetchMomentum(undefined, false);
           }

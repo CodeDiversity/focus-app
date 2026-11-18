@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { useEffect } from 'react';
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom';
@@ -105,6 +105,28 @@ function renderHeader(path: string, auth: Partial<AuthContextType>) {
 
 function renderAuthenticated(path: string, user: SessionUser = sessionUser) {
   return renderHeader(path, { isAuthenticated: true, user });
+}
+
+// jsdom has no matchMedia; without a stub useMediaQuery falls back to the
+// desktop layout (EP16E, D-E2). Stub narrow/desktop per test and restore
+// after unmounting (EP15F flake note).
+const originalMatchMedia = window.matchMedia;
+
+function stubViewport(mdUp: boolean) {
+  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+    matches: query === '(min-width: 768px)' ? mdUp : false,
+    media: query,
+    onchange: null,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })) as unknown as typeof window.matchMedia;
+}
+
+function restoreViewport() {
+  window.matchMedia = originalMatchMedia;
 }
 
 describe('Header desktop navigation (EP11A, EP16D-AC1)', () => {
@@ -407,6 +429,38 @@ describe('Header desktop navigation (EP11A, EP16D-AC1)', () => {
     expect(plan).toHaveClass('text-accent');
     expect(screen.getByRole('link', { name: 'Today' })).not.toHaveClass('text-accent');
   });
+
+  it('renders the desktop nav and account trigger only at md and above (EP16E, D-E2)', () => {
+    stubViewport(false);
+    const { unmount } = renderAuthenticated('/today');
+
+    expect(screen.queryByRole('navigation', { name: 'Primary' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Work menu' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Plan' })).not.toBeInTheDocument();
+    // Below md the only "Open account menu" control is the drawer button.
+    const trigger = screen.getByRole('button', { name: 'Open account menu' });
+    expect(trigger).toHaveAttribute('aria-controls', 'mobile-nav');
+    unmount();
+
+    stubViewport(true);
+    renderAuthenticated('/today');
+    expect(screen.getByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
+    const desktopTrigger = screen.getByRole('button', { name: 'Open account menu' });
+    expect(desktopTrigger).toHaveAttribute('aria-controls', 'account-menu');
+    restoreViewport();
+  });
+
+  it('existing desktop cases still pass with matchMedia absent (fallback = desktop)', () => {
+    window.matchMedia = undefined as unknown as typeof window.matchMedia;
+    renderAuthenticated('/today');
+    expect(screen.getByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Work menu' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open account menu' })).toHaveAttribute(
+      'aria-controls',
+      'account-menu'
+    );
+    restoreViewport();
+  });
 });
 
 describe('Header session strip (EP16D-AC2)', () => {
@@ -477,12 +531,19 @@ describe('Header route-change close rule (EP16D-AC5, D-D5)', () => {
     expect(screen.getByRole('menu', { name: 'Work' })).toBeInTheDocument();
     fireNavigate({ delta: -1 });
     expect(screen.queryByRole('menu', { name: 'Work' })).not.toBeInTheDocument();
+  });
 
-    // PUSH closes the drawer as well.
-    await user.click(screen.getByRole('button', { name: 'Open menu' }));
-    expect(screen.getByRole('dialog', { name: 'Primary navigation' })).toBeInTheDocument();
+  it('closes the drawer on a link navigation (PUSH)', async () => {
+    // EP16E: the signed-in drawer button renders below md only.
+    stubViewport(false);
+    const user = setupUser();
+    renderAuthenticated('/today');
+
+    await user.click(screen.getByRole('button', { name: 'Open account menu' }));
+    expect(screen.getByRole('dialog', { name: 'Account' })).toBeInTheDocument();
     fireNavigate({ to: '/calendar' });
-    expect(screen.queryByRole('dialog', { name: 'Primary navigation' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Account' })).not.toBeInTheDocument();
+    restoreViewport();
   });
 
   it('closes menus and the drawer when the signed-in user changes', async () => {
@@ -497,14 +558,20 @@ describe('Header route-change close rule (EP16D-AC5, D-D5)', () => {
     );
     view.rerender(headerTree('/today'));
     expect(screen.queryByRole('menu', { name: 'Account' })).not.toBeInTheDocument();
+    view.unmount();
 
-    await user.click(screen.getByRole('button', { name: 'Open menu' }));
-    expect(screen.getByRole('dialog', { name: 'Primary navigation' })).toBeInTheDocument();
+    // The drawer closes too (below md, where the signed-in drawer lives).
+    stubViewport(false);
+    const narrowView = renderAuthenticated('/today');
+    await user.click(screen.getByRole('button', { name: 'Open account menu' }));
+    expect(screen.getByRole('dialog', { name: 'Account' })).toBeInTheDocument();
     mockedUseAuth.mockReturnValue(
       authValue({ isAuthenticated: true, user: { ...sessionUser, id: 'user-3' } })
     );
-    view.rerender(headerTree('/today'));
-    expect(screen.queryByRole('dialog', { name: 'Primary navigation' })).not.toBeInTheDocument();
+    narrowView.rerender(headerTree('/today'));
+    expect(screen.queryByRole('dialog', { name: 'Account' })).not.toBeInTheDocument();
+    narrowView.unmount();
+    restoreViewport();
   });
 });
 
@@ -548,15 +615,15 @@ describe('Header mobile drawer', () => {
 
   it('closes the drawer when a nav link is clicked', async () => {
     const user = setupUser();
-    renderHeader('/', { isAuthenticated: true, user: sessionUser });
+    renderHeader('/profile', { isAuthenticated: false, user: null });
 
     await user.click(screen.getByRole('button', { name: 'Open menu' }));
     const dialog = screen.getByRole('dialog', { name: 'Primary navigation' });
     expect(dialog).toBeInTheDocument();
 
     // Click a link inside the drawer (scoped: the CSS-hidden desktop nav also
-    // renders a Today link in jsdom).
-    await user.click(within(dialog).getByRole('link', { name: 'Today' }));
+    // renders a Home link in jsdom).
+    await user.click(within(dialog).getByRole('link', { name: 'Home' }));
     expect(screen.queryByRole('dialog', { name: 'Primary navigation' })).not.toBeInTheDocument();
   });
 
@@ -583,60 +650,29 @@ describe('Header mobile drawer', () => {
   });
 });
 
-describe('Header mobile drawer grouped sections (EP11B, EP16D-AC1)', () => {
+describe('Header mobile drawer — Account only when signed in (EP16E-AC3, D-E5)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockedGetCurrent.mockResolvedValue(null);
+    stubViewport(false);
+  });
+  afterEach(() => {
+    restoreViewport();
   });
 
-  // The desktop nav is only CSS-hidden in jsdom, so every drawer assertion is
-  // scoped to the dialog (or a named region within it).
-  function getDrawer() {
-    return screen.getByRole('dialog', { name: 'Primary navigation' });
+  function getAccountDrawer() {
+    return screen.getByRole('dialog', { name: 'Account' });
   }
 
-  it('renders Today, Plan, Calendar, the Work section and the Account section for an authenticated user', async () => {
+  async function openAccountDrawer(user: ReturnType<typeof setupUser>) {
+    await user.click(screen.getByRole('button', { name: 'Open account menu' }));
+    return getAccountDrawer();
+  }
+
+  it('below md the signed-in drawer contains only the Account section (Profile, Verify email when unverified, Logout)', async () => {
     const user = setupUser();
     renderAuthenticated('/today');
-    await user.click(screen.getByRole('button', { name: 'Open menu' }));
-
-    const dialog = getDrawer();
-    // Responsiveness is class-only in jsdom (no media-query evaluation).
-    expect(dialog.parentElement).toHaveClass('md:hidden');
-
-    expect(within(dialog).getByRole('heading', { level: 2, name: 'Work' })).toBeInTheDocument();
-    expect(within(dialog).getByRole('heading', { level: 2, name: 'Account' })).toBeInTheDocument();
-    for (const label of ['Academics', 'Planning', 'Focus']) {
-      expect(
-        within(dialog).queryByRole('heading', { level: 2, name: label })
-      ).not.toBeInTheDocument();
-    }
-
-    // Single links render directly in the drawer; Home is signed-out only.
-    expect(within(dialog).getByRole('link', { name: 'Today' })).toHaveAttribute('href', '/today');
-    expect(within(dialog).getByRole('link', { name: 'Plan' })).toHaveAttribute('href', '/plan');
-    expect(within(dialog).getByRole('link', { name: 'Calendar' })).toHaveAttribute(
-      'href',
-      '/calendar'
-    );
-    expect(within(dialog).queryByRole('link', { name: 'Home' })).not.toBeInTheDocument();
-
-    const work = within(dialog).getByRole('region', { name: 'Work' });
-    expect(
-      within(work)
-        .getAllByRole('link')
-        .map((l) => l.textContent)
-    ).toEqual(['Assignments', 'Courses']);
-    expect(within(work).getByRole('link', { name: 'Assignments' })).toHaveAttribute(
-      'href',
-      '/assignments'
-    );
-    expect(within(work).getByRole('link', { name: 'Courses' })).toHaveAttribute('href', '/courses');
-
-    // EP16D: the retired entries have no drawer row either.
-    for (const name of ['Semesters', 'Plan health', 'Focus session', 'Study history']) {
-      expect(within(dialog).queryByRole('link', { name })).not.toBeInTheDocument();
-    }
+    const dialog = await openAccountDrawer(user);
 
     const account = within(dialog).getByRole('region', { name: 'Account' });
     expect(within(account).getByRole('link', { name: 'Profile' })).toHaveAttribute(
@@ -648,122 +684,88 @@ describe('Header mobile drawer grouped sections (EP11B, EP16D-AC1)', () => {
       '/verify-email'
     );
     expect(within(account).getByRole('button', { name: 'Logout' })).toBeInTheDocument();
+
+    // No primary destinations — the tab bar owns them on phones.
+    for (const name of ['Today', 'Plan', 'Calendar', 'Assignments', 'Courses', 'Home']) {
+      expect(within(dialog).queryByRole('link', { name })).not.toBeInTheDocument();
+    }
   });
 
-  it('renders Home and auth buttons with no grouped or Account sections when unauthenticated', async () => {
+  it('the signed-in drawer has no Primary navigation and is labelled Account', async () => {
     const user = setupUser();
+    renderAuthenticated('/today');
+    const dialog = await openAccountDrawer(user);
+
+    expect(within(dialog).queryByRole('navigation')).not.toBeInTheDocument();
+    expect(
+      within(dialog).getByText('Account', { selector: '#mobile-nav-title' })
+    ).toBeInTheDocument();
+    expect(dialog).toHaveAttribute('aria-labelledby', 'mobile-nav-title');
+    expect(dialog).not.toHaveAttribute('aria-label');
+  });
+
+  it('the menu button reads Open account menu / Close account menu when signed in and Open menu / Close menu when signed out', async () => {
+    const user = setupUser();
+    const signedIn = renderAuthenticated('/today');
+
+    const trigger = screen.getByRole('button', { name: 'Open account menu' });
+    expect(trigger).toHaveAttribute('aria-controls', 'mobile-nav');
+    await user.click(trigger);
+    expect(
+      document.querySelector('button[aria-controls="mobile-nav"][aria-expanded="true"]')
+    ).toHaveAccessibleName('Close account menu');
+    await user.keyboard('{Escape}');
+    signedIn.unmount();
+
     renderHeader('/', { isAuthenticated: false, user: null });
-    await user.click(screen.getByRole('button', { name: 'Open menu' }));
-
-    const dialog = getDrawer();
-    expect(within(dialog).getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
-    expect(within(dialog).getByRole('button', { name: 'Login' })).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
-
-    for (const label of ['Work', 'Account']) {
-      expect(
-        within(dialog).queryByRole('heading', { level: 2, name: label })
-      ).not.toBeInTheDocument();
-    }
-    expect(within(dialog).queryByRole('region', { name: 'Account' })).not.toBeInTheDocument();
-    expect(within(dialog).queryByText(/Signed in as/)).not.toBeInTheDocument();
-    expect(within(dialog).queryByRole('button', { name: 'Logout' })).not.toBeInTheDocument();
+    const signedOutTrigger = screen.getByRole('button', { name: 'Open menu' });
+    await user.click(signedOutTrigger);
+    expect(
+      document.querySelector('button[aria-controls="mobile-nav"][aria-expanded="true"]')
+    ).toHaveAccessibleName('Close menu');
   });
 
   it('shows Verify email only for an unverified user', async () => {
     const user = setupUser();
     const { unmount } = renderAuthenticated('/today');
-    await user.click(screen.getByRole('button', { name: 'Open menu' }));
-    const account = within(getDrawer()).getByRole('region', { name: 'Account' });
+    let account = within(await openAccountDrawer(user)).getByRole('region', { name: 'Account' });
     expect(within(account).getByRole('link', { name: 'Verify email' })).toHaveAttribute(
       'href',
       '/verify-email'
     );
-
     unmount();
+
     renderAuthenticated('/today', {
       ...sessionUser,
       emailVerifiedAt: '2026-01-01T00:00:00.000Z',
     });
-    await user.click(screen.getByRole('button', { name: 'Open menu' }));
-    const verifiedAccount = within(getDrawer()).getByRole('region', { name: 'Account' });
-    expect(
-      within(verifiedAccount).queryByRole('link', { name: 'Verify email' })
-    ).not.toBeInTheDocument();
-    expect(within(verifiedAccount).getByRole('link', { name: 'Profile' })).toBeInTheDocument();
-    expect(within(verifiedAccount).getByRole('button', { name: 'Logout' })).toBeInTheDocument();
+    account = within(await openAccountDrawer(user)).getByRole('region', { name: 'Account' });
+    expect(within(account).queryByRole('link', { name: 'Verify email' })).not.toBeInTheDocument();
+    expect(within(account).getByRole('link', { name: 'Profile' })).toBeInTheDocument();
+    expect(within(account).getByRole('button', { name: 'Logout' })).toBeInTheDocument();
   });
 
   it('shows the identity row with avatar initials and name', async () => {
     const user = setupUser();
     renderAuthenticated('/today');
-    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    const account = within(await openAccountDrawer(user)).getByRole('region', { name: 'Account' });
 
-    const account = within(getDrawer()).getByRole('region', { name: 'Account' });
     expect(within(account).getByText('Signed in as Ada Lovelace')).toBeInTheDocument();
     const avatar = within(account).getByText('A');
     expect(avatar).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('marks the active drawer item with aria-current and keeps nested routes off the parent', async () => {
-    const user = setupUser();
-    const { unmount } = renderAuthenticated('/assignments');
-    await user.click(screen.getByRole('button', { name: 'Open menu' }));
-
-    let dialog = getDrawer();
-    const assignments = within(dialog).getByRole('link', { name: 'Assignments' });
-    expect(assignments).toHaveAttribute('aria-current', 'page');
-    expect(assignments).toHaveClass('text-accent');
-    expect(within(dialog).getByRole('link', { name: 'Today' })).not.toHaveAttribute('aria-current');
-    expect(within(dialog).getByRole('link', { name: 'Courses' })).not.toHaveAttribute(
-      'aria-current'
-    );
-
-    // Settled D10-13 behavior: every drawer item uses `NavLink end`, so a
-    // nested detail route marks nothing (and headings have no active state).
-    unmount();
-    renderAuthenticated('/courses/abc');
-    await user.click(screen.getByRole('button', { name: 'Open menu' }));
-    dialog = getDrawer();
-    expect(within(dialog).getByRole('link', { name: 'Courses' })).not.toHaveAttribute(
-      'aria-current'
-    );
-    expect(dialog.querySelectorAll('[aria-current="page"]')).toHaveLength(0);
-  });
-
-  it('keeps account actions out of the primary list and headings non-interactive', async () => {
-    const user = setupUser();
-    renderAuthenticated('/today');
-    await user.click(screen.getByRole('button', { name: 'Open menu' }));
-
-    const dialog = getDrawer();
-    const nav = within(dialog).getByRole('navigation', { name: 'Primary' });
-
-    expect(within(nav).queryByRole('link', { name: 'Profile' })).not.toBeInTheDocument();
-    expect(within(nav).queryByRole('link', { name: 'Verify email' })).not.toBeInTheDocument();
-
-    // No dropdown triggers in the drawer; headings are labels only.
-    expect(within(dialog).queryByRole('button', { name: 'Work menu' })).not.toBeInTheDocument();
-    for (const label of ['Work', 'Account']) {
-      const heading = within(dialog).getByRole('heading', { level: 2, name: label });
-      expect(heading).not.toHaveAttribute('aria-expanded');
-      expect(heading).not.toHaveAttribute('aria-haspopup');
-    }
-  });
-
   it('applies 44px rows and 20px aria-hidden icons in the drawer', async () => {
     const user = setupUser();
     renderAuthenticated('/today');
-    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    const account = within(await openAccountDrawer(user)).getByRole('region', { name: 'Account' });
 
-    const dialog = getDrawer();
-    const today = within(dialog).getByRole('link', { name: 'Today' });
-    expect(today).toHaveClass('min-h-[44px]');
-    const todayIcon = today.querySelector('svg') as SVGSVGElement;
-    expect(todayIcon).toHaveClass('h-5', 'w-5');
-    expect(todayIcon).toHaveAttribute('aria-hidden', 'true');
+    const profile = within(account).getByRole('link', { name: 'Profile' });
+    expect(profile).toHaveClass('min-h-[44px]');
+    const profileIcon = profile.querySelector('svg') as SVGSVGElement;
+    expect(profileIcon).toHaveClass('h-5', 'w-5');
+    expect(profileIcon).toHaveAttribute('aria-hidden', 'true');
 
-    const account = within(dialog).getByRole('region', { name: 'Account' });
     const logout = within(account).getByRole('button', { name: 'Logout' });
     expect(logout).toHaveClass('min-h-[44px]');
     const logoutIcon = logout.querySelector('svg') as SVGSVGElement;
@@ -774,20 +776,35 @@ describe('Header mobile drawer grouped sections (EP11B, EP16D-AC1)', () => {
   it('traps focus inside the drawer after the grouped sections were added', async () => {
     const user = setupUser();
     renderAuthenticated('/today');
-    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    const dialog = await openAccountDrawer(user);
 
-    const dialog = getDrawer();
-    // Trap order guard (story risk note): close, Today, Plan, Calendar,
-    // Work ×2 (EP16D), Profile, Verify email, Logout.
+    // Trap order over the Account items (EP16E): close, Profile, Verify
+    // email, Logout.
     const focusables = dialog.querySelectorAll(
       'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
     );
-    expect(focusables).toHaveLength(9);
+    expect(focusables).toHaveLength(4);
     const logout = within(dialog).getByRole('button', { name: 'Logout' });
     expect(focusables[focusables.length - 1]).toBe(logout);
 
     logout.focus();
     await user.tab();
-    expect(within(dialog).getByRole('button', { name: 'Close menu' })).toHaveFocus();
+    expect(within(dialog).getByRole('button', { name: 'Close account menu' })).toHaveFocus();
+  });
+
+  it('renders Home and auth buttons with no grouped or Account sections when unauthenticated', async () => {
+    const user = setupUser();
+    renderHeader('/', { isAuthenticated: false, user: null });
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Primary navigation' });
+    expect(within(dialog).getByRole('navigation', { name: 'Primary' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
+    expect(within(dialog).getByRole('button', { name: 'Login' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Get Started' })).toBeInTheDocument();
+
+    expect(within(dialog).queryByRole('region', { name: 'Account' })).not.toBeInTheDocument();
+    expect(within(dialog).queryByText(/Signed in as/)).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Logout' })).not.toBeInTheDocument();
   });
 });

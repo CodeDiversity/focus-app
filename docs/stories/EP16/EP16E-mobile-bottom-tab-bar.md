@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1)
 **Layer:** Frontend
-**Status:** Ready. Refined 2026-11-18 (technical + UI/UX, D16-15). ▲ D-E1 ratified: five flat tabs. Implementation comes after EP16D.
+**Status:** Implemented — awaiting parent review (2026-11-18). Record: [implementation.md](./artifacts/EP16E/implementation.md). All ACs done; one recorded deviation (F-EP16E-01: the signed-in menu button is md-gated so "Open account menu" stays unique in the DOM).
 **Refined:** 2026-11-18
 **Dependencies:** EP16D must be implemented first. EP16E builds on four things it adds: the navigation contract, `CurrentSessionProvider` / `useCurrentSession` (D-D8), the header session strip (D-D6) and the drawer route-change rule (D-D5). EP16B provides `expectNoForbiddenWords`. Epic decisions: D16-7 (ratified a), D16-12.
 
@@ -275,7 +275,7 @@ Every string passes `expectNoForbiddenWords`.
 
 - **Outcome:** on a phone, the main destinations are always visible and one thumb-tap away.
 - **Size:** about 0.5–1 window, as planned. One outcome, so no split.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** well under one window, 2026-11-18. Fourteen source/test files (the planned set; `App.test.tsx` needed no change — its narrow stub renders the bar harmlessly). Web suite 1428/0 (+32); full e2e 61/0 + 1 planned skip, narrow journeys included. One deviation recorded (F-EP16E-01).
 - **Files:** see § Relevant files.
 - **Start context:** this story; EP16D's implementation record (provider API, D-D5 as built); contracts.md § Navigation contract; `Header.tsx:484-750`; `Layout.tsx`; `CalendarPage.tsx:162-171`.
 - **Verification:**

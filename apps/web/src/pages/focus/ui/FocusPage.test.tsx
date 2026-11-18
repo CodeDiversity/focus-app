@@ -12,6 +12,10 @@ import {
 } from '@/entities/study-session/api/studySessionApi';
 import { listAssignments } from '@/entities/assignment/api/assignmentApi';
 import { expectNoForbiddenWords } from '@/test/forbiddenWords';
+import {
+  CurrentSessionContext,
+  defaultCurrentSessionValue,
+} from '@/widgets/session-indicator/model/useCurrentSession';
 
 vi.mock('@/entities/study-session/api/studySessionApi', () => ({
   // EP13K: the momentum slice imports this client.
@@ -205,6 +209,28 @@ describe('FocusPage', () => {
     mockedCurrent.mockResolvedValue({ ...activeSession, status: 'PAUSED', elapsedSeconds: 10 });
     renderPage();
     await waitFor(() => expect(screen.getByText('Focus session paused')).toBeInTheDocument());
+  });
+
+  it('finishing a session refreshes the shared current-session state (EP16E-AC4)', async () => {
+    mockedCurrent.mockResolvedValue({ ...activeSession, elapsedSeconds: 20 * 60 });
+    mockedFinish.mockResolvedValue({
+      ...activeSession,
+      status: 'COMPLETED',
+      durationMinutes: 25,
+      endTime: '2026-10-30T10:25:00.000Z',
+    } as never);
+    const refresh = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <Providers initialEntries={['/focus']}>
+        <CurrentSessionContext.Provider value={{ ...defaultCurrentSessionValue, refresh }}>
+          <FocusPage />
+        </CurrentSessionContext.Provider>
+      </Providers>
+    );
+    await user.click(await screen.findByRole('button', { name: 'Finish session' }));
+    await user.click(await screen.findByRole('button', { name: 'Save time' }));
+    await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
   });
 
   it('escape is no-op (no dialog/navigation)', async () => {
