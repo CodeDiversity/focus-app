@@ -28,7 +28,7 @@ EP13F appended them.
 | Key | Meaning | Default | Bounds | Notes |
 |---|---|---|---|---|
 | `spreadPercent` | How strongly the pacing target binds. `100` = pace fully (an assignment takes its even share of its horizon); `0` = reproduce the pre-EP17 engine exactly | `70` | `0…100` | The "off" value `0` is what TR-E17-02's byte-identical baseline run uses (D17-6) |
-| `weeklyGoalDays` | **Existing key; ▲ D17-2 Ruled (a) (user, 2026-11-19):** it becomes the number of days of the window the planner may use, and stays the momentum yardstick | `3` (momentum yardstick); **unset = unconstrained** to the planner (▲ D17-16) | `1…7` | Proviso: the control is visibly surfaced with its instruction meaning (EP17G). The stored default stays `3` because the same key is the EP13K yardstick; only an explicitly chosen number narrows the plan (▲ D17-16). EP17A writes no code for the losing options |
+| `weeklyGoalDays` | **Existing key; ▲ D17-2 Ruled (a) (user, 2026-11-19):** it becomes the number of days of the window the planner may use, and stays the momentum yardstick | Two readers (▲ D17-16): momentum default `3` (`readStudyPreferences`, the EP13K yardstick, unchanged); **planning default when the key was never stored: `7` (unconstrained)** — the planning read is `readPlanningStudyPreferences` (`preferences.ts`), and an invalid stored value (wrong type or out of bounds) is treated as *unchosen* for planning while the momentum read still repairs it to `3` | `1…7` | Proviso: the control is visibly surfaced with its instruction meaning (EP17G). The stored default stays `3` because the same key is the EP13K yardstick; only an explicitly chosen number narrows the plan (▲ D17-16). EP17A writes no code for the losing options |
 
 Asked in the UI as named presets (the EP13N pattern), not as a raw number —
 exact labels are EP17G's refiner call.
@@ -150,12 +150,15 @@ usableDays(window) = the `weeklyGoalDays` days of the window with the most
   - the **anchor pass**: the narrowed budgets, per ▲ D-C2 (a) — less slack
     legitimately pins more sessions `FIXED`.
 - `weeklyGoalDays = 7` reproduces today's behaviour (AC-E17-05).
-- **An unset `weeklyGoalDays` is unconstrained** (▲ D17-16, user,
-  2026-11-19): a student who has never explicitly chosen a study-days number
-  is planned across the whole window, effectively `7`. Only an explicitly
-  stored number narrows the selection. The *stored default* stays `3` because
-  the same key is the EP13K momentum yardstick — raising it would restate
-  every student's motivational goal as "study 7 days a week".
+- **`usableDays(window)` reads the *planning* value of `weeklyGoalDays`**
+  (▲ D17-16, user, 2026-11-19): the value `readPlanningStudyPreferences`
+  returns, which the service hands the engine (`gatherPlanData` →
+  `preview` / `catchUpPreview`). A student who has never explicitly chosen a
+  study-days number is unconstrained — the whole window is usable,
+  effectively `7`. Only an explicitly stored number narrows the selection.
+  The *stored default* stays `3` because the same key is the EP13K momentum
+  yardstick — raising it would restate every student's motivational goal as
+  "study 7 days a week".
 - If the selection would leave an assignment with no usable day before its
   deadline, that assignment's **normal pass** falls back to its full horizon
   rather than producing a deficit — smoothness never manufactures a miss.

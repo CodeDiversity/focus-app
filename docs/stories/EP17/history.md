@@ -19,7 +19,7 @@ Applied after the last dependent edit
 | 6 | Feature risks/counterexamples and owning tests | **Pass** (re-checked after corrections, 2026-11-19) — six invariants with a concrete counterexample, a preventing mechanism and an owning test in the [epic's invariant table](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md#security--privacy--accessibility-invariants). Plan review pass 1 defeated the no-new-deadline-miss row (R-EP17-01) and the minute-sum wording (R-EP17-02); the row now names the feasibility-floor mechanism with its bounded claim and the adversarial owning fixture, and the sum invariant is stated per deficit category (C-R-EP17-01 / C-R-EP17-02). |
 | 7 | Dependency mapping and sequence | **Pass** — one vertical sequence (contract → engine → service → frontend → integration) with the rationale and the known windows recorded; EP17C is the only `Blocked` row and its blocker is named. |
 | 8 | Material (▲) decisions ruled or explicitly blocked | **Pass** — at breakdown (2026-11-19): ▲ D17-3 and ▲ D17-4 ruled; the other ▲ rows `Proposed` with recommendations filled (gate then **Needs Decision**). Update 2026-11-19 (same day): the user ratified every recommended row; ▲ D17-2 ruled (a) with a UI-visibility proviso (EP17G owns the surfacing, no new story). Update 2026-11-19 (in flight, after EP17C): three further rulings — ▲ D-G5 (spread preset labels) and ▲ D-F7 (calibration note inside the collapsed disclosure, no auto-expand) ruled as recommended, and the new ▲ D17-16 (an unset `weeklyGoalDays` means unconstrained) ruled, refining ▲ D17-2 (a). No open ▲ rows. |
-| 9 | Correction log complete | **Pass** (updated 2026-11-19) — plan review pass 1 findings R-EP17-01…06 logged below as C-R-EP17-01…06, each with the original wording, the correction, verification and status — closed to `Fixed in plan` at plan review pass 2 (2026-11-19, `005bc78`, Plan Ready). Implementer finding F-EP17B-01 (raised during EP17B) logged as C-F-EP17B-01 in the same format and closed `Fixed in plan` — contracts §3 amended to the shipped `evenShare` with its one-sitting floor. EP17C's findings F-EP17C-01 and F-EP17C-02 logged as `C-F-EP17C-01` / `C-F-EP17C-02` in the same format (F-EP17C-03 needed no plan change and is closed in its own record). |
+| 9 | Correction log complete | **Pass** (updated 2026-11-19) — plan review pass 1 findings R-EP17-01…06 logged below as C-R-EP17-01…06, each with the original wording, the correction, verification and status — closed to `Fixed in plan` at plan review pass 2 (2026-11-19, `005bc78`, Plan Ready). Implementer finding F-EP17B-01 (raised during EP17B) logged as C-F-EP17B-01 in the same format and closed `Fixed in plan` — contracts §3 amended to the shipped `evenShare` with its one-sitting floor. EP17C's findings F-EP17C-01 and F-EP17C-02 logged as `C-F-EP17C-01` / `C-F-EP17C-02` in the same format (F-EP17C-03 needed no plan change and is closed in its own record). The EP17D implementer's requested contracts wording for the ▲ D17-16 resolution logged as `C-F-EP17D-01` and applied to contracts §2/§4. |
 | 10 | Identifier consistency and at-a-glance blocks (`queue-lint` clean) | **Pass** — every child has the at-a-glance block and a Decisions table with a Ruling column; epic decisions `D17-<n>`, story decisions `D-<suffix><n>`, epic criteria `AC-E17-<nn>`, test requirements `TR-E17-<nn>`, verification `V-17-<n>`, backlog `BL-17-<nn>`; `node tools/queue-lint.mjs docs/stories/EP17` clean. |
 
 **Gate status:** **Plan Ready** (updated 2026-11-19 — the user ratified every
@@ -64,7 +64,10 @@ implementer finding from
 (2026-11-19); its entry is `C-F-EP17B-01`. Findings F-EP17C-01 and
 F-EP17C-02 are implementer findings from
 [artifacts/EP17C/implementation.md](./artifacts/EP17C/implementation.md)
-(2026-11-19); their entries are `C-F-EP17C-01` and `C-F-EP17C-02`.
+(2026-11-19); their entries are `C-F-EP17C-01` and `C-F-EP17C-02`. The
+EP17D implementer's contracts follow-up from
+[artifacts/EP17D/F-EP17C-02-resolution.md](./artifacts/EP17D/F-EP17C-02-resolution.md)
+(2026-11-19) is `C-F-EP17D-01`.
 
 ### C-R-EP17-01 (from R-EP17-01, should-fix)
 
@@ -299,6 +302,49 @@ closeout; the `weeklyGoalDays` twin of F-EP17B-03. Source record:
   evidence stays with EP17G (surface the control) and EP17H (journey), per
   the finding's named owners. Closure evidence for the *planning* half is
   this entry plus ▲ D17-16 and contracts §2/§4.
+
+### C-F-EP17D-01 (from the EP17D implementer's F-EP17C-02 resolution, contracts follow-up)
+
+Raised by the EP17D implementer on resolving F-EP17C-02 in code (the commit
+immediately preceding EP17D's implementation). Source record:
+[artifacts/EP17D/F-EP17C-02-resolution.md](./artifacts/EP17D/F-EP17C-02-resolution.md),
+§ "Contracts follow-up". Logged by the planner 2026-11-19; the implementer
+may not write contracts.
+
+- **Original request (wording preserved):** "**§2**, the `weeklyGoalDays`
+  row — the `Default` cell should distinguish the two readers: momentum
+  default `3`; **planning default when the key was never stored: `7`
+  (unconstrained)**. A note that the planning read is
+  `readPlanningStudyPreferences` and that an invalid stored value is treated
+  as unchosen for planning (while the momentum read still repairs it to `3`).
+  **§4** — `usableDays(window)` reads the **planning** value of
+  `weeklyGoalDays`; a student who never chose one has the whole window
+  usable." Until it lands, "this note is the contract of record for the
+  behaviour."
+- **Correction:** contracts §2's `weeklyGoalDays` Default cell now names the
+  two readers — momentum default `3` (`readStudyPreferences`, the EP13K
+  yardstick, unchanged) and the planning default `7` (unconstrained) when the
+  key was never stored, via `readPlanningStudyPreferences`, with
+  wrong-typed / out-of-bounds stored values treated as unchosen for planning
+  while the momentum read still repairs them to `3`. Contracts §4's
+  unset-unconstrained bullet restated as: `usableDays(window)` reads the
+  **planning** value (`readPlanningStudyPreferences`, handed to the engine by
+  `gatherPlanData` → `preview` / `catchUpPreview`), citing ▲ D17-16.
+  Documentation catching up to shipped, ruled code — no new design, no AC, no
+  Ruling cell changed.
+- **Verification:** read against the shipped code —
+  `apps/api/src/domain/study-planning/preferences.ts`
+  (`UNSET_PLANNING_WEEKLY_GOAL_DAYS = 7` at `:276`;
+  `hasStoredWeeklyGoalDays` at `:286`, bounds-checked so absent / wrong-typed
+  / out-of-bounds all count as not chosen; `readPlanningStudyPreferences` at
+  `:317`, identical to `readStudyPreferences` in every other key) and
+  `apps/api/src/modules/study-plans/study-plans.service.ts`
+  (`readPlanningStudyPreferences(user.preferences)` at `:1061`; both
+  `preview` and `catchUpPreview` hand `data.planningPreferences` to the
+  engine at `:1205` / `:1310`). Contracts §2/§4 now match the code term for
+  term. `node tools/queue-lint.mjs docs/stories/EP17` clean.
+- **Status:** Fixed in plan — the resolution record's "contract of record"
+  interim note is discharged; nothing is pending for an implementer.
 
 ## Superseded decisions
 
