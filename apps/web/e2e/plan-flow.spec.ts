@@ -907,14 +907,21 @@ test.describe('plan surfaces — narrow viewport + keyboard (TR-E08-08 → TR-E1
     }));
     expect(widths.scroll).toBeLessThanOrEqual(widths.client);
 
-    // Header controls stack vertically and each keeps a ≥44px target.
+    // EP17F (▲ D-F1): the decision lives in the fixed bottom action bar —
+    // both controls share its one row, keep ≥44px targets, and the bar sits
+    // above EP16E's tab bar (D-F5 asserts the offset classes in unit tests;
+    // EP17H asserts the rendered position).
     const confirmBox = await page.getByRole('button', { name: 'Use this plan' }).boundingBox();
     const declineBox = await page.getByRole('button', { name: 'Not now' }).boundingBox();
     expect(confirmBox).toBeTruthy();
     expect(declineBox).toBeTruthy();
     expect(confirmBox!.height).toBeGreaterThanOrEqual(44);
     expect(declineBox!.height).toBeGreaterThanOrEqual(44);
-    expect(confirmBox!.y).not.toBe(declineBox!.y); // stacked, not side-by-side
+    expect(confirmBox!.y).toBe(declineBox!.y); // one bar row, side by side
+
+    // EP17F (▲ D-F2/▲ D-F7): below md the context regions start collapsed
+    // behind "What else changed" — open it to reach the lock toggle.
+    await page.getByRole('button', { name: 'What else changed' }).click();
 
     // The explicit lock toggle (D08-4) is present, pressed, tappable, and
     // its persisted flip removes the locked session from the preview.

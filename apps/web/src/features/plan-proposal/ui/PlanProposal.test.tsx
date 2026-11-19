@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -394,13 +395,13 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     renderPreview();
     await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
 
-    // Focus entered on the heading; Tab reaches the header controls.
+    // Focus entered on the heading; Tab reaches the week first — EP17F moved
+    // the decision buttons to the action bar at the end of the DOM, so the
+    // focus order matches the visual order (heading → week → … → decision).
     const heading = screen.getByRole('heading', { name: /your proposed week/i, level: 1 });
     expect(document.activeElement).toBe(heading);
     await user.tab();
-    expect(screen.getByRole('button', { name: /use this plan/i })).toHaveFocus();
-    await user.tab();
-    expect(screen.getByRole('button', { name: /not now/i })).toHaveFocus();
+    expect(screen.getByRole('button', { name: /essay 09:00/i })).toHaveFocus();
 
     // EP17E: open the session's in-place panel, then its controls respond
     // to Enter.
@@ -424,6 +425,12 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     await waitFor(() =>
       expect(screen.queryByRole('button', { name: /keep "lab report" locked/i })).toBeNull()
     );
+
+    // The action bar's confirm responds to Enter (the decision is last).
+    const confirmBtn = screen.getByRole('button', { name: /use this plan/i });
+    confirmBtn.focus();
+    await user.keyboard('{Enter}');
+    await waitFor(() => expect(mockedConfirm).toHaveBeenCalledTimes(1));
   });
 
   it('moves focus to the h1 "Your proposed week" on entry', async () => {
@@ -456,7 +463,7 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     expect(screen.queryByRole('heading', { level: 2, name: 'What this plan keeps' })).toBeNull();
   });
 
-  it('section order: calibration, week, editor, keeps, moved forward, warnings (D-C6)', async () => {
+  it('renders four regions in the contract order: summary, week, risk, What else changed (EP17F-AC4, replaces D-C6)', async () => {
     mockedPreview.mockResolvedValue({
       ...catchUpPreviewFixture,
       calibration: [{ assignmentType: 'ESSAY', multiplier: 1.5, samples: 4 }],
@@ -465,21 +472,35 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
     const markers = Array.from(
       container.querySelectorAll(
-        '[data-testid="calibration-note"], [data-testid="editable-week"], [data-testid="catch-up-preservation"], [aria-labelledby="proposal-moved-heading"], [data-testid="workload-warnings"]'
+        '[data-testid="proposal-summary"], [data-testid="editable-week"], section[aria-label="Workload warnings"], [data-testid="calibration-note"], [data-testid="catch-up-preservation"], [aria-labelledby="proposal-moved-heading"]'
       )
-    ).map((el) => el.getAttribute('data-testid') ?? el.getAttribute('aria-labelledby'));
-    expect(markers.filter(Boolean)).toEqual(
-      [
-        'calibration-note',
-        'editable-week',
-        'catch-up-preservation',
-        'proposal-moved-heading',
-        'workload-warnings',
-      ].filter((m) => markers.includes(m))
+    ).map(
+      (el) =>
+        el.getAttribute('data-testid') ??
+        el.getAttribute('aria-label') ??
+        el.getAttribute('aria-labelledby')
     );
-    expect(markers.indexOf('editable-week')).toBeLessThan(markers.indexOf('catch-up-preservation'));
-    expect(markers.indexOf('catch-up-preservation')).toBeLessThan(
-      markers.indexOf('proposal-moved-heading')
+    expect(markers).toEqual([
+      'proposal-summary',
+      'editable-week',
+      'Workload warnings',
+      'calibration-note',
+      'catch-up-preservation',
+      'proposal-moved-heading',
+    ]);
+    // The demoted regions live inside the one labelled disclosure (▲ D-F2),
+    // expanded by default at md+ (the jsdom fallback is the desktop layout).
+    const disclosure = screen.getByRole('button', { name: 'What else changed' });
+    expect(disclosure).toHaveAttribute('aria-expanded', 'true');
+    const panel = document.getElementById(disclosure.getAttribute('aria-controls') as string);
+    expect(panel).toContainElement(screen.getByTestId('calibration-note'));
+    expect(panel).toContainElement(screen.getByTestId('catch-up-preservation'));
+    expect(panel).toContainElement(
+      screen.getByRole('heading', { level: 2, name: 'Moved forward into this plan' })
+    );
+    // …and the risk region never does (workload warnings stay visible).
+    expect(panel).not.toContainElement(
+      container.querySelector('section[aria-label="Workload warnings"]')
     );
   });
 
@@ -590,3 +611,195 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     expectNoForbiddenWords(view.container);
   });
 });
+
+describe('PlanProposal (EP17F, composition and decision affordances)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockedPreview.mockResolvedValue(catchUpPreviewFixture as never);
+    mockedLock.mockResolvedValue({ id: 'ps-1', locked: false } as never);
+  });
+
+  it('exposes exactly one Use this plan and one Not now, and neither is in the page header (EP17F-AC1)', async () => {
+    const { container } = renderPreview();
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+    const confirms = screen.getAllByRole('button', { name: /use this plan/i });
+    const declines = screen.getAllByRole('button', { name: /not now/i });
+    expect(confirms).toHaveLength(1);
+    expect(declines).toHaveLength(1);
+    const bar = screen.getByTestId('proposal-action-bar');
+    expect(bar).toContainElement(confirms[0]);
+    expect(bar).toContainElement(declines[0]);
+    // The header region carries no button at all.
+    const header = container.querySelector('.mb-6.min-w-0');
+    expect(header).toBeTruthy();
+    expect(header?.querySelector('button')).toBeNull();
+  });
+
+  it('the action bar clears the mobile tab bar and the safe area; the section reserves bottom padding (EP17F-AC2)', async () => {
+    const { container } = renderPreview();
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+    const bar = screen.getByTestId('proposal-action-bar');
+    expect(bar.className).toContain('fixed');
+    expect(bar.className).toContain('bottom-[calc(3.5rem+env(safe-area-inset-bottom))]');
+    expect(bar.className).toContain('md:bottom-0');
+    expect(bar.className).toContain('pb-[env(safe-area-inset-bottom)]');
+    expect(bar.className).toContain('z-20');
+    // The proposal section reserves matching bottom padding (D-F5).
+    expect(container.querySelector('section')?.className).toContain('pb-24');
+  });
+
+  it('the confirm is reachable from the editing area at every scroll position by structure (EP17F-AC1, V-17-5)', async () => {
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+    // Fixed to the viewport: not inside the scrolled content regions.
+    const bar = screen.getByTestId('proposal-action-bar');
+    expect(screen.getByTestId('editable-week')).not.toContainElement(bar);
+    expect(bar.className).toContain('fixed');
+    // Position at 360×640 is asserted by EP17H's Playwright run (TR-E17-06).
+  });
+
+  it('the pacing sentence names the sessions, the time and the spread (EP17F-AC3)', async () => {
+    mockedPreview.mockResolvedValue({
+      ...catchUpPreviewFixture,
+      pacing: {
+        spreadPercent: 70,
+        studyDays: ['2026-10-30', '2026-11-01', '2026-11-03'],
+        perDayMinutes: { '2026-10-30': 60 },
+      },
+    } as never);
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+    expect(screen.getByTestId('proposal-summary')).toHaveTextContent(
+      '1 session · about 1 h this week · spread across 3 days'
+    );
+    // A paragraph, never a heading.
+    expect(screen.getByTestId('proposal-summary').tagName).toBe('P');
+    // Helper boundaries (D-F3).
+    expect(proposalSummary(5, 240, 3)).toBe(
+      '5 sessions · about 4 h this week · spread across 3 days'
+    );
+    expect(proposalSummary(2, 90, 1)).toBe('2 sessions · about 1 h 30 min this week · on 1 day');
+  });
+
+  it('a preview without a pacing block renders today’s sentence unchanged; an empty proposal renders no summary (EP17F-AC3)', async () => {
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+    // No pacing in the fixture → the pre-EP17D sentence, byte-identical.
+    expect(screen.getByTestId('proposal-summary')).toHaveTextContent(
+      '1 session · about 1 h this week'
+    );
+    expect(proposalSummary(3, 150)).toBe('3 sessions · about 2 h 30 min this week');
+    cleanup();
+    mockedPreview.mockResolvedValue({
+      ...catchUpPreviewFixture,
+      days: catchUpPreviewFixture.days.map((d) => ({ ...d, sessions: [], targetMinutes: 0 })),
+      pacing: { spreadPercent: 70, studyDays: [], perDayMinutes: {} },
+    } as never);
+    renderPreview();
+    await waitFor(() => expect(screen.getByText('Nothing new to schedule')).toBeInTheDocument());
+    expect(screen.queryByTestId('proposal-summary')).toBeNull();
+  });
+
+  it('What else changed is collapsed below md and every demoted region is reachable through it (EP17F-AC4, ▲ D-F7)', async () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: false, // below md
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })) as unknown as typeof window.matchMedia;
+    try {
+      mockedPreview.mockResolvedValue({
+        ...catchUpPreviewFixture,
+        calibration: [{ assignmentType: 'ESSAY', multiplier: 1.5, samples: 4 }],
+      } as never);
+      const user = userEvent.setup();
+      renderPreview();
+      await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+      const disclosure = screen.getByRole('button', { name: 'What else changed' });
+      expect(disclosure).toHaveAttribute('aria-expanded', 'false');
+      // ▲ D-F7 (a): the calibration note starts collapsed below md too.
+      expect(screen.queryByTestId('calibration-note')).toBeNull();
+      expect(screen.queryByTestId('catch-up-preservation')).toBeNull();
+      // The risk region is NOT demoted — warnings stay visible (▲ D-F2).
+      expect(
+        screen.getByRole('heading', { level: 2, name: 'Workload warnings' })
+      ).toBeInTheDocument();
+
+      await user.click(disclosure);
+      expect(screen.getByTestId('calibration-note')).toBeInTheDocument();
+      expect(screen.getByTestId('catch-up-preservation')).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { level: 2, name: 'Moved forward into this plan' })
+      ).toBeInTheDocument();
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  });
+
+  it('a 409 marks the conflicted sessions, renders the conflict summary once and keeps it outside the disclosure (EP17F-AC5)', async () => {
+    mockedConfirm.mockRejectedValue({
+      response: {
+        data: {
+          statusCode: 409,
+          error: 'Conflict',
+          conflicts: [
+            { sessionIndex: 0, date: '2026-10-30', startTime: '09:00', reason: 'OVERLAPS_CLASS' },
+          ],
+        },
+      },
+      message: 'conflict',
+    } as never);
+    const user = userEvent.setup();
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: /use this plan/i }));
+    await waitFor(() => expect(screen.getByTestId('conflict-summary')).toBeInTheDocument());
+    expect(screen.getAllByTestId('conflict-summary')).toHaveLength(1);
+    // Always-visible risk region: no disclosure needs forcing open (retires
+    // EP16K's AC3 rule) — the summary is not inside the disclosure panel.
+    const disclosure = screen.getByRole('button', { name: 'What else changed' });
+    const panel = document.getElementById(disclosure.getAttribute('aria-controls') as string);
+    expect(panel).not.toContainElement(screen.getByTestId('conflict-summary'));
+  });
+
+  it('axe reports no violations at 1280px and at 360px (EP17F-AC6)', async () => {
+    const axe = loadAxe();
+    for (const width of [1280, 360]) {
+      (window as { innerWidth: number }).innerWidth = width;
+      window.dispatchEvent(new Event('resize'));
+      const view = renderPreview();
+      await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+      const results = await axe.run(view.container, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
+        rules: {
+          // Needs real rendering (canvas); covered by the e2e axe pass.
+          'color-contrast': { enabled: false },
+        },
+      });
+      expect(
+        results.violations.map((v) => `${width}px ${v.id}: ${v.nodes.map((n) => n.html).join()}`)
+      ).toEqual([]);
+      cleanup();
+    }
+  });
+});
+
+/**
+ * axe-core ships with eslint-plugin-jsx-a11y (the e2e helper uses the same
+ * copy) — no new dependency. Loaded through that package's resolver.
+ */
+function loadAxe(): {
+  run: (
+    ctx: Element,
+    opts: unknown
+  ) => Promise<{ violations: { id: string; nodes: { html: string }[] }[] }>;
+} {
+  const here = createRequire(import.meta.url);
+  const fromPlugin = createRequire(here.resolve('eslint-plugin-jsx-a11y/package.json'));
+  return fromPlugin('axe-core');
+}

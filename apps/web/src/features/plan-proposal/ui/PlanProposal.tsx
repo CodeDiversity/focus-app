@@ -2,8 +2,10 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
+import { Disclosure } from '@/shared/ui/Disclosure';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { getBrowserTimeZone } from '@/shared/lib/datetime';
+import { MD_UP_QUERY, useMediaQuery } from '@/shared/lib/useMediaQuery';
 import { CONFLICT_REASON_LABEL } from '@/entities/study-plan/model/types';
 import { WorkloadWarnings } from '@/features/study-plan/ui/WorkloadWarnings';
 import { CalibrationNote } from '@/features/study-plan/ui/CalibrationNote';
@@ -17,39 +19,68 @@ import { recoverySummaryApi } from '@/features/today/api/recoverySummaryApi';
 import { useAppDispatch } from '@/app/store/hooks';
 import { useProposal } from '../model/useProposal';
 import { EditableWeek } from './EditableWeek';
+import { ProposalActionBar } from './ProposalActionBar';
 import { WhatThisKeepsCard } from './WhatThisKeepsCard';
 import { MovedForwardList } from './MovedForwardList';
 
 /**
- * EP16C — the one proposal surface at `/plan/proposal` (D16-4, D16-5, D-C1,
- * D-C6): header (`h1` "Your proposed week", window line, **Use this plan**,
- * **Not now**) → rolled-over banner → calibration note → the editable week
- * (EP17E, ▲ D17-4: rendered once, edited in place) → conflicts → What this
- * plan keeps → Moved forward into this plan → workload warnings. Confirming
- * lands on Today (D-C2); Not now
- * returns to `/plan` with no request. Focus lands on the `h1` on entry and
- * again after a reload (Try again / Create new plan), because the control
- * that had focus disappears.
+ * EP16C → EP17F — the one proposal surface at `/plan/proposal`, composed
+ * around the decision (▲ D-F1/▲ D-F2, replacing EP16C's D-C6 order). Four
+ * regions, in rank order:
  *
- * D-C12 (EP16C implementer, ADHD): one sentence under the heading — "5
- * sessions · about 4 h this week" — lets a student judge the proposal before
- * reading the grid. It is a paragraph, never a heading (copy rules).
+ *   1. judge the week — `h1`, window line, the one pacing sentence
+ *      (+ EP17G's control slot under it);
+ *   2. change the week — EP17E's `EditableWeek`;
+ *   3. what will not happen — the conflict summary then `WorkloadWarnings`,
+ *      always visible at every width (▲ D-F2: a hidden warning is a promise
+ *      quietly broken);
+ *   4. reassurance and context — one "What else changed" disclosure holding
+ *      `CalibrationNote`, `WhatThisKeepsCard` and `MovedForwardList`, open by
+ *      default at `md`+ and collapsed below it (▲ D-F7: no auto-expand rule).
+ *
+ * **Use this plan** / **Not now** render once, in the fixed bottom
+ * `ProposalActionBar` (AC-E17-11) — reachable from the editing area at every
+ * scroll position; the section reserves `pb-24` so the bar never covers the
+ * last day (D-F5). Confirming lands on Today (D-C2); Not now returns to
+ * `/plan` with no request. Focus lands on the `h1` on entry and again after a
+ * reload (Try again / Create new plan), because the control that had focus
+ * disappears.
+ *
+ * D-C12 (EP16C implementer, ADHD) + EP17F D-F3: one sentence under the
+ * heading — "5 sessions · about 4 h this week · spread across 3 days" — lets
+ * a student judge the proposal before reading the grid. It is a paragraph,
+ * never a heading (copy rules; `%` is forbidden, so the spread lever is never
+ * shown as a percentage here).
  */
 export const PROPOSAL_TITLE = 'Your proposed week';
 
-export function proposalSummary(sessionCount: number, totalMinutes: number): string {
+export function proposalSummary(
+  sessionCount: number,
+  totalMinutes: number,
+  studyDayCount?: number
+): string {
   const sessions = `${sessionCount} ${sessionCount === 1 ? 'session' : 'sessions'}`;
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   const time =
     hours > 0 ? (minutes > 0 ? `${hours} h ${minutes} min` : `${hours} h`) : formatMinutes(minutes);
-  return `${sessions} · about ${time} this week`;
+  const base = `${sessions} · about ${time} this week`;
+  // EP17F (D-F3): optional third part from the `pacing` block — absent, the
+  // pre-EP17D sentence stays byte-identical. `studyDayCount` is the
+  // *selected* day set's size (contracts §5, ▲ D-D1), hence "spread across".
+  if (studyDayCount === undefined) return base;
+  return studyDayCount === 1
+    ? `${base} · on 1 day`
+    : `${base} · spread across ${studyDayCount} days`;
 }
 
 export function PlanProposal() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const headingRef = useRef<HTMLHeadingElement>(null);
+  // ▲ D-F2/D-F7: the reassurance disclosure starts open at `md`+, collapsed
+  // below. `useSyncExternalStore`'s first render is synchronous — no flash.
+  const mdUp = useMediaQuery(MD_UP_QUERY, true);
   const {
     preview,
     edited,
@@ -83,49 +114,39 @@ export function PlanProposal() {
   const lockedMissedSessions = preview?.missedSessions.filter((m) => m.locked) ?? [];
   const isEmpty = !!preview && preview.days.every((d) => d.sessions.length === 0);
   const totalMinutes = edited.reduce((sum, s) => sum + s.durationMinutes, 0);
+  const hasContext =
+    !!preview &&
+    (preview.calibration.length > 0 ||
+      preview.missedSessions.length > 0 ||
+      preview.lockedPreserved > 0 ||
+      preview.completedPreserved > 0);
 
   return (
-    <section aria-labelledby="plan-proposal-heading">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1
-            id="plan-proposal-heading"
-            tabIndex={-1}
-            ref={headingRef}
-            className="text-3xl font-bold text-text focus:outline-none"
-          >
-            {PROPOSAL_TITLE}
-          </h1>
-          {preview ? (
-            <p className="text-sm text-text-muted">
-              {weekLine(preview.from, preview.to, preview.timeZone, getBrowserTimeZone())}
-            </p>
-          ) : null}
-          {preview && !isEmpty ? (
-            <p className="mt-1 text-sm text-text" data-testid="proposal-summary">
-              {proposalSummary(edited.length, totalMinutes)}
-            </p>
-          ) : null}
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-          {preview ? (
-            <Button
-              onClick={() => void confirm()}
-              disabled={isConfirming}
-              isLoading={isConfirming}
-              className="w-full sm:w-auto max-sm:min-h-[44px]"
-            >
-              Use this plan
-            </Button>
-          ) : null}
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/plan')}
-            className="w-full sm:w-auto max-sm:min-h-[44px]"
-          >
-            Not now
-          </Button>
-        </div>
+    // pb-24: room for the fixed action bar (D-F5) — the last day of the week
+    // is never underneath it.
+    <section aria-labelledby="plan-proposal-heading" className="pb-24">
+      {/* Region 1 — judge the week. The decision buttons left the header for
+          the ProposalActionBar (▲ D-F1); EP17G's preset controls will slot in
+          under the pacing sentence. */}
+      <div className="mb-6 min-w-0">
+        <h1
+          id="plan-proposal-heading"
+          tabIndex={-1}
+          ref={headingRef}
+          className="text-3xl font-bold text-text focus:outline-none"
+        >
+          {PROPOSAL_TITLE}
+        </h1>
+        {preview ? (
+          <p className="text-sm text-text-muted">
+            {weekLine(preview.from, preview.to, preview.timeZone, getBrowserTimeZone())}
+          </p>
+        ) : null}
+        {preview && !isEmpty ? (
+          <p className="mt-1 text-sm text-text" data-testid="proposal-summary">
+            {proposalSummary(edited.length, totalMinutes, preview.pacing?.studyDays.length)}
+          </p>
+        ) : null}
       </div>
 
       {rolledOver ? (
@@ -169,64 +190,82 @@ export function PlanProposal() {
 
       {phase === 'ready' && preview ? (
         <>
-          {/* EP13L (D-L4): explain the longer figures before they are read. */}
-          <CalibrationNote calibration={preview.calibration} className="mb-4" />
-
+          {/* Region 2 — change the week. */}
           {isEmpty ? (
             <EmptyState
               title="Nothing new to schedule"
               description="Your unfinished work didn't need any new sessions this week. Check the workload warnings below."
             />
           ) : (
-            <>
-              <EditableWeek
-                sessions={edited}
-                days={preview.days.map((d) => d.date)}
-                onChange={setEdited}
-                conflicts={conflicts}
-                timeZone={preview.timeZone}
-              />
-              {conflicts.length > 0 ? (
-                <div
-                  role="alert"
-                  className="mt-4 card border border-danger/30 bg-danger/10 p-4"
-                  data-testid="conflict-summary"
-                >
-                  {/* F-EP16F-04: `danger-strong` keeps 4.5:1 on the 10% danger tint. */}
-                  <p className="text-sm font-medium text-danger-strong">
-                    Some sessions clash with your calendar. Adjust them and try again:
-                  </p>
-                  <ul className="mt-2 space-y-1 text-sm text-danger-strong">
-                    {conflicts.map((c, i) => (
-                      <li key={i}>
-                        {c.date} {c.startTime} — {CONFLICT_REASON_LABEL[c.reason] ?? c.reason}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </>
+            <EditableWeek
+              sessions={edited}
+              days={preview.days.map((d) => d.date)}
+              onChange={setEdited}
+              conflicts={conflicts}
+              timeZone={preview.timeZone}
+            />
           )}
 
-          <WhatThisKeepsCard
-            className="mt-6"
-            lockedPreserved={preview.lockedPreserved}
-            completedPreserved={preview.completedPreserved}
-            lockedSessions={lockedMissedSessions}
-            onLockedChange={onLockedChange}
-          />
-
-          <div className="mt-6">
-            <MovedForwardList sessions={preview.missedSessions} />
-          </div>
+          {/* Region 3 — what will not happen: always visible (▲ D-F2).
+              EP16K's "a 409 forces the disclosure open" rule is retired —
+              nothing here can be hidden in the first place. */}
+          {conflicts.length > 0 ? (
+            <div
+              role="alert"
+              className="mt-4 card border border-danger/30 bg-danger/10 p-4"
+              data-testid="conflict-summary"
+            >
+              {/* F-EP16F-04: `danger-strong` keeps 4.5:1 on the 10% danger tint. */}
+              <p className="text-sm font-medium text-danger-strong">
+                Some sessions clash with your calendar. Adjust them and try again:
+              </p>
+              <ul className="mt-2 space-y-1 text-sm text-danger-strong">
+                {conflicts.map((c, i) => (
+                  <li key={i}>
+                    {c.date} {c.startTime} — {CONFLICT_REASON_LABEL[c.reason] ?? c.reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
 
           <WorkloadWarnings
             className="mt-6"
             warnings={preview.warnings}
             deferred={preview.deferred}
           />
+
+          {/* Region 4 — reassurance and context (▲ D-F2 (a), ▲ D-F7 (a)): the
+              calibration note (EP13L D-L4), what the plan keeps and what it
+              moved forward, behind one labelled disclosure. */}
+          {hasContext ? (
+            <Disclosure
+              id="proposal-context"
+              label="What else changed"
+              defaultOpen={mdUp}
+              className="mt-6"
+            >
+              <CalibrationNote calibration={preview.calibration} className="mb-4" />
+              <WhatThisKeepsCard
+                lockedPreserved={preview.lockedPreserved}
+                completedPreserved={preview.completedPreserved}
+                lockedSessions={lockedMissedSessions}
+                onLockedChange={onLockedChange}
+              />
+              <div className="mt-6">
+                <MovedForwardList sessions={preview.missedSessions} />
+              </div>
+            </Disclosure>
+          ) : null}
         </>
       ) : null}
+
+      <ProposalActionBar
+        showConfirm={!!preview}
+        isConfirming={isConfirming}
+        onConfirm={() => void confirm()}
+        onDecline={() => navigate('/plan')}
+      />
     </section>
   );
 }
