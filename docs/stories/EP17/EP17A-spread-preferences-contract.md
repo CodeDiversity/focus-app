@@ -5,13 +5,13 @@
 **Milestone:** M10 (proposed, D17-1)
 **Layer:** Backend (domain contract + API projection)
 **Status:** Queued
-**Dependencies:** none (first in the queue). ▲ D17-2 blocks the `weeklyGoalDays` half.
+**Dependencies:** none (first in the queue). ▲ D17-2 **Ruled (a)** (user, 2026-11-19) — the `weeklyGoalDays` half proceeds under that ruling.
 
 ## Plan at a glance
 
 - **What this changes:** the study-preferences contract gains the spread lever(s) — `spreadPercent` (new) and, under ▲ D17-2 option (a), the ruled meaning of the existing `weeklyGoalDays`. `STUDY_PREFERENCE_KEYS`, `STUDY_PREFERENCE_DEFAULTS`, `STUDY_PREFERENCE_BOUNDS`, `validateStudyPreferences`, `readStudyPreferences` (`apps/api/src/domain/study-planning/preferences.ts`) and `toStudyPreferencesResponse` (`study-plans.service.ts:194`) all learn the new key; `GET`/`PUT /study-preferences` carry it. No engine change yet, no migration.
 - **Why it improves it:** nothing in the bag today expresses *pace* — every key is session shape or per-day volume (`preferences.ts:19-28`), which is the root cause of the front-loaded week. This story adds the vocabulary the rest of the epic speaks (product), and keeps the bag's additive-JSON discipline that EP13F and EP13K established, so no student's stored preferences break (code).
-- **Decisions needing you:** ▲ D17-2 (what `weeklyGoalDays` means — epic register, still Proposed; it decides whether this story extends an existing key's meaning or adds a second one) and ▲ D17-5 (bag keys rather than columns). ▲ D-A1 below (the default value of `spreadPercent`).
+- **Decisions needing you:** none — ▲ D17-2 ruled (a), ▲ D17-5 and ▲ D-A1 all ruled/ratified (user, 2026-11-19). This story extends the existing `weeklyGoalDays` key's meaning per D17-2 (a).
 - **How to change this plan:** edit a Ruling cell below; ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary
@@ -29,7 +29,12 @@ consume.
 **In:** `preferences.ts` (keys, defaults, bounds, validator, reader),
 `update-study-preferences.dto.ts`, `toStudyPreferencesResponse`, the
 `GET`/`PUT /study-preferences` handlers, the web type mirror for the
-preferences payload, and the tests for all of it.
+preferences payload, and the tests for all of it. Also in scope (R-EP17-06,
+doc updates): the stale "four keys" endpoint comments at
+`study-plans.controller.ts:33-48` and the "exactly the four contract keys"
+projection comment at `study-plans.service.ts:190-193` — both are rewritten to
+describe the full contract key set, so a third generation of the same stale
+comment is not created.
 
 **Out:** reading the lever in the engine (EP17B/EP17C); feeding it to
 `schedule` (EP17D); any UI (EP17G); any Prisma migration (▲ D17-5 (a)).
@@ -57,12 +62,10 @@ AC-E17-06, AC-E17-07; TR-E17-03; DoD-2, DoD-8, DoD-9.
    every other key untouched, and a body with no `spreadPercent` leaves a
    stored one untouched. The serialized bag stays under
    `PREFERENCES_BAG_MAX_BYTES`.
-4. Under ▲ D17-2 option (a): `weeklyGoalDays`'s documentation in
-   `preferences.ts` and in the response contract states that it is a planning
-   instruction as well as the momentum yardstick, and the momentum read's
-   existing use of the key is confirmed unchanged by a test. Under option (b)
-   this AC instead adds `studyDaysPerWeek` with the same contract treatment
-   as AC-1 and leaves `weeklyGoalDays`'s docs alone.
+4. Per ▲ D17-2's ruling (a) (user, 2026-11-19): `weeklyGoalDays`'s
+   documentation in `preferences.ts` and in the response contract states that
+   it is a planning instruction as well as the momentum yardstick, and the
+   momentum read's existing use of the key is confirmed unchanged by a test.
 
 ## Tests
 
@@ -132,5 +135,5 @@ DoD-5/6/7 N/A — no UI. DoD-10/11 at the EP17 parent review.
   `study-plans.service.ts:180-210`.
 - **Verification:** `pnpm --filter @studypilot/api test -- preferences` and
   the study-plans service/controller specs green; the legacy-bag test passes.
-- **Dependencies / exclusions:** ▲ D17-2 decides AC-4's shape. Engine
+- **Dependencies / exclusions:** AC-4 follows ▲ D17-2's ruling (a). Engine
   consumption is EP17B/EP17C; wiring is EP17D; UI is EP17G.

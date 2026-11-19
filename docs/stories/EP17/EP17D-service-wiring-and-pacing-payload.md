@@ -9,9 +9,9 @@
 
 ## Plan at a glance
 
-- **What this changes:** `gatherPlanData` passes the spread levers into the engine, so a real student's "Plan my week" finally paces; and both proposal payloads (`PlanPreview` and `CatchUpPreview`) gain one additive `pacing` object — the effective spread value, the dates the plan used and the minutes per day — so the proposal surface can state what it did and the preset controls can show what is in effect.
+- **What this changes:** `gatherPlanData` passes the spread levers into the engine, so a real student's "Plan my week" finally paces; and both proposal payloads (`PlanPreview` and `CatchUpPreview`) gain one additive `pacing` object — the effective spread value, the selected study days (placed-on or not) and the minutes per day — so the proposal surface can state what it did and the preset controls can show what is in effect.
 - **Why it improves it:** without this story the engine work is dead code behind a service that still hands it the old input. With it, the plan a student sees is the paced plan, and the UI can say "spread across Mon, Wed, Fri" instead of leaving the student to count (product). One payload addition serves both EP17F's summary and EP17G's controls, so neither has to recompute the engine's decision client-side (code).
-- **Decisions needing you:** ▲ D-D1 (the payload gains a field — a public contract change, additive and backward-compatible). D-D2/D-D3 below are non-material.
+- **Decisions needing you:** none — ▲ D-D1 ratified (user, 2026-11-19); D-D2/D-D3 below are non-material and also ratified.
 - **How to change this plan:** edit a Ruling cell below; ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary
@@ -44,8 +44,9 @@ DoD-1, DoD-3, DoD-8, DoD-9.
    default from `readStudyPreferences`.
 2. Both proposal payloads carry the additive `pacing` block of
    [contracts §5](./contracts.md#5-the-pacing-block-in-the-proposal-payload-ep17d-owns-it)
-   — `spreadPercent`, `studyDays` (the civil dates the plan used, in order)
-   and `perDayMinutes`. Every pre-EP17 field keeps its name, type and order;
+   — `spreadPercent`, `studyDays` (the §4 **selected** day set in date order,
+   including selected days on which nothing was placed — R-EP17-05) and
+   `perDayMinutes`. Every pre-EP17 field keeps its name, type and order;
    no field is removed; no route changes.
 3. Both reads stay scoped to the authenticated student: `pacing` is derived
    only from that student's own preferences and that student's own run, and

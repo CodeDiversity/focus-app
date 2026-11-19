@@ -3,7 +3,7 @@
 **Epic:** [EP17](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md)
 **Milestone:** M10 — release 1.4 (proposed, D17-1)
 **Epic dependency:** EP06, EP13, EP14, EP15, EP16 closed. No predecessor blocks the queue.
-**Status:** Breakdown complete (planner, 2026-11-19). Quality gate: **Plan Ready** — every ▲ row ruled as recommended (user, 2026-11-19; D17-2 ruled (a) with a UI-visibility proviso, see the epic register); see [history.md](./history.md). **Plan review: required** (the preferences bag gains persisted keys — planning-checklist rule) before implementation. No tracker sync.
+**Status:** Breakdown complete (planner, 2026-11-19). Quality gate: **Plan Ready** — every ▲ row ruled as recommended (user, 2026-11-19; D17-2 ruled (a) with a UI-visibility proviso, see the epic register); see [history.md](./history.md). **Plan review (required, D17-12): pass 1 returned Changes Required** (2026-11-19, [plan-review.md](./plan-review.md)); corrections C-R-EP17-01…06 applied ([history.md](./history.md)), awaiting re-review before implementation. No tracker sync.
 
 ## Plan at a glance
 
@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** **EP17A** — refine nothing (specified in-story); all ▲ rows ruled (user, 2026-11-19). A **plan review** is required before implementation starts (persisted-data contract).
+**Next substory:** **EP17A** — refine nothing (specified in-story); all ▲ rows ruled (user, 2026-11-19). Plan review pass 1 ran 2026-11-19 (Changes Required); corrections applied — the **re-review of the changed sections** gates implementation.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -28,12 +28,12 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP17A](./EP17A-spread-preferences-contract.md) | Queued | ▲ D17-2 ruled (a), ▲ D17-5 / ▲ D-A1 ratified (user, 2026-11-19). Plan review required first. | Run the plan review, then implement | — |
+| [EP17A](./EP17A-spread-preferences-contract.md) | Queued | ▲ D17-2 ruled (a), ▲ D17-5 / ▲ D-A1 ratified (user, 2026-11-19). Plan-review re-review (pass 1 corrections) gates implementation. | Re-review, then implement | [plan-review.md](./plan-review.md) — pass 1 Changes Required; corrections in [history.md](./history.md) |
 | [EP17B](./EP17B-engine-daily-pacing.md) | Queued | EP17A. ▲ D17-3 ruled (user, 2026-11-19). | Implement after EP17A | — |
 | [EP17C](./EP17C-engine-study-day-selection.md) | Queued | ▲ D17-2 ruled (a) and ▲ D-C2 ratified (user, 2026-11-19). EP17B. | Implement after EP17B | — |
-| [EP17D](./EP17D-service-wiring-and-pacing-payload.md) | Queued | EP17A–EP17C; ▲ D-D1 unruled. | Implement after EP17C | — |
+| [EP17D](./EP17D-service-wiring-and-pacing-payload.md) | Queued | EP17A–EP17C; ▲ D-D1 ratified (user, 2026-11-19). | Implement after EP17C | — |
 | [EP17E](./EP17E-editable-week-grid.md) | Needs refinement | EP17D; ▲ D-E1 (interaction model) is the refiner's to ground. ▲ D17-4 ruled (user, 2026-11-19). | Dispatch the refiner | — |
-| [EP17F](./EP17F-proposal-composition-and-decision.md) | Needs refinement | EP17E; ▲ D-F1, ▲ D-F2 unruled. Absorbs BL-16-09. | Dispatch the refiner | — |
+| [EP17F](./EP17F-proposal-composition-and-decision.md) | Needs refinement | EP17E; ▲ D-F1, ▲ D-F2 ratified (user, 2026-11-19). Absorbs BL-16-09. | Dispatch the refiner | — |
 | [EP17G](./EP17G-plan-time-pacing-controls.md) | Needs refinement | EP17F; ▲ D17-8 / ▲ D-G1 ratified (user, 2026-11-19). ▲ D17-2 (a) ruled: the study-days control appears, with copy stating its instruction meaning (D17-2 proviso). | Dispatch the refiner | — |
 | [EP17H](./EP17H-cross-layer-e2e-and-parent-index.md) | Queued | EP17A–EP17G implemented. | Implement last | — |
 
@@ -79,7 +79,7 @@ Original wording in the [epic](../../epics/EP17-adhd-friendly-pacing-and-plan-pr
 
 | Req | Requirement | Owner |
 |---|---|---|
-| TR-E17-01 | Domain unit tests for pacing: spread with slack, no spread when tight, the many-small-assignments counterexample, the minute-sum invariant | **EP17B**, EP17C |
+| TR-E17-01 | Domain unit tests for pacing: spread with slack, no spread when tight, the many-small-assignments counterexample, the minute-sum invariant **per deficit category** (R-EP17-02: non-overdue — placed + deficit + deferred = remaining; `OVERDUE` — deficit = remaining, placed reported alongside) | **EP17B**, EP17C |
 | TR-E17-02 | Determinism and byte-identical-at-"off" compatibility over a fixture battery | **EP17B**, EP17C; EP17H re-runs the gate |
 | TR-E17-03 | Preferences contract tests incl. the frozen legacy-bag fixture | **EP17A** |
 | TR-E17-04 | API tests for the `pacing` payload and the plan-time write + re-preview, with ownership scoping | **EP17D**, EP17G (client half) |

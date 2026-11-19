@@ -51,14 +51,27 @@ TR-E17-07; DoD-1, DoD-8, DoD-9.
    those days instead of exhausting the first two days' budgets.
 2. The rule 3 feasibility override is unchanged and runs first: an assignment
    whose remaining work exceeds `capacityAfter` on a day is still served
-   before any rotation and **ignores** its pacing target. A fixture whose
-   deadline is met by the pre-EP17 engine is still met after pacing — pacing
-   never produces a new deficit or a new `INSUFFICIENT_TIME_BEFORE_DEADLINE`.
-3. For every run, `placedMinutes + deficitMinutes + deferredMinutes` still
-   accounts for each assignment's input `remainingMinutes`, and the category
-   set is exactly the pre-EP17 set. Minutes the pacing target declines are
-   reported as `INSUFFICIENT_TIME_BEFORE_DEADLINE` by the existing branch
-   (`scheduler.ts:612-618`) — never dropped, never a new category.
+   before any rotation and **ignores** its pacing target. In the normal pass,
+   a day's take for an assignment is floored at
+   `max(paceTarget, remaining − capacityAfter)` ([contracts §3](./contracts.md#3-the-pacing-rule-ep17b-owns-the-definition)'s
+   feasibility floor), so pacing never voluntarily defers minutes the later
+   horizon days cannot nominally absorb. **Bounded claim (R-EP17-01):**
+   because `capacityAfter` (`scheduler.ts:317-332`) stays optimistic about gap
+   fragmentation and competing assignments, the guarantee is that pacing is
+   **no worse than the rule 3 guarantee the engine already makes** — a fixture
+   whose deadline is met by the pre-EP17 engine and whose final-day capacity
+   is real (not an artifact of that optimism) is still met after pacing; the
+   residual-optimism cases are pinned by the adversarial fixture below.
+3. For every run the minutes are accounted for **per deficit category**
+   (R-EP17-02, matching `scheduler.ts:594-628`): for a non-overdue
+   assignment, `placedMinutes + deficitMinutes + deferredMinutes =` input
+   `remainingMinutes`; for an `OVERDUE` assignment,
+   `deficitMinutes = remainingMinutes` whatever was placed
+   (`scheduler.ts:594-596`) and `placedMinutes` is reported alongside. The
+   category set is exactly the pre-EP17 set. Minutes the pacing target
+   declines are reported as `INSUFFICIENT_TIME_BEFORE_DEADLINE` by the
+   existing branch (`scheduler.ts:612-618`) — never dropped, never a new
+   category.
 4. `schedule()` remains pure and deterministic: no clock, no randomness, no
    I/O, no `@nestjs/*` or Prisma import; the same input yields byte-identical
    output across repeated runs; and with `spreadPercent = 0` the output is
@@ -81,8 +94,18 @@ In `scheduler.spec.ts` (TR-E17-01, TR-E17-02, TR-E17-07):
 - *never introduces a deadline miss* — a battery of fixtures run at
   `spreadPercent` 0 and 100; no fixture gains a deficit category at 100
   (EP17B-AC2, negative).
+- *pacing under optimistic capacity — the fragmentation counterexample*
+  (**owning adversarial test for EP17B-AC2 / R-EP17-01**): plan-review pass
+  1's counterexample 1 — 100 min due Tue, Mon holds one 100-min gap, Tue has
+  140 free minutes in 10-min gaps (`minSessionMinutes = 15`), so
+  `dayBudgetOf(Tue)` is nominal only. At `spreadPercent = 100` the fixture
+  pins the chosen behaviour under the feasibility floor and documents the
+  bounded claim; a companion case covers counterexample 2 (two 60-min
+  assignments sharing a tight Tuesday).
 - *accounts for every minute* — property-style sum assertion across the
-  battery (EP17B-AC3).
+  battery, **per deficit category** (EP17B-AC3, R-EP17-02): non-overdue —
+  `placed + deficit + deferred = remaining`; `OVERDUE` —
+  `deficit = remaining` and `placed` asserted alongside.
 - *is byte-identical at `spreadPercent = 0`* — `JSON.stringify` compared to
   the frozen baseline (EP17B-AC4, TR-E17-02).
 - *is byte-identical across two runs of the same input* at `spreadPercent`

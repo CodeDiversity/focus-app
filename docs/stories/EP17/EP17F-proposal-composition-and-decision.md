@@ -11,7 +11,7 @@
 
 - **What this changes:** the proposal page stops being a stack of seven equal regions. It becomes: a short summary of what the planner did (including how the week was spread), the editable week, and the decision — with **Use this plan** / **Not now** reachable from the editing area instead of only from the page header. The context regions (what this plan keeps, what moved forward, workload warnings, calibration note) are still there, in a secondary position that does not stand between the student and the decision. Absorbs BL-16-09 (phone-first proposal).
 - **Why it improves it:** today the confirm sits at the very top (`PlanProposal.tsx:110-128`) and six regions sit between a student's eyes and it. A student with ADHD who has just finished nudging a session on Thursday has to scroll back to the top to say yes — a trivial-sounding cost that is exactly where confirmation gets abandoned (product). In code, one page that composes three regions is far easier to keep honest than seven sibling blocks with implicit priority (code).
-- **Decisions needing you:** ▲ D-F1 (where the decision controls live) and ▲ D-F2 (what is demoted behind a disclosure) — both user-visible workflow, both recommended below.
+- **Decisions needing you:** none — ▲ D-F1 (where the decision controls live) and ▲ D-F2 (what is demoted behind a disclosure) are both ratified (user, 2026-11-19).
 - **How to change this plan:** edit a Ruling cell below; ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary

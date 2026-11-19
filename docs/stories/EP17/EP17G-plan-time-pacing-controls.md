@@ -5,13 +5,13 @@
 **Milestone:** M10 (proposed, D17-1)
 **Layer:** Frontend
 **Status:** **Needs refinement** (D17-11) — preset naming, copy and the inline-write affordance are UI/UX decisions the refiner grounds.
-**Dependencies:** EP17F. ▲ D17-2 decides whether a study-days control appears here at all.
+**Dependencies:** EP17F. ▲ D17-2 is **Ruled (a)** (user, 2026-11-19) with a proviso this story owns: the study-days control **must** appear and be visibly surfaced with its new instruction meaning — its copy states that the number now steers the planner.
 
 ## Plan at a glance
 
 - **What this changes:** the spread levers become reachable **from the proposal**. A student who looks at a crowded week picks a named preset ("Spread out" / "Balanced" / "Packed", labels to be refined) — and optionally how many days a week they want to study — and the week re-plans in front of them. The same controls are added to the Profile preferences form, so there is one contract and two entrances.
 - **Why it improves it:** today there is no path at all from a plan you dislike to the knob that would fix it; the only editing surface is Profile (`ProfilePage.tsx:221`), two navigations and a mental map away. Giving the lever to the student at the moment they notice the problem is the difference between "this app doesn't understand me" and "I fixed it" (product). Reusing the existing preset-card pattern (`StudyPreferencesForm.tsx:98-115`, EP13N D-N1) means one component, one contract, and no third spelling of the same choice (code).
-- **Decisions needing you:** ▲ D17-8 (a preference write from a preview surface, with an immediate re-preview) — epic register, still Proposed. ▲ D-G1 below (whether the change is persisted or proposal-only) refines it.
+- **Decisions needing you:** none — ▲ D17-8 and ▲ D-G1 are ratified (user, 2026-11-19). **Binding obligation (▲ D17-2 proviso, user, 2026-11-19):** this story surfaces the study-days control visibly with its new meaning — on the proposal (D-G2 (a)) and on the Profile form — with copy stating that the number instructs the planner, not just the momentum yardstick.
 - **How to change this plan:** edit a Ruling cell below; ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary

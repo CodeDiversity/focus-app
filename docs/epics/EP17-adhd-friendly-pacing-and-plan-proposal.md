@@ -1,7 +1,7 @@
 # EP17: ADHD-Friendly Pacing and a One-Surface Plan Proposal
 
 **Epic ID:** EP17
-**Status:** Breakdown complete (planner, 2026-11-19) → [docs/stories/EP17](../stories/EP17/README.md). Quality gate: **Needs Decision** (▲ D17-2 open — the `weeklyGoalDays` semantics the user delegated to the planner). Plan review: **required** (the preferences bag gains persisted keys — planning-checklist rule).
+**Status:** Breakdown complete (planner, 2026-11-19) → [docs/stories/EP17](../stories/EP17/README.md). Quality gate: **Plan Ready** — every ▲ row ruled as recommended (user, 2026-11-19); ▲ D17-2 ruled (a) with a UI-visibility proviso (EP17G owns the surfacing). Plan review (required — the preferences bag gains persisted keys): pass 1 returned **Changes Required**; corrections applied, awaiting re-review ([history.md](../stories/EP17/history.md)).
 **Release:** 1.4 (proposed, D17-1)
 **Priority:** High / P0
 **Labels:** `studypilot`, `adhd`, `scheduling`, `planning`
@@ -151,7 +151,11 @@ the spread happens **within those chosen days**.
    distributed across the horizon rather than packed into its earliest days.
 2. Feasibility still wins: an assignment that cannot otherwise meet its
    deadline is served first and ignores its pacing target, exactly as rule 3
-   does today. No new deadline miss is introduced by pacing.
+   does today, and the normal pass never defers below the feasibility floor
+   (contracts §3). Bounded claim (R-EP17-01): pacing introduces no deadline
+   miss beyond the rule 3 guarantee the engine already makes — `capacityAfter`
+   stays optimistic about fragmentation and competition, and those residual
+   cases are pinned by EP17B's adversarial fixtures.
 3. No minutes are lost: every minute the rules decline to place is still
    reported through the existing `deficitMinutes` / `deferredMinutes` fields
    and the existing categories (`OVERDUE`, `NO_AVAILABLE_TIME`,
@@ -211,8 +215,11 @@ the spread happens **within those chosen days**.
 
 - **TR-E17-01** Domain unit tests for pacing: an assignment with slack is
   spread; a tight-deadline assignment is not; a week of many small
-  assignments is **not** throttled (the D17-3 counterexample); placed +
-  deficit + deferred minutes still sum to the input remainder.
+  assignments is **not** throttled (the D17-3 counterexample); the minute-sum
+  invariant holds **per deficit category** (R-EP17-02): for non-overdue work,
+  placed + deficit + deferred minutes equal the input remainder; for
+  `OVERDUE`, deficit equals the input remainder (`scheduler.ts:594-596`) and
+  placed is asserted alongside.
 - **TR-E17-02** Determinism and compatibility: identical input → identical
   output over a fixture battery; with pacing off, output is byte-identical to
   the recorded pre-EP17 baseline.
@@ -312,7 +319,7 @@ epic touches already scopes by the authenticated `userId`.
 
 | Claim | Counterexample | Mechanism | Owning test |
 |---|---|---|---|
-| Pacing never causes a new deadline miss | A tight-deadline assignment is spread thin and runs out of days | The rule 3 feasibility override runs **before** pacing and ignores the pacing target (`scheduler.ts:547-553`, extended by EP17B) | TR-E17-01, EP17B-AC2 |
+| Pacing introduces no deadline miss beyond the rule 3 guarantee the engine already makes (bounded claim, R-EP17-01) | Pacing defers minutes onto a final day whose nominal budget is fragmented below `minSessionMinutes`, or shared with a competing assignment — `capacityAfter` (`scheduler.ts:317-332`) is optimistic and never sees either | The rule 3 feasibility override runs **before** pacing and ignores the pacing target (`scheduler.ts:547-553`); the normal pass floors each day's take at `max(paceTarget, remaining − capacityAfter)` (contracts §3's feasibility floor), so pacing never defers below nominal feasibility; the residual optimism is pinned by the adversarial fixtures | TR-E17-01, EP17B-AC2, EP17B's *pacing under optimistic capacity* fixtures |
 | No minute is silently dropped | Pacing declines to place work and nobody reports it | The existing deficit/deferred classification already reports "everything the rules declined to place" (`scheduler.ts:612-618`); EP17B adds a sum invariant test | TR-E17-01, EP17B-AC3 |
 | The engine stays pure and deterministic | A pacing heuristic iterates a `Map` in insertion order that depends on input order | Every iteration is over `days` or the comparator-sorted `progress`; the identity fixture battery runs the same input twice and compares bytes | TR-E17-02, EP17B-AC4 |
 | A pre-EP17 preferences bag never breaks a student's plan | A bag with eight keys hits a reader expecting nine and throws or returns `NaN` | `readStudyPreferences` is per-key with per-key defaults (`preferences.ts:201-230`); EP17A adds the legacy-bag test | TR-E17-03, EP17A-AC2 |
@@ -333,6 +340,7 @@ epic touches already scopes by the authenticated `userId`.
 
 ## Remaining decisions
 
-▲ D17-2 (what `weeklyGoalDays` means) is the one open material row and it
-blocks EP17A and EP17C. ▲ D17-5 and ▲ D17-8 are recommended and awaiting your
-ruling. Breakdown: [docs/stories/EP17](../stories/EP17/README.md).
+None — every ▲ row is ruled (user, 2026-11-19). ▲ D17-2 is ruled (a) with the
+proviso that the study-days control is visibly surfaced with its instruction
+meaning (EP17G owns it; no new story). Breakdown:
+[docs/stories/EP17](../stories/EP17/README.md).

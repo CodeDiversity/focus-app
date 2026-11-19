@@ -28,7 +28,7 @@ EP13F appended them.
 | Key | Meaning | Default | Bounds | Notes |
 |---|---|---|---|---|
 | `spreadPercent` | How strongly the pacing target binds. `100` = pace fully (an assignment takes its even share of its horizon); `0` = reproduce the pre-EP17 engine exactly | `70` | `0…100` | The "off" value `0` is what TR-E17-02's byte-identical baseline run uses (D17-6) |
-| `weeklyGoalDays` | **Existing key, semantics decided by ▲ D17-2.** Under option (a) it becomes the number of days of the window the planner may use | `3` | `1…7` | Under option (b) a new `studyDaysPerWeek` key is added instead and `weeklyGoalDays` stays a goal. EP17A does not write code for the losing option |
+| `weeklyGoalDays` | **Existing key; ▲ D17-2 Ruled (a) (user, 2026-11-19):** it becomes the number of days of the window the planner may use, and stays the momentum yardstick | `3` | `1…7` | Proviso: the control is visibly surfaced with its instruction meaning (EP17G). EP17A writes no code for the losing options |
 
 Asked in the UI as named presets (the EP13N pattern), not as a raw number —
 exact labels are EP17G's refiner call.
@@ -54,8 +54,14 @@ block length or the anchor partition.
 For each assignment A and each day D of A's horizon that the plan may use:
   evenShare(A, D) = ceil(A.remainingAtRunStart / |usableDays(A)|)
   paceTarget(A, D) = dayBudget(D) - (dayBudget(D) - evenShare(A, D)) * spreadPercent/100
-  A takes at most paceTarget(A, D) minutes on D.
+  dayTake(A, D) = max(paceTarget(A, D), A.remaining - capacityAfter(A, D))
+  A takes at most dayTake(A, D) minutes on D.
 ```
+
+The `max(…)` term is the **feasibility floor** (R-EP17-01): pacing may never
+defer below what the later days can nominally still absorb, so a day's take is
+raised back up whenever deferring the full pace amount would leave
+`A.remaining > capacityAfter(A, D)` after the day.
 
 - `usableDays(A)` = the days of `A`'s horizon that survive the study-day
   selection of §4. For an overdue assignment the horizon is the whole window
@@ -64,7 +70,16 @@ For each assignment A and each day D of A's horizon that the plan may use:
   behaviour, byte for byte.
 - The target is a **soft ceiling under the feasibility override**: the
   critical pass (`scheduler.ts:547-553`) ignores it entirely, so rule 3 is
-  untouched and no deadline is traded for smoothness.
+  untouched, and the feasibility floor above keeps the *normal* pass from
+  deferring work the remaining horizon cannot nominally hold.
+- **Bounded guarantee (R-EP17-01).** `capacityAfter` (`scheduler.ts:317-332`)
+  is optimistic by design: it sums `dayBudgetOf` over later horizon days,
+  ignoring break buffers, gap fragmentation against `minSessionMinutes` and
+  competing assignments. The guarantee pacing makes is therefore **no worse
+  than the rule 3 guarantee the engine already makes** — not an absolute
+  "never a new deficit". Where that residual optimism bites (a fragmented
+  final day; two assignments sharing a tight final day), the adversarial
+  fixtures named in EP17B's test list pin the chosen behaviour.
 - The target never raises a day's budget; `dayBudgetOf` (rule 2) still caps
   the day as a whole.
 - Minutes the target declines are reported by the existing classification
@@ -74,7 +89,8 @@ For each assignment A and each day D of A's horizon that the plan may use:
 
 ## 4. Study-day selection (EP17C owns the definition; gated by ▲ D17-2)
 
-Under ▲ D17-2 option (a):
+▲ D17-2 is **Ruled (a)** (user, 2026-11-19): `weeklyGoalDays` is the planning
+instruction this section reads.
 
 ```text
 usableDays(window) = the `weeklyGoalDays` days of the window with the most
@@ -83,18 +99,25 @@ usableDays(window) = the `weeklyGoalDays` days of the window with the most
 
 - Computed once per run from `baselineFreeMinutes` (`scheduler.ts:290-293`),
   which is already free of run state — so the selection is deterministic.
-- A day outside the selection gets `dayBudget = 0` for the normal pass. The
-  **critical** pass (rule 3) may still use it: a deadline always beats a
-  preference, and a one-day-per-week student with a Tuesday deadline must
-  still get Tuesday.
+- The narrowed budget is **pass-aware** (R-EP17-03) — a single zeroing of
+  `dayBudgetOf` would starve the critical pass too, because `budgetLeft` is
+  seeded from it (`scheduler.ts:534-537`) and `placeBlock` returns 0 at
+  `budget <= 0` (`:489-490`), on the critical path as well (`:550-551`). The
+  selection applies per consumer:
+  - the **normal rotation**'s `budgetLeft` seed: `0` on an unselected day;
+  - the **critical pass** (rule 3): the *real* budget on every day — a
+    deadline always beats a preference, and a one-day-per-week student with a
+    Tuesday deadline must still get Tuesday;
+  - **`capacityAfter`**: the narrowed budgets, so the feasibility estimate
+    sees only the days the plan may normally use;
+  - the **anchor pass**: the narrowed budgets, per ▲ D-C2 (a) — less slack
+    legitimately pins more sessions `FIXED`.
 - `weeklyGoalDays = 7` reproduces today's behaviour (AC-E17-05).
 - If the selection would leave an assignment with no usable day before its
-  deadline, that assignment's horizon falls back to its full horizon rather
-  than producing a deficit — smoothness never manufactures a miss.
-
-Under ▲ D17-2 option (b) the same algorithm reads a new `studyDaysPerWeek`
-key and `weeklyGoalDays` is untouched. Under option (c) EP17C is dropped and
-its ACs are withdrawn with a recorded ruling.
+  deadline, that assignment's **normal pass** falls back to its full horizon
+  rather than producing a deficit — smoothness never manufactures a miss.
+  This fallback and the critical pass are the two explicit carve-outs from
+  EP17C-AC1's "at most N distinct dates", each covered by its own fixture.
 
 ## 5. The pacing block in the proposal payload (EP17D owns it)
 
@@ -104,10 +127,17 @@ changes, no field is removed or renamed.
 ```ts
 pacing: {
   spreadPercent: number;      // the effective lever
-  studyDays: string[];        // the civil dates the plan used (§4)
+  studyDays: string[];        // the §4 *selected* day set (see below)
   perDayMinutes: Record<string, number>; // date → placed minutes
 }
 ```
+
+`studyDays` is the **§4 selection, in date order, independent of whether any
+minutes were placed on a day** (R-EP17-05) — a selected day with an empty
+`perDayMinutes` entry is still listed, which is exactly the distinction ▲ D-D1
+exists to carry to the client. A day used only by the rule 3 critical pass
+(outside the selection, §4) appears in `perDayMinutes` but **not** in
+`studyDays`.
 
 Consumers: EP17F's summary line and EP17G's preset controls. Clients that
 ignore it are unaffected.

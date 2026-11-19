@@ -41,7 +41,10 @@ evidence; DoD-8, DoD-10.
 
 1. A Playwright journey covers: sign in → **Plan my week** → the proposal
    shows a week whose minutes fall on more than the first two days and only
-   on the chosen study days → edit one session in place (change its day) →
+   on the chosen study days — **asserted on a seeded fixture with no critical
+   work**, since the rule 3 critical pass may legitimately place on an
+   unselected day (contracts §4; R-EP17-05) → edit one session in place
+   (change its day) →
    **Use this plan** → Today shows the resulting next session. It asserts
    human day labels, never an ISO date.
 2. A second journey covers the plan-time preset: change the spread preset on
@@ -85,7 +88,7 @@ The journeys above are the tests. Additionally:
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-H1 | Asserting "the week is spread": (a) assert the **shape** — minutes appear on more than N days and on no unselected day — from a seeded fixture; (b) assert exact per-day minutes | **(a)** — (b) re-pins the engine's arithmetic in a slow browser test that the domain spec already owns far better; the journey's job is that the levers reach the engine | Ratified (user, 2026-11-19) |
+| D-H1 | Asserting "the week is spread": (a) assert the **shape** — minutes appear on more than N days and on no unselected day — from a seeded fixture **containing no critical (rule 3) work**, because the critical pass may place on an unselected day (R-EP17-05); (b) assert exact per-day minutes | **(a)** — (b) re-pins the engine's arithmetic in a slow browser test that the domain spec already owns far better; the journey's job is that the levers reach the engine | Ratified (user, 2026-11-19) |
 | D-H2 | Where the preset journey asserts persistence: (a) on the Profile page after confirming; (b) by re-opening the proposal | **(a)** — it proves the ▲ D-G1 persistence claim at the surface a student would check | Ratified (user, 2026-11-19) |
 
 ## Definition of Done

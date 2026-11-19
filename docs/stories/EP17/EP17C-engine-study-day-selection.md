@@ -5,7 +5,7 @@
 **Milestone:** M10 (proposed, D17-1)
 **Layer:** Backend (pure domain)
 **Status:** Queued — ▲ D17-2 ruled (a) (user, 2026-11-19); unblocked
-**Dependencies:** EP17B (pacing must exist for "spread *within* the chosen days" to mean anything). ▲ D17-2 decides whether this story reads `weeklyGoalDays` or a new key — and under option (c) withdraws it entirely.
+**Dependencies:** EP17B (pacing must exist for "spread *within* the chosen days" to mean anything). ▲ D17-2 **Ruled (a)** (user, 2026-11-19): this story reads the existing `weeklyGoalDays` key.
 
 ## Plan at a glance
 
@@ -44,9 +44,11 @@ TR-E17-02; DoD-1, DoD-8, DoD-9.
 ## Acceptance criteria
 
 1. With a chosen count N < 7, the normal placement pass places sessions on at
-   most N distinct dates of the window, and those dates are the N with the
-   greatest baseline free minutes (ties broken by earlier date), computed
-   from run-start data only — see
+   most N distinct dates of the window — **except days used by the rule 3
+   critical pass or by the full-horizon fallback, each covered by its own
+   fixture** (R-EP17-03) — and those dates are the N with the greatest
+   baseline free minutes (ties broken by earlier date), computed from
+   run-start data only — see
    [contracts §4](./contracts.md#4-study-day-selection-ep17c-owns-the-definition-gated-by--d17-2).
 2. With N = 7 the output is byte-identical to the EP17B engine for the same
    input — the selection is a no-op when the student wants every day.
@@ -85,14 +87,21 @@ TR-E17-02; DoD-1, DoD-8, DoD-9.
 
 - Inspected: `baselineFreeMinutes` (`scheduler.ts:290-293`) is built before
   any placement and never mutates — the correct and only safe input for the
-  selection (purity). `dayBudgetOf` (`:296`) is the single place a day's
-  allowance is computed, so zeroing an unselected day is a one-site change;
-  note that `capacityAfter` (`:324`) and the anchor pass (`:656-659`) **also**
-  call `dayBudgetOf`, so the selection automatically and correctly narrows
-  the feasibility estimate and the FLEX/FIXED slack test too. That coupling is
-  the main review risk of this story: an assignment may now pin as `FIXED`
-  where it previously stayed `FLEX_DAY`, and the spec must say whether that is
-  intended (D-C2).
+  selection (purity).
+- **The budget must be pass-aware; this is more than one site** (R-EP17-03).
+  A bare zeroing of `dayBudgetOf` (`:296`) for unselected days would also
+  starve the critical pass, because the day loop seeds `budgetLeft` from
+  `dayBudgetOf` (`:534-537`) and `placeBlock` returns 0 whenever
+  `budget <= 0` (`:489-490`) — on the critical path too (`:550-551`) —
+  contradicting EP17C-AC3. The sites, per
+  [contracts §4](./contracts.md#4-study-day-selection-ep17c-owns-the-definition-gated-by--d17-2):
+  the **normal rotation's `budgetLeft`** seed is zeroed on unselected days;
+  the **critical pass's budget source** keeps the real budget on every day;
+  **`capacityAfter`** (`:324`) reads the narrowed budgets so the feasibility
+  estimate is correctly narrowed; and the **anchor pass** (`:656-659`) reads
+  the narrowed budgets per ▲ D-C2 (a). That anchor coupling is the main
+  review risk of this story: an assignment may now pin as `FIXED` where it
+  previously stayed `FLEX_DAY`, and the spec must say that is intended (D-C2).
 - Inspected: the critical pass `:547-553` is the channel that must keep
   access to unselected days (EP17C-AC3).
 - Inspected: `preferences.ts:58-61` — the current comment ("They gate
@@ -130,6 +139,6 @@ DoD-10/11 at the EP17 parent review.
   `scheduler.ts:280-340` and `:530-580`, EP17B's implementation record.
 - **Verification:** `pnpm --filter @studypilot/api test -- scheduler` green;
   the N = 7 byte-identical case passes.
-- **Dependencies / exclusions:** **blocked on ▲ D17-2**; needs EP17B.
+- **Dependencies / exclusions:** ▲ D17-2 ruled (a) (user, 2026-11-19); needs EP17B.
   Nothing reaches a student until EP17D wires it and EP17G exposes the
   control.
