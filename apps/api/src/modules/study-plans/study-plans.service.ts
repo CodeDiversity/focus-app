@@ -188,8 +188,10 @@ export type TodayPlan = {
 
 /**
  * The response projection (the `availability` module's `toSlotResponse`
- * precedent): exactly the four contract keys, in the contract's order.
- * `userId` is never exposed and neither is the rest of the preferences bag.
+ * precedent): exactly the `STUDY_PREFERENCE_KEYS` contract key set, in the
+ * contract's order — the D06-4 four, EP13F's two placement levers, EP13K's
+ * two momentum goals and EP17A's `spreadPercent`. `userId` is never exposed
+ * and neither is the rest of the preferences bag.
  */
 function toStudyPreferencesResponse(prefs: StudyPreferences): StudyPreferences {
   return {
@@ -200,9 +202,12 @@ function toStudyPreferencesResponse(prefs: StudyPreferences): StudyPreferences {
     // EP13F's two placement levers (D13-5), additive to the D06-4 four.
     breakMinutes: prefs.breakMinutes,
     densityPercent: prefs.densityPercent,
-    // EP13K's two momentum goals (D-K6/D-K7), additive.
+    // EP13K's two momentum goals (D-K6/D-K7), additive. `weeklyGoalDays` is
+    // also the planning instruction since ▲ D17-2's ruling (a).
     dailyGoalMinutes: prefs.dailyGoalMinutes,
     weeklyGoalDays: prefs.weeklyGoalDays,
+    // EP17A's spread lever (▲ D-A1), additive.
+    spreadPercent: prefs.spreadPercent,
   };
 }
 
@@ -515,9 +520,9 @@ export class StudyPlansService {
    * D06-14). A missing, partial or malformed stored bag never fails the
    * request and never yields an invalid combination.
    *
-   * 200 → `{ sessionLengthMinutes, minSessionMinutes, maxSessionMinutes,
-   * dailyCapMinutes }`; 404 → the uniform `Resource not found` (the
-   * principal's row no longer exists); 401 → unauthenticated (global guard).
+   * 200 → the complete `STUDY_PREFERENCE_KEYS` contract key set; 404 → the
+   * uniform `Resource not found` (the principal's row no longer exists);
+   * 401 → unauthenticated (global guard).
    */
   async getPreferences(userId: string): Promise<StudyPreferences> {
     const user = await this.prisma.user.findUnique({
@@ -533,7 +538,7 @@ export class StudyPlansService {
   /**
    * PUT /study-preferences — a **merge**: the client's subset is applied on
    * top of the current *effective* values, the merged result is validated,
-   * and the complete four-key object is written into
+   * and the complete contract-key object is written into
    * `preferences.studyDefaults`. The bag's other keys survive unchanged
    * (the write is a merge **into** the `studyDefaults` key, never a
    * replacement of the whole column — D06-14, SP106's free-form bag).

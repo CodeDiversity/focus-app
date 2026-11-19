@@ -35,7 +35,7 @@ describe('study preferences (domain, EP06A)', () => {
   };
 
   describe('the defaults and the bounds (D06-4)', () => {
-    it('exposes the documented defaults 60 / 15 / 120 / 240, plus EP13F’s 15 / 80 and EP13K’s 60 / 3', () => {
+    it('exposes the documented defaults 60 / 15 / 120 / 240, plus EP13F’s 15 / 80, EP13K’s 60 / 3 and EP17A’s 70', () => {
       expect(DEFAULTS).toEqual({
         sessionLengthMinutes: 60,
         minSessionMinutes: 15,
@@ -45,10 +45,12 @@ describe('study preferences (domain, EP06A)', () => {
         densityPercent: 80,
         dailyGoalMinutes: 60,
         weeklyGoalDays: 3,
+        // EP17A (▲ D-A1): spread by default.
+        spreadPercent: 70,
       });
     });
 
-    it('exposes the documented bounds 5..480 / 5..480 / 5..480 / 5..1440 / 0..60 / 50..100 / 5..480 / 1..7', () => {
+    it('exposes the documented bounds 5..480 / 5..480 / 5..480 / 5..1440 / 0..60 / 50..100 / 5..480 / 1..7 / 0..100', () => {
       expect(STUDY_PREFERENCE_BOUNDS).toEqual({
         sessionLengthMinutes: { min: 5, max: 480 },
         minSessionMinutes: { min: 5, max: 480 },
@@ -60,6 +62,8 @@ describe('study preferences (domain, EP06A)', () => {
         densityPercent: { min: 50, max: 100 },
         dailyGoalMinutes: { min: 5, max: 480 },
         weeklyGoalDays: { min: 1, max: 7 },
+        // EP17A: `0` is the pre-EP17 "no pacing" behaviour (D17-6).
+        spreadPercent: { min: 0, max: 100 },
       });
     });
   });
@@ -312,7 +316,7 @@ describe('study preferences (domain, EP06A)', () => {
       }
     });
 
-    it('returns exactly the eight keys', () => {
+    it('returns exactly the contract keys', () => {
       expect(Object.keys(readStudyPreferences({ theme: 'dark' })).sort()).toEqual(
         [...STUDY_PREFERENCE_KEYS].sort()
       );
@@ -431,6 +435,7 @@ describe('study preferences (domain, EP06A)', () => {
         densityPercent: 80,
         dailyGoalMinutes: 60,
         weeklyGoalDays: 3,
+        spreadPercent: 70,
       });
     });
 
@@ -552,6 +557,155 @@ describe('study preferences (domain, EP06A)', () => {
       expect(validateStudyPreferences({ dailyGoalMinutes: 4 })).toEqual({
         dailyGoalMinutes: ['dailyGoalMinutes must be between 5 and 480'],
       });
+    });
+  });
+
+  // =========================================================================
+  // EP17A — the spread lever (▲ D17-5 (a), ▲ D-A1): `spreadPercent`.
+  // =========================================================================
+
+  describe('the EP17A spread lever (EP17A-AC1/AC2)', () => {
+    it('keeps a stored value inside the bounds, including both boundaries 0 and 100', () => {
+      expect(readStudyPreferences({ studyDefaults: { spreadPercent: 35 } }).spreadPercent).toBe(35);
+      expect(readStudyPreferences({ studyDefaults: { spreadPercent: 0 } })).toEqual({
+        ...DEFAULTS,
+        spreadPercent: 0,
+      });
+      expect(readStudyPreferences({ studyDefaults: { spreadPercent: 100 } })).toEqual({
+        ...DEFAULTS,
+        spreadPercent: 100,
+      });
+    });
+
+    it('falls back to the default 70 for out-of-range, float, string, boolean and missing values', () => {
+      for (const value of [-1, 101, 70.5, '70', true, false, null, undefined, {}, []]) {
+        expect(
+          readStudyPreferences({ studyDefaults: { spreadPercent: value } }).spreadPercent
+        ).toBe(70);
+      }
+    });
+
+    it('the validator rejects a non-integer and an out-of-range value, naming the field and the rule', () => {
+      expect(validateStudyPreferences({ spreadPercent: 70.5 })).toEqual({
+        spreadPercent: ['spreadPercent must be an integer'],
+      });
+      expect(validateStudyPreferences({ spreadPercent: -1 })).toEqual({
+        spreadPercent: ['spreadPercent must be between 0 and 100'],
+      });
+      expect(validateStudyPreferences({ spreadPercent: 101 })).toEqual({
+        spreadPercent: ['spreadPercent must be between 0 and 100'],
+      });
+    });
+
+    it('returns null for a valid partial containing only the new key', () => {
+      expect(validateStudyPreferences({ spreadPercent: 0 })).toBeNull();
+      expect(validateStudyPreferences({ spreadPercent: 100 })).toBeNull();
+    });
+
+    it('takes part in no cross-field rule: the two rules still fire and still ignore the new key', () => {
+      // The rules run when their own four inputs are present, whatever
+      // spreadPercent holds …
+      expect(
+        validateStudyPreferences({
+          sessionLengthMinutes: 10,
+          minSessionMinutes: 15,
+          maxSessionMinutes: 120,
+          dailyCapMinutes: 240,
+          spreadPercent: 0,
+        })
+      ).toEqual({
+        sessionLengthMinutes: [
+          'sessionLengthMinutes must be greater than or equal to minSessionMinutes',
+        ],
+      });
+      // … and a cross-field-valid combination is not failed by the new key.
+      expect(validateStudyPreferences({ ...DEFAULTS, spreadPercent: 100 })).toBeNull();
+      // The reader's repair steps never touch it either.
+      const prefs = readStudyPreferences({
+        studyDefaults: {
+          sessionLengthMinutes: 60,
+          minSessionMinutes: 300,
+          maxSessionMinutes: 200,
+          spreadPercent: 0,
+        },
+      });
+      expect(prefs.minSessionMinutes).toBe(200);
+      expect(prefs.spreadPercent).toBe(0);
+    });
+  });
+
+  describe('the frozen pre-EP17 legacy bag (TR-E17-03, EP17A-AC2)', () => {
+    /**
+     * A frozen fixture of a bag as written immediately before EP17: the
+     * eight pre-EP17 keys, every one off its default so a regression cannot
+     * hide behind a fallback. Do not edit — it pins backward compatibility.
+     */
+    const PRE_EP17_BAG = Object.freeze({
+      theme: 'dark',
+      studyDefaults: Object.freeze({
+        sessionLengthMinutes: 45,
+        minSessionMinutes: 20,
+        maxSessionMinutes: 90,
+        dailyCapMinutes: 300,
+        breakMinutes: 10,
+        densityPercent: 65,
+        dailyGoalMinutes: 90,
+        weeklyGoalDays: 5,
+      }),
+    });
+
+    /** The recorded pre-EP17 reader output for the fixture above. */
+    const PRE_EP17_EXPECTATION = {
+      sessionLengthMinutes: 45,
+      minSessionMinutes: 20,
+      maxSessionMinutes: 90,
+      dailyCapMinutes: 300,
+      breakMinutes: 10,
+      densityPercent: 65,
+      dailyGoalMinutes: 90,
+      weeklyGoalDays: 5,
+    } as const;
+
+    it('reads back every pre-EP17 key byte-identically, plus the new key at its default', () => {
+      const prefs = readStudyPreferences(PRE_EP17_BAG);
+      for (const [key, expected] of Object.entries(PRE_EP17_EXPECTATION)) {
+        expect(prefs[key as keyof StudyPreferences]).toBe(expected);
+      }
+      expect(prefs.spreadPercent).toBe(70);
+      expect(Object.keys(prefs).sort()).toEqual([...STUDY_PREFERENCE_KEYS].sort());
+    });
+
+    it('still never throws: no studyDefaults, a null bag, an array, a string', () => {
+      for (const bag of [
+        null,
+        { theme: 'dark' },
+        { studyDefaults: null },
+        { studyDefaults: ['spreadPercent', 70] },
+        { studyDefaults: 'spreadPercent=70' },
+      ]) {
+        let prefs: StudyPreferences | undefined;
+        expect(() => {
+          prefs = readStudyPreferences(bag);
+        }).not.toThrow();
+        expect(prefs).toEqual(DEFAULTS);
+        expectValidCombination(prefs as StudyPreferences);
+      }
+    });
+
+    it('a maximal bag (every key at its widest value) stays under the 4096-byte cap', () => {
+      const maximal: StudyPreferences = {
+        sessionLengthMinutes: 480,
+        minSessionMinutes: 480,
+        maxSessionMinutes: 480,
+        dailyCapMinutes: 1440,
+        breakMinutes: 60,
+        densityPercent: 100,
+        dailyGoalMinutes: 480,
+        weeklyGoalDays: 7,
+        spreadPercent: 100,
+      };
+      const serialized = JSON.stringify({ studyDefaults: maximal });
+      expect(Buffer.byteLength(serialized, 'utf8')).toBeLessThan(PREFERENCES_BAG_MAX_BYTES);
     });
   });
 });

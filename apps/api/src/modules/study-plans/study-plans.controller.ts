@@ -29,11 +29,14 @@ export class StudyPlansController {
   constructor(private readonly studyPlansService: StudyPlansService) {}
 
   /**
-   * GET /study-preferences — the student's effective study defaults
-   * (`sessionLengthMinutes`, `minSessionMinutes`, `maxSessionMinutes`,
-   * `dailyCapMinutes`); the stored values with the defaults filled in for
-   * any missing or invalid field, then the documented repair order.
-   * 200 → the four keys; 401 → unauthenticated (global guard).
+   * GET /study-preferences — the student's effective study defaults: the
+   * complete `STUDY_PREFERENCE_KEYS` contract key set (the D06-4 four,
+   * EP13F's `breakMinutes`/`densityPercent`, EP13K's
+   * `dailyGoalMinutes`/`weeklyGoalDays` and EP17A's `spreadPercent`); the
+   * stored values with the defaults filled in for any missing or invalid
+   * field, then the documented repair order.
+   * 200 → the contract keys, in the contract's order; 401 → unauthenticated
+   * (global guard).
    */
   @Get()
   getPreferences(@CurrentUser() user: AuthenticatedUser) {
@@ -41,10 +44,11 @@ export class StudyPlansController {
   }
 
   /**
-   * PUT /study-preferences — a **merge**: any subset of the four keys is
-   * applied on top of the current effective values, the merged result is
-   * validated, and the complete four-key object is written into
-   * `preferences.studyDefaults` (the bag's other keys survive unchanged).
+   * PUT /study-preferences — a **merge**: any subset of the contract keys
+   * (see the GET comment above) is applied on top of the current effective
+   * values, the merged result is validated, and the complete contract-key
+   * object is written into `preferences.studyDefaults` (the bag's other
+   * keys survive unchanged).
    * 200 → the effective values; 400 → a field-level `errors` map and nothing
    * written; 401 → unauthenticated (global guard).
    */

@@ -45,8 +45,20 @@ export type StudyPreferences = {
   densityPercent: number;
   /** EP13K (D-K6) — minutes a study day aims for (5…480, default 60). Gates nothing. */
   dailyGoalMinutes: number;
-  /** EP13K (D-K7) — study days a Monday-start week aims for (1…7, default 3). */
+  /**
+   * EP13K (D-K7) — study days a Monday-start week aims for (1…7, default 3).
+   * Since ▲ D17-2's ruling (a) (user, 2026-11-19) it is **both** the momentum
+   * yardstick (that read is unchanged) and a planning instruction: the number
+   * of days of the window the planner may use (read by the engine, EP17C).
+   */
   weeklyGoalDays: number;
+  /**
+   * EP17A (▲ D-A1) — how strongly the pacing target binds (0…100, default
+   * 70): `100` = an assignment takes its even share of its horizon, `0` =
+   * the pre-EP17 engine exactly. Read by the engine from EP17B on; it takes
+   * part in no cross-field rule.
+   */
+  spreadPercent: number;
 };
 
 /**

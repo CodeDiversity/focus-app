@@ -39,6 +39,15 @@ describe('momentum (domain, EP13K)', () => {
     expect(b.week.studyDays).toEqual([day(0), day(3), day(6)]);
   });
 
+  it('weeklyGoalDays stays the momentum yardstick unchanged (EP17A-AC4, ▲ D17-2 (a))', () => {
+    // D17-2 (a) made the key a planning instruction *as well*; the momentum
+    // read's use of it — the week's goal and goal-met test — is unchanged.
+    const out = run(SUN, [s(day(0)), s(day(3))], 2);
+    expect(out.week.goalDays).toBe(2);
+    expect(out.week.goalMet).toBe(true);
+    expect(run(SUN, [s(day(0)), s(day(3))], 5).week.goalMet).toBe(false);
+  });
+
   it('two sessions on one day count that day once', () => {
     expect(run(SUN, [s(day(0)), s(day(0))]).week.studyDayCount).toBe(1);
   });

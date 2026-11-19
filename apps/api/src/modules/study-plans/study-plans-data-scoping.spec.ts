@@ -45,6 +45,8 @@ const PREFERENCE_KEYS = [
   // EP13K (D-K6/D-K7) — the two momentum goals, additive.
   'dailyGoalMinutes',
   'weeklyGoalDays',
+  // EP17A (▲ D-A1) — the spread lever, additive.
+  'spreadPercent',
 ].sort();
 
 /** The documented defaults (D06-4 + EP13F's D13-5). */
@@ -57,6 +59,7 @@ const DEFAULTS = {
   densityPercent: 80,
   dailyGoalMinutes: 60,
   weeklyGoalDays: 3,
+  spreadPercent: 70,
 };
 
 describeIntegration('study preferences data scoping (integration, real database)', () => {

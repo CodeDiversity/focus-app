@@ -34,6 +34,7 @@ const PREFS: StudyPreferences = {
   densityPercent: 80,
   dailyGoalMinutes: 60,
   weeklyGoalDays: 3,
+  spreadPercent: 0, // EP17A — unread until EP17B; 0 = the pre-EP17 behaviour (D17-6).
 };
 
 const WEEK = [

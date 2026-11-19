@@ -14,7 +14,9 @@ import type { StudyPreferences } from './types';
  * The keys of the `studyDefaults` object, in the contract's order. EP13F
  * appended `breakMinutes` and `densityPercent` (D13-5) — additively, so a
  * bag written before EP13F still reads back valid (both keys fall back to
- * their defaults).
+ * their defaults). EP17A appended `spreadPercent` (▲ D17-5 (a)) the same
+ * way: a bag written before EP17 reads back with every existing key
+ * unchanged and the new key at its default.
  */
 export const STUDY_PREFERENCE_KEYS = [
   'sessionLengthMinutes',
@@ -25,6 +27,7 @@ export const STUDY_PREFERENCE_KEYS = [
   'densityPercent',
   'dailyGoalMinutes',
   'weeklyGoalDays',
+  'spreadPercent',
 ] as const;
 
 /** One of the `studyDefaults` keys. */
@@ -55,17 +58,25 @@ export const STUDY_PREFERENCE_DEFAULTS: StudyPreferences = {
   dailyCapMinutes: 240,
   breakMinutes: 15,
   densityPercent: 80,
-  // EP13K (D13-11, D-K6/D-K7): momentum goals. They gate nothing — they are
-  // only the yardstick the momentum read reports progress against.
+  // EP13K (D13-11, D-K6/D-K7): momentum goals. `dailyGoalMinutes` gates
+  // nothing. `weeklyGoalDays` is, since ▲ D17-2's ruling (a) (user,
+  // 2026-11-19), **both** the momentum yardstick (the momentum read's use is
+  // unchanged) and a planning instruction: the number of days of the window
+  // the planner may use (read by the engine from EP17C on).
   dailyGoalMinutes: 60,
   weeklyGoalDays: 3,
+  // EP17A (▲ D-A1): how strongly the pacing target binds — `100` = pace
+  // fully, `0` = reproduce the pre-EP17 engine exactly. Read by the engine
+  // from EP17B on; it gates nothing here.
+  spreadPercent: 70,
 };
 
 /**
  * The inclusive bounds of each key (D06-4, D13-5): the three session-length
  * keys accept `5…480` minutes, the daily cap accepts `5…1440` minutes, the
- * break accepts `0…60` minutes (`0` is a legitimate "no break" choice) and
- * the density accepts `50…100` percent.
+ * break accepts `0…60` minutes (`0` is a legitimate "no break" choice), the
+ * density accepts `50…100` percent and EP17A's spread accepts `0…100`
+ * percent (`0` is the pre-EP17 "no pacing" behaviour).
  */
 export const STUDY_PREFERENCE_BOUNDS: Record<StudyPreferenceKey, { min: number; max: number }> = {
   sessionLengthMinutes: { min: 5, max: 480 },
@@ -76,6 +87,7 @@ export const STUDY_PREFERENCE_BOUNDS: Record<StudyPreferenceKey, { min: number; 
   densityPercent: { min: 50, max: 100 },
   dailyGoalMinutes: { min: 5, max: 480 },
   weeklyGoalDays: { min: 1, max: 7 },
+  spreadPercent: { min: 0, max: 100 },
 };
 
 /** The serialized-size cap of the `preferences` JSON column (SP-106, D106-5). */
@@ -168,8 +180,9 @@ export function validateStudyPreferences(input: unknown): Record<string, string[
 
 /**
  * The **defensive reader** (D06-14): the whole `preferences` value (which
- * may be `null`) in, the effective study defaults out (the four D06-4 keys
- * plus EP13F's two).
+ * may be `null`) in, the effective study defaults out (the complete
+ * `STUDY_PREFERENCE_KEYS` set: the four D06-4 keys, EP13F's two, EP13K's
+ * two and EP17A's `spreadPercent`).
  *
  * It never throws and never returns an invalid combination: every value it
  * returns is inside its own bounds and both cross-field rules hold. The
@@ -227,6 +240,10 @@ export function readStudyPreferences(bag: unknown): StudyPreferences {
     weeklyGoalDays: isValueInBounds('weeklyGoalDays', stored?.weeklyGoalDays)
       ? (stored?.weeklyGoalDays as number)
       : STUDY_PREFERENCE_DEFAULTS.weeklyGoalDays,
+    // EP17A (▲ D-A1). Independent like `densityPercent` — step 1 only.
+    spreadPercent: isValueInBounds('spreadPercent', stored?.spreadPercent)
+      ? (stored?.spreadPercent as number)
+      : STUDY_PREFERENCE_DEFAULTS.spreadPercent,
   };
 
   // Step 2 — repair the inverted min/max pair (the maximum is kept).

@@ -26,6 +26,7 @@ describe('day bounds and preferred study blocks (domain, EP15C)', () => {
     densityPercent: 100,
     dailyGoalMinutes: 60,
     weeklyGoalDays: 3,
+    spreadPercent: 0, // EP17A — unread until EP17B; 0 = the pre-EP17 behaviour.
   };
   const MON = '2026-11-02';
   const TUE = '2026-11-03';

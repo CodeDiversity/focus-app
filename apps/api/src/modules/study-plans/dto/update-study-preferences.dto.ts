@@ -73,10 +73,24 @@ export class UpdateStudyPreferencesDto {
   @Max(480, { message: 'dailyGoalMinutes must be between 5 and 480' })
   dailyGoalMinutes?: number | null;
 
-  /** EP13K (D-K7) — the weekly momentum goal in study days. */
+  /**
+   * EP13K (D-K7) — the weekly momentum goal in study days; since ▲ D17-2's
+   * ruling (a) also the planning instruction for how many days of the window
+   * the planner may use (EP17C).
+   */
   @IsOptional()
   @IsInt({ message: 'weeklyGoalDays must be an integer' })
   @Min(1, { message: 'weeklyGoalDays must be between 1 and 7' })
   @Max(7, { message: 'weeklyGoalDays must be between 1 and 7' })
   weeklyGoalDays?: number | null;
+
+  /**
+   * EP17A (▲ D-A1) — how strongly the pacing target binds. `0` restores the
+   * pre-EP17 placement exactly; it takes part in no cross-field rule.
+   */
+  @IsOptional()
+  @IsInt({ message: 'spreadPercent must be an integer' })
+  @Min(0, { message: 'spreadPercent must be between 0 and 100' })
+  @Max(100, { message: 'spreadPercent must be between 0 and 100' })
+  spreadPercent?: number | null;
 }

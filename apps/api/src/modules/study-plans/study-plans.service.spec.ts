@@ -82,6 +82,8 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
     'densityPercent',
     'dailyGoalMinutes',
     'weeklyGoalDays',
+    // EP17A (▲ D-A1) — the spread lever, additive.
+    'spreadPercent',
   ].sort();
 
   /** Assert a 400 and return its field-level `errors` map. */
@@ -371,6 +373,89 @@ describe('StudyPlansService (unit, mocked PrismaService)', () => {
 
       expect(result.breakMinutes).toBe(0);
       expect(result.densityPercent).toBe(50);
+    });
+
+    // ============ EP17A — the spread lever (EP17A-AC3, ▲ D-A1) ============
+
+    it('GET returns exactly the contract key set, in the contract’s order (EP17A-AC3)', async () => {
+      userFindUnique.mockResolvedValue({ preferences: null });
+
+      const result = await service.getPreferences(userId);
+
+      // Unsorted: the projection's order is the contract's order.
+      expect(Object.keys(result)).toEqual([
+        'sessionLengthMinutes',
+        'minSessionMinutes',
+        'maxSessionMinutes',
+        'dailyCapMinutes',
+        'breakMinutes',
+        'densityPercent',
+        'dailyGoalMinutes',
+        'weeklyGoalDays',
+        'spreadPercent',
+      ]);
+      expect(result.spreadPercent).toBe(70);
+    });
+
+    it('PUT with only spreadPercent leaves every other key untouched (EP17A-AC3)', async () => {
+      userFindUnique.mockResolvedValue({
+        preferences: {
+          theme: 'dark',
+          studyDefaults: { sessionLengthMinutes: 45, breakMinutes: 5 },
+        },
+      });
+
+      const result = await service.updatePreferences(userId, { spreadPercent: 0 });
+
+      expect(result).toEqual({
+        ...STUDY_PREFERENCE_DEFAULTS,
+        sessionLengthMinutes: 45,
+        breakMinutes: 5,
+        spreadPercent: 0,
+      });
+      const written = userUpdateMany.mock.calls[0][0].data.preferences;
+      expect(written.theme).toBe('dark');
+      expect(written.studyDefaults.sessionLengthMinutes).toBe(45);
+      expect(written.studyDefaults.spreadPercent).toBe(0);
+    });
+
+    it('PUT without spreadPercent leaves a stored value untouched (EP17A-AC3)', async () => {
+      userFindUnique.mockResolvedValue({
+        preferences: { studyDefaults: { spreadPercent: 25 } },
+      });
+
+      const result = await service.updatePreferences(userId, { sessionLengthMinutes: 45 });
+
+      expect(result.spreadPercent).toBe(25);
+      const written = userUpdateMany.mock.calls[0][0].data.preferences;
+      expect(written.studyDefaults.spreadPercent).toBe(25);
+    });
+
+    it('400 names the field for an invalid spreadPercent and writes nothing (EP17A-AC1)', async () => {
+      userFindUnique.mockResolvedValue({ preferences: null });
+
+      await expect400With(
+        service.updatePreferences(userId, { spreadPercent: -1 }),
+        'spreadPercent'
+      );
+      await expect400With(
+        service.updatePreferences(userId, { spreadPercent: 101 }),
+        'spreadPercent'
+      );
+      await expect400With(
+        service.updatePreferences(userId, { spreadPercent: 70.5 }),
+        'spreadPercent'
+      );
+      expect(userUpdateMany).not.toHaveBeenCalled();
+    });
+
+    it('accepts the spread boundaries 0 and 100 (EP17A-AC1)', async () => {
+      userFindUnique.mockResolvedValue({ preferences: null });
+
+      expect((await service.updatePreferences(userId, { spreadPercent: 0 })).spreadPercent).toBe(0);
+      expect((await service.updatePreferences(userId, { spreadPercent: 100 })).spreadPercent).toBe(
+        100
+      );
     });
 
     it('rejects an unknown body field (the DTO re-validation) and writes nothing', async () => {

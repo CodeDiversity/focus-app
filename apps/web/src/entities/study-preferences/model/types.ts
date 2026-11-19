@@ -14,7 +14,14 @@
 // cross-field rule.
 //
 // EP13K (D-K6/D-K7) added the two momentum goals: `dailyGoalMinutes` (5..480,
-// default 60) and `weeklyGoalDays` (1..7, default 3). They gate nothing.
+// default 60) and `weeklyGoalDays` (1..7, default 3). Since ▲ D17-2's ruling
+// (a) (user, 2026-11-19), `weeklyGoalDays` is also a planning instruction:
+// the number of days of the window the planner may use (surfaced by EP17G).
+//
+// EP17A (▲ D-A1) added `spreadPercent` (0..100, default 70) — how strongly
+// the engine's pacing target binds; `0` reproduces the pre-EP17 placement.
+// Optional-safe here (D-A3): the backend always returns it, but pre-EP17
+// client code never reads it, and EP17G adds the UI.
 
 export interface StudyPreferences {
   sessionLengthMinutes: number;
@@ -25,6 +32,7 @@ export interface StudyPreferences {
   densityPercent: number;
   dailyGoalMinutes: number;
   weeklyGoalDays: number;
+  spreadPercent?: number;
 }
 
 export type UpdateStudyPreferencesPayload = Partial<StudyPreferences>;

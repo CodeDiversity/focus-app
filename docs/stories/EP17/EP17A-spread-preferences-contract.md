@@ -4,7 +4,7 @@
 **Epic:** [EP17](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md)
 **Milestone:** M10 (proposed, D17-1)
 **Layer:** Backend (domain contract + API projection)
-**Status:** Queued
+**Status:** Implemented (implementer, 2026-11-19) — record: [artifacts/EP17A/implementation.md](./artifacts/EP17A/implementation.md)
 **Dependencies:** none (first in the queue). ▲ D17-2 **Ruled (a)** (user, 2026-11-19) — the `weeklyGoalDays` half proceeds under that ruling.
 
 ## Plan at a glance
@@ -123,7 +123,7 @@ DoD-5/6/7 N/A — no UI. DoD-10/11 at the EP17 parent review.
 
 - **Outcome:** the spread lever exists end to end in the preferences
   contract, backward-compatible with every stored bag.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** as sized — 16 files (6 planned code/test files + web mirror, plus 6 fixture-only type completions and the data-scoping key list); 1 dispatch, 1 window; all four ACs met, tests green (see the implementation record for counts).
 - **Files:** `apps/api/src/domain/study-planning/preferences.ts`,
   `preferences.spec.ts`, `apps/api/src/domain/study-planning/types.ts`,
   `apps/api/src/modules/study-plans/dto/update-study-preferences.dto.ts`,

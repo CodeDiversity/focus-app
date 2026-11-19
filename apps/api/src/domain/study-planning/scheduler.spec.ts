@@ -23,6 +23,7 @@ describe('scheduling engine (domain, EP06C)', () => {
     densityPercent: 80,
     dailyGoalMinutes: 60,
     weeklyGoalDays: 3,
+    spreadPercent: 0, // EP17A — unread until EP17B; 0 = the pre-EP17 behaviour.
   };
 
   /** Placement v2 switched off: no break, the whole day's free time usable. */
