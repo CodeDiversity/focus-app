@@ -127,6 +127,50 @@ import type {
  *      and never silently (EP17B-AC3).
  *    - `spreadPercent = 0` makes `paceTarget = dayBudget(D)`: the pre-EP17
  *      engine, byte for byte (EP17B-AC4, TR-E17-02).
+ *
+ * EP17C (contracts.md §4; ▲ D17-2 (a), D-C1, ▲ D-C2 (a)) adds the companion
+ * rule that decides *which days* rule 9 spreads over:
+ *
+ * 9b. **Study-day selection** (`weeklyGoalDays`). The plan no longer assumes
+ *    it may use all seven days. Once per run, from the run-start
+ *    `baselineFreeMinutes` only:
+ *
+ *    ```text
+ *    studyDays(window) = the `weeklyGoalDays` days of the window with the
+ *                        most baseline free minutes; ties by earlier date
+ *    ```
+ *
+ *    - `weeklyGoalDays` is the student's existing momentum yardstick, which
+ *      ▲ D17-2 (a) promotes to a planning instruction as well (the momentum
+ *      read's own use of the key is unchanged). The engine's defensive
+ *      fallback for a missing or non-finite value is `7` — every day usable,
+ *      i.e. the pre-EP17C engine byte for byte (EP17C-AC2, TR-E17-02) — and
+ *      a window shorter than the count selects the whole window.
+ *    - Ranking by free minutes (D-C1) puts the work where the student
+ *      actually has room; the tie-break on the earlier date is total, and the
+ *      input is run-start data, so the selection is deterministic (rule 5).
+ *    - The narrowed budget is **pass-aware** (R-EP17-03); a single zeroing of
+ *      `dayBudgetOf` would starve the deadline pass too. Per consumer:
+ *      the **normal rotation** sees `0` on an unselected day; the **rule 3
+ *      critical pass** keeps the *real* budget on every day, so a deadline
+ *      always beats the preference and a one-day-a-week student with a
+ *      Tuesday deadline still gets Tuesday; **`capacityAfter`** reads the
+ *      narrowed budgets, so "can this still fit?" is asked about the days
+ *      the plan may normally use — which is what lets rule 3 notice a
+ *      deadline the selection alone would have missed; and the **anchor
+ *      pass** reads the narrowed budgets per ▲ D-C2 (a): a narrower week
+ *      genuinely makes a placement load-bearing, so more assignments pin
+ *      `FIXED`, and that is intended rather than a regression.
+ *    - **Full-horizon fallback.** An assignment with no selected day of
+ *      positive budget inside its horizon keeps its *whole* horizon for the
+ *      normal pass — smoothness never manufactures a miss. That fallback and
+ *      the critical pass are the only two ways a session lands outside the
+ *      selection (EP17C-AC1's two carve-outs).
+ *    - The selection never raises a day's budget and adds no deficit
+ *      category: minutes it declines flow through the same classification
+ *      (`NO_AVAILABLE_TIME` still asks whether the student had free time at
+ *      all, measured on the *unnarrowed* baseline, so no assignment changes
+ *      category because of the selection alone — EP17C-AC3).
  */
 
 /** Convert a weekly window list into dated intervals for one civil date. */
@@ -222,6 +266,29 @@ export function byEnergyPreference(
     .map(({ interval }) => interval);
 }
 
+/**
+ * EP17C rule 9b (D-C1) — the study-day selection: the `count` days of
+ * `days` with the most baseline free minutes, ties broken by the earlier
+ * date (`days` is in date order, so the original index *is* the date order).
+ * Returns every day when `count` covers the window, which is what makes
+ * `weeklyGoalDays = 7` a no-op (EP17C-AC2).
+ *
+ * Pure and total: the sort key pair (free minutes, index) is unique per day,
+ * so the result cannot depend on the sort's stability or on input order
+ * (EP17C-AC4). Exported for the domain spec only.
+ */
+export function selectStudyDays(
+  days: readonly string[],
+  freeMinutesOf: (date: string) => number,
+  count: number
+): Set<string> {
+  if (count >= days.length) return new Set(days);
+  const ranked = days
+    .map((date, index) => ({ date, index, free: freeMinutesOf(date) }))
+    .sort((a, b) => b.free - a.free || a.index - b.index);
+  return new Set(ranked.slice(0, Math.max(0, count)).map((entry) => entry.date));
+}
+
 /** Sum the free minutes of a list of intervals. */
 function freeMinutes(intervals: DatedInterval[]): number {
   let total = 0;
@@ -290,6 +357,12 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
     minBlock,
     Math.min(safeInt(preferences.sessionLengthMinutes, maxBlock), maxBlock)
   );
+  // EP17C rule 9b. The fallback is `7` — every day usable, the pre-EP17C
+  // behaviour — so a caller or a fixture written against the older engine
+  // gets exactly that engine (the service always supplies the real value,
+  // defaulted to 3 by `readStudyPreferences`). Bounds 1…7 mirror
+  // `STUDY_PREFERENCE_BOUNDS.weeklyGoalDays`.
+  const weeklyGoalDays = Math.min(7, Math.max(1, safeInt(preferences.weeklyGoalDays, 7)));
 
   // Sort the assignments by the one shared comparator (D06-22).
   const sorted: SchedulableAssignment[] = [...input.assignments].sort((a, b) =>
@@ -350,6 +423,15 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
     return Math.min(preferences.dailyCapMinutes, Math.floor((free * densityPercent) / 100));
   };
 
+  // EP17C rule 9b — the study-day selection, computed once from run-start
+  // data only (`baselineFreeMinutes` never changes during the run), so it is
+  // deterministic and independent of placement order (EP17C-AC4).
+  const studyDays = selectStudyDays(
+    days,
+    (date) => baselineFreeMinutes.get(date) ?? 0,
+    weeklyGoalDays
+  );
+
   // Per-assignment state, in comparator order.
   const progress: Progress[] = sorted.map((assignment) => {
     const overdue = assignment.dueDate < today;
@@ -367,17 +449,46 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
   });
 
   /**
+   * EP17C rule 9b — the **full-horizon fallback**: an assignment with no
+   * selected day of positive budget inside its horizon would otherwise be
+   * starved by the selection alone, so its normal pass keeps the whole
+   * horizon. Smoothness never manufactures a miss (contracts §4,
+   * EP17C-AC3). Computed from run-start data only.
+   */
+  const fullHorizonFallback = new Set<Progress>();
+  for (const item of progress) {
+    const hasUsableDay = days.some(
+      (date) => item.horizon.has(date) && studyDays.has(date) && dayBudgetOf(date) > 0
+    );
+    if (!hasUsableDay) fullHorizonFallback.add(item);
+  }
+
+  /**
+   * EP17C rule 9b — the budget the **normal** pass may spend on `item` on
+   * `date`: the real day budget on a selected day (or for a fallback
+   * assignment), `0` otherwise. This is the one narrowed reading; the rule 3
+   * critical pass deliberately keeps `dayBudgetOf` / `budgetLeft`.
+   */
+  const normalBudgetOf = (item: Progress, date: string): number =>
+    studyDays.has(date) || fullHorizonFallback.has(item) ? dayBudgetOf(date) : 0;
+
+  /**
    * An optimistic upper bound on what an assignment could still receive on
    * the days **after** `date`: the per-day budgets of its remaining horizon,
    * ignoring breaks and competing work. Optimistic on purpose — the
    * feasibility override (rule 3) must fire only when variety would *really*
    * cost a deadline, never merely because another assignment might compete.
+   *
+   * EP17C rule 9b (contracts §4): the budgets read here are the **narrowed**
+   * ones, so the estimate is about the days the plan may normally use. That
+   * is what lets rule 3 notice a deadline the selection alone could not
+   * meet and serve it on any day of the window.
    */
   const capacityAfter = (item: Progress, date: string): number => {
     let total = 0;
     for (const day of days) {
       if (day > date && item.horizon.has(day)) {
-        total += dayBudgetOf(day);
+        total += normalBudgetOf(item, day);
       }
     }
     return total;
@@ -392,9 +503,15 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
    */
   const evenShareOf = new Map<Progress, number>();
   for (const item of progress) {
+    // EP17C rule 9b: `usableDays(A)` are the horizon days that survive the
+    // study-day selection (contracts §3 + §4), i.e. the days with a positive
+    // **narrowed** budget. Reading the unnarrowed budgets here would divide
+    // the share over days the normal pass may not use, and a student who
+    // asked for three study days would get seven days' worth of thin,
+    // under-filled targets.
     let usableDays = 0;
     for (const date of days) {
-      if (item.horizon.has(date) && dayBudgetOf(date) > 0) usableDays += 1;
+      if (item.horizon.has(date) && normalBudgetOf(item, date) > 0) usableDays += 1;
     }
     const atRunStart = Math.max(0, safeInt(item.assignment.remainingMinutes, 0));
     // D-B4: round the share up, so rounding can never leave a residue no day
@@ -410,7 +527,8 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
    * pacing only ever lowers a take (rule 2 stays the hard cap).
    */
   const dayTakeOf = (item: Progress, date: string): number => {
-    const budget = dayBudgetOf(date);
+    // EP17C rule 9b: the normal pass's budget — `0` on an unselected day.
+    const budget = normalBudgetOf(item, date);
     if (spreadPercent === 0) return budget;
     const share = evenShareOf.get(item) ?? budget;
     const paceTarget = budget - Math.floor(((budget - share) * spreadPercent) / 100);
@@ -589,6 +707,12 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
     const dayBudget = budgetLeft.get(date) ?? 0;
     if (dayBudget <= 0 || item.remaining <= 0) return 0;
 
+    // EP17C rule 9b: the normal rotation sees a zero budget on a day outside
+    // the study-day selection. `preferEnergy === false` is the rule 3
+    // critical pass, which keeps the real budget on every day (contracts §4)
+    // — a deadline always beats the preference.
+    if (preferEnergy && normalBudgetOf(item, date) <= 0) return 0;
+
     // EP17B rule 9: in the normal pass the day's budget is narrowed to what
     // this assignment's pacing target still allows today. It can only lower
     // the take; `budgetLeft` remains the hard per-day cap.
@@ -622,6 +746,9 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
         (candidate) =>
           candidate !== item &&
           candidate.remaining > 0 &&
+          // EP17C rule 9b: the out-of-turn owner is still a normal-pass
+          // placement, so it needs its own day to be usable too.
+          normalBudgetOf(candidate, date) > 0 &&
           (candidate.assignment.courseId ?? null) === gap.courseId
       );
       if (owner) {
@@ -780,9 +907,15 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
     const beyondWindow = !overdue && days.length > 0 && assignment.dueDate > lastDay;
     if (overdue || beyondWindow) continue;
 
+    // EP17C rule 9b (▲ D-C2 (a)): the **narrowed** budgets. A narrower week
+    // leaves less slack, so more assignments pin `FIXED` — intended, because
+    // the partition's premise (EP13G D13-4) is "pin when the deadline makes
+    // the exact placement load-bearing", and three study days genuinely make
+    // it more load-bearing. Telling the student a session is flexible when
+    // it is not would be the real regression.
     let horizonCapacity = 0;
     for (const date of days) {
-      if (item.horizon.has(date)) horizonCapacity += dayBudgetOf(date);
+      if (item.horizon.has(date)) horizonCapacity += normalBudgetOf(item, date);
     }
     const noSlack = assignment.remainingMinutes + minBlock > horizonCapacity;
     if (noSlack || result.deficitCategory === 'INSUFFICIENT_TIME_BEFORE_DEADLINE') {

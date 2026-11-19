@@ -4,7 +4,7 @@
 **Epic:** [EP17](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md)
 **Milestone:** M10 (proposed, D17-1)
 **Layer:** Backend (pure domain)
-**Status:** Queued — ▲ D17-2 ruled (a) (user, 2026-11-19); unblocked
+**Status:** Implemented (2026-11-19) — awaiting the combined EP17 parent review. Record: [artifacts/EP17C/implementation.md](./artifacts/EP17C/implementation.md)
 **Dependencies:** EP17B (pacing must exist for "spread *within* the chosen days" to mean anything). ▲ D17-2 **Ruled (a)** (user, 2026-11-19): this story reads the existing `weeklyGoalDays` key.
 
 ## Plan at a glance
@@ -132,7 +132,12 @@ DoD-10/11 at the EP17 parent review.
 
 - **Outcome:** the planner uses the number of days the student asked for, and
   spreads inside them.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** as sized — one engine rule (`selectStudyDays` + a
+  pass-aware `normalBudgetOf` threaded through five readers), a new spec
+  section (33 cases) and a documentation-only `preferences.ts` change. The
+  compatibility value `weeklyGoalDays: 7` moved into seven existing fixture
+  files, one line each; **no existing expectation changed** (TR-E17-07).
+  Findings F-EP17C-01…03; F-EP17B-02 re-checked and re-reported.
 - **Files:** `apps/api/src/domain/study-planning/scheduler.ts`,
   `scheduler.spec.ts`, `preferences.ts` (documentation only).
 - **Start context:** this story, [contracts.md §3–§4](./contracts.md),

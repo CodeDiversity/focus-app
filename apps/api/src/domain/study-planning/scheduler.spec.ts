@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { schedule } from './scheduler';
+import { schedule, selectStudyDays } from './scheduler';
 import { boundsFromWeeklyWindows } from './legacy-windows';
 import type { SchedulerInput, WeeklyWindow } from './types';
 import type { SchedulableAssignment } from './types';
@@ -30,7 +30,7 @@ describe('scheduling engine (domain, EP06C)', () => {
     breakMinutes: 15,
     densityPercent: 80,
     dailyGoalMinutes: 60,
-    weeklyGoalDays: 3,
+    weeklyGoalDays: 7, // EP17C rule 9b: 7 = every day usable — the pre-EP17C engine (TR-E17-02).
     spreadPercent: 0, // EP17A — unread until EP17B; 0 = the pre-EP17 behaviour.
   };
 
@@ -1142,7 +1142,10 @@ describe('scheduling engine (domain, EP06C)', () => {
         // feasibility floor `max(paceTarget, remaining - capacityAfter)`.
         // See F-EP17B-02 — the floor is implemented per contracts §3 and is
         // currently subsumed by the critical test; it is the belt to that
-        // pair of braces, not an independent mechanism.
+        // pair of braces, not an independent mechanism. EP17C re-checked
+        // this once the budgets became pass-aware and it is **still**
+        // subsumed: both readings of `capacityAfter` are narrowed the same
+        // way, so the two predicates stay identical (F-EP17C-01).
         const out = schedule(
           input({
             days: ['2026-10-30', '2026-10-31'],
@@ -1372,6 +1375,371 @@ describe('scheduling engine (domain, EP06C)', () => {
         expect(out.results[0].deficitCategory).toBeNull();
         expect(out.results[0].deficitMinutes).toBe(0);
         expect(out.results[0].placedMinutes + out.results[0].deferredMinutes).toBe(5000);
+      });
+    });
+  });
+
+  // =========================================================================
+  // EP17C — study-day selection (rule 9b; ▲ D17-2 (a), D-C1, ▲ D-C2 (a);
+  // contracts §4). Every case above runs at `weeklyGoalDays: 7`, the
+  // compatibility value (TR-E17-02), so rule 9b changed **no existing
+  // expectation**; the cases below own rule 9b.
+  // =========================================================================
+
+  describe('17. study-day selection (EP17C rule 9b)', () => {
+    /** date → placed minutes. */
+    const perDay = (out: ReturnType<typeof schedule>): Record<string, number> => {
+      const totals: Record<string, number> = {};
+      for (const s of [...out.sessions].sort((x, y) => x.date.localeCompare(y.date))) {
+        totals[s.date] = (totals[s.date] ?? 0) + s.durationMinutes;
+      }
+      return totals;
+    };
+    const datesOf = (out: ReturnType<typeof schedule>): string[] =>
+      [...new Set(out.sessions.map((s) => s.date))].sort();
+
+    /**
+     * A week with deliberately uneven availability, one window per date (the
+     * seven dates of the fixture window fall on seven distinct weekdays, so a
+     * weekly window addresses exactly one date).
+     *
+     *   Fri 10-30  60 │ Sat 10-31 300 │ Sun 11-01 120 │ Mon 11-02 240
+     *   Tue 11-03  30 │ Wed 11-04 210 │ Thu 11-05  90
+     *
+     * The three richest days are **10-31, 11-02, 11-04** (300, 240, 210):
+     * enough later capacity, day by day, that rule 3 never takes over — the
+     * placement below is rule 9b's normal pass alone.
+     */
+    const UNEVEN_MINUTES: Record<string, number> = {
+      '2026-10-30': 60,
+      '2026-10-31': 300,
+      '2026-11-01': 120,
+      '2026-11-02': 240,
+      '2026-11-03': 30,
+      '2026-11-04': 210,
+      '2026-11-05': 90,
+    };
+    const windowsFrom = (minutes: Record<string, number>): WeeklyWindow[] =>
+      Object.entries(minutes)
+        .filter(([, free]) => free > 0)
+        .map(([date, free]) => ({ dayOfWeek: dow(date), startMinute: 540, endMinute: 540 + free }));
+
+    describe('EP17C-AC1 — only the chosen number of days', () => {
+      it('uses only the chosen number of days, and they are the richest ones', () => {
+        const out = schedule(
+          input({
+            assignments: [assignment({ remainingMinutes: 300, dueDate: '2026-11-05' })],
+            availability: windowsFrom(UNEVEN_MINUTES),
+            preferences: { ...V1_PREFS, spreadPercent: 100, weeklyGoalDays: 3 },
+          })
+        );
+        expect(datesOf(out)).toEqual(['2026-10-31', '2026-11-02', '2026-11-04']);
+        // …and rule 9 spread the work *within* them: the share is 300/3.
+        expect(perDay(out)).toEqual({
+          '2026-10-31': 100,
+          '2026-11-02': 100,
+          '2026-11-04': 100,
+        });
+        expect(out.results[0]).toEqual({
+          assignmentId: 'a-1',
+          placedMinutes: 300,
+          deferredMinutes: 0,
+          deficitMinutes: 0,
+          deficitCategory: null,
+        });
+      });
+
+      it('divides the even share over the **selected** days, not every day with free time', () => {
+        // The binding check on contracts §3's `|usableDays(A)|` once §4
+        // exists: the fixture has seven days of positive run-start budget but
+        // only three selected days, so the two readings differ visibly.
+        // Narrowed (correct): 300/3 = 100 minutes a day. Unnarrowed: 300/7 =
+        // 43, floored to one sitting (60) — thin, under-filled days.
+        const out = schedule(
+          input({
+            assignments: [assignment({ remainingMinutes: 300, dueDate: '2026-11-05' })],
+            availability: windowsFrom(UNEVEN_MINUTES),
+            preferences: { ...V1_PREFS, spreadPercent: 100, weeklyGoalDays: 3 },
+          })
+        );
+        expect(perDay(out)['2026-10-31']).toBe(100);
+        expect(perDay(out)['2026-10-31']).not.toBe(60);
+        // Every day of the window really does carry free time — it is the
+        // selection, not the availability, that narrows the divisor.
+        expect(Object.values(UNEVEN_MINUTES).every((free) => free > 0)).toBe(true);
+      });
+
+      it('breaks ties by the earlier date', () => {
+        // 10-30 and 10-31 are tied at 120; 11-01 is richer. With N = 2 the
+        // selection is {11-01, 10-30} — the later tied day is never used.
+        const tied: Record<string, number> = {
+          '2026-10-30': 120,
+          '2026-10-31': 120,
+          '2026-11-01': 180,
+          '2026-11-02': 0,
+          '2026-11-03': 0,
+          '2026-11-04': 0,
+          '2026-11-05': 0,
+        };
+        const out = schedule(
+          input({
+            assignments: [assignment({ remainingMinutes: 120, dueDate: '2026-11-05' })],
+            availability: windowsFrom(tied),
+            preferences: { ...V1_PREFS, spreadPercent: 100, weeklyGoalDays: 2 },
+          })
+        );
+        expect(datesOf(out)).toEqual(['2026-10-30', '2026-11-01']);
+        expect(perDay(out)['2026-10-31']).toBeUndefined();
+      });
+
+      it('selectStudyDays is a total, deterministic ranking (free minutes, then date)', () => {
+        const days = ['2026-10-30', '2026-10-31', '2026-11-01', '2026-11-02'];
+        const free: Record<string, number> = {
+          '2026-10-30': 100,
+          '2026-10-31': 100,
+          '2026-11-01': 200,
+          '2026-11-02': 0,
+        };
+        expect([...selectStudyDays(days, (d) => free[d], 2)].sort()).toEqual([
+          '2026-10-30',
+          '2026-11-01',
+        ]);
+        expect([...selectStudyDays(days, (d) => free[d], 1)]).toEqual(['2026-11-01']);
+        // A count that covers the window selects all of it, in window order.
+        expect([...selectStudyDays(days, (d) => free[d], 7)]).toEqual(days);
+      });
+    });
+
+    describe('EP17C-AC2 — `weeklyGoalDays = 7` is a no-op', () => {
+      it.each(PACING_BATTERY.map((f) => [f.name, f] as const))(
+        'is byte-identical at 7 and with the key absent: %s',
+        (_name, fixture) => {
+          for (const spread of [0, 70, 100]) {
+            expect(JSON.stringify(runFixture(fixture, spread, 7))).toBe(
+              JSON.stringify(runFixture(fixture, spread))
+            );
+          }
+        }
+      );
+
+      it('a window shorter than the count is fully selected', () => {
+        const short = () =>
+          input({
+            days: ['2026-10-30', '2026-10-31'],
+            assignments: [assignment({ remainingMinutes: 240, dueDate: '2026-10-31' })],
+            availability: [
+              { dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 780 },
+              { dayOfWeek: dow('2026-10-31'), startMinute: 540, endMinute: 780 },
+            ],
+          });
+        const seven = schedule({
+          ...short(),
+          preferences: { ...V1_PREFS, spreadPercent: 100, weeklyGoalDays: 7 },
+        });
+        const two = schedule({
+          ...short(),
+          preferences: { ...V1_PREFS, spreadPercent: 100, weeklyGoalDays: 2 },
+        });
+        expect(JSON.stringify(two)).toBe(JSON.stringify(seven));
+      });
+
+      it('falls back to every day when the key is missing or unusable', () => {
+        const base = input({
+          assignments: [assignment({ remainingMinutes: 300, dueDate: '2026-11-05' })],
+          availability: windowsFrom(UNEVEN_MINUTES),
+        });
+        const prefs = { ...V1_PREFS, spreadPercent: 100 };
+        const seven = JSON.stringify(
+          schedule({ ...base, preferences: { ...prefs, weeklyGoalDays: 7 } })
+        );
+        const missing = { ...prefs } as Partial<StudyPreferences>;
+        delete missing.weeklyGoalDays;
+        expect(
+          JSON.stringify(schedule({ ...base, preferences: missing as StudyPreferences }))
+        ).toBe(seven);
+        expect(
+          JSON.stringify(
+            schedule({
+              ...base,
+              preferences: { ...prefs, weeklyGoalDays: Number.NaN },
+            })
+          )
+        ).toBe(seven);
+      });
+    });
+
+    describe('EP17C-AC3 — a deadline always beats the preference', () => {
+      it('meets a deadline that needs a day the selection dropped (critical carve-out)', () => {
+        // N = 1 selects 10-30 (240). The assignment needs 300 minutes by
+        // 10-31, which the selected day alone cannot hold, so rule 3 calls it
+        // critical and the critical pass spends the **real** budget of the
+        // unselected 10-31. A naive zeroing of `dayBudgetOf` would report a
+        // 60-minute deficit here (R-EP17-03).
+        const minutes: Record<string, number> = {
+          '2026-10-30': 240,
+          '2026-10-31': 180,
+          '2026-11-01': 120,
+          '2026-11-02': 0,
+          '2026-11-03': 0,
+          '2026-11-04': 0,
+          '2026-11-05': 0,
+        };
+        const out = schedule(
+          input({
+            assignments: [assignment({ remainingMinutes: 300, dueDate: '2026-10-31' })],
+            availability: windowsFrom(minutes),
+            preferences: {
+              ...V1_PREFS,
+              spreadPercent: 100,
+              weeklyGoalDays: 1,
+              maxSessionMinutes: 240,
+            },
+          })
+        );
+        expect([...selectStudyDays(Object.keys(minutes), (d) => minutes[d], 1)]).toEqual([
+          '2026-10-30',
+        ]);
+        expect(perDay(out)).toEqual({ '2026-10-30': 240, '2026-10-31': 60 });
+        expect(out.results[0].deficitMinutes).toBe(0);
+        expect(out.results[0].deficitCategory).toBeNull();
+      });
+
+      it('falls back to the full horizon when no selected day precedes the deadline', () => {
+        // N = 1 selects 11-01 (180). The assignment is due 10-31, so its
+        // horizon {10-30, 10-31} holds no selected day at all: its normal
+        // pass keeps the whole horizon (contracts §4), which is why it is
+        // still paced across both days and still `FLEX_DAY` rather than
+        // being rescued — pinned and bunched — by the critical pass.
+        const minutes: Record<string, number> = {
+          '2026-10-30': 120,
+          '2026-10-31': 120,
+          '2026-11-01': 180,
+          '2026-11-02': 0,
+          '2026-11-03': 0,
+          '2026-11-04': 0,
+          '2026-11-05': 0,
+        };
+        const out = schedule(
+          input({
+            assignments: [assignment({ remainingMinutes: 120, dueDate: '2026-10-31' })],
+            availability: windowsFrom(minutes),
+            preferences: { ...V1_PREFS, spreadPercent: 100, weeklyGoalDays: 1 },
+          })
+        );
+        expect(perDay(out)).toEqual({ '2026-10-30': 60, '2026-10-31': 60 });
+        expect(out.results[0].deficitMinutes).toBe(0);
+        expect(out.sessions.every((s) => s.anchor === 'FLEX_DAY')).toBe(true);
+      });
+
+      it('no battery fixture gains a deficit category from the selection alone', () => {
+        // EP17C-AC3's negative, over the whole battery at N = 3 and N = 1:
+        // the category each assignment ends with is the one it already had
+        // at N = 7 — including the two adversarial EP17B fixtures, which
+        // need no exception here.
+        for (const fixture of PACING_BATTERY) {
+          const seven = runFixture(fixture, 100, 7);
+          for (const count of [3, 1]) {
+            const narrowed = runFixture(fixture, 100, count);
+            expect({
+              name: `${fixture.name}@${count}`,
+              categories: narrowed.results.map((r) => r.deficitCategory),
+            }).toEqual({
+              name: `${fixture.name}@${count}`,
+              categories: seven.results.map((r) => r.deficitCategory),
+            });
+          }
+        }
+      });
+
+      it('reports the deficit honestly at N = 1 with a week of work (boundary)', () => {
+        const out = schedule(
+          input({
+            assignments: [
+              assignment({ id: 'a', remainingMinutes: 300, dueDate: '2026-11-05' }),
+              assignment({ id: 'b', remainingMinutes: 300, dueDate: '2026-11-05' }),
+            ],
+            availability: windowsFrom(UNEVEN_MINUTES),
+            preferences: { ...V1_PREFS, spreadPercent: 100, weeklyGoalDays: 1 },
+          })
+        );
+        for (const result of out.results) {
+          // No minutes vanish, and no new category appears.
+          expect(result.placedMinutes + result.deficitMinutes + result.deferredMinutes).toBe(300);
+          expect([null, 'INSUFFICIENT_TIME_BEFORE_DEADLINE']).toContain(result.deficitCategory);
+        }
+        const placed = out.sessions.reduce((sum, s) => sum + s.durationMinutes, 0);
+        expect(placed).toBe(out.results.reduce((sum, r) => sum + r.placedMinutes, 0));
+      });
+    });
+
+    describe('EP17C-AC4 — determinism and purity', () => {
+      it('is byte-identical across two runs of the same input', () => {
+        for (const fixture of PACING_BATTERY) {
+          for (const count of [1, 3, 5]) {
+            const first = JSON.stringify(runFixture(fixture, 100, count));
+            expect(JSON.stringify(runFixture(fixture, 100, count))).toBe(first);
+          }
+        }
+      });
+
+      it('does not depend on the order the assignments are handed in', () => {
+        const a = assignment({ id: 'a', remainingMinutes: 180, dueDate: '2026-11-05' });
+        const b = assignment({ id: 'b', remainingMinutes: 180, dueDate: '2026-11-05' });
+        const run = (assignments: SchedulableAssignment[]) =>
+          JSON.stringify(
+            schedule(
+              input({
+                assignments,
+                availability: windowsFrom(UNEVEN_MINUTES),
+                preferences: { ...V1_PREFS, spreadPercent: 100, weeklyGoalDays: 3 },
+              })
+            )
+          );
+        expect(run([b, a])).toBe(run([a, b]));
+      });
+
+      it('does not mutate its input while selecting', () => {
+        const inp = {
+          ...input({
+            assignments: [assignment({ remainingMinutes: 300 })],
+            availability: windowsFrom(UNEVEN_MINUTES),
+          }),
+          preferences: { ...V1_PREFS, spreadPercent: 100, weeklyGoalDays: 3 },
+        };
+        const snapshot = JSON.stringify(inp);
+        schedule(inp);
+        expect(JSON.stringify(inp)).toBe(snapshot);
+      });
+    });
+
+    describe('EP17C — the ▲ D-C2 (a) anchor coupling, pinned as intended', () => {
+      it('a narrower week may pin an assignment FIXED that was FLEX_DAY at N = 7', () => {
+        // A flat week of 120-minute days, so the selection changes the
+        // horizon capacity and nothing else.
+        const minutes: Record<string, number> = {
+          '2026-10-30': 120,
+          '2026-10-31': 120,
+          '2026-11-01': 120,
+          '2026-11-02': 120,
+          '2026-11-03': 120,
+          '2026-11-04': 120,
+          '2026-11-05': 120,
+        };
+        const run = (weeklyGoalDays: number) =>
+          schedule(
+            input({
+              assignments: [assignment({ remainingMinutes: 350, dueDate: '2026-11-05' })],
+              availability: windowsFrom(minutes),
+              preferences: { ...V1_PREFS, spreadPercent: 100, weeklyGoalDays },
+            })
+          );
+        // N = 7: 840 budgeted minutes of horizon — 350 + 15 fits with slack.
+        expect(run(7).sessions.every((s) => s.anchor === 'FLEX_DAY')).toBe(true);
+        // N = 3: 360 budgeted minutes — 350 + 15 does not fit, so every
+        // block is load-bearing and pins (▲ D-C2 (a), intended).
+        const narrowed = run(3);
+        expect(narrowed.sessions.every((s) => s.anchor === 'FIXED')).toBe(true);
+        expect(narrowed.sessions.every((s) => s.windowHint === null)).toBe(true);
       });
     });
   });

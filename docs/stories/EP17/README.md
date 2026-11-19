@@ -18,9 +18,9 @@
 
 **Artifact root:** `./artifacts/` — one directory per child (`./artifacts/EP17A/`, …), plus `./artifacts/EP17/` for the parent index and the combined review.
 
-**Active substory:** None (EP17B closed 2026-11-19).
+**Active substory:** None (EP17C closed 2026-11-19).
 
-**Next substory:** **EP17C** — EP17B is implemented; ▲ D17-2 ruled (a) and ▲ D-C2 ratified (user, 2026-11-19). Nothing gates implementation.
+**Next substory:** **EP17D** — EP17A–EP17C are implemented; ▲ D-D1 ratified (user, 2026-11-19). Nothing gates implementation.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -30,8 +30,8 @@
 |---|---|---|---|---|
 | [EP17A](./EP17A-spread-preferences-contract.md) | Implemented — awaiting parent review | ▲ D17-2 ruled (a), ▲ D17-5 / ▲ D-A1 ratified (user, 2026-11-19). Plan review passed (pass 2, 2026-11-19). | Combined EP17 review after EP17H | [implementation.md](./artifacts/EP17A/implementation.md) — all 4 ACs met, 263 targeted tests green, legacy bag byte-identical, no migration; [plan-review.md](./plan-review.md) pass 2 Plan Ready |
 | [EP17B](./EP17B-engine-daily-pacing.md) | Implemented — awaiting parent review | EP17A implemented (2026-11-19). ▲ D17-3 ruled (user, 2026-11-19). | Combined EP17 review after EP17H | [implementation.md](./artifacts/EP17B/implementation.md) — all 5 ACs met; rule 9 added, 96 scheduler tests green, 19/19 fixtures byte-identical at `spreadPercent 0`; F-EP17B-01 asks for a contracts §3 amendment |
-| [EP17C](./EP17C-engine-study-day-selection.md) | Queued | ▲ D17-2 ruled (a) and ▲ D-C2 ratified (user, 2026-11-19). EP17B implemented (2026-11-19). | Implement | — |
-| [EP17D](./EP17D-service-wiring-and-pacing-payload.md) | Queued | EP17A–EP17C; ▲ D-D1 ratified (user, 2026-11-19). | Implement after EP17C | — |
+| [EP17C](./EP17C-engine-study-day-selection.md) | Implemented — awaiting parent review | ▲ D17-2 ruled (a) and ▲ D-C2 ratified (user, 2026-11-19). EP17B implemented (2026-11-19). | Combined EP17 review after EP17H | [implementation.md](./artifacts/EP17C/implementation.md) — all 5 ACs met; rule 9b with a pass-aware budget (R-EP17-03), both carve-outs fixtured, 129 scheduler tests green, API suite 1338 passed / 0 failed; F-EP17C-02 is for EP17G |
+| [EP17D](./EP17D-service-wiring-and-pacing-payload.md) | Queued | EP17A–EP17C implemented (2026-11-19); ▲ D-D1 ratified (user, 2026-11-19). | Implement | — |
 | [EP17E](./EP17E-editable-week-grid.md) | Needs refinement | EP17D; ▲ D-E1 (interaction model) is the refiner's to ground. ▲ D17-4 ruled (user, 2026-11-19). | Dispatch the refiner | — |
 | [EP17F](./EP17F-proposal-composition-and-decision.md) | Needs refinement | EP17E; ▲ D-F1, ▲ D-F2 ratified (user, 2026-11-19). Absorbs BL-16-09. | Dispatch the refiner | — |
 | [EP17G](./EP17G-plan-time-pacing-controls.md) | Needs refinement | EP17F; ▲ D17-8 / ▲ D-G1 ratified (user, 2026-11-19). ▲ D17-2 (a) ruled: the study-days control appears, with copy stating its instruction meaning (D17-2 proviso). | Dispatch the refiner | — |

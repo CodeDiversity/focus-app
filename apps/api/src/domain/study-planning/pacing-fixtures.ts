@@ -40,7 +40,7 @@ const PLAIN = {
   breakMinutes: 0,
   densityPercent: 100,
   dailyGoalMinutes: 60,
-  weeklyGoalDays: 3,
+  weeklyGoalDays: 7, // EP17C rule 9b: 7 = every day usable — the pre-EP17C engine (TR-E17-02).
   spreadPercent: 0, // every fixture is stored "off"; the spec overrides it.
 };
 
@@ -148,8 +148,16 @@ export const PACING_FIXTURES: LegacyFixture[] = [
 /** The whole battery: the identity shapes plus the pacing fixtures. */
 export const PACING_BATTERY: LegacyFixture[] = [...IDENTITY_FIXTURES, ...PACING_FIXTURES];
 
-/** Run one battery fixture at an explicit `spreadPercent`. */
-export function runFixture(f: LegacyFixture, spreadPercent: number): SchedulerOutput {
+/**
+ * Run one battery fixture at an explicit `spreadPercent` and, optionally, an
+ * explicit `weeklyGoalDays` (EP17C rule 9b — the fixtures' stored value is
+ * `7`, the compatibility value, so omitting it keeps the pre-EP17C engine).
+ */
+export function runFixture(
+  f: LegacyFixture,
+  spreadPercent: number,
+  weeklyGoalDays?: number
+): SchedulerOutput {
   return schedule({
     days: f.days,
     assignments: f.assignments,
@@ -157,6 +165,10 @@ export function runFixture(f: LegacyFixture, spreadPercent: number): SchedulerOu
     classes: f.classes,
     busy: f.busy,
     preferred: [],
-    preferences: { ...f.preferences, spreadPercent },
+    preferences: {
+      ...f.preferences,
+      spreadPercent,
+      ...(weeklyGoalDays === undefined ? {} : { weeklyGoalDays }),
+    },
   });
 }

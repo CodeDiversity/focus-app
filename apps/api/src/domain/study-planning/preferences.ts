@@ -60,9 +60,11 @@ export const STUDY_PREFERENCE_DEFAULTS: StudyPreferences = {
   densityPercent: 80,
   // EP13K (D13-11, D-K6/D-K7): momentum goals. `dailyGoalMinutes` gates
   // nothing. `weeklyGoalDays` is, since ▲ D17-2's ruling (a) (user,
-  // 2026-11-19), **both** the momentum yardstick (the momentum read's use is
-  // unchanged) and a planning instruction: the number of days of the window
-  // the planner may use (read by the engine from EP17C on).
+  // 2026-11-19), **both** the momentum yardstick (`momentum.ts` reads it
+  // unchanged) and a planning instruction: EP17C's rule 9b narrows the plan
+  // to that many days of the window — the ones with the most free time, ties
+  // by earlier date (contracts §4). It no longer gates nothing. A deadline
+  // still beats it: the engine's rule 3 critical pass may use any day.
   dailyGoalMinutes: 60,
   weeklyGoalDays: 3,
   // EP17A (▲ D-A1): how strongly the pacing target binds — `100` = pace

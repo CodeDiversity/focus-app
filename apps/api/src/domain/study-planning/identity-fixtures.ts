@@ -33,7 +33,7 @@ const PREFS: StudyPreferences = {
   breakMinutes: 15,
   densityPercent: 80,
   dailyGoalMinutes: 60,
-  weeklyGoalDays: 3,
+  weeklyGoalDays: 7, // EP17C rule 9b: 7 = every day usable — the pre-EP17C engine (TR-E17-02).
   spreadPercent: 0, // EP17A — unread until EP17B; 0 = the pre-EP17 behaviour (D17-6).
 };
 
