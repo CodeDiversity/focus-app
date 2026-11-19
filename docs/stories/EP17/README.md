@@ -3,7 +3,7 @@
 **Epic:** [EP17](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md)
 **Milestone:** M10 — release 1.4 (proposed, D17-1)
 **Epic dependency:** EP06, EP13, EP14, EP15, EP16 closed. No predecessor blocks the queue.
-**Status:** Breakdown complete (planner, 2026-11-19). Quality gate: **Plan Ready** — every ▲ row ruled as recommended (user, 2026-11-19; D17-2 ruled (a) with a UI-visibility proviso, see the epic register); see [history.md](./history.md). **Plan review (required, D17-12): pass 1 returned Changes Required** (2026-11-19, [plan-review.md](./plan-review.md)); corrections C-R-EP17-01…06 applied ([history.md](./history.md)), awaiting re-review before implementation. No tracker sync.
+**Status:** Breakdown complete (planner, 2026-11-19). Quality gate: **Plan Ready** — every ▲ row ruled as recommended (user, 2026-11-19; D17-2 ruled (a) with a UI-visibility proviso, see the epic register); see [history.md](./history.md). **Plan review (required, D17-12): passed** — pass 1 Changes Required, corrections C-R-EP17-01…06 applied, pass 2 **Plan Ready** (2026-11-19, reviewed commit `005bc78`, [plan-review.md](./plan-review.md)); implementation may start with EP17A. No tracker sync.
 
 ## Plan at a glance
 
@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** **EP17A** — refine nothing (specified in-story); all ▲ rows ruled (user, 2026-11-19). Plan review pass 1 ran 2026-11-19 (Changes Required); corrections applied — the **re-review of the changed sections** gates implementation.
+**Next substory:** **EP17A** — refine nothing (specified in-story); all ▲ rows ruled (user, 2026-11-19). The required plan review passed (pass 2 Plan Ready, 2026-11-19, [plan-review.md](./plan-review.md)); nothing gates implementation.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -28,7 +28,7 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP17A](./EP17A-spread-preferences-contract.md) | Queued | ▲ D17-2 ruled (a), ▲ D17-5 / ▲ D-A1 ratified (user, 2026-11-19). Plan-review re-review (pass 1 corrections) gates implementation. | Re-review, then implement | [plan-review.md](./plan-review.md) — pass 1 Changes Required; corrections in [history.md](./history.md) |
+| [EP17A](./EP17A-spread-preferences-contract.md) | Queued | ▲ D17-2 ruled (a), ▲ D17-5 / ▲ D-A1 ratified (user, 2026-11-19). Plan review passed (pass 2, 2026-11-19). | Implement | [plan-review.md](./plan-review.md) — pass 2 Plan Ready (R-EP17-01…06 resolved; corrections in [history.md](./history.md)) |
 | [EP17B](./EP17B-engine-daily-pacing.md) | Queued | EP17A. ▲ D17-3 ruled (user, 2026-11-19). | Implement after EP17A | — |
 | [EP17C](./EP17C-engine-study-day-selection.md) | Queued | ▲ D17-2 ruled (a) and ▲ D-C2 ratified (user, 2026-11-19). EP17B. | Implement after EP17B | — |
 | [EP17D](./EP17D-service-wiring-and-pacing-payload.md) | Queued | EP17A–EP17C; ▲ D-D1 ratified (user, 2026-11-19). | Implement after EP17C | — |
@@ -152,7 +152,7 @@ rows themselves live in their own home's register
 
 | Parent | In-scope children | Artifact paths | Index owner | Gate |
 |---|---|---|---|---|
-| [EP17](./README.md) | EP17A–EP17H | `./artifacts/EP17/` | EP17H's implementer writes the parent index | One combined EP17 review after EP17H; a **plan review** (D17-12) runs before implementation starts |
+| [EP17](./README.md) | EP17A–EP17H | `./artifacts/EP17/` | EP17H's implementer writes the parent index | One combined EP17 review after EP17H; the required plan review (D17-12) **passed** — pass 2 Plan Ready, 2026-11-19 |
 
 Child implementation completion unblocks dependents; only the passing
 combined review establishes sign-off.

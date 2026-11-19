@@ -19,15 +19,16 @@ Applied after the last dependent edit
 | 6 | Feature risks/counterexamples and owning tests | **Pass** (re-checked after corrections, 2026-11-19) — six invariants with a concrete counterexample, a preventing mechanism and an owning test in the [epic's invariant table](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md#security--privacy--accessibility-invariants). Plan review pass 1 defeated the no-new-deadline-miss row (R-EP17-01) and the minute-sum wording (R-EP17-02); the row now names the feasibility-floor mechanism with its bounded claim and the adversarial owning fixture, and the sum invariant is stated per deficit category (C-R-EP17-01 / C-R-EP17-02). |
 | 7 | Dependency mapping and sequence | **Pass** — one vertical sequence (contract → engine → service → frontend → integration) with the rationale and the known windows recorded; EP17C is the only `Blocked` row and its blocker is named. |
 | 8 | Material (▲) decisions ruled or explicitly blocked | **Pass** — at breakdown (2026-11-19): ▲ D17-3 and ▲ D17-4 ruled; the other ▲ rows `Proposed` with recommendations filled (gate then **Needs Decision**). Update 2026-11-19 (same day): the user ratified every recommended row; ▲ D17-2 ruled (a) with a UI-visibility proviso (EP17G owns the surfacing, no new story). No open ▲ rows. |
-| 9 | Correction log complete | **Pass** (updated 2026-11-19) — plan review pass 1 findings R-EP17-01…06 logged below as C-R-EP17-01…06, each with the original wording, the correction, verification and status `Addressed — awaiting re-review`. |
+| 9 | Correction log complete | **Pass** (updated 2026-11-19) — plan review pass 1 findings R-EP17-01…06 logged below as C-R-EP17-01…06, each with the original wording, the correction, verification and status — closed to `Fixed in plan` at plan review pass 2 (2026-11-19, `005bc78`, Plan Ready). |
 | 10 | Identifier consistency and at-a-glance blocks (`queue-lint` clean) | **Pass** — every child has the at-a-glance block and a Decisions table with a Ruling column; epic decisions `D17-<n>`, story decisions `D-<suffix><n>`, epic criteria `AC-E17-<nn>`, test requirements `TR-E17-<nn>`, verification `V-17-<n>`, backlog `BL-17-<nn>`; `node tools/queue-lint.mjs docs/stories/EP17` clean. |
 
 **Gate status:** **Plan Ready** (updated 2026-11-19 — the user ratified every
 recommended ruling; originally **Needs Decision** at breakdown while the
 material rows awaited rulings, ▲ D17-2 the only one blocking a child outright).
-Implementation still waits on the required plan review (D17-12): pass 1
-returned **Changes Required**; corrections C-R-EP17-01…06 applied 2026-11-19
-and awaiting re-review of the changed sections.
+The required plan review (D17-12) is **complete**: pass 1 returned
+**Changes Required**; corrections C-R-EP17-01…06 applied 2026-11-19; pass 2
+(reviewed commit `005bc78`) returned **Plan Ready** — implementation may
+start with EP17A.
 
 ## Plan review
 
@@ -43,8 +44,13 @@ determinism and no-silent-loss invariants.
 should-fix (R-EP17-01…04) and two polish (R-EP17-05/06) findings, all
 plan-text corrections; no re-scoping, no new child, no decision re-opened.
 Planner corrections applied 2026-11-19 (correction log below,
-C-R-EP17-01…06); the changed sections await re-review (findings keep their
-IDs).
+C-R-EP17-01…06).
+
+**Pass 2 run 2026-11-19** (reviewed commit `005bc78`, same report): all six
+findings **Resolved** against the diff `476f970..005bc78`, re-verified against
+the engine code; no Ruling cell altered; no new contradiction between
+contracts §2–§5, the changed ACs and the epic tables; verdict **Plan Ready**.
+Correction statuses below closed to `Fixed in plan`.
 
 ## Correction log
 
@@ -76,7 +82,7 @@ additionally `Addressed — awaiting re-review`). Findings R-EP17-01…06 are fr
   `dayBudgetOf` over later horizon days only), `:489-490`, `:547-553` — the
   counterexamples hold against the old wording and are defeated or explicitly
   bounded by the new wording.
-- **Status:** Addressed — awaiting re-review.
+- **Status:** Fixed in plan (plan review pass 2, 2026-11-19, reviewed commit `005bc78`).
 
 ### C-R-EP17-02 (from R-EP17-02, should-fix)
 
@@ -91,7 +97,7 @@ additionally `Addressed — awaiting re-review`). Findings R-EP17-01…06 are fr
   TR-E17-01's wording updated in the epic and in the README traceability row.
 - **Verification:** `scheduler.ts:594-596` confirmed:
   `deficitMinutes = remainingTotal; // full remaining, whatever was placed`.
-- **Status:** Addressed — awaiting re-review.
+- **Status:** Fixed in plan (plan review pass 2, 2026-11-19, reviewed commit `005bc78`).
 
 ### C-R-EP17-03 (from R-EP17-03, should-fix)
 
@@ -110,7 +116,7 @@ additionally `Addressed — awaiting re-review`). Findings R-EP17-01…06 are fr
 - **Verification:** `scheduler.ts:534-537`, `:489-490`, `:547-553` re-read —
   one `budgetLeft` map serves both passes, so a pass-aware budget is required
   and "one site" was wrong.
-- **Status:** Addressed — awaiting re-review.
+- **Status:** Fixed in plan (plan review pass 2, 2026-11-19, reviewed commit `005bc78`).
 
 ### C-R-EP17-04 (from R-EP17-04, should-fix)
 
@@ -130,7 +136,7 @@ additionally `Addressed — awaiting re-review`). Findings R-EP17-01…06 are fr
 - **Verification:** `grep -n "unruled\|still Proposed\|awaiting your ruling\|Needs Decision" `
   over `docs/epics/EP17*.md`, `docs/epics/README.md` and
   `docs/stories/EP17/*.md` returns no live stale line.
-- **Status:** Addressed — awaiting re-review.
+- **Status:** Fixed in plan (plan review pass 2, 2026-11-19, reviewed commit `005bc78`).
 
 ### C-R-EP17-05 (from R-EP17-05, polish)
 
@@ -143,7 +149,7 @@ additionally `Addressed — awaiting re-review`). Findings R-EP17-01…06 are fr
   wording aligned; EP17H-AC1 and D-H1's seeded fixture gain the critical-pass
   caveat.
 - **Verification:** contracts §4/§5, EP17D-AC2, EP17H-AC1 and D-H1 now agree.
-- **Status:** Addressed — awaiting re-review.
+- **Status:** Fixed in plan (plan review pass 2, 2026-11-19, reviewed commit `005bc78`).
 
 ### C-R-EP17-06 (from R-EP17-06, polish)
 
@@ -157,7 +163,7 @@ additionally `Addressed — awaiting re-review`). Findings R-EP17-01…06 are fr
   comment at `study-plans.service.ts:190-193`) as in-scope doc updates.
 - **Verification:** EP17A scope line added; no other story claims those
   comments.
-- **Status:** Addressed — awaiting re-review.
+- **Status:** Fixed in plan (plan review pass 2, 2026-11-19, reviewed commit `005bc78`).
 
 ## Superseded decisions
 

@@ -1,8 +1,94 @@
 # EP17 plan review
 
 **Date:** 2026-11-19
-**Pass:** 1
-**Reviewed commit:** `476f970` (clean working tree)
+**Pass:** 2 (pass 1 preserved below; findings keep their IDs)
+**Reviewed commit:** pass 1 `476f970`; pass 2 `005bc78` (clean working tree)
+**Overall verdict:** **Plan Ready** — all six pass-1 findings resolved at `005bc78`; see the pass-2 section.
+
+---
+
+## Pass 2 — re-review of the corrections (2026-11-19, commit `005bc78`)
+
+**Scope:** the sections the planner changed in `005bc78` (verified against the
+full diff `476f970..005bc78` and re-checked against the engine code), plus a
+contradiction and Ruling-cell sweep.
+
+### Per-finding verdicts
+
+**R-EP17-01 — Resolved.** Contracts §3 adds the feasibility floor
+`dayTake(A, D) = max(paceTarget(A, D), A.remaining − capacityAfter(A, D))` and
+an explicit **bounded guarantee** paragraph naming `capacityAfter`'s optimism
+(fragmentation, competition). EP17B-AC2 restates the claim as "no worse than
+the rule 3 guarantee the engine already makes" and the test list adds the
+owning adversarial fixtures (*pacing under optimistic capacity* — both pass-1
+counterexamples, named concretely). The epic's AC-E17-02 and invariant-table
+row 1 now carry the same counterexample, mechanism and owning test. Checked
+for new contradictions: at `spreadPercent = 0` the floor is
+`max(dayBudget, …)` and the retained "the target never raises a day's budget"
+clause keeps `dayBudgetOf` as the hard cap, so the byte-identical-at-0
+guarantee (AC-E17-04, TR-E17-02) is unaffected; the floor reads deterministic
+run state only, so EP17B-AC4 is unaffected.
+
+**R-EP17-02 — Resolved.** EP17B-AC3, its sum-invariant test bullet, and
+TR-E17-01 in both the epic and the README traceability row now state the
+invariant per deficit category — non-overdue:
+`placed + deficit + deferred = remaining`; `OVERDUE`: `deficit = remaining`
+with `placed` asserted alongside — matching `scheduler.ts:594-596` exactly.
+
+**R-EP17-03 — Resolved.** EP17C's technical notes replace the "one-site
+change" with a pass-aware budget naming all four sites (normal rotation's
+`budgetLeft` seed zeroed; critical pass keeps the real budget;
+`capacityAfter` narrowed; anchor pass narrowed per ▲ D-C2 (a)), citing the
+exact lines that made one site impossible (`:534-537`, `:489-490`,
+`:550-551`). Contracts §4 matches, and EP17C-AC1 carries the two explicit
+carve-outs (critical pass, full-horizon fallback), each with its own fixture.
+No contradiction with the §3 floor: `capacityAfter` narrowed to selected days
+is consistent with the floor's use of it.
+
+**R-EP17-04 — Resolved.** Reviewer-executed sweep: `grep -n
+"unruled|still Proposed|awaiting your ruling"` over the epic and every EP17
+story returns nothing outside the history/correction records. Epic Status
+line, epic Remaining decisions, the epics README EP17 row, the breakdown
+README queue rows (D-D1, D-F1/D-F2) and the EP17A/C/D/F/G at-a-glance and
+header lines all state the rulings; EP17G's header and at-a-glance state the
+▲ D17-2 proviso as a **binding obligation** of that story.
+
+**R-EP17-05 — Resolved.** Contracts §5 defines `studyDays` as the §4
+*selection* in date order, independent of placement, with the explicit
+critical-pass note (`perDayMinutes` may carry an unselected date that
+`studyDays` does not list); EP17D-AC2 matches; EP17H-AC1 and D-H1's fixture
+gain the no-critical-work caveat.
+
+**R-EP17-06 — Resolved.** EP17A's scope names both stale "four keys" comment
+sites (`study-plans.controller.ts:33-48`,
+`study-plans.service.ts:190-193`) as in-scope doc updates.
+
+### Integrity checks
+
+- **No Ruling cell altered:** the diff removes no `Ruled`/`Ratified` cell;
+  the only edited decision row is D-H1, whose *Options* text gained the
+  R-EP17-05 fixture caveat while its Ruling cell is preserved verbatim — an
+  annotation consistent with the ruling, not a change to it.
+- **No new contradiction found** between contracts §2–§5, the EP17B/EP17C/
+  EP17D/EP17H ACs and the epic's AC/TR/invariant tables (checked pairwise on
+  the changed sections).
+- `node tools/queue-lint.mjs docs/stories/EP17` → clean.
+- Cosmetic only, no action required: the §4 heading still reads "gated by
+  ▲ D17-2" — kept, correctly, so the stories' section anchors stay valid; the
+  body opens with the ruling.
+- `history.md` carries C-R-EP17-01…06 with original wording preserved and
+  gate rows 4/6/9 re-checked.
+
+### Pass-2 verdict
+
+**Plan Ready.** All four should-fix and both polish findings are resolved; no
+finding remains open; no ▲ decision was re-opened. Passing sync performed per
+the reviewer skill (correction-log statuses, queue state, epic/README status
+lines).
+
+---
+
+# Pass 1 (2026-11-19, commit `476f970`) — preserved verbatim
 **Mode:** `plan_review` (required by D17-12 — the preferences bag gains persisted keys)
 **Scope:** epic `EP17-adhd-friendly-pacing-and-plan-proposal.md`, breakdown
 `README.md`, `contracts.md`, `history.md`, children EP17A–EP17H, verified
