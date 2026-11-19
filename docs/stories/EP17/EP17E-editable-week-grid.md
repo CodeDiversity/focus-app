@@ -41,7 +41,13 @@ the grid's own responsive behaviour; component tests.
 
 **Out:** the rest of the page's composition, the decision controls, the
 "What else changed" disclosure and the `shared/ui/Disclosure` primitive
-(all EP17F); the spread presets (EP17G); `PlanWeek.tsx`,
+(all EP17F); the dates rendered by the page's other EP13/EP16 cards —
+`WhatThisKeepsCard`, `MovedSessionRow` and the 409 conflict summary — which
+this story changes the *placement* of, not the source (**owner since
+2026-11-19: EP17H, per D17-17**, raised as F-EP17E-02 / F-EP17F-01 and
+logged as C-F-EP17E-02 / C-F-EP17F-01 in [history.md](./history.md); no
+EP17E AC is reopened — AC5 is met as written against the week grid);
+the spread presets (EP17G); `PlanWeek.tsx`,
 `WeekGrid.tsx` and `PlanPage.tsx` (unchanged — `PlanWeek` keeps its ISO-ish
 label on `/plan`, which is outside AC-E17-10's "the proposal"); rendering on
 the EP15 calendar grid (BL-16-02's deferred half); drag-and-drop

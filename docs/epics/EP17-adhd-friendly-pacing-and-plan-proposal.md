@@ -191,7 +191,13 @@ the spread happens **within those chosen days**.
    grid: change day, change start, change length, pin/unpin, delete with undo.
    The separate read-only grid + editor-list pair no longer exists.
 10. Days are labelled in human form (weekday + day + month) everywhere in the
-    proposal; no raw ISO date is shown to a student.
+    proposal; no raw ISO date is shown to a student. "Everywhere" means the
+    whole page, not only the week grid: the locked-session lines in
+    `WhatThisKeepsCard`, the "moved forward" rows in `MovedSessionRow` and
+    the 409 conflict-summary lines in `PlanProposal` read the same label as
+    the grid, from the one shared `dayLabel` helper. **EP17E** owns the week
+    grid (shipped); **EP17H** owns those three secondary call sites and the
+    V-17-4 sweep that proves the page is clean (D17-17).
 11. **Use this plan** and **Not now** are reachable from the editing area
     without scrolling back to the page header, on desktop and on a 360×640
     phone; exactly one confirm and one decline exist.
@@ -312,6 +318,7 @@ implementation start.
 | D17-10 | Backlog absorption at this breakdown | BL-16-02 (proposal on the week grid) is **partly absorbed**: EP17E makes the proposal's own grid editable; the "render on the EP15 calendar grid" half stays deferred. BL-16-09 (phone-first proposal, spec in EP16K) is **absorbed into EP17F**. BL-14-03 (placement explainability) stays deferred — its trigger has not fired, though pacing makes it more valuable | — | Ratified (user, 2026-11-19) |
 | D17-11 | Refiner gate | EP17E (in-place interaction), EP17F (composition, phone-first) and EP17G (preset copy and the inline write affordance) are `Needs refinement`; EP17A–EP17D and EP17H are specified in-story | — | Ratified (user, 2026-11-19) |
 | ▲ D17-16 | What an **unset** `weeklyGoalDays` means to the planner (refines ▲ D17-2 (a)) | (a) **an unset key means unconstrained**: a student who has never explicitly chosen a study-days number is planned across the **whole week** (effectively 7), and only an explicitly stored number narrows the plan; `STUDY_PREFERENCE_DEFAULTS.weeklyGoalDays` **stays 3**, because the same key is the EP13K momentum yardstick; (b) let the stored default (3) instruct the planner for everyone, so every student's preview narrows to three days from EP17C onward; (c) raise `STUDY_PREFERENCE_DEFAULTS.weeklyGoalDays` to 7 so planner and yardstick share one default | **(a)** — (b) silently narrows the plans of students who set the key as a *motivational goal*, before EP17G ships the control that explains the new meaning; that is exactly what ▲ D17-2's visibility proviso exists to prevent. (c) fixes the planner by breaking the yardstick: it would turn every student's momentum goal into "study 7 days a week" (EP13K). (a) keeps one key with one stored meaning and makes the *absence* of a choice, not the default value, the unconstrained case. Driver: implementer findings F-EP17C-02 and F-EP17B-03 — the engine began constraining real previews before the control existed. ▲ — persisted-preference semantics and user-visible workflow | **Ruled (user, 2026-11-19)** |
+| D17-17 | Who closes the remaining raw-ISO-date gap on the proposal (implementer findings F-EP17E-02 and F-EP17F-01): three secondary surfaces — `WhatThisKeepsCard.tsx:80`, `MovedSessionRow.tsx:23` and the 409 conflict-summary list in `PlanProposal.tsx:223-226` — still render `2026-11-19` beside a grid that now reads "Thu, Nov 19" | (a) **extend AC-E17-10 to name the three call sites and give them to EP17H**, which is unimplemented (nothing frozen), already owns the V-17-4 sweep's evidence and already owns updating the journeys the rebuild touched — including `plan-flow.spec.ts:781`, the 409 assertion that pins the ISO string; (b) a new child **EP17I** for the three call sites; (c) a backlog row deferred past EP17 | **(a)** — the work is three `dayLabel(...)` call sites plus two component tests and one e2e assertion, far under a child's worth of outcome, so (b) would be a story invented to carry a one-line change and would push the review unit out by a window. (c) leaves the exact inconsistency this epic exists to remove visible on the page it rebuilt — one surface speaking two date languages is the ADHD-and-simplicity friction of the standing user standard (2026-11-19). Neither EP17E's nor EP17F's frozen AC text is reopened: both stay met as written and as implemented; AC-E17-10 is the **epic** criterion, and it gains a second owner rather than a changed promise. Not ▲: no security, persisted-data or contract change, and the user-visible change is making one page agree with itself under an already-ruled criterion | Proposed |
 
 ## Security / privacy / accessibility invariants
 
@@ -335,13 +342,21 @@ epic touches already scopes by the authenticated `userId`.
   same total minutes as the pre-EP17 engine, with no session throttled away.
 - **V-17-3:** byte-identical baseline run with pacing at its "off" value.
 - **V-17-4:** `grep` the proposal surface for raw ISO date rendering —
-  AC-E17-10 leaves none.
+  AC-E17-10 leaves none. Scoped to the **whole** `/plan/proposal` page, not
+  the week grid alone (D17-17): EP17E cleared the grid; EP17H clears
+  `WhatThisKeepsCard`, `MovedSessionRow` and the 409 summary and records the
+  final sweep.
 - **V-17-5:** 360×640 — the confirm control is reachable from the editing
   area without scrolling to the page header (AC-E17-11).
 
 ## Remaining decisions
 
-None — every ▲ row is ruled (user, 2026-11-19). ▲ D17-2 is ruled (a) with the
+No ▲ row is open. One non-material row is `Proposed` and ratifies by default
+when EP17H starts: **D17-17** (AC-E17-10's three remaining raw-ISO-date call
+sites go to EP17H, not to a new child and not to the backlog) — raised by
+implementer findings F-EP17E-02 / F-EP17F-01, logged as C-F-EP17E-02 and
+C-F-EP17F-01 in [history.md](../stories/EP17/history.md). Every ▲ row is
+ruled (user, 2026-11-19). ▲ D17-2 is ruled (a) with the
 proviso that the study-days control is visibly surfaced with its instruction
 meaning (EP17G owns it; no new story), refined by ▲ D17-16 (an unset
 `weeklyGoalDays` means unconstrained). The two story rows the refiners

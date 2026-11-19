@@ -12,14 +12,14 @@ Applied after the last dependent edit
 | # | Check | Pass / Blocked / N/A + reference |
 |---|---|---|
 | 1 | Child separation and sizing | **Pass** — eight children, each one observable outcome with 4–6 criteria and a sizing block. Splitting rationale recorded in [README § Stories](./README.md#stories): EP17B/EP17C split so the open ▲ D17-2 blocks only one of them; EP17E/EP17F split per ▲ D17-4's "split if sizing demands"; EP17G separated as the only writing child. No README-only, status-only or evidence-only child. |
-| 2 | Original AC/TR coverage | **Pass** — AC-E17-01…14 and TR-E17-01…07 each have a named primary owner in the [ownership](./README.md#epic-acceptance-criteria--ownership) and [traceability](./README.md#requirement-and-test-traceability) tables; no criterion is weakened or deferred. |
+| 2 | Original AC/TR coverage | **Pass** — AC-E17-01…14 and TR-E17-01…07 each have a named primary owner in the [ownership](./README.md#epic-acceptance-criteria--ownership) and [traceability](./README.md#requirement-and-test-traceability) tables; no criterion is weakened or deferred. Update 2026-11-19 (in flight, after EP17F): **AC-E17-10 now has two owners** — EP17E the week grid, EP17H the three non-grid call sites (D17-17, C-F-EP17E-02 / C-F-EP17F-01). The criterion is extended, not weakened, and nothing is deferred past EP17. |
 | 3 | DoD obligations | **Pass** — all eleven mapped in [README § DoD](./README.md); DoD-9 notes explicitly that there is **no migration** (▲ D17-5 (a)); DoD-10/11 belong to the EP17 parent unit. |
 | 4 | Contract consistency and integration ownership | **Pass** (re-checked after corrections, 2026-11-19) — the preferences keys, the pacing rule, study-day selection, the payload block and the surface contract each live once, in [contracts.md](./contracts.md), and are cited rather than restated. The two internal contradictions plan review pass 1 found (R-EP17-01's AC-2 vs AC-3 tension; R-EP17-03's §4 vs EP17C mechanism) are corrected in C-R-EP17-01 / C-R-EP17-03. Integration ownership is EP17H, which carries real journey code and the protective gates (not a manufactured index child). |
 | 5 | Code paths inspected; unverified disclosed | **Pass** — `scheduler.ts` (673 lines) read end to end; `preferences.ts` (250), `PlanProposal.tsx` (248), `PlanSessionEditor.tsx` (315) read in full; `study-plans.service.ts` read around `:180-210` and `:960-1200`; `StudyPreferencesForm.tsx` and `study-plans.controller.ts` inspected by targeted search. Unverified paths are named in each story's Technical notes and in the epic (`useProposal.ts`, `PlanWeek.tsx`, `catchUpPreview`'s full return shape, the momentum read's use of `weeklyGoalDays`, the preferences DTO decorators). |
 | 6 | Feature risks/counterexamples and owning tests | **Pass** (re-checked after corrections, 2026-11-19) — six invariants with a concrete counterexample, a preventing mechanism and an owning test in the [epic's invariant table](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md#security--privacy--accessibility-invariants). Plan review pass 1 defeated the no-new-deadline-miss row (R-EP17-01) and the minute-sum wording (R-EP17-02); the row now names the feasibility-floor mechanism with its bounded claim and the adversarial owning fixture, and the sum invariant is stated per deficit category (C-R-EP17-01 / C-R-EP17-02). |
 | 7 | Dependency mapping and sequence | **Pass** — one vertical sequence (contract → engine → service → frontend → integration) with the rationale and the known windows recorded; EP17C is the only `Blocked` row and its blocker is named. |
-| 8 | Material (▲) decisions ruled or explicitly blocked | **Pass** — at breakdown (2026-11-19): ▲ D17-3 and ▲ D17-4 ruled; the other ▲ rows `Proposed` with recommendations filled (gate then **Needs Decision**). Update 2026-11-19 (same day): the user ratified every recommended row; ▲ D17-2 ruled (a) with a UI-visibility proviso (EP17G owns the surfacing, no new story). Update 2026-11-19 (in flight, after EP17C): three further rulings — ▲ D-G5 (spread preset labels) and ▲ D-F7 (calibration note inside the collapsed disclosure, no auto-expand) ruled as recommended, and the new ▲ D17-16 (an unset `weeklyGoalDays` means unconstrained) ruled, refining ▲ D17-2 (a). No open ▲ rows. |
-| 9 | Correction log complete | **Pass** (updated 2026-11-19) — plan review pass 1 findings R-EP17-01…06 logged below as C-R-EP17-01…06, each with the original wording, the correction, verification and status — closed to `Fixed in plan` at plan review pass 2 (2026-11-19, `005bc78`, Plan Ready). Implementer finding F-EP17B-01 (raised during EP17B) logged as C-F-EP17B-01 in the same format and closed `Fixed in plan` — contracts §3 amended to the shipped `evenShare` with its one-sitting floor. EP17C's findings F-EP17C-01 and F-EP17C-02 logged as `C-F-EP17C-01` / `C-F-EP17C-02` in the same format (F-EP17C-03 needed no plan change and is closed in its own record). The EP17D implementer's requested contracts wording for the ▲ D17-16 resolution logged as `C-F-EP17D-01` and applied to contracts §2/§4. |
+| 8 | Material (▲) decisions ruled or explicitly blocked | **Pass** — at breakdown (2026-11-19): ▲ D17-3 and ▲ D17-4 ruled; the other ▲ rows `Proposed` with recommendations filled (gate then **Needs Decision**). Update 2026-11-19 (same day): the user ratified every recommended row; ▲ D17-2 ruled (a) with a UI-visibility proviso (EP17G owns the surfacing, no new story). Update 2026-11-19 (in flight, after EP17C): three further rulings — ▲ D-G5 (spread preset labels) and ▲ D-F7 (calibration note inside the collapsed disclosure, no auto-expand) ruled as recommended, and the new ▲ D17-16 (an unset `weeklyGoalDays` means unconstrained) ruled, refining ▲ D17-2 (a). Update 2026-11-19 (in flight, after EP17F): new row **D17-17** (who closes AC-E17-10's three remaining raw-ISO-date call sites) is **not ▲** — no security, persisted-data or contract change, and the user-visible effect is one page agreeing with itself under an already-ruled criterion — so it is `Proposed` and ratifies by default when EP17H starts. No open ▲ rows. |
+| 9 | Correction log complete | **Pass** (updated 2026-11-19) — plan review pass 1 findings R-EP17-01…06 logged below as C-R-EP17-01…06, each with the original wording, the correction, verification and status — closed to `Fixed in plan` at plan review pass 2 (2026-11-19, `005bc78`, Plan Ready). Implementer finding F-EP17B-01 (raised during EP17B) logged as C-F-EP17B-01 in the same format and closed `Fixed in plan` — contracts §3 amended to the shipped `evenShare` with its one-sitting floor. EP17C's findings F-EP17C-01 and F-EP17C-02 logged as `C-F-EP17C-01` / `C-F-EP17C-02` in the same format (F-EP17C-03 needed no plan change and is closed in its own record). The EP17D implementer's requested contracts wording for the ▲ D17-16 resolution logged as `C-F-EP17D-01` and applied to contracts §2/§4. The EP17E/EP17F implementer findings F-EP17E-02 and F-EP17F-01 are logged as `C-F-EP17E-02` / `C-F-EP17F-01` in the same format; both are `Fixed in plan` with the code change assigned to EP17H (D17-17, EP17H-AC7). |
 | 10 | Identifier consistency and at-a-glance blocks (`queue-lint` clean) | **Pass** — every child has the at-a-glance block and a Decisions table with a Ruling column; epic decisions `D17-<n>`, story decisions `D-<suffix><n>`, epic criteria `AC-E17-<nn>`, test requirements `TR-E17-<nn>`, verification `V-17-<n>`, backlog `BL-17-<nn>`; `node tools/queue-lint.mjs docs/stories/EP17` clean. |
 
 **Gate status:** **Plan Ready** (updated 2026-11-19 — the user ratified every
@@ -67,7 +67,12 @@ F-EP17C-02 are implementer findings from
 (2026-11-19); their entries are `C-F-EP17C-01` and `C-F-EP17C-02`. The
 EP17D implementer's contracts follow-up from
 [artifacts/EP17D/F-EP17C-02-resolution.md](./artifacts/EP17D/F-EP17C-02-resolution.md)
-(2026-11-19) is `C-F-EP17D-01`.
+(2026-11-19) is `C-F-EP17D-01`. Findings F-EP17E-02 and F-EP17F-01 are
+implementer findings from
+[artifacts/EP17E/implementation.md](./artifacts/EP17E/implementation.md) and
+[artifacts/EP17F/implementation.md](./artifacts/EP17F/implementation.md)
+(2026-11-19); they are two halves of one gap and their entries are
+`C-F-EP17E-02` and `C-F-EP17F-01`.
 
 ### C-R-EP17-01 (from R-EP17-01, should-fix)
 
@@ -345,6 +350,91 @@ may not write contracts.
   term. `node tools/queue-lint.mjs docs/stories/EP17` clean.
 - **Status:** Fixed in plan — the resolution record's "contract of record"
   interim note is discharged; nothing is pending for an implementer.
+
+### C-F-EP17E-02 (from F-EP17E-02, implementer finding, should-fix)
+
+Raised by the EP17E implementer during the V-17-4 sweep, against frozen
+EP17E-AC5 and EP17E/EP17F scope text. Source record:
+[artifacts/EP17E/implementation.md](./artifacts/EP17E/implementation.md),
+§ Findings. Logged by the planner 2026-11-19; the implementer may not write
+the epic or another child's ACs.
+
+- **Original finding (wording preserved):** "source: V-17-4 sweep; paths:
+  `apps/web/src/features/plan-proposal/ui/WhatThisKeepsCard.tsx:80`,
+  `MovedSessionRow.tsx:23`; issue: both EP13/EP16 cards still render raw ISO
+  dates (`<time>{s.date}</time>`) on the proposal page; EP17E-AC5's frozen
+  text enumerates the week surfaces (headings, section names, day select),
+  and both EP17E's and EP17F's Scope sections place these components out of
+  scope ('change placement only, not source'); disposition: reported for the
+  combined EP17 review / a follow-up story, not fixed here; owner: planner;
+  closure evidence: pending."
+- **Correction:** a scope decision, not a wording fix. New epic row **D17-17**
+  (non-material, `Proposed`, ratifies by default at EP17H's start) assigns the
+  gap to **EP17H**, which is unimplemented — so nothing is unfrozen and no new
+  child is invented for three `dayLabel(...)` call sites. Epic **AC-E17-10**
+  now states that "everywhere in the proposal" means the whole page and names
+  the call sites and the two owners (EP17E the grid, EP17H the rest);
+  contracts §6's day-label bullet names the shipped helper
+  `features/study-plan/lib/dayLabel.ts`, the three non-grid sites, and that
+  the `<time dateTime=…>` attribute keeps its ISO value; **V-17-4** is scoped
+  page-wide with EP17H recording the final sweep. **EP17H-AC7** is new and
+  names the three call sites with file and line; EP17H's Tests gain the two
+  component tests, the page-wide negative `/\d{4}-\d{2}-\d{2}/` test (the one
+  that would have caught both findings) and the required update to
+  `e2e/plan-flow.spec.ts:781`. **No EP17E or EP17F AC text was touched**:
+  EP17E-AC5 remains met as written against the week grid, and EP17E's Scope
+  "Out" gains only a pointer to the new owner.
+- **Verification:** both paths re-read at HEAD `d918046` —
+  `WhatThisKeepsCard.tsx:80` renders `<time dateTime={s.date}>{s.date}</time>`
+  and `MovedSessionRow.tsx:23` the same shape for `session.date`, so the
+  finding holds exactly as worded. `dayLabel.ts` confirmed to be a pure
+  `(date: string) => string` formatted in `UTC` from the civil date, taking
+  precisely the values both sites hold, so the fix needs no new helper, no
+  prop and no time-zone plumbing. `MovedSessionRow` has no test file of its
+  own (it renders only from `MovedForwardList`, which has one) — EP17H's test
+  list reflects that. `node tools/queue-lint.mjs docs/stories/EP17` clean.
+- **Status:** Fixed in plan (decision taken and owner assigned) — the code
+  change itself is **pending for EP17H**; closure evidence for F-EP17E-02 is
+  this entry plus EP17H-AC7 and, at EP17H's closeout, its record.
+
+### C-F-EP17F-01 (from F-EP17F-01, implementer finding, should-fix)
+
+The 409 half of the same gap, raised by the EP17F implementer against frozen
+EP17F-AC5. Source record:
+[artifacts/EP17F/implementation.md](./artifacts/EP17F/implementation.md),
+§ Findings. Logged by the planner 2026-11-19.
+
+- **Original finding (wording preserved):** "source: AC-E17-10 sweep while
+  recomposing; path: `PlanProposal.tsx` conflict-summary list
+  (`{c.date} {c.startTime} — …`); issue: the 409 summary prints the raw ISO
+  date; EP17F-AC5 freezes this copy ('the confirm's 409 handling … unchanged
+  in behaviour and in copy') and the e2e 409 test asserts the ISO string, so
+  changing it here would contradict a frozen AC; joins F-EP17E-02
+  (WhatThisKeepsCard / MovedSessionRow ISO dates) as the one remaining
+  AC-E17-10 gap on the page; disposition: reported for the combined review /
+  a follow-up story; owner: planner; closure evidence: pending."
+- **Correction:** covered by the same D17-17 and the same EP17H-AC7, as its
+  third call site (`PlanProposal.tsx:223-226`). EP17H-AC7 records the reading
+  that makes this consistent rather than contradictory: EP17F-AC5's frozen
+  promise is about the *message* — its wording, its `role="alert"`, its
+  `data-testid` and the confirm behaviour around it, all of which stay
+  unchanged — while D17-17 changes only how its date reads, under the epic
+  criterion (AC-E17-10) that was always meant to cover the page. EP17F's
+  story file is **not** edited; the finding's own record keeps its
+  disposition and this entry carries the resolution.
+- **Verification:** `PlanProposal.tsx:223-226` re-read — the line
+  interpolates `{c.date}` into a plain `<li>` with no `<time>` element, so
+  `dayLabel(c.date)` replaces it outright. The frozen e2e assertion is
+  `apps/web/e2e/plan-flow.spec.ts:781`,
+  `await expect(summary).toContainText(target.date)`; it is named in EP17H's
+  test list as an update, not a deletion, consistent with EP17H's standing
+  rule that a journey the rebuild breaks is updated. The surrounding
+  assertions (the lead sentence, `[data-conflicted]` count, nothing saved,
+  the axe stop) are unaffected. `node tools/queue-lint.mjs docs/stories/EP17`
+  clean.
+- **Status:** Fixed in plan (decision taken and owner assigned) — the code
+  change is **pending for EP17H**; closure evidence for F-EP17F-01 is this
+  entry plus EP17H-AC7 and, at EP17H's closeout, its record.
 
 ## Superseded decisions
 

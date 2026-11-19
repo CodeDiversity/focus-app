@@ -196,8 +196,15 @@ ignore it are unaffected.
   path and an announcement, carrying over `PlanSessionEditor`'s existing
   semantics — moving or typing a start time pins a `FLEX_DAY` session
   (EP13H D-H5, `PlanSessionEditor.tsx:99`, `:194-200`); resizing does not.
-- **Day labels:** weekday + day + month in the plan's time zone (e.g.
-  "Wed 19 Nov"). No raw ISO date is rendered to a student (AC-E17-10).
+- **Day labels:** weekday + day + month in the plan's time zone, from the one
+  shared helper `features/study-plan/lib/dayLabel.ts` — `"2026-11-19"` →
+  `"Wed, Nov 19"` (shipped by EP17E; D-E5 chose the exact string over the
+  "Wed 19 Nov" shorthand this contract first illustrated). No raw ISO date is
+  rendered to a student **anywhere on `/plan/proposal`** (AC-E17-10) — that
+  includes the three non-grid call sites EP17H owns under D17-17:
+  `WhatThisKeepsCard`'s locked-session line, `MovedSessionRow`'s date and the
+  409 conflict-summary lines in `PlanProposal`. The `<time dateTime="…">`
+  attribute keeps the ISO value; only the rendered text changes.
 - **Decision controls:** exactly one confirm (**Use this plan**) and one
   decline (**Not now**), reachable from the editing area without scrolling to
   the page header (AC-E17-11).
