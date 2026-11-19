@@ -166,3 +166,84 @@ describe('useProposal (EP16C-AC2/AC3)', () => {
     expect(result.current.preview?.lockedPreserved).toBe(1);
   });
 });
+
+describe('useProposal.replan (EP17G-AC3, D-G9)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockedPreview.mockResolvedValue(fixture as never);
+  });
+
+  it('a successful replan swaps in the new week and returns its pacing block', async () => {
+    const { result } = renderHook(() => useProposal({ onConfirmed: vi.fn() }));
+    await waitFor(() => expect(result.current.phase).toBe('ready'));
+
+    const next = {
+      ...fixture,
+      days: [{ ...fixture.days[0], sessions: [] }],
+      pacing: { spreadPercent: 100, studyDays: ['2026-10-30'], perDayMinutes: {} },
+    };
+    mockedPreview.mockResolvedValueOnce(next as never);
+
+    let outcome: Awaited<ReturnType<typeof result.current.replan>>;
+    await act(async () => {
+      outcome = await result.current.replan();
+    });
+    expect(outcome!).toEqual({
+      ok: true,
+      pacing: { spreadPercent: 100, studyDays: ['2026-10-30'], perDayMinutes: {} },
+    });
+    expect(result.current.phase).toBe('ready');
+    expect(result.current.edited).toHaveLength(0);
+  });
+
+  it('a failed replan keeps the previous proposal rendered and editable, phase still ready', async () => {
+    const { result } = renderHook(() => useProposal({ onConfirmed: vi.fn() }));
+    await waitFor(() => expect(result.current.phase).toBe('ready'));
+    const before = result.current.preview;
+    const editedBefore = result.current.edited;
+
+    mockedPreview.mockRejectedValueOnce(new Error('boom'));
+    let outcome: Awaited<ReturnType<typeof result.current.replan>>;
+    await act(async () => {
+      outcome = await result.current.replan();
+    });
+
+    expect(outcome!).toEqual({ ok: false });
+    // The guarantee EP17G-AC3 exists for: nothing was thrown away.
+    expect(result.current.phase).toBe('ready');
+    expect(result.current.preview).toBe(before);
+    expect(result.current.edited).toBe(editedBefore);
+    expect(result.current.isReplanning).toBe(false);
+  });
+
+  it('load() keeps its destructive behaviour (the contrast D-G9 names)', async () => {
+    const { result } = renderHook(() => useProposal({ onConfirmed: vi.fn() }));
+    await waitFor(() => expect(result.current.phase).toBe('ready'));
+    mockedPreview.mockRejectedValueOnce(new Error('boom'));
+    await act(async () => {
+      await result.current.load();
+    });
+    expect(result.current.phase).toBe('error');
+    expect(result.current.preview).toBeNull();
+  });
+
+  it('isReplanning is true while the rebuild is in flight', async () => {
+    const { result } = renderHook(() => useProposal({ onConfirmed: vi.fn() }));
+    await waitFor(() => expect(result.current.phase).toBe('ready'));
+
+    let release!: () => void;
+    mockedPreview.mockReturnValueOnce(
+      new Promise((resolve) => (release = () => resolve(fixture as never))) as never
+    );
+    let pending!: Promise<unknown>;
+    await act(async () => {
+      pending = result.current.replan();
+    });
+    expect(result.current.isReplanning).toBe(true);
+    await act(async () => {
+      release();
+      await pending;
+    });
+    expect(result.current.isReplanning).toBe(false);
+  });
+});

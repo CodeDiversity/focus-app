@@ -3,16 +3,27 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { CheckCircle2, Loader2 } from 'lucide-react';
-import { clsx } from 'clsx';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
 import { Card } from '@/shared/ui/Card';
+import { PresetRadioGroup, isPreset, withCustom } from '@/shared/ui/PresetRadioGroup';
+import type { Preset } from '@/shared/ui/PresetRadioGroup';
 import { extractApiError, getFieldError, getErrorMessage } from '@/shared/lib/errors';
 import {
   getStudyPreferences,
   putStudyPreferences,
 } from '@/entities/study-preferences/api/studyPreferencesApi';
+import {
+  GOAL_DAY_PRESETS,
+  SPREAD_CUSTOM_LABEL,
+  SPREAD_LEGEND,
+  SPREAD_PRESETS,
+  STUDY_DAYS_CUSTOM_LABEL,
+  STUDY_DAYS_DESCRIPTION,
+  STUDY_DAYS_LEGEND,
+} from '@/entities/study-preferences/model/pacingPresets';
+import type { StudyPreferences } from '@/entities/study-preferences/model/types';
 
 const BOUNDS_MSG = 'Must be between 5 and 480.';
 const DAILY_CAP_MSG = 'Must be between 5 and 1440.';
@@ -21,6 +32,8 @@ const DENSITY_MSG = 'Must be between 50 and 100.';
 const INTEGER_MSG = 'Must be a whole number.';
 const DAILY_GOAL_MSG = 'Must be between 5 and 480.';
 const WEEKLY_GOAL_MSG = 'Must be between 1 and 7.';
+// EP17G: the spread lever's bounds mirror the server's (contracts §2).
+const SPREAD_MSG = 'Must be between 0 and 100.';
 
 const studyPreferencesSchema = z
   .object({
@@ -68,6 +81,13 @@ const studyPreferencesSchema = z
       .int(INTEGER_MSG)
       .min(1, WEEKLY_GOAL_MSG)
       .max(7, WEEKLY_GOAL_MSG),
+    // EP17A/EP17G (▲ D-A1, ▲ D-G5): how strongly the pacing target binds.
+    // Takes part in no cross-field rule.
+    spreadPercent: z
+      .number({ invalid_type_error: INTEGER_MSG })
+      .int(INTEGER_MSG)
+      .min(0, SPREAD_MSG)
+      .max(100, SPREAD_MSG),
   })
   .refine((data) => data.minSessionMinutes <= data.sessionLengthMinutes, {
     message: 'Shortest session must be no longer than the default session length.',
@@ -93,6 +113,7 @@ const DEFAULTS: FormValues = {
   densityPercent: 80,
   dailyGoalMinutes: 60,
   weeklyGoalDays: 3,
+  spreadPercent: 70,
 };
 
 // EP13N (D-N1, D13-15): the density lever is asked as three named presets
@@ -109,10 +130,6 @@ const DENSITY_PRESETS: ReadonlyArray<{ value: number; label: string; description
   { value: 100, label: 'Packed', description: 'Use nearly all your free time — 100%.' },
 ];
 
-type Preset = { value: number; label: string; description: string };
-
-const isPreset = (presets: ReadonlyArray<Preset>, value: number) =>
-  presets.some((p) => p.value === value);
 const isDensityPreset = (value: number) => isPreset(DENSITY_PRESETS, value);
 
 // EP13K (D-K6/D-K7, D13-15): the goals reuse EP13N's named-choice control.
@@ -122,24 +139,9 @@ const GOAL_MINUTE_PRESETS: ReadonlyArray<Preset> = [
   { value: 60, label: 'Steady', description: 'About an hour — the default.' },
   { value: 120, label: 'Ambitious', description: 'About two hours, for heavier weeks.' },
 ];
-const GOAL_DAY_PRESETS: ReadonlyArray<Preset> = [
-  { value: 2, label: 'Light', description: '2 days a week.' },
-  { value: 3, label: 'Steady', description: '3 days a week — the default.' },
-  { value: 5, label: 'Most days', description: '5 days a week.' },
-];
-
-const CUSTOM_DESCRIPTION = 'What is saved right now. Pick a named option to change it.';
-
-/** The presets plus the honest Custom option when the saved value is none of them (D-N2). */
-function withCustom(
-  presets: ReadonlyArray<Preset>,
-  custom: number | null,
-  label: (n: number) => string
-): ReadonlyArray<Preset> {
-  return custom === null
-    ? presets
-    : [...presets, { value: custom, label: label(custom), description: CUSTOM_DESCRIPTION }];
-}
+// EP17G (D-G7): `GOAL_DAY_PRESETS` and the spread presets live in
+// `entities/study-preferences/model/pacingPresets.ts` so Profile and the
+// proposal cannot spell the same choice two ways.
 
 const FIELD_NAMES = [
   'sessionLengthMinutes',
@@ -150,96 +152,10 @@ const FIELD_NAMES = [
   'densityPercent',
   'dailyGoalMinutes',
   'weeklyGoalDays',
+  'spreadPercent',
 ] as const;
 
-type PresetField = 'densityPercent' | 'dailyGoalMinutes' | 'weeklyGoalDays';
-
-/**
- * EP13N's radio-card group (D-N5), extracted in-file once EP13K added two
- * more groups. Native fieldset/legend + radios; arrow keys move the
- * selection; `focus-within` ring; a "Selected" text cue (never colour only).
- */
-function PresetRadioGroup({
-  name,
-  legend,
-  options,
-  value,
-  onSelect,
-  error,
-  disabled,
-  idBase,
-}: {
-  name: PresetField;
-  legend: string;
-  options: ReadonlyArray<Preset>;
-  value: number;
-  onSelect: (value: number) => void;
-  error?: string;
-  disabled: boolean;
-  idBase: string;
-}) {
-  const errorId = `${idBase}-${name}-error`;
-  return (
-    <fieldset className="space-y-2" aria-describedby={error ? errorId : undefined}>
-      <legend className="mb-2 block text-body-sm font-medium text-text">{legend}</legend>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-        {options.map((option) => {
-          const checked = value === option.value;
-          const optionId = `${idBase}-${name}-${option.value}`;
-          return (
-            <label
-              key={option.value}
-              className={clsx(
-                'flex cursor-pointer items-start gap-2 rounded-lg border p-3 transition-colors duration-base max-sm:min-h-[44px]',
-                'focus-within:outline-none focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
-                checked
-                  ? 'border-accent bg-accent/10'
-                  : 'border-border bg-surface hover:border-border-strong',
-                disabled && 'cursor-not-allowed opacity-50'
-              )}
-            >
-              <input
-                type="radio"
-                name={name}
-                value={option.value}
-                checked={checked}
-                onChange={() => onSelect(option.value)}
-                aria-labelledby={`${optionId}-label`}
-                aria-describedby={`${optionId}-desc`}
-                // Explicit size + resets: the global base rule
-                // `input { @apply w-full … }` (index.css) would
-                // otherwise stretch this radio to the card width.
-                className="mt-1 h-4 w-4 shrink-0 border-0 bg-transparent p-0"
-                disabled={disabled}
-              />
-              <span className="min-w-0 flex-1">
-                <span className="flex items-center justify-between gap-2">
-                  <span id={`${optionId}-label`} className="text-sm font-medium text-text">
-                    {option.label}
-                  </span>
-                  {checked && (
-                    <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-accent">
-                      <CheckCircle2 aria-hidden size={14} data-icon="selected" />
-                      Selected
-                    </span>
-                  )}
-                </span>
-                <span id={`${optionId}-desc`} className="mt-0.5 block text-xs text-text-muted">
-                  {option.description}
-                </span>
-              </span>
-            </label>
-          );
-        })}
-      </div>
-      {error && (
-        <p id={errorId} className="text-body-sm text-danger">
-          {error}
-        </p>
-      )}
-    </fieldset>
-  );
-}
+type PresetField = 'densityPercent' | 'dailyGoalMinutes' | 'weeklyGoalDays' | 'spreadPercent';
 
 export function StudyPreferencesForm() {
   // (no stored-preferences state needed; the form is reset from the API
@@ -256,6 +172,8 @@ export function StudyPreferencesForm() {
   // EP13K (D-K6/D-K7): the same honest-Custom rule for the two goals.
   const [customDailyGoal, setCustomDailyGoal] = useState<number | null>(null);
   const [customWeeklyGoal, setCustomWeeklyGoal] = useState<number | null>(null);
+  // EP17G: the same honest-Custom rule for the spread lever.
+  const [customSpread, setCustomSpread] = useState<number | null>(null);
   const idBase = useId();
 
   const {
@@ -274,12 +192,16 @@ export function StudyPreferencesForm() {
   const densityPercent = watch('densityPercent');
   const dailyGoalMinutes = watch('dailyGoalMinutes');
   const weeklyGoalDays = watch('weeklyGoalDays');
+  const spreadPercent = watch('spreadPercent');
 
   const selectPreset = (field: PresetField) => (value: number) =>
     setValue(field, value, { shouldDirty: true, shouldValidate: Boolean(errors[field]) });
 
   const applyServerState = useCallback(
-    (data: FormValues) => {
+    (server: StudyPreferences) => {
+      // EP17A (D-A3) left `spreadPercent` optional on the client mirror; a
+      // pre-EP17 response simply shows the contract default.
+      const data: FormValues = { ...server, spreadPercent: server.spreadPercent ?? 70 };
       reset(data);
       setCustomDensity(isDensityPreset(data.densityPercent) ? null : data.densityPercent);
       setCustomDailyGoal(
@@ -288,6 +210,7 @@ export function StudyPreferencesForm() {
       setCustomWeeklyGoal(
         isPreset(GOAL_DAY_PRESETS, data.weeklyGoalDays) ? null : data.weeklyGoalDays
       );
+      setCustomSpread(isPreset(SPREAD_PRESETS, data.spreadPercent) ? null : data.spreadPercent);
     },
     [reset]
   );
@@ -346,11 +269,8 @@ export function StudyPreferencesForm() {
     customDailyGoal,
     (n) => `Custom (${n} min)`
   );
-  const weeklyGoalOptions = withCustom(
-    GOAL_DAY_PRESETS,
-    customWeeklyGoal,
-    (n) => `Custom (${n} ${n === 1 ? 'day' : 'days'})`
-  );
+  const weeklyGoalOptions = withCustom(GOAL_DAY_PRESETS, customWeeklyGoal, STUDY_DAYS_CUSTOM_LABEL);
+  const spreadOptions = withCustom(SPREAD_PRESETS, customSpread, SPREAD_CUSTOM_LABEL);
 
   if (isLoading) {
     return (
@@ -486,15 +406,26 @@ export function StudyPreferencesForm() {
             disabled={isSaving}
             idBase={idBase}
           />
+          {/* EP17G (▲ D-G5): the spread lever, worded exactly as on the
+              proposal — one component, one contract, one spelling. */}
+          <PresetRadioGroup
+            name="spreadPercent"
+            legend={SPREAD_LEGEND}
+            options={spreadOptions}
+            value={spreadPercent}
+            onSelect={selectPreset('spreadPercent')}
+            error={errors.spreadPercent?.message}
+            disabled={isSaving}
+            idBase={idBase}
+          />
         </fieldset>
 
         {/* EP13K (D-K6/D-K7): the momentum goals, as named choices (D13-15). */}
         <fieldset className="space-y-4">
           <legend className="text-sm font-medium text-text">Your goals</legend>
           <p className="text-sm text-text-muted">
-            A daily goal is the minutes you&apos;d like to reach on a study day. A weekly goal is
-            how many days you&apos;d like to show up. Small goals you actually hit beat big ones you
-            dread.
+            A daily goal is the minutes you&apos;d like to reach on a study day. Small goals you
+            actually hit beat big ones you dread.
           </p>
           <PresetRadioGroup
             name="dailyGoalMinutes"
@@ -508,7 +439,8 @@ export function StudyPreferencesForm() {
           />
           <PresetRadioGroup
             name="weeklyGoalDays"
-            legend="Weekly goal"
+            legend={STUDY_DAYS_LEGEND}
+            description={STUDY_DAYS_DESCRIPTION}
             options={weeklyGoalOptions}
             value={weeklyGoalDays}
             onSelect={selectPreset('weeklyGoalDays')}

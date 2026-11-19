@@ -46,6 +46,13 @@ describe('ProposalActionBar (EP17F, ▲ D-F1, AC-E17-11)', () => {
     expect(bar.className).toContain('z-20'); // the tab bar keeps z-30
   });
 
+  it('confirmDisabled disables Use this plan without a spinner (EP17G-AC3)', () => {
+    renderBar({ confirmDisabled: true });
+    const confirm = screen.getByRole('button', { name: /use this plan/i });
+    expect(confirm).toBeDisabled();
+    expect(screen.getByRole('button', { name: /not now/i })).toBeEnabled();
+  });
+
   it('keeps 44px targets below sm (class contract)', () => {
     renderBar();
     for (const name of [/use this plan/i, /not now/i]) {

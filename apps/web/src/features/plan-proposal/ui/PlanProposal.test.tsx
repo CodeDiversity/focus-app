@@ -10,6 +10,7 @@ import { Providers, makeTestStore } from '@/test/providers';
 import { todayPlanApi } from '@/features/today-plan/api/todayPlanApi';
 import { calendarApi } from '@/features/calendar/api/calendarApi';
 import { recoverySummaryApi } from '@/features/today/api/recoverySummaryApi';
+import { putStudyPreferences } from '@/entities/study-preferences/api/studyPreferencesApi';
 import {
   previewCatchUp,
   confirmCatchUpPlan,
@@ -25,6 +26,10 @@ vi.mock('@/entities/study-plan/api/studyPlanApi', async (importOriginal) => ({
   setPlannedSessionLock: vi.fn(),
 }));
 
+vi.mock('@/entities/study-preferences/api/studyPreferencesApi', () => ({
+  putStudyPreferences: vi.fn(),
+}));
+
 vi.mock('react-hot-toast', () => ({
   default: { success: vi.fn(), error: vi.fn() },
 }));
@@ -38,6 +43,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 const mockedPreview = vi.mocked(previewCatchUp);
 const mockedConfirm = vi.mocked(confirmCatchUpPlan);
 const mockedLock = vi.mocked(setPlannedSessionLock);
+const mockedPut = vi.mocked(putStudyPreferences);
 
 const catchUpPreviewFixture = {
   from: '2026-10-30',
@@ -786,6 +792,153 @@ describe('PlanProposal (EP17F, composition and decision affordances)', () => {
       ).toEqual([]);
       cleanup();
     }
+  });
+});
+
+/**
+ * EP17G — the plan-time pacing levers in their slot. The disclosure is
+ * collapsed in jsdom (`useMediaQuery(MD_UP_QUERY, false)` with no
+ * `matchMedia`), so each case opens it first — which is also the phone path.
+ */
+describe('PlanProposal pacing controls (EP17G)', () => {
+  const pacedFixture = {
+    ...catchUpPreviewFixture,
+    pacing: {
+      spreadPercent: 70,
+      studyDays: ['2026-10-30', '2026-11-01', '2026-11-03'],
+      perDayMinutes: { '2026-10-30': 60 },
+    },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockedPreview.mockResolvedValue(pacedFixture as never);
+    mockedPut.mockResolvedValue({} as never);
+  });
+
+  const openPace = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.click(screen.getByRole('button', { name: 'Change the pace' }));
+  };
+
+  it('sits under the pacing sentence behind one "Change the pace" toggle (D-G3, D-G8)', async () => {
+    const user = userEvent.setup();
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+
+    const toggle = screen.getByRole('button', { name: 'Change the pace' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByTestId('pacing-controls')).toBeNull();
+
+    await openPace(user);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+    // Region 1 order: summary → the controls → the week.
+    const html = document.body.innerHTML;
+    expect(html.indexOf('data-testid="proposal-summary"')).toBeLessThan(
+      html.indexOf('data-testid="pacing-controls"')
+    );
+    expect(html.indexOf('data-testid="pacing-controls"')).toBeLessThan(
+      html.indexOf('data-testid="editable-week"')
+    );
+  });
+
+  it('a preview without a pacing block renders no pacing toggle', async () => {
+    mockedPreview.mockResolvedValue(catchUpPreviewFixture as never);
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Change the pace' })).toBeNull();
+  });
+
+  it('choosing a preset saves it and rebuilds the week in place, announced once (EP17G-AC1/AC2)', async () => {
+    const user = userEvent.setup();
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+    await openPace(user);
+
+    mockedPreview.mockResolvedValueOnce({
+      ...pacedFixture,
+      days: pacedFixture.days.map((d) =>
+        d.date === '2026-10-30'
+          ? {
+              ...d,
+              sessions: [{ ...d.sessions[0], assignmentTitle: 'Rebuilt essay' }],
+            }
+          : d
+      ),
+      pacing: { ...pacedFixture.pacing, spreadPercent: 100 },
+    } as never);
+
+    await user.click(screen.getByRole('radio', { name: 'Evenly spread' }));
+
+    await waitFor(() => expect(mockedPut).toHaveBeenCalledWith({ spreadPercent: 100 }));
+    await waitFor(() => expect(mockedPreview).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(screen.getByTestId('editable-week')).toHaveTextContent('Rebuilt essay')
+    );
+    // One announcement, from the new pacing block.
+    expect(
+      screen
+        .getAllByRole('status')
+        .map((n) => n.textContent)
+        .join(' ')
+    ).toContain('New week ready — evenly spread, across 3 days.');
+    // We never left the surface.
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('while the rebuild is in flight the section is aria-busy and Use this plan is disabled (EP17G-AC3)', async () => {
+    const user = userEvent.setup();
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+    await openPace(user);
+
+    let release!: () => void;
+    mockedPreview.mockReturnValueOnce(
+      new Promise((resolve) => (release = () => resolve(pacedFixture as never))) as never
+    );
+
+    await user.click(screen.getByRole('radio', { name: 'Evenly spread' }));
+
+    const section = document.querySelector('section[aria-labelledby="plan-proposal-heading"]')!;
+    await waitFor(() => expect(section).toHaveAttribute('aria-busy', 'true'));
+    expect(screen.getByRole('button', { name: /use this plan/i })).toBeDisabled();
+
+    release();
+    await waitFor(() => expect(section).not.toHaveAttribute('aria-busy'));
+    expect(screen.getByRole('button', { name: /use this plan/i })).toBeEnabled();
+  });
+
+  it('a failed rebuild leaves the previous proposal rendered and editable (EP17G-AC3)', async () => {
+    const user = userEvent.setup();
+    renderPreview();
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+    await openPace(user);
+
+    mockedPreview.mockRejectedValueOnce(new Error('boom'));
+    await user.click(screen.getByRole('radio', { name: 'Evenly spread' }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('pacing-error')).toHaveTextContent(
+        "We saved your choice but couldn't rebuild the week. Your current plan is still here."
+      )
+    );
+    // The plan is still here — and still editable.
+    expect(screen.getByTestId('editable-week')).toHaveTextContent('Essay');
+    expect(screen.queryByText(/We couldn’t build a plan proposal/)).toBeNull();
+    await user.click(screen.getByRole('button', { name: /essay 09:00/i }));
+    await user.click(screen.getByRole('button', { name: /move later/i }));
+    await waitFor(() =>
+      expect(screen.getByTestId('editable-week')).toHaveTextContent('09:15 – 10:15')
+    );
+  });
+
+  it('the copy audit passes with the controls open and closed (EP17G-AC5, TR-E17-05)', async () => {
+    const user = userEvent.setup();
+    const { container } = renderPreview();
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+    expectNoForbiddenWords(container);
+    await openPace(user);
+    expectNoForbiddenWords(container);
   });
 });
 

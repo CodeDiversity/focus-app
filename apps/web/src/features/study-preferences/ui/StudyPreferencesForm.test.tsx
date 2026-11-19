@@ -610,7 +610,8 @@ describe('StudyPreferencesForm a11y', () => {
 describe('StudyPreferencesForm goal preferences (EP13K, D13-15)', () => {
   const BLAME = /missed|behind|failed|lazy|should|broke|lost/i;
   const dailyGroup = () => screen.getByRole('group', { name: 'Daily goal' });
-  const weeklyGroup = () => screen.getByRole('group', { name: 'Weekly goal' });
+  // EP17G (D-G6, ▲ D17-2 proviso): "Weekly goal" → "Study days a week".
+  const weeklyGroup = () => screen.getByRole('group', { name: 'Study days a week' });
   const goalsFieldset = () => screen.getByRole('group', { name: 'Your goals' });
   const radioIn = (group: HTMLElement, name: string | RegExp) =>
     within(group).getByRole('radio', { name });
@@ -728,5 +729,101 @@ describe('StudyPreferencesForm goal preferences (EP13K, D13-15)', () => {
     await waitFor(() => expect(goalsFieldset()).toBeInTheDocument());
     expect(goalsFieldset().querySelector('input[type="number"]')).toBeNull();
     expect(screen.queryByLabelText(/daily goal \(minutes\)/i)).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * EP17G (EP17G-AC4, AC-E17-07) — Profile parity: the same spread group as the
+ * proposal, through the same `shared/ui/PresetRadioGroup`, plus the ▲ D17-2
+ * proviso on the study-days group.
+ */
+describe('StudyPreferencesForm pacing levers (EP17G)', () => {
+  const spreadGroup = () => screen.getByRole('group', { name: 'How your week is paced' });
+  const daysGroup = () => screen.getByRole('group', { name: 'Study days a week' });
+
+  it('renders the three ruled spread labels (▲ D-G5) with no percentage anywhere', async () => {
+    mockedGet.mockResolvedValue({ ...defaults, spreadPercent: 70 });
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(spreadGroup()).toBeInTheDocument());
+    const labels = within(spreadGroup())
+      .getAllByRole('radio')
+      .map((r) => document.getElementById(r.getAttribute('aria-labelledby')!)!.textContent);
+    expect(labels).toEqual(['As early as possible', 'A little each day', 'Evenly spread']);
+    expect(within(spreadGroup()).getByRole('radio', { name: 'A little each day' })).toBeChecked();
+    expect(spreadGroup().textContent).not.toMatch(/%/);
+    // ▲ D-G5's rejected option (b): never the DENSITY_PRESETS words.
+    expect(labels).not.toContain('Relaxed');
+    expect(labels).not.toContain('Packed');
+  });
+
+  it('a pre-EP17 response with no spreadPercent shows the contract default', async () => {
+    mockedGet.mockResolvedValue(defaults); // no spreadPercent key
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(spreadGroup()).toBeInTheDocument());
+    expect(within(spreadGroup()).getByRole('radio', { name: 'A little each day' })).toBeChecked();
+  });
+
+  it('shows Custom for an off-preset stored spread (EP13N D-N2)', async () => {
+    mockedGet.mockResolvedValue({ ...defaults, spreadPercent: 42 });
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(spreadGroup()).toBeInTheDocument());
+    expect(within(spreadGroup()).getByRole('radio', { name: 'Custom' })).toBeChecked();
+  });
+
+  it('saves the spread preset and leaves every other field untouched', async () => {
+    const user = setupUser();
+    mockedGet.mockResolvedValue({ ...stored, spreadPercent: 70 });
+    mockedPut.mockResolvedValue({ ...stored, spreadPercent: 100 });
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(spreadGroup()).toBeInTheDocument());
+
+    await user.click(within(spreadGroup()).getByRole('radio', { name: 'Evenly spread' }));
+    await user.click(screen.getByRole('button', { name: /save study preferences/i }));
+
+    await waitFor(() => expect(mockedPut).toHaveBeenCalled());
+    expect(mockedPut.mock.calls[0][0]).toEqual({ ...stored, spreadPercent: 100 });
+  });
+
+  it('surfaces the field-level message for an out-of-range stored value', async () => {
+    const user = setupUser();
+    mockedPut.mockRejectedValue({
+      response: {
+        data: {
+          statusCode: 400,
+          message: ['spreadPercent must be between 0 and 100'],
+          errors: { spreadPercent: ['spreadPercent must be between 0 and 100'] },
+        },
+      },
+    });
+    mockedGet.mockResolvedValue({ ...defaults, spreadPercent: 70 });
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(spreadGroup()).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: /save study preferences/i }));
+
+    const error = await screen.findByText('spreadPercent must be between 0 and 100');
+    expect(spreadGroup()).toContainElement(error);
+  });
+
+  it('the study days group states that the number steers the planner (▲ D17-2 proviso, D-G6)', async () => {
+    mockedGet.mockResolvedValue(defaults);
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(daysGroup()).toBeInTheDocument());
+    expect(daysGroup()).toHaveTextContent(
+      "Your plan uses at most this many days of the week, and it's the number of days you're aiming to show up."
+    );
+    // D-G6: one number, one control — no second planning control appears.
+    expect(screen.queryByRole('group', { name: 'Weekly goal' })).toBeNull();
+    // The weekly clause left the "Your goals" paragraph; the daily one stayed.
+    const goals = screen.getByRole('group', { name: 'Your goals' });
+    expect(goals).toHaveTextContent(/A daily goal is the minutes/);
+    expect(goals.textContent).not.toMatch(/A weekly goal is how many days/);
+  });
+
+  it('both surfaces use the same component and copy (D-G7)', async () => {
+    mockedGet.mockResolvedValue(defaults);
+    render(<StudyPreferencesForm />);
+    await waitFor(() => expect(spreadGroup()).toBeInTheDocument());
+    expect(spreadGroup()).toHaveTextContent('Share each piece of work across the days you have.');
+    expect(spreadGroup()).toHaveTextContent('Give every study day about the same amount.');
   });
 });

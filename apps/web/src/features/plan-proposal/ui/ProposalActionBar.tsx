@@ -4,6 +4,8 @@ export interface ProposalActionBarProps {
   /** The confirm renders only when a preview exists (loading/error: decline only). */
   showConfirm: boolean;
   isConfirming: boolean;
+  /** EP17G-AC3: disabled without a spinner while the week is being rebuilt. */
+  confirmDisabled?: boolean;
   onConfirm: () => void;
   onDecline: () => void;
 }
@@ -24,6 +26,7 @@ export interface ProposalActionBarProps {
 export function ProposalActionBar({
   showConfirm,
   isConfirming,
+  confirmDisabled = false,
   onConfirm,
   onDecline,
 }: ProposalActionBarProps) {
@@ -43,7 +46,7 @@ export function ProposalActionBar({
         {showConfirm ? (
           <Button
             onClick={onConfirm}
-            disabled={isConfirming}
+            disabled={isConfirming || confirmDisabled}
             isLoading={isConfirming}
             className="flex-1 sm:flex-initial max-sm:min-h-[44px]"
           >

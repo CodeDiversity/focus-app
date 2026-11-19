@@ -5,6 +5,7 @@ import { confirmCatchUpPlan, previewCatchUp } from '@/entities/study-plan/api/st
 import type {
   CatchUpPreview,
   PlanConflict,
+  PlanPacing,
   ProposedSession,
 } from '@/entities/study-plan/model/types';
 import { flattenPreview, projectSessions } from '@/features/study-plan/lib/preview';
@@ -21,10 +22,24 @@ export type ProposalPhase = 'loading' | 'ready' | 'error';
  * The preview is a client-held proposal; declining makes no request. A
  * confirm that resolves after the student left still toasts "Plan saved."
  * but never navigates (D-C9).
+ *
+ * EP17G (D-G9) adds `replan()` — the non-destructive rebuild a plan-time
+ * preset change runs. See below.
  */
 export interface UseProposalOptions {
   /** Called once a confirm succeeds while the surface is still mounted. */
   onConfirmed: () => void;
+}
+
+/**
+ * EP17G (D-G9) — what a non-destructive rebuild tells its caller. `ok: false`
+ * means the rebuild failed *and nothing was thrown away*; the error message is
+ * owned by the control that asked for it (`PacingControls`), so there is one
+ * home for it.
+ */
+export interface ReplanResult {
+  ok: boolean;
+  pacing?: PlanPacing;
 }
 
 export function useProposal({ onConfirmed }: UseProposalOptions) {
@@ -34,6 +49,8 @@ export function useProposal({ onConfirmed }: UseProposalOptions) {
   const [isConfirming, setIsConfirming] = useState(false);
   const [conflicts, setConflicts] = useState<PlanConflict[]>([]);
   const [rolledOver, setRolledOver] = useState(false);
+  // EP17G (D-G9): in flight for a plan-time rebuild, distinct from `phase`.
+  const [isReplanning, setIsReplanning] = useState(false);
 
   const mounted = useRef(true);
   const onConfirmedRef = useRef(onConfirmed);
@@ -66,6 +83,34 @@ export function useProposal({ onConfirmed }: UseProposalOptions) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  /**
+   * EP17G (D-G9) — the **non-destructive** sibling of `load()`. A plan-time
+   * preset change rebuilds the week with it, so a failure must leave the
+   * student's current proposal on screen and editable (EP17G-AC3):
+   * `preview`, `edited` and `phase` are untouched on the error path, and the
+   * caller is told by the returned `ok: false`. `load()` keeps its own
+   * destructive behaviour (and its tests) for the mount path, **Try again**
+   * and **Create new plan**.
+   */
+  const replan = useCallback(async (): Promise<ReplanResult> => {
+    setIsReplanning(true);
+    setConflicts([]);
+    try {
+      const p = await previewCatchUp();
+      if (!mounted.current) return { ok: false };
+      setPreview(p);
+      setEdited(flattenPreview(p));
+      setRolledOver(false);
+      setPhase('ready');
+      return { ok: true, pacing: p.pacing };
+    } catch {
+      // Deliberately nothing: the previous proposal stays rendered.
+      return { ok: false };
+    } finally {
+      if (mounted.current) setIsReplanning(false);
+    }
+  }, []);
 
   const confirm = useCallback(async () => {
     if (!preview) return;
@@ -119,7 +164,9 @@ export function useProposal({ onConfirmed }: UseProposalOptions) {
     isConfirming,
     conflicts,
     rolledOver,
+    isReplanning,
     load,
+    replan,
     confirm,
     setEdited,
     onLockedChange,

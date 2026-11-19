@@ -20,6 +20,7 @@ import { useAppDispatch } from '@/app/store/hooks';
 import { useProposal } from '../model/useProposal';
 import { EditableWeek } from './EditableWeek';
 import { ProposalActionBar } from './ProposalActionBar';
+import { PacingControls } from './PacingControls';
 import { WhatThisKeepsCard } from './WhatThisKeepsCard';
 import { MovedForwardList } from './MovedForwardList';
 
@@ -81,6 +82,10 @@ export function PlanProposal() {
   // ▲ D-F2/D-F7: the reassurance disclosure starts open at `md`+, collapsed
   // below. `useSyncExternalStore`'s first render is synchronous — no flash.
   const mdUp = useMediaQuery(MD_UP_QUERY, true);
+  // EP17G (D-G8): "Change the pace" is open at `md`+ and collapsed below —
+  // six radio cards between the summary and the week on a 360 px phone is the
+  // density the epic's ADHD standard rejects.
+  const pacingOpen = useMediaQuery(MD_UP_QUERY, false);
   const {
     preview,
     edited,
@@ -88,7 +93,9 @@ export function PlanProposal() {
     isConfirming,
     conflicts,
     rolledOver,
+    isReplanning,
     load,
+    replan,
     confirm,
     setEdited,
     onLockedChange,
@@ -124,10 +131,16 @@ export function PlanProposal() {
   return (
     // pb-24: room for the fixed action bar (D-F5) — the last day of the week
     // is never underneath it.
-    <section aria-labelledby="plan-proposal-heading" className="pb-24">
+    <section
+      aria-labelledby="plan-proposal-heading"
+      className="pb-24"
+      // EP17G-AC3: the whole proposal is busy while a plan-time change is
+      // being saved and the week rebuilt.
+      aria-busy={isReplanning || undefined}
+    >
       {/* Region 1 — judge the week. The decision buttons left the header for
-          the ProposalActionBar (▲ D-F1); EP17G's preset controls will slot in
-          under the pacing sentence. */}
+          the ProposalActionBar (▲ D-F1); EP17G's pacing controls sit under the
+          pacing sentence, behind the "Change the pace" disclosure. */}
       <div className="mb-6 min-w-0">
         <h1
           id="plan-proposal-heading"
@@ -146,6 +159,19 @@ export function PlanProposal() {
           <p className="mt-1 text-sm text-text" data-testid="proposal-summary">
             {proposalSummary(edited.length, totalMinutes, preview.pacing?.studyDays.length)}
           </p>
+        ) : null}
+        {/* EP17G (D-G3 (a), D-G8) — the levers sit under the pacing sentence
+            that states the symptom. They need the effective values, so they
+            render only once a `pacing` block has arrived. */}
+        {phase === 'ready' && preview?.pacing ? (
+          <Disclosure
+            id="proposal-pacing"
+            label="Change the pace"
+            defaultOpen={pacingOpen}
+            className="mt-3"
+          >
+            <PacingControls pacing={preview.pacing} onChanged={replan} disabled={isConfirming} />
+          </Disclosure>
         ) : null}
       </div>
 
@@ -263,6 +289,9 @@ export function PlanProposal() {
       <ProposalActionBar
         showConfirm={!!preview}
         isConfirming={isConfirming}
+        // EP17G-AC3: confirming a week that is being rebuilt would save the
+        // one on its way out.
+        confirmDisabled={isReplanning}
         onConfirm={() => void confirm()}
         onDecline={() => navigate('/plan')}
       />

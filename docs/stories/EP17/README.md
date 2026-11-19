@@ -18,9 +18,9 @@
 
 **Artifact root:** `./artifacts/` — one directory per child (`./artifacts/EP17A/`, …), plus `./artifacts/EP17/` for the parent index and the combined review.
 
-**Active substory:** None (EP17E and EP17F closed 2026-11-19, one session).
+**Active substory:** None (EP17G closed 2026-11-19).
 
-**Next substory:** **EP17G** — EP17F is implemented; EP17G was refined 2026-11-19 (`40e1e22`) and its ▲ rows are ruled. Dispatch an implementer.
+**Next substory:** **EP17H** — EP17A–EP17G are implemented. EP17H owns the cross-layer e2e run (incl. TR-E17-06's "preset change re-plans", not run locally by EP17G) and the parent index. Dispatch an implementer.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -34,7 +34,7 @@
 | [EP17D](./EP17D-service-wiring-and-pacing-payload.md) | Implemented — awaiting parent review | EP17A–EP17C implemented (2026-11-19); ▲ D-D1 ratified (user, 2026-11-19). | Combined EP17 review after EP17H | [implementation.md](./artifacts/EP17D/implementation.md) — all 4 ACs met; `pacing` additive on both payloads, 1368 passed / 0 failed, both frozen snapshots untouched; F-EP17D-01…03. Also [F-EP17C-02-resolution.md](./artifacts/EP17D/F-EP17C-02-resolution.md) |
 | [EP17E](./EP17E-editable-week-grid.md) | Implemented — awaiting parent review | EP17D implemented (2026-11-19). Refined 2026-11-19 (`40e1e22`); ▲ D17-4 and ▲ D-E1 ruled (user, 2026-11-19). | Combined EP17 review after EP17H | [implementation.md](./artifacts/EP17E/implementation.md) — all 8 ACs met; one `EditableWeek`, `PlanSessionEditor` deleted, human day labels; 105 targeted / 1455 full web tests green; F-EP17E-02 (pre-existing ISO dates in two EP16 cards) for the parent review |
 | [EP17F](./EP17F-proposal-composition-and-decision.md) | Implemented — awaiting parent review | EP17E implemented (2026-11-19); refined 2026-11-19 (`40e1e22`); ▲ D-F1, ▲ D-F2, ▲ D-F7 ruled (user, 2026-11-19). Absorbs BL-16-09. | Combined EP17 review after EP17H | [implementation.md](./artifacts/EP17F/implementation.md) — all 6 ACs met; four regions, one fixed action bar above the tab bar, `shared/ui/Disclosure` new; 1472 web tests green, axe clean at two widths; F-EP17F-01 for the parent review |
-| [EP17G](./EP17G-plan-time-pacing-controls.md) | Ready | EP17F; refined 2026-11-19 (`40e1e22`); ▲ D17-8 / ▲ D-G1 / ▲ D-G5 ruled (user, 2026-11-19). ▲ D17-2 (a) + ▲ D17-16: the study-days control appears, with copy stating its instruction meaning, and closes the F-EP17B-03 / F-EP17C-02 visibility window. | Implement after EP17F | — |
+| [EP17G](./EP17G-plan-time-pacing-controls.md) | Implemented — awaiting parent review | EP17F implemented (2026-11-19); refined 2026-11-19 (`40e1e22`); ▲ D17-8 / ▲ D-G1 / ▲ D-G5 ruled (user, 2026-11-19); D-G6…D-G9 ratified by default 2026-11-19. | Combined EP17 review after EP17H | [implementation.md](./artifacts/EP17G/implementation.md) — all 5 ACs met; `PresetRadioGroup` extracted to `shared/ui`, `PacingControls` behind "Change the pace", non-destructive `replan()`, Profile parity, ▲ D17-2 re-legend; 1512 web tests green; F-EP17G-01…03 |
 | [EP17H](./EP17H-cross-layer-e2e-and-parent-index.md) | Queued | EP17A–EP17G implemented. | Implement last | — |
 
 Sequence (one writer): EP17A → EP17B → EP17C → EP17D → EP17E → EP17F → EP17G → EP17H. Why: the preferences contract first, because both engine children read it; pacing before study-day selection, because "spread within the chosen days" needs something to spread; the service wiring once the engine is settled, so the payload is written once; the editable week before the page that composes it; the preset controls last among the frontend children, because they need a slot in the recomposed surface and the `pacing` values to display; integration over the final state. **Known windows** between children are listed in [contracts.md §7](./contracts.md#7-known-windows-between-sequential-children).
