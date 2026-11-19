@@ -2,7 +2,7 @@
 
 **Epic:** [EP16 Today-First Simplification](../../../../epics/EP16-today-first-simplification.md) · **Breakdown:** [README](../../README.md) · **Contracts:** [contracts.md](../../contracts.md) · **History:** [history.md](../../history.md)
 **Written by:** EP16F's implementer (live session), 2026-11-18, per [review-cadence](../../../../../.agents/review-cadence.md).
-**Status:** ready for the combined review of EP16A–EP16G. Optional children EP16H–EP16K (D16-20) join this unit only if the user accepts their ▲ rows; none has been implemented.
+**Status:** ready for the combined review of **EP16A–EP16I** (the user accepted EP16H and EP16I on 2026-11-18; EP16J → BL-16-05 and EP16K → BL-16-09 are deferred and out of the unit). All TR-E16-04 manual passes are **user-accepted** (2026-11-18 ruling) — see § 6.
 
 ## 1. Child inventory
 
@@ -15,7 +15,9 @@
 | 5 | [EP16D](../../EP16D-navigation-and-session-indicator.md) | Today · Plan · Calendar · Work ▾; header session strip; Semesters / Study history / Go to Today links; BL-14-07 fixed | [implementation.md](../EP16D/implementation.md) | Implemented — awaiting parent review |
 | 6 | [EP16E](../../EP16E-mobile-bottom-tab-bar.md) | Bottom tab bar (five flat tabs); one Primary landmark per width; Account-only drawer | [implementation.md](../EP16E/implementation.md) | Implemented — awaiting parent review |
 | 7 | [EP16F](../../EP16F-cross-layer-e2e-and-parent-index.md) | `today.spec.ts`, `navigation.spec.ts`, `plan-flow.spec.ts`; redirect matrix; axe stops; this index; four defects found and fixed in owning children | [implementation.md](../EP16F/implementation.md) | Implemented — awaiting parent review |
-| — | EP16H / EP16I / EP16J / EP16K | Optional ADHD upgrades (7/10, 6/10, 5/10, 8/10) | — | Queued — awaiting ▲ acceptance (D16-20) |
+| 8 | [EP16H](../../EP16H-paused-session-nudge.md) | Paused-session nudge: "Paused a while" + **Resume** after 15 min (ADHD 7/10) | [implementation.md](../EP16H/implementation.md) | Implemented — awaiting parent review |
+| 9 | [EP16I](../../EP16I-target-in-session-strip.md) | Target in the strip: "of 25 min" / "· target reached" (ADHD 6/10) | [implementation.md](../EP16I/implementation.md) | Implemented — awaiting parent review |
+| — | EP16J / EP16K | Deferred (user, 2026-11-18): → BL-16-05 / BL-16-09; specs kept in their story files | — | Out of the unit |
 
 ## 2. Combined Git scope
 
@@ -29,7 +31,9 @@ Baseline `8d69995` (EP15K pass 2 committed) → final EP16F commit (see the EP16
 | EP16C | `5764e1b` | `e272a6e..5764e1b` |
 | EP16D | `55e7819` (+ `ae202b0` efficiency row; `bc9f43d` EP16E ratifications) | `5764e1b..ae202b0` |
 | EP16E | `a9f3543` (+ `90161c0` efficiency row) | `ae202b0..90161c0` |
-| EP16F | this commit + its efficiency row | `90161c0..HEAD` |
+| EP16F | `2453e60` (+ `739a2dd` efficiency; `d2bd0c8` optional-children docs) | `90161c0..739a2dd` |
+| EP16H | `839bf48` (rulings `a4ae8ae`) | `739a2dd..839bf48` |
+| EP16I | `b7cc88b` + the closing docs commit | `839bf48..HEAD` |
 
 Planning-only commits in the range: `ea91c27` (EP16B/C/E refined), `69bc401` (EP16D refined, EP16G added, A-EP16-02), `bc9f43d` (D-E4…7 ratified), the optional-children docs commit (EP16H–K, D16-20).
 
@@ -45,7 +49,9 @@ All in `apps/web` unless stated. Every child ran `npx tsc --noEmit -p tsconfig.j
 | EP16C | `src/features/plan-proposal`, `src/pages/plan`, `src/app/appRoutes.test.tsx` | 1356 / 0 | 61 / 0 + 1 fixme ×2 |
 | EP16D | `src/widgets/header`, `src/widgets/session-indicator`, `src/entities/study-session`, `src/pages/focus`, `src/pages/courses` | 1396 / 0 | 61 / 0 + 1 fixme |
 | EP16E | `src/widgets/tab-bar`, `src/shared/lib/useMediaQuery`, `src/widgets/layout`, `src/widgets/header` | 1428 / 0 | 61 / 0 + 1 fixme (narrow journeys incl.) |
-| EP16F | `src/features/plan-proposal`, `src/features/today-plan` (defect fixes) | 1429 / 0 | self-contained ×3 — see the EP16F record |
+| EP16F | `src/features/plan-proposal`, `src/features/today-plan` (defect fixes) | 1429 / 0 | self-contained 73/0/0 ×3 |
+| EP16H | `src/widgets/session-indicator`, `src/entities/study-session` | 1435 / 0 | with EP16I |
+| EP16I | `src/widgets/session-indicator` | 1440 / 0 | self-contained 73/0 (flaky first run disclosed) |
 | API gate | `apps/api`: `npx jest src/domain/study-planning` (EP13J identity, EP15 determinism) | 12 suites, 291 / 0 (EP16F, 2026-11-18) | — |
 
 Reviewer reproduction: `cd apps/web && npx vitest run` then `DATABASE_URL=<postgres url to an existing dev db> JWT_SECRET=<any> pnpm test:e2e` (self-contained; this worktree has no `.env.local`, so both must come from the shell — F-EP16D-01).
@@ -83,9 +89,9 @@ TR-E16-01/02/05/06 — unit, per child records. TR-E16-03 — EP16F. **TR-E16-04
 
 ## 6. Known gaps
 
-1. **TR-E16-04 manual passes (EP16D strip, EP16E tab bar)** — not executed; structural halves unit-tested. Needs VoiceOver/TalkBack at 360×640 and the 320×568 "Assignments" label check.
+1. **TR-E16-04 manual passes** — resolved by user sign-off: the user accepted every owed manual pass as passed on 2026-11-18 ("mark all manual passes as passed/accepted"); none was machine-verified. Recorded in the EP16D/EP16E/EP16F/EP16H/EP16I records.
 2. **BL-16-08** — the email-verification banner pushes Today's hero below the fold on phones for unverified students (F-EP16F-01). Outside EP16's children.
 3. **Pre-existing `text-danger` on `bg-danger/10`** error blocks (`TodayPlanCard`, `FocusPage`, `PlanPage`) are not reached by any axe stop; the 409 state's twin was fixed (F-EP16F-04). A sweep belongs to a follow-up.
 4. **Harness:** `pnpm start:e2e`'s Nest grandchild outlives Playwright's exit, so back-to-back self-contained runs collide on :4100 unless a stale sweep runs between them (F-EP16F-05; BL-15-08 family).
 5. **BL-16-07** — Today flashes before `/onboarding` for new students (double post-login redirect); EP16D fixed only the menu symptom.
-6. Optional children EP16H–EP16K await ▲ acceptance (D16-20); if accepted after this review, they are re-reviewed with the unit.
+6. Optional children ruled 2026-11-18: EP16H and EP16I accepted and implemented (rows 8–9); EP16J → BL-16-05, EP16K → BL-16-09 with their specs kept on file.

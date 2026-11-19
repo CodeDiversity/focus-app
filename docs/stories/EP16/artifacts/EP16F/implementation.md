@@ -22,7 +22,7 @@ Decisions applied: D-F1 (a) rename + rewrite, D-F2 (a) `boundingBox()` (ratified
 
 All on the working tree of this commit, 2026-11-18, cwd `apps/web` unless stated.
 
-- `npx tsc --noEmit -p tsconfig.json` clean; `npx eslint src --max-warnings=0` clean; `npx vitest run` → **135 files, 1429 passed, 0 failed** (+1: the F-EP16F-02 reset test; EP16A's done-copy test re-targeted). E2E sources type-check with `npx tsc --noEmit --skipLibCheck … e2e/*.ts` (clean).
+- `npx tsc --noEmit -p tsconfig.json` clean; `npx eslint src --max-warnings=0` clean; `npx vitest run` → **134 files, 1429 passed, 0 failed** (file count corrected 2026-11-18; 135 was a transcription slip) (+1: the F-EP16F-02 reset test; EP16A's done-copy test re-targeted). E2E sources type-check with `npx tsc --noEmit --skipLibCheck … e2e/*.ts` (clean).
 - **Playwright, full suite, self-contained mode ×3 consecutive** (`pnpm test:e2e`; the harness derived `sp_elm_ep16f_dev_e2e_test` from a throwaway `sp_elm_ep16f_dev`, migrated, API :4100, web :3100, dropped after each run; shell `DATABASE_URL` + placeholder `JWT_SECRET` because this worktree has no `.env.local` — F-EP16D-01):
   - run 1 → **73 passed, 0 failed, 0 skipped** (44.2 s)
   - run 2 → **73 passed, 0 failed, 0 skipped** (50.6 s)
@@ -45,6 +45,8 @@ Deviations: none from the ACs. Product code was touched only as the scope rule a
 ## TR-E16-04 collection
 
 EP16D (strip) and EP16E (tab bar) both recorded their manual passes as **not executed** (no interactive browser / screen reader in the implementing environment). What the automated half now proves on the real stack: one Primary landmark per width; the strip's live sentence text and tab-order position; 44 px tab targets; the bar flush to the viewport bottom; hero visibility at 360×640 (banner dismissed). Still owed to a human: VoiceOver/TalkBack read-once of the strip, "current page" on the active tab, the 320×568 "Assignments" label fit, and the hero check *with* the banner (BL-16-08). Listed in the parent index § 6.
+
+**Update 2026-11-18 (user ruling, "mark all manual passes as passed/accepted"):** every manual pass this story collects (EP16D's and EP16E's TR-E16-04 items, the 320×568 label check, the with-banner hero check) is **accepted as passed by the user** on their authority; it was not machine-verified in this environment. The combined review may treat TR-E16-04 as closed by user sign-off (R-EP15K-02 precedent).
 
 ## How to verify by hand
 

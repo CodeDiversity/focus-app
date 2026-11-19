@@ -34,6 +34,8 @@ Residual (not fixed here, per the story's Out list): the same double navigation 
 
 **Not executed** — no interactive browser/screen reader in this environment. Owed: VoiceOver/NVDA read-once check on the strip (start a session, go to Calendar; the sentence is announced once, ticks silent; Tab reaches **Back to session** before the logo) and the 360×640 one-line strip + 44 px target check. To be collected with EP16E's recorded pass in EP16F (TR-E16-04 collection). The structural halves are unit-tested (persistent live span, sentence-only text, `tabular-nums`, `min-h-[44px]`, DOM order).
 
+**Update 2026-11-18 (user ruling, "mark all manual passes as passed/accepted"):** the owed manual pass is **accepted as passed by the user** on their authority; it was not machine-verified in this environment. The combined review may treat TR-E16-04 as closed by user sign-off (R-EP15K-02 precedent).
+
 ## Findings
 
 | ID | Source / paths | Issue | Disposition | Owner |

@@ -28,6 +28,8 @@ Decisions applied: ▲ D-E1 (b), D-E2 (a), D-E3 (a) (ratified 2026-11-17, "ratif
 
 **Not executed** — no interactive browser/screen reader in this environment. Owed to the EP16F collection, together with EP16D's: VoiceOver (iOS) / TalkBack at 360×640 (one Primary landmark, current tab read as "current page", five labels); "Assignments" fits at 320×568 without truncation; hero control visible above the bar with and without the 44 px session strip; last Assignments/Courses row scrolls fully above the bar; bar absent during a running session on `/focus` and back after Finish. The structural halves are unit-tested (one landmark per width, padding class, 44 px/`min-h-14` targets, `aria-current`, no-animation).
 
+**Update 2026-11-18 (user ruling, "mark all manual passes as passed/accepted"):** the owed manual pass is **accepted as passed by the user** on their authority; it was not machine-verified in this environment. The combined review may treat TR-E16-04 as closed by user sign-off (R-EP15K-02 precedent).
+
 ## Findings
 
 | ID | Source / paths | Issue | Disposition | Owner |
