@@ -52,11 +52,27 @@ block length or the anchor partition.
 
 ```text
 For each assignment A and each day D of A's horizon that the plan may use:
-  evenShare(A, D) = ceil(A.remainingAtRunStart / |usableDays(A)|)
-  paceTarget(A, D) = dayBudget(D) - (dayBudget(D) - evenShare(A, D)) * spreadPercent/100
+  oneSitting(A) = min(A.remainingAtRunStart, sessionLengthMinutes)
+                  with sessionLengthMinutes clamped to [minSessionMinutes, maxSessionMinutes]
+  evenShare(A)  = max(oneSitting(A), ceil(A.remainingAtRunStart / |usableDays(A)|))
+  paceTarget(A, D) = dayBudget(D) - (dayBudget(D) - evenShare(A)) * spreadPercent/100
   dayTake(A, D) = max(paceTarget(A, D), A.remaining - capacityAfter(A, D))
   A takes at most dayTake(A, D) minutes on D.
 ```
+
+`evenShare` is a property of the assignment, not of the day: it is computed
+once per run and is the same on every day of `A`'s horizon.
+
+The `oneSitting(A)` term is the **one-sitting floor** (F-EP17B-01): the share
+is never paced below a single session for `A`, so pacing spreads work across
+days without shattering one sitting into sub-session slivers. Without it the
+even share is unsatisfiable together with EP17B-AC5 / ▲ D17-3 — a 15-minute
+assignment over a five-day horizon would get a 3-minute target, below
+`minSessionMinutes`, and the "twelve small assignments" student would have
+**nothing** placed. The floor is therefore what keeps rule 9 from throttling
+the *number* of distinct pieces of work a day may hold; it only ever raises a
+target, so it cannot defeat the spread for a large assignment (for which
+`ceil(remaining / |usableDays|)` already exceeds one sitting).
 
 The `max(…)` term is the **feasibility floor** (R-EP17-01): pacing may never
 defer below what the later days can nominally still absorb, so a day's take is
@@ -64,8 +80,10 @@ raised back up whenever deferring the full pace amount would leave
 `A.remaining > capacityAfter(A, D)` after the day.
 
 - `usableDays(A)` = the days of `A`'s horizon that survive the study-day
-  selection of §4. For an overdue assignment the horizon is the whole window
-  (`scheduler.ts:306`), unchanged.
+  selection of §4. Operationally the engine counts the horizon days whose
+  **run-start** budget is non-zero (D-B3, `scheduler.ts:393-404`), which is
+  the same set once §4's narrowed budgets are in place. For an overdue
+  assignment the horizon is the whole window (`scheduler.ts:306`), unchanged.
 - With `spreadPercent = 0`, `paceTarget = dayBudget(D)` — the pre-EP17
   behaviour, byte for byte.
 - The target is a **soft ceiling under the feasibility override**: the
@@ -79,13 +97,18 @@ raised back up whenever deferring the full pace amount would leave
   than the rule 3 guarantee the engine already makes** — not an absolute
   "never a new deficit". Where that residual optimism bites (a fragmented
   final day; two assignments sharing a tight final day), the adversarial
-  fixtures named in EP17B's test list pin the chosen behaviour.
+  fixtures named in EP17B's test list pin the chosen behaviour. The
+  one-sitting floor does not weaken this: it only ever *raises* a day's take,
+  so it defers strictly less work than the unfloored share would.
 - The target never raises a day's budget; `dayBudgetOf` (rule 2) still caps
   the day as a whole.
 - Minutes the target declines are reported by the existing classification
   (`scheduler.ts:584-628`) — no new category, no silent loss.
-- Purity: `evenShare` is computed from run-start inputs only, so it is stable
-  within a run and independent of iteration order.
+- Purity: `evenShare` — including its `oneSitting` floor — is computed from
+  run-start inputs only (`remainingMinutes` as handed in, the run-start day
+  budgets, the horizon and the session-length preferences), never from the
+  mutating `remaining`, so it is stable within a run and independent of
+  iteration order.
 
 ## 4. Study-day selection (EP17C owns the definition; gated by ▲ D17-2)
 

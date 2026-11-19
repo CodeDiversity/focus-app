@@ -19,7 +19,7 @@ Applied after the last dependent edit
 | 6 | Feature risks/counterexamples and owning tests | **Pass** (re-checked after corrections, 2026-11-19) — six invariants with a concrete counterexample, a preventing mechanism and an owning test in the [epic's invariant table](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md#security--privacy--accessibility-invariants). Plan review pass 1 defeated the no-new-deadline-miss row (R-EP17-01) and the minute-sum wording (R-EP17-02); the row now names the feasibility-floor mechanism with its bounded claim and the adversarial owning fixture, and the sum invariant is stated per deficit category (C-R-EP17-01 / C-R-EP17-02). |
 | 7 | Dependency mapping and sequence | **Pass** — one vertical sequence (contract → engine → service → frontend → integration) with the rationale and the known windows recorded; EP17C is the only `Blocked` row and its blocker is named. |
 | 8 | Material (▲) decisions ruled or explicitly blocked | **Pass** — at breakdown (2026-11-19): ▲ D17-3 and ▲ D17-4 ruled; the other ▲ rows `Proposed` with recommendations filled (gate then **Needs Decision**). Update 2026-11-19 (same day): the user ratified every recommended row; ▲ D17-2 ruled (a) with a UI-visibility proviso (EP17G owns the surfacing, no new story). No open ▲ rows. |
-| 9 | Correction log complete | **Pass** (updated 2026-11-19) — plan review pass 1 findings R-EP17-01…06 logged below as C-R-EP17-01…06, each with the original wording, the correction, verification and status — closed to `Fixed in plan` at plan review pass 2 (2026-11-19, `005bc78`, Plan Ready). |
+| 9 | Correction log complete | **Pass** (updated 2026-11-19) — plan review pass 1 findings R-EP17-01…06 logged below as C-R-EP17-01…06, each with the original wording, the correction, verification and status — closed to `Fixed in plan` at plan review pass 2 (2026-11-19, `005bc78`, Plan Ready). Implementer finding F-EP17B-01 (raised during EP17B) logged as C-F-EP17B-01 in the same format and closed `Fixed in plan` — contracts §3 amended to the shipped `evenShare` with its one-sitting floor. |
 | 10 | Identifier consistency and at-a-glance blocks (`queue-lint` clean) | **Pass** — every child has the at-a-glance block and a Decisions table with a Ruling column; epic decisions `D17-<n>`, story decisions `D-<suffix><n>`, epic criteria `AC-E17-<nn>`, test requirements `TR-E17-<nn>`, verification `V-17-<n>`, backlog `BL-17-<nn>`; `node tools/queue-lint.mjs docs/stories/EP17` clean. |
 
 **Gate status:** **Plan Ready** (updated 2026-11-19 — the user ratified every
@@ -58,7 +58,10 @@ Format: `original finding → correction → verification → status`
 (`Fixed in plan` / `Decision needed` / `Unresolved`; reviewer findings
 additionally `Addressed — awaiting re-review`). Findings R-EP17-01…06 are from
 [plan-review.md](./plan-review.md) (pass 1, 2026-11-19, reviewed commit
-`476f970`, verdict **Changes Required**).
+`476f970`, verdict **Changes Required**). Finding F-EP17B-01 is an
+implementer finding from
+[artifacts/EP17B/implementation.md](./artifacts/EP17B/implementation.md)
+(2026-11-19); its entry is `C-F-EP17B-01`.
 
 ### C-R-EP17-01 (from R-EP17-01, should-fix)
 
@@ -164,6 +167,49 @@ additionally `Addressed — awaiting re-review`). Findings R-EP17-01…06 are fr
 - **Verification:** EP17A scope line added; no other story claims those
   comments.
 - **Status:** Fixed in plan (plan review pass 2, 2026-11-19, reviewed commit `005bc78`).
+
+### C-F-EP17B-01 (from F-EP17B-01, implementer finding, should-fix)
+
+Raised by the EP17B implementer while implementing contracts §3 against the
+frozen EP17B-AC5 (source record:
+[artifacts/EP17B/implementation.md](./artifacts/EP17B/implementation.md),
+§ Findings). Logged by the planner 2026-11-19; the implementer may not write
+contracts.
+
+- **Original finding (wording preserved):** "contracts §3's
+  `evenShare(A, D) = ceil(A.remainingAtRunStart / |usableDays(A)|)` is
+  unsatisfiable together with EP17B-AC5 — a 15-minute assignment with a
+  five-day horizon gets a 3-minute target, below `minSessionMinutes`, so the
+  D17-3 student's twelve small assignments would place **nothing**";
+  disposition: "implemented the minimal fix (floor the share at one sitting
+  for that assignment) because the AC is frozen and the formula is the
+  derived artifact, and documented it in the engine's rule list; **contracts
+  §3 needs a one-line amendment** which this role may not write".
+- **Correction:** contracts §3's formula amended to the shipped engine —
+  `oneSitting(A) = min(A.remainingAtRunStart, sessionLengthMinutes)` (the
+  session length clamped to `[minSessionMinutes, maxSessionMinutes]`) and
+  `evenShare(A) = max(oneSitting(A), ceil(A.remainingAtRunStart /
+  |usableDays(A)|))`. §3 gains a **one-sitting floor** paragraph giving the
+  D17-3 rationale, drops the spurious `D` index from `evenShare` (it is a
+  per-assignment value computed once per run), states the engine's
+  operational reading of `|usableDays(A)|` (horizon days with a non-zero
+  run-start budget, D-B3 — the same set once §4's narrowed budgets land), and
+  notes in the bounded-guarantee paragraph that the floor only ever *raises*
+  a take and so cannot weaken the R-EP17-01 claim. §4 unchanged: the
+  amendment is inside §3 and no §4 statement contradicts it.
+- **Verification:** read against the shipped code, which is the truth here —
+  `scheduler.ts:393-404` (`evenShareOf`:
+  `Math.max(Math.min(atRunStart, sittingLength), share)`), `:288-292`
+  (`sittingLength = max(minBlock, min(sessionLengthMinutes, maxBlock))`),
+  `:412-419` (`dayTakeOf`, feasibility floor and day-budget clamp) and the
+  rule 9 doc comment `:94-129`. Contracts §3 now matches the engine term for
+  term. EP17B's suite is green as recorded in its `implementation.md`
+  (96 tests in `scheduler.spec.ts`), including V-17-2's many-small
+  counterexample. `node tools/queue-lint.mjs docs/stories/EP17` clean.
+- **Status:** Fixed in plan — documentation catching up to a justified
+  in-flight implementation decision; the code already matches, so nothing is
+  pending for an implementer. Closure evidence for F-EP17B-01 is this entry
+  plus contracts §3.
 
 ## Superseded decisions
 
