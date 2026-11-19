@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1) — **optional child** (D16-20): implemented only if the user accepts ▲ D-H1; reviewed with the EP16 unit if accepted.
 **Layer:** Frontend
-**Status:** Implemented — awaiting parent review (2026-11-18). Record: [implementation.md](./artifacts/EP16H/implementation.md).
+**Status:** Reviewed — EP16 combined review passed 2026-11-18, pass 2 ([review.md](./artifacts/EP16/review.md)). Record: [implementation.md](./artifacts/EP16H/implementation.md).
 **Dependencies:** EP16D implemented (`SessionIndicator`, `CurrentSessionProvider`). Epic decisions D16-11 (no polling), D16-12 (copy rules).
 **ADHD value: 7 / 10.** Pausing is the classic ADHD exit ramp — a student pauses to answer a message and the session quietly dies. The running strip (EP16D) made a *running* session unlosable; a *paused* one still looks identical in weight and never changes. A gentle, time-aware handle back closes the most common abandonment path without any reminder infrastructure (BL-16-04).
 

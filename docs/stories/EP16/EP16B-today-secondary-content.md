@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1)
 **Layer:** Frontend
-**Status:** Implemented — awaiting parent review (2026-11-18); record: [artifacts/EP16B/implementation.md](./artifacts/EP16B/implementation.md). D-B5…D-B10 ratified by default at implementation start (2026-11-18).
+**Status:** Reviewed — EP16 combined review passed 2026-11-18, pass 2 ([review.md](./artifacts/EP16/review.md)); record: [artifacts/EP16B/implementation.md](./artifacts/EP16B/implementation.md). D-B5…D-B10 ratified by default at implementation start (2026-11-18).
 **Refined:** 2026-11-18
 **Dependencies:** EP16A implemented (`TodayPage` composition root, `features/today`). Epic decisions D16-3 (ratified), D16-8 (ratified, option c), D16-12, D16-18.
 

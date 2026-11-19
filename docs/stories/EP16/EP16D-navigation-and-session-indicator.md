@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1)
 **Layer:** Frontend
-**Status:** Implemented — awaiting parent review (2026-11-18). Record: [implementation.md](./artifacts/EP16D/implementation.md). All ACs done; BL-14-07 reproduced pre-fix, fixed (D-D5) and kept as a regression.
+**Status:** Reviewed — EP16 combined review passed 2026-11-18, pass 2 ([review.md](./artifacts/EP16/review.md)). Record: [implementation.md](./artifacts/EP16D/implementation.md). All ACs done; BL-14-07 reproduced pre-fix, fixed (D-D5) and kept as a regression.
 **Refined:** 2026-11-18
 **Dependencies:** EP16A implemented (`/today` exists; nav's first entry already `{ id: 'today', label: 'Today', icon: Sun, to: '/today' }`). EP16B implemented (`expectNoForbiddenWords`). Epic decisions D16-6 (ratified a), D16-11, D16-12, D16-14 (BL-14-07). Amends EP11 D11-4/D11-6/D11-10 (→ D11-11), EP15 D15-9, EP13E D-E13 — back-references recorded by the planner 2026-11-17. New D-D5 refines EP10C D10-11 (drawer route-change close) — back-reference requested.
 

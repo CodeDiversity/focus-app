@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1)
 **Layer:** Frontend (store + auth wiring)
-**Status:** Implemented — awaiting parent review (2026-11-18); record: [artifacts/EP16G/implementation.md](./artifacts/EP16G/implementation.md). ▲ D-G1 and D-G2 ratified (user, 2026-11-18).
+**Status:** Reviewed — EP16 combined review passed 2026-11-18, pass 2 ([review.md](./artifacts/EP16/review.md); invariant reviewer-verified in code and tests); record: [artifacts/EP16G/implementation.md](./artifacts/EP16G/implementation.md). ▲ D-G1 and D-G2 ratified (user, 2026-11-18).
 **Dependencies:** none. Source: EP16D refinement finding (2026-11-18), verified by the planner against the code at `d35970a`.
 
 ## Plan at a glance

@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1)
 **Layer:** Frontend
-**Status:** Implemented — awaiting parent review (2026-11-17); record: [artifacts/EP16A/implementation.md](./artifacts/EP16A/implementation.md)
+**Status:** Reviewed — EP16 combined review passed 2026-11-18, pass 2 ([review.md](./artifacts/EP16/review.md)); record: [artifacts/EP16A/implementation.md](./artifacts/EP16A/implementation.md)
 **Dependencies:** none inside EP16. Epic decisions D16-2 (▲, pending), D16-10, D16-12, D16-13, D16-14 (Button item).
 
 ## Plan at a glance

@@ -2,7 +2,7 @@
 
 **Epic:** [EP16 Today-First Simplification](../../../../epics/EP16-today-first-simplification.md) · **Breakdown:** [README](../../README.md) · **Contracts:** [contracts.md](../../contracts.md) · **History:** [history.md](../../history.md)
 **Written by:** EP16F's implementer (live session), 2026-11-18, per [review-cadence](../../../../../.agents/review-cadence.md).
-**Status:** ready for the combined review of **EP16A–EP16I** (the user accepted EP16H and EP16I on 2026-11-18; EP16J → BL-16-05 and EP16K → BL-16-09 are deferred and out of the unit). All TR-E16-04 manual passes are **user-accepted** (2026-11-18 ruling) — see § 6.
+**Status:** **Reviewed — combined review passed 2026-11-18 at `4f9ecd1`** (pass 2, [review.md](./review.md); round 1 [review-round-1.md](./review-round-1.md) — R-EP16-01/02 closed, polish R-EP16-03/04/05 tracked). Unit: **EP16A–EP16I** (the user accepted EP16H and EP16I on 2026-11-18; EP16J → BL-16-05 and EP16K → BL-16-09 are deferred and out of the unit). All TR-E16-04 manual passes are **user-accepted** (2026-11-18 ruling) — see § 6.
 
 ## 1. Child inventory
 

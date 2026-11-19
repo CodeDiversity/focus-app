@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1)
 **Layer:** Frontend
-**Status:** Implemented — awaiting parent review (2026-11-18); record: [artifacts/EP16C/implementation.md](./artifacts/EP16C/implementation.md). D-C5…D-C10 ratified by default at implementation start; D-C11/D-C12 added by the implementer under the user's tweak grant.
+**Status:** Reviewed — EP16 combined review passed 2026-11-18, pass 2 ([review.md](./artifacts/EP16/review.md); R-EP16-01 contrast fix `4f9ecd1` verified); record: [artifacts/EP16C/implementation.md](./artifacts/EP16C/implementation.md). D-C5…D-C10 ratified by default at implementation start; D-C11/D-C12 added by the implementer under the user's tweak grant.
 **Refined:** 2026-11-18
 **Dependencies:** EP16B implemented (the plan note has left `/plan`; `recoverySummaryApi` lives in `features/today`). Epic decisions D16-4 (▲, ratified (a)), D16-5 (ratified (a)), D16-9 (▲, ratified (a)), D16-10, D16-12, D16-13.
 

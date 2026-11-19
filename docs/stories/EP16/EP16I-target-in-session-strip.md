@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1) — **optional child** (D16-20): implemented only if the user accepts ▲ D-I1; reviewed with the EP16 unit if accepted.
 **Layer:** Frontend
-**Status:** Implemented — awaiting parent review (2026-11-18). Record: [implementation.md](./artifacts/EP16I/implementation.md).
+**Status:** Reviewed — EP16 combined review passed 2026-11-18, pass 2 ([review.md](./artifacts/EP16/review.md); AC2 gating interpretation accepted). Record: [implementation.md](./artifacts/EP16I/implementation.md).
 **Dependencies:** EP16D implemented. Epic decisions D16-11, D16-12.
 **ADHD value: 6 / 10.** Time blindness is central to ADHD: "Running · 12:34" tells a student how long they have worked but not how far they are from the commitment they made. Showing the target where the strip already shows the elapsed time ("12:34 of 25 min") makes the size of the promise visible on every page, not only on `/focus`. It is a genuine aid rather than a transformative one, because the Focus page already shows the target.
 

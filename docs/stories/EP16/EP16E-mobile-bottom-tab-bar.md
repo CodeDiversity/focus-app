@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1)
 **Layer:** Frontend
-**Status:** Implemented — awaiting parent review (2026-11-18). Record: [implementation.md](./artifacts/EP16E/implementation.md). All ACs done; one recorded deviation (F-EP16E-01: the signed-in menu button is md-gated so "Open account menu" stays unique in the DOM).
+**Status:** Reviewed — EP16 combined review passed 2026-11-18, pass 2 ([review.md](./artifacts/EP16/review.md); F-EP16E-01 deviation accepted). Record: [implementation.md](./artifacts/EP16E/implementation.md). All ACs done; one recorded deviation (F-EP16E-01: the signed-in menu button is md-gated so "Open account menu" stays unique in the DOM).
 **Refined:** 2026-11-18
 **Dependencies:** EP16D must be implemented first. EP16E builds on four things it adds: the navigation contract, `CurrentSessionProvider` / `useCurrentSession` (D-D8), the header session strip (D-D6) and the drawer route-change rule (D-D5). EP16B provides `expectNoForbiddenWords`. Epic decisions: D16-7 (ratified a), D16-12.
 

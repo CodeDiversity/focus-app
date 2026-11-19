@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1)
 **Layer:** Integration
-**Status:** Implemented — awaiting parent review (2026-11-18). Record: [implementation.md](./artifacts/EP16F/implementation.md); parent index: [artifacts/EP16/implementation.md](./artifacts/EP16/implementation.md). Four defects found by the new journeys were fixed in their owning children (F-EP16F-02/03/04) and one deferred (F-EP16F-01 → BL-16-08).
+**Status:** Reviewed — EP16 combined review passed 2026-11-18, pass 2 ([review.md](./artifacts/EP16/review.md)). Record: [implementation.md](./artifacts/EP16F/implementation.md); parent index: [artifacts/EP16/implementation.md](./artifacts/EP16/implementation.md). Four defects found by the new journeys were fixed in their owning children (F-EP16F-02/03/04) and one deferred (F-EP16F-01 → BL-16-08).
 **Dependencies:** EP16A–EP16E implemented. Epic decisions D16-13, D16-17; verification tasks V-16-2, V-16-3.
 
 ## Plan at a glance
