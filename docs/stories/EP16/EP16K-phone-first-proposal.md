@@ -51,9 +51,9 @@ AC-E16-06 (editing kept), AC-E16-12, D16-12. TR-E16-01, TR-E16-05. DoD-1, 5, 6, 
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| ▲ D-K1 | Accept into EP16's review unit: (a) accept (with a refiner pass for the UI half); (b) defer to backlog beside BL-16-02 | **(a)** — the highest-value upgrade of the set, and EP16E made the phone layout part of this epic's contract; the implementation is a wrapper, the risk is copy and default-state, which the refiner settles | Proposed |
-| D-K2 | Default state: (a) collapsed below `md`, open at `md`+; (b) collapsed everywhere; (c) collapsed only when the proposal has more than N sessions | **(a)** — desktop keeps its tests and habits; phones get the one-screen proposal; (c) adds a rule a student cannot predict | Proposed |
-| D-K3 | Label: (a) **Adjust sessions**; (b) **Edit times**; (c) **Fine-tune** | **(a)** — says what the controls do (move, shorten, delete, pin); refiner may change | Proposed |
+| ▲ D-K1 | Accept into EP16's review unit: (a) accept (with a refiner pass for the UI half); (b) defer to backlog beside BL-16-02 | **(a)** — the highest-value upgrade of the set, and EP16E made the phone layout part of this epic's contract; the implementation is a wrapper, the risk is copy and default-state, which the refiner settles | Overridden: (b) defer (user, 2026-11-18 — "Implement H, I") → BL-16-09 |
+| D-K2 | Default state: (a) collapsed below `md`, open at `md`+; (b) collapsed everywhere; (c) collapsed only when the proposal has more than N sessions | **(a)** — desktop keeps its tests and habits; phones get the one-screen proposal; (c) adds a rule a student cannot predict | Ratified (user, 2026-11-18 — "ratify all decisions") (applies if ever promoted) |
+| D-K3 | Label: (a) **Adjust sessions**; (b) **Edit times**; (c) **Fine-tune** | **(a)** — says what the controls do (move, shorten, delete, pin); refiner may change | Ratified (user, 2026-11-18 — "ratify all decisions") (applies if ever promoted) |
 
 ## Definition of Done
 

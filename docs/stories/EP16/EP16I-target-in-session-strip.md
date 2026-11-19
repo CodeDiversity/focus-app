@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1) — **optional child** (D16-20): implemented only if the user accepts ▲ D-I1; reviewed with the EP16 unit if accepted.
 **Layer:** Frontend
-**Status:** Queued — optional, awaiting acceptance (▲ D-I1). Specified in-story.
+**Status:** Ready — accepted (▲ D-I1 (a), user 2026-11-18); D-I2 (a) ratified. Implementation after EP16H (same file).
 **Dependencies:** EP16D implemented. Epic decisions D16-11, D16-12.
 **ADHD value: 6 / 10.** Time blindness is central to ADHD: "Running · 12:34" tells a student how long they have worked but not how far they are from the commitment they made. Showing the target where the strip already shows the elapsed time ("12:34 of 25 min") makes the size of the promise visible on every page, not only on `/focus`. It is a genuine aid rather than a transformative one, because the Focus page already shows the target.
 
@@ -48,8 +48,8 @@ AC-E16-10, AC-E16-12, D16-12. TR-E16-01, TR-E16-05. DoD-1, 6, 7, 8.
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| ▲ D-I1 | Accept into EP16's review unit: (a) accept; (b) defer to backlog | **(a)** — trivial change, every field already present, directly serves time blindness | Proposed |
-| D-I2 | Past-target copy: (a) "· target reached"; (b) "+2 min"; (c) keep "of 25 min" | **(a)** — positive and consistent with the Focus page's reached state (EP13I); (b) counts "over", which reads as debt | Proposed |
+| ▲ D-I1 | Accept into EP16's review unit: (a) accept; (b) defer to backlog | **(a)** — trivial change, every field already present, directly serves time blindness | Ratified (user, 2026-11-18 — "ratify all decisions") — accepted |
+| D-I2 | Past-target copy: (a) "· target reached"; (b) "+2 min"; (c) keep "of 25 min" | **(a)** — positive and consistent with the Focus page's reached state (EP13I); (b) counts "over", which reads as debt | Ratified (user, 2026-11-18 — "ratify all decisions") |
 
 ## Definition of Done
 

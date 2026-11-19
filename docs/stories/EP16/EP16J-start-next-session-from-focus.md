@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1) — **optional child** (D16-20): implemented only if the user accepts ▲ D-J1; reviewed with the EP16 unit if accepted.
 **Layer:** Frontend
-**Status:** Queued — optional, awaiting acceptance (▲ D-J1). Specified in-story (reuses the hero's start hook and copy).
+**Status:** Deferred to backlog (user, 2026-11-18): ▲ D-J1 ruled (b) — folded into BL-16-05. Not part of the EP16 review unit. This file stays as the spec if BL-16-05 is picked up.
 **Dependencies:** EP16D implemented (Focus empty state with `h1`, Study history, Go to Today); EP13D/EP13I (`useStartPlannedSession`, the micro-start). Epic decision D16-12.
 **ADHD value: 5 / 10.** Every hop between "I want to work" and "I am working" is an initiation tax, and ADHD initiation is the bottleneck EP16 exists to lower. Today a student who opens Focus (from the tab bar's muscle memory, the strip, or a bookmark) with no session running is told their next session is on Today and sent there to find the button. Offering that same next session — with **Start focus** and **Just 10 min** — right here removes one hop. Moderate rather than high value because Today is one tap away and already does this well.
 
@@ -51,8 +51,8 @@ AC-E16-02 (one next action), AC-E16-12, D16-12. TR-E16-01, TR-E16-05. DoD-1, 5, 
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| ▲ D-J1 | Accept into EP16's review unit: (a) accept; (b) defer to backlog (BL-16-05 focus-upgrades epic) | **(b) unless the user values the saved hop now** — the hop costs one tap and Today already does this well; the extraction is cheap, but it widens the review unit more than H/I. Recommended: defer, and fold into BL-16-05 | Proposed |
-| D-J2 | Extraction: (a) lift the hero's next-up block into `NextSessionStart` shared by both pages; (b) duplicate a smaller block on Focus | **(a)** — one start path; (b) is the two-flows problem EP16C just removed | Proposed |
+| ▲ D-J1 | Accept into EP16's review unit: (a) accept; (b) defer to backlog (BL-16-05 focus-upgrades epic) | **(b) unless the user values the saved hop now** — the hop costs one tap and Today already does this well; the extraction is cheap, but it widens the review unit more than H/I. Recommended: defer, and fold into BL-16-05 | Ratified (b) — deferred (user, 2026-11-18 — "Implement H, I") |
+| D-J2 | Extraction: (a) lift the hero's next-up block into `NextSessionStart` shared by both pages; (b) duplicate a smaller block on Focus | **(a)** — one start path; (b) is the two-flows problem EP16C just removed | Ratified (user, 2026-11-18 — "ratify all decisions") (applies if ever promoted) |
 
 ## Definition of Done
 

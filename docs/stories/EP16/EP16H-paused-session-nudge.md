@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1) — **optional child** (D16-20): implemented only if the user accepts ▲ D-H1; reviewed with the EP16 unit if accepted.
 **Layer:** Frontend
-**Status:** Queued — optional, awaiting acceptance (▲ D-H1). Specified in-story (reuses EP16D's strip and provider; no refiner gate needed unless the user changes the copy).
+**Status:** Ready — accepted (▲ D-H1 (a), user 2026-11-18); D-H2 (15 min), D-H3 (copy a) ratified. Specified in-story.
 **Dependencies:** EP16D implemented (`SessionIndicator`, `CurrentSessionProvider`). Epic decisions D16-11 (no polling), D16-12 (copy rules).
 **ADHD value: 7 / 10.** Pausing is the classic ADHD exit ramp — a student pauses to answer a message and the session quietly dies. The running strip (EP16D) made a *running* session unlosable; a *paused* one still looks identical in weight and never changes. A gentle, time-aware handle back closes the most common abandonment path without any reminder infrastructure (BL-16-04).
 
@@ -49,9 +49,9 @@ AC-E16-10 (indicator), AC-E16-12 (a11y, live region), D16-11, D16-12. TR-E16-01,
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| ▲ D-H1 | Accept into EP16's review unit: (a) accept — implement after EP16F, review with the unit; (b) defer — register as a backlog row for a later epic | **(a)** — small (one widget, one helper), reuses shipped structure, and the paused-session gap is the strip's one blind spot | Proposed |
-| D-H2 | Threshold: (a) 15 min; (b) 5 min; (c) 30 min | **(a)** — long enough that a real break is not nagged, short enough that a forgotten session is caught within the same study block | Proposed |
-| D-H3 | Copy: (a) "Paused a while · mm:ss" + **Resume**; (b) "Still paused" + **Back to session**; (c) no copy change, icon only | **(a)** — the verb says the next step; (b) reads as a reproach; (c) is colour/shape-only meaning | Proposed |
+| ▲ D-H1 | Accept into EP16's review unit: (a) accept — implement after EP16F, review with the unit; (b) defer — register as a backlog row for a later epic | **(a)** — small (one widget, one helper), reuses shipped structure, and the paused-session gap is the strip's one blind spot | Ratified (user, 2026-11-18 — "ratify all decisions") — accepted |
+| D-H2 | Threshold: (a) 15 min; (b) 5 min; (c) 30 min | **(a)** — long enough that a real break is not nagged, short enough that a forgotten session is caught within the same study block | Ratified (user, 2026-11-18 — "ratify all decisions") |
+| D-H3 | Copy: (a) "Paused a while · mm:ss" + **Resume**; (b) "Still paused" + **Back to session**; (c) no copy change, icon only | **(a)** — the verb says the next step; (b) reads as a reproach; (c) is colour/shape-only meaning | Ratified (user, 2026-11-18 — "ratify all decisions") |
 
 ## Definition of Done
 
