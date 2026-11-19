@@ -1,7 +1,7 @@
 # EP16: Today-First Simplification (one daily surface, fewer destinations)
 
 **Epic ID:** EP16
-**Status:** **Draft for user review (planner, 2026-11-17)** — epic shape and proposed stories; story files, breakdown README and queue are created once the ▲ decisions below are ruled ("finalize the stories"). **Breakdown complete 2026-11-17** → [docs/stories/EP16](../stories/EP16/README.md). All decisions D16-1…D16-14 and every story row ratified by the user 2026-11-17 ("ratify all"). Implementation starts after EP15K's review unit (D16-1). No tracker sync.
+**Status:** **Reviewed — shipped on the development branch (2026-11-18).** Breakdown 2026-11-17 → [docs/stories/EP16](../stories/EP16/README.md); nine children (EP16A–EP16I, incl. the security child EP16G and the accepted ADHD upgrades EP16H/EP16I) implemented and passed the combined review at `4f9ecd1` (pass 2, [review](../stories/EP16/artifacts/EP16/review.md)); EP16J/EP16K cancelled for the epic (specs kept via BL-16-05/BL-16-09). Open polish: BL-16-08, BL-16-10, BL-15-08. No tracker sync.
 **Release:** 1.3 (proposed, D16-1)
 **Priority:** High / P0
 **Labels:** `studypilot`, `adhd`, `simplification`, `navigation`
