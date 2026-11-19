@@ -929,5 +929,11 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
     }
   }
 
-  return { sessions, results };
+  // EP17D (contracts §5): the rule 9b selection travels with the output, in
+  // date order and independent of whether anything was placed on a day — the
+  // service cannot recompute it (it never sees `baselineFreeMinutes`), and
+  // the client cannot infer it (a selected-but-empty day is indistinguishable
+  // from an unselected one in `sessions`). Days used only by the rule 3
+  // critical pass are *not* here: they are outside the selection.
+  return { sessions, results, studyDays: days.filter((date) => studyDays.has(date)) };
 }

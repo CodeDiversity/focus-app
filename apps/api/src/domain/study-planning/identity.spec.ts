@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { schedule } from './scheduler';
 import { boundsFromWeeklyWindows } from './legacy-windows';
-import { IDENTITY_FIXTURES } from './identity-fixtures';
+import { IDENTITY_FIXTURES, placementOf } from './identity-fixtures';
 
 /**
  * EP15C-AC4 — byte-identity with the EP14E engine. `identity.snapshot.json`
@@ -33,9 +33,11 @@ describe('EP15C-AC4 identity with the EP14E engine', () => {
           preferred: [],
           preferences: fixture.preferences,
         });
-      const first = JSON.stringify(run());
+      // EP17D: compare the **placement** only — `studyDays` is an additive
+      // reporting key on `SchedulerOutput`, not part of what this gate pins.
+      const first = JSON.stringify(placementOf(run()));
       expect(first).toBe(JSON.stringify(snapshot[name]));
-      expect(JSON.stringify(run())).toBe(first); // determinism (V-15-3)
+      expect(JSON.stringify(placementOf(run()))).toBe(first); // determinism (V-15-3)
     }
   );
 

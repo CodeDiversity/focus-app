@@ -563,6 +563,9 @@ describe('StudyPlansService EP08 recovery + catch-up (unit, mocked PrismaService
         'generatedAt',
         'lockedPreserved',
         'missedSessions',
+        // EP17D (▲ D-D1, contracts §5): additive. Every pre-EP17 key above
+        // is unchanged — this list is the regression guard for that.
+        'pacing',
         'preferences',
         'timeZone',
         'to',

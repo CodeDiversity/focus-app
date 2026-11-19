@@ -213,6 +213,32 @@ function toStudyPreferencesResponse(prefs: StudyPreferences): StudyPreferences {
 }
 
 /**
+ * EP17D (contracts §5) — build the `pacing` block from the engine's own
+ * output and the days already projected onto the payload.
+ *
+ * `perDayMinutes` is derived from the **same** `PlanPreviewDay[]` the
+ * response carries, so EP17D-AC4 ("for every date, the sum of that day's
+ * session durations equals the recorded value") holds by construction rather
+ * than by a second, drifting computation. `studyDays` is the engine's
+ * selection verbatim — never the days that happen to have sessions.
+ *
+ * `effectiveSpreadPercent` is the lever the **engine** ran with (the
+ * planning read), which is also what the projection reports, so D-D2's
+ * duplication stays consistent.
+ */
+function toPacing(
+  effectiveSpreadPercent: number,
+  studyDays: readonly string[],
+  days: readonly PlanPreviewDay[]
+): PlanPacing {
+  const perDayMinutes: Record<string, number> = {};
+  for (const day of days) {
+    perDayMinutes[day.date] = day.sessions.reduce((sum, s) => sum + s.durationMinutes, 0);
+  }
+  return { spreadPercent: effectiveSpreadPercent, studyDays: [...studyDays], perDayMinutes };
+}
+
+/**
  * Re-run a DTO's complete declared constraint set without coercion: defense
  * in depth for non-HTTP callers (the `availability` module's `dtoErrors`
  * precedent). Returns the field-level `errors` map, or `null` when valid.
@@ -331,6 +357,33 @@ export type PlanPreviewWarning = {
   dueDate: string | null;
 };
 
+/**
+ * EP17D (▲ D-D1, contracts §5) — the additive pacing block on both proposal
+ * payloads. It states what the engine's pacing actually did, so EP17F's
+ * summary sentence and EP17G's preset controls never have to recompute the
+ * engine's decision client-side.
+ *
+ * - `spreadPercent` — the effective lever the week was planned with. It
+ *   duplicates `preferences.spreadPercent` on purpose (D-D2): the block is
+ *   self-contained for the surface that renders it, and the consistency test
+ *   pins the two equal.
+ * - `studyDays` — the §4 **selected** day set, in date order, **including
+ *   selected days on which nothing was placed** (R-EP17-05). That inclusion
+ *   is the whole point of the block: a client cannot tell a selected-but-
+ *   empty day from an unselected one. A day reached only by the rule 3
+ *   critical pass (outside the selection) appears in `perDayMinutes` but
+ *   **not** here.
+ * - `perDayMinutes` — every date of the window mapped to its placed minutes
+ *   (`0` for an empty day). By construction it is the same number as the
+ *   day's `targetMinutes`, i.e. the sum of that day's session durations
+ *   (EP17D-AC4) — a disagreement is a bug, not a rounding allowance.
+ */
+export type PlanPacing = {
+  spreadPercent: number;
+  studyDays: string[];
+  perDayMinutes: Record<string, number>;
+};
+
 export type PlanPreview = {
   from: string;
   to: string;
@@ -347,6 +400,12 @@ export type PlanPreview = {
    * anything — the proposal is then exactly EP13A's.
    */
   calibration: CalibrationAnnotation[];
+  /**
+   * EP17D (▲ D-D1, contracts §5) — additive and last: every pre-EP17 key
+   * above keeps its name, type and position. Clients that ignore it are
+   * unaffected.
+   */
+  pacing: PlanPacing;
 };
 
 export type CatchUpPreview = PlanPreview & {
@@ -1193,6 +1252,8 @@ export class StudyPlansService {
       warnings,
       deferred,
       calibration: data.calibration,
+      // EP17D (contracts §5): additive and last.
+      pacing: toPacing(data.planningPreferences.spreadPercent, output.studyDays, days),
     };
   }
 
@@ -1296,6 +1357,8 @@ export class StudyPlansService {
       warnings,
       deferred,
       calibration: data.calibration,
+      // EP17D (contracts §5): the same block on the catch-up payload.
+      pacing: toPacing(data.planningPreferences.spreadPercent, output.studyDays, days),
       missedSessions: output.missedSessions,
       lockedPreserved: output.lockedPreserved,
       completedPreserved: output.completedPreserved,

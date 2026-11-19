@@ -4,7 +4,7 @@
 **Epic:** [EP17](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md)
 **Milestone:** M10 (proposed, D17-1)
 **Layer:** Backend (module + API contract)
-**Status:** Queued
+**Status:** Implemented — awaiting parent review (implementer, 2026-11-19). Record: [artifacts/EP17D/implementation.md](./artifacts/EP17D/implementation.md); the preceding F-EP17C-02 correction: [artifacts/EP17D/F-EP17C-02-resolution.md](./artifacts/EP17D/F-EP17C-02-resolution.md).
 **Dependencies:** EP17A, EP17B, EP17C.
 
 ## Plan at a glance
@@ -116,7 +116,14 @@ review.
 
 - **Outcome:** the paced engine reaches real students, and the proposal
   payload says what the pacing did.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** as sized, on the small side. The engine input
+  needed **zero** lines (D-D3 (a) predicted it — F-EP17D-02), so the work was
+  one additive engine output key (`SchedulerOutput.studyDays`, passed through
+  `replan`), one `PlanPacing` type, one shared `toPacing` helper called from
+  both return sites, and the web mirror. +18 tests. One unplanned fix: both
+  frozen protective gates compared the whole scheduler output and had to be
+  taught to compare the placement projection (`placementOf`) so no snapshot
+  file was regenerated — F-EP17D-01.
 - **Files:** `apps/api/src/modules/study-plans/study-plans.service.ts`, its
   spec, the study-plans controller spec, the shared response types, and the
   web `entities/study-plan/model/types.ts` mirror.

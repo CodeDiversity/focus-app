@@ -1,4 +1,10 @@
-import type { DatedInterval, SchedulableAssignment, StudyPreferences, WeeklyWindow } from './types';
+import type {
+  DatedInterval,
+  SchedulableAssignment,
+  SchedulerOutput,
+  StudyPreferences,
+  WeeklyWindow,
+} from './types';
 
 /**
  * EP15C-AC4 identity battery (test support, not shipped behaviour). Every
@@ -190,3 +196,23 @@ export const IDENTITY_FIXTURES: LegacyFixture[] = [
     busy: [{ date: '2026-11-02', startMinute: 540, endMinute: 720 }],
   }),
 ];
+
+/**
+ * The **placement** contract the two frozen snapshots pin:
+ * `identity.snapshot.json` (EP15C-AC4) and `pacing-baseline.snapshot.json`
+ * (EP17B-AC4 / TR-E17-02) were both generated from engines whose output was
+ * exactly `{ sessions, results }`.
+ *
+ * EP17D appended a third, **reporting-only** key to `SchedulerOutput`
+ * (`studyDays`, contracts §5): it carries the rule 9b selection to the
+ * service and changes no placement. Projecting the output through this
+ * function keeps both gates comparing what they were written to compare —
+ * every placed minute, date, start, anchor and deficit — rather than
+ * forcing a regeneration of a frozen file for an additive field.
+ */
+export function placementOf(output: SchedulerOutput): {
+  sessions: SchedulerOutput['sessions'];
+  results: SchedulerOutput['results'];
+} {
+  return { sessions: output.sessions, results: output.results };
+}

@@ -76,6 +76,8 @@ export type ReplanInput = {
 export type ReplanOutput = {
   sessions: PlannedSessionProposal[];
   results: AssignmentScheduleResult[];
+  /** EP17D (contracts §5): the engine's rule 9b study-day selection, passed through. */
+  studyDays: string[];
   missedSessions: MissedSession[];
   lockedPreserved: number;
   completedPreserved: number;
@@ -144,6 +146,7 @@ export function replan(input: ReplanInput): ReplanOutput {
   return {
     sessions: output.sessions,
     results: output.results,
+    studyDays: output.studyDays,
     missedSessions: input.missedSessions,
     lockedPreserved,
     completedPreserved,

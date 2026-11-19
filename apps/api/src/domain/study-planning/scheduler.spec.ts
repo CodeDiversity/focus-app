@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { schedule, selectStudyDays } from './scheduler';
 import { boundsFromWeeklyWindows } from './legacy-windows';
+import { placementOf } from './identity-fixtures';
 import type { SchedulerInput, WeeklyWindow } from './types';
 import type { SchedulableAssignment } from './types';
 import type { StudyPreferences } from './types';
@@ -1269,7 +1270,11 @@ describe('scheduling engine (domain, EP06C)', () => {
       it.each(PACING_BATTERY.map((f) => [f.name, f] as const))(
         'is byte-identical to the pre-EP17 baseline at spreadPercent 0: %s',
         (name, fixture) => {
-          expect(JSON.stringify(runFixture(fixture, 0))).toBe(JSON.stringify(baseline[name]));
+          // EP17D: the frozen baseline is the pre-EP17 **placement**;
+          // `studyDays` is an additive reporting key (contracts §5).
+          expect(JSON.stringify(placementOf(runFixture(fixture, 0)))).toBe(
+            JSON.stringify(baseline[name])
+          );
         }
       );
 

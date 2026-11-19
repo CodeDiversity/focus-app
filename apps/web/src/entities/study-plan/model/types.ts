@@ -84,6 +84,24 @@ export interface PlanPreview {
   deferred: PlanDeferred[];
   /** EP13L — every multiplier this proposal was planned with; empty when none. */
   calibration: CalibrationAnnotation[];
+  /**
+   * EP17D (▲ D-D1, contracts §5) — what the engine's pacing did: the
+   * effective spread lever, the **selected** study days in date order
+   * (including selected days with no session on them) and every date's
+   * placed minutes. The API always sends it from EP17D on; it is optional
+   * here only so pre-EP17 fixtures keep type-checking. EP17F's summary and
+   * EP17G's presets are its consumers.
+   */
+  pacing?: PlanPacing;
+}
+
+/** EP17D (contracts §5) — the proposal payload's pacing block. */
+export interface PlanPacing {
+  spreadPercent: number;
+  /** The selected day set, in date order, placement-independent. */
+  studyDays: string[];
+  /** Date → placed minutes; `0` for a selected-but-empty day. */
+  perDayMinutes: Record<string, number>;
 }
 
 export interface SavedPlanSession {

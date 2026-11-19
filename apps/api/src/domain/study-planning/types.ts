@@ -368,6 +368,15 @@ export type SchedulerInput = {
 export type SchedulerOutput = {
   sessions: PlannedSessionProposal[];
   results: AssignmentScheduleResult[];
+  /**
+   * EP17D (contracts §4/§5) — the rule 9b **study-day selection**: the days
+   * of `input.days` the normal rotation was allowed to use, in date order,
+   * **independent of whether anything was placed on them**. A selected day
+   * that ended up empty is still listed; a day the rule 3 critical pass
+   * reached from outside the selection is not. Additive: a caller that
+   * ignores it sees exactly the pre-EP17D output.
+   */
+  studyDays: string[];
 };
 
 /**
