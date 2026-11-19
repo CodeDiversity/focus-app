@@ -5,6 +5,14 @@ import { boundsFromWeeklyWindows } from './legacy-windows';
 import type { SchedulerInput, WeeklyWindow } from './types';
 import type { SchedulableAssignment } from './types';
 import type { StudyPreferences } from './types';
+import {
+  FRAGMENTED_FIXTURE,
+  MANY_SMALL_FIXTURE,
+  PACING_BATTERY,
+  SHARED_CAPACITY_FIXTURE,
+  SPREAD_FIXTURE,
+  runFixture,
+} from './pacing-fixtures';
 
 /**
  * EP06C domain unit spec (pure, no clock, no zone): the scheduling engine
@@ -1031,6 +1039,340 @@ describe('scheduling engine (domain, EP06C)', () => {
         .reduce((total, s) => total + s.durationMinutes, 0);
       expect(firstDay).toBe(240);
       expect(out.sessions.every((s) => s.anchor === 'FLEX_DAY')).toBe(true);
+    });
+  });
+
+  // =========================================================================
+  // EP17B — per-assignment daily pacing (rule 9; TR-E17-01, TR-E17-02,
+  // TR-E17-07). Every case above runs at `spreadPercent: 0`, the documented
+  // "off" value (D17-6), so rule 9 changed **no existing expectation** —
+  // see `artifacts/EP17B/implementation.md`. The cases below own rule 9.
+  // =========================================================================
+
+  describe('16. daily pacing (EP17B rule 9)', () => {
+    /** date → placed minutes, in date order. */
+    const perDay = (out: ReturnType<typeof schedule>): Record<string, number> => {
+      const totals: Record<string, number> = {};
+      for (const s of [...out.sessions].sort((x, y) => x.date.localeCompare(y.date))) {
+        totals[s.date] = (totals[s.date] ?? 0) + s.durationMinutes;
+      }
+      return totals;
+    };
+
+    describe('EP17B-AC1 — an assignment with slack is spread across its horizon', () => {
+      it('spreads one large assignment across its horizon', () => {
+        // 300 minutes due in five days; five days of 300 free minutes each
+        // (budget 240 after the 240-minute cap). evenShare = 300/5 = 60.
+        const out = runFixture(SPREAD_FIXTURE, 100);
+        expect(perDay(out)).toEqual({
+          '2026-10-30': 60,
+          '2026-10-31': 60,
+          '2026-11-01': 60,
+          '2026-11-02': 60,
+          '2026-11-03': 60,
+        });
+        expect(out.results[0].placedMinutes).toBe(300);
+        expect(out.results[0].deficitMinutes).toBe(0);
+      });
+
+      it('front-loads the same fixture with pacing off — the pre-EP17 shape', () => {
+        // The behaviour EP17B exists to replace: two days, then a hollow week.
+        expect(perDay(runFixture(SPREAD_FIXTURE, 0))).toEqual({
+          '2026-10-30': 240,
+          '2026-10-31': 60,
+        });
+      });
+
+      it('is a continuous lever: 70 paces partially, never above the target', () => {
+        // paceTarget = 240 - (240 - 60) * 70/100 = 114 minutes a day.
+        const out = runFixture(SPREAD_FIXTURE, 70);
+        const days = perDay(out);
+        expect(Object.keys(days).length).toBeGreaterThan(2);
+        for (const minutes of Object.values(days)) {
+          expect(minutes).toBeLessThanOrEqual(114);
+        }
+        expect(out.results[0].placedMinutes).toBe(300);
+      });
+    });
+
+    describe('EP17B-AC2 — feasibility still wins', () => {
+      it('does not spread a tight-deadline assignment', () => {
+        // 480 minutes due tomorrow over two 240-minute budgets: rule 3 calls
+        // it critical on both days, so pacing never sees it. The placement
+        // must match the pre-EP17 expectation byte for byte.
+        const tight = () =>
+          input({
+            assignments: [assignment({ remainingMinutes: 480, dueDate: '2026-10-31' })],
+            availability: [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+              dayOfWeek,
+              startMinute: 17 * 60,
+              endMinute: 22 * 60,
+            })),
+          });
+        const off = schedule({ ...tight(), preferences: { ...PREFS, spreadPercent: 0 } });
+        const paced = schedule({ ...tight(), preferences: { ...PREFS, spreadPercent: 100 } });
+        expect(JSON.stringify(paced)).toBe(JSON.stringify(off));
+        expect(perDay(paced)).toEqual({ '2026-10-30': 240, '2026-10-31': 240 });
+      });
+
+      it('never introduces a deadline miss across the fixture battery', () => {
+        // Every battery fixture except the two adversarial ones below, at
+        // `spreadPercent` 0 and 100: no assignment gains a deficit category
+        // it did not already have, and none loses placed minutes it already
+        // had, purely because the week was spread.
+        for (const fixture of PACING_BATTERY) {
+          if (fixture === FRAGMENTED_FIXTURE || fixture === SHARED_CAPACITY_FIXTURE) continue;
+          const off = runFixture(fixture, 0);
+          const paced = runFixture(fixture, 100);
+          for (let i = 0; i < off.results.length; i += 1) {
+            expect({ name: fixture.name, ...paced.results[i] }).toEqual({
+              name: fixture.name,
+              ...off.results[i],
+            });
+          }
+        }
+      });
+
+      it('never defers below what the later horizon days can nominally absorb', () => {
+        // 200 minutes due in two days; today's budget is 240 and tomorrow's
+        // is 60. The unfloored pace target would be 100, leaving 100 minutes
+        // for a day that can hold 60. Two mechanisms forbid that, and they
+        // fire on the same test (`remaining > capacityAfter`): rule 3's
+        // critical pass, which ignores pacing outright (D-B2), and rule 9's
+        // feasibility floor `max(paceTarget, remaining - capacityAfter)`.
+        // See F-EP17B-02 — the floor is implemented per contracts §3 and is
+        // currently subsumed by the critical test; it is the belt to that
+        // pair of braces, not an independent mechanism.
+        const out = schedule(
+          input({
+            days: ['2026-10-30', '2026-10-31'],
+            assignments: [assignment({ remainingMinutes: 200, dueDate: '2026-10-31' })],
+            availability: [
+              { dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 780 }, // 240
+              { dayOfWeek: dow('2026-10-31'), startMinute: 540, endMinute: 600 }, // 60
+            ],
+            preferences: { ...V1_PREFS, spreadPercent: 100, maxSessionMinutes: 240 },
+          })
+        );
+        expect(perDay(out)).toEqual({ '2026-10-30': 200 });
+        expect(out.results[0].deficitMinutes).toBe(0);
+        // …and pacing did not change it: the pre-EP17 placement is identical.
+        expect(JSON.stringify(out)).toBe(
+          JSON.stringify(
+            schedule({
+              ...input({
+                days: ['2026-10-30', '2026-10-31'],
+                assignments: [assignment({ remainingMinutes: 200, dueDate: '2026-10-31' })],
+                availability: [
+                  { dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 780 },
+                  { dayOfWeek: dow('2026-10-31'), startMinute: 540, endMinute: 600 },
+                ],
+              }),
+              preferences: { ...V1_PREFS, spreadPercent: 0, maxSessionMinutes: 240 },
+            })
+          )
+        );
+      });
+
+      it('pacing under optimistic capacity — the fragmentation counterexample (R-EP17-01)', () => {
+        // Plan-review pass 1, counterexample 1: 100 minutes due Tue; Monday
+        // holds one usable 100-minute gap; Tuesday's 140 free minutes are
+        // ten-minute slivers, all below `minSessionMinutes` (15).
+        // `dayBudgetOf(Tue)` — and therefore `capacityAfter` — reads 140, so
+        // the feasibility floor does **not** fire: this is exactly the
+        // residual optimism the bounded claim names. The engine paces to one
+        // sitting on Monday and reports the rest; it is not silently lost.
+        const off = runFixture(FRAGMENTED_FIXTURE, 0);
+        expect(perDay(off)).toEqual({ '2026-11-02': 100 });
+        expect(off.results[0].deficitCategory).toBeNull();
+
+        const paced = runFixture(FRAGMENTED_FIXTURE, 100);
+        expect(perDay(paced)).toEqual({ '2026-11-02': 60 });
+        expect(paced.results[0]).toEqual({
+          assignmentId: 'frag',
+          placedMinutes: 60,
+          deferredMinutes: 0,
+          deficitMinutes: 40,
+          deficitCategory: 'INSUFFICIENT_TIME_BEFORE_DEADLINE',
+        });
+      });
+
+      it('shared capacity on a tight final day stays lossless (R-EP17-01, counterexample 2)', () => {
+        // Counterexample 2: two 60-minute assignments due Tue share a
+        // 30-minute Tuesday, and `capacityAfter` ignores the competition.
+        // Rule 3 sees both as critical on Monday (60 > 30), so the critical
+        // pass — which ignores pacing (D-B2) — serves both in full. Pacing
+        // is no worse than the rule 3 guarantee the engine already makes.
+        const off = runFixture(SHARED_CAPACITY_FIXTURE, 0);
+        const paced = runFixture(SHARED_CAPACITY_FIXTURE, 100);
+        expect(JSON.stringify(paced)).toBe(JSON.stringify(off));
+        expect(paced.results.map((r) => r.placedMinutes)).toEqual([60, 60]);
+        expect(paced.results.every((r) => r.deficitCategory === null)).toBe(true);
+      });
+    });
+
+    describe('EP17B-AC3 — every minute is accounted for, per deficit category', () => {
+      it.each([0, 70, 100])('accounts for every minute at spreadPercent %i', (spread) => {
+        for (const fixture of PACING_BATTERY) {
+          const out = runFixture(fixture, spread);
+          const byId = new Map(fixture.assignments.map((a) => [a.id, a]));
+          const today = fixture.days[0];
+          for (const result of out.results) {
+            const source = byId.get(result.assignmentId);
+            expect(source).toBeDefined();
+            const remaining = source?.remainingMinutes ?? 0;
+            const label = `${fixture.name} / ${result.assignmentId} @ ${spread}`;
+            if (result.deficitCategory === 'OVERDUE') {
+              // R-EP17-02: the overdue branch reports the full remaining as
+              // the deficit whatever was placed (scheduler.ts:594-596), with
+              // `placedMinutes` reported alongside.
+              expect([label, result.deficitMinutes]).toEqual([label, remaining]);
+              expect((source?.dueDate ?? '') < today).toBe(true);
+              expect(result.placedMinutes).toBeLessThanOrEqual(remaining);
+              expect(result.deferredMinutes).toBe(0);
+            } else {
+              expect([
+                label,
+                result.placedMinutes + result.deficitMinutes + result.deferredMinutes,
+              ]).toEqual([label, remaining]);
+            }
+            // The category set is exactly the pre-EP17 set.
+            expect([
+              null,
+              'OVERDUE',
+              'NO_AVAILABLE_TIME',
+              'INSUFFICIENT_TIME_BEFORE_DEADLINE',
+            ]).toContain(result.deficitCategory);
+          }
+        }
+      });
+
+      it('reports the minutes a pacing target declines as INSUFFICIENT_TIME_BEFORE_DEADLINE', () => {
+        const paced = runFixture(FRAGMENTED_FIXTURE, 100);
+        expect(paced.results[0].deficitCategory).toBe('INSUFFICIENT_TIME_BEFORE_DEADLINE');
+        expect(paced.results[0].placedMinutes + paced.results[0].deficitMinutes).toBe(100);
+      });
+    });
+
+    describe('EP17B-AC4 — purity, determinism and the compatibility gate', () => {
+      const baseline = JSON.parse(
+        readFileSync(join(__dirname, 'pacing-baseline.snapshot.json'), 'utf8')
+      ) as Record<string, unknown>;
+
+      it('the frozen baseline covers every battery fixture', () => {
+        expect(Object.keys(baseline).sort()).toEqual(PACING_BATTERY.map((f) => f.name).sort());
+      });
+
+      it.each(PACING_BATTERY.map((f) => [f.name, f] as const))(
+        'is byte-identical to the pre-EP17 baseline at spreadPercent 0: %s',
+        (name, fixture) => {
+          expect(JSON.stringify(runFixture(fixture, 0))).toBe(JSON.stringify(baseline[name]));
+        }
+      );
+
+      it.each([70, 100])(
+        'is byte-identical across two runs of the same input at spreadPercent %i',
+        (spread) => {
+          for (const fixture of PACING_BATTERY) {
+            const first = JSON.stringify(runFixture(fixture, spread));
+            expect(JSON.stringify(runFixture(fixture, spread))).toBe(first);
+          }
+        }
+      );
+
+      it('does not mutate its input while pacing', () => {
+        const inp = {
+          ...input({ assignments: [assignment({ remainingMinutes: 300 })] }),
+          preferences: { ...PREFS, spreadPercent: 100 },
+        };
+        const snapshot = JSON.stringify(inp);
+        schedule(inp);
+        expect(JSON.stringify(inp)).toBe(snapshot);
+      });
+    });
+
+    describe('EP17B-AC5 — pacing never throttles many small assignments (D17-3)', () => {
+      it('places the same minutes in the same number of sessions as the pre-EP17 engine', () => {
+        const off = runFixture(MANY_SMALL_FIXTURE, 0);
+        const paced = runFixture(MANY_SMALL_FIXTURE, 100);
+        const total = (out: ReturnType<typeof schedule>) =>
+          out.sessions.reduce((sum, s) => sum + s.durationMinutes, 0);
+        expect(total(paced)).toBe(total(off));
+        expect(paced.sessions).toHaveLength(off.sessions.length);
+        expect(paced.results).toEqual(off.results);
+      });
+
+      it('throttles a large assignment on the same day it leaves the small ones alone', () => {
+        // One 300-minute assignment and three 20-minute ones, all due at the
+        // end of the week: the big one is paced, the small ones are not.
+        const out = schedule(
+          input({
+            assignments: [
+              assignment({ id: 'big', remainingMinutes: 300, priority: 'LOW' }),
+              assignment({ id: 's1', remainingMinutes: 20, priority: 'HIGH' }),
+              assignment({ id: 's2', remainingMinutes: 20, priority: 'HIGH' }),
+              assignment({ id: 's3', remainingMinutes: 20, priority: 'HIGH' }),
+            ],
+            availability: [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+              dayOfWeek,
+              startMinute: 540,
+              endMinute: 840,
+            })),
+            preferences: { ...V1_PREFS, spreadPercent: 100 },
+          })
+        );
+        const firstDay = out.sessions.filter((s) => s.date === '2026-10-30');
+        // Each small assignment is finished in one sitting on day one.
+        for (const id of ['s1', 's2', 's3']) {
+          expect(
+            firstDay.filter((s) => s.assignmentId === id).reduce((t, s) => t + s.durationMinutes, 0)
+          ).toBe(20);
+        }
+        // The big one takes its even share — 300 over 7 days is 43, raised
+        // to one sitting (60) by rule 9's `oneSitting` floor — not the rest
+        // of the day's 240-minute budget.
+        expect(
+          firstDay
+            .filter((s) => s.assignmentId === 'big')
+            .reduce((t, s) => t + s.durationMinutes, 0)
+        ).toBe(60);
+        expect(out.results.every((r) => r.deficitCategory === null)).toBe(true);
+      });
+    });
+
+    describe('EP17B — unchanged-behaviour guards', () => {
+      it('overdue work still uses the whole window', () => {
+        const out = schedule(
+          input({
+            assignments: [assignment({ remainingMinutes: 300, dueDate: '2026-10-01' })],
+            availability: [0, 1, 2, 3, 4, 5, 6].map((dayOfWeek) => ({
+              dayOfWeek,
+              startMinute: 540,
+              endMinute: 840,
+            })),
+            preferences: { ...V1_PREFS, spreadPercent: 100 },
+          })
+        );
+        // The horizon is the whole window (scheduler.ts:306), so the even
+        // share is 300/7 → 43, and the work still lands inside the week.
+        expect(out.results[0].placedMinutes).toBe(300);
+        expect(out.results[0].deficitCategory).toBe('OVERDUE');
+        expect(out.results[0].deficitMinutes).toBe(300);
+        expect(new Set(out.sessions.map((s) => s.date)).size).toBeGreaterThan(1);
+      });
+
+      it('work due after the window is still deferred, never a deficit', () => {
+        const out = schedule(
+          input({
+            assignments: [assignment({ remainingMinutes: 5000, dueDate: '2026-12-01' })],
+            availability: [{ dayOfWeek: dow('2026-10-30'), startMinute: 540, endMinute: 660 }],
+            preferences: { ...V1_PREFS, spreadPercent: 100 },
+          })
+        );
+        expect(out.results[0].deficitCategory).toBeNull();
+        expect(out.results[0].deficitMinutes).toBe(0);
+        expect(out.results[0].placedMinutes + out.results[0].deferredMinutes).toBe(5000);
+      });
     });
   });
 });

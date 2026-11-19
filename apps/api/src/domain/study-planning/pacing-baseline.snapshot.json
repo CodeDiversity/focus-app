@@ -1,0 +1,1508 @@
+{
+  "one window, one assignment": {
+    "sessions": [
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 615,
+        "endMinute": 675,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "a-1",
+        "placedMinutes": 120,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  },
+  "three assignments, round-robin, mixed priority": {
+    "sessions": [
+      {
+        "assignmentId": "b",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 480,
+        "endMinute": 540,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "c",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 555,
+        "endMinute": 615,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 630,
+        "endMinute": 690,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "b",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 705,
+        "endMinute": 735,
+        "durationMinutes": 30,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "c",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 750,
+        "endMinute": 780,
+        "durationMinutes": 30,
+        "anchor": "FLEX_DAY",
+        "windowHint": "AFTERNOON"
+      },
+      {
+        "assignmentId": "c",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 480,
+        "endMinute": 540,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 555,
+        "endMinute": 615,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "c",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 630,
+        "endMinute": 690,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 705,
+        "endMinute": 765,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "c",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-01",
+        "startMinute": 480,
+        "endMinute": 510,
+        "durationMinutes": 30,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "b",
+        "placedMinutes": 90,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "c",
+        "placedMinutes": 240,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "a",
+        "placedMinutes": 180,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  },
+  "two windows per weekday apart (morning + evening)": {
+    "sessions": [
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-2",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 615,
+        "endMinute": 660,
+        "durationMinutes": 45,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 1080,
+        "endMinute": 1140,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "EVENING"
+      },
+      {
+        "assignmentId": "a-2",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 1155,
+        "endMinute": 1215,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "EVENING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 1230,
+        "endMinute": 1245,
+        "durationMinutes": 15,
+        "anchor": "FLEX_DAY",
+        "windowHint": "EVENING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-2",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 615,
+        "endMinute": 630,
+        "durationMinutes": 15,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 645,
+        "endMinute": 660,
+        "durationMinutes": 15,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 1080,
+        "endMinute": 1140,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "EVENING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 1155,
+        "endMinute": 1185,
+        "durationMinutes": 30,
+        "anchor": "FLEX_DAY",
+        "windowHint": "EVENING"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "a-1",
+        "placedMinutes": 300,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "a-2",
+        "placedMinutes": 120,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  },
+  "two touching windows per weekday": {
+    "sessions": [
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 615,
+        "endMinute": 675,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 690,
+        "endMinute": 714,
+        "durationMinutes": 24,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 540,
+        "endMinute": 596,
+        "durationMinutes": 56,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "a-1",
+        "placedMinutes": 200,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  },
+  "three windows one weekday only, others empty": {
+    "sessions": [
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-02",
+        "startMinute": 480,
+        "endMinute": 540,
+        "durationMinutes": 60,
+        "anchor": "FIXED",
+        "windowHint": null
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-02",
+        "startMinute": 555,
+        "endMinute": 600,
+        "durationMinutes": 45,
+        "anchor": "FIXED",
+        "windowHint": null
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-02",
+        "startMinute": 720,
+        "endMinute": 780,
+        "durationMinutes": 60,
+        "anchor": "FIXED",
+        "windowHint": null
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-02",
+        "startMinute": 795,
+        "endMinute": 840,
+        "durationMinutes": 45,
+        "anchor": "FIXED",
+        "windowHint": null
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-02",
+        "startMinute": 1020,
+        "endMinute": 1050,
+        "durationMinutes": 30,
+        "anchor": "FIXED",
+        "windowHint": null
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "a-1",
+        "placedMinutes": 240,
+        "deferredMinutes": 0,
+        "deficitMinutes": 160,
+        "deficitCategory": "INSUFFICIENT_TIME_BEFORE_DEADLINE"
+      }
+    ]
+  },
+  "recurring blocked time inside the window": {
+    "sessions": [
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 480,
+        "endMinute": 540,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 555,
+        "endMinute": 600,
+        "durationMinutes": 45,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 720,
+        "endMinute": 765,
+        "durationMinutes": 45,
+        "anchor": "FLEX_DAY",
+        "windowHint": "AFTERNOON"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "a-1",
+        "placedMinutes": 150,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  },
+  "classes and dated busy time": {
+    "sessions": [
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 480,
+        "endMinute": 540,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-2",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 630,
+        "endMinute": 660,
+        "durationMinutes": 30,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 720,
+        "endMinute": 780,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "AFTERNOON"
+      },
+      {
+        "assignmentId": "a-2",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 795,
+        "endMinute": 825,
+        "durationMinutes": 30,
+        "anchor": "FLEX_DAY",
+        "windowHint": "AFTERNOON"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 840,
+        "endMinute": 900,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "AFTERNOON"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "a-1",
+        "placedMinutes": 180,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "a-2",
+        "placedMinutes": 60,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  },
+  "hard flags true / false / null with types": {
+    "sessions": [
+      {
+        "assignmentId": "h-false",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "h-none",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 615,
+        "endMinute": 675,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "h-null",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 690,
+        "endMinute": 750,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "h-none",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "h-true",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 615,
+        "endMinute": 675,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "h-none",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 690,
+        "endMinute": 720,
+        "durationMinutes": 30,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "h-false",
+        "placedMinutes": 60,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "h-none",
+        "placedMinutes": 150,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "h-null",
+        "placedMinutes": 60,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "h-true",
+        "placedMinutes": 60,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  },
+  "overdue, beyond-window and tight deadline (FIXED partition)": {
+    "sessions": [
+      {
+        "assignmentId": "tight",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "tight",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 615,
+        "endMinute": 675,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "tight",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 690,
+        "endMinute": 714,
+        "durationMinutes": 24,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "tight",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "tight",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 615,
+        "endMinute": 641,
+        "durationMinutes": 26,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "later",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 656,
+        "endMinute": 714,
+        "durationMinutes": 58,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "later",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-01",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "overdue",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-01",
+        "startMinute": 615,
+        "endMinute": 675,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "later",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-01",
+        "startMinute": 690,
+        "endMinute": 714,
+        "durationMinutes": 24,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "later",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-02",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "later",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-02",
+        "startMinute": 615,
+        "endMinute": 675,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "later",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-02",
+        "startMinute": 690,
+        "endMinute": 714,
+        "durationMinutes": 24,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "later",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-03",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "later",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-03",
+        "startMinute": 615,
+        "endMinute": 675,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "later",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-03",
+        "startMinute": 690,
+        "endMinute": 714,
+        "durationMinutes": 24,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "later",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-04",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "later",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-04",
+        "startMinute": 615,
+        "endMinute": 675,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "later",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-04",
+        "startMinute": 690,
+        "endMinute": 714,
+        "durationMinutes": 24,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "later",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-05",
+        "startMinute": 540,
+        "endMinute": 566,
+        "durationMinutes": 26,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "overdue",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-05",
+        "startMinute": 581,
+        "endMinute": 611,
+        "durationMinutes": 30,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "tight",
+        "placedMinutes": 230,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "later",
+        "placedMinutes": 600,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "overdue",
+        "placedMinutes": 90,
+        "deferredMinutes": 0,
+        "deficitMinutes": 90,
+        "deficitCategory": "OVERDUE"
+      }
+    ]
+  },
+  "tail below minimum and max block growth": {
+    "sessions": [
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 540,
+        "endMinute": 660,
+        "durationMinutes": 120,
+        "anchor": "FIXED",
+        "windowHint": null
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "a-1",
+        "placedMinutes": 120,
+        "deferredMinutes": 0,
+        "deficitMinutes": 5,
+        "deficitCategory": "INSUFFICIENT_TIME_BEFORE_DEADLINE"
+      }
+    ]
+  },
+  "density 50 with breaks 30, cap 180": {
+    "sessions": [
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 480,
+        "endMinute": 540,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-2",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 570,
+        "endMinute": 630,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 660,
+        "endMinute": 720,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 480,
+        "endMinute": 540,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-2",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 570,
+        "endMinute": 630,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 660,
+        "endMinute": 720,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-01",
+        "startMinute": 480,
+        "endMinute": 540,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-2",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-01",
+        "startMinute": 570,
+        "endMinute": 630,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-01",
+        "startMinute": 660,
+        "endMinute": 720,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-02",
+        "startMinute": 480,
+        "endMinute": 540,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-2",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-02",
+        "startMinute": 570,
+        "endMinute": 630,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-11-02",
+        "startMinute": 660,
+        "endMinute": 720,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "a-1",
+        "placedMinutes": 480,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "a-2",
+        "placedMinutes": 240,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  },
+  "v1 prefs (no break, density 100), whole-day windows": {
+    "sessions": [
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 0,
+        "endMinute": 60,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-2",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 60,
+        "endMinute": 105,
+        "durationMinutes": 45,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 105,
+        "endMinute": 165,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 165,
+        "endMinute": 225,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 225,
+        "endMinute": 240,
+        "durationMinutes": 15,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 0,
+        "endMinute": 60,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 60,
+        "endMinute": 105,
+        "durationMinutes": 45,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "a-1",
+        "placedMinutes": 300,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "a-2",
+        "placedMinutes": 45,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  },
+  "24:00 window end and a zero-availability weekday": {
+    "sessions": [
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 1320,
+        "endMinute": 1380,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "EVENING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-30",
+        "startMinute": 1395,
+        "endMinute": 1431,
+        "durationMinutes": 36,
+        "anchor": "FLEX_DAY",
+        "windowHint": "EVENING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 1200,
+        "endMinute": 1260,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "EVENING"
+      },
+      {
+        "assignmentId": "a-1",
+        "assignmentTitle": "Assignment 1",
+        "date": "2026-10-31",
+        "startMinute": 1275,
+        "endMinute": 1319,
+        "durationMinutes": 44,
+        "anchor": "FLEX_DAY",
+        "windowHint": "EVENING"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "a-1",
+        "placedMinutes": 200,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  },
+  "no availability at all → NO_AVAILABLE_TIME": {
+    "sessions": [],
+    "results": [
+      {
+        "assignmentId": "a-1",
+        "placedMinutes": 0,
+        "deferredMinutes": 0,
+        "deficitMinutes": 120,
+        "deficitCategory": "NO_AVAILABLE_TIME"
+      }
+    ]
+  },
+  "window fully blocked → NO_AVAILABLE_TIME, busy covering another": {
+    "sessions": [],
+    "results": [
+      {
+        "assignmentId": "a-1",
+        "placedMinutes": 0,
+        "deferredMinutes": 0,
+        "deficitMinutes": 120,
+        "deficitCategory": "NO_AVAILABLE_TIME"
+      }
+    ]
+  },
+  "pacing: one 300-minute assignment, five generous days (EP17B-AC1)": {
+    "sessions": [
+      {
+        "assignmentId": "big",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "big",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 600,
+        "endMinute": 660,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "big",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 660,
+        "endMinute": 720,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "big",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 720,
+        "endMinute": 780,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "AFTERNOON"
+      },
+      {
+        "assignmentId": "big",
+        "assignmentTitle": "Task",
+        "date": "2026-10-31",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "big",
+        "placedMinutes": 300,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  },
+  "pacing: the fragmentation counterexample (R-EP17-01)": {
+    "sessions": [
+      {
+        "assignmentId": "frag",
+        "assignmentTitle": "Task",
+        "date": "2026-11-02",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "frag",
+        "assignmentTitle": "Task",
+        "date": "2026-11-02",
+        "startMinute": 600,
+        "endMinute": 640,
+        "durationMinutes": 40,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "frag",
+        "placedMinutes": 100,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  },
+  "pacing: two assignments sharing a tight final day (R-EP17-01)": {
+    "sessions": [
+      {
+        "assignmentId": "s-a",
+        "assignmentTitle": "Task",
+        "date": "2026-11-02",
+        "startMinute": 540,
+        "endMinute": 600,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "s-b",
+        "assignmentTitle": "Task",
+        "date": "2026-11-02",
+        "startMinute": 600,
+        "endMinute": 660,
+        "durationMinutes": 60,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "s-a",
+        "placedMinutes": 60,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "s-b",
+        "placedMinutes": 60,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  },
+  "pacing: twelve small assignments (D17-3 counterexample)": {
+    "sessions": [
+      {
+        "assignmentId": "small-01",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 540,
+        "endMinute": 555,
+        "durationMinutes": 15,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "small-06",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 555,
+        "endMinute": 575,
+        "durationMinutes": 20,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "small-11",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 575,
+        "endMinute": 600,
+        "durationMinutes": 25,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "small-02",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 600,
+        "endMinute": 620,
+        "durationMinutes": 20,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "small-07",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 620,
+        "endMinute": 645,
+        "durationMinutes": 25,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "small-12",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 645,
+        "endMinute": 675,
+        "durationMinutes": 30,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "small-03",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 675,
+        "endMinute": 700,
+        "durationMinutes": 25,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "small-08",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 700,
+        "endMinute": 730,
+        "durationMinutes": 30,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "small-04",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 730,
+        "endMinute": 760,
+        "durationMinutes": 30,
+        "anchor": "FLEX_DAY",
+        "windowHint": "AFTERNOON"
+      },
+      {
+        "assignmentId": "small-09",
+        "assignmentTitle": "Task",
+        "date": "2026-10-30",
+        "startMinute": 760,
+        "endMinute": 775,
+        "durationMinutes": 15,
+        "anchor": "FLEX_DAY",
+        "windowHint": "AFTERNOON"
+      },
+      {
+        "assignmentId": "small-05",
+        "assignmentTitle": "Task",
+        "date": "2026-10-31",
+        "startMinute": 540,
+        "endMinute": 555,
+        "durationMinutes": 15,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      },
+      {
+        "assignmentId": "small-10",
+        "assignmentTitle": "Task",
+        "date": "2026-10-31",
+        "startMinute": 555,
+        "endMinute": 575,
+        "durationMinutes": 20,
+        "anchor": "FLEX_DAY",
+        "windowHint": "MORNING"
+      }
+    ],
+    "results": [
+      {
+        "assignmentId": "small-01",
+        "placedMinutes": 15,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "small-06",
+        "placedMinutes": 20,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "small-11",
+        "placedMinutes": 25,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "small-02",
+        "placedMinutes": 20,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "small-07",
+        "placedMinutes": 25,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "small-12",
+        "placedMinutes": 30,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "small-03",
+        "placedMinutes": 25,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "small-08",
+        "placedMinutes": 30,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "small-04",
+        "placedMinutes": 30,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "small-09",
+        "placedMinutes": 15,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "small-05",
+        "placedMinutes": 15,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      },
+      {
+        "assignmentId": "small-10",
+        "placedMinutes": 20,
+        "deferredMinutes": 0,
+        "deficitMinutes": 0,
+        "deficitCategory": null
+      }
+    ]
+  }
+}

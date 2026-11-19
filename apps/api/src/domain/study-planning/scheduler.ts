@@ -85,6 +85,48 @@ import type {
  *    first (D-C3; feasibility still wins). Study blocks never change a
  *    day's free minutes (AC-E15-07). With `preferred` empty the output is
  *    byte-identical to the EP14E engine (EP15C-AC4).
+ *
+ * EP17B (contracts.md §3; D17-3, D-B1…D-B4) adds the pacing objective. It
+ * changes *how much* one assignment may take on one day; it changes nothing
+ * about ordering, gap choice, energy, study blocks, breaks, min/max block
+ * length or the FLEX/FIXED partition:
+ *
+ * 9. **Daily pacing** (`spreadPercent`). The engine no longer fills each
+ *    day to its budget before looking at the next one. For an assignment
+ *    `A` and a day `D` of `A`'s horizon:
+ *
+ *    ```text
+ *    evenShare(A)    = max(oneSitting(A), ceil(A.remainingAtRunStart / |usableDays(A)|))
+ *    paceTarget(A,D) = dayBudget(D) - (dayBudget(D) - evenShare(A)) * spreadPercent/100
+ *    dayTake(A,D)    = max(paceTarget(A,D), A.remaining - capacityAfter(A,D))
+ *    ```
+ *
+ *    and `A` takes at most `dayTake(A, D)` minutes on `D`.
+ *    - `usableDays(A)` are the days of `A`'s horizon whose **run-start**
+ *      budget is non-zero (D-B3); the share is rounded up (D-B4) and read
+ *      from run-start inputs only, so it is stable within a run and
+ *      independent of iteration order (purity, rule 5).
+ *    - `oneSitting(A)` is one full session for `A`
+ *      (`min(A.remainingAtRunStart, sessionLengthMinutes)`, never below
+ *      `minSessionMinutes`). Pacing spreads work across days; it never
+ *      shatters a single sitting into sub-session slivers, and so it never
+ *      throttles the *number* of distinct pieces of work a day may hold
+ *      (D17-3, EP17B-AC5). Without this floor twelve 20-minute assignments
+ *      would each be paced to a few unplaceable minutes a day.
+ *    - The `max(…)` term is the **feasibility floor** (R-EP17-01): pacing
+ *      never voluntarily defers minutes the later horizon days cannot
+ *      nominally absorb. Because `capacityAfter` is optimistic by design
+ *      (it ignores gap fragmentation and competing work), the guarantee is
+ *      *no worse than the rule 3 guarantee the engine already makes*, not
+ *      "never a new deficit".
+ *    - Rule 3's critical pass ignores the target entirely (D-B2): a
+ *      deadline is a constraint, smoothness is a preference.
+ *    - The target never *raises* a day's budget — rule 2's `dayBudgetOf`
+ *      is still the hard cap — and minutes the target declines flow into
+ *      the existing deficit/deferred classification, in no new category
+ *      and never silently (EP17B-AC3).
+ *    - `spreadPercent = 0` makes `paceTarget = dayBudget(D)`: the pre-EP17
+ *      engine, byte for byte (EP17B-AC4, TR-E17-02).
  */
 
 /** Convert a weekly window list into dated intervals for one civil date. */
@@ -238,6 +280,16 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
   const densityPercent = Math.min(100, Math.max(0, safeInt(preferences.densityPercent, 100)));
   const maxBlock = Math.max(1, safeInt(preferences.maxSessionMinutes, 1));
   const minBlock = Math.max(1, Math.min(safeInt(preferences.minSessionMinutes, 1), maxBlock));
+  // EP17B rule 9. The fallback is `0` — the pre-EP17 behaviour — so a caller
+  // or a fixture written before EP17A added the key gets exactly the engine
+  // it was written against (the service always supplies the real value,
+  // defaulted to 70 by `readStudyPreferences`).
+  const spreadPercent = Math.min(100, Math.max(0, safeInt(preferences.spreadPercent, 0)));
+  /** One full sitting for an assignment — the floor of `evenShare` (rule 9). */
+  const sittingLength = Math.max(
+    minBlock,
+    Math.min(safeInt(preferences.sessionLengthMinutes, maxBlock), maxBlock)
+  );
 
   // Sort the assignments by the one shared comparator (D06-22).
   const sorted: SchedulableAssignment[] = [...input.assignments].sort((a, b) =>
@@ -330,6 +382,49 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
     }
     return total;
   };
+
+  /**
+   * EP17B rule 9 — the per-assignment even share, computed **once**, from
+   * run-start inputs only (`remainingMinutes` as handed in, the run-start
+   * day budgets and the horizon), never from `item.remaining`, which
+   * mutates during the run. That is what makes the target stable within a
+   * run and independent of iteration order (EP17B-AC4).
+   */
+  const evenShareOf = new Map<Progress, number>();
+  for (const item of progress) {
+    let usableDays = 0;
+    for (const date of days) {
+      if (item.horizon.has(date) && dayBudgetOf(date) > 0) usableDays += 1;
+    }
+    const atRunStart = Math.max(0, safeInt(item.assignment.remainingMinutes, 0));
+    // D-B4: round the share up, so rounding can never leave a residue no day
+    // may absorb. With no usable day there is nothing to share over.
+    const share = usableDays > 0 ? Math.ceil(atRunStart / usableDays) : atRunStart;
+    evenShareOf.set(item, Math.max(Math.min(atRunStart, sittingLength), share));
+  }
+
+  /**
+   * EP17B rule 9 — the most `item` may take on `date` in the **normal**
+   * pass: the blend of the day's budget and the even share, raised back up
+   * by the feasibility floor (R-EP17-01). Never above the day's budget —
+   * pacing only ever lowers a take (rule 2 stays the hard cap).
+   */
+  const dayTakeOf = (item: Progress, date: string): number => {
+    const budget = dayBudgetOf(date);
+    if (spreadPercent === 0) return budget;
+    const share = evenShareOf.get(item) ?? budget;
+    const paceTarget = budget - Math.floor(((budget - share) * spreadPercent) / 100);
+    const floored = Math.max(paceTarget, item.remaining - capacityAfter(item, date));
+    return Math.max(0, Math.min(budget, floored));
+  };
+
+  /**
+   * How many minutes `item` may still take **today** under rule 9. Seeded
+   * per day in the placement loop; an assignment the day's critical pass
+   * owns is absent from the map and so is uncapped (D-B2).
+   */
+  let paceLeft = new Map<Progress, number>();
+  const paceLeftOf = (item: Progress): number => paceLeft.get(item) ?? Number.POSITIVE_INFINITY;
 
   /**
    * Expand every placed interval of `date` by the break on both sides (rule
@@ -462,6 +557,11 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
       endMinute: block.endMinute,
     });
     budgetLeft.set(date, budget - usable);
+    // EP17B rule 9: the day's pacing allowance is consumed by whatever is
+    // placed, whichever path placed it (the rotation, or a course tie that
+    // served this item out of turn).
+    const pace = paceLeft.get(item);
+    if (pace !== undefined) paceLeft.set(item, Math.max(0, pace - usable));
     item.remaining -= usable;
     item.placedMinutes += usable;
     item.lastBlock = block;
@@ -486,14 +586,26 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
     preferEnergy = true,
     courseCandidates: Progress[] = []
   ): number => {
-    const budget = budgetLeft.get(date) ?? 0;
-    if (budget <= 0 || item.remaining <= 0) return 0;
+    const dayBudget = budgetLeft.get(date) ?? 0;
+    if (dayBudget <= 0 || item.remaining <= 0) return 0;
+
+    // EP17B rule 9: in the normal pass the day's budget is narrowed to what
+    // this assignment's pacing target still allows today. It can only lower
+    // the take; `budgetLeft` remains the hard per-day cap.
+    const budget = Math.min(dayBudget, paceLeftOf(item));
+    if (budget <= 0) return 0;
 
     const desired = desiredFor(item, budget);
 
     // A tail shorter than the minimum is never placed on its own: it merges
     // into the previous block or it is reported as a deficit (rule 4).
     if (desired < minBlock) {
+      // EP17B rule 9: when it is the *pacing target* — not the work itself
+      // or the day's budget — that has fallen below one legal block, the
+      // day simply declines. Merging here would hand the assignment minutes
+      // its target just refused (and, since `lastBlock` may belong to an
+      // earlier day, would also move them backwards in the week).
+      if (budget < dayBudget && desiredFor(item, dayBudget) >= minBlock) return 0;
       return tryMergeTail(item, Math.min(item.remaining, maxBlock), budgetLeft);
     }
 
@@ -513,7 +625,8 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
           (candidate.assignment.courseId ?? null) === gap.courseId
       );
       if (owner) {
-        const ownerDesired = desiredFor(owner, budget);
+        // EP17B rule 9: the owner takes the gap under *its own* allowance.
+        const ownerDesired = desiredFor(owner, Math.min(dayBudget, paceLeftOf(owner)));
         if (
           ownerDesired >= minBlock &&
           Math.min(ownerDesired, gap.endMinute - gap.startMinute) >= minBlock
@@ -545,6 +658,20 @@ export function schedule(input: SchedulerInput): SchedulerOutput {
     // Rule 3's feasibility override: work that cannot still fit after today
     // is served first, in deadline order, without rotation.
     const critical = candidates.filter((item) => item.remaining > capacityAfter(item, date));
+
+    // EP17B rule 9: today's pacing allowance, seeded from each candidate's
+    // state **at the start of the day** so it cannot drift with the
+    // rotation. Critical work is left out of the map entirely, which is
+    // what makes it uncapped (D-B2) — on the critical pass *and* in the
+    // rotation that follows, where it is still the same deadline.
+    paceLeft = new Map<Progress, number>();
+    if (spreadPercent > 0) {
+      const criticalToday = new Set(critical);
+      for (const item of candidates) {
+        if (!criticalToday.has(item)) paceLeft.set(item, dayTakeOf(item, date));
+      }
+    }
+
     for (const item of critical) {
       // Keep placing this assignment until the day can give it no more.
       while (item.remaining > 0 && (budgetLeft.get(date) ?? 0) > 0) {

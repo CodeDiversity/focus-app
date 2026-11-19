@@ -4,7 +4,7 @@
 **Epic:** [EP17](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md)
 **Milestone:** M10 (proposed, D17-1)
 **Layer:** Backend (pure domain)
-**Status:** Queued
+**Status:** Implemented — awaiting the combined EP17 review ([implementation record](./artifacts/EP17B/implementation.md))
 **Dependencies:** EP17A (the `spreadPercent` lever must exist).
 
 ## Plan at a glance
@@ -168,7 +168,12 @@ and no UI. DoD-10/11 at the EP17 parent review.
 - **Outcome:** the engine spreads an assignment's work across its horizon
   instead of front-loading it, provably without losing minutes or missing a
   deadline.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** delivered. `scheduler.ts` +rule 9 (~95 lines, doc
+  comment included); a new `pacing-fixtures.ts` battery (19 fixtures) and the
+  frozen `pacing-baseline.snapshot.json`; `scheduler.spec.ts` additive only
+  (+342 lines, **no existing expectation changed** — the spec already ran at
+  `spreadPercent: 0`, see TR-E17-07 in the record). All 5 ACs met;
+  V-17-1/2/3 observed. Findings F-EP17B-01…03.
 - **Files:** `apps/api/src/domain/study-planning/scheduler.ts`,
   `scheduler.spec.ts`, `types.ts` (if the input gains the lever), and a
   **new** frozen pre-EP17 baseline fixture under the domain test folder.
