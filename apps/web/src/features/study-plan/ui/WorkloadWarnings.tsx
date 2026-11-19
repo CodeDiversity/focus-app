@@ -1,6 +1,7 @@
 import { Card } from '@/shared/ui/Card';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { formatMinutes } from '@/features/study-plan/lib/formatMinutes';
+import { dayLabel } from '@/features/study-plan/lib/dayLabel';
 import type { PlanWarning, PlanDeferred } from '@/entities/study-plan/model/types';
 
 export interface WorkloadWarningsProps {
@@ -11,15 +12,25 @@ export interface WorkloadWarningsProps {
   className?: string;
 }
 
+/**
+ * EP17H-AC7 (D17-17, AC-E17-10): the proposal speaks one date language.
+ * `dueDate` is nullable in the contract, so the label is derived defensively
+ * — a missing date degrades to the empty string exactly where the old
+ * interpolation would have printed `null`.
+ */
+function dueLabel(dueDate: string | null): string {
+  return dueDate ? dayLabel(dueDate) : '';
+}
+
 function warningSentence(w: PlanWarning): string {
   const mins = formatMinutes(w.minutes);
   switch (w.category) {
     case 'NO_AVAILABLE_TIME':
       return `No free study time this week for "${w.assignmentTitle}" — ${mins} of work remain.`;
     case 'INSUFFICIENT_TIME_BEFORE_DEADLINE':
-      return `${mins} of "${w.assignmentTitle}" do not fit before its ${w.dueDate} deadline.`;
+      return `${mins} of "${w.assignmentTitle}" do not fit before its ${dueLabel(w.dueDate)} deadline.`;
     case 'OVERDUE':
-      return `"${w.assignmentTitle}" was due on ${w.dueDate} and ${mins} remain.`;
+      return `"${w.assignmentTitle}" was due on ${dueLabel(w.dueDate)} and ${mins} remain.`;
     default:
       return `${mins} of "${w.assignmentTitle}" remain.`;
   }
@@ -71,7 +82,7 @@ export function WorkloadWarnings({
                     <p className="text-sm text-text">{warningSentence(w)}</p>
                     <p className="text-xs text-text-muted">
                       {w.minutes} min
-                      {w.dueDate ? ` · due ${w.dueDate}` : ''}
+                      {w.dueDate ? ` · due ${dayLabel(w.dueDate)}` : ''}
                     </p>
                   </li>
                 ))}

@@ -8,6 +8,7 @@ import {
   createAuthenticatedUserViaApi,
   createCourseViaApi,
   createSemesterViaApi,
+  dayLabel,
   setDayBoundsViaApi,
   loginViaUi,
 } from './helpers';
@@ -327,7 +328,8 @@ test('journey: missed sessions → preview → edit → confirm → the saved pl
   await expect(page.getByRole('heading', { name: 'Your proposed week' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Moved forward into this plan' })).toBeVisible();
   await expect(page.getByText(essay.title).first()).toBeVisible();
-  await expect(page.getByText(addDays(user.today, -2)).first()).toBeVisible();
+  // EP17H-AC7 (D17-17): the moved-forward row shows the human day label.
+  await expect(page.getByText(dayLabel(addDays(user.today, -2))).first()).toBeVisible();
   await expectNoAxeViolations(page, '/plan/proposal (moved forward)');
 
   // AC 1b — assert against the server window.
@@ -577,7 +579,9 @@ test('feasibility warning is displayed when work cannot fit before its deadline'
   await expect(page.getByRole('heading', { name: 'Workload warnings' })).toBeVisible();
   await expect(page.getByText(`"${big.title}"`)).toBeVisible();
   await expect(page.getByText(/do not fit before its .* deadline/)).toBeVisible();
-  await expect(page.getByText(`due ${dueCivil}`)).toBeVisible();
+  // EP17H-AC7 (D17-17, fourth call site): the warning's due date reads in
+  // human form too — the API payload above still carries the ISO value.
+  await expect(page.getByText(`due ${dayLabel(dueCivil)}`)).toBeVisible();
 
   // Displaying the warning never touches the deadline (AC-E08-08).
   expect(await assignmentSnapshot(request, user.accessToken, big.id)).toBe(assignmentBefore);
@@ -728,7 +732,8 @@ test('a 409 on Use this plan marks the clashing rows and keeps the edits (AC-E16
     name: `E2E Course ${uniqueSuffix()}`,
     semesterId: semester.id,
   });
-  const assignment = await createAssignmentViaApi(request, user.accessToken, {
+  // Seeded for its side effect only — the journey finds it through the UI.
+  await createAssignmentViaApi(request, user.accessToken, {
     title: `Clash ${uniqueSuffix()}`,
     courseId: course.id,
     dueDate: `${addDays(user.today, 5)}T12:00:00.000Z`,
@@ -778,7 +783,10 @@ test('a 409 on Use this plan marks the clashing rows and keeps the edits (AC-E16
   const summary = page.getByTestId('conflict-summary');
   await expect(summary).toBeVisible({ timeout: 15_000 });
   await expect(summary).toContainText('Some sessions clash with your calendar');
-  await expect(summary).toContainText(target.date);
+  // EP17H-AC7 (D17-17): the summary names the clashing day in human form.
+  // Updated, not deleted — the ISO string it used to pin is no longer shown.
+  await expect(summary).toContainText(dayLabel(target.date));
+  await expect(summary).not.toContainText(target.date);
   await expect(page.locator('[data-conflicted]')).toHaveCount(1);
   await expect(page).toHaveURL(/\/plan\/proposal$/);
   await expect(page.getByText('Plan saved.')).toHaveCount(0);

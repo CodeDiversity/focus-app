@@ -73,7 +73,13 @@ test('(a) sign in lands on /today with the hero control in view at 360×640 (AC-
     estimatedHours: 1,
   });
   await savePlanWeekViaApi(request, s.accessToken, s.today, [
-    { assignmentId: essay.id, date: s.today, startTime: '19:00', endTime: '19:30', anchor: 'FIXED' },
+    {
+      assignmentId: essay.id,
+      date: s.today,
+      startTime: '19:00',
+      endTime: '19:30',
+      anchor: 'FIXED',
+    },
   ]);
 
   // The phone viewport first: the hero's primary control must be visible

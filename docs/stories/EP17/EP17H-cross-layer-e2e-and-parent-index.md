@@ -4,7 +4,7 @@
 **Epic:** [EP17](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md)
 **Milestone:** M10 (proposed, D17-1)
 **Layer:** Integration
-**Status:** Queued
+**Status:** **Implemented** (2026-11-19) — awaiting the combined EP17 parent review. All 7 ACs met; evidence in [artifacts/EP17H/implementation.md](./artifacts/EP17H/implementation.md), parent index at [artifacts/EP17/implementation.md](./artifacts/EP17/implementation.md). The DB-gated Playwright suite **was genuinely run** (76/76, four clean runs). D-H1/D-H2 were already ruled; the epic's **D17-17 ratified by default, 2026-11-19**. One addition to D17-17's enumerated call sites: a fourth raw-ISO site (`WorkloadWarnings.tsx`) found by the mandated page-wide scan — F-EP17H-01.
 **Dependencies:** EP17A–EP17G implemented.
 
 ## Plan at a glance
@@ -167,7 +167,15 @@ three call sites. DoD-11 is the reviewer's, inside the combined report.
 
 - **Outcome:** the epic is proven end to end, the proposal page speaks one
   date language, and the combined review has one entry point.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** one window, one commit. 17 files: 3 new
+  (`apps/web/e2e/plan-pacing.spec.ts`, the parent index, this child's
+  record), 4 product files (the AC7 call sites — **four**, not three), 4
+  component test files, 4 e2e files (`helpers.ts` + three specs, two of them
+  F-EP17A-01 lint-only), and the three record/queue files. No new Playwright
+  spec was needed for AC3 (the existing `plan-flow.spec.ts:455` journey
+  covers it and was re-run green). AC7 cost well under a tenth of the window,
+  as sized; the e2e harness bring-up (no `.env.local`, no Docker) was the
+  largest unplanned cost.
 - **Files:** **new** `apps/web/e2e/plan-pacing.spec.ts` (name tbd), updates
   to existing plan/catch-up specs and `helpers.ts` if needed, a **new**
   `docs/stories/EP17/artifacts/EP17/implementation.md`, and for AC7 three

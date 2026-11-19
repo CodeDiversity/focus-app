@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { ComponentProps } from 'react';
 import { render, screen } from '@testing-library/react';
 import { WhatThisKeepsCard } from './WhatThisKeepsCard';
+import { renderedStrings } from '@/test/forbiddenWords';
 import type { MissedSession } from '@/entities/study-plan/model/types';
 
 // The per-card lock toggle calls the entity client; stub it at the boundary.
@@ -52,7 +53,7 @@ describe('WhatThisKeepsCard (EP16C, ex CatchUpPreservationCard)', () => {
   it('renders a locked session as a read-only card — no time/day inputs, no delete', () => {
     const { container } = renderCard({ lockedPreserved: 1, lockedSessions: [lockedSession] });
     expect(screen.getByText('Lab report')).toBeInTheDocument();
-    expect(screen.getByText('2026-10-28')).toBeInTheDocument();
+    expect(screen.getByText('Wed, Oct 28')).toBeInTheDocument();
     expect(screen.getByText(/13:00 – 14:00/)).toBeInTheDocument();
     expect(screen.getByText('Locked')).toBeInTheDocument();
     expect(screen.getByText('Locked sessions are never moved or replaced.')).toBeInTheDocument();
@@ -65,5 +66,19 @@ describe('WhatThisKeepsCard (EP16C, ex CatchUpPreservationCard)', () => {
     expect(buttons).toHaveLength(1);
     expect(buttons[0]).toHaveAccessibleName(/keep "lab report" locked/i);
     expect(screen.queryByRole('button', { name: /delete session/i })).not.toBeInTheDocument();
+  });
+
+  // EP17H-AC7 (D17-17, AC-E17-10): the locked-session line reads in human
+  // form; the machine-readable ISO value stays on the `dateTime` attribute.
+  it("renders the locked session's day in human form and keeps the ISO dateTime attribute", () => {
+    const { container } = renderCard({ lockedPreserved: 1, lockedSessions: [lockedSession] });
+    const time = container.querySelector('time');
+    expect(time).not.toBeNull();
+    expect(time).toHaveTextContent('Wed, Oct 28');
+    expect(time).toHaveAttribute('dateTime', '2026-10-28');
+    // Nothing a student (or a screen reader) receives is a raw ISO date.
+    for (const text of renderedStrings(container)) {
+      expect(text).not.toMatch(/\d{4}-\d{2}-\d{2}/);
+    }
   });
 });

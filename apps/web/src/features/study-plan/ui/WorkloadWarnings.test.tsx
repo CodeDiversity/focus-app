@@ -42,10 +42,10 @@ describe('WorkloadWarnings', () => {
     });
     expect(screen.getByText(/No free study time this week for "Essay"/)).toBeInTheDocument();
     expect(
-      screen.getByText(/30 min of "Lab" do not fit before its 2026-11-02 deadline\./)
+      screen.getByText(/30 min of "Lab" do not fit before its Mon, Nov 2 deadline\./)
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/"Quiz" was due on 2026-10-28 and 15 min remain\./)
+      screen.getByText(/"Quiz" was due on Wed, Oct 28 and 15 min remain\./)
     ).toBeInTheDocument();
   });
 

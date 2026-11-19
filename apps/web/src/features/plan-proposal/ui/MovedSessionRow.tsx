@@ -1,6 +1,7 @@
 import { Lock } from 'lucide-react';
 import { Badge } from '@/shared/ui/Badge';
 import { formatMinutes } from '@/features/study-plan/lib/formatMinutes';
+import { dayLabel } from '@/features/study-plan/lib/dayLabel';
 import type { MissedSession } from '@/entities/study-plan/model/types';
 
 export interface MovedSessionRowProps {
@@ -20,7 +21,7 @@ export function MovedSessionRow({ session }: MovedSessionRowProps) {
     <li className="py-3">
       <div className="flex flex-wrap items-center gap-2">
         <time dateTime={session.date} className="text-sm text-text">
-          {session.date}
+          {dayLabel(session.date)}
         </time>
         <span className="text-sm text-text-muted">·</span>
         <span className="text-sm text-text">

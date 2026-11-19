@@ -125,7 +125,14 @@ test('360 × 640: the bottom tab bar carries the five entries and the drawer onl
   await expect(drawer.getByRole('navigation')).toHaveCount(0);
   await expect(drawer.getByRole('link')).toHaveText(['Profile', 'Verify email']);
   await expect(drawer.getByRole('button', { name: 'Logout' })).toBeVisible();
-  for (const text of ['Today', 'Plan', 'Calendar', 'Assignments', 'Courses', ...RETIRED_SHELL_TEXT]) {
+  for (const text of [
+    'Today',
+    'Plan',
+    'Calendar',
+    'Assignments',
+    'Courses',
+    ...RETIRED_SHELL_TEXT,
+  ]) {
     await expect(drawer, `"${text}" is not in the Account drawer`).not.toContainText(text);
   }
   await page.keyboard.press('Escape');

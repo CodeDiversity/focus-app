@@ -2,6 +2,7 @@ import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
 import { Lock } from 'lucide-react';
 import { formatMinutes } from '@/features/study-plan/lib/formatMinutes';
+import { dayLabel } from '@/features/study-plan/lib/dayLabel';
 import type { MissedSession } from '@/entities/study-plan/model/types';
 import { CatchUpLockToggle } from './CatchUpLockToggle';
 
@@ -61,7 +62,7 @@ export function WhatThisKeepsCard({
             {lockedSessions.map((s) => (
               <li key={s.id}>
                 <article
-                  aria-label={`Locked session: ${s.assignmentTitle}, ${s.date}, ${s.startTime} to ${s.endTime}`}
+                  aria-label={`Locked session: ${s.assignmentTitle}, ${dayLabel(s.date)}, ${s.startTime} to ${s.endTime}`}
                   className="rounded-md border border-border bg-surface p-3"
                 >
                   <div className="flex flex-wrap items-center gap-2">
@@ -77,8 +78,8 @@ export function WhatThisKeepsCard({
                     </Badge>
                   </div>
                   <p className="mt-1 text-sm text-text-muted">
-                    <time dateTime={s.date}>{s.date}</time> · {s.startTime} – {s.endTime} ·{' '}
-                    {formatMinutes(s.durationMinutes)}
+                    <time dateTime={s.date}>{dayLabel(s.date)}</time> · {s.startTime} – {s.endTime}{' '}
+                    · {formatMinutes(s.durationMinutes)}
                   </p>
                   <div className="mt-2">
                     <CatchUpLockToggle

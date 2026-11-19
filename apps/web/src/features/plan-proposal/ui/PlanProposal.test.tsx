@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { PlanProposal, proposalSummary } from './PlanProposal';
-import { expectNoForbiddenWords } from '@/test/forbiddenWords';
+import { expectNoForbiddenWords, renderedStrings } from '@/test/forbiddenWords';
 import { Providers, makeTestStore } from '@/test/providers';
 import { todayPlanApi } from '@/features/today-plan/api/todayPlanApi';
 import { calendarApi } from '@/features/calendar/api/calendarApi';
@@ -939,6 +939,72 @@ describe('PlanProposal pacing controls (EP17G)', () => {
     expectNoForbiddenWords(container);
     await openPace(user);
     expectNoForbiddenWords(container);
+  });
+});
+
+/**
+ * EP17H-AC7 (D17-17, AC-E17-10, V-17-4) — the proposal speaks one date
+ * language. The grid was EP17E's; these cover the secondary call sites —
+ * D17-17 enumerated three, the page-wide scan below found a fourth in
+ * `WorkloadWarnings` (F-EP17H-01) — plus the negative scan that owns V-17-4.
+ */
+describe('PlanProposal date language (EP17H-AC7, D17-17)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockedPreview.mockResolvedValue(catchUpPreviewFixture as never);
+    mockedLock.mockResolvedValue({ id: 'ps-1', locked: false } as never);
+  });
+
+  /** Drives the fixture into the state that renders every region at once. */
+  async function renderConflictedAndOpened() {
+    mockedConfirm.mockRejectedValue({
+      response: {
+        data: {
+          statusCode: 409,
+          error: 'Conflict',
+          conflicts: [
+            { sessionIndex: 0, date: '2026-10-30', startTime: '09:00', reason: 'OVERLAPS_CLASS' },
+          ],
+        },
+      },
+      message: 'conflict',
+    } as never);
+    const user = userEvent.setup();
+    const view = renderPreview();
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: /use this plan/i }));
+    await waitFor(() => expect(screen.getByTestId('conflict-summary')).toBeInTheDocument());
+    // The demoted regions (What this plan keeps, Moved forward) live behind
+    // the disclosure, which jsdom renders collapsed — open it so the scan
+    // really covers the whole page.
+    const disclosure = screen.getByRole('button', { name: 'What else changed' });
+    if (disclosure.getAttribute('aria-expanded') === 'false') {
+      await user.click(disclosure);
+    }
+    return view;
+  }
+
+  it('the 409 conflict summary names the clashing day in human form', async () => {
+    await renderConflictedAndOpened();
+    const summary = screen.getByTestId('conflict-summary');
+    // Unchanged lead sentence and semantics (EP17F-AC5's frozen copy).
+    expect(summary).toHaveTextContent(
+      /some sessions clash with your calendar\. adjust them and try again:/i
+    );
+    expect(summary).toHaveAttribute('role', 'alert');
+    expect(summary).toHaveTextContent('Fri, Oct 30 09:00');
+    expect(summary.textContent).not.toMatch(/\d{4}-\d{2}-\d{2}/);
+  });
+
+  it('renders no raw ISO date anywhere on the proposal (V-17-4, page-wide)', async () => {
+    const { container } = await renderConflictedAndOpened();
+    // Sanity: the state really does carry the locked and moved-forward rows.
+    expect(screen.getByTestId('catch-up-preservation')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Moved forward into this plan' })
+    ).toBeInTheDocument();
+    const offenders = renderedStrings(container).filter((t) => /\d{4}-\d{2}-\d{2}/.test(t));
+    expect(offenders).toEqual([]);
   });
 });
 

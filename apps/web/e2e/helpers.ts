@@ -337,6 +337,22 @@ export function civilWeekday(dateStr: string): number {
   return new Date(`${dateStr}T00:00:00.000Z`).getUTCDay();
 }
 
+/**
+ * EP17E/EP17H (D-E5, D17-17, AC-E17-10) — the human day label the proposal
+ * renders: `"2026-11-19"` → `"Thu, Nov 19"`. Derived here exactly as
+ * `src/features/study-plan/lib/dayLabel.ts` derives it (en-US, UTC from the
+ * civil date); the e2e project compiles outside the app's path aliases, so
+ * the one-line formatter is mirrored rather than imported.
+ */
+export function dayLabel(dateStr: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${dateStr}T00:00:00.000Z`));
+}
+
 /** The Monday that starts the week of `dateStr` (Sunday belongs to the previous Monday). */
 export function civilMondayOf(dateStr: string): string {
   return addCivilDays(dateStr, -((civilWeekday(dateStr) + 6) % 7));

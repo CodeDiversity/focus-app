@@ -11,6 +11,7 @@ import { WorkloadWarnings } from '@/features/study-plan/ui/WorkloadWarnings';
 import { CalibrationNote } from '@/features/study-plan/ui/CalibrationNote';
 import { formatMinutes } from '@/features/study-plan/lib/formatMinutes';
 import { weekLine } from '@/features/study-plan/lib/weekLine';
+import { dayLabel } from '@/features/study-plan/lib/dayLabel';
 import { todayPlanApi } from '@/features/today-plan/api/todayPlanApi';
 import { calendarApi } from '@/features/calendar/api/calendarApi';
 import { recoverySummaryApi } from '@/features/today/api/recoverySummaryApi';
@@ -248,7 +249,7 @@ export function PlanProposal() {
               <ul className="mt-2 space-y-1 text-sm text-danger-strong">
                 {conflicts.map((c, i) => (
                   <li key={i}>
-                    {c.date} {c.startTime} — {CONFLICT_REASON_LABEL[c.reason] ?? c.reason}
+                    {dayLabel(c.date)} {c.startTime} — {CONFLICT_REASON_LABEL[c.reason] ?? c.reason}
                   </li>
                 ))}
               </ul>
