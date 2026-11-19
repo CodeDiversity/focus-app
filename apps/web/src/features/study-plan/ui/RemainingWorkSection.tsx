@@ -73,7 +73,9 @@ export function RemainingWorkSection({ timeZone, className }: RemainingWorkSecti
 
         {!isLoading && error && (
           <div role="alert" className="border border-danger/30 bg-danger/10 p-4">
-            <p className="text-sm text-danger">We could not load your remaining work. Try again.</p>
+            <p className="text-sm text-danger-strong">
+              We could not load your remaining work. Try again.
+            </p>
             <Button
               variant="outline"
               size="sm"

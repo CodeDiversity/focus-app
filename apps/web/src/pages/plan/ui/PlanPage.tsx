@@ -111,7 +111,7 @@ export function PlanPage() {
         <WeekSkeleton />
       ) : loadError ? (
         <div role="alert" className="card border border-danger/30 bg-danger/10 p-6">
-          <p className="text-sm text-danger">{loadError}</p>
+          <p className="text-sm text-danger-strong">{loadError}</p>
           <Button
             variant="outline"
             className="mt-4 max-sm:min-h-[44px]"

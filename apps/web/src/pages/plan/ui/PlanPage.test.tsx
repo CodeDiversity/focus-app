@@ -131,6 +131,8 @@ describe('PlanPage (EP16C-AC1)', () => {
     mockedList.mockRejectedValueOnce(new Error('Network Error'));
     renderPage();
     expect(await screen.findByRole('alert')).toHaveTextContent('Network Error');
+    // R-EP16-01: danger text on the 10% danger tint must use the ≥4.5:1 token.
+    expect(screen.getByText('Network Error')).toHaveClass('text-danger-strong');
     const retry = screen.getByRole('button', { name: 'Try again' });
     expect(retry.classList.contains('bg-accent')).toBe(false);
     expect(screen.getByRole('button', { name: 'Plan my week' })).toBeInTheDocument();

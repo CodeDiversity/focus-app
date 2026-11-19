@@ -306,9 +306,9 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     const user = userEvent.setup();
     renderPreview();
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
-    expect(
-      screen.getByText(/we couldn't build a plan proposal\. try again\./i)
-    ).toBeInTheDocument();
+    const errorLine = screen.getByText(/we couldn't build a plan proposal\. try again\./i);
+    // R-EP16-01: danger text on the 10% danger tint must use the ≥4.5:1 token.
+    expect(errorLine).toHaveClass('text-danger-strong');
     expect(screen.queryByRole('button', { name: /back to/i })).toBeNull();
 
     await user.click(screen.getByRole('button', { name: /try again/i }));

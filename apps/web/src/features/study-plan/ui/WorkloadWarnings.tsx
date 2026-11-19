@@ -47,7 +47,7 @@ export function WorkloadWarnings({
 
         {errorMessage ? (
           <div role="alert" className="border border-danger/30 bg-danger/10 p-4">
-            <p className="text-sm text-danger">{errorMessage}</p>
+            <p className="text-sm text-danger-strong">{errorMessage}</p>
           </div>
         ) : wList.length === 0 && dList.length === 0 ? (
           <EmptyState

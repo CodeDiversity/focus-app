@@ -91,7 +91,7 @@ TR-E16-01/02/05/06 — unit, per child records. TR-E16-03 — EP16F. **TR-E16-04
 
 1. **TR-E16-04 manual passes** — resolved by user sign-off: the user accepted every owed manual pass as passed on 2026-11-18 ("mark all manual passes as passed/accepted"); none was machine-verified. Recorded in the EP16D/EP16E/EP16F/EP16H/EP16I records.
 2. **BL-16-08** — the email-verification banner pushes Today's hero below the fold on phones for unverified students (F-EP16F-01). Outside EP16's children.
-3. **Pre-existing `text-danger` on `bg-danger/10`** error blocks (`TodayPlanCard`, `FocusPage`, `PlanPage`) are not reached by any axe stop; the 409 state's twin was fixed (F-EP16F-04). A sweep belongs to a follow-up.
+3. ~~Pre-existing `text-danger` on `bg-danger/10` error blocks~~ **Resolved after review round 1 (R-EP16-01 + R-EP16-02 folded, 2026-11-18):** every tinted error text — EP16C's `PlanProposal`/`PlanPage` (which this index had mislabelled pre-existing) and the five sibling sites — now uses `danger-strong`, with class assertions in the PlanProposal and PlanPage error tests.
 4. **Harness:** `pnpm start:e2e`'s Nest grandchild outlives Playwright's exit, so back-to-back self-contained runs collide on :4100 unless a stale sweep runs between them (F-EP16F-05; BL-15-08 family).
 5. **BL-16-07** — Today flashes before `/onboarding` for new students (double post-login redirect); EP16D fixed only the menu symptom.
 6. Optional children ruled 2026-11-18: EP16H and EP16I accepted and implemented (rows 8–9); EP16J → BL-16-05, EP16K → BL-16-09 with their specs kept on file.

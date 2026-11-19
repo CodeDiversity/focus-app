@@ -84,7 +84,7 @@ export function TodayPlanCard({ plan, status, error, isFetching, onRetry }: Toda
         </div>
       ) : status === 'error' ? (
         <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 p-4">
-          <p className="text-sm text-danger">{loadMessage}</p>
+          <p className="text-sm text-danger-strong">{loadMessage}</p>
           <Button
             type="button"
             variant="outline"
@@ -179,7 +179,7 @@ export function TodayPlanCard({ plan, status, error, isFetching, onRetry }: Toda
               role="alert"
               className="mt-3 rounded-lg border border-danger/30 bg-danger/10 p-4 sm:flex sm:items-center sm:justify-between sm:gap-4"
             >
-              <p className="text-sm text-danger">{start.error}</p>
+              <p className="text-sm text-danger-strong">{start.error}</p>
               {start.conflict ? (
                 <Button
                   type="button"

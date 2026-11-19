@@ -158,7 +158,9 @@ export function PlanProposal() {
 
       {phase === 'error' ? (
         <Card role="alert" className="border border-danger/30 bg-danger/10 p-6">
-          <p className="text-sm text-danger">We couldn&apos;t build a plan proposal. Try again.</p>
+          <p className="text-sm text-danger-strong">
+            We couldn&apos;t build a plan proposal. Try again.
+          </p>
           <Button className="mt-4 max-sm:min-h-[44px]" onClick={() => void load()}>
             Try again
           </Button>

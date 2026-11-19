@@ -67,7 +67,7 @@ export function FocusPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
         <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 p-6">
-          <p className="text-sm text-danger">{loadError}</p>
+          <p className="text-sm text-danger-strong">{loadError}</p>
           <Button className="mt-4 max-sm:min-h-[44px]" onClick={() => void reload()}>
             Try again
           </Button>
