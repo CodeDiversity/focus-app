@@ -21,6 +21,12 @@ import { useCurrentSession } from '../model/useCurrentSession';
  * student back: "Paused a while · mm:ss" with a **Resume** link and one new
  * polite sentence. No colour change, no nagging cadence — the check is a
  * coarse 60 s render tick, never a network read (D16-11).
+ *
+ * EP16I (D-I2) — when the session has a target, the visible status carries it
+ * ("12:34 of 25 min"; "· target reached" once met — positive, never "over",
+ * mirroring EP13I's reached rule). The suffix is `sm`-gated so the 320 px
+ * strip keeps EP16D's one-line layout, and it never enters the live sentence
+ * (a target in a live region would re-announce on every state change).
  */
 export const PAUSE_NUDGE_SECONDS = 15 * 60;
 
@@ -62,6 +68,8 @@ export function SessionIndicator() {
     visible && anchor ? elapsedSecondsAt(anchor, running ? now : anchor.responseInstant) : 0;
   const pausedLong =
     visible && !running && !!session && pausedForSeconds(session, now) >= PAUSE_NUDGE_SECONDS;
+  const target = session?.plannedMinutes ?? null;
+  const targetReached = target !== null && Math.floor(elapsed / 60) >= target;
   const liveText = visible
     ? running
       ? 'Your focus session is running.'
@@ -83,6 +91,11 @@ export function SessionIndicator() {
               <span>
                 {running ? 'Running' : pausedLong ? 'Paused a while' : 'Paused'} ·{' '}
                 <span className="tabular-nums">{formatElapsed(elapsed)}</span>
+                {target !== null ? (
+                  <span className="hidden sm:inline">
+                    {targetReached ? ' · target reached' : ` of ${target} min`}
+                  </span>
+                ) : null}
               </span>
             </div>
             <Link

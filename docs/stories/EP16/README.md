@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** EP16I — implement (accepted 2026-11-18; after EP16H, same file); the **EP16 combined review** follows (index at `./artifacts/EP16/implementation.md`).
+**Next substory:** None — every accepted child (EP16A–EP16I minus the deferred J/K) is implemented; the **EP16 combined review** is the next action (index at `./artifacts/EP16/implementation.md`).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -36,7 +36,7 @@
 | [EP16E](./EP16E-mobile-bottom-tab-bar.md) | Implemented — awaiting parent review | D-E4…D-E7 ratified (user, 2026-11-18 — "ratify remaining"). | None until the EP16 combined review | [implementation.md](./artifacts/EP16E/implementation.md) — green 2026-11-18 (web 1428/0, e2e 61/0 + 1 planned skip incl. narrow journeys); F-EP16E-01 (deviation) /02 |
 | [EP16F](./EP16F-cross-layer-e2e-and-parent-index.md) | Implemented — awaiting parent review | EP16A–EP16E, EP16G implemented. | None until the EP16 combined review | [implementation.md](./artifacts/EP16F/implementation.md), [parent index](./artifacts/EP16/implementation.md) — green 2026-11-18 (web 1429/0; e2e 73/0/0 ×3; API gate 291/0); F-EP16F-01…05 (02–04 fixed) |
 | [EP16H](./EP16H-paused-session-nudge.md) | Implemented — awaiting parent review | Accepted (▲ D-H1 (a), user 2026-11-18). ADHD value 7/10. | None until the EP16 combined review | [implementation.md](./artifacts/EP16H/implementation.md) — green 2026-11-18 (web 1435/0) |
-| [EP16I](./EP16I-target-in-session-strip.md) | Ready | Accepted (▲ D-I1 (a), user 2026-11-18); D-I2 ratified; after EP16H (same file). ADHD value 6/10. | Implement after EP16H | — |
+| [EP16I](./EP16I-target-in-session-strip.md) | Implemented — awaiting parent review | Accepted (▲ D-I1 (a), user 2026-11-18). ADHD value 6/10. | None until the EP16 combined review | [implementation.md](./artifacts/EP16I/implementation.md) — green 2026-11-18 (web 1440/0; e2e 73/0) |
 | [EP16J](./EP16J-start-next-session-from-focus.md) | Queued | **Deferred (user, 2026-11-18)** — ▲ D-J1 (b): folded into BL-16-05; not in the EP16 unit. | None — see BL-16-05 | — |
 | [EP16K](./EP16K-phone-first-proposal.md) | Queued | **Deferred (user, 2026-11-18)** — ▲ D-K1 (b) overrode the recommendation → BL-16-09; not in the EP16 unit. | None — see BL-16-09 | — |
 

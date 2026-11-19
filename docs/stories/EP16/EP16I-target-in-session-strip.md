@@ -4,7 +4,7 @@
 **Parent epic:** [EP16: Today-First Simplification](../../epics/EP16-today-first-simplification.md)
 **Milestone:** M9 (D16-1) — **optional child** (D16-20): implemented only if the user accepts ▲ D-I1; reviewed with the EP16 unit if accepted.
 **Layer:** Frontend
-**Status:** Ready — accepted (▲ D-I1 (a), user 2026-11-18); D-I2 (a) ratified. Implementation after EP16H (same file).
+**Status:** Implemented — awaiting parent review (2026-11-18). Record: [implementation.md](./artifacts/EP16I/implementation.md).
 **Dependencies:** EP16D implemented. Epic decisions D16-11, D16-12.
 **ADHD value: 6 / 10.** Time blindness is central to ADHD: "Running · 12:34" tells a student how long they have worked but not how far they are from the commitment they made. Showing the target where the strip already shows the elapsed time ("12:34 of 25 min") makes the size of the promise visible on every page, not only on `/focus`. It is a genuine aid rather than a transformative one, because the Focus page already shows the target.
 
@@ -59,7 +59,7 @@ AC-E16-10, AC-E16-12, D16-12. TR-E16-01, TR-E16-05. DoD-1, 6, 7, 8.
 
 - **Outcome:** the strip shows how far the student is from the commitment they made.
 - **Size:** well under a quarter window. No split.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** as sized, 2026-11-18. One source file + its test (+5 cases); web 1440/0; full e2e 73/0 (one flaky first run disclosed in the record).
 - **Files:** `apps/web/src/widgets/session-indicator/ui/SessionIndicator.tsx` (+ test).
 - **Start context:** this story; `SessionIndicator.tsx`; `FocusTimer.tsx:70-76` (the reached rule).
 - **Verification:** `npx vitest run src/widgets/session-indicator`; tsc + eslint clean; manual: 320 px one-line check.

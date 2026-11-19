@@ -196,6 +196,57 @@ describe('SessionIndicator (EP16D-AC2, AC-E16-10)', () => {
     expect(screen.getByRole('link', { name: 'Back to session' })).toHaveClass('min-h-[44px]');
   });
 
+  describe('target in the strip (EP16I, D-I2)', () => {
+    it('appends "of 25 min" when a target exists, sm-gated', () => {
+      renderIndicator(contextValue(session)); // plannedMinutes: 25, elapsed 00:42
+      const suffix = screen.getByText('of 25 min');
+      expect(suffix).toHaveClass('hidden', 'sm:inline');
+      expect(suffix.closest('[aria-hidden="true"]')).not.toBeNull();
+    });
+
+    it('switches to "target reached" at the target and keeps ticking', () => {
+      renderIndicator(contextValue({ ...session, elapsedSeconds: 25 * 60 }));
+      expect(screen.getByText('· target reached')).toBeInTheDocument();
+      expect(screen.queryByText(/of 25 min/)).not.toBeInTheDocument();
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+      expect(screen.getByText('25:01')).toBeInTheDocument();
+      expect(screen.getByText('· target reached')).toBeInTheDocument();
+      expect(document.body.textContent).not.toMatch(/over|late|overtime/i);
+    });
+
+    it('keeps EP16D copy without a target', () => {
+      const { container } = renderIndicator(contextValue({ ...session, plannedMinutes: null }));
+      expect(screen.getByText(/^Running ·/)).toBeInTheDocument();
+      expect(container.textContent).not.toMatch(/of \d+ min|target/);
+    });
+
+    it('shows the target while paused too, and the live sentence never includes it', () => {
+      renderIndicator(
+        contextValue({
+          ...session,
+          status: 'PAUSED',
+          elapsedSeconds: 754,
+          updatedAt: new Date().toISOString(),
+        })
+      );
+      expect(screen.getByText('of 25 min')).toBeInTheDocument();
+      expect(liveSpan()?.textContent).toBe('Your focus session is paused.');
+      expect(liveSpan()?.textContent).not.toMatch(/\d/);
+    });
+
+    it('passes the copy audit with and past the target', () => {
+      const { container, unmount } = renderIndicator(contextValue(session));
+      expectNoForbiddenWords(container);
+      unmount();
+      const { container: past } = renderIndicator(
+        contextValue({ ...session, elapsedSeconds: 30 * 60 })
+      );
+      expectNoForbiddenWords(past);
+    });
+  });
+
   describe('paused-session nudge (EP16H, D-H2/D-H3)', () => {
     const pausedSince = (minutesAgo: number) =>
       contextValue({
