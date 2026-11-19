@@ -13,6 +13,7 @@ import {
 import {
   PREFERENCES_BAG_MAX_BYTES,
   STUDY_PREFERENCE_KEYS,
+  readPlanningStudyPreferences,
   readStudyPreferences,
   validateStudyPreferences,
 } from '../../domain/study-planning/preferences';
@@ -993,6 +994,12 @@ export class StudyPlansService {
     }
     const timeZone = resolveTimeZone(user.timeZone);
     const preferences = readStudyPreferences(user.preferences);
+    // The **planning** read (user ruling 2026-11-19, F-EP17C-02): identical
+    // to `preferences` except that an unchosen `weeklyGoalDays` leaves the
+    // planner unconstrained (7) instead of silently narrowing the week to
+    // the momentum default of 3. `preferences` above stays the projected /
+    // momentum value, so nothing a student sees or stores changes.
+    const planningPreferences = readPlanningStudyPreferences(user.preferences);
 
     const today = toCivilDate(new Date(), timeZone);
 
@@ -1109,6 +1116,7 @@ export class StudyPlansService {
     return {
       timeZone,
       preferences,
+      planningPreferences,
       days,
       dayBounds,
       blocked,
@@ -1135,7 +1143,7 @@ export class StudyPlansService {
       classes: data.classes,
       busy: data.busy,
       preferred: data.preferred,
-      preferences: data.preferences,
+      preferences: data.planningPreferences,
     });
 
     const sessionsByDay = new Map<string, PlanPreviewSession[]>();
@@ -1238,7 +1246,7 @@ export class StudyPlansService {
       busy: data.busy,
       preferred: data.preferred,
       missedSessions,
-      preferences: data.preferences,
+      preferences: data.planningPreferences,
     });
 
     const sessionsByDay = new Map<string, PlanPreviewSession[]>();

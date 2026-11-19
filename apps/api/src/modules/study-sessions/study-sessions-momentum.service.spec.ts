@@ -140,6 +140,23 @@ describe('StudySessionsService EP13K momentum (unit, mocked PrismaService)', () 
     expect(out.week.goalDays).toBe(3);
   });
 
+  it('the momentum yardstick is unaffected by the planning read: an unset `weeklyGoalDays` is still 3 (F-EP17C-02)', async () => {
+    // The planner treats an unchosen `weeklyGoalDays` as unconstrained (7,
+    // `readPlanningStudyPreferences`), but EP13K's motivational goal must
+    // keep its ADHD-friendly default of 3 — this read goes through
+    // `readStudyPreferences` and must not move.
+    for (const preferences of [
+      null,
+      {},
+      { studyDefaults: {} },
+      { studyDefaults: { dailyGoalMinutes: 45 } },
+    ]) {
+      userFindUnique.mockResolvedValue({ timeZone: 'UTC', preferences });
+      const out = await service.momentum(userId);
+      expect(out.week.goalDays).toBe(3);
+    }
+  });
+
   it('missing user → uniform 404 `Resource not found`', async () => {
     userFindUnique.mockResolvedValue(null);
     const error = await service.momentum(userId).then(

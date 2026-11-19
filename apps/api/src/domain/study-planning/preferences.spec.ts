@@ -3,6 +3,9 @@ import {
   STUDY_PREFERENCE_BOUNDS,
   STUDY_PREFERENCE_DEFAULTS,
   STUDY_PREFERENCE_KEYS,
+  UNSET_PLANNING_WEEKLY_GOAL_DAYS,
+  hasStoredWeeklyGoalDays,
+  readPlanningStudyPreferences,
   readStudyPreferences,
   validateStudyPreferences,
 } from './preferences';
@@ -706,6 +709,91 @@ describe('study preferences (domain, EP06A)', () => {
       };
       const serialized = JSON.stringify({ studyDefaults: maximal });
       expect(Buffer.byteLength(serialized, 'utf8')).toBeLessThan(PREFERENCES_BAG_MAX_BYTES);
+    });
+  });
+  // =========================================================================
+  // The planning read of `weeklyGoalDays` (user ruling, 2026-11-19 —
+  // F-EP17C-02). Since ▲ D17-2 (a) the key means two things at once; an
+  // *unchosen* value must leave the planner unconstrained while the EP13K
+  // momentum yardstick keeps its default of 3.
+  // =========================================================================
+
+  describe('readPlanningStudyPreferences — unset `weeklyGoalDays` means unconstrained', () => {
+    it('plans across the whole week when the key was never stored', () => {
+      for (const bag of [
+        undefined,
+        null,
+        {},
+        { studyDefaults: {} },
+        { studyDefaults: { breakMinutes: 10, densityPercent: 60 } },
+      ]) {
+        expect(readPlanningStudyPreferences(bag).weeklyGoalDays).toBe(
+          UNSET_PLANNING_WEEKLY_GOAL_DAYS
+        );
+        expect(UNSET_PLANNING_WEEKLY_GOAL_DAYS).toBe(7);
+        expect(hasStoredWeeklyGoalDays(bag)).toBe(false);
+      }
+    });
+
+    it('honours an explicitly stored value — 3 constrains the planner to 3', () => {
+      expect(readPlanningStudyPreferences({ studyDefaults: { weeklyGoalDays: 3 } })).toEqual({
+        ...DEFAULTS,
+        weeklyGoalDays: 3,
+      });
+      for (const stored of [1, 2, 3, 4, 5, 6, 7]) {
+        expect(
+          readPlanningStudyPreferences({ studyDefaults: { weeklyGoalDays: stored } }).weeklyGoalDays
+        ).toBe(stored);
+        expect(hasStoredWeeklyGoalDays({ studyDefaults: { weeklyGoalDays: stored } })).toBe(true);
+      }
+    });
+
+    it('treats an invalid or out-of-bounds stored value as unchosen — 7, never the default 3', () => {
+      for (const value of [0, 8, -1, 3.5, '3', true, false, null, {}, []]) {
+        const bag = { studyDefaults: { weeklyGoalDays: value } };
+        expect(hasStoredWeeklyGoalDays(bag)).toBe(false);
+        expect(readPlanningStudyPreferences(bag).weeklyGoalDays).toBe(
+          UNSET_PLANNING_WEEKLY_GOAL_DAYS
+        );
+        // The momentum read still falls back to the yardstick default.
+        expect(readStudyPreferences(bag).weeklyGoalDays).toBe(3);
+      }
+    });
+
+    it('changes nothing but `weeklyGoalDays`, and only when it was unchosen', () => {
+      const bag = {
+        studyDefaults: { sessionLengthMinutes: 45, densityPercent: 55, spreadPercent: 10 },
+      };
+      const planning = readPlanningStudyPreferences(bag);
+      const momentum = readStudyPreferences(bag);
+      expect(planning).toEqual({ ...momentum, weeklyGoalDays: 7 });
+      expectValidCombination(planning);
+    });
+
+    it('never throws and always returns a valid combination, like the reader it wraps', () => {
+      for (const bag of [
+        undefined,
+        null,
+        0,
+        'x',
+        [],
+        { studyDefaults: 'x' },
+        { studyDefaults: [] },
+      ]) {
+        let prefs: StudyPreferences | undefined;
+        expect(() => {
+          prefs = readPlanningStudyPreferences(bag);
+        }).not.toThrow();
+        expect(prefs).toEqual({ ...DEFAULTS, weeklyGoalDays: UNSET_PLANNING_WEEKLY_GOAL_DAYS });
+        expectValidCombination(prefs as StudyPreferences);
+      }
+    });
+
+    it('the EP13K momentum yardstick is provably unchanged: unset still reads 3', () => {
+      expect(STUDY_PREFERENCE_DEFAULTS.weeklyGoalDays).toBe(3);
+      expect(readStudyPreferences(undefined).weeklyGoalDays).toBe(3);
+      expect(readStudyPreferences({ studyDefaults: {} }).weeklyGoalDays).toBe(3);
+      expect(readStudyPreferences({ studyDefaults: { breakMinutes: 10 } }).weeklyGoalDays).toBe(3);
     });
   });
 });

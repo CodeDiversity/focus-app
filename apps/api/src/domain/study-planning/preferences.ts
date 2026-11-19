@@ -267,3 +267,56 @@ export function readStudyPreferences(bag: unknown): StudyPreferences {
 
   return values;
 }
+
+/**
+ * The planning value of `weeklyGoalDays` for a student who has **never
+ * chosen one**: the whole window, i.e. unconstrained (▲ D17-2's proviso,
+ * user ruling 2026-11-19, finding F-EP17C-02).
+ */
+export const UNSET_PLANNING_WEEKLY_GOAL_DAYS = 7;
+
+/**
+ * Was `weeklyGoalDays` **explicitly stored** (and storable) in this bag?
+ *
+ * Pure provenance read: the same acceptance test the defensive reader
+ * applies in its step 1, so "present" means exactly "a value
+ * `readStudyPreferences` would keep". A missing key, a wrong type and an
+ * out-of-bounds value all count as *not chosen*.
+ */
+export function hasStoredWeeklyGoalDays(bag: unknown): boolean {
+  const preferences = isPlainObject(bag) ? bag : undefined;
+  const stored =
+    preferences && isPlainObject(preferences.studyDefaults) ? preferences.studyDefaults : undefined;
+  return isValueInBounds('weeklyGoalDays', stored?.weeklyGoalDays);
+}
+
+/**
+ * The **planning** read of the preferences bag (user ruling, 2026-11-19 —
+ * finding F-EP17C-02).
+ *
+ * Identical to `readStudyPreferences` in every key but one: when the student
+ * has never explicitly chosen a `weeklyGoalDays` (the key is absent, of the
+ * wrong type, or out of bounds), the *planner* treats the week as
+ * **unconstrained** — `UNSET_PLANNING_WEEKLY_GOAL_DAYS` (7), every day of
+ * the window usable — instead of silently squeezing the plan into
+ * `STUDY_PREFERENCE_DEFAULTS.weeklyGoalDays` days.
+ *
+ * Why a second reader instead of a different default: since ▲ D17-2's ruling
+ * (a) the key carries **two** meanings. As the EP13K momentum yardstick its
+ * default must stay `3` (an ADHD-friendly goal — `momentum.ts` reads
+ * `readStudyPreferences` and is unaffected by this function). As EP17C's
+ * planning instruction an unchosen value must not constrain anything, and no
+ * UI explains the constraint until EP17G ships. The provenance — stored vs.
+ * defaulted — is the only thing that separates the two, so it is read here,
+ * once, in the pure domain module that owns the contract.
+ *
+ * Used by the plan-preview path only (`gatherPlanData`); every other reader
+ * (the `GET`/`PUT` projection, the momentum summary) keeps
+ * `readStudyPreferences`, so nothing a student sees or stores changes.
+ */
+export function readPlanningStudyPreferences(bag: unknown): StudyPreferences {
+  const values = readStudyPreferences(bag);
+  return hasStoredWeeklyGoalDays(bag)
+    ? values
+    : { ...values, weeklyGoalDays: UNSET_PLANNING_WEEKLY_GOAL_DAYS };
+}
