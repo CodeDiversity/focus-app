@@ -81,6 +81,7 @@ describe('SessionIndicator (EP16D-AC2, AC-E16-10)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-18T12:00:00.000Z'));
     mockedUseAuth.mockReturnValue({
       user: { id: 'user-1', name: 'Ada', email: 'ada@example.com', emailVerifiedAt: null },
       isAuthenticated: true,
@@ -111,7 +112,14 @@ describe('SessionIndicator (EP16D-AC2, AC-E16-10)', () => {
   });
 
   it('shows "Paused · 12:34" and does not tick for a PAUSED session', () => {
-    renderIndicator(contextValue({ ...session, status: 'PAUSED', elapsedSeconds: 754 }));
+    renderIndicator(
+      contextValue({
+        ...session,
+        status: 'PAUSED',
+        elapsedSeconds: 754,
+        updatedAt: new Date().toISOString(),
+      })
+    );
     expect(screen.getByText(/Paused ·/)).toBeInTheDocument();
     expect(screen.getByText('12:34')).toBeInTheDocument();
     act(() => {
@@ -188,10 +196,82 @@ describe('SessionIndicator (EP16D-AC2, AC-E16-10)', () => {
     expect(screen.getByRole('link', { name: 'Back to session' })).toHaveClass('min-h-[44px]');
   });
 
+  describe('paused-session nudge (EP16H, D-H2/D-H3)', () => {
+    const pausedSince = (minutesAgo: number) =>
+      contextValue({
+        ...session,
+        status: 'PAUSED',
+        elapsedSeconds: 754,
+        updatedAt: new Date(Date.now() - minutesAgo * 60 * 1000).toISOString(),
+      });
+
+    it('shows the EP16D paused copy under the threshold', () => {
+      renderIndicator(pausedSince(14));
+      expect(screen.getByText(/^Paused ·/)).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Back to session' })).toHaveAttribute(
+        'href',
+        '/focus'
+      );
+      expect(liveSpan()).toHaveTextContent('Your focus session is paused.');
+    });
+
+    it('switches to "Paused a while" and Resume at the threshold', () => {
+      renderIndicator(pausedSince(14));
+      act(() => {
+        vi.advanceTimersByTime(60_000);
+      });
+      expect(screen.getByText(/^Paused a while ·/)).toBeInTheDocument();
+      // The time itself stays the static paused elapsed, not the wait.
+      expect(screen.getByText('12:34')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Resume' })).toHaveAttribute('href', '/focus');
+      expect(liveSpan()).toHaveTextContent(
+        'Your session has been paused for a while — ready when you are.'
+      );
+    });
+
+    it('announces the long-pause sentence once and stays silent afterwards', () => {
+      renderIndicator(pausedSince(15));
+      const span = liveSpan();
+      const sentence = 'Your session has been paused for a while — ready when you are.';
+      expect(span?.textContent).toBe(sentence);
+      act(() => {
+        vi.advanceTimersByTime(5 * 60_000);
+      });
+      expect(liveSpan()).toBe(span);
+      expect(span?.textContent).toBe(sentence);
+    });
+
+    it('returns to Running when the session resumes', () => {
+      const { rerender } = renderIndicator(pausedSince(20));
+      expect(screen.getByText(/^Paused a while ·/)).toBeInTheDocument();
+      rerender(
+        <MemoryRouter initialEntries={['/today']}>
+          <NavigationProbe />
+          <CurrentSessionContext.Provider
+            value={contextValue({ ...session, updatedAt: new Date().toISOString() })}
+          >
+            <SessionIndicator />
+          </CurrentSessionContext.Provider>
+        </MemoryRouter>
+      );
+      expect(screen.getByText(/^Running ·/)).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Back to session' })).toBeInTheDocument();
+      expect(liveSpan()).toHaveTextContent('Your focus session is running.');
+    });
+
+    it('passes the copy audit in the long-pause state', () => {
+      const { container } = renderIndicator(pausedSince(30));
+      expectNoForbiddenWords(container);
+      expect(container.textContent).not.toMatch(/stopped|abandoned|idle/i);
+    });
+  });
+
   it('passes the copy audit', () => {
     const { container } = renderIndicator(contextValue(session));
     expectNoForbiddenWords(container);
-    const { container: paused } = renderIndicator(contextValue({ ...session, status: 'PAUSED' }));
+    const { container: paused } = renderIndicator(
+      contextValue({ ...session, status: 'PAUSED', updatedAt: new Date().toISOString() })
+    );
     expectNoForbiddenWords(paused);
   });
 });

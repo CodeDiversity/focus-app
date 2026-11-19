@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { anchorFor, elapsedSecondsAt, formatElapsed } from './elapsed';
+import { anchorFor, elapsedSecondsAt, formatElapsed, pausedForSeconds } from './elapsed';
 import type { StudySession } from './types';
 
 const session: StudySession = {
@@ -41,5 +41,16 @@ describe('elapsed (EP16D-AC2)', () => {
     expect(formatElapsed(3600)).toBe('1:00:00');
     expect(formatElapsed(3723)).toBe('1:02:03');
     expect(formatElapsed(-5)).toBe('00:00');
+  });
+});
+
+describe('pausedForSeconds (EP16H)', () => {
+  it('counts from updatedAt and never goes negative', () => {
+    const paused = { ...session, status: 'PAUSED' as const, updatedAt: '2026-11-18T12:00:00.000Z' };
+    const t0 = Date.parse('2026-11-18T12:00:00.000Z');
+    expect(pausedForSeconds(paused, t0)).toBe(0);
+    expect(pausedForSeconds(paused, t0 + 14 * 60 * 1000)).toBe(14 * 60);
+    expect(pausedForSeconds(paused, t0 + 15 * 60 * 1000)).toBe(15 * 60);
+    expect(pausedForSeconds(paused, t0 - 5000)).toBe(0);
   });
 });

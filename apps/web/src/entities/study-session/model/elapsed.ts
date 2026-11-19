@@ -31,3 +31,12 @@ export function formatElapsed(seconds: number): string {
   if (h > 0) return `${h}:${mm}:${ss}`;
   return `${mm}:${ss}`;
 }
+
+/**
+ * EP16H — seconds since the session's last transition. The server sets
+ * `updatedAt` on every transition, so for a PAUSED row it is the pause
+ * instant. Never negative (a skewed clock can't nag early).
+ */
+export function pausedForSeconds(session: StudySession, nowMs: number): number {
+  return Math.max(0, Math.floor((nowMs - Date.parse(session.updatedAt)) / 1000));
+}

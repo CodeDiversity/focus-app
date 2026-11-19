@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Pause, Timer } from 'lucide-react';
 import { useAuth } from '@/features/auth/model/AuthContext';
-import { elapsedSecondsAt, formatElapsed } from '@/entities/study-session/model/elapsed';
+import {
+  elapsedSecondsAt,
+  formatElapsed,
+  pausedForSeconds,
+} from '@/entities/study-session/model/elapsed';
 import { useCurrentSession } from '../model/useCurrentSession';
 
 /**
@@ -12,7 +16,14 @@ import { useCurrentSession } from '../model/useCurrentSession';
  * shown on `/focus/history`. The live span persists whenever signed in so a
  * screen reader hears the appearance once — its text is the state sentence,
  * never the ticking time (the visible status group is aria-hidden).
+ *
+ * EP16H (D-H2, D-H3) — a session paused for 15 minutes or more invites the
+ * student back: "Paused a while · mm:ss" with a **Resume** link and one new
+ * polite sentence. No colour change, no nagging cadence — the check is a
+ * coarse 60 s render tick, never a network read (D16-11).
  */
+export const PAUSE_NUDGE_SECONDS = 15 * 60;
+
 export function SessionIndicator() {
   const { isAuthenticated, user } = useAuth();
   const { session, anchor, ownerId } = useCurrentSession();
@@ -28,7 +39,7 @@ export function SessionIndicator() {
     (status === 'ACTIVE' || status === 'PAUSED') &&
     anchor !== null;
 
-  // Display tick only — never a network read (D16-11 applies to the request).
+  // Display ticks only — never a network read (D16-11 applies to the request).
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!visible || !running) return;
@@ -36,15 +47,27 @@ export function SessionIndicator() {
     const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, [visible, running, anchor]);
+  // EP16H: while paused the only thing that can change is "how long" — one
+  // coarse check per minute is enough to cross the nudge threshold.
+  useEffect(() => {
+    if (!visible || running) return;
+    setNow(Date.now());
+    const id = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(id);
+  }, [visible, running, session?.updatedAt]);
 
   if (!isAuthenticated) return null;
 
   const elapsed =
     visible && anchor ? elapsedSecondsAt(anchor, running ? now : anchor.responseInstant) : 0;
+  const pausedLong =
+    visible && !running && !!session && pausedForSeconds(session, now) >= PAUSE_NUDGE_SECONDS;
   const liveText = visible
     ? running
       ? 'Your focus session is running.'
-      : 'Your focus session is paused.'
+      : pausedLong
+        ? 'Your session has been paused for a while — ready when you are.'
+        : 'Your focus session is paused.'
     : '';
 
   return (
@@ -58,7 +81,7 @@ export function SessionIndicator() {
             <div aria-hidden="true" className="flex items-center gap-2 text-body-sm text-text">
               {running ? <Timer className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
               <span>
-                {running ? 'Running' : 'Paused'} ·{' '}
+                {running ? 'Running' : pausedLong ? 'Paused a while' : 'Paused'} ·{' '}
                 <span className="tabular-nums">{formatElapsed(elapsed)}</span>
               </span>
             </div>
@@ -66,7 +89,7 @@ export function SessionIndicator() {
               to="/focus"
               className="inline-flex min-h-[44px] items-center px-2 text-body-sm font-medium text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 rounded-md"
             >
-              Back to session
+              {pausedLong ? 'Resume' : 'Back to session'}
             </Link>
           </div>
         </div>
