@@ -18,8 +18,8 @@ export interface WhatThisKeepsCardProps {
  * "What this plan keeps" (EP16C, formerly EP08E's "What stays as it is"): the preservation indicators
  * for replanning — neutral, factual count lines (D08-8) plus a read-only
  * card per locked session shown in the preview. Locked sessions are never
- * rendered as editable rows in `PlanSessionEditor`; the card carries the
- * explicit lock toggle (decision 7).
+ * rendered as editable cards in the editable week (EP17E); the card carries
+ * the explicit lock toggle (decision 7).
  */
 export function WhatThisKeepsCard({
   lockedPreserved,

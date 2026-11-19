@@ -18,8 +18,10 @@ import {
  * Replan my week** → `/plan/proposal` → **Use this plan** / **Not now**, with
  * locks, conflicts, warnings, the retired-route redirect matrix (V-16-2) and
  * the durable narrow-viewport + keyboard evidence (TR-E08-08 → TR-E16-04).
- * The EP08F test ids (`catch-up-preservation`, `plan-week`,
- * `plan-session-editor`) are preserved.
+ * The EP08F test ids are preserved where their surface survives:
+ * `catch-up-preservation`, and `plan-week` on /plan. On /plan/proposal the
+ * week is EP17E's single `editable-week` (the old `plan-session-editor` list
+ * is gone); edits happen in the in-place panel a session card opens.
  *
  * Date-fixture discipline (EP06H lesson): the browser and this test process
  * never compute "today" from the wall clock. The window is read from the
@@ -334,12 +336,13 @@ test('journey: missed sessions → preview → edit → confirm → the saved pl
   expect(preview.to).toBe(user.to);
   expect(preview.missedSessions).toHaveLength(3);
 
-  await expect(page.getByTestId('plan-week')).toBeVisible();
+  await expect(page.getByTestId('editable-week')).toBeVisible();
   const proposed = flattenProposed(preview);
   expect(proposed.length).toBeGreaterThanOrEqual(2);
-  await expect(page.getByRole('button', { name: /move later 15 minutes/i })).toHaveCount(
-    proposed.length
-  );
+  // EP17E: one card per proposed session; the edit controls live in the one
+  // in-place panel an open card shows.
+  const sessionCards = page.getByTestId('editable-week').locator('article');
+  await expect(sessionCards).toHaveCount(proposed.length);
 
   // AC 1c — edit: move the first proposal 15 minutes later, delete the last.
   const edited = [...proposed];
@@ -349,14 +352,10 @@ test('journey: missed sessions → preview → edit → confirm → the saved pl
     endTime: toHHmm(minutesOf(edited[0].endTime) + 15),
   };
   edited.pop();
-  await page
-    .getByRole('button', { name: /move later 15 minutes/i })
-    .first()
-    .click();
-  await page
-    .getByRole('button', { name: /delete session/i })
-    .last()
-    .click();
+  await sessionCards.first().locator('button').first().click();
+  await page.getByRole('button', { name: /move later 15 minutes/i }).click();
+  await sessionCards.last().locator('button').first().click();
+  await page.getByRole('button', { name: /delete session/i }).click();
 
   // AC 1d — confirm.
   await page.getByRole('button', { name: 'Use this plan' }).click();
@@ -744,18 +743,20 @@ test('a 409 on Use this plan marks the clashing rows and keeps the edits (AC-E16
   const preview = (await previewRes.json()) as CatchUpPreviewResponse;
   const proposed = flattenProposed(preview);
   expect(proposed.length).toBeGreaterThanOrEqual(1);
-  await expect(page.getByTestId('plan-session-editor')).toBeVisible();
+  await expect(page.getByTestId('editable-week')).toBeVisible();
 
+  // EP17E: open the first session card to reach its in-place panel.
+  await page.getByTestId('editable-week').locator('article button').first().click();
+  const panel = page.getByTestId('session-editor-panel');
   // A flex ("Anytime") session has no clock to collide with (EP13G), so pin
-  // the first row to its suggested time first — the student's own choice.
-  const row = page.getByTestId('plan-session-editor').locator('article').first();
-  const pin = row.getByRole('button', { name: /^Pin to this time/ });
+  // the first session to its suggested time first — the student's own choice.
+  const pin = panel.getByRole('button', { name: /^Pin to this time/ });
   if ((await pin.count()) > 0) await pin.click();
-  await expect(row.getByRole('button', { name: /^Make flexible/ })).toBeVisible();
+  await expect(panel.getByRole('button', { name: /^Make flexible/ })).toBeVisible();
   const target = {
-    date: await row.getByLabel('Day').inputValue(),
-    startTime: await row.getByLabel('Start time').inputValue(),
-    endTime: await row.getByLabel('End time').inputValue(),
+    date: await panel.getByLabel('Day').inputValue(),
+    startTime: await panel.getByLabel('Start time').inputValue(),
+    endTime: await panel.getByLabel('End time').inputValue(),
   };
 
   // A class meeting lands on that slot AFTER the proposal was built — the
@@ -781,9 +782,7 @@ test('a 409 on Use this plan marks the clashing rows and keeps the edits (AC-E16
   await expect(page.locator('[data-conflicted]')).toHaveCount(1);
   await expect(page).toHaveURL(/\/plan\/proposal$/);
   await expect(page.getByText('Plan saved.')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: /move later 15 minutes/i })).toHaveCount(
-    proposed.length
-  );
+  await expect(page.getByTestId('editable-week').locator('article')).toHaveCount(proposed.length);
   const saved = await getPlanWindow(request, user.accessToken, preview.from, preview.to);
   expect(flattenSaved(saved)).toHaveLength(0);
   await expectNoAxeViolations(page, '/plan/proposal (409 conflict)');

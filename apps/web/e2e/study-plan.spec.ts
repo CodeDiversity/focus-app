@@ -80,29 +80,33 @@ test('journey: generate, edit, save, and survive a reload', async ({ page, reque
   // EP16C: Plan my week opens the proposal surface.
   await page.getByRole('button', { name: /^(Plan|Replan) my week$/ }).click();
   await expect(page).toHaveURL(/\/plan\/proposal$/);
-  await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 15_000 });
+  // EP17E: the proposal renders one editable week.
+  await expect(page.getByTestId('editable-week')).toBeVisible({ timeout: 15_000 });
 
   // Seven days rendered.
-  const daySections = page.locator('[data-testid="plan-week"] > section');
+  const daySections = page.locator('[data-testid="editable-week"] > section');
   await expect(daySections).toHaveCount(7);
 
   // Proposed sessions present.
-  await expect(page.getByTestId('plan-session-editor').getByText(a1.title)).toBeVisible();
-  await expect(page.getByTestId('plan-session-editor').getByText(a2.title)).toBeVisible();
+  await expect(page.getByTestId('editable-week').getByText(a1.title)).toBeVisible();
+  await expect(page.getByTestId('editable-week').getByText(a2.title)).toBeVisible();
 
   // Move a session 15 minutes later — EP14C (D-C1, F-EP13M-06): choose, from
   // the engine's real output, the first proposal whose shifted window stays
   // clear of the Monday 09:00–10:00 class and inside the 20:00 availability
   // edge. Moving `.first()` blindly failed on any Monday, where the engine
   // rightly placed 08:00–09:00 right before the class.
-  const rows = page.getByTestId('plan-session-editor').locator('article');
+  // EP17E: each card opens its in-place panel (one at a time) — open a card
+  // to read its times; the last opened panel is the one edited.
+  const rows = page.getByTestId('editable-week').locator('article');
+  const panelOf = page.getByTestId('session-editor-panel');
   const rowCount = await rows.count();
   let target = -1;
   for (let i = 0; i < rowCount && target < 0; i++) {
-    const row = rows.nth(i);
-    const date = await row.getByLabel('Day').inputValue();
-    const start = minutesOf(await row.getByLabel('Start time').inputValue()) + 15;
-    const end = minutesOf(await row.getByLabel('End time').inputValue()) + 15;
+    await rows.nth(i).locator('button').first().click();
+    const date = await panelOf.getByLabel('Day').inputValue();
+    const start = minutesOf(await panelOf.getByLabel('Start time').inputValue()) + 15;
+    const end = minutesOf(await panelOf.getByLabel('End time').inputValue()) + 15;
     const isMonday = new Date(`${date}T00:00:00.000Z`).getUTCDay() === 1;
     const hitsClass = isMonday && start < 10 * 60 && end > 9 * 60;
     if (!hitsClass && end <= 20 * 60) target = i;
@@ -111,11 +115,13 @@ test('journey: generate, edit, save, and survive a reload', async ({ page, reque
     target,
     'a proposal that can move 15 minutes without hitting the class'
   ).toBeGreaterThanOrEqual(0);
-  await rows.nth(target).getByRole('button', { name: 'Move later 15 minutes' }).click();
+  // The target's panel is the one left open by the search loop.
+  await panelOf.getByRole('button', { name: 'Move later 15 minutes' }).click();
 
-  // Delete a session.
-  const deleteBtn = page.getByRole('button', { name: /delete session/i }).last();
-  await deleteBtn.click();
+  // Delete a session: open the last card (unless it is already the open one).
+  const lastToggle = rows.last().locator('button').first();
+  if ((await lastToggle.getAttribute('aria-expanded')) !== 'true') await lastToggle.click();
+  await page.getByRole('button', { name: /delete session/i }).click();
 
   // Confirm — EP16C: Use this plan lands on Today.
   await page.getByRole('button', { name: 'Use this plan' }).click();
@@ -167,7 +173,7 @@ test('deficit warning reports an assignment that cannot fit', async ({ page, req
 
   await page.goto('/plan');
   await page.getByRole('button', { name: /^(Plan|Replan) my week$/ }).click();
-  await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('editable-week')).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText(/do not fit/i)).toBeVisible({ timeout: 15_000 });
 });
 

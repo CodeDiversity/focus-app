@@ -5,8 +5,6 @@ import { Card } from '@/shared/ui/Card';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { getBrowserTimeZone } from '@/shared/lib/datetime';
 import { CONFLICT_REASON_LABEL } from '@/entities/study-plan/model/types';
-import { PlanWeek } from '@/features/study-plan/ui/PlanWeek';
-import { PlanSessionEditor } from '@/features/study-plan/ui/PlanSessionEditor';
 import { WorkloadWarnings } from '@/features/study-plan/ui/WorkloadWarnings';
 import { CalibrationNote } from '@/features/study-plan/ui/CalibrationNote';
 import { formatMinutes } from '@/features/study-plan/lib/formatMinutes';
@@ -18,15 +16,17 @@ import { recoverySummaryApi } from '@/features/today/api/recoverySummaryApi';
 // eslint-disable-next-line import/no-restricted-paths
 import { useAppDispatch } from '@/app/store/hooks';
 import { useProposal } from '../model/useProposal';
+import { EditableWeek } from './EditableWeek';
 import { WhatThisKeepsCard } from './WhatThisKeepsCard';
 import { MovedForwardList } from './MovedForwardList';
 
 /**
  * EP16C — the one proposal surface at `/plan/proposal` (D16-4, D16-5, D-C1,
  * D-C6): header (`h1` "Your proposed week", window line, **Use this plan**,
- * **Not now**) → rolled-over banner → calibration note → the week →
- * the editor → conflicts → What this plan keeps → Moved forward into this
- * plan → workload warnings. Confirming lands on Today (D-C2); Not now
+ * **Not now**) → rolled-over banner → calibration note → the editable week
+ * (EP17E, ▲ D17-4: rendered once, edited in place) → conflicts → What this
+ * plan keeps → Moved forward into this plan → workload warnings. Confirming
+ * lands on Today (D-C2); Not now
  * returns to `/plan` with no request. Focus lands on the `h1` on entry and
  * again after a reload (Try again / Create new plan), because the control
  * that had focus disappears.
@@ -179,26 +179,12 @@ export function PlanProposal() {
             />
           ) : (
             <>
-              <PlanWeek
-                days={preview.days.map((d) => ({
-                  date: d.date,
-                  sessions: d.sessions.map((s) => ({
-                    assignmentTitle: s.assignmentTitle,
-                    startTime: s.startTime,
-                    endTime: s.endTime,
-                    durationMinutes: s.durationMinutes,
-                    anchor: s.anchor,
-                    windowHint: s.windowHint,
-                  })),
-                }))}
-                timeZone={preview.timeZone}
-              />
-              <PlanSessionEditor
-                className="mt-6"
+              <EditableWeek
                 sessions={edited}
                 days={preview.days.map((d) => d.date)}
                 onChange={setEdited}
                 conflicts={conflicts}
+                timeZone={preview.timeZone}
               />
               {conflicts.length > 0 ? (
                 <div

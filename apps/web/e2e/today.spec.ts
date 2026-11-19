@@ -141,8 +141,9 @@ test('(b) no plan → Plan my week → Use this plan → Today shows a next sess
   await page.getByRole('link', { name: 'Plan my week' }).click();
   await expect(page).toHaveURL(/\/plan\/proposal$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Your proposed week' })).toBeVisible();
-  await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByTestId('plan-session-editor').getByText(reading.title).first()).toBeVisible();
+  // EP17E: the proposal renders one editable week.
+  await expect(page.getByTestId('editable-week')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('editable-week').getByText(reading.title).first()).toBeVisible();
 
   // Use this plan → Today, with the saved session as the next action.
   await page.getByRole('button', { name: 'Use this plan' }).click();

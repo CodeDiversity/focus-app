@@ -4,7 +4,7 @@
 **Epic:** [EP17](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md)
 **Milestone:** M10 (proposed, D17-1)
 **Layer:** Frontend
-**Status:** **Ready for implementation** — ▲ D17-4 and ▲ D-E1 ruled; the interaction model, focus rules, labels and responsive behaviour are grounded below. No material question blocks a start.
+**Status:** **Implemented — awaiting parent review** (implementer, 2026-11-19). All 8 ACs met; record at [artifacts/EP17E/implementation.md](./artifacts/EP17E/implementation.md).
 **Dependencies:** EP17D.
 **Refined:** 2026-11-19
 
@@ -220,10 +220,10 @@ behavioural `it(...)` per case. Each edit case is driven by keyboard
 | D-E2 | Where the component lives: (a) a new `EditableWeek` in `features/plan-proposal/ui/`; (b) extend `PlanWeek` in `features/study-plan/ui/` in place | **(a)** — confirmed: `PlanWeek` has a second live caller, `PlanPage.tsx:124` (via the `WeekGrid` re-export), and is a read-only presentation of a saved week. Editing belongs to the proposal feature that owns the edit state | Ratified (user, 2026-11-19) |
 | D-E3 | Undo: (a) keep the existing toast-with-Undo (`PlanSessionEditor.tsx:65-82`); (b) an in-grid "restore" slot | **(a)** — it is shipped, tested and consistent with the rest of the app; changing it is a separate concern | Ratified (user, 2026-11-19) |
 | D-E4 | Day label format: (a) weekday + day + month in the plan's time zone; (b) weekday only ("Wed") | **(a)**, at both widths — D-F4 (a) stacks the week vertically below `md`, so the narrow layout has *more* horizontal room per heading, not less, and (b)'s space argument never arises | Ratified (user, 2026-11-19) |
-| D-E5 | Exact label string (refines D-E4): (a) **"Wed, Nov 19"** — `en-US`, matching `shared/lib/datetime.ts:221` and `weekLine`'s "Oct 30, 2026"; (b) "Wed 19 Nov" — the planner's illustrative example, which needs a second locale (`en-GB`) for one component | **(a)** — one date voice across the app beats matching an example that was written as shorthand. Both satisfy AC-E17-10 | Proposed |
-| D-E6 | Open-panel placement at `md`+: (a) a **full-width panel below the seven day columns** (`md:col-span-7`), with the source card showing a persistent "Editing" state; (b) the panel inside its ~140 px day column; (c) the panel replaces the day column's contents | **(a)** — (b) cannot hold a day select and two time inputs legibly and would reintroduce horizontal scrolling; (c) hides the rest of the day while editing it. Below `md` the single-column stack puts the panel directly under its card with no extra rule | Proposed |
-| D-E7 | Delete affordance: (a) the **Delete** button stays inside the expanded panel, where it is today, behind one deliberate act of opening the session; (b) a delete control on the collapsed card | **(a)** — a destructive control on every collapsed card in a seven-day grid is a mis-tap surface, and the toast-Undo (D-E3) is the safety net for the deliberate case, not for an accidental one | Proposed |
-| D-E8 | `PlanSessionEditor`'s fate: (a) **delete the component and its test**; (b) keep it unused; (c) keep it for `/plan` | **(a)** — grep for `PlanSessionEditor` finds `PlanProposal.tsx:196`, the component, its own test and one stale comment in `WhatThisKeepsCard.tsx:21`. `/plan` renders `PlanWeek`, not the editor. Leaving a 315-line unused component is the drift this story exists to remove | Proposed |
+| D-E5 | Exact label string (refines D-E4): (a) **"Wed, Nov 19"** — `en-US`, matching `shared/lib/datetime.ts:221` and `weekLine`'s "Oct 30, 2026"; (b) "Wed 19 Nov" — the planner's illustrative example, which needs a second locale (`en-GB`) for one component | **(a)** — one date voice across the app beats matching an example that was written as shorthand. Both satisfy AC-E17-10 | Ratified by default, 2026-11-19 |
+| D-E6 | Open-panel placement at `md`+: (a) a **full-width panel below the seven day columns** (`md:col-span-7`), with the source card showing a persistent "Editing" state; (b) the panel inside its ~140 px day column; (c) the panel replaces the day column's contents | **(a)** — (b) cannot hold a day select and two time inputs legibly and would reintroduce horizontal scrolling; (c) hides the rest of the day while editing it. Below `md` the single-column stack puts the panel directly under its card with no extra rule | Ratified by default, 2026-11-19 |
+| D-E7 | Delete affordance: (a) the **Delete** button stays inside the expanded panel, where it is today, behind one deliberate act of opening the session; (b) a delete control on the collapsed card | **(a)** — a destructive control on every collapsed card in a seven-day grid is a mis-tap surface, and the toast-Undo (D-E3) is the safety net for the deliberate case, not for an accidental one | Ratified by default, 2026-11-19 |
+| D-E8 | `PlanSessionEditor`'s fate: (a) **delete the component and its test**; (b) keep it unused; (c) keep it for `/plan` | **(a)** — grep for `PlanSessionEditor` finds `PlanProposal.tsx:196`, the component, its own test and one stale comment in `WhatThisKeepsCard.tsx:21`. `/plan` renders `PlanWeek`, not the editor. Leaving a 315-line unused component is the drift this story exists to remove | Ratified by default, 2026-11-19 |
 
 ## Definition of Done
 
@@ -237,7 +237,11 @@ review.
 
 - **Outcome:** one editable week — a student changes a session where they see
   it.
-- **Actual at closeout:** tbd.
+- **Actual at closeout:** as sized — three new modules + tests,
+  `PlanProposal` + test updated, `PlanSessionEditor` + test deleted,
+  `WhatThisKeepsCard` comment; plus four Playwright specs whose proposal
+  selectors the collapse broke (deviation 2 in the implementation record).
+  105 targeted tests / 1455 full web suite green.
 - **Files:** **new** `EditableWeek.tsx`, `EditableSessionCard.tsx` and their
   tests in `apps/web/src/features/plan-proposal/ui/`; **new**
   `apps/web/src/features/study-plan/lib/dayLabel.ts` + test;

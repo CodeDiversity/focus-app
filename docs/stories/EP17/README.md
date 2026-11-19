@@ -18,9 +18,9 @@
 
 **Artifact root:** `./artifacts/` — one directory per child (`./artifacts/EP17A/`, …), plus `./artifacts/EP17/` for the parent index and the combined review.
 
-**Active substory:** None (EP17D closed 2026-11-19).
+**Active substory:** **EP17F** (implementer, 2026-11-19 — the session that closed EP17E continues).
 
-**Next substory:** **EP17E** — EP17A–EP17D are implemented; EP17E/F/G were refined 2026-11-19 (`40e1e22`) and are **Ready for implementation**; ▲ D17-4 and ▲ D-E1 are ruled. Dispatch an implementer.
+**Next substory:** **EP17G** — after EP17F. EP17E/F/G were refined 2026-11-19 (`40e1e22`); all their ▲ rows are ruled.
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -32,7 +32,7 @@
 | [EP17B](./EP17B-engine-daily-pacing.md) | Implemented — awaiting parent review | EP17A implemented (2026-11-19). ▲ D17-3 ruled (user, 2026-11-19). | Combined EP17 review after EP17H | [implementation.md](./artifacts/EP17B/implementation.md) — all 5 ACs met; rule 9 added, 96 scheduler tests green, 19/19 fixtures byte-identical at `spreadPercent 0`; F-EP17B-01 asks for a contracts §3 amendment |
 | [EP17C](./EP17C-engine-study-day-selection.md) | Implemented — awaiting parent review | ▲ D17-2 ruled (a) and ▲ D-C2 ratified (user, 2026-11-19). EP17B implemented (2026-11-19). | Combined EP17 review after EP17H | [implementation.md](./artifacts/EP17C/implementation.md) — all 5 ACs met; rule 9b with a pass-aware budget (R-EP17-03), both carve-outs fixtured, 129 scheduler tests green, API suite 1338 passed / 0 failed; F-EP17C-02 is for EP17G |
 | [EP17D](./EP17D-service-wiring-and-pacing-payload.md) | Implemented — awaiting parent review | EP17A–EP17C implemented (2026-11-19); ▲ D-D1 ratified (user, 2026-11-19). | Combined EP17 review after EP17H | [implementation.md](./artifacts/EP17D/implementation.md) — all 4 ACs met; `pacing` additive on both payloads, 1368 passed / 0 failed, both frozen snapshots untouched; F-EP17D-01…03. Also [F-EP17C-02-resolution.md](./artifacts/EP17D/F-EP17C-02-resolution.md) |
-| [EP17E](./EP17E-editable-week-grid.md) | Ready | EP17D implemented (2026-11-19). Refined 2026-11-19 (`40e1e22`); ▲ D17-4 and ▲ D-E1 ruled (user, 2026-11-19). | Implement | — |
+| [EP17E](./EP17E-editable-week-grid.md) | Implemented — awaiting parent review | EP17D implemented (2026-11-19). Refined 2026-11-19 (`40e1e22`); ▲ D17-4 and ▲ D-E1 ruled (user, 2026-11-19). | Combined EP17 review after EP17H | [implementation.md](./artifacts/EP17E/implementation.md) — all 8 ACs met; one `EditableWeek`, `PlanSessionEditor` deleted, human day labels; 105 targeted / 1455 full web tests green; F-EP17E-02 (pre-existing ISO dates in two EP16 cards) for the parent review |
 | [EP17F](./EP17F-proposal-composition-and-decision.md) | Ready | EP17E; refined 2026-11-19 (`40e1e22`); ▲ D-F1, ▲ D-F2, ▲ D-F7 ruled (user, 2026-11-19). Absorbs BL-16-09. | Implement after EP17E | — |
 | [EP17G](./EP17G-plan-time-pacing-controls.md) | Ready | EP17F; refined 2026-11-19 (`40e1e22`); ▲ D17-8 / ▲ D-G1 / ▲ D-G5 ruled (user, 2026-11-19). ▲ D17-2 (a) + ▲ D17-16: the study-days control appears, with copy stating its instruction meaning, and closes the F-EP17B-03 / F-EP17C-02 visibility window. | Implement after EP17F | — |
 | [EP17H](./EP17H-cross-layer-e2e-and-parent-index.md) | Queued | EP17A–EP17G implemented. | Implement last | — |

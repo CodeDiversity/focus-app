@@ -66,11 +66,10 @@ const catchUpPreviewFixture = {
         },
       ],
     },
-    ...Array.from({ length: 6 }, (_, i) => ({
-      date: `2026-10-${31 + i}`,
-      targetMinutes: 0,
-      sessions: [],
-    })),
+    // Valid civil dates (EP17E: dayLabel parses them; 2026-10-32 is not a day).
+    ...['2026-10-31', '2026-11-01', '2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05'].map(
+      (date) => ({ date, targetMinutes: 0, sessions: [] })
+    ),
   ],
   warnings: [
     {
@@ -130,10 +129,12 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
   it('fetches previewCatchUp on mount and renders proposed sessions grouped by day', async () => {
     const { container } = renderPreview();
     await waitFor(() => expect(mockedPreview).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(screen.getByTestId('plan-week')).toBeInTheDocument());
-    // Grouped by day: the week grid with its day columns, and the editor row.
-    expect(container.querySelectorAll('[data-testid="plan-week"] section')).toHaveLength(7);
-    expect(screen.getByTestId('plan-session-editor')).toHaveTextContent('Essay');
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
+    // EP17E (AC-E17-09): the week renders once — no second editor region.
+    expect(container.querySelectorAll('[data-testid="editable-week"] > section')).toHaveLength(7);
+    expect(screen.queryByTestId('plan-week')).toBeNull();
+    expect(screen.queryByTestId('plan-session-editor')).toBeNull();
+    expect(screen.getByTestId('editable-week')).toHaveTextContent('Essay');
     // The window line names the server-proposed window without a raw zone id (D-C5).
     expect(screen.getByText(/Oct 30, 2026 – Nov 5, 2026/)).toBeInTheDocument();
     expect(screen.queryByText(/America\/New_York/)).toBeNull();
@@ -143,11 +144,13 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     mockedConfirm.mockResolvedValue({} as never);
     const user = userEvent.setup();
     renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
 
+    // EP17E: the session is edited in place — open its card, then edit.
+    await user.click(screen.getByRole('button', { name: /essay 09:00/i }));
     await user.click(screen.getByRole('button', { name: /move later/i }));
     await waitFor(() =>
-      expect(screen.getByTestId('plan-session-editor')).toHaveTextContent('09:15 – 10:15')
+      expect(screen.getByTestId('editable-week')).toHaveTextContent('09:15 – 10:15')
     );
 
     await user.click(screen.getByRole('button', { name: /use this plan/i }));
@@ -178,7 +181,7 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
   it('"Not now" navigates to /plan and makes no confirm call', async () => {
     const user = userEvent.setup();
     renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
 
     const callsBefore = mockedPreview.mock.calls.length;
     await user.click(screen.getByRole('button', { name: /not now/i }));
@@ -202,8 +205,9 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     } as never);
     const user = userEvent.setup();
     renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
 
+    await user.click(screen.getByRole('button', { name: /essay 09:00/i }));
     await user.click(screen.getByRole('button', { name: /move later/i }));
     await user.click(screen.getByRole('button', { name: /use this plan/i }));
 
@@ -212,8 +216,8 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
       /some sessions clash with your calendar\. adjust them and try again:/i
     );
     expect(screen.getByTestId('conflict-summary')).toHaveTextContent(/overlaps a class/i);
-    // The offending row is marked — and the student's edit survives.
-    const row = screen.getByTestId('plan-session-editor').querySelector('article');
+    // The offending card is marked — and the student's edit survives.
+    const row = screen.getByTestId('editable-week').querySelector('article');
     expect(row?.className).toContain('border-danger');
     expect(row).toHaveTextContent('09:15 – 10:15');
   });
@@ -231,7 +235,7 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     } as never);
     const user = userEvent.setup();
     renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: /use this plan/i }));
     await waitFor(() =>
@@ -239,11 +243,11 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     );
     expect(screen.getByRole('alert')).toBeInTheDocument();
     // The proposal is gone — only the regeneration affordance remains.
-    expect(screen.queryByTestId('plan-session-editor')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('editable-week')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /create new plan/i }));
     await waitFor(() => expect(mockedPreview).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
     expect(screen.getByRole('heading', { level: 1, name: 'Your proposed week' })).toHaveFocus();
   });
 
@@ -261,7 +265,7 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     } as never);
     const user = userEvent.setup();
     renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: /use this plan/i }));
     await waitFor(() =>
@@ -273,7 +277,7 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     mockedPreview.mockReturnValue(new Promise(() => {}) as never);
     renderPreview();
     expect(document.querySelector('[aria-busy="true"]')).toBeTruthy();
-    expect(screen.queryByTestId('plan-session-editor')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('editable-week')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /use this plan/i })).toBeNull();
     expect(screen.getByRole('button', { name: /not now/i })).toBeInTheDocument();
   });
@@ -297,7 +301,7 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     // D-C8: no second "go back" control — Not now in the header does that; Use this plan stays (A-C5).
     expect(screen.queryByRole('button', { name: /back to/i })).toBeNull();
     expect(screen.getByRole('button', { name: /use this plan/i })).toBeInTheDocument();
-    expect(screen.queryByTestId('plan-session-editor')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('editable-week')).not.toBeInTheDocument();
     expect(screen.queryByTestId('proposal-summary')).toBeNull();
   });
 
@@ -313,17 +317,17 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
 
     await user.click(screen.getByRole('button', { name: /try again/i }));
     await waitFor(() => expect(mockedPreview).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
     expect(screen.getByRole('heading', { level: 1, name: 'Your proposed week' })).toHaveFocus();
   });
 
   it('renders locked preview sessions in "What this plan keeps", never as editor rows', async () => {
     const { getByTestId } = renderPreview();
-    await waitFor(() => expect(getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(getByTestId('editable-week')).toBeInTheDocument());
     // The locked missed session is only in the preservation card…
     expect(screen.getByTestId('catch-up-preservation')).toHaveTextContent('Lab report');
-    // …never in the editable list (proposed sessions are the only editable rows).
-    expect(getByTestId('plan-session-editor')).not.toHaveTextContent('Lab report');
+    // …never in the editable week (proposed sessions are the only editable cards).
+    expect(getByTestId('editable-week')).not.toHaveTextContent('Lab report');
   });
 
   it('reverts the toggle on failure, explains it, and keeps the plan editable', async () => {
@@ -340,7 +344,7 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
       /we couldn't update that session's lock\. try again\./i
     );
     // the plan stays editable; nothing was confirmed
-    expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument();
+    expect(screen.getByTestId('editable-week')).toBeInTheDocument();
     expect(mockedConfirm).not.toHaveBeenCalled();
     // the toggle itself reverts to its previous state (still locked)
     await waitFor(() =>
@@ -366,7 +370,7 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     } as never);
     const user = userEvent.setup();
     renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
 
     // unlock the locked missed session (succeeds; the preservation list empties)
     await user.click(screen.getByRole('button', { name: /keep "lab report" locked/i }));
@@ -381,14 +385,14 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     // D-C11: the inline summary is the one message — no conflict toast at all.
     expect(toast.error).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: /keep "lab report" locked/i })).toBeNull();
-    expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument();
+    expect(screen.getByTestId('editable-week')).toBeInTheDocument();
   });
 
   it('is keyboard operable — Tab/Enter reach and operate every header/editor/toggle control', async () => {
     mockedConfirm.mockResolvedValue({} as never);
     const user = userEvent.setup();
     renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
 
     // Focus entered on the heading; Tab reaches the header controls.
     const heading = screen.getByRole('heading', { name: /your proposed week/i, level: 1 });
@@ -398,12 +402,16 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     await user.tab();
     expect(screen.getByRole('button', { name: /not now/i })).toHaveFocus();
 
-    // Editor controls respond to Enter.
+    // EP17E: open the session's in-place panel, then its controls respond
+    // to Enter.
+    const card = screen.getByRole('button', { name: /essay 09:00/i });
+    card.focus();
+    await user.keyboard('{Enter}');
     const moveLater = screen.getByRole('button', { name: /move later/i });
     moveLater.focus();
     await user.keyboard('{Enter}');
     await waitFor(() =>
-      expect(screen.getByTestId('plan-session-editor')).toHaveTextContent('09:15 – 10:15')
+      expect(screen.getByTestId('editable-week')).toHaveTextContent('09:15 – 10:15')
     );
 
     // The lock toggle responds to Enter.
@@ -420,13 +428,13 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
 
   it('moves focus to the h1 "Your proposed week" on entry', async () => {
     renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
     expect(screen.getByRole('heading', { level: 1, name: 'Your proposed week' })).toHaveFocus();
   });
 
   it('"Moved forward into this plan" lists missedSessions and is absent when empty; "What this plan keeps" is absent when nothing is kept', async () => {
     renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
     expect(
       screen.getByRole('heading', { level: 2, name: 'Moved forward into this plan' })
     ).toBeInTheDocument();
@@ -441,7 +449,7 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
       completedPreserved: 0,
     } as never);
     renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
     expect(
       screen.queryByRole('heading', { level: 2, name: 'Moved forward into this plan' })
     ).toBeNull();
@@ -454,26 +462,22 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
       calibration: [{ assignmentType: 'ESSAY', multiplier: 1.5, samples: 4 }],
     } as never);
     const { container } = renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
     const markers = Array.from(
       container.querySelectorAll(
-        '[data-testid="calibration-note"], [data-testid="plan-week"], [data-testid="plan-session-editor"], [data-testid="catch-up-preservation"], [aria-labelledby="proposal-moved-heading"], [data-testid="workload-warnings"]'
+        '[data-testid="calibration-note"], [data-testid="editable-week"], [data-testid="catch-up-preservation"], [aria-labelledby="proposal-moved-heading"], [data-testid="workload-warnings"]'
       )
     ).map((el) => el.getAttribute('data-testid') ?? el.getAttribute('aria-labelledby'));
     expect(markers.filter(Boolean)).toEqual(
       [
         'calibration-note',
-        'plan-week',
-        'plan-session-editor',
+        'editable-week',
         'catch-up-preservation',
         'proposal-moved-heading',
         'workload-warnings',
       ].filter((m) => markers.includes(m))
     );
-    expect(markers.indexOf('plan-week')).toBeLessThan(markers.indexOf('plan-session-editor'));
-    expect(markers.indexOf('plan-session-editor')).toBeLessThan(
-      markers.indexOf('catch-up-preservation')
-    );
+    expect(markers.indexOf('editable-week')).toBeLessThan(markers.indexOf('catch-up-preservation'));
     expect(markers.indexOf('catch-up-preservation')).toBeLessThan(
       markers.indexOf('proposal-moved-heading')
     );
@@ -484,7 +488,7 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     mockedConfirm.mockReturnValue(new Promise<void>((r) => (resolve = r)) as never);
     const user = userEvent.setup();
     renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
     await user.click(screen.getByRole('button', { name: /use this plan/i }));
     const confirmBtn = screen.getByRole('button', { name: /use this plan/i });
     expect(confirmBtn).toBeDisabled();
@@ -513,7 +517,7 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
         </MemoryRouter>
       </Providers>
     );
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
     await user.click(screen.getByRole('button', { name: /use this plan/i }));
     await waitFor(() => expect(navigate).toHaveBeenCalledWith('/today'));
     for (const api of [todayPlanApi, calendarApi, recoverySummaryApi]) {
@@ -523,7 +527,7 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
 
   it('D-C12: the summary line states sessions and total time, and no h1/h2 carries a digit', async () => {
     renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
     expect(screen.getByTestId('proposal-summary')).toHaveTextContent(
       '1 session · about 1 h this week'
     );
@@ -540,7 +544,7 @@ describe('PlanProposal (EP16C, ported from CatchUpPreview)', () => {
     const user = userEvent.setup();
     // ready
     let view = renderPreview();
-    await waitFor(() => expect(screen.getByTestId('plan-session-editor')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('editable-week')).toBeInTheDocument());
     expectNoForbiddenWords(view.container);
     // conflict
     mockedConfirm.mockRejectedValueOnce({

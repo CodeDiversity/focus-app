@@ -129,10 +129,9 @@ test('journey 1 — do the work and the plan shrinks (AC-E13-01)', async ({ page
   // EP16C: one planning action opens the proposal surface.
   await page.getByRole('button', { name: /^(Plan|Replan) my week$/ }).click();
   await expect(page).toHaveURL(/\/plan\/proposal$/);
-  await expect(page.getByTestId('plan-week')).toBeVisible({ timeout: 15_000 });
-  await expect(
-    page.getByTestId('plan-session-editor').getByText(essay.title).first()
-  ).toBeVisible();
+  // EP17E: the proposal renders one editable week (plan-week stays on /plan).
+  await expect(page.getByTestId('editable-week')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('editable-week').getByText(essay.title).first()).toBeVisible();
 });
 
 test('journey 2 — miss a day and the plan quietly rolls forward (AC-E13-04)', async ({
