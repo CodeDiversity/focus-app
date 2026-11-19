@@ -4,7 +4,7 @@
 **Epic:** [EP17](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md)
 **Milestone:** M10 (proposed, D17-1)
 **Layer:** Frontend
-**Status:** **Ready for implementation** — the region hierarchy, the phone layout and the tab-bar collision are grounded below. One non-blocking observation for the user is recorded at D-F7.
+**Status:** **Ready for implementation** — the region hierarchy, the phone layout and the tab-bar collision are grounded below. ▲ D-F7 is **Ruled (user, 2026-11-19)**: the calibration note may sit inside the collapsed disclosure below `md`, with no auto-expand rule.
 **Dependencies:** EP17E.
 **Refined:** 2026-11-19
 

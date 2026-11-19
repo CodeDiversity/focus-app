@@ -4,7 +4,7 @@
 **Epic:** [EP17](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md)
 **Milestone:** M10 (proposed, D17-1)
 **Layer:** Frontend
-**Status:** **Ready for implementation** — preset naming, the inline-write affordance, the announcement and the ▲ D17-2 copy obligation are settled below. One copy question is returned to the user at D-G5, with a grounded recommendation that is safe to build.
+**Status:** **Ready for implementation** — preset naming, the inline-write affordance, the announcement and the ▲ D17-2 copy obligation are settled below. ▲ D-G5 is **Ruled (user, 2026-11-19)**: the preset labels are "As early as possible" / "A little each day" / "Evenly spread". No open questions.
 **Dependencies:** EP17F. ▲ D17-2 is **Ruled (a)** (user, 2026-11-19) with a proviso this story owns: the study-days control **must** appear and be visibly surfaced with its new instruction meaning — its copy states that the number now steers the planner.
 **Refined:** 2026-11-19
 
