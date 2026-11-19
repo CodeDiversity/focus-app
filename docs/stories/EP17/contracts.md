@@ -93,6 +93,23 @@ two consumers different capacity estimates. Nothing here weakens that
 guarantee: the floor only ever raises a take, and the guarantee itself rests
 on rule 3 running first.
 
+**Amendment at epic closeout (R-EP17-10, planner, 2026-11-19).** The
+statement above is confirmed against the engine as shipped in its **final
+EP17C form**: the floor term `max(paceTarget, remaining − capacityAfter)`
+lives in `dayTakeOf` (`scheduler.ts:529-537`), the critical test is
+`remaining > capacityAfter` (`scheduler.ts:787`), and **both consumers read
+the same narrowed `capacityAfter`**, so the floor is **currently inert** in
+the shipped engine — proven by the EP17C deletion experiment (372/372 domain
+tests indistinguishable without it) — while remaining the documented
+R-EP17-01 guard. On the F-EP17C-03 denominator: `|usableDays(A)|` in
+`evenShare` is, in the shipped engine, **exactly the §4 selection** —
+`evenShareOf` (`scheduler.ts:504-521`) counts horizon days through the
+narrowed `normalBudgetOf`, not every day with free time, pinned by the
+discriminating fixture *"divides the even share over the selected days, not
+every day with free time"* (`scheduler.spec.ts`, EP17C-AC1). The D-B3
+"non-zero run-start budget" reading below is therefore operational shorthand
+for the same set, no longer merely coincident with it.
+
 - `usableDays(A)` = the days of `A`'s horizon that survive the study-day
   selection of §4. Operationally the engine counts the horizon days whose
   **run-start** budget is non-zero (D-B3, `scheduler.ts:393-404`), which is

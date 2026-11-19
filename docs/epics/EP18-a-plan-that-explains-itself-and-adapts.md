@@ -13,12 +13,13 @@ here is ratified-by-default, because nothing has started.
 **Dependencies:** EP13 (calibration `calibration.ts`, momentum `momentum.ts`,
 flex anchors), EP14 (the hard flag — the second reason worth explaining, which
 is BL-14-03's own trigger), EP17 (pacing rule 9, study-day selection rule 9b,
-the rebuilt proposal surface). EP13 and EP14 are closed. **EP17 is implemented
-through EP17G but is *not* reviewed** — EP17H is Ready and the single combined
-EP17 review has not run
-([docs/stories/EP17/README.md](../stories/EP17/README.md), execution queue,
-read 2026-11-19). EP18 therefore plans against code that may still change under
-review; D18-2 records how that is handled.
+the rebuilt proposal surface). EP13 and EP14 are closed. *Updated at the EP17
+closeout (planner, 2026-11-19):* **EP17 is closed** — the combined review
+passed (pass 1, `d8d226f`,
+[review.md](../stories/EP17/artifacts/EP17/review.md)), so ▲ D18-2's
+precondition is met; the breakdown's re-grounding pass remains required and
+should start from the review's four polish findings, two of which this
+proposal now carries (AC-E18-29/30, D18-11).
 **Milestone:** M11 (proposed, D18-1).
 
 ## Epic Summary
@@ -274,6 +275,36 @@ item numbers are given in each heading.
     contract is introduced for the framing itself beyond whatever ▲ D18-7
     rules.
 
+#### Post-EP17-review additions to Outcome 3 (user-approved capture, 2026-11-19)
+
+Two polish findings from the passing EP17 combined review
+([review.md](../stories/EP17/artifacts/EP17/review.md) §1) are carried here as
+named early items of this outcome, because both live on the same ▲ D17-16
+seam — the unset `weeklyGoalDays` state — that Outcome 3 exists to make
+visible. They are **additions to this proposal**, numbered after the existing
+stable IDs; a breakdown assigns owners, it does not renumber. See D18-11.
+
+29. **AC-E18-29** *(from R-EP17-07)* For a student who has never stored
+    `weeklyGoalDays`, the proposal's study-days control and Profile's never
+    disagree without explanation: today the proposal shows "Custom (7 days)"
+    (the unconstrained planning read) while Profile shows "Steady — 3 days a
+    week" (the momentum default), and `STUDY_DAYS_DESCRIPTION`'s second clause
+    ("…it's the number of days you're aiming to show up") is then untrue.
+    After this item, either the two surfaces show one agreed presentation of
+    the unset state or each states which reader it reflects, and every copy
+    clause is true in the unset state. Both numbers remain true of their own
+    reader — the ▲ D17-16 two-reader design is not reopened.
+30. **AC-E18-30** *(from R-EP17-08; named early item — the live session's
+    recommendation, 2026-11-19)* Saving the Profile preferences form never
+    promotes an **unset** `weeklyGoalDays` to a stored value as a side effect
+    of a save made for an unrelated field: today the whole-bag
+    `putStudyPreferences(data)` (`StudyPreferencesForm.tsx:239`) stores `3`,
+    silently converting an unconstrained (7-day) planner into a 3-day one.
+    After this item, only an explicit student choice of a study-days preset
+    stores the key (dirty-field write, or carrying the unset state in the
+    payload — the mechanism is a breakdown/refiner call), closing the side
+    door on the invisible-constraint defect ▲ D17-16 exists to prevent.
+
 ### Outcome 4 — Adaptive response when the plan is wrong (brief item 2)
 
 14. **AC-E18-14** The product detects a small, **named and enumerated** set of
@@ -380,13 +411,14 @@ item numbers are given in each heading.
 
 ## Dependencies and sequencing notes
 
-- **EP17 is not reviewed.** EP17A–EP17G are *Implemented — awaiting parent
-  review*; EP17H is Ready and owns the combined-review gate
-  ([docs/stories/EP17/README.md](../stories/EP17/README.md)). The EP17 review
-  may still produce findings in exactly the code EP18 builds on — rule 9/9b,
-  the `pacing` block, `EditableWeek`, `PacingControls`. ▲ D18-2 records the
-  recommended handling: **plan EP18 now, start it after the EP17 review
-  passes.**
+- **EP17 is closed** *(updated at the EP17 closeout, planner, 2026-11-19;
+  this bullet originally read "EP17 is not reviewed")*: the combined review
+  passed (pass 1, `d8d226f`,
+  [review.md](../stories/EP17/artifacts/EP17/review.md)) with four polish
+  findings, two of which this proposal now carries (AC-E18-29/30, D18-11).
+  ▲ D18-2's recommended handling — plan now, implement after the review
+  passes — has its precondition met; the breakdown's re-grounding pass is
+  still required.
 - EP13 supplies the two precedents EP18's new domain modules should follow
   (`calibration.ts`, `momentum.ts`): pure arithmetic, an explicit sample gate,
   an honest `null` below it.
@@ -438,9 +470,10 @@ item numbers are given in each heading.
 ## Decision Register
 
 `Ruling` is yours. ▲ rows are material (security, persisted data, public
-contract or user-visible workflow). **Every row below is `Proposed`:** this
+contract or user-visible workflow). **Every row below is `Proposed`** — this
 epic has not been broken down and nothing ratifies by default until a child
-starts.
+starts — **except D18-11**, which records a capture the user approved at the
+EP17 closeout (2026-11-19) and changes nothing about the proposal's status.
 
 | ID | Decision | Options considered | Recommended | Ruling |
 |---|---|---|---|---|
@@ -453,6 +486,7 @@ starts.
 | ▲ D18-7 | How "this is your first plan" is known | (a) **derive it from durable, student-scoped data already stored** — whether the student has ever confirmed a plan — so a new browser or device cannot replay the moment; (b) a `localStorage` flag; (c) a new persisted preference key for "has seen the first-plan framing" | **(a)** where the derivation is honest, falling back to **(c)** as an additive key under ▲ D17-5's pattern if it is not. (b) is rejected: it shows the first-run moment again on every new device and hides it after a cache clear, which is the opposite of both intentions. ▲ — persisted data | Proposed |
 | D18-8 | Where the first-plan framing lives | (a) **inside the proposal, as a first-time region above the week**, dismissible; (b) a separate pre-plan screen before the proposal; (c) a fourth onboarding wizard step | **(a)** — (b) adds a screen between the student and the thing they asked for, which is the friction EP16 removed; (c) asks for pace decisions before the student has ever seen a plan, which is when they are least able to answer. (a) states the assumptions beside the week they produced. The exact composition is a refiner question | Proposed |
 | D18-9 | Delivery sequence for the five items | (a) the brief's ranking: explainability → adaptive response → onboarding → pace gestures → deadline pressure; (b) **explainability → deadline pressure → first-plan framing → adaptive response → pace gestures**; (c) by independent shippability alone | **(b)** — a considered challenge to the brief's order, agreeing on #1 first and disagreeing about second place. Deadline pressure is the cheapest item in the epic (the engine already computes criticality at `scheduler.ts:787`; the work is carrying one boolean out and saying it calmly) and it rides the *same* payload extension as the reasons, so doing it second costs a fraction of a window and halves the contract churn. Adaptive response is the largest item — a new domain module, a new persisted decline state, a new offer surface — and it reads better *after* the reason vocabulary exists, because an offer's evidence sentence and a day's reason sentence want the same words. Pace gestures go last because they are the item most likely to change shape once students have used explainability | Proposed |
+| D18-11 | **Post-EP17-review capture (planner, epic closeout 2026-11-19):** where the EP17 review's two D17-16-seam polish findings land | (a) **carry both into Outcome 3 as named additions** — AC-E18-29 (R-EP17-07: the unset-state display disagreement between the proposal's "Custom (7 days)" and Profile's "Steady — 3 days", with the then-untrue copy clause) and AC-E18-30 (R-EP17-08: Profile's whole-bag save promoting an unset `weeklyGoalDays` to a stored `3`); (b) backlog rows `BL-17-<nn>` in the EP17 register; (c) a sixth outcome | **(a)** — both findings are squarely Outcome 3's "first plan / unset state" territory and touch the same ▲ D17-16 seam its AC-E18-10…13 already work; a backlog row would orphan them from the outcome that will inevitably reread the same code, and a sixth outcome is too large a home for two sharply-scoped items. R-EP17-08 is carried as its own AC (the smallest honest home) per the live session's recommendation (coordinator, 2026-11-19) rather than left a loose finding. The proposal stays a proposal: no story, no owner, no schedule | Approved (user-approved capture, 2026-11-19) |
 | D18-10 | Backlog rows cited rather than duplicated | **BL-14-03** (placement explainability, EP14 register) — **recommended for promotion into Outcome 1**: its stated trigger ("EP14E ships … or a user asks") has **fired on both limbs** (EP14E shipped; the user asked on 2026-11-19), which supersedes EP17 D17-10's "its trigger has not fired". **BL-17-03** (placement explainability for pacing, EP17 register) — **absorbed into Outcome 1** as its rule 9/9b cases; it should not be promoted separately. **BL-17-02** (name the weekdays you study) stays deferred, but Outcome 5 may fire its trigger and a breakdown must re-check it. **BL-16-02** (proposal on the EP15 calendar grid), **BL-17-01** (intra-gap placement), **BL-16-04** (reminders), **BL-14-05** (momentum goal history), **BL-14-02** ("drained today") all stay deferred and are **cited, not duplicated**; no EP18 outcome restates them. No backlog row is edited by this proposal — promotion is a breakdown action, and this is not a breakdown | Proposed |
 
 ## Security / privacy / accessibility invariants

@@ -469,6 +469,12 @@ inherited evidence from EP17H, not re-run.
   follow-up story. No AC is unmet: both numbers are true of their own reader,
   which is exactly the two-reader design ▲ D17-16 ruled.
 - **Report reference:** review.md §1 R-EP17-07, §2 AC-E17-07.
+- **Closeout disposition (planner, 2026-11-19):** **captured into EP18** as
+  **AC-E18-29** under Outcome 3 (D18-11, user-approved capture) — the residue
+  is squarely Outcome 3's first-plan / unset-state territory and sits on the
+  same ▲ D17-16 seam as AC-E18-10…13, so a separate `BL-17-<nn>` row would
+  orphan it from the outcome that will reread the same code. **Closed in this
+  register**; closure evidence is the EP18 epic file.
 
 ### C-R-EP17-08 (from R-EP17-08, polish — rules on F-EP17G-02)
 
@@ -486,6 +492,12 @@ inherited evidence from EP17H, not re-run.
   follow-up (planner): a dirty-field write on the Profile form, or carrying
   the stored value beside `studyDays` in the payload. Not fixed in EP17.
 - **Report reference:** review.md §1 R-EP17-08.
+- **Closeout disposition (planner, 2026-11-19):** **promoted into EP18
+  explicitly** as **AC-E18-30**, a named early item of Outcome 3 (D18-11),
+  per the live session's recommendation (coordinator, 2026-11-19) — the
+  whole-bag save re-creates the invisible-constraint defect ▲ D17-16 exists
+  to prevent, through a side door, so it must not stay a loose finding.
+  **Closed in this register**; closure evidence is the EP18 epic file.
 
 ### C-R-EP17-09 (from R-EP17-09, polish — rules on F-EP17H-03)
 
@@ -504,6 +516,12 @@ inherited evidence from EP17H, not re-run.
 - **Disposition:** carried as a backlog candidate alongside BL-15-08; owner
   planner / live session. Not fixed in EP17.
 - **Report reference:** review.md §1 R-EP17-09, §7 G.
+- **Closeout disposition (planner, 2026-11-19):** recorded as **BL-17-04**
+  in the [README backlog register](./README.md#backlog) — the two named
+  flakes with honest triggers. The leftover-server / cold-stack *harness*
+  family is already **BL-15-08** (EP15 register, where F-EP17H-02 was routed
+  2026-11-19); BL-17-04 cites it rather than duplicating it. **Closed in
+  this register.**
 
 ### C-R-EP17-10 (from R-EP17-10, polish)
 
@@ -516,6 +534,18 @@ inherited evidence from EP17H, not re-run.
 - **Disposition:** open, owner **planner**; no role in this review unit may
   write `contracts.md`. Does not block the pass.
 - **Report reference:** review.md §1 R-EP17-10, DoD-9.
+- **Closeout disposition (planner, 2026-11-19): Resolved.** Contracts §3
+  amended at the epic closeout ("Amendment at epic closeout (R-EP17-10)"):
+  it records that the feasibility-floor term
+  `max(paceTarget, remaining − capacityAfter)` is **currently inert** in the
+  shipped engine in its final EP17C form — both consumers (the rule 3
+  critical test at `scheduler.ts:787` and `dayTakeOf` at `:529-537`) read
+  the same narrowed `capacityAfter`, proven by the EP17C deletion experiment
+  (372/372) — while staying the documented R-EP17-01 guard; and it closes
+  the F-EP17C-03 denominator wording (`|usableDays(A)|` is exactly the §4
+  selection via `normalBudgetOf`, `evenShareOf` `scheduler.ts:504-521`,
+  pinned by the EP17C-AC1 discriminating fixture). No engine, AC or Ruling
+  change; `queue-lint` clean.
 
 ### Findings closed by this review with no action
 
@@ -525,6 +555,18 @@ projection is still the comparison in both frozen gates), `F-EP17E-02` /
 site, correctly handled as an addition to D17-17's examples), and EP17F's
 "What else changed" + EP17G's `{ ok, pacing? }` / preset-module deviations —
 all accepted with reasons in review.md §1.
+
+### Epic closeout — planner, 2026-11-19
+
+EP17 closed at the passing combined review (`d8d226f`). All four polish
+findings dispositioned above: R-EP17-07 → EP18 AC-E18-29, R-EP17-08 → EP18
+AC-E18-30 (both D18-11, user-approved capture 2026-11-19), R-EP17-09 →
+BL-17-04 (citing BL-15-08), R-EP17-10 → **resolved** (contracts §3
+amendment). Gates at closeout: `node tools/queue-lint.mjs docs/stories/EP17`
+and `node tools/queue-lint.mjs --backlog docs/stories` — results in the
+closeout commit's record. No checkpoint existed for this epic, so there is
+nothing to close to a pointer (mirroring the EP16 closeout, which left its
+history open-form).
 
 ## Superseded decisions
 
