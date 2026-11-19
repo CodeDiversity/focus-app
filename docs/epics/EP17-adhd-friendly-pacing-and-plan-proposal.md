@@ -1,7 +1,7 @@
 # EP17: ADHD-Friendly Pacing and a One-Surface Plan Proposal
 
 **Epic ID:** EP17
-**Status:** Breakdown complete (planner, 2026-11-19) → [docs/stories/EP17](../stories/EP17/README.md). Quality gate: **Plan Ready** — every ▲ row ruled as recommended (user, 2026-11-19); ▲ D17-2 ruled (a) with a UI-visibility proviso (EP17G owns the surfacing). Plan review (required — the preferences bag gains persisted keys): **passed** — pass 1 Changes Required, corrections applied, pass 2 **Plan Ready** (2026-11-19, `005bc78`; [plan-review.md](../stories/EP17/plan-review.md)).
+**Status:** Breakdown complete (planner, 2026-11-19) → [docs/stories/EP17](../stories/EP17/README.md). Quality gate: **Plan Ready** — every ▲ row ruled as recommended (user, 2026-11-19); ▲ D17-2 ruled (a) with a UI-visibility proviso (EP17G owns the surfacing). Plan review (required — the preferences bag gains persisted keys): **passed** — pass 1 Changes Required, corrections applied, pass 2 **Plan Ready** (2026-11-19, `005bc78`; [plan-review.md](../stories/EP17/plan-review.md)). **Implemented and closed 2026-11-19** — combined implementation review **passed** (pass 1, reviewed commit `d8d226f`; [review.md](../stories/EP17/artifacts/EP17/review.md)); four polish findings carried, no blocker or should-fix.
 **Release:** 1.4 (proposed, D17-1)
 **Priority:** High / P0
 **Labels:** `studypilot`, `adhd`, `scheduling`, `planning`
