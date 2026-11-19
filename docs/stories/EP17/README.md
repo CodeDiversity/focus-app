@@ -3,13 +3,13 @@
 **Epic:** [EP17](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md)
 **Milestone:** M10 — release 1.4 (proposed, D17-1)
 **Epic dependency:** EP06, EP13, EP14, EP15, EP16 closed. No predecessor blocks the queue.
-**Status:** Breakdown complete (planner, 2026-11-19). Quality gate: **Needs Decision** — ▲ D17-2 blocks EP17C and shapes EP17A's fourth criterion; see [history.md](./history.md). **Plan review: required** (the preferences bag gains persisted keys — planning-checklist rule). No tracker sync.
+**Status:** Breakdown complete (planner, 2026-11-19). Quality gate: **Plan Ready** — every ▲ row ruled as recommended (user, 2026-11-19; D17-2 ruled (a) with a UI-visibility proviso, see the epic register); see [history.md](./history.md). **Plan review: required** (the preferences bag gains persisted keys — planning-checklist rule) before implementation. No tracker sync.
 
 ## Plan at a glance
 
 - **What this changes:** the scheduling engine gains a pacing objective so a week's work is spread across the days a student actually chose, instead of packed into the earliest ones; the proposal at `/plan/proposal` stops rendering the week twice and becomes one editable surface with a reachable confirm; and the spread levers become real preferences a student can change from the proposal itself.
 - **Why it improves it:** "Plan my week" currently answers "when could this fit?" and returns two full days and a hollow Thursday, on a screen that makes moving one session a scavenger hunt. Afterwards it answers "what pace can I keep?" and shows it on one screen a student can nudge and confirm (product). In code, an implicit earliest-feasible objective becomes a stated, tested rule in a pure function, and a duplicated rendering of the same week disappears (code).
-- **Decisions needing you:** **▲ D17-2** (what `weeklyGoalDays` means — the user delegated it to the planner; it changes a persisted preference's meaning, so the planner recommends and you confirm), plus ▲ D17-5, ▲ D17-8 in the epic register and ▲ D-A1, ▲ D-C2, ▲ D-E1, ▲ D-F1, ▲ D-F2, ▲ D-G1 in the stories. ▲ D17-3 (minute-based pacing, no session-count ceiling) and ▲ D17-4 (in-place editing) are already **Ruled (user, 2026-11-19)**.
+- **Decisions needing you:** none — every ▲ row ruled as recommended (user, 2026-11-19). ▲ D17-2 ruled (a) with a proviso: the study-days control must be visibly surfaced with its new instruction meaning (owned by EP17G, no new story).
 - **How to change this plan:** edit a Ruling cell in a story or in the [epic register](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md#decision-register); ask the planner for AC or queue changes. Corrections and the quality gate live in [history.md](./history.md); engine rules, the preferences contract, the payload and the surface contract in [contracts.md](./contracts.md).
 
 ## Execution queue
@@ -20,7 +20,7 @@
 
 **Active substory:** None.
 
-**Next substory:** **EP17A** — refine nothing (specified in-story); rule ▲ D17-2 and ▲ D-A1, then implement. A **plan review** is required before implementation starts (persisted-data contract).
+**Next substory:** **EP17A** — refine nothing (specified in-story); all ▲ rows ruled (user, 2026-11-19). A **plan review** is required before implementation starts (persisted-data contract).
 
 **Implementation owner:** `implementer`, one sequential writer across all layers.
 
@@ -28,13 +28,13 @@
 
 | Story | State | Dependencies / blockers | Next action | Evidence / artifacts |
 |---|---|---|---|---|
-| [EP17A](./EP17A-spread-preferences-contract.md) | Queued | ▲ D17-2 shapes EP17A-AC4; ▲ D17-5, ▲ D-A1 unruled. Plan review required first. | Rule the ▲ rows, run the plan review, then implement | — |
+| [EP17A](./EP17A-spread-preferences-contract.md) | Queued | ▲ D17-2 ruled (a), ▲ D17-5 / ▲ D-A1 ratified (user, 2026-11-19). Plan review required first. | Run the plan review, then implement | — |
 | [EP17B](./EP17B-engine-daily-pacing.md) | Queued | EP17A. ▲ D17-3 ruled (user, 2026-11-19). | Implement after EP17A | — |
-| [EP17C](./EP17C-engine-study-day-selection.md) | Blocked | **▲ D17-2 open** — it decides the key, the semantics, and whether this child exists; ▲ D-C2 unruled. EP17B. | Rule ▲ D17-2 | — |
+| [EP17C](./EP17C-engine-study-day-selection.md) | Queued | ▲ D17-2 ruled (a) and ▲ D-C2 ratified (user, 2026-11-19). EP17B. | Implement after EP17B | — |
 | [EP17D](./EP17D-service-wiring-and-pacing-payload.md) | Queued | EP17A–EP17C; ▲ D-D1 unruled. | Implement after EP17C | — |
 | [EP17E](./EP17E-editable-week-grid.md) | Needs refinement | EP17D; ▲ D-E1 (interaction model) is the refiner's to ground. ▲ D17-4 ruled (user, 2026-11-19). | Dispatch the refiner | — |
 | [EP17F](./EP17F-proposal-composition-and-decision.md) | Needs refinement | EP17E; ▲ D-F1, ▲ D-F2 unruled. Absorbs BL-16-09. | Dispatch the refiner | — |
-| [EP17G](./EP17G-plan-time-pacing-controls.md) | Needs refinement | EP17F; ▲ D17-8 / ▲ D-G1 unruled; ▲ D17-2 decides whether a study-days control appears. | Dispatch the refiner | — |
+| [EP17G](./EP17G-plan-time-pacing-controls.md) | Needs refinement | EP17F; ▲ D17-8 / ▲ D-G1 ratified (user, 2026-11-19). ▲ D17-2 (a) ruled: the study-days control appears, with copy stating its instruction meaning (D17-2 proviso). | Dispatch the refiner | — |
 | [EP17H](./EP17H-cross-layer-e2e-and-parent-index.md) | Queued | EP17A–EP17G implemented. | Implement last | — |
 
 Sequence (one writer): EP17A → EP17B → EP17C → EP17D → EP17E → EP17F → EP17G → EP17H. Why: the preferences contract first, because both engine children read it; pacing before study-day selection, because "spread within the chosen days" needs something to spread; the service wiring once the engine is settled, so the payload is written once; the editable week before the page that composes it; the preset controls last among the frontend children, because they need a slot in the recomposed surface and the `pacing` values to display; integration over the final state. **Known windows** between children are listed in [contracts.md §7](./contracts.md#7-known-windows-between-sequential-children).
@@ -113,14 +113,15 @@ block, the proposal surface contract, and the known windows between children.
 
 Epic-level decisions D17-1…D17-11 live in the
 [epic](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md#decision-register).
-Ruled so far: ▲ D17-3 (a) and ▲ D17-4 (a), user 2026-11-19. Open ▲: D17-2,
-D17-5, D17-8. Breakdown-level additions:
+All decisions ruled: every row ratified as recommended (user, 2026-11-19);
+▲ D17-2 ruled (a) with a UI-visibility proviso (epic register). No open ▲ rows.
+Breakdown-level additions:
 
 | ID | Decision | Status / provenance |
 |---|---|---|
 | D17-12 | **Plan review is required** for this breakdown: the preferences bag gains persisted keys, which the planning-checklist counts as a new persisted-data contract. Eight children is at the rule's threshold, not over it, so the contract change is the trigger. The review should focus on EP17A (contract, backward compatibility) and EP17B/EP17C (the purity and no-silent-loss invariants). | Planner, 2026-11-19 (planning-checklist "When a plan review is required"). |
 | D17-13 | **Backlog absorbed at this breakdown:** BL-16-02 → **partly promoted** to [EP17E](./EP17E-editable-week-grid.md) (the proposal's own grid becomes editable); its "render on the EP15 calendar grid" half stays deferred and keeps the row open. BL-16-09 → **promoted** to [EP17F](./EP17F-proposal-composition-and-decision.md) (the phone-first proposal; the EP16K spec is the input). Every other open row was reviewed and its trigger has not fired; `Last reviewed` stamped 2026-11-19 in its own home. | Planner, 2026-11-19 (`queue-lint --backlog`, delivery-state backlog register). |
-| D17-14 | **▲ D17-2 is recommended, not ruled.** The user's 2026-11-19 message ("not clear to me what weeklyGoalDays is") delegated the call to the planner. The planner recommends option (a) — the key becomes a planning instruction — and records it ▲ and `Proposed` rather than self-ratifying, because it changes a persisted preference's meaning for every student who already set it. It blocks EP17C only; EP17A and EP17B proceed without it once their own rows are ruled. | Planner, 2026-11-19. |
+| D17-14 | **▲ D17-2 is recommended, not ruled.** The user's 2026-11-19 message ("not clear to me what weeklyGoalDays is") delegated the call to the planner. The planner recommends option (a) — the key becomes a planning instruction — and records it ▲ and `Proposed` rather than self-ratifying, because it changes a persisted preference's meaning for every student who already set it. It blocks EP17C only; EP17A and EP17B proceed without it once their own rows are ruled. **Resolved:** ruled (a) (user, 2026-11-19) with the proviso that the study-days control is visibly surfaced with its new meaning (EP17G owns it; no new story). | Planner, 2026-11-19; ruled by user, 2026-11-19. |
 | D17-15 | **The 1035-line `scheduler.spec.ts` diff is planned work, not a surprise:** D17-7 (a) requires each changed expectation to name the rule that changed it (TR-E17-07), and a frozen pre-EP17 baseline fixture preserves the old behaviour as an executable test rather than as a deleted assertion. | Planner, 2026-11-19. |
 
 ## Verification tasks

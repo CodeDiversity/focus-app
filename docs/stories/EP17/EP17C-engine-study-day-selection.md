@@ -4,14 +4,14 @@
 **Epic:** [EP17](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md)
 **Milestone:** M10 (proposed, D17-1)
 **Layer:** Backend (pure domain)
-**Status:** Queued — **blocked by ▲ D17-2**
+**Status:** Queued — ▲ D17-2 ruled (a) (user, 2026-11-19); unblocked
 **Dependencies:** EP17B (pacing must exist for "spread *within* the chosen days" to mean anything). ▲ D17-2 decides whether this story reads `weeklyGoalDays` or a new key — and under option (c) withdraws it entirely.
 
 ## Plan at a glance
 
 - **What this changes:** the planner stops assuming it may use all seven days. It selects the student's chosen number of study days from the window — deterministically, by where the free time actually is — and EP17B's pacing spreads work *within* those days. A deadline still beats the preference: the feasibility pass may use a day outside the selection rather than miss it.
 - **Why it improves it:** it resolves the tension the epic names out loud — "study 3 days a week" and "spread my work across the week" cannot both be honoured across seven days. Under ▲ D17-2 (a) the student's number finally instructs the planner instead of decorating a progress bar (product), and `weeklyGoalDays` stops being a control that `preferences.ts:58-59` documents as gating nothing (code).
-- **Decisions needing you:** **▲ D17-2 (epic register) is open and blocks this story.** It is the single highest-impact open row in EP17: it changes what a persisted preference means and what a student's existing "3" will do to their next plan.
+- **Decisions needing you:** none — **▲ D17-2 is ruled (a) (user, 2026-11-19)**: `weeklyGoalDays` becomes a planning instruction, with the proviso that the control is visibly surfaced with its new meaning (EP17G owns the UI).
 - **How to change this plan:** edit a Ruling cell below or ▲ D17-2 in the epic register; ask the planner for AC changes. AC text freezes when implementation starts; later asks become a follow-up story.
 
 ## Summary
@@ -107,9 +107,9 @@ TR-E17-02; DoD-1, DoD-8, DoD-9.
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-C1 | How days are chosen: (a) the N days with the most baseline free minutes, ties by earlier date; (b) evenly spaced days (e.g. Mon/Wed/Fri for N = 3); (c) the N earliest days with any free time | **(a)** — it puts study where the student actually has room, needs no new weekday preference, and is trivially deterministic. (b) is prettier on a calendar but regularly picks a day the student has 20 free minutes on. (c) re-creates the front-loading this epic removes | Proposed |
-| ▲ D-C2 | The anchor-pass coupling: (a) accept that a narrower day set makes `noSlack` true more often, so more assignments pin `FIXED`, and document it as intended — less slack genuinely means the time is load-bearing; (b) keep the anchor pass on the **unnarrowed** budgets so the FLEX/FIXED partition is unchanged by the selection | **(a)** — the partition's whole premise (EP13G D13-4) is "pin when the deadline makes the exact placement load-bearing"; a three-day week makes it more load-bearing, and (b) would tell the student a session is flexible when it is not. ▲ because it changes a user-visible workflow (which sessions a student may start anytime) | Proposed |
-| D-C3 | Scope of the preference: (a) a count the engine picks days for; (b) let the student name the weekdays | **(a)** for this epic — (b) is a second control and a second contract; record it as a backlog row if a student asks | Proposed |
+| D-C1 | How days are chosen: (a) the N days with the most baseline free minutes, ties by earlier date; (b) evenly spaced days (e.g. Mon/Wed/Fri for N = 3); (c) the N earliest days with any free time | **(a)** — it puts study where the student actually has room, needs no new weekday preference, and is trivially deterministic. (b) is prettier on a calendar but regularly picks a day the student has 20 free minutes on. (c) re-creates the front-loading this epic removes | Ratified (user, 2026-11-19) |
+| ▲ D-C2 | The anchor-pass coupling: (a) accept that a narrower day set makes `noSlack` true more often, so more assignments pin `FIXED`, and document it as intended — less slack genuinely means the time is load-bearing; (b) keep the anchor pass on the **unnarrowed** budgets so the FLEX/FIXED partition is unchanged by the selection | **(a)** — the partition's whole premise (EP13G D13-4) is "pin when the deadline makes the exact placement load-bearing"; a three-day week makes it more load-bearing, and (b) would tell the student a session is flexible when it is not. ▲ because it changes a user-visible workflow (which sessions a student may start anytime) | Ratified (user, 2026-11-19) |
+| D-C3 | Scope of the preference: (a) a count the engine picks days for; (b) let the student name the weekdays | **(a)** for this epic — (b) is a second control and a second contract; record it as a backlog row if a student asks | Ratified (user, 2026-11-19) |
 
 ## Definition of Done
 

@@ -85,8 +85,8 @@ The journeys above are the tests. Additionally:
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| D-H1 | Asserting "the week is spread": (a) assert the **shape** — minutes appear on more than N days and on no unselected day — from a seeded fixture; (b) assert exact per-day minutes | **(a)** — (b) re-pins the engine's arithmetic in a slow browser test that the domain spec already owns far better; the journey's job is that the levers reach the engine | Proposed |
-| D-H2 | Where the preset journey asserts persistence: (a) on the Profile page after confirming; (b) by re-opening the proposal | **(a)** — it proves the ▲ D-G1 persistence claim at the surface a student would check | Proposed |
+| D-H1 | Asserting "the week is spread": (a) assert the **shape** — minutes appear on more than N days and on no unselected day — from a seeded fixture; (b) assert exact per-day minutes | **(a)** — (b) re-pins the engine's arithmetic in a slow browser test that the domain spec already owns far better; the journey's job is that the levers reach the engine | Ratified (user, 2026-11-19) |
+| D-H2 | Where the preset journey asserts persistence: (a) on the Profile page after confirming; (b) by re-opening the proposal | **(a)** — it proves the ▲ D-G1 persistence claim at the surface a student would check | Ratified (user, 2026-11-19) |
 
 ## Definition of Done
 

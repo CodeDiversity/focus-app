@@ -18,12 +18,14 @@ Applied after the last dependent edit
 | 5 | Code paths inspected; unverified disclosed | **Pass** — `scheduler.ts` (673 lines) read end to end; `preferences.ts` (250), `PlanProposal.tsx` (248), `PlanSessionEditor.tsx` (315) read in full; `study-plans.service.ts` read around `:180-210` and `:960-1200`; `StudyPreferencesForm.tsx` and `study-plans.controller.ts` inspected by targeted search. Unverified paths are named in each story's Technical notes and in the epic (`useProposal.ts`, `PlanWeek.tsx`, `catchUpPreview`'s full return shape, the momentum read's use of `weeklyGoalDays`, the preferences DTO decorators). |
 | 6 | Feature risks/counterexamples and owning tests | **Pass** — six invariants with a concrete counterexample, a preventing mechanism and an owning test in the [epic's invariant table](../../epics/EP17-adhd-friendly-pacing-and-plan-proposal.md#security--privacy--accessibility-invariants), including the user's own D17-3 counterexample (many small assignments must not be throttled), the no-silent-loss sum invariant, and the determinism/compatibility gate. |
 | 7 | Dependency mapping and sequence | **Pass** — one vertical sequence (contract → engine → service → frontend → integration) with the rationale and the known windows recorded; EP17C is the only `Blocked` row and its blocker is named. |
-| 8 | Material (▲) decisions ruled or explicitly blocked | **Blocked (by design)** — ▲ D17-3 and ▲ D17-4 are ruled (user, 2026-11-19). ▲ D17-2, ▲ D17-5, ▲ D17-8, ▲ D-A1, ▲ D-C2, ▲ D-D1, ▲ D-E1, ▲ D-F1, ▲ D-F2, ▲ D-G1 are `Proposed` with a recommendation filled for every row (recommend-don't-ask). ▲ D17-2 blocks EP17C; the rest block only their own child at implementation start. Gate status: **Needs Decision**. |
+| 8 | Material (▲) decisions ruled or explicitly blocked | **Pass** — at breakdown (2026-11-19): ▲ D17-3 and ▲ D17-4 ruled; the other ▲ rows `Proposed` with recommendations filled (gate then **Needs Decision**). Update 2026-11-19 (same day): the user ratified every recommended row; ▲ D17-2 ruled (a) with a UI-visibility proviso (EP17G owns the surfacing, no new story). No open ▲ rows. |
 | 9 | Correction log complete | **Pass** — no corrections at this breakdown (see below). |
 | 10 | Identifier consistency and at-a-glance blocks (`queue-lint` clean) | **Pass** — every child has the at-a-glance block and a Decisions table with a Ruling column; epic decisions `D17-<n>`, story decisions `D-<suffix><n>`, epic criteria `AC-E17-<nn>`, test requirements `TR-E17-<nn>`, verification `V-17-<n>`, backlog `BL-17-<nn>`; `node tools/queue-lint.mjs docs/stories/EP17` clean. |
 
-**Gate status:** **Needs Decision** — a sound, complete plan whose material
-rows await rulings; ▲ D17-2 is the only one that blocks a child outright.
+**Gate status:** **Plan Ready** (updated 2026-11-19 — the user ratified every
+recommended ruling; originally **Needs Decision** at breakdown while the
+material rows awaited rulings, ▲ D17-2 the only one blocking a child outright).
+Implementation still waits on the required plan review (D17-12).
 
 ## Plan review
 

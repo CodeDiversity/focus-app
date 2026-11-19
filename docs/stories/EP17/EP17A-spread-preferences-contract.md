@@ -104,9 +104,9 @@ AC-E17-06, AC-E17-07; TR-E17-03; DoD-2, DoD-8, DoD-9.
 
 | ID | Options considered | Recommended | Ruling |
 |---|---|---|---|
-| ▲ D-A1 | Default `spreadPercent`: (a) `70` — spread by default, visibly different from today; (b) `0` — opt-in, nothing changes until a student chooses; (c) `100` | **(a)** — the epic exists because the default plan front-loads; shipping it off by default would leave the defect in place for every student who never opens Profile. (b) is the choice if you want zero change for existing students until they ask | Proposed |
-| D-A2 | Where the key is validated: (a) in `preferences.ts` only, with the DTO re-checking as defense in depth (the existing `dtoErrors` precedent); (b) DTO only | **(a)** — `preferences.ts` is documented as the single definition of the shape (`:3-11`) and non-HTTP callers must be covered | Proposed |
-| D-A3 | Web type mirror: (a) extend the existing shared preferences type so the compiler flags every unhandled site; (b) keep the web type at the pre-EP17 shape until EP17G | **(a)** — an additive optional-safe field costs nothing and surfaces the EP17G work | Proposed |
+| ▲ D-A1 | Default `spreadPercent`: (a) `70` — spread by default, visibly different from today; (b) `0` — opt-in, nothing changes until a student chooses; (c) `100` | **(a)** — the epic exists because the default plan front-loads; shipping it off by default would leave the defect in place for every student who never opens Profile. (b) is the choice if you want zero change for existing students until they ask | Ratified (user, 2026-11-19) |
+| D-A2 | Where the key is validated: (a) in `preferences.ts` only, with the DTO re-checking as defense in depth (the existing `dtoErrors` precedent); (b) DTO only | **(a)** — `preferences.ts` is documented as the single definition of the shape (`:3-11`) and non-HTTP callers must be covered | Ratified (user, 2026-11-19) |
+| D-A3 | Web type mirror: (a) extend the existing shared preferences type so the compiler flags every unhandled site; (b) keep the web type at the pre-EP17 shape until EP17G | **(a)** — an additive optional-safe field costs nothing and surfaces the EP17G work | Ratified (user, 2026-11-19) |
 
 ## Definition of Done
 
